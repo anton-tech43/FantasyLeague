@@ -87,9 +87,10 @@ Data is fetched **per team**, not per user. In v1 with 3 teams, this keeps API a
 
 1. Scheduled jobs pull data from APIs and news sources for each of the 3 teams
 2. Claude API processes raw data into short summaries and talking points
-3. Content is stored in the database, tagged by team
-4. Push notifications are sent to users based on their selected team
-5. Users tap through to see the full detail view
+3. Multiple AI review bots validate content quality and tone before publishing
+4. Approved content is stored in the database, tagged by team
+5. Push notifications are sent to users based on their selected team
+6. Users tap through to see the full detail view
 
 ## 8. Monetization
 
@@ -103,6 +104,8 @@ Data is fetched **per team**, not per user. In v1 with 3 teams, this keeps API a
 - iOS only
 - No boyfriend connection feature (planned for future)
 - No live match updates (future consideration)
+- Off-season: the app goes quiet when there's no news — no filler content
+- Notification permission is requested once; if denied, the Home Screen feed is still available but no re-prompting
 
 ## 10. Future Roadmap
 
