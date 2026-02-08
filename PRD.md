@@ -113,7 +113,19 @@ Data is fetched **per team**, not per user. In v1 with 3 teams, this keeps API a
 - Post-match summaries ("Here's what happened")
 - Customizable notification frequency
 
-## 11. Tone of Voice
+## 11. Design Direction
+
+Goal Digger should look and feel like a modern lifestyle app — not a sports app. The target audience has no interest in football, so the design should feel welcoming, clean, and something they'd happily keep on their home screen.
+
+- **Aesthetic:** Light, warm, and modern. Think lifestyle/social app, not ESPN.
+- **Color palette:** Soft, muted tones — no aggressive reds, dark backgrounds, or neon accents. Neutral base with subtle accent colors.
+- **Typography:** Friendly, rounded sans-serif. Easy to read, never blocky or bold in a "sports" way.
+- **Layout:** Card-based feed with generous whitespace and rounded corners. Should feel closer to Instagram stories than a news ticker.
+- **Team theming:** Minimal — the app stays brand-neutral regardless of which team is selected. Team identity comes through in content, not UI colors.
+- **Icons & imagery:** Simple, illustrative style. Avoid stock football imagery or crest-heavy designs.
+- **Overall vibe:** If someone looked over her shoulder, it should look like a cute, well-designed app — not a football stats tracker.
+
+## 12. Tone of Voice
 
 All content should feel like a fun, helpful friend explaining football—never condescending, never overly technical. Think "gossip column meets match preview." Examples:
 
