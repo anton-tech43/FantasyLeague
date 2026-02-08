@@ -20,28 +20,32 @@ The primary user is someone (stereotypically a girlfriend) with little to no int
 
 ### 3.1 Team Selection
 
-On first launch, the user selects one Premier League team to follow. In v1, the available teams are Arsenal, Manchester United, and West Ham.
+On first launch, the user selects one Premier League team to follow. In v1, the available teams are Arsenal, Manchester United, and West Ham. (West Ham is a personal pick; Arsenal and Man United were chosen for their large fanbases.)
 
-### 3.2 Daily News Updates
+### 3.2 News Updates (When Newsworthy)
 
-The app sends a daily push notification summarizing anything relevant happening in the Premier League world related to the user's chosen team. This includes transfers, injuries, off-pitch drama, manager quotes, and trending stories. The tone should be casual, fun, and easy to understand—not dry sports journalism.
+The app sends a push notification when something genuinely newsworthy happens related to the user's chosen team. This includes transfers, injuries, off-pitch drama, manager quotes, and trending stories. If nothing meaningful is happening, no notification is sent — the app should never spam the user. The tone should be casual, fun, and easy to understand—not dry sports journalism.
 
 ### 3.3 Game Day Talking Points
 
 On match days, the user receives an additional push notification with short, digestible talking points about the upcoming game. This could include recent form, key players to watch, head-to-head stats, and conversation starters like "Did you know...?" facts.
 
-### 3.4 Tap-Through Detail View
+### 3.4 Home Screen Feed
 
-When the user taps a notification, they land on a detail screen with more context, deeper talking points, and background info. This is for users who want to go a level deeper before the conversation.
+The Home Screen serves as the central notification feed — a scrollable timeline of all updates for the user's selected team. This means users can dismiss push notifications when the timing is bad and catch up later in the app. The feed gives a quick overview of everything the user needs to know.
+
+### 3.5 Tap-Through Detail View
+
+When the user taps an item in the feed (or a push notification), they land on a detail screen with more context, deeper talking points, and background info. This is for users who want to go a level deeper before the conversation.
 
 ## 4. Notification Strategy
 
-| Type                    | Frequency         | Timing                   |
-|-------------------------|-------------------|--------------------------|
-| Daily news update       | Once per day      | Morning (e.g., 9:00 AM)  |
-| Game day talking points | Once per game day | 3–4 hours before kickoff |
+| Type                    | Frequency                  | Timing                                    |
+|-------------------------|----------------------------|-------------------------------------------|
+| News update             | Only when newsworthy       | When relevant news breaks (never at night) |
+| Game day talking points | Once per game day          | Close to kickoff                           |
 
-Notifications should be short and punchy (1–2 sentences max), with a "tap for more" experience.
+Notifications should be short and punchy (1–2 sentences max), with a "tap for more" experience. Notifications are never sent during nighttime hours. News updates are timed to when the story breaks rather than on a fixed schedule. Game day notifications are sent close to the match to keep the information fresh and top of mind.
 
 ## 5. Data Sources
 
@@ -51,7 +55,7 @@ The app pulls data from multiple sources to create engaging, well-rounded update
 - **News sites** — AI reads and summarizes articles from major football news outlets (e.g., BBC Sport, Sky Sports, The Athletic).
 - **Social media** — Team Instagram accounts, player accounts, and football influencers for trending stories and off-pitch content.
 
-An AI layer processes and summarizes all incoming data into short, engaging, girlfriend-friendly language.
+The Claude API (Anthropic) processes and summarizes all incoming data into short, engaging, girlfriend-friendly language.
 
 ## 6. User Flow
 
@@ -59,7 +63,7 @@ An AI layer processes and summarizes all incoming data into short, engaging, gir
 2. **Onboarding** — Welcome screen explaining the concept. No account creation needed.
 3. **Team Selection** — Pick one team (Arsenal, Man United, or West Ham).
 4. **Enable Notifications** — Prompt to allow push notifications.
-5. **Home Screen** — Shows latest updates and upcoming match info for the selected team.
+5. **Home Screen** — A feed of all updates and upcoming match info for the selected team. Users can scroll through and catch up at their own pace.
 6. **Receive Notifications** — Daily updates + game day talking points arrive via push.
 7. **Tap Notification** — Opens detail view with more talking points and context.
 
@@ -73,22 +77,24 @@ An AI layer processes and summarizes all incoming data into short, engaging, gir
 ### 7.2 Backend
 
 - **Server:** Cloud-based backend (e.g., Firebase, AWS, or Supabase)
-- **AI Processing:** An AI agent scrapes/reads data sources, summarizes content, and generates talking points
+- **AI Processing:** Claude API (Anthropic) processes and summarizes content from data sources into engaging talking points
 - **Push Notifications:** Apple Push Notification Service (APNs) via the backend
 - **Scheduled Jobs:** Cron jobs or cloud functions to trigger daily updates and game-day notifications
 
 ### 7.3 Data Pipeline
 
-1. Scheduled job runs daily (and on game days) to pull data from APIs and news sources
-2. AI processes raw data into short summaries and talking points
-3. Content is stored in the database
+Data is fetched **per team**, not per user. In v1 with 3 teams, this keeps API and AI costs flat regardless of user count.
+
+1. Scheduled jobs pull data from APIs and news sources for each of the 3 teams
+2. Claude API processes raw data into short summaries and talking points
+3. Content is stored in the database, tagged by team
 4. Push notifications are sent to users based on their selected team
 5. Users tap through to see the full detail view
 
 ## 8. Monetization
 
-- **v1:** Free to download, optional one-time purchase in the App Store (price TBD)
-- **Future:** Explore subscription model if content expands
+- **v1:** Paid app — $10 on the App Store (one-time purchase, no in-app purchases)
+- **Future:** Explore subscription model if content expands (e.g., more teams, live updates)
 
 ## 9. Scope & Limitations (v1)
 
