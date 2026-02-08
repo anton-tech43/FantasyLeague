@@ -431,12 +431,104 @@ Rules:
 ### Deduplication
 Before generating, check `content_items` for any content published for this team in the last 6 hours with a similar headline. Use a simple similarity check (e.g., Levenshtein distance or shared keyword overlap) to avoid duplicate notifications about the same story from multiple sources.
 
-### Matchday Scheduling
+### Matchday Scheduling — Full Timing Logic
 
-On the daily 07:00 GMT run:
-1. Query API-Football for today's fixtures across the 3 teams
-2. For each team playing today, calculate kickoff time minus 90 minutes
-3. Schedule a one-off `content-generator` invocation at that time with type `"matchday"`
+Premier League kickoff times are not fixed. They vary by broadcast schedule, competition, and day of the week. The matchday content generator must handle all of them dynamically.
+
+#### All Possible Premier League Kickoff Times (GMT/BST)
+
+| Day | Kickoff (GMT) | Kickoff (BST, Mar-Oct) | Notification Send Time | Notes |
+|-----|---------------|------------------------|----------------------|-------|
+| Saturday | 12:30 | 12:30 | 11:00 | Early kickoff (TV) |
+| Saturday | 15:00 | 15:00 | 13:30 | Standard 3pm kickoff |
+| Saturday | 17:30 | 17:30 | 16:00 | Late kickoff (TV) |
+| Sunday | 14:00 | 14:00 | 12:30 | Early Sunday (TV) |
+| Sunday | 16:30 | 16:30 | 15:00 | Late Sunday (TV) |
+| Monday | 20:00 | 20:00 | 18:30 | Monday Night Football |
+| Tuesday | 19:45 | 19:45 | 18:15 | Midweek fixture |
+| Tuesday | 20:00 | 20:00 | 18:30 | Midweek fixture |
+| Wednesday | 19:45 | 19:45 | 18:15 | Midweek fixture |
+| Wednesday | 20:00 | 20:00 | 18:30 | Midweek fixture |
+| Thursday | 19:45 | 19:45 | 18:15 | Rescheduled / European weeks |
+| Friday | 20:00 | 20:00 | 18:30 | Occasional Friday night (TV) |
+
+**Rule: Send matchday notification exactly 90 minutes before kickoff.**
+
+Why 90 minutes:
+- Early enough to read before the game starts
+- Late enough that the info feels fresh and timely
+- Aligns with when her partner is probably starting to get into "match mode"
+- She has time to read, absorb, and use a talking point before kickoff
+
+#### Time Zone Handling
+
+All times in the pipeline and database are stored in **UTC**. The notification sender converts to the user's local time for the quiet hours check (08:00–22:00), but the matchday scheduling is based on the actual kickoff time from the API.
+
+**BST Consideration:** The UK switches to British Summer Time (UTC+1) from the last Sunday in March to the last Sunday in October. API-Football returns fixture times in UTC. The pipeline works in UTC throughout — no conversion needed for scheduling. The only place BST matters is the user-facing display in the app (iOS handles this automatically via the device's locale).
+
+#### Implementation: The Matchday Scheduler
+
+This runs as a separate scheduled function once daily at **07:00 UTC**.
+
+```
+Function: matchday-scheduler
+Schedule: 0 7 * * * (daily at 07:00 UTC)
+
+Logic:
+1. GET /v3/fixtures?league=39&season=2025&from={today}&to={today}
+   (This returns ALL Premier League fixtures for today)
+
+2. Filter fixtures for our 3 teams:
+   - Check both home_team_id and away_team_id against our team IDs
+   - A team can only have 1 fixture per day (PL rules)
+
+3. For each matching fixture:
+   a. Extract kickoff_time (UTC) from the API response
+   b. Calculate send_time = kickoff_time - 90 minutes
+   c. Check: is send_time in the future?
+      - YES → Schedule the content generator to run at send_time
+      - NO → The 07:00 run was too late (12:30 kickoff - 90min = 11:00,
+              but this only applies to very early kickoffs which are rare)
+              In this case, run the content generator IMMEDIATELY
+
+4. How to schedule a delayed invocation:
+   Option A (Recommended): Use pg_cron to create a one-off job:
+     SELECT cron.schedule(
+         'matchday-arsenal-20260208',
+         '0 16 8 2 *',  -- 16:00 UTC on Feb 8 (for 17:30 kickoff)
+         $$SELECT net.http_post(...)$$
+     );
+     -- Clean up the one-off job after it runs
+
+   Option B: Use Supabase's pg_net with a delayed HTTP call
+   Option C: Store scheduled sends in a table and have a
+             minutely cron job check for pending sends
+
+5. Log the scheduled send time in pipeline_health
+```
+
+#### Edge Cases
+
+| Edge Case | How to Handle |
+|-----------|---------------|
+| **Match postponed after scheduling** | The data fetcher runs every 30 min. If it detects a fixture status change to "postponed", cancel the scheduled matchday content. Don't send a "match postponed" notification — that's handled by the news content generator if it's newsworthy. |
+| **Kickoff time changed** | Same as postponed — the 30-min data fetcher will detect the new time. Cancel the old schedule, create a new one. |
+| **Double gameweek (2 matches in a week)** | Each fixture is handled independently. If Arsenal play Tuesday and Saturday, they get 2 separate matchday briefings. Both count toward the 2-notifications-per-day max. |
+| **Match kicks off before 09:30 UTC** | Send time would be before 08:00 (quiet hours). In this case, send at exactly 08:00 — earliest allowed. This is rare in the PL (only 12:30 GMT Saturday kickoffs during winter, which would mean an 11:00 send — well within hours). |
+| **Cup matches (FA Cup, League Cup)** | API-Football returns these too. For v1, only generate matchday content for Premier League fixtures (`league=39`). Cup matches are out of scope. If there's newsworthy cup news, the regular news pipeline will catch it. |
+| **International break** | No PL fixtures → no matchday content. The scheduler runs, finds nothing, does nothing. This is correct. |
+| **Bank holiday / festive fixtures (Dec 26, Jan 1)** | These often have unusual kickoff times (12:30, 15:00, 17:30 all on the same day). Handle normally — each team gets one fixture, one notification. |
+| **Match already started by the time content is generated** | Check fixture status before sending. If status is "1H" (first half), "2H", or "FT" — do NOT send. The moment has passed. |
+
+#### Matchday Content in the Feed
+
+Even if the user misses the push notification, the matchday content should be visually prominent in the feed:
+
+- Display a countdown badge on the card: "Kicks off in 2h" / "Live now" / "Full time"
+- The countdown is calculated client-side using the kickoff time stored in the content item
+- After the match ends, the badge changes to "Full time" and fades to the standard timestamp format after 24 hours
+
+> **Note:** The feed does NOT show live scores (out of scope for v1). "Live now" just means the match is happening — not that we're updating scores in real-time.
 
 ---
 
@@ -1203,6 +1295,92 @@ If the API call fails and there's no cached data:
 - "Something went wrong" in `feedHeadline`, `textSecondary`
 - "Pull down to try again." in `onboardingBody`, `textTertiary`
 - No scary error icons or technical messages
+
+### Content Freshness & "You're All Caught Up" State
+
+This is critical UX. If the latest content is from 3 days ago, the user shouldn't think the app is broken — she should feel like she's on top of things.
+
+**Logic:** After the feed loads, check the `published_at` of the most recent item.
+
+**State 1: Fresh content (most recent item < 12 hours old)**
+- No special indicator needed. The feed feels alive.
+
+**State 2: Caught up (most recent item is 12–72 hours old)**
+- Show a "caught up" card at the top of the feed, ABOVE the most recent content card:
+```
+┌──────────────────────────────────────┐
+│                                      │
+│        ✓  You're all caught up       │
+│                                      │
+│   Nothing new for {team short name}  │
+│   right now. We'll ping you when     │
+│   something happens.                 │
+│                                      │
+└──────────────────────────────────────┘
+```
+- Style: No `cardStyle()` shadow. Use a subtle `feedDivider` background with rounded corners. `textSecondary` for the heading, `textTertiary` for the subtext. SF Symbol `checkmark.circle` in `accentGreen`.
+- This communicates: "There's nothing new and that's intentional."
+
+**State 3: Quiet period (most recent item is 3–14 days old)**
+- Show a contextual message at the top of the feed:
+```
+┌──────────────────────────────────────┐
+│                                      │
+│   💤  Quiet week for {team}          │
+│                                      │
+│   Not much happening right now.      │
+│   We'll let you know when there's    │
+│   something worth talking about.     │
+│                                      │
+│   Next match: Sat 15 Feb vs Chelsea  │
+│                                      │
+└──────────────────────────────────────┘
+```
+- If the next fixture is known (from cached API data), show it — this proves the app is alive and knows what's coming.
+- Style: Same as caught-up card but with `textTertiary` emoji icon instead of checkmark.
+
+**State 4: Extended silence (most recent item > 14 days old)**
+- This is likely off-season or an international break.
+- Show at the top:
+```
+┌──────────────────────────────────────┐
+│                                      │
+│   The Premier League is on a break   │
+│                                      │
+│   No matches or major news right     │
+│   now. We'll wake up when things     │
+│   kick off again.                    │
+│                                      │
+└──────────────────────────────────────┘
+```
+- Below this card, the existing feed of older content is still visible and scrollable.
+- The user can still read previous updates — the feed doesn't disappear.
+
+**State 5: Off-season (June–August, no PL fixtures scheduled)**
+- The matchday scheduler will find no upcoming fixtures
+- Show a warm, branded message:
+```
+┌──────────────────────────────────────┐
+│                                      │
+│   ☀️  Season's over!                 │
+│                                      │
+│   The Premier League is on summer    │
+│   break. Enjoy the peace and quiet   │
+│   — we'll be back in August.         │
+│                                      │
+│   (Transfer rumours might still      │
+│   pop up though 👀)                  │
+│                                      │
+└──────────────────────────────────────┘
+```
+- Transfer news CAN still trigger notifications during summer — the news pipeline doesn't stop, it just naturally produces less content.
+
+**Implementation Notes:**
+- All freshness checks are done client-side based on `published_at` timestamps
+- The "caught up" card is NOT a content item in the database — it's a local UI element
+- The "next match" date is pulled from the most recent matchday content item or cached fixture data
+- Off-season detection: if no PL fixtures exist in the API-Football response for the next 30 days, show the off-season state
+- These cards are dismissible — tapping anywhere on them collapses them (with animation) and they reappear on next app open
 
 ---
 
