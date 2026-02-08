@@ -20,7 +20,7 @@ The primary user is someone (stereotypically a girlfriend) with little to no int
 
 ### 3.1 Team Selection
 
-On first launch, the user selects one Premier League team to follow. In v1, the available teams are Arsenal, Manchester United, and West Ham. (West Ham is a personal pick; Arsenal and Man United were chosen for their large fanbases.)
+On first launch, the user selects one Premier League team to follow. In v1, the available teams are Arsenal, Manchester United, and West Ham.
 
 ### 3.2 News Updates (When Newsworthy)
 
