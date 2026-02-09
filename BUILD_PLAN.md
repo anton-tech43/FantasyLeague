@@ -2,7 +2,7 @@
 
 **Version:** 1.0
 **Date:** February 8, 2026
-**Companion document:** [PRD.md](./PRD.md)
+**Companion documents:** [PRD.md](./PRD.md) | [AGENT_CONTRACTS.md](./AGENT_CONTRACTS.md)
 
 ---
 
@@ -91,13 +91,25 @@ GoalDigger/
 │   │   ├── migrations/                    # SQL schema migrations
 │   │   │   └── 001_initial_schema.sql
 │   │   └── functions/
+│   │       ├── _shared/                   # Shared utilities (see AGENT_CONTRACTS.md)
+│   │       │   ├── supabase-client.ts
+│   │       │   ├── claude-client.ts
+│   │       │   ├── apns-client.ts
+│   │       │   ├── types.ts
+│   │       │   ├── anti-spam.ts
+│   │       │   ├── trigger.ts
+│   │       │   └── pipeline-logger.ts
 │   │       ├── data-fetcher/
 │   │       │   └── index.ts
 │   │       ├── content-generator/
 │   │       │   └── index.ts
 │   │       ├── content-reviewer/
 │   │       │   └── index.ts
-│   │       └── notification-sender/
+│   │       ├── notification-sender/
+│   │       │   └── index.ts
+│   │       ├── matchday-scheduler/        # Daily 07:00 UTC, schedules game-day content
+│   │       │   └── index.ts
+│   │       └── health-check/              # GET endpoint for monitoring (see RUNBOOK.md)
 │   │           └── index.ts
 │   └── seed/
 │       └── seed_teams.sql
@@ -1331,6 +1343,25 @@ a BIG rivalry."
 
 ──────────────────────────────────────     ← Subtle divider
 
+🏁 After the match                         ← Section header (MATCHDAY ONLY)
+                                              Only shown when type == .matchday
+┌──────────────────────────────────────┐      and postMatchCheatSheet exists.
+│  If they WIN:                        │   ← Green-tinted card
+│  "That was massive, right?! You      │      See AGENT_CONTRACTS.md Contract 8
+│   must be buzzing."                  │      for exact styling.
+└──────────────────────────────────────┘
+┌──────────────────────────────────────┐
+│  If they LOSE:                       │   ← Red/muted-tinted card
+│  "Unlucky. They'll bounce back       │
+│   though."                           │
+└──────────────────────────────────────┘
+┌──────────────────────────────────────┐
+│  Bold prediction:                    │   ← Standard accent card
+│  "2-1 Arsenal"                       │
+└──────────────────────────────────────┘
+
+──────────────────────────────────────     ← Subtle divider
+
 The backstory                              ← Section header
 
 [Body text in markdown, 3-5 paragraphs.    ← Rendered markdown body
@@ -1351,7 +1382,7 @@ Comfortable line spacing (1.5x).
 - Spacing between cards: 8pt
 
 ### Section Headers
-- "Things to say" and "The backstory"
+- "Things to say", "After the match" (matchday only), and "The backstory"
 - Font: `feedBadge` but larger (caption size), uppercase, `textTertiary`, letter-spacing 1pt
 - Left-aligned
 
