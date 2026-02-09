@@ -45,7 +45,7 @@ SEVERITY RULES:
 - Any "unverifiable_claims" -> flag for logging but don't fail (the claim might be
   general knowledge not in the source data, like "Arsenal and Tottenham are rivals")
 
-RESPONSE FORMAT:
+RESPONSE FORMAT (return ONLY valid JSON, no markdown wrapping):
 {
     "pass": true/false,
     "confidence": 0.0-1.0,

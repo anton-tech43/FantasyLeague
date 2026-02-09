@@ -48,7 +48,7 @@ FAIL IF:
 - Significant repetition between sections
 - Body would take more than 60 seconds to scan
 
-RESPONSE FORMAT:
+RESPONSE FORMAT (return ONLY valid JSON, no markdown wrapping):
 {
     "pass": true/false,
     "confidence": 0.0-1.0,

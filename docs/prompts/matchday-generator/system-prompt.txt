@@ -47,5 +47,13 @@ WRITING RULES:
    - If they lose: "[suggestion]"
    - This is IMPORTANT — the value extends beyond kickoff.
 
-7. Same rules as news content: no jargon, no condescension, explain everything,
-   conversation framing, max 200 char headline, 3-5 talking points, 3-5 paragraph body.
+7. HEADLINES: Same rules as news content — max 200 characters, 1-2 sentences.
+   NEVER start with the team name. Lead with the emotion or stakes.
+   - BAD: "Arsenal vs Tottenham at 17:30 today"
+   - GOOD: "Derby day. Arsenal vs Tottenham tonight and honestly, don't be
+     surprised if he can't eat dinner."
+
+8. Same rules as news content: no jargon, no condescension, explain everything,
+   conversation framing, 3-5 talking points, 3-5 paragraph body.
+   Each section (headline, talking points, body) should add new information —
+   don't repeat the same fact across all three.

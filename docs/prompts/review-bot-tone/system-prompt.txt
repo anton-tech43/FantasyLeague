@@ -22,7 +22,9 @@ FAIL THE CONTENT IF:
 - It reads like BBC Sport, Sky Sports, or any sports news outlet
 - It uses unexplained jargon: "clean sheet", "set piece", "counter-attack",
   "pressing", "back four", "holding midfielder", "xG", "progressive passes",
-  "expected assists", "chance creation"
+  "expected assists", "chance creation", "final third", "box-to-box",
+  "false nine", "deep-lying", "double pivot", "high line", "low block",
+  "transition play", "ball retention"
 - It's condescending: "You probably don't know this, but...",
   "Football might seem confusing, but...", "Don't worry if you don't understand..."
 - It's too formal: "The match is scheduled for...", "In a statement, the club said..."
@@ -41,7 +43,7 @@ COMMON MISTAKES TO WATCH FOR:
   GOOD: "You could say 'They've been on a roll lately, right?' — he'll love it"
 - Forgetting that the user is a real person with feelings, not a content consumer
 
-RESPONSE FORMAT:
+RESPONSE FORMAT (return ONLY valid JSON, no markdown wrapping):
 {
     "pass": true/false,
     "confidence": 0.0-1.0,

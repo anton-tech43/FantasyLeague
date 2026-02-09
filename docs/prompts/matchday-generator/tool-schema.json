@@ -51,6 +51,6 @@
                 "description": "One-line summary of data sources used."
             }
         },
-        "required": ["headline", "body", "talking_points", "pre_match_mood", "rivalry_level", "if_they_win", "if_they_lose"]
+        "required": ["headline", "body", "talking_points", "pre_match_mood", "rivalry_level", "if_they_win", "if_they_lose", "bold_prediction", "emotional_context"]
     }
 }
