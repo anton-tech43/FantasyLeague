@@ -12,6 +12,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 interface ContentItem {
   id: string;
   team_id: string;
+  type: "news" | "matchday";
   headline: string;
   status: string;
   published_at: string | null;
@@ -32,10 +33,10 @@ interface DeviceToken {
 async function createAPNsJWT(): Promise<string> {
   const keyId = Deno.env.get("APNS_KEY_ID");
   const teamId = Deno.env.get("APNS_TEAM_ID");
-  const privateKeyPem = Deno.env.get("APNS_PRIVATE_KEY");
+  const privateKeyPem = Deno.env.get("APNS_KEY_P8");
 
   if (!keyId || !teamId || !privateKeyPem) {
-    throw new Error("APNs credentials not configured (APNS_KEY_ID, APNS_TEAM_ID, APNS_PRIVATE_KEY)");
+    throw new Error("APNs credentials not configured (APNS_KEY_ID, APNS_TEAM_ID, APNS_KEY_P8)");
   }
 
   // Parse the PKCS#8 private key
@@ -117,6 +118,7 @@ async function sendPush(
     ? "api.push.apple.com"
     : "api.sandbox.push.apple.com";
 
+  // Contract 2: exact APNs payload format
   const apnsPayload = {
     aps: {
       alert: {
@@ -126,16 +128,19 @@ async function sendPush(
       },
       sound: "default",
       "mutable-content": 1,
+      category: "CONTENT_UPDATE",
     },
     content_id: contentId,
   };
+
+  const bundleId = Deno.env.get("APNS_BUNDLE_ID") ?? "com.goaldigger.app";
 
   try {
     const res = await fetch(`https://${host}/3/device/${token}`, {
       method: "POST",
       headers: {
         Authorization: `bearer ${jwt}`,
-        "apns-topic": "com.goaldigger.app",
+        "apns-topic": bundleId,
         "apns-push-type": "alert",
         "apns-priority": "10",
         "Content-Type": "application/json",
@@ -165,6 +170,46 @@ async function getTeamShortName(
     .eq("id", teamId)
     .single();
   return data?.short_name ?? teamId;
+}
+
+/** Anti-spam check per Contract 4. Returns canSend and reason if blocked. */
+async function checkAntiSpamRules(
+  supabase: ReturnType<typeof createClient>,
+  teamId: string,
+  contentType: "news" | "matchday",
+): Promise<{ canSend: boolean; reason?: string }> {
+  // Rule 1: Max 2 notifications per day per team (rolling 24h)
+  const { count: dailyCount } = await supabase
+    .from("content_items")
+    .select("*", { count: "exact", head: true })
+    .eq("team_id", teamId)
+    .eq("status", "published")
+    .gte("published_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+
+  if ((dailyCount ?? 0) >= 2) {
+    return { canSend: false, reason: "daily_limit_reached" };
+  }
+
+  // Rule 2: Min 3 hours between notifications (skip for matchday per Contract 4)
+  if (contentType !== "matchday") {
+    const { data: lastPublished } = await supabase
+      .from("content_items")
+      .select("published_at")
+      .eq("team_id", teamId)
+      .eq("status", "published")
+      .order("published_at", { ascending: false })
+      .limit(1);
+
+    if (lastPublished?.[0]?.published_at) {
+      const hoursSinceLast =
+        (Date.now() - new Date(lastPublished[0].published_at).getTime()) / (1000 * 60 * 60);
+      if (hoursSinceLast < 3) {
+        return { canSend: false, reason: "gap_too_short" };
+      }
+    }
+  }
+
+  return { canSend: true };
 }
 
 /** Log pipeline health. */
@@ -281,6 +326,22 @@ serve(async (req) => {
 
     for (const item of items as ContentItem[]) {
       const startTime = Date.now();
+
+      // Contract 4: Anti-spam enforcement (hard gate before sending)
+      const spamCheck = await checkAntiSpamRules(supabase, item.team_id, item.type ?? "news");
+      if (!spamCheck.canSend) {
+        results[item.id] = { sent: 0, failed: 0, deactivated: 0 };
+        await logHealth(
+          supabase,
+          item.team_id,
+          "skipped",
+          Date.now() - startTime,
+          `Anti-spam blocked: ${spamCheck.reason}`,
+          item.id,
+        );
+        continue;
+      }
+
       const teamShortName = await getTeamShortName(supabase, item.team_id);
 
       // Get active device tokens for this team

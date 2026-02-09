@@ -127,6 +127,57 @@ CREATE POLICY "pipeline_health_service_only" ON pipeline_health
     WITH CHECK (auth.role() = 'service_role');
 
 -- ============================================================================
+-- RPC FUNCTIONS
+-- ============================================================================
+
+-- schedule_matchday_job: Called by matchday-scheduler Edge Function to create
+-- one-off pg_cron jobs that trigger content generation before kickoff.
+-- Uses pg_net to make HTTP POST to the content-generator function.
+CREATE OR REPLACE FUNCTION schedule_matchday_job(
+    job_name TEXT,
+    cron_schedule TEXT,
+    function_url TEXT,
+    payload TEXT
+) RETURNS void AS $$
+DECLARE
+    _service_key TEXT;
+BEGIN
+    _service_key := current_setting('app.settings.service_role_key', true);
+
+    -- Schedule a one-off cron job using pg_cron + pg_net
+    PERFORM cron.schedule(
+        job_name,
+        cron_schedule,
+        format(
+            $$SELECT net.http_post(
+                url := %L,
+                body := %L::jsonb,
+                headers := jsonb_build_object(
+                    'Content-Type', 'application/json',
+                    'Authorization', 'Bearer ' || %L
+                )
+            )$$,
+            function_url,
+            payload,
+            _service_key
+        )
+    );
+
+    -- Schedule removal of the one-off job 2 hours after it runs
+    -- (cron jobs persist unless explicitly removed)
+    PERFORM cron.schedule(
+        job_name || '_cleanup',
+        cron_schedule,
+        format(
+            $$SELECT cron.unschedule(%L); SELECT cron.unschedule(%L);$$,
+            job_name,
+            job_name || '_cleanup'
+        )
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ============================================================================
 -- SCHEDULED JOBS (pg_cron)
 -- ============================================================================
 
