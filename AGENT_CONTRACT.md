@@ -8,12 +8,14 @@
 
 | Area | Status | Agent / Branch | Notes |
 |------|--------|----------------|-------|
-| **Backend: Project structure & scaffolding** | IN PROGRESS | `claude/review-repo-setup-TCJ11` | Creating directory layout, config files |
-| **Backend: SQL schema migration** | IN PROGRESS | `claude/review-repo-setup-TCJ11` | `001_initial_schema.sql` + seed data |
-| **Backend: data-fetcher Edge Function** | IN PROGRESS | `claude/review-repo-setup-TCJ11` | API-Football + RSS feed fetching |
-| **Backend: content-generator Edge Function** | IN PROGRESS | `claude/review-repo-setup-TCJ11` | Claude API content generation |
-| **Backend: content-reviewer Edge Function** | IN PROGRESS | `claude/review-repo-setup-TCJ11` | 3 parallel review bots (tone, accuracy, brevity) |
-| **Backend: notification-sender Edge Function** | IN PROGRESS | `claude/review-repo-setup-TCJ11` | APNs integration |
+| **Backend: Project structure & scaffolding** | DONE | `claude/review-repo-setup-TCJ11` | Full directory tree created |
+| **Backend: SQL schema migration** | DONE | `claude/review-repo-setup-TCJ11` | `001_initial_schema.sql` + RLS + indexes + cron jobs |
+| **Backend: Seed data** | DONE | `claude/review-repo-setup-TCJ11` | `seed_teams.sql` (Arsenal, Man Utd, West Ham) |
+| **Backend: data-fetcher Edge Function** | DONE | `claude/review-repo-setup-TCJ11` | API-Football (6 endpoints) + 12 RSS feeds + dedup |
+| **Backend: content-generator Edge Function** | DONE | `claude/review-repo-setup-TCJ11` | Claude API news generation + anti-spam rules |
+| **Backend: content-reviewer Edge Function** | DONE | `claude/review-repo-setup-TCJ11` | 3 parallel review bots + retry logic |
+| **Backend: notification-sender Edge Function** | DONE | `claude/review-repo-setup-TCJ11` | APNs JWT auth + token management + quiet hours |
+| **Backend: health endpoint** | DONE | `claude/review-repo-setup-TCJ11` | Pipeline monitoring + alert conditions |
 | **iOS: Xcode project setup** | AVAILABLE | — | Not started |
 | **iOS: Models (Team, ContentItem, AppState)** | AVAILABLE | — | Not started |
 | **iOS: Design system (Theme.swift, Components)** | AVAILABLE | — | Not started |
@@ -21,7 +23,7 @@
 | **iOS: Feed view** | AVAILABLE | — | Not started |
 | **iOS: Detail view** | AVAILABLE | — | Not started |
 | **iOS: Settings view** | AVAILABLE | — | Not started |
-| **iOS: APIClient / Networking** | AVAILABLE | — | Not started |
+| **iOS: APIClient / Networking** | AVAILABLE | — | Not started (depends on backend) |
 | **iOS: NotificationService** | AVAILABLE | — | Not started |
 | **iOS: CacheService (SwiftData)** | AVAILABLE | — | Not started |
 | **Docs: README.md** | AVAILABLE | — | Not started |
@@ -32,7 +34,8 @@
 
 | Date | Agent / Branch | What was done |
 |------|----------------|---------------|
-| 2026-02-09 | `claude/review-repo-setup-TCJ11` | Read all repo docs (PRD, BUILD_PLAN, PROMPTS, CONTENT_EXAMPLES, RUNBOOK, APP_STORE_STRATEGY). Created this contract file. Starting Phase 1 backend implementation. |
+| 2026-02-09 | `claude/review-repo-setup-TCJ11` | Read all repo docs (PRD, BUILD_PLAN, PROMPTS, CONTENT_EXAMPLES, RUNBOOK, APP_STORE_STRATEGY). Created this contract file. |
+| 2026-02-09 | `claude/review-repo-setup-TCJ11` | **Phase 1 Backend — COMPLETE.** Built full project directory structure, SQL migration with RLS policies + indexes + scheduled cron jobs, seed data, and all 5 Supabase Edge Functions: data-fetcher (API-Football 6 endpoints + 12 RSS feeds + dedup + player filtering), content-generator (Claude API news generation with full prompt templates + anti-spam rules), content-reviewer (3 parallel review bots: tone/accuracy/brevity + retry logic), notification-sender (APNs JWT auth + token lifecycle + quiet hours), health endpoint (per-team monitoring + alert conditions). |
 
 ---
 
