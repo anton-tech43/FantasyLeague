@@ -94,12 +94,19 @@ WRITING RULES:
 7. ACCURACY: Never make up facts, stats, or quotes. Only use information from
    the provided source data. If you're unsure about something, leave it out.
 
-8. LENGTH:
-   - Headline: 1-2 sentences. Max 200 characters. This is the push notification —
+8. HEADLINES:
+   - 1-2 sentences. Max 200 characters. This is the push notification —
      it needs to hook her in 3 seconds.
+   - NEVER start with the team name. "Arsenal sign new striker" is boring.
+     "Big news — Arsenal just signed someone he'll definitely be talking about" is good.
+   - Lead with emotion, intrigue, or her partner's likely reaction — not the football fact.
+
+9. LENGTH:
    - Talking points: 3-5 items. Each 1-2 sentences. These are conversation scripts.
    - Body: 3-5 short paragraphs. Scannable in 60 seconds. This is for users who
      want the full story before talking to their partner.
+   - Each section (headline, talking points, body) should add new information —
+     don't repeat the same fact across all three.
 ```
 
 ### User Message Template
@@ -180,6 +187,8 @@ One notification at a time — never overwhelm her.
 }
 ```
 
+> **Backend Agent note — conditional validation:** The JSON schema only requires `is_newsworthy` and `newsworthiness_score` because Claude must always return those to make the publish/skip decision. When `is_newsworthy` is `true`, the Backend Agent **must validate** that `headline`, `body`, `talking_points`, and `emotional_context` are all present before inserting into `content_items`. If any are missing, treat as a generation failure and log to `pipeline_health`.
+
 ### Decision Logic
 
 Only publish content where:
@@ -187,6 +196,7 @@ Only publish content where:
 - `newsworthiness_score` >= 6
 - `headline` is present and under 200 characters
 - `talking_points` has 3–5 items
+- `emotional_context` is present
 
 If `is_newsworthy` is `true` but `newsworthiness_score` < 6, log for analysis but don't publish. This catches the model being uncertain — and uncertainty means it's probably not worth sending.
 
@@ -646,7 +656,8 @@ Quick reference for all variables used across prompts.
 |----------|--------|---------|
 | `{{opponent_name}}` | API-Football fixture | "Tottenham" |
 | `{{kickoff_time}}` | API-Football fixture | "15:00 GMT" |
-| `{{kickoff_day}}` | Derived | "Saturday" |
+| `{{kickoff_day}}` | Derived from fixture date | "Saturday" |
+| `{{match_date}}` | API-Football fixture | "2026-02-14" |
 | `{{venue}}` | API-Football fixture | "Emirates Stadium" |
 | `{{competition}}` | API-Football fixture | "Premier League" |
 | `{{referee}}` | API-Football fixture | "Michael Oliver" |
@@ -654,14 +665,23 @@ Quick reference for all variables used across prompts.
 ### Form & Stats Variables
 | Variable | Source | Example |
 |----------|--------|---------|
-| `{{team_position}}` | API-Football standings | "3rd" |
+| `{{league_position}}` | API-Football standings | "3rd" (used in news generator user template) |
+| `{{recent_form}}` | API-Football standings | "W W D L W" (used in news generator user template) |
+| `{{next_fixture}}` | API-Football fixtures | "vs Tottenham, Saturday 15:00" (used in news generator user template) |
+| `{{team_position}}` | API-Football standings | "3rd" (used in matchday user template) |
 | `{{team_points}}` | API-Football standings | "52 points" |
 | `{{team_form}}` | API-Football standings | "W W D L W" |
 | `{{opponent_position}}` | API-Football standings | "7th" |
+| `{{opponent_points}}` | API-Football standings | "38 points" |
 | `{{opponent_form}}` | API-Football standings | "L W W D L" |
-| `{{team_top_scorer}}` | API-Football stats | "Saka (12 goals)" |
+| `{{team_top_scorer}}` | API-Football stats | "Saka" |
+| `{{goals}}` | API-Football stats | "12" (top scorer goal count) |
 | `{{team_injuries}}` | API-Football injuries | "Odegaard (knee, 2 weeks)" |
+| `{{team_suspensions}}` | API-Football fixtures/lineups | "None" or "Rice (1 match)" |
+| `{{opponent_top_scorer}}` | API-Football stats | "Son (9 goals)" |
+| `{{opponent_injuries}}` | API-Football injuries | "Romero (hamstring, 3 weeks)" |
 | `{{h2h_results}}` | API-Football H2H | Last 5 meetings formatted |
+| `{{additional_context}}` | Backend-generated | Free-text notes, e.g. "Title race — 2 points off 1st" or "Relegation battle" |
 
 ### Content Pipeline Variables
 | Variable | Source | Example |
@@ -669,6 +689,15 @@ Quick reference for all variables used across prompts.
 | `{{formatted_articles}}` | RSS parser | Deduplicated article titles + summaries |
 | `{{recent_published_headlines}}` | content_items DB | Last 5 published headlines for dedup |
 | `{{raw_source_data}}` | raw_fetch_logs DB | Full raw data for accuracy review |
+
+### Review Bot Input Variables
+| Variable | Source | Example |
+|----------|--------|---------|
+| `{{headline}}` | Generated content | The headline text to review |
+| `{{talking_points_formatted}}` | Generated content | Talking points as a numbered list, one per line: `1. "Point one..."\n2. "Point two..."` |
+| `{{body}}` | Generated content | The body markdown text to review |
+| `{{emotional_context}}` | Generated content | One of: "exciting", "bad_news", "drama", "informational", "funny" |
+| `{{content_type}}` | Generated content | "news" or "matchday" |
 
 ---
 
