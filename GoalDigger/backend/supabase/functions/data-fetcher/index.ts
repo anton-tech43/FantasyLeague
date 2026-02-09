@@ -218,7 +218,7 @@ async function isDuplicate(
     .gte("fetched_at", since)
     .limit(1)
     // Search for URL in the JSONB data
-    .filter("data->url", "eq", url);
+    .filter("data->>url", "eq", url);
 
   return (data?.length ?? 0) > 0;
 }
@@ -241,12 +241,12 @@ async function logHealth(
   });
 }
 
-/** Trigger the content-generator function for a team. */
+/** Trigger the content-generator function for a team (Contract 1). */
 async function triggerContentGenerator(
   teamId: string,
-  hasNewData: boolean,
+  fetchLogIds: string[],
 ) {
-  if (!hasNewData) return;
+  if (fetchLogIds.length === 0) return;
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -258,7 +258,11 @@ async function triggerContentGenerator(
         Authorization: `Bearer ${serviceKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ team_id: teamId }),
+      body: JSON.stringify({
+        team_id: teamId,
+        fetch_log_ids: fetchLogIds,
+        trigger: "new_data",
+      }),
     });
   } catch (err) {
     console.error(`Failed to trigger content-generator for ${teamId}:`, err);
@@ -272,11 +276,11 @@ async function triggerContentGenerator(
 serve(async (req) => {
   try {
     const supabase = getSupabaseClient();
-    const rapidApiKey = Deno.env.get("RAPIDAPI_KEY");
+    const rapidApiKey = Deno.env.get("API_FOOTBALL_KEY");
 
     if (!rapidApiKey) {
       return new Response(
-        JSON.stringify({ error: "RAPIDAPI_KEY not configured" }),
+        JSON.stringify({ error: "API_FOOTBALL_KEY not configured" }),
         { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }
@@ -309,13 +313,16 @@ serve(async (req) => {
       let hasNewData = false;
 
       try {
+        const fetchLogIds: string[] = [];
+
         // 1. Fetch API-Football data
         const apiData = await fetchApiFootball(team.api_football_id, rapidApiKey);
-        await supabase.from("raw_fetch_logs").insert({
+        const { data: apiLog } = await supabase.from("raw_fetch_logs").insert({
           team_id: team.id,
           source: "api_football",
           data: apiData,
-        });
+        }).select("id").single();
+        if (apiLog) fetchLogIds.push(apiLog.id);
 
         // 2. Fetch and filter RSS feeds
         const rssResults = await fetchRSSForTeam(team);
@@ -328,7 +335,7 @@ serve(async (req) => {
             if (alreadySeen) continue;
 
             newArticleCount++;
-            await supabase.from("raw_fetch_logs").insert({
+            const { data: rssLog } = await supabase.from("raw_fetch_logs").insert({
               team_id: team.id,
               source: feedResult.source,
               data: {
@@ -337,7 +344,8 @@ serve(async (req) => {
                 description: article.description,
                 pub_date: article.pubDate,
               },
-            });
+            }).select("id").single();
+            if (rssLog) fetchLogIds.push(rssLog.id);
           }
         }
 
@@ -358,9 +366,9 @@ serve(async (req) => {
           `Fetched ${newArticleCount} new articles`,
         );
 
-        // 3. Trigger content generator if new data found
+        // 3. Trigger content generator if new data found (Contract 1)
         if (hasNewData) {
-          await triggerContentGenerator(team.id, true);
+          await triggerContentGenerator(team.id, fetchLogIds);
         }
       } catch (err) {
         console.error(`Error processing team ${team.id}:`, err);

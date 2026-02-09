@@ -298,8 +298,8 @@ async function logHealth(
   });
 }
 
-/** Trigger notification sender for approved content. */
-async function triggerNotificationSender(contentItemId: string) {
+/** Trigger notification sender for approved content (Contract 1). */
+async function triggerNotificationSender(contentItemId: string, teamId: string) {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -310,7 +310,10 @@ async function triggerNotificationSender(contentItemId: string) {
         Authorization: `Bearer ${serviceKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ content_item_id: contentItemId }),
+      body: JSON.stringify({
+        content_item_id: contentItemId,
+        team_id: teamId,
+      }),
     });
   } catch (err) {
     console.error("Failed to trigger notification-sender:", err);
@@ -405,8 +408,8 @@ serve(async (req) => {
         content_item_id,
       );
 
-      // Trigger notification sender
-      await triggerNotificationSender(content_item_id);
+      // Trigger notification sender (Contract 1: include team_id)
+      await triggerNotificationSender(content_item_id, item.team_id);
 
       return new Response(
         JSON.stringify({ approved: true, reviews: allResults }),

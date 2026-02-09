@@ -111,7 +111,7 @@ function calculateSendTime(kickoffTime: Date): Date {
   return sendTime;
 }
 
-/** Trigger content generator for matchday content. */
+/** Trigger content generator for matchday content (Contract 1 format). */
 async function triggerMatchdayGenerator(
   teamId: string,
   fixture: Fixture,
@@ -124,6 +124,7 @@ async function triggerMatchdayGenerator(
     ? fixture.teams.away.name
     : fixture.teams.home.name;
 
+  // Contract 1: matchday-scheduler → content-generator payload
   await fetch(`${supabaseUrl}/functions/v1/content-generator`, {
     method: "POST",
     headers: {
@@ -132,7 +133,11 @@ async function triggerMatchdayGenerator(
     },
     body: JSON.stringify({
       team_id: teamId,
-      type: "matchday",
+      trigger: "matchday",
+      fixture_id: String(fixture.fixture.id),
+      kickoff_time: fixture.fixture.date,
+      opponent: opponentName,
+      // Also pass fixture_data for backward compatibility
       fixture_data: {
         fixture_id: String(fixture.fixture.id),
         kickoff_time: fixture.fixture.date,
@@ -178,11 +183,11 @@ async function logHealth(
 serve(async () => {
   try {
     const supabase = getSupabaseClient();
-    const rapidApiKey = Deno.env.get("RAPIDAPI_KEY");
+    const rapidApiKey = Deno.env.get("API_FOOTBALL_KEY");
 
     if (!rapidApiKey) {
       return new Response(
-        JSON.stringify({ error: "RAPIDAPI_KEY not configured" }),
+        JSON.stringify({ error: "API_FOOTBALL_KEY not configured" }),
         { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }
@@ -292,14 +297,17 @@ serve(async () => {
           ? match.fixture.teams.away.name
           : match.fixture.teams.home.name;
 
-        // Use Supabase's RPC to schedule a pg_cron job
+        // Use Supabase's RPC to schedule a pg_cron job (Contract 1 payload)
         const { error: cronErr } = await supabase.rpc("schedule_matchday_job", {
           job_name: jobName,
           cron_schedule: `${cronMinute} ${cronHour} ${cronDay} ${cronMonth} *`,
           function_url: `${supabaseUrl}/functions/v1/content-generator`,
           payload: JSON.stringify({
             team_id: match.team.id,
-            type: "matchday",
+            trigger: "matchday",
+            fixture_id: String(match.fixture.fixture.id),
+            kickoff_time: match.fixture.fixture.date,
+            opponent: opponentName,
             fixture_data: {
               fixture_id: String(match.fixture.fixture.id),
               kickoff_time: match.fixture.fixture.date,

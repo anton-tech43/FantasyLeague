@@ -12,6 +12,13 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 interface ContentGeneratorInput {
   team_id: string;
+  trigger?: "new_data" | "matchday";
+  fetch_log_ids?: string[];
+  // Matchday fields (Contract 1)
+  fixture_id?: string;
+  kickoff_time?: string;
+  opponent?: string;
+  // Legacy fields
   type?: "news" | "matchday";
   fixture_data?: Record<string, unknown>;
 }
@@ -456,6 +463,77 @@ async function logHealth(
 // Main handler
 // ---------------------------------------------------------------------------
 
+/** Format matchday user message with fixture data. */
+function formatMatchdayUserMessage(
+  teamDisplayName: string,
+  fixtureData: Record<string, unknown>,
+  rawData: Record<string, unknown>[],
+  recentHeadlines: string[],
+): string {
+  // Extract recent form from API-Football data
+  const apiData = rawData.filter((d: Record<string, unknown>) => d.source === "api_football");
+  let recentForm = "Unknown";
+  let leaguePosition = "Unknown";
+  let injuries = "None reported";
+
+  if (apiData.length > 0) {
+    const latestApi = apiData[0].data as Record<string, unknown>;
+    try {
+      if (latestApi.standings) {
+        const response = latestApi.standings as unknown as { response: Array<{ league: { standings: Array<Array<{ team: { name: string }; rank: number; points: number; form: string }>> } }> };
+        if (response.response?.[0]?.league?.standings?.[0]) {
+          const table = response.response[0].league.standings[0];
+          const teamEntry = table.find((t) =>
+            t.team.name.toLowerCase().includes(teamDisplayName.toLowerCase())
+          );
+          if (teamEntry) {
+            leaguePosition = `${teamEntry.rank}th (${teamEntry.points} points)`;
+            recentForm = teamEntry.form ?? "Unknown";
+          }
+        }
+      }
+      if (latestApi.injuries) {
+        const injResponse = latestApi.injuries as { response: Array<{ player: { name: string }; player_injury: { type: string } }> };
+        if (injResponse.response?.length > 0) {
+          injuries = injResponse.response
+            .slice(0, 5)
+            .map((i) => `${i.player.name} (${i.player_injury?.type ?? "unknown"})`)
+            .join(", ");
+        }
+      }
+    } catch {
+      // Parsing failed — use defaults
+    }
+  }
+
+  const recentPublished = recentHeadlines.length > 0
+    ? recentHeadlines.map((h) => `- ${h}`).join("\n")
+    : "(No recent content)";
+
+  return `Here is today's match information for ${teamDisplayName}:
+
+--- MATCH DETAILS ---
+Opponent: ${fixtureData.opponent_name ?? fixtureData.opponent ?? "TBD"}
+Kickoff: ${fixtureData.kickoff_time ?? "TBD"}
+Venue: ${fixtureData.venue ?? "TBD"}
+Competition: ${fixtureData.competition ?? "Premier League"}
+Home/Away: ${fixtureData.is_home ? "HOME" : "AWAY"}
+
+--- TEAM CONTEXT ---
+League position: ${leaguePosition}
+Recent form: ${recentForm}
+Key injuries: ${injuries}
+
+--- RECENT CONTENT ---
+(These are items we already published recently — DO NOT duplicate them)
+${recentPublished}
+
+---
+
+Create a matchday briefing that helps her understand what's happening today.
+Give her everything she needs to sound knowledgeable when he talks about this match.`;
+}
+
 serve(async (req) => {
   try {
     const supabase = getSupabaseClient();
@@ -470,6 +548,9 @@ serve(async (req) => {
     }
 
     const startTime = Date.now();
+
+    // Determine content type from trigger (Contract 1)
+    const isMatchday = input.trigger === "matchday" || input.type === "matchday";
 
     // Get team info
     const team = await getTeam(supabase, teamId);
@@ -494,7 +575,7 @@ serve(async (req) => {
     const rawData = await getRawData(supabase, teamId);
     const recentHeadlines = await getRecentHeadlines(supabase, teamId);
 
-    if (rawData.length === 0) {
+    if (rawData.length === 0 && !isMatchday) {
       await logHealth(supabase, teamId, "skipped", Date.now() - startTime, "No raw data available");
       return new Response(
         JSON.stringify({ skipped: true, reason: "No raw data" }),
@@ -502,7 +583,115 @@ serve(async (req) => {
       );
     }
 
-    // Build prompt and call Claude
+    if (isMatchday) {
+      // ---- MATCHDAY CONTENT PATH ----
+      // Build fixture data from Contract 1 payload or legacy format
+      const fixtureData: Record<string, unknown> = input.fixture_data ?? {
+        fixture_id: input.fixture_id,
+        kickoff_time: input.kickoff_time,
+        opponent_name: input.opponent,
+      };
+
+      const systemPrompt = MATCHDAY_SYSTEM_PROMPT
+        .replace(/\{\{team_display_name\}\}/g, team.display_name)
+        .replace(/\{\{opponent_name\}\}/g, String(fixtureData.opponent_name ?? fixtureData.opponent ?? "TBD"))
+        .replace(/\{\{kickoff_time\}\}/g, String(fixtureData.kickoff_time ?? "TBD"))
+        .replace(/\{\{kickoff_day\}\}/g, fixtureData.kickoff_time
+          ? new Date(String(fixtureData.kickoff_time)).toLocaleDateString("en-GB", { weekday: "long" })
+          : "TBD")
+        .replace(/\{\{venue\}\}/g, String(fixtureData.venue ?? "TBD"))
+        .replace(/\{\{competition\}\}/g, String(fixtureData.competition ?? "Premier League"));
+
+      const userMessage = formatMatchdayUserMessage(
+        team.display_name,
+        fixtureData,
+        rawData,
+        recentHeadlines,
+      );
+
+      const result = await callClaude(
+        systemPrompt,
+        userMessage,
+        MATCHDAY_TOOL,
+        "generate_matchday_content",
+      );
+
+      // Build Contract 3 JSONB format for talking_points
+      const talkingPointsJsonb = {
+        regular: result.talking_points ?? [],
+        post_match: {
+          if_they_win: result.if_they_win ?? "",
+          if_they_lose: result.if_they_lose ?? "",
+          bold_prediction: result.bold_prediction ?? "",
+        },
+        metadata: {
+          pre_match_mood: result.pre_match_mood ?? "meh",
+          rivalry_level: result.rivalry_level ?? "normal",
+        },
+      };
+
+      // Save as draft content item
+      const { data: contentItem, error: insertErr } = await supabase
+        .from("content_items")
+        .insert({
+          team_id: teamId,
+          type: "matchday",
+          headline: result.headline,
+          body: result.body,
+          talking_points: talkingPointsJsonb,
+          emotional_context: result.emotional_context ?? "exciting",
+          source_urls: [],
+          match_id: String(fixtureData.fixture_id ?? ""),
+          kickoff_time: fixtureData.kickoff_time ?? null,
+          status: "draft",
+        })
+        .select()
+        .single();
+
+      if (insertErr) {
+        throw new Error(`Failed to insert matchday content: ${insertErr.message}`);
+      }
+
+      await logHealth(
+        supabase,
+        teamId,
+        "success",
+        Date.now() - startTime,
+        `Generated matchday content vs ${fixtureData.opponent_name ?? fixtureData.opponent}`,
+        contentItem.id,
+      );
+
+      // Trigger content reviewer (Contract 1: include team_id)
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+      try {
+        await fetch(`${supabaseUrl}/functions/v1/content-reviewer`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${serviceKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            content_item_id: contentItem.id,
+            team_id: teamId,
+          }),
+        });
+      } catch (err) {
+        console.error("Failed to trigger content-reviewer:", err);
+      }
+
+      return new Response(
+        JSON.stringify({
+          published: true,
+          content_id: contentItem.id,
+          type: "matchday",
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    // ---- NEWS CONTENT PATH ----
     const systemPrompt = NEWS_SYSTEM_PROMPT.replace(
       /\{\{team_display_name\}\}/g,
       team.display_name,
@@ -568,7 +757,7 @@ serve(async (req) => {
       contentItem.id,
     );
 
-    // Trigger content reviewer
+    // Trigger content reviewer (Contract 1: include team_id)
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -579,7 +768,10 @@ serve(async (req) => {
           Authorization: `Bearer ${serviceKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ content_item_id: contentItem.id }),
+        body: JSON.stringify({
+          content_item_id: contentItem.id,
+          team_id: teamId,
+        }),
       });
     } catch (err) {
       console.error("Failed to trigger content-reviewer:", err);
