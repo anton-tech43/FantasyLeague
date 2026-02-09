@@ -1002,7 +1002,7 @@ Every agent **must** follow this protocol. It keeps the work tracker honest and 
 
 | # | Task | Status | Agent | Started | Completed | Outcome |
 |---|------|--------|-------|---------|-----------|---------|
-| P1 | News generator prompt — System prompt, user template, tool schema (PROMPTS.md Section 1) | `open` | Pipeline | — | — | — |
+| P1 | News generator prompt — System prompt, user template, tool schema (PROMPTS.md Section 1) | `in_progress` | Pipeline | 2026-02-09 | — | — |
 | P2 | Matchday generator prompt — System prompt, user template, tool schema (PROMPTS.md Section 2) | `open` | Pipeline | — | — | — |
 | P3 | Tone review bot prompt — System prompt, input template, pass/fail criteria (PROMPTS.md Section 3) | `open` | Pipeline | — | — | — |
 | P4 | Accuracy review bot prompt — System prompt, input template, severity rules (PROMPTS.md Section 4) | `open` | Pipeline | — | — | — |
