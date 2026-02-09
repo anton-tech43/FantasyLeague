@@ -281,37 +281,44 @@ async function getTeam(
   return data;
 }
 
-/** Check anti-spam rules: max 2 notifications per day, min 3 hours between. */
+/** Check anti-spam rules: max 2 notifications per day (rolling 24h), min 3 hours between.
+ *  Matchday content bypasses the 3h gap rule per Contract 4. */
 async function checkAntiSpam(
   supabase: ReturnType<typeof createClient>,
   teamId: string,
+  contentType: "news" | "matchday" = "news",
 ): Promise<{ allowed: boolean; reason?: string }> {
-  const todayStart = new Date();
-  todayStart.setUTCHours(0, 0, 0, 0);
+  // Rolling 24h daily limit
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-  // Check daily count
-  const { data: todayItems } = await supabase
+  const { count: dailyCount } = await supabase
     .from("content_items")
-    .select("id, created_at")
+    .select("*", { count: "exact", head: true })
     .eq("team_id", teamId)
-    .in("status", ["approved", "published"])
-    .gte("created_at", todayStart.toISOString());
+    .eq("status", "published")
+    .gte("published_at", twentyFourHoursAgo);
 
-  if ((todayItems?.length ?? 0) >= 2) {
+  if ((dailyCount ?? 0) >= 2) {
     return { allowed: false, reason: "Max 2 notifications per day reached" };
   }
 
-  // Check 3-hour gap
-  const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
-  const { data: recentItems } = await supabase
-    .from("content_items")
-    .select("id")
-    .eq("team_id", teamId)
-    .in("status", ["approved", "published"])
-    .gte("created_at", threeHoursAgo);
+  // 3-hour gap (skip for matchday per Contract 4)
+  if (contentType !== "matchday") {
+    const { data: lastPublished } = await supabase
+      .from("content_items")
+      .select("published_at")
+      .eq("team_id", teamId)
+      .eq("status", "published")
+      .order("published_at", { ascending: false })
+      .limit(1);
 
-  if ((recentItems?.length ?? 0) > 0) {
-    return { allowed: false, reason: "Min 3 hours between notifications not met" };
+    if (lastPublished?.[0]?.published_at) {
+      const hoursSinceLast =
+        (Date.now() - new Date(lastPublished[0].published_at).getTime()) / (1000 * 60 * 60);
+      if (hoursSinceLast < 3) {
+        return { allowed: false, reason: "Min 3 hours between notifications not met" };
+      }
+    }
   }
 
   return { allowed: true };
@@ -561,8 +568,8 @@ serve(async (req) => {
       );
     }
 
-    // Check anti-spam rules
-    const spamCheck = await checkAntiSpam(supabase, teamId);
+    // Check anti-spam rules (Contract 4: matchday bypasses 3h gap)
+    const spamCheck = await checkAntiSpam(supabase, teamId, isMatchday ? "matchday" : "news");
     if (!spamCheck.allowed) {
       await logHealth(supabase, teamId, "skipped", Date.now() - startTime, spamCheck.reason!);
       return new Response(

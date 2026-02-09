@@ -15,7 +15,7 @@ export interface ContentItem {
   type: "news" | "matchday";
   headline: string;
   body: string;
-  talking_points: string[];
+  talking_points: string[] | MatchdayTalkingPoints; // string[] for news, structured JSONB for matchday
   source_urls: string[];
   match_id: string | null;
   kickoff_time: string | null;
@@ -96,6 +96,20 @@ export interface GeneratedContent {
   talking_points?: string[];
   emotional_context?: string;
   source_summary?: string;
+}
+
+/** Contract 3 JSONB format for matchday talking_points. */
+export interface MatchdayTalkingPoints {
+  regular: string[];
+  post_match: {
+    if_they_win: string;
+    if_they_lose: string;
+    bold_prediction: string;
+  };
+  metadata: {
+    pre_match_mood: string;
+    rivalry_level: string;
+  };
 }
 
 export interface MatchdayContent {

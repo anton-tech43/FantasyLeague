@@ -32,10 +32,10 @@ interface ReviewResult {
 interface ContentItem {
   id: string;
   team_id: string;
-  type: string;
+  type: "news" | "matchday";
   headline: string;
   body: string;
-  talking_points: string[];
+  talking_points: string[] | Record<string, unknown>; // string[] for news, Contract 3 JSONB for matchday
   emotional_context: string;
   status: string;
   review_notes: unknown[];
@@ -226,11 +226,34 @@ async function runReviewBot(
   return JSON.parse(jsonMatch[0]) as ReviewResult;
 }
 
-/** Format content item for review input. */
+/** Format content item for review input.
+ *  Handles both news (talking_points is string[]) and matchday
+ *  (talking_points is {regular: string[], post_match: {...}, metadata: {...}}) formats. */
 function formatContentForReview(item: ContentItem): string {
-  const talkingPointsFormatted = item.talking_points
-    .map((tp: string, i: number) => `${i + 1}. ${tp}`)
-    .join("\n");
+  let talkingPointsFormatted: string;
+
+  if (Array.isArray(item.talking_points)) {
+    // News format: flat array of strings
+    talkingPointsFormatted = item.talking_points
+      .map((tp: string, i: number) => `${i + 1}. ${tp}`)
+      .join("\n");
+  } else if (item.talking_points && typeof item.talking_points === "object") {
+    // Matchday format: Contract 3 JSONB structure
+    const tp = item.talking_points as unknown as {
+      regular?: string[];
+      post_match?: { if_they_win?: string; if_they_lose?: string; bold_prediction?: string };
+      metadata?: { pre_match_mood?: string; rivalry_level?: string };
+    };
+    const regularPoints = (tp.regular ?? [])
+      .map((p: string, i: number) => `${i + 1}. ${p}`)
+      .join("\n");
+    const postMatch = tp.post_match
+      ? `\nPost-match scripts:\n- If they win: ${tp.post_match.if_they_win ?? "N/A"}\n- If they lose: ${tp.post_match.if_they_lose ?? "N/A"}\n- Bold prediction: ${tp.post_match.bold_prediction ?? "N/A"}`
+      : "";
+    talkingPointsFormatted = regularPoints + postMatch;
+  } else {
+    talkingPointsFormatted = "(No talking points)";
+  }
 
   return `CONTENT TO REVIEW:
 
@@ -243,6 +266,7 @@ Body:
 ${item.body}
 
 Emotional Context: ${item.emotional_context ?? "not specified"}
+Content Type: ${item.type}
 Team: ${item.team_id}`;
 }
 
