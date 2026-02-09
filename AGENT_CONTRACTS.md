@@ -29,6 +29,8 @@ This project can be built by multiple AI agents working in parallel **without co
 11. [Contract 8: ContentDetailView Post-Match Section](#11-contract-8-contentdetailview-post-match-section)
 12. [Contract 9: Health Check Endpoint](#12-contract-9-health-check-endpoint)
 13. [Build Order & Dependencies](#13-build-order--dependencies)
+14. [Agent Reporting Protocol](#14-agent-reporting-protocol)
+15. [Work Tracker — Live Status Board](#15-work-tracker--live-status-board)
 
 ---
 
@@ -920,6 +922,135 @@ When all agents are done, verify these contracts work end-to-end:
 - [ ] iOS fetches feed via REST API successfully (Contract 5)
 - [ ] iOS renders Post-Match Cheat Sheet for matchday items (Contract 8)
 - [ ] health-check returns correct status (Contract 9)
+
+---
+
+---
+
+## 14. Agent Reporting Protocol
+
+Every agent **must** follow this protocol. It keeps the work tracker honest and prevents two agents from doing the same task.
+
+### Before Starting Work
+
+1. **Read this file first.** Check the [Work Tracker](#15-work-tracker--live-status-board) below.
+2. **Claim your task.** Change its status from `open` to `in_progress` and add your agent name and start date.
+3. **Commit the claim immediately.** Push a commit that only updates the work tracker row — before you write any code. This is the "lock."
+4. **Never claim a task that is already `in_progress` or `done`.** If it's taken, move on.
+
+### While Working
+
+5. **Stay in your lane.** Only touch files you own (see [File Ownership Map](#2-file-ownership-map)). If you need something from another agent's scope, check the contracts above — the answer should be there. If it's genuinely not, add a row to the [Blockers & Questions](#blockers--questions) table below and move to a different task.
+6. **One task at a time.** Finish or explicitly pause a task before claiming the next one.
+
+### After Completing a Task
+
+7. **Update the Work Tracker.** Change status to `done`, add your completion date.
+8. **Fill in the Outcome column.** One line: what was built, how it went, anything the next agent should know. Be specific — "Done" is not helpful. "Built, all 12 RSS feeds parsing, tested with live data" is.
+9. **If a task is blocked or abandoned**, change status to `blocked` and explain in the Outcome column what's needed to unblock it.
+10. **Commit the status update** in the same commit as your code, or immediately after.
+
+### Status Values
+
+| Status | Meaning | Who Can Change It |
+|--------|---------|-------------------|
+| `open` | Not started, available to claim | Any agent |
+| `in_progress` | Claimed by an agent, work underway | Only the agent who claimed it |
+| `done` | Completed and working | Only the agent who claimed it |
+| `blocked` | Cannot proceed, needs input | Only the agent who claimed it |
+| `review` | Done but needs integration testing | Only the agent who claimed it |
+
+---
+
+## 15. Work Tracker — Live Status Board
+
+**How to read this:** Each row is a discrete deliverable. The Agent column shows who should do it. Status shows where it stands. Agents update this table as they work.
+
+### Backend Agent Tasks
+
+| # | Task | Status | Agent | Started | Completed | Outcome |
+|---|------|--------|-------|---------|-----------|---------|
+| B1 | Database schema (`001_initial_schema.sql`) — all tables, indexes, RLS policies, seed data | `open` | Backend | — | — | — |
+| B2 | `_shared/` utilities — supabase-client, claude-client, types, trigger, pipeline-logger, anti-spam | `open` | Backend | — | — | — |
+| B3 | `data-fetcher` — RSS parsing, API-Football integration, raw_fetch_logs storage, deduplication | `open` | Backend | — | — | — |
+| B4 | `content-generator` — Claude API integration, newsworthiness check, draft creation, matchday JSONB formatting (Contract 3) | `open` | Backend | — | — | — |
+| B5 | `content-reviewer` — 3 parallel review bots, retry logic, approval/rejection flow | `open` | Backend | — | — | — |
+| B6 | `notification-sender` — APNs integration, anti-spam enforcement (Contract 4), payload format (Contract 2) | `open` | Backend | — | — | — |
+| B7 | `matchday-scheduler` — Daily 07:00 UTC, fixture detection, one-off pg_cron scheduling | `open` | Backend | — | — | — |
+| B8 | `health-check` — GET endpoint, system status JSON (Contract 9) | `open` | Backend | — | — | — |
+| B9 | pg_cron jobs — data-fetcher schedule, matchday-scheduler schedule, cleanup crons | `open` | Backend | — | — | — |
+| B10 | APNs .p8 key setup — JWT auth, sandbox + production config | `open` | Backend | — | — | — |
+
+### iOS Agent Tasks
+
+| # | Task | Status | Agent | Started | Completed | Outcome |
+|---|------|--------|-------|---------|-----------|---------|
+| I1 | Xcode project setup — bundle ID, capabilities, iOS 17+ target, no dependencies | `open` | iOS | — | — | — |
+| I2 | Data models — `Team.swift`, `ContentItem.swift` (with matchday JSONB parsing per Contract 3), `AppState.swift` | `open` | iOS | — | — | — |
+| I3 | `Theme.swift` — Design system (colors, fonts, spacing from BUILD_PLAN Phase 3) | `open` | iOS | — | — | — |
+| I4 | `APIClient.swift` — All REST endpoints per Contract 5, error handling | `open` | iOS | — | — | — |
+| I5 | `CacheService.swift` — SwiftData model, upsert, purge, offline support | `open` | iOS | — | — | — |
+| I6 | Onboarding flow — WelcomeView, TeamSelectionView, NotificationPromptView | `open` | iOS | — | — | — |
+| I7 | `FeedView.swift` — Content cards, badges, pull-to-refresh, freshness states (5 states from BUILD_PLAN) | `open` | iOS | — | — | — |
+| I8 | `ContentDetailView.swift` — Talking points, body, share button, Post-Match Cheat Sheet (Contract 8) | `open` | iOS | — | — | — |
+| I9 | Push notification handling — AppDelegate, token registration, deep link to detail view (Contract 2) | `open` | iOS | — | — | — |
+| I10 | `SettingsView.swift` — Team switcher, about section, app version | `open` | iOS | — | — | — |
+| I11 | MockData.swift — 5 golden examples from CONTENT_EXAMPLES.md for development without backend | `open` | iOS | — | — | — |
+| I12 | Visual polish — Animations, loading states, empty states, error states | `open` | iOS | — | — | — |
+
+### Pipeline Agent Tasks
+
+| # | Task | Status | Agent | Started | Completed | Outcome |
+|---|------|--------|-------|---------|-----------|---------|
+| P1 | News generator prompt — System prompt, user template, tool schema (PROMPTS.md Section 1) | `open` | Pipeline | — | — | — |
+| P2 | Matchday generator prompt — System prompt, user template, tool schema (PROMPTS.md Section 2) | `open` | Pipeline | — | — | — |
+| P3 | Tone review bot prompt — System prompt, input template, pass/fail criteria (PROMPTS.md Section 3) | `open` | Pipeline | — | — | — |
+| P4 | Accuracy review bot prompt — System prompt, input template, severity rules (PROMPTS.md Section 4) | `open` | Pipeline | — | — | — |
+| P5 | Brevity review bot prompt — System prompt, input template, length rules (PROMPTS.md Section 5) | `open` | Pipeline | — | — | — |
+| P6 | Prompt testing — Run all prompts against real data, compare output to golden examples, iterate | `open` | Pipeline | — | — | — |
+| P7 | Document prompt iterations — Log changes in PROMPTS.md Section 8 | `open` | Pipeline | — | — | — |
+
+### Integration Tasks (All Agents)
+
+| # | Task | Status | Agent | Started | Completed | Outcome |
+|---|------|--------|-------|---------|-----------|---------|
+| X1 | Connect iOS to live Supabase backend — swap mock data for real API calls | `open` | iOS | — | — | — |
+| X2 | End-to-end pipeline test — data-fetcher → generator → reviewer → notification → iOS | `open` | Backend | — | — | — |
+| X3 | Integration checklist — verify all 9 contracts (see Section 13) | `open` | All | — | — | — |
+| X4 | TestFlight beta — 5-10 testers, 3-5 days | `open` | iOS | — | — | — |
+| X5 | App Store submission — screenshots, description, review | `open` | iOS | — | — | — |
+
+### Blockers & Questions
+
+If an agent encounters something that isn't covered by the contracts and can't proceed, log it here. Another agent (or the project owner) will resolve it.
+
+| # | Raised By | Date | Question / Blocker | Status | Resolution |
+|---|-----------|------|--------------------|--------|------------|
+| — | — | — | — | — | — |
+
+---
+
+### Example: How an Agent Updates This Board
+
+**Before starting B3 (data-fetcher):**
+```
+| B3 | `data-fetcher` — RSS parsing, API-Football... | `in_progress` | Backend | 2026-02-10 | — | — |
+```
+
+**After completing B3:**
+```
+| B3 | `data-fetcher` — RSS parsing, API-Football... | `done` | Backend | 2026-02-10 | 2026-02-12 | Built with 12 RSS feeds + 6 API-Football endpoints. Deduplication working via URL hash. Tested with live data for all 3 teams. Average fetch cycle: 8 seconds. |
+```
+
+**If B6 is blocked:**
+```
+| B6 | `notification-sender` — APNs integration... | `blocked` | Backend | 2026-02-14 | — | Blocked: need Apple Developer account for .p8 key. Can't test APNs without it. Mock mode built and working. |
+```
+
+Then add a row to Blockers & Questions:
+```
+| Q1 | Backend | 2026-02-14 | Need Apple Developer enrollment to generate APNs .p8 key for B6 and B10 | open | — |
+```
 
 ---
 
