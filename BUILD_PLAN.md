@@ -362,49 +362,21 @@ Takes raw fetched data for a team and uses Claude API to determine if anything i
 {
     "model": "claude-sonnet-4-5-20250929",
     "max_tokens": 2000,
-    "system": "<system prompt>",
+    "system": "<system prompt from PROMPTS.md>",
     "messages": [
         {
             "role": "user",
-            "content": "Here is the latest raw data for {{team_display_name}}:\n\n{{formatted_raw_data}}\n\nAnalyze this and respond with a JSON object."
+            "content": "<user message template from PROMPTS.md>"
         }
     ],
     "tools": [
-        {
-            "name": "generate_content",
-            "description": "Generate a content item for the Goal Digger app",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "is_newsworthy": {
-                        "type": "boolean",
-                        "description": "Is this genuinely worth notifying the user about?"
-                    },
-                    "skip_reason": {
-                        "type": "string",
-                        "description": "If not newsworthy, explain why (for logging)"
-                    },
-                    "headline": {
-                        "type": "string",
-                        "description": "1-2 sentence push notification text"
-                    },
-                    "body": {
-                        "type": "string",
-                        "description": "Detail view content in markdown, 3-5 paragraphs"
-                    },
-                    "talking_points": {
-                        "type": "array",
-                        "items": { "type": "string" },
-                        "description": "3-5 short conversation starters"
-                    }
-                },
-                "required": ["is_newsworthy"]
-            }
-        }
+        "<tool definition from PROMPTS.md Section 1 (news) or Section 2 (matchday)>"
     ],
     "tool_choice": { "type": "tool", "name": "generate_content" }
 }
 ```
+
+> **Important:** The full tool schemas are defined in [PROMPTS.md](./PROMPTS.md). The news tool (`generate_content`) includes `newsworthiness_score`, `emotional_context`, and `source_summary` fields in addition to the core `headline`, `body`, and `talking_points`. The matchday tool (`generate_matchday_content`) adds `pre_match_mood`, `rivalry_level`, `if_they_win`, `if_they_lose`, and `bold_prediction`. Always use the PROMPTS.md definitions as the source of truth.
 
 **Response Handling:**
 - If `is_newsworthy` is `false` → log the `skip_reason`, do nothing. Pipeline stops here.
@@ -706,6 +678,8 @@ struct ContentItem: Identifiable, Codable {
     let headline: String
     let body: String
     let talkingPoints: [String]
+    let kickoffTime: Date?          // Matchday only — used for countdown badges
+    let emotionalContext: String?    // "exciting", "bad_news", "drama", "informational", "funny"
     let publishedAt: Date
 
     enum ContentType: String, Codable {
@@ -720,6 +694,8 @@ struct ContentItem: Identifiable, Codable {
         case headline
         case body
         case talkingPoints = "talking_points"
+        case kickoffTime = "kickoff_time"
+        case emotionalContext = "emotional_context"
         case publishedAt = "published_at"
     }
 }
@@ -825,6 +801,8 @@ class CachedContentItem {
     var headline: String
     var body: String
     var talkingPoints: [String]
+    var kickoffTime: Date?          // Matchday only — mirrors ContentItem
+    var emotionalContext: String?    // Mirrors ContentItem
     var publishedAt: Date
     var cachedAt: Date
 
@@ -1632,18 +1610,20 @@ explained like a friend would.
 
 Capture on iPhone 16 Pro Max (6.9") and iPhone 16 (6.3").
 
-**Screenshot sequence (5 screenshots):**
-1. **Team Selection** — shows the 3 team cards, one highlighted
-2. **Feed View** — 3-4 content cards visible, mix of news and matchday
-3. **Detail View** — talking points section visible
-4. **Push Notification** — lock screen showing a Goal Digger notification
-5. **Onboarding** — the welcome screen with tagline
+**Screenshot sequence (5 screenshots):** *(matches [APP_STORE_STRATEGY.md](./APP_STORE_STRATEGY.md) order)*
+1. **"The Hook"** — Onboarding/welcome screen with tagline. Caption: "Stay in the loop. Win the conversation."
+2. **"The Setup"** — Team selection with 3 team cards, Arsenal highlighted. Caption: "Pick his team."
+3. **"The Feed"** — 3-4 content cards visible, mix of news and matchday, "caught up" card at top. Caption: "Get the updates that matter."
+4. **"The Cheat Sheet"** — Detail view with talking points visible. Caption: "Know exactly what to say."
+5. **"The Notification"** — Lock screen with Goal Digger push notification. Caption: "Never miss a thing."
 
 **Screenshot styling:**
-- Use device frames (iPhone mockup around the screenshot)
-- Add a short caption above each: "Pick his team", "Get the updates", "Know what to say", "Never miss a thing", "Stay in the loop"
-- Warm background behind the device frame matching the app palette
+- Use device frames (Apple Design Resources or clean mockup generator)
+- Captions above the device, not overlapping screen content
+- Warm gradient background matching app palette (#FAF8F5 to #E8CEB8) — NOT white, NOT dark
+- Use REAL content from CONTENT_EXAMPLES.md in screenshots 3 and 4
 - Clean, minimal — look at how Headspace or Clue present their App Store screenshots
+- See [APP_STORE_STRATEGY.md](./APP_STORE_STRATEGY.md) for full screenshot design guidelines
 
 ## Step 5.5: TestFlight
 

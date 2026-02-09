@@ -20,19 +20,17 @@ Users paid $10 for this app. If the pipeline breaks and no content is generated 
 
 Add this table to the database to track pipeline health:
 
+> **Note:** The `pipeline_health` table is defined in the initial schema migration (`001_initial_schema.sql`) in [BUILD_PLAN.md](./BUILD_PLAN.md#step-12-database-schema). The schema below must match that migration.
+
 ```sql
 CREATE TABLE pipeline_health (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     team_id         TEXT NOT NULL REFERENCES teams(id),
-    stage           TEXT NOT NULL CHECK (stage IN (
-                        'fetch', 'generate', 'review', 'publish'
-                    )),
-    status          TEXT NOT NULL CHECK (status IN (
-                        'success', 'failure', 'skipped'
-                    )),
-    error_message   TEXT,
+    stage           TEXT NOT NULL CHECK (stage IN ('fetch', 'generate', 'review', 'publish')),
+    status          TEXT NOT NULL CHECK (status IN ('success', 'failure', 'skipped')),
     duration_ms     INTEGER,
-    metadata        JSONB DEFAULT '{}',
+    message         TEXT,
+    content_item_id UUID REFERENCES content_items(id),
     created_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -69,7 +67,7 @@ SELECT
     ph.status,
     ph.created_at as last_run,
     EXTRACT(EPOCH FROM (NOW() - ph.created_at)) / 3600 as hours_ago,
-    ph.error_message
+    ph.message
 FROM teams t
 CROSS JOIN LATERAL (
     SELECT *

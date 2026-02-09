@@ -10,7 +10,7 @@
 
 Goal Digger is an iOS app designed for girlfriends (or anyone) who want to connect better with their football-loving partners by staying informed about Premier League news, match days, and talking points—without needing to be a football fan themselves.
 
-The app delivers short, engaging push notifications with daily updates and game-day talking points, so the user always has something relevant to say.
+The app delivers short, engaging push notifications with news updates (only when something newsworthy happens) and game-day talking points, so the user always has something relevant to say.
 
 ## 2. Target User
 
@@ -79,7 +79,7 @@ The Claude API (Anthropic) processes and summarizes all incoming data into short
 - **Server:** Supabase (PostgreSQL + Edge Functions + auto REST API)
 - **AI Processing:** Claude API (Anthropic) processes and summarizes content from data sources into engaging talking points
 - **Push Notifications:** Apple Push Notification Service (APNs) via the backend
-- **Scheduled Jobs:** Cron jobs or cloud functions to trigger daily updates and game-day notifications
+- **Scheduled Jobs:** Supabase `pg_cron` + Edge Functions to trigger news updates and game-day notifications
 
 ### 7.3 Data Pipeline
 
