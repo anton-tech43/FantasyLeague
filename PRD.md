@@ -53,7 +53,7 @@ The app pulls data from multiple sources to create engaging, well-rounded update
 
 - **Official APIs** — Football data APIs (e.g., football-data.org, API-Football) for fixtures, scores, standings, and player stats.
 - **News sites** — AI reads and summarizes articles from major football news outlets (e.g., BBC Sport, Sky Sports, The Athletic).
-- **Social media** — Team Instagram accounts, player accounts, and football influencers for trending stories and off-pitch content.
+- **Social media (v1.2)** — Team Instagram accounts, player accounts, and football influencers for trending stories and off-pitch content. Deferred from v1 due to complexity vs. value tradeoff.
 
 The Claude API (Anthropic) processes and summarizes all incoming data into short, engaging, girlfriend-friendly language.
 
@@ -64,7 +64,7 @@ The Claude API (Anthropic) processes and summarizes all incoming data into short
 3. **Team Selection** — Pick one team (Arsenal, Man United, or West Ham).
 4. **Enable Notifications** — Prompt to allow push notifications.
 5. **Home Screen** — A feed of all updates and upcoming match info for the selected team. Users can scroll through and catch up at their own pace.
-6. **Receive Notifications** — Daily updates + game day talking points arrive via push.
+6. **Receive Notifications** — News updates (only when newsworthy) + game day talking points arrive via push.
 7. **Tap Notification** — Opens detail view with more talking points and context.
 
 ## 7. Technical Architecture
@@ -72,11 +72,11 @@ The Claude API (Anthropic) processes and summarizes all incoming data into short
 ### 7.1 Frontend
 
 - **Platform:** iOS (Swift / SwiftUI)
-- **Local storage:** UserDefaults or CoreData for team selection and preferences
+- **Local storage:** UserDefaults for preferences + SwiftData for content caching
 
 ### 7.2 Backend
 
-- **Server:** Cloud-based backend (e.g., Firebase, AWS, or Supabase)
+- **Server:** Supabase (PostgreSQL + Edge Functions + auto REST API)
 - **AI Processing:** Claude API (Anthropic) processes and summarizes content from data sources into engaging talking points
 - **Push Notifications:** Apple Push Notification Service (APNs) via the backend
 - **Scheduled Jobs:** Cron jobs or cloud functions to trigger daily updates and game-day notifications

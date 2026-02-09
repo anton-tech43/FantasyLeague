@@ -163,6 +163,8 @@ CREATE TABLE content_items (
     talking_points  JSONB NOT NULL DEFAULT '[]',  -- Array of short strings
     source_urls     JSONB DEFAULT '[]',      -- Original sources for traceability
     match_id        TEXT,                    -- API-Football fixture ID (matchday only)
+    kickoff_time    TIMESTAMPTZ,            -- Kickoff time for matchday content (client-side countdown)
+    emotional_context TEXT CHECK (emotional_context IN ('exciting', 'bad_news', 'drama', 'informational', 'funny')),
     status          TEXT NOT NULL DEFAULT 'draft'
                     CHECK (status IN ('draft', 'approved', 'rejected', 'published')),
     review_notes    JSONB DEFAULT '[]',      -- Notes from each review bot
@@ -192,6 +194,18 @@ CREATE TABLE raw_fetch_logs (
     fetched_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Pipeline health tracking for monitoring and debugging
+CREATE TABLE pipeline_health (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    team_id         TEXT NOT NULL REFERENCES teams(id),
+    stage           TEXT NOT NULL CHECK (stage IN ('fetch', 'generate', 'review', 'publish')),
+    status          TEXT NOT NULL CHECK (status IN ('success', 'failure', 'skipped')),
+    duration_ms     INTEGER,
+    message         TEXT,
+    content_item_id UUID REFERENCES content_items(id),
+    created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Indexes for common queries
 CREATE INDEX idx_content_team_status ON content_items(team_id, status);
 CREATE INDEX idx_content_published ON content_items(team_id, published_at DESC)
@@ -199,6 +213,7 @@ CREATE INDEX idx_content_published ON content_items(team_id, published_at DESC)
 CREATE INDEX idx_device_tokens_team ON device_tokens(team_id)
     WHERE is_active = true;
 CREATE INDEX idx_raw_fetch_team_date ON raw_fetch_logs(team_id, fetched_at DESC);
+CREATE INDEX idx_pipeline_health_recent ON pipeline_health(team_id, stage, created_at DESC);
 ```
 
 ### Seed Data: `seed_teams.sql`
@@ -220,6 +235,7 @@ Enable RLS on all tables. Policies:
 - `device_tokens`: Insert/update via `anon` key (iOS client). Delete via `service_role` key.
 - `teams`: Public read access.
 - `raw_fetch_logs`: No public access. `service_role` only.
+- `pipeline_health`: No public access. `service_role` only.
 
 ---
 
@@ -290,9 +306,10 @@ west_ham_players: ["Bowen", "Paqueta", "Kudus", "Antonio", "Areola", "Soler", ..
 
 ```sql
 -- Run data fetcher every 30 minutes between 08:00 and 23:00 GMT
+-- Note: cron hour range 8-23 means 08:00, 08:30, ..., 23:00, 23:30
 SELECT cron.schedule(
     'data-fetcher',
-    '*/30 8-22 * * *',
+    '*/30 8-23 * * *',
     $$SELECT net.http_post(
         'https://xxxxx.supabase.co/functions/v1/data-fetcher',
         '{}',
@@ -317,7 +334,7 @@ FOR each team IN [arsenal, man_utd, west_ham]:
 ### Error Handling
 - If an individual RSS feed fails (timeout, 404, etc.), log the error and continue with other sources. Never let one broken feed stop the entire pipeline.
 - If API-Football fails, log and retry once after 30 seconds. If still failing, skip this cycle — data will be fetched next run.
-- Log all errors to a `pipeline_errors` table for monitoring.
+- Log all errors to the `pipeline_health` table with `status = 'failure'` for monitoring.
 
 ---
 
@@ -334,46 +351,11 @@ Takes raw fetched data for a team and uses Claude API to determine if anything i
 
 **Model:** `claude-sonnet-4-5-20250929` (cost-effective for summarization, excellent tone quality)
 
-**System Prompt (News Content):**
-```
-You are the voice of Goal Digger, an app that helps girlfriends stay in the loop about
-their partner's favourite Premier League team. Your job is to take raw football news and
-turn it into short, fun, easy-to-understand updates.
-
-Rules:
-1. Write like you're texting a friend who knows nothing about football. Never be
-   condescending. Never assume knowledge of football terms.
-2. If a football term is unavoidable (e.g., "offside"), explain it in parentheses
-   the first time.
-3. Keep the tone casual, warm, and a little gossipy. Think "gossip column meets
-   match preview."
-4. The headline must be 1-2 sentences max. It should make her want to tap for more.
-5. Talking points should be things she can actually say in conversation. Frame them
-   as conversation starters, not facts to memorize.
-6. IMPORTANT: If the news is not genuinely interesting or conversation-worthy, say so.
-   Not everything needs to become a notification. We never spam.
-7. Never make up facts. Only use information from the provided source data.
-8. The team name is {team_display_name}. The user's partner supports this team.
-```
-
-**System Prompt (Matchday Content):**
-```
-You are the voice of Goal Digger. Today, {team_display_name} have a match. Your job is
-to give the user everything she needs to sound informed about the game — in a fun,
-approachable way.
-
-Rules:
-1. Start with the basics: who are they playing, when, and why it matters.
-2. Include "Did you know...?" style facts that are genuinely interesting
-   conversation starters.
-3. Suggest specific things she can say or ask her partner about. Frame these as
-   natural conversation, not a quiz.
-4. Mention any key players who are injured or in form — but explain WHY it matters
-   ("He's their best scorer, so this is a big deal").
-5. If it's a rivalry match, explain the rivalry in simple terms.
-6. Keep it fun. She's doing this to connect, not to pass an exam.
-7. Never make up stats. Only use the provided data.
-```
+**Prompts:** All system prompts, user message templates, and tool definitions for the content generator are documented in [PROMPTS.md](./PROMPTS.md). See:
+- Section 1 (Content Generator — News) for news content generation
+- Section 2 (Content Generator — Matchday) for matchday briefings
+- Section 6 (Newsworthy Filter) for the decision logic and anti-spam rules
+- Section 7 (Prompt Variables Reference) for all template variables
 
 **Request Format:**
 ```json
@@ -384,7 +366,7 @@ Rules:
     "messages": [
         {
             "role": "user",
-            "content": "Here is the latest raw data for {team}:\n\n{formatted_raw_data}\n\nAnalyze this and respond with a JSON object."
+            "content": "Here is the latest raw data for {{team_display_name}}:\n\n{{formatted_raw_data}}\n\nAnalyze this and respond with a JSON object."
         }
     ],
     "tools": [
@@ -539,68 +521,11 @@ Quality gate. Every draft content item goes through 3 AI review bots in parallel
 
 ### The 3 Review Bots
 
-Each is a separate Claude API call with a distinct system prompt.
+Each is a separate Claude API call with a distinct system prompt. Full prompts, input templates, and response formats are documented in [PROMPTS.md](./PROMPTS.md):
 
-#### Bot 1: Tone Reviewer
-```
-You are reviewing content for Goal Digger, an app for girlfriends who don't care about
-football. Your ONLY job is to check the tone.
-
-Pass if:
-- It sounds like a fun, warm friend texting — not a sports journalist
-- Football terms are explained simply when used
-- It's never condescending ("you probably don't know this, but...")
-- It's never too technical ("4-3-3 formation", "xG stats", "pressing trigger")
-- A 25-year-old woman with zero football interest would enjoy reading it
-
-Fail if:
-- It reads like a BBC Sport article
-- It uses unexplained jargon
-- It feels patronizing
-- It's boring or dry
-
-Respond with JSON: { "pass": true/false, "notes": "explanation" }
-```
-
-#### Bot 2: Accuracy Reviewer
-```
-You are a fact-checker for Goal Digger. You will receive generated content AND the raw
-source data it was based on.
-
-Pass if:
-- All player names are spelled correctly
-- All match times and dates are correct
-- All stats and facts can be traced to the provided source data
-- No information is hallucinated or embellished
-
-Fail if:
-- Any factual error exists
-- Any stat is made up or cannot be verified from the source data
-- Player names are wrong
-
-Respond with JSON: { "pass": true/false, "notes": "explanation", "errors": ["list of specific errors if any"] }
-```
-
-#### Bot 3: Brevity Reviewer
-```
-You are an editor for Goal Digger. Your ONLY job is to check that content is concise
-and scannable.
-
-Pass if:
-- Headline is 1-2 sentences, under 200 characters
-- Body can be scanned in under 60 seconds
-- Talking points are each 1-2 sentences max
-- There are 3-5 talking points (not more)
-- No repetition between headline, body, and talking points
-
-Fail if:
-- Headline is too long or has more than 2 sentences
-- Body is a wall of text or exceeds 5 paragraphs
-- Talking points are wordy or there are too many
-- Content repeats itself
-
-Respond with JSON: { "pass": true/false, "notes": "explanation", "suggested_cuts": ["specific suggestions if any"] }
-```
+- **Bot 1: Tone Reviewer** — See [PROMPTS.md Section 3](./PROMPTS.md#3-review-bot-1--tone). Checks that content sounds like a warm friend texting, not a sports journalist. Fails on unexplained jargon, condescension, or overly formal tone.
+- **Bot 2: Accuracy Reviewer** — See [PROMPTS.md Section 4](./PROMPTS.md#4-review-bot-2--accuracy). Cross-references every factual claim against raw source data. Fails on any factual error, misspelled names, or hallucinated stats.
+- **Bot 3: Brevity Reviewer** — See [PROMPTS.md Section 5](./PROMPTS.md#5-review-bot-3--brevity). Enforces content length and scannability rules. Fails if headline >200 chars, >5 talking points, or body takes >60 seconds to scan.
 
 ### Review Logic
 
@@ -806,6 +731,11 @@ import SwiftUI
 
 @Observable
 class AppState {
+    /// Shared instance — used by AppDelegate and NotificationService which
+    /// cannot access the SwiftUI environment. The same instance is also
+    /// injected into the view hierarchy via .environment().
+    static let shared = AppState()
+
     // Persisted
     var selectedTeam: Team? {
         didSet {
@@ -999,7 +929,7 @@ class NotificationService {
 @main
 struct GoalDiggerApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @State private var appState = AppState()
+    @State private var appState = AppState.shared
 
     var body: some Scene {
         WindowGroup {
