@@ -737,6 +737,17 @@ Date | Prompt | Change | Reason | Result
 | Date | Prompt | Change | Reason | Result |
 |------|--------|--------|--------|--------|
 | 2026-02-08 | All | v1.0 — Initial prompts | Launch | Pending testing |
+| 2026-02-09 | News Generator (S1) | Added rule 8 (headlines): never start with team name, lead with emotion/intrigue. Added rule 9: no repetition across sections. | Golden example 1 uses this pattern; anti-pattern 1 violates it. Making it explicit prevents drift. | Golden examples still pass structural validation |
+| 2026-02-09 | News Generator (S1) | Added Backend Agent note on conditional field validation for tool schema | `required` only lists `is_newsworthy` + `newsworthiness_score`; Backend must validate `headline`, `body`, `talking_points`, `emotional_context` when `is_newsworthy=true` | Prevents silent generation failures |
+| 2026-02-09 | News Generator (S1) | Added `emotional_context` to decision logic publish requirements | Field was in schema but not in publish criteria — could publish without mood context | Aligns schema with decision logic |
+| 2026-02-09 | Matchday Generator (S2) | Added rule 7 (headlines) with good/bad matchday examples. Added rule 8: no repetition. | Consistent with news generator refinements | N/A |
+| 2026-02-09 | Matchday Generator (S2) | Made `bold_prediction` and `emotional_context` required in tool schema | Contract 3 JSONB format expects `bold_prediction` in `post_match` object; was incorrectly optional | Aligns tool schema with Contract 3 |
+| 2026-02-09 | Matchday Generator (S2) | Added explicit JSONB mapping note referencing Contract 3 | Backend Agent needs clear instructions on restructuring flat tool output → nested JSONB | Prevents Contract 3 mismatches |
+| 2026-02-09 | Tone Bot (S3) | Expanded jargon blacklist: +9 terms (final third, box-to-box, false nine, deep-lying, double pivot, high line, low block, transition play, ball retention) | Anti-pattern 3 uses "final third" but it wasn't in the blacklist. Added related tactical terms. | "final third" now caught in structural validation |
+| 2026-02-09 | All Review Bots (S3-S5) | Added "return ONLY valid JSON, no markdown wrapping" to response format instruction. Added Contract 6 note. | Per Contract 6, Backend parses `response.content[0].text` as JSON. Claude sometimes wraps JSON in markdown code fences — this prevents that. | Ensures reliable JSON parsing |
+| 2026-02-09 | Accuracy Bot (S4) | Moved severity rules (critical/minor/unverifiable) into the system prompt | Severity rules were in PROMPTS.md documentation but outside the prompt — Claude wouldn't see them during inference | Rules are now part of the prompt Claude receives |
+| 2026-02-09 | Variables Reference (S7) | Added 9 missing variables + new Review Bot Input Variables subsection | `league_position`, `recent_form`, `next_fixture`, `match_date`, `team_suspensions`, `opponent_injuries`, `opponent_points`, `goals`, `additional_context` were used in templates but not documented | Complete variable reference for Backend Agent |
+| 2026-02-09 | Variables Reference (S7) | Defined `{{talking_points_formatted}}` format: numbered list, one per line | Variable was used in 3 review bot input templates but format was undefined | Backend Agent now knows exact format to use |
 
 ### How to Iterate
 

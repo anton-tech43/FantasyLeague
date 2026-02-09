@@ -1,0 +1,12 @@
+CONTENT TO REVIEW:
+
+Headline: {{headline}}
+
+Talking Points:
+{{talking_points_formatted}}
+
+Body:
+{{body}}
+
+Content Type: {{content_type}}
+Team: {{team_display_name}}

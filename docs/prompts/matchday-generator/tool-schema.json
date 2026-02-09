@@ -1,0 +1,56 @@
+{
+    "name": "generate_matchday_content",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "headline": {
+                "type": "string",
+                "maxLength": 200,
+                "description": "1-2 sentence push notification text. Max 200 characters."
+            },
+            "body": {
+                "type": "string",
+                "description": "Full detail view content in markdown. 3-5 short paragraphs."
+            },
+            "talking_points": {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 3,
+                "maxItems": 5,
+                "description": "3-5 conversation starters for before the match."
+            },
+            "pre_match_mood": {
+                "type": "string",
+                "enum": ["confident", "nervous", "excited", "meh"],
+                "description": "How is the fan likely feeling before this match?"
+            },
+            "rivalry_level": {
+                "type": "string",
+                "enum": ["derby", "big_game", "normal", "dead_rubber"],
+                "description": "How important is this fixture?"
+            },
+            "if_they_win": {
+                "type": "string",
+                "description": "One sentence she can say if they win"
+            },
+            "if_they_lose": {
+                "type": "string",
+                "description": "One sentence she can say if they lose"
+            },
+            "bold_prediction": {
+                "type": "string",
+                "description": "A casual score prediction she can throw out, e.g. '2-1'"
+            },
+            "emotional_context": {
+                "type": "string",
+                "enum": ["exciting", "bad_news", "drama", "informational", "funny"],
+                "description": "The emotional tone of this matchday briefing."
+            },
+            "source_summary": {
+                "type": "string",
+                "description": "One-line summary of data sources used."
+            }
+        },
+        "required": ["headline", "body", "talking_points", "pre_match_mood", "rivalry_level", "if_they_win", "if_they_lose"]
+    }
+}

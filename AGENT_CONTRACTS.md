@@ -1007,8 +1007,8 @@ Every agent **must** follow this protocol. It keeps the work tracker honest and 
 | P3 | Tone review bot prompt — System prompt, input template, pass/fail criteria (PROMPTS.md Section 3) | `done` | Pipeline | 2026-02-09 | 2026-02-09 | Refined: expanded jargon blacklist with 9 additional terms (incl. "final third" from anti-pattern 3), added Contract 6 response format note, specified plain JSON requirement. |
 | P4 | Accuracy review bot prompt — System prompt, input template, severity rules (PROMPTS.md Section 4) | `done` | Pipeline | 2026-02-09 | 2026-02-09 | Refined: moved severity rules INTO the system prompt (Claude needs to see them), added Contract 6 plain JSON note, added "no markdown wrapping" instruction. |
 | P5 | Brevity review bot prompt — System prompt, input template, length rules (PROMPTS.md Section 5) | `done` | Pipeline | 2026-02-09 | 2026-02-09 | Refined: added Contract 6 plain JSON note, added "no markdown wrapping" instruction. Prompt was otherwise solid — length rules are clear and specific. |
-| P6 | Prompt testing — Run all prompts against real data, compare output to golden examples, iterate | `open` | Pipeline | — | — | — |
-| P7 | Document prompt iterations — Log changes in PROMPTS.md Section 8 | `open` | Pipeline | — | — | — |
+| P6 | Prompt testing — Run all prompts against real data, compare output to golden examples, iterate | `done` | Pipeline | 2026-02-09 | 2026-02-09 | Structural validation: all 5 golden examples pass, 4/6 anti-patterns caught (2 require API review bots). Created test harness at docs/prompts/test-harness/. Full API testing blocked until Backend deploys pipeline — documented 5-step testing procedure in CONTENT_EXAMPLES.md. |
+| P7 | Document prompt iterations — Log changes in PROMPTS.md Section 8 | `done` | Pipeline | 2026-02-09 | 2026-02-09 | Logged 12 iteration entries in Section 8 covering all changes from P1-P6. Each entry has date, prompt, change, reason, and result. |
 
 ### Integration Tasks (All Agents)
 

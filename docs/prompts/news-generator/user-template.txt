@@ -1,0 +1,19 @@
+Here is the latest data for {{team_display_name}}:
+
+--- RAW NEWS ARTICLES ---
+{{formatted_articles}}
+
+--- TEAM STATS ---
+League position: {{league_position}}
+Recent form: {{recent_form}}
+Next match: {{next_fixture}}
+
+--- RECENT CONTENT ---
+(These are items we already published recently — DO NOT duplicate them)
+{{recent_published_headlines}}
+
+---
+
+Analyze the news and decide if anything is worth telling our user about.
+If multiple stories are newsworthy, pick the SINGLE most interesting one.
+One notification at a time — never overwhelm her.

@@ -394,6 +394,44 @@ These are examples of bad content that the review bots should catch.
 3. If a golden example fails review, the review bot prompt is too strict
 4. If an anti-pattern passes review, the review bot prompt is too lenient
 
+### Structural Validation (Offline)
+
+A Python validation script is available at `docs/prompts/test-harness/validate-content.py`. It checks:
+- Headline: character count (<200), sentence count (1-2), doesn't start with team name
+- Talking points: count (3-5), length per point
+- Body: paragraph count (3-5), sentence count per paragraph, estimated read time (<60s)
+- Jargon detection: scans for unexplained football terms
+- Condescension detection: catches patronising phrases
+- Filler phrase detection: catches "it's worth noting that..." etc.
+
+Run with: `python3 docs/prompts/test-harness/validate-content.py --golden`
+
+**Current status (2026-02-09):** All 5 golden examples pass structural validation. 4 of 6 anti-patterns caught structurally; 2 require review bots (factual accuracy, newsworthiness).
+
+### Full API Testing (Requires ANTHROPIC_API_KEY)
+
+When the Backend Agent has the content pipeline running, perform this test sequence:
+
+1. **Review bot calibration:** Feed each of the 5 golden examples through all 3 review bots (tone, accuracy, brevity). All 5 must pass all 3 bots. If any golden example fails, the review bot prompt is too strict — adjust.
+
+2. **Anti-pattern detection:** Feed each anti-pattern through the relevant review bot(s). They must fail. If they pass, the review bot prompt is too lenient — adjust.
+
+3. **Live generation test:** Feed real RSS + API-Football data for each of the 3 teams through the news generator prompt. Compare output quality to golden examples. Score each output 1-5 on:
+   - Tone (sounds like a friend, not a journalist)
+   - Accuracy (all facts match source data)
+   - Usefulness (talking points are things she'd actually say)
+   - Brevity (scannable in <60s)
+
+4. **Matchday generation test:** Feed real fixture data through the matchday generator. Verify:
+   - Post-match cheat sheet fields are populated
+   - Rivalry level is appropriate
+   - Pre-match mood matches team form
+
+5. **Edge case tests:**
+   - Feed boring data (routine fixture confirmation) → should return `is_newsworthy: false`
+   - Feed multiple stories for same team → should pick the single best one
+   - Feed data with no team mentions → should return `is_newsworthy: false`
+
 ---
 
 *These examples are the quality bar. Nothing ships unless it's this good.*

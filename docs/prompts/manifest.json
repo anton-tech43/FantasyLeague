@@ -1,0 +1,98 @@
+{
+    "version": "1.0",
+    "date": "2026-02-09",
+    "model": "claude-sonnet-4-5-20250929",
+    "description": "Prompt manifest for Goal Digger content pipeline. Backend Agent: use these files as the source of truth when embedding prompts into Edge Functions.",
+    "prompts": {
+        "news-generator": {
+            "description": "Generates news content items from raw football data. Decides newsworthiness and creates headline, body, and talking points.",
+            "trigger": "Called by content-generator Edge Function when data-fetcher finds new data",
+            "files": {
+                "system_prompt": "news-generator/system-prompt.txt",
+                "user_template": "news-generator/user-template.txt",
+                "tool_schema": "news-generator/tool-schema.json"
+            },
+            "api_config": {
+                "model": "claude-sonnet-4-5-20250929",
+                "max_tokens": 2000,
+                "tool_choice": { "type": "tool", "name": "generate_content" }
+            },
+            "decision_logic": {
+                "publish_if": "is_newsworthy === true AND newsworthiness_score >= 6 AND headline.length <= 200 AND talking_points.length >= 3 AND talking_points.length <= 5",
+                "log_if": "is_newsworthy === true AND newsworthiness_score < 6",
+                "skip_if": "is_newsworthy === false"
+            }
+        },
+        "matchday-generator": {
+            "description": "Generates matchday briefing content ~90 minutes before kickoff. Always published (not subject to newsworthiness filter).",
+            "trigger": "Called by matchday-scheduler Edge Function on game days",
+            "files": {
+                "system_prompt": "matchday-generator/system-prompt.txt",
+                "user_template": "matchday-generator/user-template.txt",
+                "tool_schema": "matchday-generator/tool-schema.json"
+            },
+            "api_config": {
+                "model": "claude-sonnet-4-5-20250929",
+                "max_tokens": 2000,
+                "tool_choice": { "type": "tool", "name": "generate_matchday_content" }
+            },
+            "notes": "Matchday content is always generated and published. The if_they_win, if_they_lose, and bold_prediction fields are stored in content_items.talking_points JSONB but displayed in the Post-Match Cheat Sheet section of ContentDetailView."
+        },
+        "review-bot-tone": {
+            "description": "Review Bot 1: Checks content tone, voice, jargon usage, condescension, and conversational framing.",
+            "trigger": "Called by content-reviewer Edge Function after content is generated",
+            "files": {
+                "system_prompt": "review-bot-tone/system-prompt.txt",
+                "input_template": "review-bot-tone/input-template.txt",
+                "response_schema": "review-bot-tone/response-schema.json"
+            },
+            "api_config": {
+                "model": "claude-sonnet-4-5-20250929",
+                "max_tokens": 1000
+            },
+            "pass_criteria": "pass === true"
+        },
+        "review-bot-accuracy": {
+            "description": "Review Bot 2: Cross-references every factual claim against raw source data.",
+            "trigger": "Called by content-reviewer Edge Function after content is generated (in parallel with tone and brevity bots)",
+            "files": {
+                "system_prompt": "review-bot-accuracy/system-prompt.txt",
+                "input_template": "review-bot-accuracy/input-template.txt",
+                "response_schema": "review-bot-accuracy/response-schema.json"
+            },
+            "api_config": {
+                "model": "claude-sonnet-4-5-20250929",
+                "max_tokens": 1000
+            },
+            "pass_criteria": "pass === true (auto-fail on any critical error, fail on >2 minor errors)"
+        },
+        "review-bot-brevity": {
+            "description": "Review Bot 3: Ensures content is concise, scannable, and respects length limits.",
+            "trigger": "Called by content-reviewer Edge Function after content is generated (in parallel with tone and accuracy bots)",
+            "files": {
+                "system_prompt": "review-bot-brevity/system-prompt.txt",
+                "input_template": "review-bot-brevity/input-template.txt",
+                "response_schema": "review-bot-brevity/response-schema.json"
+            },
+            "api_config": {
+                "model": "claude-sonnet-4-5-20250929",
+                "max_tokens": 1000
+            },
+            "pass_criteria": "pass === true"
+        }
+    },
+    "review_pipeline": {
+        "description": "All 3 review bots run in parallel. Content must pass ALL 3 to be approved.",
+        "execution": "parallel",
+        "approval_rule": "ALL bots must return pass: true",
+        "on_any_fail": "Set content_items.status = 'rejected', store review notes in content_items.review_notes",
+        "on_all_pass": "Set content_items.status = 'approved', trigger notification-sender"
+    },
+    "template_variables": {
+        "team": ["team_display_name", "team_short_name", "team_id"],
+        "match": ["opponent_name", "kickoff_time", "kickoff_day", "venue", "competition", "referee", "match_date"],
+        "form_stats": ["team_position", "team_points", "team_form", "opponent_position", "opponent_points", "opponent_form", "team_top_scorer", "goals", "team_injuries", "team_suspensions", "opponent_top_scorer", "opponent_injuries", "h2h_results", "additional_context"],
+        "pipeline": ["formatted_articles", "league_position", "recent_form", "next_fixture", "recent_published_headlines", "raw_source_data"],
+        "content": ["headline", "body", "talking_points_formatted", "emotional_context", "content_type"]
+    }
+}

@@ -1,0 +1,49 @@
+{
+    "name": "generate_content",
+    "description": "Generate a content item for the Goal Digger app, or decide to skip if nothing is newsworthy",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "is_newsworthy": {
+                "type": "boolean",
+                "description": "Is this genuinely worth notifying her about? Be honest. When in doubt, skip."
+            },
+            "skip_reason": {
+                "type": "string",
+                "description": "If not newsworthy: explain why in one sentence (for internal logging only)"
+            },
+            "newsworthiness_score": {
+                "type": "integer",
+                "description": "1-10 scale. 1 = routine/boring, 5 = mildly interesting, 8 = definitely tell her, 10 = huge breaking news. Only publish if 6+.",
+                "minimum": 1,
+                "maximum": 10
+            },
+            "headline": {
+                "type": "string",
+                "description": "1-2 sentence push notification text. Max 200 characters. Must hook her in 3 seconds.",
+                "maxLength": 200
+            },
+            "body": {
+                "type": "string",
+                "description": "Full detail view content in markdown. 3-5 short paragraphs. Scannable in 60 seconds."
+            },
+            "talking_points": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "3-5 conversation starters. Each should be something she can naturally say or ask.",
+                "minItems": 3,
+                "maxItems": 5
+            },
+            "emotional_context": {
+                "type": "string",
+                "enum": ["exciting", "bad_news", "drama", "informational", "funny"],
+                "description": "The emotional tone of this news. Used to potentially style the notification."
+            },
+            "source_summary": {
+                "type": "string",
+                "description": "One-line summary of which source(s) this content is based on (for internal audit)"
+            }
+        },
+        "required": ["is_newsworthy", "newsworthiness_score"]
+    }
+}

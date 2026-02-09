@@ -1,0 +1,29 @@
+Here is the match data for {{team_display_name}} vs {{opponent_name}}:
+
+--- FIXTURE INFO ---
+Competition: {{competition}}
+Date: {{match_date}}
+Kickoff: {{kickoff_time}} local time
+Venue: {{venue}}
+Referee: {{referee}}
+
+--- {{team_display_name}} ---
+League position: {{team_position}} ({{team_points}} points)
+Last 5 results: {{team_form}}
+Top scorer: {{team_top_scorer}} ({{goals}} goals)
+Key injuries: {{team_injuries}}
+Suspensions: {{team_suspensions}}
+
+--- {{opponent_name}} ---
+League position: {{opponent_position}} ({{opponent_points}} points)
+Last 5 results: {{opponent_form}}
+Top scorer: {{opponent_top_scorer}} ({{goals}} goals)
+Key injuries: {{opponent_injuries}}
+
+--- HEAD TO HEAD (last 5 meetings) ---
+{{h2h_results}}
+
+--- CONTEXT ---
+{{additional_context}}
+
+Generate the match day briefing.

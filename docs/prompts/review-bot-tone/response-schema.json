@@ -1,0 +1,30 @@
+{
+    "type": "object",
+    "properties": {
+        "pass": {
+            "type": "boolean",
+            "description": "Does this content pass tone review?"
+        },
+        "confidence": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0,
+            "description": "Confidence in the review decision"
+        },
+        "notes": {
+            "type": "string",
+            "description": "Explanation of the review decision"
+        },
+        "issues": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Specific lines or phrases that need fixing (if failing)"
+        },
+        "suggestions": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Specific rewording suggestions (if failing)"
+        }
+    },
+    "required": ["pass", "confidence", "notes"]
+}

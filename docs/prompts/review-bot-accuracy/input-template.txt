@@ -1,0 +1,15 @@
+GENERATED CONTENT:
+
+Headline: {{headline}}
+
+Talking Points:
+{{talking_points_formatted}}
+
+Body:
+{{body}}
+
+---
+
+RAW SOURCE DATA THIS CONTENT WAS BASED ON:
+
+{{raw_source_data}}

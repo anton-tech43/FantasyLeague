@@ -1,0 +1,50 @@
+{
+    "type": "object",
+    "properties": {
+        "pass": {
+            "type": "boolean",
+            "description": "Does this content pass brevity review?"
+        },
+        "confidence": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0,
+            "description": "Confidence in the review decision"
+        },
+        "notes": {
+            "type": "string",
+            "description": "Summary of the edit review"
+        },
+        "headline_chars": {
+            "type": "integer",
+            "description": "Character count of the headline"
+        },
+        "headline_sentences": {
+            "type": "integer",
+            "description": "Sentence count of the headline"
+        },
+        "talking_point_count": {
+            "type": "integer",
+            "description": "Number of talking points"
+        },
+        "body_paragraph_count": {
+            "type": "integer",
+            "description": "Number of paragraphs in the body"
+        },
+        "estimated_read_seconds": {
+            "type": "integer",
+            "description": "Estimated time to scan the full content in seconds"
+        },
+        "issues": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Specific issues if failing"
+        },
+        "suggested_cuts": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Specific sentences or phrases that should be removed or shortened"
+        }
+    },
+    "required": ["pass", "confidence", "notes", "headline_chars", "headline_sentences", "talking_point_count", "body_paragraph_count", "estimated_read_seconds"]
+}
