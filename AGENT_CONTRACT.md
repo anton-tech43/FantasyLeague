@@ -16,6 +16,9 @@
 | **Backend: content-reviewer Edge Function** | DONE | `claude/review-repo-setup-TCJ11` | 3 parallel review bots + retry logic |
 | **Backend: notification-sender Edge Function** | DONE | `claude/review-repo-setup-TCJ11` | APNs JWT auth + token management + quiet hours |
 | **Backend: health endpoint** | DONE | `claude/review-repo-setup-TCJ11` | Pipeline monitoring + alert conditions |
+| **Backend: matchday-scheduler Edge Function** | DONE | `claude/review-repo-setup-TCJ11` | Daily 07:00 UTC, fixture detection, delayed triggering |
+| **Backend: _shared/ utilities** | DONE | `claude/review-repo-setup-TCJ11` | types.ts, supabase-client.ts, claude-client.ts, anti-spam.ts |
+| **Backend: .env.example** | DONE | `claude/review-repo-setup-TCJ11` | All env vars documented |
 | **iOS: Xcode project setup** | AVAILABLE | — | Not started |
 | **iOS: Models (Team, ContentItem, AppState)** | AVAILABLE | — | Not started |
 | **iOS: Design system (Theme.swift, Components)** | AVAILABLE | — | Not started |
@@ -36,6 +39,7 @@
 |------|----------------|---------------|
 | 2026-02-09 | `claude/review-repo-setup-TCJ11` | Read all repo docs (PRD, BUILD_PLAN, PROMPTS, CONTENT_EXAMPLES, RUNBOOK, APP_STORE_STRATEGY). Created this contract file. |
 | 2026-02-09 | `claude/review-repo-setup-TCJ11` | **Phase 1 Backend — COMPLETE.** Built full project directory structure, SQL migration with RLS policies + indexes + scheduled cron jobs, seed data, and all 5 Supabase Edge Functions: data-fetcher (API-Football 6 endpoints + 12 RSS feeds + dedup + player filtering), content-generator (Claude API news generation with full prompt templates + anti-spam rules), content-reviewer (3 parallel review bots: tone/accuracy/brevity + retry logic), notification-sender (APNs JWT auth + token lifecycle + quiet hours), health endpoint (per-team monitoring + alert conditions). |
+| 2026-02-09 | `claude/review-repo-setup-TCJ11` | **Phase 1 Backend — Extended.** Added matchday-scheduler (daily 07:00 UTC, detects today's fixtures, schedules content 90min before kickoff with pg_cron one-off jobs, handles edge cases). Added shared utilities (_shared/): types.ts (all DB + API types), supabase-client.ts (singleton + pipeline logger + function trigger helper), claude-client.ts (Claude API wrapper), anti-spam.ts (daily limit + gap check + quiet hours + headline dedup). Added .env.example documenting all required secrets. Removed iOS directory (iOS is Agent 2's scope). |
 
 ---
 
