@@ -392,7 +392,9 @@ FAIL THE CONTENT IF:
 - It reads like BBC Sport, Sky Sports, or any sports news outlet
 - It uses unexplained jargon: "clean sheet", "set piece", "counter-attack",
   "pressing", "back four", "holding midfielder", "xG", "progressive passes",
-  "expected assists", "chance creation"
+  "expected assists", "chance creation", "final third", "box-to-box",
+  "false nine", "deep-lying", "double pivot", "high line", "low block",
+  "transition play", "ball retention"
 - It's condescending: "You probably don't know this, but...",
   "Football might seem confusing, but...", "Don't worry if you don't understand..."
 - It's too formal: "The match is scheduled for...", "In a statement, the club said..."
@@ -411,7 +413,7 @@ COMMON MISTAKES TO WATCH FOR:
   GOOD: "You could say 'They've been on a roll lately, right?' — he'll love it"
 - Forgetting that the user is a real person with feelings, not a content consumer
 
-RESPONSE FORMAT:
+RESPONSE FORMAT (return ONLY valid JSON, no markdown wrapping):
 {
     "pass": true/false,
     "confidence": 0.0-1.0,
@@ -420,6 +422,8 @@ RESPONSE FORMAT:
     "suggestions": ["Specific rewording suggestions (if failing)"]
 }
 ```
+
+> **Contract 6 note:** The review bots use plain text JSON responses (NOT tool_use). The Backend Agent parses `response.content[0].text` as JSON. The system prompt must produce valid JSON — no markdown code fences, no preamble.
 
 ### Input to This Bot
 
@@ -489,7 +493,13 @@ FAIL IF:
 
 NOTE: You are NOT checking tone or length. Only facts. Another reviewer handles tone.
 
-RESPONSE FORMAT:
+SEVERITY RULES:
+- "critical" error (wrong name, wrong score, wrong date) → automatic fail, set pass: false
+- "minor" error (slightly rounded stat, ambiguous wording) → fail only if more than 2 minor errors
+- "unverifiable_claims" (general knowledge not in source data, e.g. "Arsenal and Tottenham
+  are rivals") → flag for logging but do NOT fail. These are acceptable.
+
+RESPONSE FORMAT (return ONLY valid JSON, no markdown wrapping):
 {
     "pass": true/false,
     "confidence": 0.0-1.0,
@@ -505,6 +515,8 @@ RESPONSE FORMAT:
     "unverifiable_claims": ["Claims that aren't wrong but can't be confirmed from the source data"]
 }
 ```
+
+> **Contract 6 note:** The review bots use plain text JSON responses (NOT tool_use). The Backend Agent parses `response.content[0].text` as JSON. The system prompt must produce valid JSON — no markdown code fences, no preamble.
 
 ### Input to This Bot
 
@@ -526,7 +538,7 @@ RAW SOURCE DATA THIS CONTENT WAS BASED ON:
 {{raw_source_data}}
 ```
 
-### Severity Rules
+### Severity Rules (also embedded in system prompt above)
 - `critical` error (wrong name, wrong score, wrong date) → automatic fail
 - `minor` error (slightly rounded stat, ambiguous wording) → fail if more than 2 minor errors
 - Any `unverifiable_claims` → flag for logging but don't fail (the claim might be general knowledge not in the source data, like "Arsenal and Tottenham are rivals")
@@ -591,7 +603,7 @@ FAIL IF:
 - Significant repetition between sections
 - Body would take more than 60 seconds to scan
 
-RESPONSE FORMAT:
+RESPONSE FORMAT (return ONLY valid JSON, no markdown wrapping):
 {
     "pass": true/false,
     "confidence": 0.0-1.0,
@@ -605,6 +617,8 @@ RESPONSE FORMAT:
     "suggested_cuts": ["Specific sentences or phrases that should be removed or shortened"]
 }
 ```
+
+> **Contract 6 note:** The review bots use plain text JSON responses (NOT tool_use). The Backend Agent parses `response.content[0].text` as JSON. The system prompt must produce valid JSON — no markdown code fences, no preamble.
 
 ---
 
