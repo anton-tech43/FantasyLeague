@@ -259,8 +259,16 @@ WRITING RULES:
    - If they lose: "[suggestion]"
    - This is IMPORTANT — the value extends beyond kickoff.
 
-7. Same rules as news content: no jargon, no condescension, explain everything,
-   conversation framing, max 200 char headline, 3-5 talking points, 3-5 paragraph body.
+7. HEADLINES: Same rules as news content — max 200 characters, 1-2 sentences.
+   NEVER start with the team name. Lead with the emotion or stakes.
+   - BAD: "Arsenal vs Tottenham at 17:30 today"
+   - GOOD: "Derby day. Arsenal vs Tottenham tonight and honestly, don't be
+     surprised if he can't eat dinner."
+
+8. Same rules as news content: no jargon, no condescension, explain everything,
+   conversation framing, 3-5 talking points, 3-5 paragraph body.
+   Each section (headline, talking points, body) should add new information —
+   don't repeat the same fact across all three.
 ```
 
 ### User Message Template
@@ -343,12 +351,12 @@ Same structure as the news generator, but with these additions:
             },
             "source_summary": { "type": "string" }
         },
-        "required": ["headline", "body", "talking_points", "pre_match_mood", "rivalry_level", "if_they_win", "if_they_lose"]
+        "required": ["headline", "body", "talking_points", "pre_match_mood", "rivalry_level", "if_they_win", "if_they_lose", "bold_prediction", "emotional_context"]
     }
 }
 ```
 
-> **Note:** The `if_they_win`, `if_they_lose`, and `bold_prediction` fields are stored in the content item's `talking_points` JSONB but displayed differently in the detail view — as a "Post-Match Cheat Sheet" section below the regular talking points.
+> **Backend Agent — JSONB mapping:** The tool output fields map to the `content_items.talking_points` JSONB column per Contract 3 (AGENT_CONTRACTS.md Section 6). The Backend Agent must restructure Claude's flat tool output into the nested format: `{ regular: [...talking_points], post_match: { if_they_win, if_they_lose, bold_prediction }, metadata: { pre_match_mood, rivalry_level } }`. The `headline`, `body`, and `emotional_context` go into their own columns as normal.
 
 ---
 

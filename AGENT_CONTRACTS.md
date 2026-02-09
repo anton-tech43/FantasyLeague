@@ -1003,8 +1003,8 @@ Every agent **must** follow this protocol. It keeps the work tracker honest and 
 | # | Task | Status | Agent | Started | Completed | Outcome |
 |---|------|--------|-------|---------|-----------|---------|
 | P1 | News generator prompt — System prompt, user template, tool schema (PROMPTS.md Section 1) | `done` | Pipeline | 2026-02-09 | 2026-02-09 | Refined: added headline-first rule (rule 8), conditional validation note for Backend Agent on tool schema, added emotional_context to decision logic, fixed Variables Reference with 9 missing variables, defined talking_points_formatted format. |
-| P2 | Matchday generator prompt — System prompt, user template, tool schema (PROMPTS.md Section 2) | `in_progress` | Pipeline | 2026-02-09 | — | — |
-| P3 | Tone review bot prompt — System prompt, input template, pass/fail criteria (PROMPTS.md Section 3) | `open` | Pipeline | — | — | — |
+| P2 | Matchday generator prompt — System prompt, user template, tool schema (PROMPTS.md Section 2) | `done` | Pipeline | 2026-02-09 | 2026-02-09 | Refined: added headline rule (rule 7) with good/bad examples, added no-repetition rule, made bold_prediction and emotional_context required in tool schema, added explicit JSONB mapping note referencing Contract 3 for Backend Agent. |
+| P3 | Tone review bot prompt — System prompt, input template, pass/fail criteria (PROMPTS.md Section 3) | `in_progress` | Pipeline | 2026-02-09 | — | — |
 | P4 | Accuracy review bot prompt — System prompt, input template, severity rules (PROMPTS.md Section 4) | `open` | Pipeline | — | — | — |
 | P5 | Brevity review bot prompt — System prompt, input template, length rules (PROMPTS.md Section 5) | `open` | Pipeline | — | — | — |
 | P6 | Prompt testing — Run all prompts against real data, compare output to golden examples, iterate | `open` | Pipeline | — | — | — |
