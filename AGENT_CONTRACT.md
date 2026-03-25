@@ -23,7 +23,7 @@
 | **Backend: .env.example** | DONE | Agent 1 | All env vars documented |
 | **Backend: Deploy to Supabase** | AVAILABLE | — | Link project, push schema, deploy functions, set secrets |
 | **Backend: End-to-end pipeline test** | AVAILABLE | — | Test full pipeline with real API keys |
-| **iOS: Xcode project setup (I1)** | AVAILABLE | — | Not started |
+| **iOS: Xcode project setup (I1)** | IN PROGRESS | Agent 2 | Creating directory tree + project structure |
 | **iOS: Models (I2)** | AVAILABLE | — | Team, ContentItem, AppState |
 | **iOS: Design system (I3)** | AVAILABLE | — | Theme.swift — colors, fonts, spacing |
 | **iOS: Mock data (I11)** | AVAILABLE | — | Golden examples from CONTENT_EXAMPLES.md |
