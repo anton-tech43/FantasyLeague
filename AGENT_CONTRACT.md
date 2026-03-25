@@ -36,7 +36,7 @@
 | **iOS: CacheService (I5)** | AVAILABLE | — | SwiftData |
 | **iOS: NotificationService (I9)** | AVAILABLE | — | AppDelegate + push handling |
 | **Pipeline: News generator prompt (P1)** | DONE | Agent 3 | PROMPTS.md Section 1 — verified prompt, tool schema, and backend embedding match all contracts |
-| **Pipeline: Matchday generator prompt (P2)** | IN PROGRESS | Agent 3 | PROMPTS.md Section 2 |
+| **Pipeline: Matchday generator prompt (P2)** | DONE | Agent 3 | PROMPTS.md Section 2 — verified prompt, tool schema, Contract 3 JSONB mapping, and backend embedding |
 | **Pipeline: Tone review bot prompt (P3)** | AVAILABLE | — | PROMPTS.md Section 3 |
 | **Pipeline: Accuracy review bot prompt (P4)** | AVAILABLE | — | PROMPTS.md Section 4 |
 | **Pipeline: Brevity review bot prompt (P5)** | AVAILABLE | — | PROMPTS.md Section 5 |
@@ -62,6 +62,7 @@
 | 2026-02-09 | Agent 1 | **Phase 1 Backend — COMPLETE.** SQL migration with RLS + indexes + cron jobs, seed data, all 6 Edge Functions (data-fetcher, content-generator, content-reviewer, notification-sender, matchday-scheduler, health-check), shared utilities (types.ts, supabase-client.ts, claude-client.ts, anti-spam.ts), .env.example. ~3,300 lines across 12 files. |
 | 2026-03-25 | — | Merged all code from `claude/review-repo-setup-TCJ11` into `main`. All work now on `main` branch. |
 | 2026-03-25 | Agent 3 | **P1 — News generator prompt: VERIFIED.** System prompt (8 writing rules), user message template (with dedup), tool schema (is_newsworthy, newsworthiness_score 1-10, headline ≤200 chars, 3-5 talking points, emotional_context enum, source_summary). Backend embedding in content-generator/index.ts matches PROMPTS.md Section 1 verbatim. Contract 4 compliance confirmed (newsworthiness_score present, ≥6 threshold enforced by backend). |
+| 2026-03-25 | Agent 3 | **P2 — Matchday generator prompt: VERIFIED.** System prompt (7 writing rules + match context variables), user message template (fixture info, team context, dedup), tool schema (headline, talking_points, pre_match_mood, rivalry_level, if_they_win, if_they_lose, bold_prediction). Contract 3 JSONB mapping confirmed: backend correctly maps tool output fields into {regular, post_match, metadata} structure. types.ts MatchdayTalkingPoints/MatchdayContent interfaces align. |
 
 ---
 
