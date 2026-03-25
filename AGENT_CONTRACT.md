@@ -35,7 +35,7 @@
 | **iOS: APIClient (I4)** | AVAILABLE | — | Supabase REST (depends on backend deploy for testing) |
 | **iOS: CacheService (I5)** | AVAILABLE | — | SwiftData |
 | **iOS: NotificationService (I9)** | AVAILABLE | — | AppDelegate + push handling |
-| **Pipeline: News generator prompt (P1)** | IN PROGRESS | Agent 3 | PROMPTS.md Section 1 |
+| **Pipeline: News generator prompt (P1)** | DONE | Agent 3 | PROMPTS.md Section 1 — verified prompt, tool schema, and backend embedding match all contracts |
 | **Pipeline: Matchday generator prompt (P2)** | AVAILABLE | — | PROMPTS.md Section 2 |
 | **Pipeline: Tone review bot prompt (P3)** | AVAILABLE | — | PROMPTS.md Section 3 |
 | **Pipeline: Accuracy review bot prompt (P4)** | AVAILABLE | — | PROMPTS.md Section 4 |
@@ -61,6 +61,7 @@
 |------|-------|---------------|
 | 2026-02-09 | Agent 1 | **Phase 1 Backend — COMPLETE.** SQL migration with RLS + indexes + cron jobs, seed data, all 6 Edge Functions (data-fetcher, content-generator, content-reviewer, notification-sender, matchday-scheduler, health-check), shared utilities (types.ts, supabase-client.ts, claude-client.ts, anti-spam.ts), .env.example. ~3,300 lines across 12 files. |
 | 2026-03-25 | — | Merged all code from `claude/review-repo-setup-TCJ11` into `main`. All work now on `main` branch. |
+| 2026-03-25 | Agent 3 | **P1 — News generator prompt: VERIFIED.** System prompt (8 writing rules), user message template (with dedup), tool schema (is_newsworthy, newsworthiness_score 1-10, headline ≤200 chars, 3-5 talking points, emotional_context enum, source_summary). Backend embedding in content-generator/index.ts matches PROMPTS.md Section 1 verbatim. Contract 4 compliance confirmed (newsworthiness_score present, ≥6 threshold enforced by backend). |
 
 ---
 
