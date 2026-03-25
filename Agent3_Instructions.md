@@ -90,4 +90,4 @@ Never touch anything in `GoalDigger/backend/` or `GoalDigger/ios/`.
 
 ## Model
 
-All prompts target `claude-sonnet-4-5-20250929` (cost-effective, excellent tone for casual writing).
+All prompts target `claude-sonnet-4-6` (cost-effective, excellent tone for casual writing).
