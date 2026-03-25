@@ -23,18 +23,18 @@
 | **Backend: .env.example** | DONE | Agent 1 | All env vars documented |
 | **Backend: Deploy to Supabase** | AVAILABLE | — | Link project, push schema, deploy functions, set secrets |
 | **Backend: End-to-end pipeline test** | AVAILABLE | — | Test full pipeline with real API keys |
-| **iOS: Xcode project setup (I1)** | IN PROGRESS | Agent 2 | Creating directory tree + project structure |
-| **iOS: Models (I2)** | AVAILABLE | — | Team, ContentItem, AppState |
-| **iOS: Design system (I3)** | AVAILABLE | — | Theme.swift — colors, fonts, spacing |
-| **iOS: Mock data (I11)** | AVAILABLE | — | Golden examples from CONTENT_EXAMPLES.md |
-| **iOS: Onboarding flow (I6)** | AVAILABLE | — | Welcome, TeamSelection, NotificationPrompt |
-| **iOS: Feed view (I7)** | AVAILABLE | — | Main content feed |
-| **iOS: Detail view (I8)** | AVAILABLE | — | Full content + talking points |
-| **iOS: Settings view (I10)** | AVAILABLE | — | Not started |
-| **iOS: Shared components (I12)** | AVAILABLE | — | ContentCard, BadgeView, TeamPickerCard, EmptyStateView |
-| **iOS: APIClient (I4)** | AVAILABLE | — | Supabase REST (depends on backend deploy for testing) |
-| **iOS: CacheService (I5)** | AVAILABLE | — | SwiftData |
-| **iOS: NotificationService (I9)** | AVAILABLE | — | AppDelegate + push handling |
+| **iOS: Xcode project setup (I1)** | DONE | Agent 2 | GoalDiggerApp.swift + AppDelegate.swift |
+| **iOS: Models (I2)** | DONE | Agent 2 | Team.swift, ContentItem.swift (dual-format decoder), AppState.swift |
+| **iOS: Design system (I3)** | DONE | Agent 2 | Theme.swift — colors, fonts, spacing, CardStyle modifier |
+| **iOS: Mock data (I11)** | DONE | Agent 2 | MockData.swift — all 5 golden examples |
+| **iOS: Onboarding flow (I6)** | DONE | Agent 2 | WelcomeView, TeamSelectionView, NotificationPromptView |
+| **iOS: Feed view (I7)** | DONE | Agent 2 | FeedView + FeedViewModel + freshness states + skeleton loading |
+| **iOS: Detail view (I8)** | DONE | Agent 2 | ContentDetailView + TalkingPointCard + PostMatchCard (Contract 8) |
+| **iOS: Settings view (I10)** | DONE | Agent 2 | SettingsView + AboutView + team switch + notification status |
+| **iOS: Shared components (I12)** | DONE | Agent 2 | ContentCard, BadgeView, TeamPickerCard, EmptyStateView |
+| **iOS: APIClient (I4)** | DONE | Agent 2 | Supabase REST — 4 endpoints per Contract 5 |
+| **iOS: CacheService (I5)** | DONE | Agent 2 | SwiftData CachedContentItem + cache/load/purge/clear |
+| **iOS: NotificationService (I9)** | DONE | Agent 2 | Permission request + token registration + status check |
 | **Pipeline: News generator prompt (P1)** | AVAILABLE | — | PROMPTS.md Section 1 |
 | **Pipeline: Matchday generator prompt (P2)** | AVAILABLE | — | PROMPTS.md Section 2 |
 | **Pipeline: Tone review bot prompt (P3)** | AVAILABLE | — | PROMPTS.md Section 3 |
@@ -61,6 +61,7 @@
 |------|-------|---------------|
 | 2026-02-09 | Agent 1 | **Phase 1 Backend — COMPLETE.** SQL migration with RLS + indexes + cron jobs, seed data, all 6 Edge Functions (data-fetcher, content-generator, content-reviewer, notification-sender, matchday-scheduler, health-check), shared utilities (types.ts, supabase-client.ts, claude-client.ts, anti-spam.ts), .env.example. ~3,300 lines across 12 files. |
 | 2026-03-25 | — | Merged all code from `claude/review-repo-setup-TCJ11` into `main`. All work now on `main` branch. |
+| 2026-03-25 | Agent 2 | **Phase 2–3 iOS — COMPLETE.** App entry point (GoalDiggerApp + AppDelegate with APNs deep link), 3 models (Team, ContentItem with Contract 3 dual-format decoder, AppState), design system (Theme.swift with full color/font/spacing), MockData (5 golden examples), 3 onboarding views, FeedView with cache-first loading + pagination + freshness cards + skeleton loading, ContentDetailView with talking points + Contract 8 post-match cheat sheet + ShareLink, SettingsView with team switch + notification status + AboutView, 4 shared components (ContentCard, BadgeView, TeamPickerCard, EmptyStateView), APIClient (4 Supabase REST endpoints per Contract 5), CacheService (SwiftData), NotificationService. 20 Swift files, ~1,400 lines. |
 
 ---
 
