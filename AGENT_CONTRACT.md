@@ -23,16 +23,18 @@
 | **Backend: .env.example** | DONE | Agent 1 | All env vars documented |
 | **Backend: Deploy to Supabase** | AVAILABLE | — | Link project, push schema, deploy functions, set secrets |
 | **Backend: End-to-end pipeline test** | AVAILABLE | — | Test full pipeline with real API keys |
-| **iOS: Xcode project setup** | AVAILABLE | — | Not started |
-| **iOS: Models (Team, ContentItem, AppState)** | AVAILABLE | — | Not started |
-| **iOS: Design system (Theme.swift, Components)** | AVAILABLE | — | Not started |
-| **iOS: Onboarding flow** | AVAILABLE | — | Not started |
-| **iOS: Feed view** | AVAILABLE | — | Not started |
-| **iOS: Detail view** | AVAILABLE | — | Not started |
-| **iOS: Settings view** | AVAILABLE | — | Not started |
-| **iOS: APIClient / Networking** | AVAILABLE | — | Not started (depends on backend deploy) |
-| **iOS: NotificationService** | AVAILABLE | — | Not started |
-| **iOS: CacheService (SwiftData)** | AVAILABLE | — | Not started |
+| **iOS: Xcode project setup (I1)** | AVAILABLE | — | Not started |
+| **iOS: Models (I2)** | AVAILABLE | — | Team, ContentItem, AppState |
+| **iOS: Design system (I3)** | AVAILABLE | — | Theme.swift — colors, fonts, spacing |
+| **iOS: Mock data (I11)** | AVAILABLE | — | Golden examples from CONTENT_EXAMPLES.md |
+| **iOS: Onboarding flow (I6)** | AVAILABLE | — | Welcome, TeamSelection, NotificationPrompt |
+| **iOS: Feed view (I7)** | AVAILABLE | — | Main content feed |
+| **iOS: Detail view (I8)** | AVAILABLE | — | Full content + talking points |
+| **iOS: Settings view (I10)** | AVAILABLE | — | Not started |
+| **iOS: Shared components (I12)** | AVAILABLE | — | ContentCard, BadgeView, TeamPickerCard, EmptyStateView |
+| **iOS: APIClient (I4)** | AVAILABLE | — | Supabase REST (depends on backend deploy for testing) |
+| **iOS: CacheService (I5)** | AVAILABLE | — | SwiftData |
+| **iOS: NotificationService (I9)** | AVAILABLE | — | AppDelegate + push handling |
 | **Docs: README.md** | AVAILABLE | — | Not started |
 
 ---
