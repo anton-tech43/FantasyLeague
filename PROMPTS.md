@@ -17,7 +17,7 @@ The prompts in this file are the product. The app is only as good as the content
 - A/B test when in doubt
 - Review generated output weekly and iterate
 
-**Model:** `claude-sonnet-4-5-20250929` for all prompts (cost-effective, excellent tone quality for casual writing)
+**Model:** `claude-sonnet-4-6` for all prompts (cost-effective, excellent tone quality for casual writing)
 
 ---
 

@@ -15,7 +15,7 @@ export async function callClaude(options: {
   }
 
   const body: Record<string, unknown> = {
-    model: "claude-sonnet-4-5-20250929",
+    model: "claude-sonnet-4-6",
     max_tokens: options.maxTokens ?? 2000,
     system: options.systemPrompt,
     messages: [{ role: "user", content: options.userMessage }],

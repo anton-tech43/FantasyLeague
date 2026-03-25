@@ -361,7 +361,7 @@ Takes raw fetched data for a team and uses Claude API to determine if anything i
 
 ### Claude API Integration
 
-**Model:** `claude-sonnet-4-5-20250929` (cost-effective for summarization, excellent tone quality)
+**Model:** `claude-sonnet-4-6` (cost-effective for summarization, excellent tone quality)
 
 **Prompts:** All system prompts, user message templates, and tool definitions for the content generator are documented in [PROMPTS.md](./PROMPTS.md). See:
 - Section 1 (Content Generator — News) for news content generation
@@ -372,7 +372,7 @@ Takes raw fetched data for a team and uses Claude API to determine if anything i
 **Request Format:**
 ```json
 {
-    "model": "claude-sonnet-4-5-20250929",
+    "model": "claude-sonnet-4-6",
     "max_tokens": 2000,
     "system": "<system prompt from PROMPTS.md>",
     "messages": [

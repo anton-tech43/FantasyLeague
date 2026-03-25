@@ -629,7 +629,7 @@ The review bots respond with JSON in their message content (not via tool_use). T
 
 ```json
 {
-    "model": "claude-sonnet-4-5-20250929",
+    "model": "claude-sonnet-4-6",
     "max_tokens": 1000,
     "system": "<system prompt from PROMPTS.md Section 3, 4, or 5>",
     "messages": [
