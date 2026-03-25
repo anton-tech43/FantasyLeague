@@ -1,24 +1,28 @@
 # Agent Contract — Goal Digger Multi-Agent Coordination
 
-**Purpose:** This file is the single source of truth for agent coordination. Each agent updates this file to declare what they are working on, what they have completed, and what is available for others to pick up. Check this file before starting work to avoid conflicts.
+**Purpose:** This file is the single source of truth for agent coordination. Every agent MUST read this file at the start of each run and update it when completing work. Check this file before starting work to avoid conflicts.
+
+**Branch:** All code is on `main`.
 
 ---
 
 ## Work Ownership Table
 
-| Area | Status | Agent / Branch | Notes |
-|------|--------|----------------|-------|
-| **Backend: Project structure & scaffolding** | DONE | `claude/review-repo-setup-TCJ11` | Full directory tree created |
-| **Backend: SQL schema migration** | DONE | `claude/review-repo-setup-TCJ11` | `001_initial_schema.sql` + RLS + indexes + cron jobs |
-| **Backend: Seed data** | DONE | `claude/review-repo-setup-TCJ11` | `seed_teams.sql` (Arsenal, Man Utd, West Ham) |
-| **Backend: data-fetcher Edge Function** | DONE | `claude/review-repo-setup-TCJ11` | API-Football (6 endpoints) + 12 RSS feeds + dedup |
-| **Backend: content-generator Edge Function** | DONE | `claude/review-repo-setup-TCJ11` | Claude API news generation + anti-spam rules |
-| **Backend: content-reviewer Edge Function** | DONE | `claude/review-repo-setup-TCJ11` | 3 parallel review bots + retry logic |
-| **Backend: notification-sender Edge Function** | DONE | `claude/review-repo-setup-TCJ11` | APNs JWT auth + token management + quiet hours |
-| **Backend: health endpoint** | DONE | `claude/review-repo-setup-TCJ11` | Pipeline monitoring + alert conditions |
-| **Backend: matchday-scheduler Edge Function** | DONE | `claude/review-repo-setup-TCJ11` | Daily 07:00 UTC, fixture detection, delayed triggering |
-| **Backend: _shared/ utilities** | DONE | `claude/review-repo-setup-TCJ11` | types.ts, supabase-client.ts, claude-client.ts, anti-spam.ts |
-| **Backend: .env.example** | DONE | `claude/review-repo-setup-TCJ11` | All env vars documented |
+| Area | Status | Agent | Notes |
+|------|--------|-------|-------|
+| **Backend: Project structure & scaffolding** | DONE | Agent 1 | Full directory tree created |
+| **Backend: SQL schema migration** | DONE | Agent 1 | `001_initial_schema.sql` + RLS + indexes + cron jobs |
+| **Backend: Seed data** | DONE | Agent 1 | `seed_teams.sql` (Arsenal, Man Utd, West Ham) |
+| **Backend: data-fetcher Edge Function** | DONE | Agent 1 | API-Football (6 endpoints) + 12 RSS feeds + dedup |
+| **Backend: content-generator Edge Function** | DONE | Agent 1 | Claude API news generation + anti-spam rules |
+| **Backend: content-reviewer Edge Function** | DONE | Agent 1 | 3 parallel review bots + retry logic |
+| **Backend: notification-sender Edge Function** | DONE | Agent 1 | APNs JWT auth + token management + quiet hours |
+| **Backend: health-check endpoint** | DONE | Agent 1 | Pipeline monitoring + alert conditions |
+| **Backend: matchday-scheduler Edge Function** | DONE | Agent 1 | Daily 07:00 UTC, fixture detection, delayed triggering |
+| **Backend: _shared/ utilities** | DONE | Agent 1 | types.ts, supabase-client.ts, claude-client.ts, anti-spam.ts |
+| **Backend: .env.example** | DONE | Agent 1 | All env vars documented |
+| **Backend: Deploy to Supabase** | AVAILABLE | — | Link project, push schema, deploy functions, set secrets |
+| **Backend: End-to-end pipeline test** | AVAILABLE | — | Test full pipeline with real API keys |
 | **iOS: Xcode project setup** | AVAILABLE | — | Not started |
 | **iOS: Models (Team, ContentItem, AppState)** | AVAILABLE | — | Not started |
 | **iOS: Design system (Theme.swift, Components)** | AVAILABLE | — | Not started |
@@ -26,30 +30,39 @@
 | **iOS: Feed view** | AVAILABLE | — | Not started |
 | **iOS: Detail view** | AVAILABLE | — | Not started |
 | **iOS: Settings view** | AVAILABLE | — | Not started |
-| **iOS: APIClient / Networking** | AVAILABLE | — | Not started (depends on backend) |
+| **iOS: APIClient / Networking** | AVAILABLE | — | Not started (depends on backend deploy) |
 | **iOS: NotificationService** | AVAILABLE | — | Not started |
 | **iOS: CacheService (SwiftData)** | AVAILABLE | — | Not started |
 | **Docs: README.md** | AVAILABLE | — | Not started |
 
 ---
 
+## Blocked Items
+
+| Area | Blocked By | Date Logged |
+|------|-----------|-------------|
+| Content-generator + content-reviewer testing | Missing `ANTHROPIC_API_KEY` | 2026-03-25 |
+| Notification-sender testing | Missing APNs credentials (Phase 5) | 2026-03-25 |
+
+---
+
 ## Completed Work Log
 
-| Date | Agent / Branch | What was done |
-|------|----------------|---------------|
-| 2026-02-09 | `claude/review-repo-setup-TCJ11` | Read all repo docs (PRD, BUILD_PLAN, PROMPTS, CONTENT_EXAMPLES, RUNBOOK, APP_STORE_STRATEGY). Created this contract file. |
-| 2026-02-09 | `claude/review-repo-setup-TCJ11` | **Phase 1 Backend — COMPLETE.** Built full project directory structure, SQL migration with RLS policies + indexes + scheduled cron jobs, seed data, and all 5 Supabase Edge Functions: data-fetcher (API-Football 6 endpoints + 12 RSS feeds + dedup + player filtering), content-generator (Claude API news generation with full prompt templates + anti-spam rules), content-reviewer (3 parallel review bots: tone/accuracy/brevity + retry logic), notification-sender (APNs JWT auth + token lifecycle + quiet hours), health endpoint (per-team monitoring + alert conditions). |
-| 2026-02-09 | `claude/review-repo-setup-TCJ11` | **Phase 1 Backend — Extended.** Added matchday-scheduler (daily 07:00 UTC, detects today's fixtures, schedules content 90min before kickoff with pg_cron one-off jobs, handles edge cases). Added shared utilities (_shared/): types.ts (all DB + API types), supabase-client.ts (singleton + pipeline logger + function trigger helper), claude-client.ts (Claude API wrapper), anti-spam.ts (daily limit + gap check + quiet hours + headline dedup). Added .env.example documenting all required secrets. Removed iOS directory (iOS is Agent 2's scope). |
+| Date | Agent | What was done |
+|------|-------|---------------|
+| 2026-02-09 | Agent 1 | **Phase 1 Backend — COMPLETE.** SQL migration with RLS + indexes + cron jobs, seed data, all 6 Edge Functions (data-fetcher, content-generator, content-reviewer, notification-sender, matchday-scheduler, health-check), shared utilities (types.ts, supabase-client.ts, claude-client.ts, anti-spam.ts), .env.example. ~3,300 lines across 12 files. |
+| 2026-03-25 | — | Merged all code from `claude/review-repo-setup-TCJ11` into `main`. All work now on `main` branch. |
 
 ---
 
 ## Rules
 
-1. **Before starting work:** Check this file. If an area says "IN PROGRESS", do not work on it.
-2. **When starting work:** Update the status to "IN PROGRESS" with your branch name, commit & push.
-3. **When done:** Move the entry to "COMPLETED" in the log, set status to "DONE", commit & push.
-4. **Conflicts:** If two agents accidentally work on the same area, the one who committed first wins. The other agent rebases or discards.
-5. **Dependencies:** Backend must be built before iOS networking layer. iOS UI can be built in parallel with backend using mock data.
+1. **Before starting work:** Read this file. If an area says "IN PROGRESS", do not work on it.
+2. **When starting work:** Update the status to "IN PROGRESS" with your agent name, commit & push.
+3. **When done:** Set status to "DONE", add entry to Completed Work Log with date and summary, commit & push.
+4. **When blocked:** Mark the task as "BLOCKED: [reason]" in the table, add to Blocked Items section, and move on to the next available task. Never stop the entire build for a single blocker.
+5. **Conflicts:** If two agents accidentally work on the same area, the one who committed first wins. The other agent rebases or discards.
+6. **Dependencies:** Backend must be deployed before iOS networking layer can be tested. iOS UI can be built in parallel using mock data.
 
 ---
 
@@ -64,3 +77,4 @@
 - **Analytics:** TelemetryDeck
 
 See `BUILD_PLAN.md` for full specifications.
+See `AGENT_CONTRACTS.md` for detailed inter-agent contracts and data formats.
