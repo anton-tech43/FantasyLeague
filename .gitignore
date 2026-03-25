@@ -1,0 +1,22 @@
+# Environment variables (contains secrets - never commit!)
+.env
+
+# Allow .env.example to be committed (template only)
+!.env.example
+
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
