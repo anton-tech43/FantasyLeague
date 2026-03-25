@@ -36,7 +36,7 @@
 | **iOS: CacheService (I5)** | AVAILABLE | — | SwiftData |
 | **iOS: NotificationService (I9)** | AVAILABLE | — | AppDelegate + push handling |
 | **Pipeline: News generator prompt (P1)** | DONE | Agent 3 | PROMPTS.md Section 1 — verified prompt, tool schema, and backend embedding match all contracts |
-| **Pipeline: Matchday generator prompt (P2)** | AVAILABLE | — | PROMPTS.md Section 2 |
+| **Pipeline: Matchday generator prompt (P2)** | IN PROGRESS | Agent 3 | PROMPTS.md Section 2 |
 | **Pipeline: Tone review bot prompt (P3)** | AVAILABLE | — | PROMPTS.md Section 3 |
 | **Pipeline: Accuracy review bot prompt (P4)** | AVAILABLE | — | PROMPTS.md Section 4 |
 | **Pipeline: Brevity review bot prompt (P5)** | AVAILABLE | — | PROMPTS.md Section 5 |
