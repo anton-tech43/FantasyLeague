@@ -64,6 +64,31 @@
 
 ---
 
+## Review Notes
+
+### 2026-03-26 — Daily Review (Reviewer & Planner)
+
+**Commits reviewed:** 5 commits from 2026-03-25 (setup day)
+- `74af4df` — Added .env.example, .gitignore, BUILD_PLAN.md.backup, DEVELOPMENT_NOTES.md
+- `c05cfe0` — Created Agent1_Instructions.md, updated AGENT_CONTRACT.md for main branch
+- `3ccd80b` — Created Agent2_Instructions.md, added iOS task IDs (I1-I12)
+- `5ecad4f` — Created Agent3_Instructions.md, added Pipeline task IDs (P1-P7)
+- `0637396` — Updated model from `sonnet-4-5` to `sonnet-4-6` across 7 files
+
+**Findings:**
+- No bugs or spec violations. All changes were documentation and configuration.
+- Model version update (`sonnet-4-6`) is consistent across all active files. Only `BUILD_PLAN.md.backup` retains old reference — acceptable.
+- No conflicts between agents — no agents have started work yet.
+- All agent instruction checklists match the ownership table accurately.
+- Blocked items (ANTHROPIC_API_KEY, APNs creds) remain valid — no resolution yet.
+
+**Status:** All Phase 1 backend code is complete but undeployed. iOS and Pipeline work not started. Next priority tasks:
+- Agent 1: Deploy database schema to Supabase (Phase 1.5)
+- Agent 2: I1 — Xcode project setup
+- Agent 3: P1 — News generator prompt
+
+---
+
 ## Rules
 
 1. **Before starting work:** Read this file. If an area says "IN PROGRESS", do not work on it.
