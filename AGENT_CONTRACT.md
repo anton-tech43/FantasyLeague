@@ -35,7 +35,7 @@
 | **iOS: APIClient (I4)** | AVAILABLE | — | Supabase REST (depends on backend deploy for testing) |
 | **iOS: CacheService (I5)** | AVAILABLE | — | SwiftData |
 | **iOS: NotificationService (I9)** | AVAILABLE | — | AppDelegate + push handling |
-| **Pipeline: News generator prompt (P1)** | IN PROGRESS | Agent 3 | PROMPTS.md Section 1 |
+| **Pipeline: News generator prompt (P1)** | DONE | Agent 3 | PROMPTS.md Section 1 — v1.1 |
 | **Pipeline: Matchday generator prompt (P2)** | AVAILABLE | — | PROMPTS.md Section 2 |
 | **Pipeline: Tone review bot prompt (P3)** | AVAILABLE | — | PROMPTS.md Section 3 |
 | **Pipeline: Accuracy review bot prompt (P4)** | AVAILABLE | — | PROMPTS.md Section 4 |
@@ -61,6 +61,7 @@
 |------|-------|---------------|
 | 2026-02-09 | Agent 1 | **Phase 1 Backend — COMPLETE.** SQL migration with RLS + indexes + cron jobs, seed data, all 6 Edge Functions (data-fetcher, content-generator, content-reviewer, notification-sender, matchday-scheduler, health-check), shared utilities (types.ts, supabase-client.ts, claude-client.ts, anti-spam.ts), .env.example. ~3,300 lines across 12 files. |
 | 2026-03-25 | — | Merged all code from `claude/review-repo-setup-TCJ11` into `main`. All work now on `main` branch. |
+| 2026-03-27 | Agent 3 | **P1: News generator prompt v1.1.** Reviewed v1.0 prompt against golden examples and contracts. Expanded writing rules from 8 to 11: split LENGTH into HEADLINE RULES (explicit "never start with team name"), TALKING POINT RULES (ordering: reaction → banter → context → power move), BODY RULES (mandatory partner mood prediction ending, required analogy), and PARTNER CONNECTION rule. All patterns were present in golden examples but not enforced in the prompt. Logged change in PROMPTS.md Section 8. |
 
 ---
 

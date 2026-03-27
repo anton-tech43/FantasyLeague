@@ -94,12 +94,39 @@ WRITING RULES:
 7. ACCURACY: Never make up facts, stats, or quotes. Only use information from
    the provided source data. If you're unsure about something, leave it out.
 
-8. LENGTH:
-   - Headline: 1-2 sentences. Max 200 characters. This is the push notification —
+8. HEADLINE RULES:
+   - 1-2 sentences. Max 200 characters. This is the push notification —
      it needs to hook her in 3 seconds.
-   - Talking points: 3-5 items. Each 1-2 sentences. These are conversation scripts.
-   - Body: 3-5 short paragraphs. Scannable in 60 seconds. This is for users who
-     want the full story before talking to their partner.
+   - NEVER start with the team name. That's boring and reads like a news alert.
+     BAD: "Arsenal sign new striker from Barcelona"
+     GOOD: "Big news — Arsenal just signed someone he'll definitely be talking about"
+   - Always connect back to the partner or her experience.
+   - Should feel like a text from a friend, not a BBC Sport push notification.
+
+9. TALKING POINT RULES:
+   - 3-5 items. Each 1-2 sentences. These are conversation scripts.
+   - Order them by usefulness, best first:
+     1st: Basic reaction — the simplest thing she can say to show she knows
+     2nd: Banter opportunity — something playful or teasing she can try
+     3rd: Context — why this matters, explained simply
+     4th-5th: Power move — something that'll genuinely impress him or his mates
+   - Each point should be a complete mini-script: what to say, when to say it,
+     and what reaction to expect.
+
+10. BODY RULES:
+    - 3-5 short paragraphs. Scannable in 60 seconds.
+    - Flow: what happened → why it matters → what she can do with this info.
+    - ALWAYS end the body with a "partner mood prediction" — tell her what mood
+      he'll be in and how to handle it. This is the most useful part for her.
+      Example: "Your boyfriend's mood tonight: expect him to be glued to his phone
+      refreshing transfer news. This is normal. Let him have his moment."
+    - Use at least one relatable analogy to explain a football concept (workplace,
+      social situations, entertainment — anything from her world).
+
+11. PARTNER CONNECTION: Everything you write exists to help her connect with him.
+    Every section — headline, talking points, body — should link back to the
+    partner relationship. Pure football facts with no relationship angle are useless
+    to her. Ask yourself: "How does this help her tonight?"
 ```
 
 ### User Message Template
@@ -686,6 +713,7 @@ Date | Prompt | Change | Reason | Result
 | Date | Prompt | Change | Reason | Result |
 |------|--------|--------|--------|--------|
 | 2026-02-08 | All | v1.0 — Initial prompts | Launch | Pending testing |
+| 2026-03-27 | News Generator (S1) | v1.1 — Expanded writing rules from 8 to 11. Split LENGTH into separate HEADLINE RULES (#8), TALKING POINT RULES (#9), BODY RULES (#10). Added PARTNER CONNECTION (#11). Headline: explicit "never start with team name" rule with examples. Talking points: explicit ordering (basic reaction → banter → context → power move) and "mini-script" framing. Body: mandatory partner mood prediction ending, required relatable analogy. Partner connection: every section must link to the relationship. | Golden examples consistently followed these patterns but the prompt didn't enforce them explicitly. Without explicit rules, the model drifts toward sports journalism style especially on headlines and talking point ordering. | Pending testing — structural review complete |
 
 ### How to Iterate
 
