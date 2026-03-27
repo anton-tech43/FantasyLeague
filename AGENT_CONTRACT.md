@@ -23,7 +23,7 @@
 | **Backend: .env.example** | DONE | Agent 1 | All env vars documented |
 | **Backend: Deploy to Supabase** | AVAILABLE | — | Link project, push schema, deploy functions, set secrets |
 | **Backend: End-to-end pipeline test** | AVAILABLE | — | Test full pipeline with real API keys |
-| **iOS: Xcode project setup (I1)** | IN PROGRESS | Agent 2 | Started 2026-03-27 |
+| **iOS: Xcode project setup (I1)** | DONE | Agent 2 | Completed 2026-03-27 |
 | **iOS: Models (I2)** | AVAILABLE | — | Team, ContentItem, AppState |
 | **iOS: Design system (I3)** | AVAILABLE | — | Theme.swift — colors, fonts, spacing |
 | **iOS: Mock data (I11)** | AVAILABLE | — | Golden examples from CONTENT_EXAMPLES.md |
@@ -61,6 +61,7 @@
 |------|-------|---------------|
 | 2026-02-09 | Agent 1 | **Phase 1 Backend — COMPLETE.** SQL migration with RLS + indexes + cron jobs, seed data, all 6 Edge Functions (data-fetcher, content-generator, content-reviewer, notification-sender, matchday-scheduler, health-check), shared utilities (types.ts, supabase-client.ts, claude-client.ts, anti-spam.ts), .env.example. ~3,300 lines across 12 files. |
 | 2026-03-25 | — | Merged all code from `claude/review-repo-setup-TCJ11` into `main`. All work now on `main` branch. |
+| 2026-03-27 | Agent 2 | **iOS I1 — Xcode project setup COMPLETE.** Created full directory tree at `GoalDigger/ios/GoalDigger/` with 20 Swift source files (App, Models, Views, Design, Services), Xcode project file (.xcodeproj/project.pbxproj), entitlements (Push Notifications + Background Modes), Assets.xcassets with AccentColor and AppIcon placeholders. All views have structural placeholders for future tasks. Models include Contract 3 dual-format talking_points decoder. iOS 17+ target, SwiftUI lifecycle, zero dependencies. |
 
 ---
 
