@@ -199,7 +199,7 @@ async function runReviewBot(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-6",
+      model: "claude-3-haiku-20240307",
       max_tokens: 1500,
       system: systemPrompt,
       messages: [{ role: "user", content: contentToReview }],

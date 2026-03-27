@@ -21,8 +21,8 @@
 | **Backend: matchday-scheduler Edge Function** | DONE | Agent 1 | Daily 07:00 UTC, fixture detection, delayed triggering |
 | **Backend: _shared/ utilities** | DONE | Agent 1 | types.ts, supabase-client.ts, claude-client.ts, anti-spam.ts |
 | **Backend: .env.example** | DONE | Agent 1 | All env vars documented |
-| **Backend: Deploy to Supabase** | AVAILABLE | — | Link project, push schema, deploy functions, set secrets |
-| **Backend: End-to-end pipeline test** | AVAILABLE | — | Test full pipeline with real API keys |
+| **Backend: Deploy to Supabase** | DONE | Agent 1 | Schema deployed via SQL Editor, seed data loaded, 6 Edge Functions deployed via Management API, secrets set |
+| **Backend: End-to-end pipeline test** | DONE | Agent 1 | data-fetcher pulls live data, content-generator produces content, content-reviewer runs 3-bot review. Using Haiku until Sonnet access unlocked. |
 | **iOS: Xcode project setup (I1)** | AVAILABLE | — | Not started |
 | **iOS: Models (I2)** | AVAILABLE | — | Team, ContentItem, AppState |
 | **iOS: Design system (I3)** | AVAILABLE | — | Theme.swift — colors, fonts, spacing |
@@ -50,8 +50,9 @@
 
 | Area | Blocked By | Date Logged |
 |------|-----------|-------------|
-| Content-generator + content-reviewer testing | Missing `ANTHROPIC_API_KEY` | 2026-03-25 |
+| Content-generator + content-reviewer testing | ~~Missing `ANTHROPIC_API_KEY`~~ RESOLVED | 2026-03-25 |
 | Notification-sender testing | Missing APNs credentials (Phase 5) | 2026-03-25 |
+| Sonnet model access | Anthropic account on Tier 1, only Haiku available. Sonnet unlocks after spending threshold. | 2026-03-27 |
 
 ---
 
@@ -61,6 +62,7 @@
 |------|-------|---------------|
 | 2026-02-09 | Agent 1 | **Phase 1 Backend — COMPLETE.** SQL migration with RLS + indexes + cron jobs, seed data, all 6 Edge Functions (data-fetcher, content-generator, content-reviewer, notification-sender, matchday-scheduler, health-check), shared utilities (types.ts, supabase-client.ts, claude-client.ts, anti-spam.ts), .env.example. ~3,300 lines across 12 files. |
 | 2026-03-25 | — | Merged all code from `claude/review-repo-setup-TCJ11` into `main`. All work now on `main` branch. |
+| 2026-03-27 | Agent 1 | **Phase 1.5 Backend Deployment — COMPLETE.** Deployed database schema (5 tables + indexes + RLS) via Supabase SQL Editor. Seeded 3 teams (Arsenal, Man Utd, West Ham). Deployed all 6 Edge Functions (data-fetcher, content-generator, content-reviewer, notification-sender, matchday-scheduler, health-check) via Supabase Management API. Set API_FOOTBALL_KEY and ANTHROPIC_API_KEY secrets. Tested data-fetcher (pulls live API-Football + RSS data), content-generator (generates girlfriend-friendly content), and health-check endpoint. Fixed hallucination issue: limited RSS input to 10 articles, truncated API data to 3000 chars, strengthened accuracy constraints in prompt. Temporarily using claude-3-haiku model until Sonnet access unlocks on Anthropic Tier 2+. |
 
 ---
 
