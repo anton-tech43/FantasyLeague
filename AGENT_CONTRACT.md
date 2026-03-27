@@ -35,7 +35,7 @@
 | **iOS: APIClient (I4)** | AVAILABLE | — | Supabase REST (depends on backend deploy for testing) |
 | **iOS: CacheService (I5)** | AVAILABLE | — | SwiftData |
 | **iOS: NotificationService (I9)** | AVAILABLE | — | AppDelegate + push handling |
-| **Pipeline: News generator prompt (P1)** | AVAILABLE | — | PROMPTS.md Section 1 |
+| **Pipeline: News generator prompt (P1)** | IN PROGRESS | Agent 3 | PROMPTS.md Section 1 |
 | **Pipeline: Matchday generator prompt (P2)** | AVAILABLE | — | PROMPTS.md Section 2 |
 | **Pipeline: Tone review bot prompt (P3)** | AVAILABLE | — | PROMPTS.md Section 3 |
 | **Pipeline: Accuracy review bot prompt (P4)** | AVAILABLE | — | PROMPTS.md Section 4 |
