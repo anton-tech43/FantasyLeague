@@ -49,7 +49,7 @@
 | **Backend: Deploy to Supabase** | DONE | Agent 1 | Schema deployed via SQL Editor, seed data loaded, 6 Edge Functions deployed via Management API, secrets set |
 | **Backend: End-to-end pipeline test** | DONE | Agent 1 | data-fetcher pulls live data, content-generator produces content, content-reviewer runs 3-bot review. Using Haiku until Sonnet access unlocked. |
 | **iOS: Xcode project setup (I1)** | DONE | Agent 2 | Xcode project, directory tree, 19 Swift files, Info.plist, entitlements, Assets.xcassets |
-| **iOS: Models (I2)** | AVAILABLE | — | Team, ContentItem, AppState |
+| **iOS: Models (I2)** | IN PROGRESS | Agent 2 | Started 2026-03-28 |
 | **iOS: Design system (I3)** | AVAILABLE | — | Theme.swift — colors, fonts, spacing |
 | **iOS: Mock data (I11)** | AVAILABLE | — | Golden examples from CONTENT_EXAMPLES.md |
 | **iOS: Onboarding flow (I6)** | AVAILABLE | — | Welcome, TeamSelection, NotificationPrompt |
