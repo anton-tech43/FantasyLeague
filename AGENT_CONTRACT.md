@@ -48,7 +48,7 @@
 | **Backend: .env.example** | DONE | Agent 1 | All env vars documented |
 | **Backend: Deploy to Supabase** | DONE | Agent 1 | Schema deployed via SQL Editor, seed data loaded, 6 Edge Functions deployed via Management API, secrets set |
 | **Backend: End-to-end pipeline test** | DONE | Agent 1 | data-fetcher pulls live data, content-generator produces content, content-reviewer runs 3-bot review. Using Haiku until Sonnet access unlocked. |
-| **iOS: Xcode project setup (I1)** | IN PROGRESS | Agent 2 | Started 2026-03-28 |
+| **iOS: Xcode project setup (I1)** | DONE | Agent 2 | Xcode project, directory tree, 19 Swift files, Info.plist, entitlements, Assets.xcassets |
 | **iOS: Models (I2)** | AVAILABLE | — | Team, ContentItem, AppState |
 | **iOS: Design system (I3)** | AVAILABLE | — | Theme.swift — colors, fonts, spacing |
 | **iOS: Mock data (I11)** | AVAILABLE | — | Golden examples from CONTENT_EXAMPLES.md |
@@ -88,6 +88,7 @@
 | 2026-02-09 | Agent 1 | **Phase 1 Backend — COMPLETE.** SQL migration with RLS + indexes + cron jobs, seed data, all 6 Edge Functions (data-fetcher, content-generator, content-reviewer, notification-sender, matchday-scheduler, health-check), shared utilities (types.ts, supabase-client.ts, claude-client.ts, anti-spam.ts), .env.example. ~3,300 lines across 12 files. |
 | 2026-03-25 | — | Merged all code from `claude/review-repo-setup-TCJ11` into `main`. All work now on `main` branch. |
 | 2026-03-27 | Agent 1 | **Phase 1.5 Backend Deployment — COMPLETE.** Deployed database schema (5 tables + indexes + RLS) via Supabase SQL Editor. Seeded 3 teams (Arsenal, Man Utd, West Ham). Deployed all 6 Edge Functions (data-fetcher, content-generator, content-reviewer, notification-sender, matchday-scheduler, health-check) via Supabase Management API. Set API_FOOTBALL_KEY and ANTHROPIC_API_KEY secrets. Tested data-fetcher (pulls live API-Football + RSS data), content-generator (generates girlfriend-friendly content), and health-check endpoint. Fixed hallucination issue: limited RSS input to 10 articles, truncated API data to 3000 chars, strengthened accuracy constraints in prompt. Temporarily using claude-3-haiku model until Sonnet access unlocks on Anthropic Tier 2+. |
+| 2026-03-28 | Agent 2 | **I1: Xcode project setup — COMPLETE.** Created full iOS directory tree at `GoalDigger/ios/GoalDigger/` matching BUILD_PLAN.md spec. 19 Swift skeleton files (App, Models, Design, Views, Services), Xcode project file (.xcodeproj/project.pbxproj), Info.plist with push notification + background modes, entitlements file, Assets.xcassets with AccentColor (#D4956A terracotta). iOS 17+ target, bundle ID `com.goaldigger.app`, portrait-only, zero dependencies. All files have working skeleton code with Theme references and TODO markers for future tasks. |
 
 ---
 
