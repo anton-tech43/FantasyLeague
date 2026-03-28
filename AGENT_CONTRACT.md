@@ -54,8 +54,8 @@
 | **iOS: Mock data (I11)** | DONE | Agent 2 | All 5 golden examples as MockData.swift, grouped by team |
 | **iOS: Onboarding flow (I6)** | DONE | Agent 2 | WelcomeView, TeamSelectionView, NotificationPromptView, OnboardingFlow coordinator |
 | **iOS: Feed view (I7)** | DONE | Agent 2 | FeedView with content cards, skeleton loading, empty/error/freshness states |
-| **iOS: Detail view (I8)** | AVAILABLE | — | Full content + talking points |
-| **iOS: Settings view (I10)** | AVAILABLE | — | Not started |
+| **iOS: Detail view (I8)** | DONE | Agent 2 | Full detail with talking points, post-match cheat sheet (Contract 8), body, share |
+| **iOS: Settings view (I10)** | DONE | Agent 2 | Team change, notification status, about, contact, version |
 | **iOS: Shared components (I12)** | AVAILABLE | — | ContentCard, BadgeView, TeamPickerCard, EmptyStateView |
 | **iOS: APIClient (I4)** | AVAILABLE | — | Supabase REST — backend is live, can test against real endpoints |
 | **iOS: CacheService (I5)** | AVAILABLE | — | SwiftData |
@@ -101,6 +101,8 @@
 | 2026-03-28 | Agent 3 | **P6: Structural prompt validation — COMPLETE.** Validated all 5 golden examples pass all 3 review bots structurally. Validated all 6 anti-patterns correctly fail at least 1 bot. Verified Contract 6 compliance (pass/confidence/notes required in all review tools). Verified Contract 3 matchday JSONB fields. Verified Contract 4 newsworthiness_score. Added missing variables to reference (`{{content_type}}`, `{{talking_points_formatted}}`). Live API testing blocked — no ANTHROPIC_API_KEY access. |
 | 2026-03-28 | Agent 3 | **P7: Document iterations — COMPLETE.** All prompt changes logged in PROMPTS.md Section 8 throughout P1-P6. 7 iteration log entries covering all 5 prompts + structural validation. Each entry includes: date, prompt, change description, reason, and result status. |
 | 2026-03-28 | Agent 2 | **I7: FeedView — COMPLETE.** Built main feed screen per BUILD_PLAN Step 3.5: NavigationStack with team name top bar + gear icon to Settings, ScrollView/LazyVStack with ContentCards, pull-to-refresh, skeleton loading (3 shimmer cards), empty state (bubble icon + team-specific message), error state, content freshness detection (caught up / quiet week cards). Updated ContentCard with full layout: badge (NEWS/MATCH DAY with correct colors), headline (max 3 lines), relative timestamp, "Read more" arrow. Added Date.relativeFormatted extension, ContentItem Hashable conformance for navigation. Currently loads mock data. |
+| 2026-03-28 | Agent 2 | **I8: ContentDetailView — COMPLETE.** Built full detail screen per BUILD_PLAN Step 3.6 + Contract 8: badge + timestamp, full headline, "Things to say" section with TalkingPointCard (accentSoft tint, 3pt left accent bar), Post-Match Cheat Sheet section for matchday items (green-tinted WIN card, red-tinted LOSE card, accent BOLD PREDICTION card per Contract 8 styling), "The backstory" body section with 1.5x line spacing, ShareLink button (outlined style). Section headers uppercase with letter-spacing. |
+| 2026-03-28 | Agent 2 | **I10: SettingsView — COMPLETE.** Built settings per BUILD_PLAN Step 3.7: team change (sheet with team cards + checkmark), notification status check (enabled/disabled with "Open Settings" link), About page, Contact Us (mailto link), version display. |
 
 ---
 
