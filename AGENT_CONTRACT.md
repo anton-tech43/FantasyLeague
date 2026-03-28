@@ -62,7 +62,7 @@
 | **iOS: NotificationService (I9)** | AVAILABLE | — | AppDelegate + push handling |
 | **Pipeline: News generator prompt (P1)** | DONE | Agent 3 | PROMPTS.md Section 1 — v1.1 finalized |
 | **Pipeline: Matchday generator prompt (P2)** | DONE | Agent 3 | PROMPTS.md Section 2 — v1.1 finalized |
-| **Pipeline: Tone review bot prompt (P3)** | AVAILABLE | — | PROMPTS.md Section 3 |
+| **Pipeline: Tone review bot prompt (P3)** | IN PROGRESS | Agent 3 | PROMPTS.md Section 3 |
 | **Pipeline: Accuracy review bot prompt (P4)** | AVAILABLE | — | PROMPTS.md Section 4 |
 | **Pipeline: Brevity review bot prompt (P5)** | AVAILABLE | — | PROMPTS.md Section 5 |
 | **Pipeline: Prompt testing (P6)** | AVAILABLE | — | Needs ANTHROPIC_API_KEY for live testing |
