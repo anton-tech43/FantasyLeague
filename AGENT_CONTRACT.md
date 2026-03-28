@@ -52,7 +52,7 @@
 | **iOS: Models (I2)** | DONE | Agent 2 | Team, ContentItem (Contract 3 dual-format decoder + MatchdayTalkingPoints), AppState |
 | **iOS: Design system (I3)** | DONE | Agent 2 | Theme.swift complete — 11 colors, 9 fonts, 8 spacing, CardStyle modifier, Color(hex:) |
 | **iOS: Mock data (I11)** | DONE | Agent 2 | All 5 golden examples as MockData.swift, grouped by team |
-| **iOS: Onboarding flow (I6)** | AVAILABLE | — | Welcome, TeamSelection, NotificationPrompt |
+| **iOS: Onboarding flow (I6)** | IN PROGRESS | Agent 2 | Started 2026-03-28 |
 | **iOS: Feed view (I7)** | AVAILABLE | — | Main content feed |
 | **iOS: Detail view (I8)** | AVAILABLE | — | Full content + talking points |
 | **iOS: Settings view (I10)** | AVAILABLE | — | Not started |
