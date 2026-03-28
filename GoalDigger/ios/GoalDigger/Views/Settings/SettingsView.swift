@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 struct SettingsView: View {
     @Environment(AppState.self) private var appState
@@ -120,6 +121,7 @@ struct SettingsView: View {
                     ForEach(Team.allCases) { team in
                         Button {
                             appState.selectedTeam = team
+                            NotificationService.shared.handleTeamChange(newTeam: team)
                             showingTeamChange = false
                         } label: {
                             HStack {

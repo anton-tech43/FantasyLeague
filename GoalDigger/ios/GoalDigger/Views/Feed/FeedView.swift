@@ -5,10 +5,10 @@ struct FeedView: View {
     @State private var items: [ContentItem] = []
     @State private var isLoading = true
     @State private var hasError = false
-    @State private var selectedItem: ContentItem?
+    @State private var navigationPath = NavigationPath()
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             ZStack {
                 Theme.appBackground.ignoresSafeArea()
 
@@ -29,21 +29,30 @@ struct FeedView: View {
                         .foregroundStyle(Theme.textPrimary)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    NavigationLink {
-                        SettingsView()
-                    } label: {
+                    NavigationLink(value: "settings") {
                         Image(systemName: "gearshape")
                             .foregroundStyle(Theme.textSecondary)
                     }
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .navigationDestination(item: $selectedItem) { item in
+            .navigationDestination(for: ContentItem.self) { item in
                 ContentDetailView(item: item)
+            }
+            .navigationDestination(for: String.self) { value in
+                if value == "settings" {
+                    SettingsView()
+                }
             }
         }
         .task {
-            await loadMockData()
+            await loadContent()
+        }
+        .onChange(of: appState.deepLinkContentId) { _, newId in
+            handleDeepLink(newId)
+        }
+        .onChange(of: appState.selectedTeam) { _, _ in
+            Task { await loadContent() }
         }
     }
 
@@ -52,26 +61,23 @@ struct FeedView: View {
     private var feedContent: some View {
         ScrollView {
             LazyVStack(spacing: Theme.cardSpacing) {
-                // "Caught up" card if needed
                 if let freshness = contentFreshness {
                     freshnessCard(freshness)
                 }
 
                 ForEach(items) { item in
-                    ContentCard(item: item)
-                        .onTapGesture {
-                            #if os(iOS)
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            #endif
-                            selectedItem = item
-                        }
+                    NavigationLink(value: item) {
+                        ContentCard(item: item)
+                    }
+                    .buttonStyle(.plain)
+                    .sensoryFeedback(.selection, trigger: item.id)
                 }
             }
             .padding(.horizontal, Theme.screenPadding)
             .padding(.top, Theme.elementSpacing)
         }
         .refreshable {
-            await loadMockData()
+            await loadContent()
         }
     }
 
@@ -182,17 +188,62 @@ struct FeedView: View {
 
     // MARK: - Data Loading
 
-    private func loadMockData() async {
-        isLoading = true
-        // Simulate network delay
-        try? await Task.sleep(for: .milliseconds(500))
-
-        if let team = appState.selectedTeam {
-            items = MockData.items(for: team)
-        } else {
+    private func loadContent() async {
+        guard let team = appState.selectedTeam else {
             items = MockData.allItems
+            isLoading = false
+            return
         }
+
+        isLoading = true
+        hasError = false
+
+        // Try API first
+        do {
+            let fetched = try await APIClient.shared.fetchFeed(teamId: team.rawValue)
+            if !fetched.isEmpty {
+                items = fetched
+                // Cache for offline use
+                await CacheService.shared.save(fetched)
+                isLoading = false
+                return
+            }
+        } catch {
+            print("[Feed] API fetch failed: \(error)")
+        }
+
+        // Fall back to cache
+        let cached = await CacheService.shared.load(teamId: team.rawValue)
+        if !cached.isEmpty {
+            items = cached
+            isLoading = false
+            return
+        }
+
+        // Fall back to mock data for development
+        items = MockData.items(for: team)
         isLoading = false
+    }
+
+    // MARK: - Deep Link
+
+    private func handleDeepLink(_ contentId: UUID?) {
+        guard let contentId else { return }
+
+        // Check if item is already in feed
+        if let item = items.first(where: { $0.id == contentId }) {
+            navigationPath.append(item)
+            appState.deepLinkContentId = nil
+            return
+        }
+
+        // Fetch from API
+        Task {
+            if let item = try? await APIClient.shared.fetchItem(id: contentId) {
+                navigationPath.append(item)
+            }
+            appState.deepLinkContentId = nil
+        }
     }
 }
 
@@ -203,12 +254,10 @@ private struct SkeletonCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.elementSpacing) {
-            // Badge placeholder
             RoundedRectangle(cornerRadius: 4)
                 .fill(Theme.shimmer)
                 .frame(width: 60, height: 18)
 
-            // Headline placeholder
             VStack(alignment: .leading, spacing: 6) {
                 RoundedRectangle(cornerRadius: 4)
                     .fill(Theme.shimmer)

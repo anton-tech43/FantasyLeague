@@ -21,10 +21,7 @@ struct RootView: View {
 
     var body: some View {
         if appState.hasCompletedOnboarding {
-            // TODO: Replace with MainTabView in I7/I12
-            NavigationStack {
-                FeedView()
-            }
+            FeedView()
         } else {
             OnboardingFlow()
         }
