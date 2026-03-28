@@ -105,6 +105,28 @@
 - Agent 2: I1 — Xcode project setup
 - Agent 3: P1 — News generator prompt
 
+### 2026-03-28 — Daily Review (Reviewer & Planner)
+
+**Commits reviewed:** 1 commit from 2026-03-27
+- `6d71e21` — Deploy backend to Supabase and fix content-generator hallucination
+
+**Findings:**
+- **Phase 1.5 Backend Deployment is COMPLETE.** Agent 1 deployed schema, seed data, all 6 Edge Functions, set secrets, and tested the pipeline end-to-end.
+- **Content-generator anti-hallucination fixes are sound:** RSS input capped at 10 articles (was 65+), descriptions truncated to 200 chars, raw API data summary added (max 3000 chars), accuracy prompt strengthened to require every claim to trace to source data. These are sensible guardrails.
+- **Model downgraded to `claude-3-haiku-20240307`** in both `content-generator/index.ts` and `content-reviewer/index.ts`. This is documented as temporary until Anthropic Tier 2 unlocks Sonnet access. No spec violation — BUILD_PLAN targets Sonnet but Haiku is an acceptable interim choice.
+- **Note for future:** When Sonnet access unlocks, both files need model string updated back to `claude-sonnet-4-6`. Also, Agent 3's prompt work (PROMPTS.md) targets `claude-sonnet-4-6` — prompts may need re-tuning after model swap since Haiku and Sonnet have different capabilities.
+- **ANTHROPIC_API_KEY blocker is now RESOLVED** (marked in previous review, confirmed by successful pipeline test).
+- No conflicts between agents — only Agent 1 has been active.
+- No bugs found. Code changes are clean and well-scoped.
+
+**Agent 1 checklist updated:** All Phase 1.5 tasks marked complete. Next task: Phase 2 iOS (Xcode project setup).
+**Agent 2 and Agent 3 checklists:** Unchanged — no work done yet. Ready to begin.
+
+**Status:** Phase 1.5 backend deployment complete and tested. Backend is live on Supabase. Priority tasks:
+- Agent 1: Phase 2 iOS — Create Xcode project structure
+- Agent 2: I1 — Xcode project setup
+- Agent 3: P1 — News generator prompt
+
 ---
 
 ## Rules

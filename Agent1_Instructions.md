@@ -25,16 +25,17 @@ If a step requires a missing API key, credentials, or user action:
 
 Work through these in order. Skip any that are blocked. Only complete ONE task per run.
 
-### Phase 1.5 — Backend Deployment
-- [ ] Deploy database schema to Supabase (`supabase db push`)
-- [ ] Run seed data (`seed_teams.sql`)
-- [ ] Deploy all Edge Functions (`supabase functions deploy`)
-- [ ] Set environment secrets in Supabase dashboard
-- [ ] Test data-fetcher with real API-Football key
-- [ ] Test content-generator end-to-end (needs ANTHROPIC_API_KEY — skip if missing)
-- [ ] Test content-reviewer end-to-end (needs ANTHROPIC_API_KEY — skip if missing)
-- [ ] Test full pipeline end-to-end
-- [ ] Test health-check endpoint
+### Phase 1.5 — Backend Deployment ✓ COMPLETE (2026-03-27)
+- [x] Deploy database schema to Supabase (via SQL Editor)
+- [x] Run seed data (`seed_teams.sql` — Arsenal, Man Utd, West Ham)
+- [x] Deploy all Edge Functions (via Supabase Management API)
+- [x] Set environment secrets (API_FOOTBALL_KEY, ANTHROPIC_API_KEY)
+- [x] Test data-fetcher with real API-Football key
+- [x] Test content-generator end-to-end (fixed hallucination: RSS limit, description truncation, stronger accuracy prompt)
+- [x] Test content-reviewer end-to-end
+- [x] Test full pipeline end-to-end (data-fetcher → content-generator → content-reviewer)
+- [x] Test health-check endpoint
+- **Note:** Temporarily using `claude-3-haiku-20240307` until Sonnet tier unlocks. Update model in `content-generator/index.ts` and `content-reviewer/index.ts` when available.
 
 ### Phase 2 — iOS App Foundation
 - [ ] Create Xcode project structure at `GoalDigger/ios/GoalDigger/`
@@ -85,7 +86,7 @@ Work through these in order. Skip any that are blocked. Only complete ONE task p
 
 **Goal Digger** is an iOS app for girlfriends who want to connect with their football-loving partner without being a football fan. It sends casual push notifications about their partner's Premier League team.
 
-- **Backend:** Supabase (PostgreSQL + Edge Functions in TypeScript/Deno) — code complete, not deployed
+- **Backend:** Supabase (PostgreSQL + Edge Functions in TypeScript/Deno) — deployed and tested (using Haiku temporarily)
 - **iOS:** Swift 5.9+ / SwiftUI / iOS 17+ — not started
 - **AI:** Anthropic Claude API (Sonnet) for content generation + 3-bot review pipeline
 - **Teams in v1:** Arsenal, Manchester United, West Ham
