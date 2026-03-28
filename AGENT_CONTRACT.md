@@ -52,7 +52,7 @@
 | **iOS: Models (I2)** | DONE | Agent 2 | Team, ContentItem (Contract 3 dual-format decoder + MatchdayTalkingPoints), AppState |
 | **iOS: Design system (I3)** | DONE | Agent 2 | Theme.swift complete — 11 colors, 9 fonts, 8 spacing, CardStyle modifier, Color(hex:) |
 | **iOS: Mock data (I11)** | DONE | Agent 2 | All 5 golden examples as MockData.swift, grouped by team |
-| **iOS: Onboarding flow (I6)** | IN PROGRESS | Agent 2 | Started 2026-03-28 |
+| **iOS: Onboarding flow (I6)** | DONE | Agent 2 | WelcomeView, TeamSelectionView, NotificationPromptView, OnboardingFlow coordinator |
 | **iOS: Feed view (I7)** | AVAILABLE | — | Main content feed |
 | **iOS: Detail view (I8)** | AVAILABLE | — | Full content + talking points |
 | **iOS: Settings view (I10)** | AVAILABLE | — | Not started |
@@ -96,6 +96,7 @@
 | 2026-03-28 | Agent 2 | **I11: Mock data — COMPLETE.** Created `MockData.swift` with all 5 golden examples from CONTENT_EXAMPLES.md: Arsenal transfer (news/exciting), Arsenal vs Tottenham derby (matchday with full MatchdayTalkingPoints + PostMatchCheatSheet + metadata), Man United transfer rumour (news/drama), West Ham Bowen injury (news/bad_news), Man United press conference (news/funny). Includes team grouping helpers. 2 Arsenal, 2 Man Utd, 1 West Ham. |
 | 2026-03-28 | Agent 3 | **P3: Tone review bot prompt v1.1 — COMPLETE.** Updated PROMPTS.md Section 3: added partner-centric framing as core voice trait, expanded jargon blacklist to 25+ terms across 3 categories (tactical, statistical, general), added content type awareness for news vs matchday, added matchday-specific checks (Post-Match Cheat Sheet tone, rivalry explainers, practical advice), added headline-specific fail criteria, added "litmus test" concept, converted response format to Contract 6 tool definition (`review_tone`), updated input template with matchday fields and content type, numbered fail categories for clarity. |
 | 2026-03-28 | Agent 3 | **P4: Accuracy review bot prompt v1.1 — COMPLETE.** Updated PROMPTS.md Section 4: expanded fact-check checklist to 8 categories (player names, match data, scores, league data, transfers/injuries, stats/records, quotes, analogies/comparisons), integrated severity rules into system prompt (critical = auto-fail, minor = fail if 3+, unverifiable = flag only), added 7 common hallucination patterns from Haiku testing, added content type awareness, converted to Contract 6 tool definition (`review_accuracy`), updated input template with matchday fields, documented what NOT to fact-check (bold_prediction, subjective assessments). |
+| 2026-03-28 | Agent 2 | **I6: Onboarding flow — COMPLETE.** Built 3 onboarding views per BUILD_PLAN Steps 3.2–3.4: WelcomeView (illustration placeholder, tagline, Get Started CTA), TeamSelectionView (3 team cards with selection border/scale animation, haptic feedback, Continue button), NotificationPromptView (bell icon, Turn on Notifications + Maybe Later CTAs, calls NotificationService). Created OnboardingFlow coordinator with step-based navigation and slide transitions. Updated GoalDiggerApp.swift with RootView that switches between OnboardingFlow and FeedView based on hasCompletedOnboarding. |
 
 ---
 
