@@ -61,7 +61,7 @@
 | **iOS: CacheService (I5)** | AVAILABLE | — | SwiftData |
 | **iOS: NotificationService (I9)** | AVAILABLE | — | AppDelegate + push handling |
 | **Pipeline: News generator prompt (P1)** | DONE | Agent 3 | PROMPTS.md Section 1 — v1.1 finalized |
-| **Pipeline: Matchday generator prompt (P2)** | IN PROGRESS | Agent 3 | PROMPTS.md Section 2 |
+| **Pipeline: Matchday generator prompt (P2)** | DONE | Agent 3 | PROMPTS.md Section 2 — v1.1 finalized |
 | **Pipeline: Tone review bot prompt (P3)** | AVAILABLE | — | PROMPTS.md Section 3 |
 | **Pipeline: Accuracy review bot prompt (P4)** | AVAILABLE | — | PROMPTS.md Section 4 |
 | **Pipeline: Brevity review bot prompt (P5)** | AVAILABLE | — | PROMPTS.md Section 5 |
@@ -91,6 +91,7 @@
 | 2026-03-28 | Agent 2 | **I1: Xcode project setup — COMPLETE.** Created full iOS directory tree at `GoalDigger/ios/GoalDigger/` matching BUILD_PLAN.md spec. 19 Swift skeleton files (App, Models, Design, Views, Services), Xcode project file (.xcodeproj/project.pbxproj), Info.plist with push notification + background modes, entitlements file, Assets.xcassets with AccentColor (#D4956A terracotta). iOS 17+ target, bundle ID `com.goaldigger.app`, portrait-only, zero dependencies. All files have working skeleton code with Theme references and TODO markers for future tasks. |
 | 2026-03-28 | Agent 3 | **P1: News generator prompt v1.1 — COMPLETE.** Updated PROMPTS.md Section 1: strengthened accuracy constraints (every claim must trace to source data, aligning with deployed code), added explicit headline rules (never start with team name, lead with emotional hook), added talking point ordering (basic reaction → banter → context → power move), added partner mood prediction requirement for body, added `{{raw_api_summary}}` variable to user template with input data notes, updated variables reference. Logged iteration in Section 8. |
 | 2026-03-28 | Agent 2 | **I2: Models — COMPLETE.** Rewrote `ContentItem.swift` with full Contract 3 dual-format decoder: news items decode `talking_points` as `[String]`, matchday items decode as `MatchdayTalkingPoints` object with `regular`, `PostMatchCheatSheet` (if_they_win, if_they_lose, bold_prediction), and `MatchdayMetadata` (pre_match_mood, rivalry_level). Added computed properties (`regularTalkingPoints`, `postMatchCheatSheet`, `matchdayMetadata`), custom encoder, and memberwise init for mock data. `Team.swift` and `AppState.swift` verified — match BUILD_PLAN spec exactly. |
+| 2026-03-28 | Agent 3 | **P2: Matchday generator prompt v1.1 — COMPLETE.** Updated PROMPTS.md Section 2: added user persona, accuracy constraints, headline rules, talking point ordering (rivalry → player → stat → emotional prep), body structure guidance, Post-Match Cheat Sheet instructions with "what NOT to say" warnings, `bold_prediction` added to required fields, documented Contract 3 JSONB mapping, added Home/Away and accuracy reminder to user template, added `{{home_or_away}}` and `{{match_date}}` to variables reference. Logged iteration in Section 8. |
 
 ---
 
