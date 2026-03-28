@@ -17,8 +17,8 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
     ) {
         let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
-        // TODO: Send token to backend via APIClient (I4)
         print("[APNs] Device token: \(token)")
+        NotificationService.shared.handleTokenRegistration(token)
     }
 
     func application(

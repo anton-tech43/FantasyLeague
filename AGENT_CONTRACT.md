@@ -57,9 +57,9 @@
 | **iOS: Detail view (I8)** | DONE | Agent 2 | Full detail with talking points, post-match cheat sheet (Contract 8), body, share |
 | **iOS: Settings view (I10)** | DONE | Agent 2 | Team change, notification status, about, contact, version |
 | **iOS: Shared components (I12)** | DONE | Agent 2 | BadgeView (8pt rounded), EmptyStateView (icon+title+message), TeamPickerCard (full spec), ContentCard (in I7) |
-| **iOS: APIClient (I4)** | AVAILABLE | — | Supabase REST — backend is live, can test against real endpoints |
-| **iOS: CacheService (I5)** | AVAILABLE | — | SwiftData |
-| **iOS: NotificationService (I9)** | AVAILABLE | — | AppDelegate + push handling |
+| **iOS: APIClient (I4)** | DONE | Agent 2 | Supabase REST: fetchFeed, fetchItem, registerToken, updateTeam per Contract 5 |
+| **iOS: CacheService (I5)** | DONE | Agent 2 | SwiftData with CachedContentItem, save/load/clear, Contract 3 format preservation |
+| **iOS: NotificationService (I9)** | DONE | Agent 2 | Permission request, token registration, team change update, deep link handling |
 | **Pipeline: News generator prompt (P1)** | DONE | Agent 3 | PROMPTS.md Section 1 — v1.1 finalized |
 | **Pipeline: Matchday generator prompt (P2)** | DONE | Agent 3 | PROMPTS.md Section 2 — v1.1 finalized |
 | **Pipeline: Tone review bot prompt (P3)** | DONE | Agent 3 | PROMPTS.md Section 3 — v1.1 finalized |
@@ -103,6 +103,9 @@
 | 2026-03-28 | Agent 2 | **I7: FeedView — COMPLETE.** Built main feed screen per BUILD_PLAN Step 3.5: NavigationStack with team name top bar + gear icon to Settings, ScrollView/LazyVStack with ContentCards, pull-to-refresh, skeleton loading (3 shimmer cards), empty state (bubble icon + team-specific message), error state, content freshness detection (caught up / quiet week cards). Updated ContentCard with full layout: badge (NEWS/MATCH DAY with correct colors), headline (max 3 lines), relative timestamp, "Read more" arrow. Added Date.relativeFormatted extension, ContentItem Hashable conformance for navigation. Currently loads mock data. |
 | 2026-03-28 | Agent 2 | **I8: ContentDetailView — COMPLETE.** Built full detail screen per BUILD_PLAN Step 3.6 + Contract 8: badge + timestamp, full headline, "Things to say" section with TalkingPointCard (accentSoft tint, 3pt left accent bar), Post-Match Cheat Sheet section for matchday items (green-tinted WIN card, red-tinted LOSE card, accent BOLD PREDICTION card per Contract 8 styling), "The backstory" body section with 1.5x line spacing, ShareLink button (outlined style). Section headers uppercase with letter-spacing. |
 | 2026-03-28 | Agent 2 | **I10: SettingsView — COMPLETE.** Built settings per BUILD_PLAN Step 3.7: team change (sheet with team cards + checkmark), notification status check (enabled/disabled with "Open Settings" link), About page, Contact Us (mailto link), version display. |
+| 2026-03-28 | Agent 2 | **I4: APIClient — COMPLETE.** Full Supabase REST client per Contract 5: `fetchFeed` (paginated with team filter, status=published, ordered by published_at desc), `fetchItem` (single item by UUID for deep links), `registerToken` (POST with Prefer: resolution=merge-duplicates upsert), `updateTeam` (PATCH by apns_token). Custom ISO 8601 date decoder with fractional seconds support. `APIError` enum with localized descriptions. Connected to live Supabase at cvnvcywwpinkzakqmotg.supabase.co. |
+| 2026-03-28 | Agent 2 | **I5: CacheService — COMPLETE.** SwiftData cache with `CachedContentItem` @Model: stores all ContentItem fields + talkingPointsJSON (preserves Contract 3 matchday format on round-trip). `save(_:)`, `load(teamId:)` (sorted by publishedAt desc), `clear(teamId:)`. Automatic SwiftData container setup. |
+| 2026-03-28 | Agent 2 | **I9: NotificationService — COMPLETE.** `requestPermission()` (async, registers for remote notifications on grant), `handleTokenRegistration(_:)` (stores token in UserDefaults, sends to backend via APIClient), `handleTeamChange(newTeam:)` (updates backend via PATCH), `checkAuthorizationStatus()`. AppDelegate wired: token registration calls NotificationService, foreground notifications shown as banner, deep link sets AppState.deepLinkContentId. |
 
 ---
 
