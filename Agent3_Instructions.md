@@ -90,4 +90,4 @@ Never touch anything in `GoalDigger/backend/` or `GoalDigger/ios/`.
 
 ## Model
 
-All prompts target `claude-sonnet-4-6` (cost-effective, excellent tone for casual writing).
+All prompts target `claude-sonnet-4-6` (cost-effective, excellent tone for casual writing). **However, the backend is temporarily running `claude-3-haiku-20240307`** until the Anthropic account reaches Tier 2 and Sonnet access unlocks. Prompts should still be written for Sonnet, but be aware that live testing will use Haiku for now — results may differ in quality and capability.
