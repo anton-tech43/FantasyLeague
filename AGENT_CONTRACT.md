@@ -63,7 +63,7 @@
 | **Pipeline: News generator prompt (P1)** | DONE | Agent 3 | PROMPTS.md Section 1 — v1.1 finalized |
 | **Pipeline: Matchday generator prompt (P2)** | DONE | Agent 3 | PROMPTS.md Section 2 — v1.1 finalized |
 | **Pipeline: Tone review bot prompt (P3)** | DONE | Agent 3 | PROMPTS.md Section 3 — v1.1 finalized |
-| **Pipeline: Accuracy review bot prompt (P4)** | IN PROGRESS | Agent 3 | PROMPTS.md Section 4 |
+| **Pipeline: Accuracy review bot prompt (P4)** | DONE | Agent 3 | PROMPTS.md Section 4 — v1.1 finalized |
 | **Pipeline: Brevity review bot prompt (P5)** | AVAILABLE | — | PROMPTS.md Section 5 |
 | **Pipeline: Prompt testing (P6)** | AVAILABLE | — | Needs ANTHROPIC_API_KEY for live testing |
 | **Pipeline: Document iterations (P7)** | AVAILABLE | — | PROMPTS.md Section 8 |
@@ -95,6 +95,7 @@
 | 2026-03-28 | Agent 2 | **I3: Design system — COMPLETE.** Theme.swift verified — all 11 colors, 9 typography tokens (SF Rounded), 8 spacing constants, CardStyle ViewModifier, Color(hex:) extension. Already fully built during I1. |
 | 2026-03-28 | Agent 2 | **I11: Mock data — COMPLETE.** Created `MockData.swift` with all 5 golden examples from CONTENT_EXAMPLES.md: Arsenal transfer (news/exciting), Arsenal vs Tottenham derby (matchday with full MatchdayTalkingPoints + PostMatchCheatSheet + metadata), Man United transfer rumour (news/drama), West Ham Bowen injury (news/bad_news), Man United press conference (news/funny). Includes team grouping helpers. 2 Arsenal, 2 Man Utd, 1 West Ham. |
 | 2026-03-28 | Agent 3 | **P3: Tone review bot prompt v1.1 — COMPLETE.** Updated PROMPTS.md Section 3: added partner-centric framing as core voice trait, expanded jargon blacklist to 25+ terms across 3 categories (tactical, statistical, general), added content type awareness for news vs matchday, added matchday-specific checks (Post-Match Cheat Sheet tone, rivalry explainers, practical advice), added headline-specific fail criteria, added "litmus test" concept, converted response format to Contract 6 tool definition (`review_tone`), updated input template with matchday fields and content type, numbered fail categories for clarity. |
+| 2026-03-28 | Agent 3 | **P4: Accuracy review bot prompt v1.1 — COMPLETE.** Updated PROMPTS.md Section 4: expanded fact-check checklist to 8 categories (player names, match data, scores, league data, transfers/injuries, stats/records, quotes, analogies/comparisons), integrated severity rules into system prompt (critical = auto-fail, minor = fail if 3+, unverifiable = flag only), added 7 common hallucination patterns from Haiku testing, added content type awareness, converted to Contract 6 tool definition (`review_accuracy`), updated input template with matchday fields, documented what NOT to fact-check (bold_prediction, subjective assessments). |
 
 ---
 
