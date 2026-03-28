@@ -12,6 +12,12 @@ Goal Digger is a $10 iOS app for girlfriends (or anyone) who want to connect wit
 
 The user picks one of 3 teams (Arsenal, Man United, West Ham). A backend pipeline fetches football news, runs it through Claude to generate girlfriend-friendly content, reviews it with 3 AI bots, then pushes it to users. The iOS app displays a feed of these content items, each with a headline, body, and "things to say" talking points.
 
+## Backend Status (as of 2026-03-28)
+
+**The backend is LIVE on Supabase.** All 6 Edge Functions are deployed and tested end-to-end. You can build and test APIClient (I4) against real endpoints — it is NOT blocked.
+
+**Model note:** The backend is temporarily using `claude-3-haiku-20240307` instead of `claude-sonnet-4-6` for content generation (Anthropic Tier 2 not yet unlocked). This means content returned from the API may be simpler or lower quality than the golden examples in CONTENT_EXAMPLES.md. Don't treat content shape differences as bugs — the structure/schema is correct, only the prose quality will improve when Sonnet is enabled.
+
 ## Your Scope
 
 **You ONLY touch files inside `GoalDigger/ios/GoalDigger/`.** Never create or modify anything in `GoalDigger/backend/` or root-level docs.
@@ -71,13 +77,13 @@ Work through these in order. Skip any that are blocked. Only complete ONE task p
 - [ ] I12: Shared components — ContentCard, BadgeView, TeamPickerCard, EmptyStateView, GoalDiggerApp entry point
 
 ### Phase 2 — iOS Services
-- [ ] I4: APIClient (Supabase REST per Contract 5 — skip if backend not deployed, use mock data)
+- [ ] I4: APIClient (Supabase REST per Contract 5 — backend is live, test against real endpoints)
 - [ ] I5: CacheService (SwiftData)
 - [ ] I9: Push notification handling (AppDelegate + NotificationService)
 
 ### Phase 4 — Polish & Integration
 - [ ] I13: Bug fixes, code review, spec compliance
-- [ ] Connect to live Supabase backend (depends on backend deployment)
+- [ ] Connect to live Supabase backend (backend is deployed — ready to integrate)
 - [ ] Test push notifications end-to-end (needs APNs creds — skip if missing)
 - [ ] Polish animations and transitions
 - [ ] Test on multiple iPhone sizes

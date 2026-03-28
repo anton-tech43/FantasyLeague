@@ -37,36 +37,14 @@ Work through these in order. Skip any that are blocked. Only complete ONE task p
 - [x] Test health-check endpoint
 - **Note:** Temporarily using `claude-3-haiku-20240307` until Sonnet tier unlocks. Update model in `content-generator/index.ts` and `content-reviewer/index.ts` when available.
 
-### Phase 2 — iOS App Foundation
-- [ ] Create Xcode project structure at `GoalDigger/ios/GoalDigger/`
-- [ ] Set up Swift Package Manager dependencies
-- [ ] Create data models: Team, ContentItem, AppState (see BUILD_PLAN.md Phase 2)
-- [ ] Create design system: Theme.swift with colors, fonts, spacing (NOT a sports app — think Headspace, Clue, Locket)
-- [ ] Create reusable UI components (cards, buttons, badges)
+### iOS — Owned by Agent 2
+All iOS development (I1–I13) is owned by Agent 2. The tasks below are listed for reference only so you understand the full project scope. Do NOT start iOS tasks unless the reviewer explicitly assigns them to you.
 
-### Phase 2 — iOS Views
-- [ ] Build onboarding flow (team selection for 3 teams)
-- [ ] Build main feed view (ContentFeedView)
-- [ ] Build content detail view (ContentDetailView)
-- [ ] Build settings view
-- [ ] Build empty states and loading states
-
-### Phase 2 — iOS Services
-- [ ] Create APIClient for Supabase REST API (see Contract 5 in AGENT_CONTRACTS.md)
-- [ ] Create CacheService with SwiftData
-- [ ] Create NotificationService (APNs registration + handling)
-- [ ] Create MockData.swift for preview/testing
-
-### Phase 3 — Integration
-- [ ] Connect iOS app to live Supabase backend
-- [ ] Test push notifications end-to-end (needs APNs creds — skip if missing)
-- [ ] Polish animations and transitions
-- [ ] Test on multiple iPhone sizes
-
-### Phase 4 — App Store
-- [ ] Prepare App Store screenshots and metadata (see APP_STORE_STRATEGY.md)
-- [ ] Create app icon
-- [ ] Write App Store description
+- Xcode project setup, models, design system, mock data
+- Views: onboarding, feed, detail, settings, shared components
+- Services: APIClient, CacheService, NotificationService
+- Integration: connect to live backend, push notifications, polish
+- App Store: screenshots, icon, description
 
 ## Key Reference Files
 
