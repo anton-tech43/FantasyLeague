@@ -1,6 +1,5 @@
 import SwiftUI
 
-// TODO: Implement in I12
 struct BadgeView: View {
     let text: String
     let backgroundColor: Color
@@ -10,9 +9,10 @@ struct BadgeView: View {
         Text(text)
             .font(Theme.feedBadge)
             .foregroundStyle(textColor)
+            .textCase(.uppercase)
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
             .background(backgroundColor)
-            .clipShape(Capsule())
+            .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }

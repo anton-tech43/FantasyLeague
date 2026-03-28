@@ -56,7 +56,7 @@
 | **iOS: Feed view (I7)** | DONE | Agent 2 | FeedView with content cards, skeleton loading, empty/error/freshness states |
 | **iOS: Detail view (I8)** | DONE | Agent 2 | Full detail with talking points, post-match cheat sheet (Contract 8), body, share |
 | **iOS: Settings view (I10)** | DONE | Agent 2 | Team change, notification status, about, contact, version |
-| **iOS: Shared components (I12)** | AVAILABLE | — | ContentCard, BadgeView, TeamPickerCard, EmptyStateView |
+| **iOS: Shared components (I12)** | DONE | Agent 2 | BadgeView (8pt rounded), EmptyStateView (icon+title+message), TeamPickerCard (full spec), ContentCard (in I7) |
 | **iOS: APIClient (I4)** | AVAILABLE | — | Supabase REST — backend is live, can test against real endpoints |
 | **iOS: CacheService (I5)** | AVAILABLE | — | SwiftData |
 | **iOS: NotificationService (I9)** | AVAILABLE | — | AppDelegate + push handling |
