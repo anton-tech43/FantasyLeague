@@ -60,7 +60,7 @@
 | **iOS: APIClient (I4)** | AVAILABLE | — | Supabase REST — backend is live, can test against real endpoints |
 | **iOS: CacheService (I5)** | AVAILABLE | — | SwiftData |
 | **iOS: NotificationService (I9)** | AVAILABLE | — | AppDelegate + push handling |
-| **Pipeline: News generator prompt (P1)** | IN PROGRESS | Agent 3 | PROMPTS.md Section 1 |
+| **Pipeline: News generator prompt (P1)** | DONE | Agent 3 | PROMPTS.md Section 1 — v1.1 finalized |
 | **Pipeline: Matchday generator prompt (P2)** | AVAILABLE | — | PROMPTS.md Section 2 |
 | **Pipeline: Tone review bot prompt (P3)** | AVAILABLE | — | PROMPTS.md Section 3 |
 | **Pipeline: Accuracy review bot prompt (P4)** | AVAILABLE | — | PROMPTS.md Section 4 |
@@ -89,6 +89,7 @@
 | 2026-03-25 | — | Merged all code from `claude/review-repo-setup-TCJ11` into `main`. All work now on `main` branch. |
 | 2026-03-27 | Agent 1 | **Phase 1.5 Backend Deployment — COMPLETE.** Deployed database schema (5 tables + indexes + RLS) via Supabase SQL Editor. Seeded 3 teams (Arsenal, Man Utd, West Ham). Deployed all 6 Edge Functions (data-fetcher, content-generator, content-reviewer, notification-sender, matchday-scheduler, health-check) via Supabase Management API. Set API_FOOTBALL_KEY and ANTHROPIC_API_KEY secrets. Tested data-fetcher (pulls live API-Football + RSS data), content-generator (generates girlfriend-friendly content), and health-check endpoint. Fixed hallucination issue: limited RSS input to 10 articles, truncated API data to 3000 chars, strengthened accuracy constraints in prompt. Temporarily using claude-3-haiku model until Sonnet access unlocks on Anthropic Tier 2+. |
 | 2026-03-28 | Agent 2 | **I1: Xcode project setup — COMPLETE.** Created full iOS directory tree at `GoalDigger/ios/GoalDigger/` matching BUILD_PLAN.md spec. 19 Swift skeleton files (App, Models, Design, Views, Services), Xcode project file (.xcodeproj/project.pbxproj), Info.plist with push notification + background modes, entitlements file, Assets.xcassets with AccentColor (#D4956A terracotta). iOS 17+ target, bundle ID `com.goaldigger.app`, portrait-only, zero dependencies. All files have working skeleton code with Theme references and TODO markers for future tasks. |
+| 2026-03-28 | Agent 3 | **P1: News generator prompt v1.1 — COMPLETE.** Updated PROMPTS.md Section 1: strengthened accuracy constraints (every claim must trace to source data, aligning with deployed code), added explicit headline rules (never start with team name, lead with emotional hook), added talking point ordering (basic reaction → banter → context → power move), added partner mood prediction requirement for body, added `{{raw_api_summary}}` variable to user template with input data notes, updated variables reference. Logged iteration in Section 8. |
 
 ---
 
