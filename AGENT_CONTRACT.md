@@ -57,6 +57,7 @@
 | **iOS: Detail view (I8)** | DONE | Agent 2 | Full detail with talking points, post-match cheat sheet (Contract 8), body, share |
 | **iOS: Settings view (I10)** | DONE | Agent 2 | Team change, notification status, about, contact, version |
 | **iOS: Shared components (I12)** | DONE | Agent 2 | BadgeView (8pt rounded), EmptyStateView (icon+title+message), TeamPickerCard (full spec), ContentCard (in I7) |
+| **iOS: Bug fixes & spec compliance (I13)** | IN PROGRESS | Agent 2 | Started 2026-03-28 |
 | **iOS: APIClient (I4)** | DONE | Agent 2 | Supabase REST: fetchFeed, fetchItem, registerToken, updateTeam per Contract 5 |
 | **iOS: CacheService (I5)** | DONE | Agent 2 | SwiftData with CachedContentItem, save/load/clear, Contract 3 format preservation |
 | **iOS: NotificationService (I9)** | DONE | Agent 2 | Permission request, token registration, team change update, deep link handling |
