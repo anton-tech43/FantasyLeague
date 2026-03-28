@@ -50,8 +50,8 @@
 | **Backend: End-to-end pipeline test** | DONE | Agent 1 | data-fetcher pulls live data, content-generator produces content, content-reviewer runs 3-bot review. Using Haiku until Sonnet access unlocked. |
 | **iOS: Xcode project setup (I1)** | DONE | Agent 2 | Xcode project, directory tree, 19 Swift files, Info.plist, entitlements, Assets.xcassets |
 | **iOS: Models (I2)** | DONE | Agent 2 | Team, ContentItem (Contract 3 dual-format decoder + MatchdayTalkingPoints), AppState |
-| **iOS: Design system (I3)** | AVAILABLE | — | Theme.swift — colors, fonts, spacing |
-| **iOS: Mock data (I11)** | AVAILABLE | — | Golden examples from CONTENT_EXAMPLES.md |
+| **iOS: Design system (I3)** | DONE | Agent 2 | Theme.swift complete — 11 colors, 9 fonts, 8 spacing, CardStyle modifier, Color(hex:) |
+| **iOS: Mock data (I11)** | DONE | Agent 2 | All 5 golden examples as MockData.swift, grouped by team |
 | **iOS: Onboarding flow (I6)** | AVAILABLE | — | Welcome, TeamSelection, NotificationPrompt |
 | **iOS: Feed view (I7)** | AVAILABLE | — | Main content feed |
 | **iOS: Detail view (I8)** | AVAILABLE | — | Full content + talking points |
@@ -92,6 +92,8 @@
 | 2026-03-28 | Agent 3 | **P1: News generator prompt v1.1 — COMPLETE.** Updated PROMPTS.md Section 1: strengthened accuracy constraints (every claim must trace to source data, aligning with deployed code), added explicit headline rules (never start with team name, lead with emotional hook), added talking point ordering (basic reaction → banter → context → power move), added partner mood prediction requirement for body, added `{{raw_api_summary}}` variable to user template with input data notes, updated variables reference. Logged iteration in Section 8. |
 | 2026-03-28 | Agent 2 | **I2: Models — COMPLETE.** Rewrote `ContentItem.swift` with full Contract 3 dual-format decoder: news items decode `talking_points` as `[String]`, matchday items decode as `MatchdayTalkingPoints` object with `regular`, `PostMatchCheatSheet` (if_they_win, if_they_lose, bold_prediction), and `MatchdayMetadata` (pre_match_mood, rivalry_level). Added computed properties (`regularTalkingPoints`, `postMatchCheatSheet`, `matchdayMetadata`), custom encoder, and memberwise init for mock data. `Team.swift` and `AppState.swift` verified — match BUILD_PLAN spec exactly. |
 | 2026-03-28 | Agent 3 | **P2: Matchday generator prompt v1.1 — COMPLETE.** Updated PROMPTS.md Section 2: added user persona, accuracy constraints, headline rules, talking point ordering (rivalry → player → stat → emotional prep), body structure guidance, Post-Match Cheat Sheet instructions with "what NOT to say" warnings, `bold_prediction` added to required fields, documented Contract 3 JSONB mapping, added Home/Away and accuracy reminder to user template, added `{{home_or_away}}` and `{{match_date}}` to variables reference. Logged iteration in Section 8. |
+| 2026-03-28 | Agent 2 | **I3: Design system — COMPLETE.** Theme.swift verified — all 11 colors, 9 typography tokens (SF Rounded), 8 spacing constants, CardStyle ViewModifier, Color(hex:) extension. Already fully built during I1. |
+| 2026-03-28 | Agent 2 | **I11: Mock data — COMPLETE.** Created `MockData.swift` with all 5 golden examples from CONTENT_EXAMPLES.md: Arsenal transfer (news/exciting), Arsenal vs Tottenham derby (matchday with full MatchdayTalkingPoints + PostMatchCheatSheet + metadata), Man United transfer rumour (news/drama), West Ham Bowen injury (news/bad_news), Man United press conference (news/funny). Includes team grouping helpers. 2 Arsenal, 2 Man Utd, 1 West Ham. |
 
 ---
 
