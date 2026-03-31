@@ -1,54 +1,51 @@
 import SwiftUI
 
-/// First onboarding screen. Warm, inviting, communicates what
-/// the app does without mentioning "football stats."
 struct WelcomeView: View {
-    let onContinue: () -> Void
+    var onGetStarted: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: Theme.sectionSpacing) {
             Spacer()
 
-            // Illustration placeholder (200x200pt area)
-            VStack(spacing: 4) {
-                Text("Goal")
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
-                    .foregroundColor(.accentWarm)
-                Text("Digger")
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
-                    .foregroundColor(.textPrimary)
+            // Illustration placeholder
+            VStack(spacing: 12) {
+                Image(systemName: "message.fill")
+                    .font(.system(size: 60))
+                    .foregroundStyle(Theme.accentWarm)
+                Image(systemName: "heart.fill")
+                    .font(.system(size: 30))
+                    .foregroundStyle(Theme.accentSoft)
             }
             .frame(width: 200, height: 200)
 
+            // App name
             Text("Goal Digger")
-                .font(.onboardingTitle)
-                .foregroundColor(.textPrimary)
-                .padding(.top, Layout.sectionSpacing)
+                .font(Theme.onboardingTitle)
+                .foregroundStyle(Theme.textPrimary)
 
+            // Tagline
             Text("Stay in the loop. Win the conversation.")
-                .font(.onboardingBody)
-                .foregroundColor(.textSecondary)
+                .font(Theme.onboardingBody)
+                .foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center)
-                .padding(.top, Layout.elementSpacing)
 
             Spacer()
 
-            Button(action: onContinue) {
+            // CTA Button
+            Button(action: onGetStarted) {
                 Text("Get Started")
-                    .font(.system(.body, design: .rounded, weight: .semibold))
-                    .foregroundColor(.white)
+                    .font(Theme.feedHeadline)
+                    .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
-                    .background(Color.accentWarm)
-                    .cornerRadius(16)
+                    .background(Theme.accentWarm)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
             }
-            .padding(.horizontal, Layout.screenPadding)
-            .padding(.bottom, 40)
-        }
-        .background(Color.appBackground)
-    }
-}
 
-#Preview {
-    WelcomeView(onContinue: {})
+            Spacer()
+                .frame(height: 40)
+        }
+        .padding(.horizontal, Theme.screenPadding)
+        .background(Theme.appBackground.ignoresSafeArea())
+    }
 }

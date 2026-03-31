@@ -1,68 +1,92 @@
 import SwiftUI
-import UIKit
 
-/// Onboarding step where the user picks their partner's team.
 struct TeamSelectionView: View {
-    let onTeamSelected: (Team) -> Void
-
-    @State private var selected: Team?
+    @Environment(AppState.self) private var appState
+    @State private var selectedTeam: Team?
+    var onContinue: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: Theme.sectionSpacing) {
+            // Title
             Text("Which team does\nhe support?")
-                .font(.onboardingTitle)
-                .foregroundColor(.textPrimary)
+                .font(Theme.onboardingTitle)
+                .foregroundStyle(Theme.textPrimary)
                 .multilineTextAlignment(.center)
-                .padding(.top, 60)
 
+            // Subtitle
             Text("Pick one and we'll keep you in the loop.")
-                .font(.onboardingBody)
-                .foregroundColor(.textSecondary)
-                .padding(.top, Layout.elementSpacing)
+                .font(Theme.onboardingBody)
+                .foregroundStyle(Theme.textSecondary)
 
-            Spacer().frame(height: Layout.sectionSpacing)
-
-            VStack(spacing: Layout.cardSpacing) {
+            // Team cards
+            VStack(spacing: Theme.cardSpacing) {
                 ForEach(Team.allCases) { team in
-                    TeamPickerCard(
-                        team: team,
-                        isSelected: selected == team
-                    ) {
+                    Button {
                         withAnimation(.easeInOut(duration: 0.2)) {
-                            selected = team
+                            selectedTeam = team
                         }
-                        let generator = UISelectionFeedbackGenerator()
-                        generator.selectionChanged()
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        #endif
+                    } label: {
+                        HStack {
+                            Text(team.displayName)
+                                .font(Theme.feedHeadline)
+                                .foregroundStyle(Theme.textPrimary)
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.body)
+                                .foregroundStyle(Theme.textTertiary)
+                        }
+                        .padding(Theme.cardPadding)
+                        .frame(height: 80)
+                        .background(Theme.cardBackground)
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: Theme.cardCornerRadius)
+                                .stroke(
+                                    selectedTeam == team ? Theme.accentWarm : .clear,
+                                    lineWidth: 2
+                                )
+                        )
+                        .shadow(
+                            color: Theme.cardShadow,
+                            radius: Theme.cardShadowRadius,
+                            x: 0,
+                            y: Theme.cardShadowY
+                        )
+                        .scaleEffect(selectedTeam == team ? 1.02 : 1.0)
                     }
+                    .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, Layout.screenPadding)
 
             Spacer()
 
-            if let team = selected {
+            // Continue button — appears when team selected
+            if selectedTeam != nil {
                 Button {
-                    onTeamSelected(team)
+                    appState.selectedTeam = selectedTeam
+                    onContinue()
                 } label: {
                     Text("Continue")
-                        .font(.system(.body, design: .rounded, weight: .semibold))
-                        .foregroundColor(.white)
+                        .font(Theme.feedHeadline)
+                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
-                        .background(Color.accentWarm)
-                        .cornerRadius(16)
+                        .background(Theme.accentWarm)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
-                .padding(.horizontal, Layout.screenPadding)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
-            Spacer().frame(height: 40)
+            Spacer()
+                .frame(height: 40)
         }
-        .background(Color.appBackground)
-        .animation(.easeInOut(duration: 0.3), value: selected)
+        .padding(.horizontal, Theme.screenPadding)
+        .background(Theme.appBackground.ignoresSafeArea())
+        .animation(.easeInOut(duration: 0.3), value: selectedTeam)
     }
-}
-
-#Preview {
-    TeamSelectionView(onTeamSelected: { _ in })
 }

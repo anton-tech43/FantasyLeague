@@ -1,6 +1,5 @@
 import Foundation
 
-/// Represents the Premier League teams available in Goal Digger v1.
 enum Team: String, CaseIterable, Identifiable, Codable {
     case arsenal = "arsenal"
     case manUtd = "man_utd"

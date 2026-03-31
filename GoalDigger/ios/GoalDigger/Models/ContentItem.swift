@@ -1,8 +1,6 @@
 import Foundation
 
-/// A single content item from the Goal Digger backend.
-/// Represents either a news update or a matchday briefing.
-struct ContentItem: Identifiable, Codable, Hashable {
+struct ContentItem: Identifiable, Codable {
     let id: UUID
     let teamId: String
     let type: ContentType
@@ -12,9 +10,15 @@ struct ContentItem: Identifiable, Codable, Hashable {
     let emotionalContext: String?
     let publishedAt: Date
 
-    // Raw JSONB — decoded differently based on `type`.
-    // Internal access so MockData.swift can construct instances directly.
-    let talkingPointsRaw: TalkingPointsPayload
+    // MARK: - Contract 3: Dual-format talking_points
+    // News items: talking_points is a simple [String]
+    // Matchday items: talking_points is a MatchdayTalkingPoints object
+
+    /// Raw string array — populated for news items, or from .regular for matchday
+    let talkingPoints: [String]
+
+    /// Structured matchday data — only populated for matchday items
+    let matchdayData: MatchdayTalkingPoints?
 
     enum ContentType: String, Codable {
         case news
@@ -27,49 +31,111 @@ struct ContentItem: Identifiable, Codable, Hashable {
         case type
         case headline
         case body
-        case talkingPointsRaw = "talking_points"
+        case talkingPoints = "talking_points"
         case kickoffTime = "kickoff_time"
         case emotionalContext = "emotional_context"
         case publishedAt = "published_at"
     }
 
-    // MARK: - Talking Points Access
+    // MARK: - Computed Properties
 
+    /// Talking points for display — works for both news and matchday
     var regularTalkingPoints: [String] {
-        switch talkingPointsRaw {
-        case .stringArray(let points):
-            return points
-        case .matchday(let data):
-            return data.regular
+        switch type {
+        case .news:
+            return talkingPoints
+        case .matchday:
+            return matchdayData?.regular ?? talkingPoints
         }
     }
 
+    /// Post-match cheat sheet — only available for matchday items
     var postMatchCheatSheet: PostMatchCheatSheet? {
         guard type == .matchday else { return nil }
-        if case .matchday(let data) = talkingPointsRaw {
-            return data.postMatch
-        }
-        return nil
+        return matchdayData?.postMatch
     }
 
+    /// Matchday metadata — only available for matchday items
     var matchdayMetadata: MatchdayMetadata? {
         guard type == .matchday else { return nil }
-        if case .matchday(let data) = talkingPointsRaw {
-            return data.metadata
+        return matchdayData?.metadata
+    }
+
+    // MARK: - Custom Decoder
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        teamId = try container.decode(String.self, forKey: .teamId)
+        type = try container.decode(ContentType.self, forKey: .type)
+        headline = try container.decode(String.self, forKey: .headline)
+        body = try container.decode(String.self, forKey: .body)
+        kickoffTime = try container.decodeIfPresent(Date.self, forKey: .kickoffTime)
+        emotionalContext = try container.decodeIfPresent(String.self, forKey: .emotionalContext)
+        publishedAt = try container.decode(Date.self, forKey: .publishedAt)
+
+        // Contract 3 dual-format decoder:
+        // Try matchday structured object first, then fall back to simple string array
+        if let matchday = try? container.decode(MatchdayTalkingPoints.self, forKey: .talkingPoints) {
+            matchdayData = matchday
+            talkingPoints = matchday.regular
+        } else if let strings = try? container.decode([String].self, forKey: .talkingPoints) {
+            matchdayData = nil
+            talkingPoints = strings
+        } else {
+            matchdayData = nil
+            talkingPoints = []
         }
-        return nil
     }
 
-    static func == (lhs: ContentItem, rhs: ContentItem) -> Bool {
-        lhs.id == rhs.id
+    // MARK: - Custom Encoder
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(teamId, forKey: .teamId)
+        try container.encode(type, forKey: .type)
+        try container.encode(headline, forKey: .headline)
+        try container.encode(body, forKey: .body)
+        try container.encodeIfPresent(kickoffTime, forKey: .kickoffTime)
+        try container.encodeIfPresent(emotionalContext, forKey: .emotionalContext)
+        try container.encode(publishedAt, forKey: .publishedAt)
+
+        if let matchdayData {
+            try container.encode(matchdayData, forKey: .talkingPoints)
+        } else {
+            try container.encode(talkingPoints, forKey: .talkingPoints)
+        }
     }
 
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
+    // MARK: - Memberwise Init (for mock data)
+
+    init(
+        id: UUID,
+        teamId: String,
+        type: ContentType,
+        headline: String,
+        body: String,
+        talkingPoints: [String],
+        matchdayData: MatchdayTalkingPoints? = nil,
+        kickoffTime: Date? = nil,
+        emotionalContext: String? = nil,
+        publishedAt: Date
+    ) {
+        self.id = id
+        self.teamId = teamId
+        self.type = type
+        self.headline = headline
+        self.body = body
+        self.talkingPoints = talkingPoints
+        self.matchdayData = matchdayData
+        self.kickoffTime = kickoffTime
+        self.emotionalContext = emotionalContext
+        self.publishedAt = publishedAt
     }
 }
 
-// MARK: - Matchday JSONB Types (Contract 3)
+// MARK: - Matchday Talking Points (Contract 3)
 
 struct MatchdayTalkingPoints: Codable {
     let regular: [String]
@@ -96,50 +162,11 @@ struct PostMatchCheatSheet: Codable {
 }
 
 struct MatchdayMetadata: Codable {
-    let preMatchMood: String
-    let rivalryLevel: String
+    let preMatchMood: String    // "confident", "nervous", "excited", "meh"
+    let rivalryLevel: String    // "derby", "big_game", "normal", "dead_rubber"
 
     enum CodingKeys: String, CodingKey {
         case preMatchMood = "pre_match_mood"
         case rivalryLevel = "rivalry_level"
-    }
-}
-
-// MARK: - Dual-Format Decoder
-
-/// Handles the dual JSON format for `talking_points`:
-/// - News items: plain `[String]`
-/// - Matchday items: `MatchdayTalkingPoints` object
-enum TalkingPointsPayload: Codable {
-    case stringArray([String])
-    case matchday(MatchdayTalkingPoints)
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let array = try? container.decode([String].self) {
-            self = .stringArray(array)
-            return
-        }
-        if let matchday = try? container.decode(MatchdayTalkingPoints.self) {
-            self = .matchday(matchday)
-            return
-        }
-        throw DecodingError.typeMismatch(
-            TalkingPointsPayload.self,
-            DecodingError.Context(
-                codingPath: decoder.codingPath,
-                debugDescription: "talking_points must be either [String] or MatchdayTalkingPoints object"
-            )
-        )
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .stringArray(let array):
-            try container.encode(array)
-        case .matchday(let data):
-            try container.encode(data)
-        }
     }
 }

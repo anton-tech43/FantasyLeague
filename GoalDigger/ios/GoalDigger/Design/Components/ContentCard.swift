@@ -1,68 +1,80 @@
 import SwiftUI
 
-/// A feed card representing one ContentItem.
 struct ContentCard: View {
     let item: ContentItem
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Layout.elementSpacing) {
+        VStack(alignment: .leading, spacing: Theme.elementSpacing) {
             // Row 1: Badge + Timestamp
             HStack {
-                BadgeView(type: item.type)
+                badgeView
                 Spacer()
-                Text(relativeTimestamp(item.publishedAt))
-                    .font(.feedTimestamp)
-                    .foregroundColor(.textTertiary)
+                Text(item.publishedAt.relativeFormatted)
+                    .font(Theme.feedTimestamp)
+                    .foregroundStyle(Theme.textTertiary)
             }
 
             // Row 2: Headline (max 3 lines)
             Text(item.headline)
-                .font(.feedHeadline)
-                .foregroundColor(.textPrimary)
+                .font(Theme.feedHeadline)
+                .foregroundStyle(Theme.textPrimary)
                 .lineLimit(3)
-                .multilineTextAlignment(.leading)
 
             // Row 3: "Read more" right-aligned
             HStack {
                 Spacer()
                 HStack(spacing: 4) {
                     Text("Read more")
-                        .font(.feedTimestamp)
-                        .foregroundColor(.accentWarm)
+                        .font(Theme.feedTimestamp)
+                        .foregroundStyle(Theme.accentWarm)
                     Image(systemName: "arrow.right")
                         .font(.system(size: 10))
-                        .foregroundColor(.accentWarm)
+                        .foregroundStyle(Theme.accentWarm)
                 }
             }
         }
         .cardStyle()
     }
 
-    // MARK: - Relative Timestamp
-
-    private func relativeTimestamp(_ date: Date) -> String {
-        let interval = Date().timeIntervalSince(date)
-        let hours = Int(interval / 3600)
-        let days = Int(interval / 86400)
-
-        if hours < 1 {
-            return "Just now"
-        } else if hours < 24 {
-            return "\(hours)h ago"
-        } else if days == 1 {
-            return "Yesterday"
-        } else if days < 7 {
-            return "\(days) days ago"
-        } else {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "d MMM"
-            return formatter.string(from: date)
+    @ViewBuilder
+    private var badgeView: some View {
+        switch item.type {
+        case .news:
+            BadgeView(
+                text: "NEWS",
+                backgroundColor: Theme.accentSoft,
+                textColor: Theme.accentWarm
+            )
+        case .matchday:
+            BadgeView(
+                text: "MATCH DAY",
+                backgroundColor: Theme.accentGreen.opacity(0.2),
+                textColor: Theme.accentGreen
+            )
         }
     }
 }
 
-#Preview {
-    ContentCard(item: MockData.newsItem)
-        .padding()
-        .background(Color.appBackground)
+// MARK: - Relative Date Formatting
+
+extension Date {
+    var relativeFormatted: String {
+        let now = Date()
+        let interval = now.timeIntervalSince(self)
+
+        if interval < 60 {
+            return "Just now"
+        } else if interval < 3600 {
+            let mins = Int(interval / 60)
+            return "\(mins)m ago"
+        } else if interval < 86400 {
+            let hours = Int(interval / 3600)
+            return "\(hours)h ago"
+        } else if interval < 172800 {
+            return "Yesterday"
+        } else {
+            let days = Int(interval / 86400)
+            return "\(days) days ago"
+        }
+    }
 }

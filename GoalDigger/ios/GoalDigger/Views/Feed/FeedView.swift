@@ -1,77 +1,58 @@
 import SwiftUI
-import SwiftData
 
-/// The main screen. A scrollable feed of content cards for the selected team.
 struct FeedView: View {
-    @Environment(AppState.self) var appState
-    @Environment(\.modelContext) var modelContext
-    @State private var viewModel = FeedViewModel()
-    @State private var showSettings = false
+    @Environment(AppState.self) private var appState
+    @State private var items: [ContentItem] = []
+    @State private var isLoading = true
+    @State private var hasError = false
     @State private var navigationPath = NavigationPath()
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
             ZStack {
-                Color.appBackground.ignoresSafeArea()
+                Theme.appBackground.ignoresSafeArea()
 
-                Group {
-                    if viewModel.isInitialLoading && viewModel.items.isEmpty {
-                        loadingState
-                    } else if viewModel.hasError && viewModel.items.isEmpty {
-                        errorState
-                    } else if viewModel.items.isEmpty {
-                        emptyState
-                    } else {
-                        feedContent
-                    }
+                if isLoading && items.isEmpty {
+                    loadingView
+                } else if hasError && items.isEmpty {
+                    errorView
+                } else if items.isEmpty {
+                    emptyView
+                } else {
+                    feedContent
                 }
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Text(appState.selectedTeam?.shortName ?? "Goal Digger")
-                        .font(.detailTitle)
-                        .foregroundColor(.textPrimary)
+                        .font(Theme.detailTitle)
+                        .foregroundStyle(Theme.textPrimary)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showSettings = true
-                    } label: {
+                    NavigationLink(value: "settings") {
                         Image(systemName: "gearshape")
-                            .foregroundColor(.textSecondary)
+                            .foregroundStyle(Theme.textSecondary)
                     }
                 }
             }
+            .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: ContentItem.self) { item in
                 ContentDetailView(item: item)
             }
-            .sheet(isPresented: $showSettings) {
-                SettingsView()
-            }
-            .task {
-                if let team = appState.selectedTeam {
-                    await viewModel.loadFeed(teamId: team.rawValue, context: modelContext)
+            .navigationDestination(for: String.self) { value in
+                if value == "settings" {
+                    SettingsView()
                 }
-            }
-            .onChange(of: appState.deepLinkContentId) { _, newId in
-                guard let id = newId else { return }
-                appState.deepLinkContentId = nil
-                handleDeepLink(id: id)
             }
         }
-    }
-
-    // MARK: - Deep Link Navigation
-
-    private func handleDeepLink(id: UUID) {
-        if let item = viewModel.items.first(where: { $0.id == id }) {
-            navigationPath.append(item)
-        } else {
-            Task {
-                if let item = try? await APIClient.shared.fetchItem(id: id) {
-                    viewModel.items.insert(item, at: 0)
-                    navigationPath.append(item)
-                }
-            }
+        .task {
+            await loadContent()
+        }
+        .onChange(of: appState.deepLinkContentId) { _, newId in
+            handleDeepLink(newId)
+        }
+        .onChange(of: appState.selectedTeam) { _, _ in
+            Task { await loadContent() }
         }
     }
 
@@ -79,258 +60,228 @@ struct FeedView: View {
 
     private var feedContent: some View {
         ScrollView {
-            LazyVStack(spacing: Layout.cardSpacing) {
-                // Freshness status card (dismissible)
-                if !viewModel.freshnessCardDismissed, let freshnessCard = viewModel.freshnessState {
-                    FreshnessCardView(state: freshnessCard, teamName: appState.selectedTeam?.shortName ?? "")
-                        .onTapGesture {
-                            withAnimation(.easeOut(duration: 0.25)) {
-                                viewModel.freshnessCardDismissed = true
-                            }
-                        }
+            LazyVStack(spacing: Theme.cardSpacing) {
+                if let freshness = contentFreshness {
+                    freshnessCard(freshness)
                 }
 
-                ForEach(viewModel.items) { item in
+                ForEach(items) { item in
                     NavigationLink(value: item) {
                         ContentCard(item: item)
                     }
                     .buttonStyle(.plain)
-                    .onAppear {
-                        if item == viewModel.items.last {
-                            Task {
-                                await viewModel.loadMore(teamId: appState.selectedTeam?.rawValue ?? "")
-                            }
-                        }
-                    }
-                }
-
-                if viewModel.isLoadingMore {
-                    ProgressView()
-                        .padding()
+                    .sensoryFeedback(.selection, trigger: item.id)
                 }
             }
-            .padding(.horizontal, Layout.screenPadding)
-            .padding(.top, Layout.elementSpacing)
+            .padding(.horizontal, Theme.screenPadding)
+            .padding(.top, Theme.elementSpacing)
         }
         .refreshable {
-            if let team = appState.selectedTeam {
-                await viewModel.refresh(teamId: team.rawValue, context: modelContext)
-            }
+            await loadContent()
         }
     }
 
-    // MARK: - States
+    // MARK: - Loading View
 
-    private var loadingState: some View {
+    private var loadingView: some View {
         ScrollView {
-            VStack(spacing: Layout.cardSpacing) {
+            LazyVStack(spacing: Theme.cardSpacing) {
                 ForEach(0..<3, id: \.self) { _ in
                     SkeletonCard()
                 }
             }
-            .padding(.horizontal, Layout.screenPadding)
-            .padding(.top, Layout.elementSpacing)
+            .padding(.horizontal, Theme.screenPadding)
+            .padding(.top, Theme.elementSpacing)
         }
     }
 
-    private var emptyState: some View {
-        EmptyStateView(
-            icon: "bubble.left.and.bubble.right",
-            title: "No updates yet",
-            message: "We'll let you know when something happens with \(appState.selectedTeam?.shortName ?? "your team")."
-        )
+    // MARK: - Empty State
+
+    private var emptyView: some View {
+        VStack(spacing: Theme.sectionSpacing) {
+            Image(systemName: "bubble.left.and.bubble.right")
+                .font(.system(size: 50))
+                .foregroundStyle(Theme.textTertiary)
+
+            Text("No updates yet")
+                .font(Theme.feedHeadline)
+                .foregroundStyle(Theme.textSecondary)
+
+            Text("We'll let you know when something happens with \(appState.selectedTeam?.shortName ?? "your team").")
+                .font(Theme.onboardingBody)
+                .foregroundStyle(Theme.textTertiary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 280)
+        }
     }
 
-    private var errorState: some View {
-        EmptyStateView(
-            icon: "wifi.slash",
-            title: "Something went wrong",
-            message: "Pull down to try again."
-        )
+    // MARK: - Error State
+
+    private var errorView: some View {
+        VStack(spacing: Theme.elementSpacing) {
+            Text("Something went wrong")
+                .font(Theme.feedHeadline)
+                .foregroundStyle(Theme.textSecondary)
+
+            Text("Pull down to try again.")
+                .font(Theme.onboardingBody)
+                .foregroundStyle(Theme.textTertiary)
+        }
     }
-}
 
-// MARK: - Skeleton Loading Card
+    // MARK: - Content Freshness
 
-struct SkeletonCard: View {
-    @State private var isAnimating = false
+    private enum Freshness {
+        case caughtUp
+        case quietWeek
+    }
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: Layout.elementSpacing) {
-            HStack {
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.shimmer)
-                    .frame(width: 60, height: 16)
-                Spacer()
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.shimmer)
-                    .frame(width: 40, height: 12)
+    private var contentFreshness: Freshness? {
+        guard let latest = items.first?.publishedAt else { return nil }
+        let hours = Date().timeIntervalSince(latest) / 3600
+        if hours >= 12 && hours < 72 { return .caughtUp }
+        if hours >= 72 { return .quietWeek }
+        return nil
+    }
+
+    private func freshnessCard(_ freshness: Freshness) -> some View {
+        Group {
+            switch freshness {
+            case .caughtUp:
+                VStack(spacing: Theme.elementSpacing) {
+                    Image(systemName: "checkmark.circle")
+                        .font(.system(size: 24))
+                        .foregroundStyle(Theme.accentGreen)
+
+                    Text("You're all caught up")
+                        .font(Theme.feedHeadline)
+                        .foregroundStyle(Theme.textSecondary)
+
+                    Text("Nothing new for \(appState.selectedTeam?.shortName ?? "your team") right now. We'll ping you when something happens.")
+                        .font(Theme.onboardingBody)
+                        .foregroundStyle(Theme.textTertiary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(Theme.cardPadding)
+                .frame(maxWidth: .infinity)
+                .background(Theme.feedDivider)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius))
+
+            case .quietWeek:
+                VStack(spacing: Theme.elementSpacing) {
+                    Text("Quiet week for \(appState.selectedTeam?.shortName ?? "your team")")
+                        .font(Theme.feedHeadline)
+                        .foregroundStyle(Theme.textSecondary)
+
+                    Text("Not much happening right now. We'll let you know when there's something worth talking about.")
+                        .font(Theme.onboardingBody)
+                        .foregroundStyle(Theme.textTertiary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(Theme.cardPadding)
+                .frame(maxWidth: .infinity)
+                .background(Theme.feedDivider)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius))
             }
-            RoundedRectangle(cornerRadius: 4)
-                .fill(Color.shimmer)
-                .frame(height: 16)
-            RoundedRectangle(cornerRadius: 4)
-                .fill(Color.shimmer)
-                .frame(width: 200, height: 16)
-        }
-        .cardStyle()
-        .opacity(isAnimating ? 0.6 : 1.0)
-        .onAppear {
-            withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
-                isAnimating = true
-            }
-        }
-    }
-}
-
-// MARK: - Feed ViewModel
-
-@Observable
-class FeedViewModel {
-    var items: [ContentItem] = []
-    var isInitialLoading = false
-    var isLoadingMore = false
-    var hasError = false
-    var freshnessState: FreshnessState?
-    var freshnessCardDismissed = false
-
-    private var currentOffset = 0
-    private let pageSize = 20
-    private var hasMorePages = true
-
-    func loadFeed(teamId: String, context: ModelContext) async {
-        isInitialLoading = true
-        hasError = false
-        freshnessCardDismissed = false
-
-        // Purge stale cache on launch (items older than 30 days)
-        await CacheService.shared.purgeOldItems(context: context)
-
-        // Show cached items immediately (instant launch)
-        let cached = await CacheService.shared.loadCachedItems(teamId: teamId, context: context)
-        if !cached.isEmpty {
-            items = cached.compactMap { $0.toContentItem() }
-            isInitialLoading = false
-            updateFreshnessState()
-        }
-
-        // Fetch fresh data from API
-        do {
-            let fetched = try await APIClient.shared.fetchFeed(teamId: teamId, limit: pageSize, offset: 0)
-            items = fetched
-            currentOffset = fetched.count
-            hasMorePages = fetched.count >= pageSize
-            await CacheService.shared.cacheItems(fetched, context: context)
-            updateFreshnessState()
-        } catch {
-            hasError = items.isEmpty
-        }
-
-        isInitialLoading = false
-    }
-
-    func refresh(teamId: String, context: ModelContext) async {
-        hasError = false
-        do {
-            let fetched = try await APIClient.shared.fetchFeed(teamId: teamId, limit: pageSize, offset: 0)
-            items = fetched
-            currentOffset = fetched.count
-            hasMorePages = fetched.count >= pageSize
-            await CacheService.shared.cacheItems(fetched, context: context)
-            updateFreshnessState()
-        } catch {
-            hasError = items.isEmpty
         }
     }
 
-    func loadMore(teamId: String) async {
-        guard !isLoadingMore, hasMorePages else { return }
-        isLoadingMore = true
-        do {
-            let fetched = try await APIClient.shared.fetchFeed(teamId: teamId, limit: pageSize, offset: currentOffset)
-            items.append(contentsOf: fetched)
-            currentOffset += fetched.count
-            hasMorePages = fetched.count >= pageSize
-        } catch {
-            // Silently fail on pagination
-        }
-        isLoadingMore = false
-    }
+    // MARK: - Data Loading
 
-    private func updateFreshnessState() {
-        guard let mostRecent = items.first?.publishedAt else {
-            freshnessState = nil
+    private func loadContent() async {
+        guard let team = appState.selectedTeam else {
+            items = MockData.allItems
+            isLoading = false
             return
         }
 
-        let hours = Date().timeIntervalSince(mostRecent) / 3600
+        isLoading = true
+        hasError = false
 
-        if hours < 12 {
-            freshnessState = nil
-        } else if hours < 72 {
-            freshnessState = .caughtUp
-        } else if hours < 336 {
-            freshnessState = .quietWeek
-        } else {
-            freshnessState = .onBreak
+        // Try API first
+        do {
+            let fetched = try await APIClient.shared.fetchFeed(teamId: team.rawValue)
+            if !fetched.isEmpty {
+                items = fetched
+                // Cache for offline use
+                await CacheService.shared.save(fetched)
+                isLoading = false
+                return
+            }
+        } catch {
+            print("[Feed] API fetch failed: \(error)")
+        }
+
+        // Fall back to cache
+        let cached = await CacheService.shared.load(teamId: team.rawValue)
+        if !cached.isEmpty {
+            items = cached
+            isLoading = false
+            return
+        }
+
+        // Fall back to mock data for development
+        items = MockData.items(for: team)
+        isLoading = false
+    }
+
+    // MARK: - Deep Link
+
+    private func handleDeepLink(_ contentId: UUID?) {
+        guard let contentId else { return }
+
+        // Check if item is already in feed
+        if let item = items.first(where: { $0.id == contentId }) {
+            navigationPath.append(item)
+            appState.deepLinkContentId = nil
+            return
+        }
+
+        // Fetch from API
+        Task {
+            if let item = try? await APIClient.shared.fetchItem(id: contentId) {
+                navigationPath.append(item)
+            }
+            appState.deepLinkContentId = nil
         }
     }
 }
 
-// MARK: - Freshness States
+// MARK: - Skeleton Card
 
-enum FreshnessState {
-    case caughtUp
-    case quietWeek
-    case onBreak
-}
-
-struct FreshnessCardView: View {
-    let state: FreshnessState
-    let teamName: String
+private struct SkeletonCard: View {
+    @State private var isAnimating = false
 
     var body: some View {
-        VStack(spacing: Layout.elementSpacing) {
-            switch state {
-            case .caughtUp:
-                Image(systemName: "checkmark.circle")
-                    .font(.title2)
-                    .foregroundColor(.accentGreen)
-                Text("You're all caught up")
-                    .font(.feedHeadline)
-                    .foregroundColor(.textSecondary)
-                Text("Nothing new for \(teamName) right now. We'll ping you when something happens.")
-                    .font(.onboardingBody)
-                    .foregroundColor(.textTertiary)
-                    .multilineTextAlignment(.center)
+        VStack(alignment: .leading, spacing: Theme.elementSpacing) {
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Theme.shimmer)
+                .frame(width: 60, height: 18)
 
-            case .quietWeek:
-                Text("Quiet week for \(teamName)")
-                    .font(.feedHeadline)
-                    .foregroundColor(.textSecondary)
-                Text("Not much happening right now. We'll let you know when there's something worth talking about.")
-                    .font(.onboardingBody)
-                    .foregroundColor(.textTertiary)
-                    .multilineTextAlignment(.center)
-
-            case .onBreak:
-                Text("The Premier League is on a break")
-                    .font(.feedHeadline)
-                    .foregroundColor(.textSecondary)
-                Text("No matches or major news right now. We'll wake up when things kick off again.")
-                    .font(.onboardingBody)
-                    .foregroundColor(.textTertiary)
-                    .multilineTextAlignment(.center)
+            VStack(alignment: .leading, spacing: 6) {
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Theme.shimmer)
+                    .frame(height: 16)
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Theme.shimmer)
+                    .frame(width: 200, height: 16)
             }
         }
-        .padding(Layout.cardPadding)
-        .frame(maxWidth: .infinity)
-        .background(Color.feedDivider)
-        .cornerRadius(Layout.cardCornerRadius)
+        .cardStyle()
+        .opacity(isAnimating ? 0.6 : 1.0)
+        .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: isAnimating)
+        .onAppear { isAnimating = true }
     }
 }
 
-#Preview {
-    FeedView()
-        .environment(AppState.shared)
+// MARK: - ContentItem: Hashable for navigationDestination
+
+extension ContentItem: Hashable {
+    static func == (lhs: ContentItem, rhs: ContentItem) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }

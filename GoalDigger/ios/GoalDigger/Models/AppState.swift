@@ -1,13 +1,13 @@
 import SwiftUI
 
-/// Central app state, persisted via UserDefaults.
-/// Shared instance used by AppDelegate and NotificationService which
-/// cannot access the SwiftUI environment.
 @Observable
 class AppState {
+    /// Shared instance — used by AppDelegate and NotificationService which
+    /// cannot access the SwiftUI environment. The same instance is also
+    /// injected into the view hierarchy via .environment().
     static let shared = AppState()
 
-    // MARK: - Persisted State
+    // MARK: - Persisted
 
     var selectedTeam: Team? {
         didSet {
@@ -29,7 +29,7 @@ class AppState {
         }
     }
 
-    // MARK: - Navigation State
+    // MARK: - Navigation
 
     var deepLinkContentId: UUID?
 

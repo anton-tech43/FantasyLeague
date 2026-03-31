@@ -53,6 +53,13 @@ If a step requires something missing (API key, backend not deployed, depends on 
 
 Work through these in order. Skip any that are blocked. Only complete ONE task per run.
 
+### Important: Code-level prompt changes already made
+The content-generator prompt in `content-generator/index.ts` was modified by Agent 1 (commit `6d71e21`, 2026-03-27) with anti-hallucination constraints:
+- RSS input capped at 10 articles, descriptions truncated to 200 chars
+- Raw API data summary added (max 3000 chars)
+- Accuracy prompt strengthened: every claim must trace to source data
+- **Your PROMPTS.md prompts are the canonical reference.** When Agent 1 embeds them in code, these constraints will be layered on top. Write your prompts assuming clean, structured input — the input sanitization is handled in code.
+
 ### Prompt Engineering
 - [ ] P1: News generator prompt — system prompt, user template, tool schema (PROMPTS.md Section 1)
 - [ ] P2: Matchday generator prompt — system prompt, user template, tool schema (PROMPTS.md Section 2)
@@ -90,4 +97,4 @@ Never touch anything in `GoalDigger/backend/` or `GoalDigger/ios/`.
 
 ## Model
 
-All prompts target `claude-sonnet-4-6` (cost-effective, excellent tone for casual writing).
+All prompts target `claude-sonnet-4-6` (cost-effective, excellent tone for casual writing). **However, the backend is temporarily running `claude-3-haiku-20240307`** until the Anthropic account reaches Tier 2 and Sonnet access unlocks. Prompts should still be written for Sonnet, but be aware that live testing will use Haiku for now — results may differ in quality and capability.

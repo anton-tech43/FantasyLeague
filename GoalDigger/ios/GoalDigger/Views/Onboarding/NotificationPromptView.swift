@@ -1,63 +1,68 @@
 import SwiftUI
 
-/// Explains why notifications matter. Shown ONCE, never again.
 struct NotificationPromptView: View {
-    let onComplete: () -> Void
+    @Environment(AppState.self) private var appState
+    var onComplete: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: Theme.sectionSpacing) {
             Spacer()
 
+            // Icon
             Image(systemName: "bell.badge")
                 .font(.system(size: 60))
-                .foregroundColor(.accentWarm)
+                .foregroundStyle(Theme.accentWarm)
 
+            // Title
             Text("Don't miss the\ngood stuff")
-                .font(.onboardingTitle)
-                .foregroundColor(.textPrimary)
+                .font(Theme.onboardingTitle)
+                .foregroundStyle(Theme.textPrimary)
                 .multilineTextAlignment(.center)
-                .padding(.top, Layout.sectionSpacing)
 
-            Text("We'll ping you when something interesting happens \u{2014} just the highlights, never spam. Promise.")
-                .font(.onboardingBody)
-                .foregroundColor(.textSecondary)
+            // Body
+            Text("We'll ping you when something interesting happens — just the highlights, never spam. Promise.")
+                .font(Theme.onboardingBody)
+                .foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 300)
-                .padding(.top, Layout.elementSpacing)
 
             Spacer()
 
-            VStack(spacing: 12) {
-                Button {
-                    Task {
-                        _ = await NotificationService.shared.requestPermission()
-                        onComplete()
-                    }
-                } label: {
-                    Text("Turn on Notifications")
-                        .font(.system(.body, design: .rounded, weight: .semibold))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(Color.accentWarm)
-                        .cornerRadius(16)
+            // Primary CTA
+            Button {
+                Task {
+                    _ = await NotificationService.shared.requestPermission()
+                    completeOnboarding()
                 }
-
-                Button {
-                    onComplete()
-                } label: {
-                    Text("Maybe Later")
-                        .font(.system(.body, design: .rounded, weight: .medium))
-                        .foregroundColor(.textSecondary)
-                }
+            } label: {
+                Text("Turn on Notifications")
+                    .font(Theme.feedHeadline)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .background(Theme.accentWarm)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
             }
-            .padding(.horizontal, Layout.screenPadding)
-            .padding(.bottom, 40)
-        }
-        .background(Color.appBackground)
-    }
-}
 
-#Preview {
-    NotificationPromptView(onComplete: {})
+            // Secondary CTA
+            Button {
+                completeOnboarding()
+            } label: {
+                Text("Maybe Later")
+                    .font(Theme.onboardingBody)
+                    .foregroundStyle(Theme.textSecondary)
+            }
+
+            Spacer()
+                .frame(height: 40)
+        }
+        .padding(.horizontal, Theme.screenPadding)
+        .background(Theme.appBackground.ignoresSafeArea())
+    }
+
+    private func completeOnboarding() {
+        appState.notificationPermissionRequested = true
+        appState.hasCompletedOnboarding = true
+        onComplete()
+    }
 }

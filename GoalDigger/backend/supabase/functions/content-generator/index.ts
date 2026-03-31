@@ -95,6 +95,10 @@ WRITING RULES:
 
 7. ACCURACY: Never make up facts, stats, or quotes. Only use information from
    the provided source data. If you're unsure about something, leave it out.
+   CRITICAL: Every claim you make MUST trace back to a specific article or stat
+   listed in the source data below. If you cannot find a specific fact in the
+   source data, DO NOT include it. NEVER reference matches, scores, or player
+   actions that are not explicitly mentioned in the source data.
 
 8. LENGTH:
    - Headline: 1-2 sentences. Max 200 characters. This is the push notification —
@@ -342,7 +346,7 @@ async function callClaude(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-6",
+      model: "claude-3-haiku-20240307",
       max_tokens: 2000,
       system: systemPrompt,
       messages: [{ role: "user", content: userMessage }],
@@ -377,10 +381,11 @@ function formatNewsUserMessage(
   const apiData = rawData.filter((d: Record<string, unknown>) => d.source === "api_football");
   const rssData = rawData.filter((d: Record<string, unknown>) => d.source !== "api_football");
 
-  // Format articles
-  const articles = rssData.map((d: Record<string, unknown>) => {
+  // Format articles — limit to 10 most recent to keep prompt focused
+  const articles = rssData.slice(0, 10).map((d: Record<string, unknown>) => {
     const data = d.data as Record<string, string>;
-    return `- [${data.title}] ${data.description ?? ""} (Source: ${d.source})`;
+    const desc = (data.description ?? "").slice(0, 200);
+    return `- [${data.title}] ${desc} (Source: ${d.source})`;
   }).join("\n");
 
   // Extract standings if available
@@ -426,7 +431,16 @@ function formatNewsUserMessage(
     ? recentHeadlines.map((h) => `- ${h}`).join("\n")
     : "(No recent content)";
 
+  // Summarize raw API data (truncated to avoid overwhelming the model)
+  let apiSummary = "";
+  if (apiData.length > 0) {
+    const raw = JSON.stringify(apiData[0].data).slice(0, 3000);
+    apiSummary = `\n--- RAW API DATA (truncated) ---\n${raw}\n`;
+  }
+
   return `Here is the latest data for ${teamDisplayName}:
+
+IMPORTANT: Only use facts from the articles and stats below. Do NOT invent any matches, scores, or events.
 
 --- RAW NEWS ARTICLES ---
 ${articles || "(No new articles)"}
@@ -435,6 +449,7 @@ ${articles || "(No new articles)"}
 League position: ${leaguePosition}
 Recent form: ${recentForm}
 Next match: ${nextFixture}
+${apiSummary}
 
 --- RECENT CONTENT ---
 (These are items we already published recently — DO NOT duplicate them)

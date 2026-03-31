@@ -1,10 +1,7 @@
 import UIKit
 import UserNotifications
 
-/// Handles APNs registration and push notification interactions.
-/// See AGENT_CONTRACTS.md Contract 2 for the notification payload format.
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
@@ -20,6 +17,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
     ) {
         let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+        print("[APNs] Device token: \(token)")
         NotificationService.shared.handleTokenRegistration(token)
     }
 
@@ -27,32 +25,26 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         _ application: UIApplication,
         didFailToRegisterForRemoteNotificationsWithError error: Error
     ) {
-        print("APNs registration failed: \(error)")
+        print("[APNs] Failed to register: \(error.localizedDescription)")
     }
 
-    // MARK: - Notification Tap (Deep Link)
+    // MARK: - Foreground Notification Handling
 
-    /// Contract 2: Parse `content_id` from APNs payload and set deep link.
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
-        didReceive response: UNNotificationResponse,
-        withCompletionHandler completionHandler: @escaping () -> Void
-    ) {
+        willPresent notification: UNNotification
+    ) async -> UNNotificationPresentationOptions {
+        [.banner, .badge, .sound]
+    }
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse
+    ) async {
         let userInfo = response.notification.request.content.userInfo
-        if let contentId = userInfo["content_id"] as? String,
-           let uuid = UUID(uuidString: contentId) {
-            AppState.shared.deepLinkContentId = uuid
+        if let contentIdString = userInfo["content_id"] as? String,
+           let contentId = UUID(uuidString: contentIdString) {
+            AppState.shared.deepLinkContentId = contentId
         }
-        completionHandler()
-    }
-
-    // MARK: - Foreground Notification
-
-    func userNotificationCenter(
-        _ center: UNUserNotificationCenter,
-        willPresent notification: UNNotification,
-        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
-    ) {
-        completionHandler([.banner, .sound])
     }
 }

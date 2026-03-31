@@ -1,10 +1,10 @@
 import Foundation
 import SwiftData
 
-// MARK: - SwiftData Model
+// MARK: - SwiftData Model for cached content
 
 @Model
-final class CachedContentItem {
+class CachedContentItem {
     @Attribute(.unique) var id: UUID
     var teamId: String
     var type: String
@@ -16,34 +16,41 @@ final class CachedContentItem {
     var publishedAt: Date
     var cachedAt: Date
 
-    init(
-        id: UUID,
-        teamId: String,
-        type: String,
-        headline: String,
-        body: String,
-        talkingPointsJSON: Data,
-        kickoffTime: Date?,
-        emotionalContext: String?,
-        publishedAt: Date,
-        cachedAt: Date = Date()
-    ) {
-        self.id = id
-        self.teamId = teamId
-        self.type = type
-        self.headline = headline
-        self.body = body
-        self.talkingPointsJSON = talkingPointsJSON
-        self.kickoffTime = kickoffTime
-        self.emotionalContext = emotionalContext
-        self.publishedAt = publishedAt
-        self.cachedAt = cachedAt
+    init(from item: ContentItem) {
+        self.id = item.id
+        self.teamId = item.teamId
+        self.type = item.type.rawValue
+        self.headline = item.headline
+        self.body = item.body
+        self.kickoffTime = item.kickoffTime
+        self.emotionalContext = item.emotionalContext
+        self.publishedAt = item.publishedAt
+        self.cachedAt = Date()
+
+        // Encode talking_points as JSON data to preserve format
+        let encoder = JSONEncoder()
+        if let matchdayData = item.matchdayData {
+            self.talkingPointsJSON = (try? encoder.encode(matchdayData)) ?? Data()
+        } else {
+            self.talkingPointsJSON = (try? encoder.encode(item.talkingPoints)) ?? Data()
+        }
     }
 
-    /// Convert back to a ContentItem for the UI layer.
+    /// Convert back to ContentItem
     func toContentItem() -> ContentItem? {
         guard let contentType = ContentItem.ContentType(rawValue: type) else { return nil }
-        guard let payload = try? JSONDecoder().decode(TalkingPointsPayload.self, from: talkingPointsJSON) else { return nil }
+
+        let decoder = JSONDecoder()
+        var talkingPoints: [String] = []
+        var matchdayData: MatchdayTalkingPoints?
+
+        if contentType == .matchday,
+           let matchday = try? decoder.decode(MatchdayTalkingPoints.self, from: talkingPointsJSON) {
+            matchdayData = matchday
+            talkingPoints = matchday.regular
+        } else if let strings = try? decoder.decode([String].self, from: talkingPointsJSON) {
+            talkingPoints = strings
+        }
 
         return ContentItem(
             id: id,
@@ -51,72 +58,76 @@ final class CachedContentItem {
             type: contentType,
             headline: headline,
             body: body,
+            talkingPoints: talkingPoints,
+            matchdayData: matchdayData,
             kickoffTime: kickoffTime,
             emotionalContext: emotionalContext,
-            publishedAt: publishedAt,
-            talkingPointsRaw: payload
+            publishedAt: publishedAt
         )
     }
 }
 
 // MARK: - Cache Service
 
-actor CacheService {
+class CacheService {
     static let shared = CacheService()
 
-    /// Cache an array of ContentItems into SwiftData.
-    func cacheItems(_ items: [ContentItem], context: ModelContext) async {
-        await MainActor.run {
-            for item in items {
-                guard let jsonData = try? JSONEncoder().encode(item.talkingPointsRaw) else { continue }
+    private var container: ModelContainer?
 
-                let cached = CachedContentItem(
-                    id: item.id,
-                    teamId: item.teamId,
-                    type: item.type.rawValue,
-                    headline: item.headline,
-                    body: item.body,
-                    talkingPointsJSON: jsonData,
-                    kickoffTime: item.kickoffTime,
-                    emotionalContext: item.emotionalContext,
-                    publishedAt: item.publishedAt
-                )
-                context.insert(cached)
+    init() {
+        do {
+            let schema = Schema([CachedContentItem.self])
+            let config = ModelConfiguration(isStoredInMemoryOnly: false)
+            container = try ModelContainer(for: schema, configurations: [config])
+        } catch {
+            print("[Cache] Failed to create container: \(error)")
+        }
+    }
+
+    /// Save content items to cache
+    @MainActor
+    func save(_ items: [ContentItem]) {
+        guard let container else { return }
+        let context = container.mainContext
+
+        for item in items {
+            let cached = CachedContentItem(from: item)
+            context.insert(cached)
+        }
+
+        try? context.save()
+    }
+
+    /// Load cached content for a team, sorted by publishedAt descending
+    @MainActor
+    func load(teamId: String) -> [ContentItem] {
+        guard let container else { return [] }
+        let context = container.mainContext
+
+        let descriptor = FetchDescriptor<CachedContentItem>(
+            predicate: #Predicate { $0.teamId == teamId },
+            sortBy: [SortDescriptor(\.publishedAt, order: .reverse)]
+        )
+
+        guard let cached = try? context.fetch(descriptor) else { return [] }
+        return cached.compactMap { $0.toContentItem() }
+    }
+
+    /// Clear all cached items for a team
+    @MainActor
+    func clear(teamId: String) {
+        guard let container else { return }
+        let context = container.mainContext
+
+        let descriptor = FetchDescriptor<CachedContentItem>(
+            predicate: #Predicate { $0.teamId == teamId }
+        )
+
+        if let items = try? context.fetch(descriptor) {
+            for item in items {
+                context.delete(item)
             }
             try? context.save()
         }
-    }
-
-    /// Load cached items for a given team, sorted by publishedAt descending.
-    func loadCachedItems(teamId: String, context: ModelContext) async -> [CachedContentItem] {
-        await MainActor.run {
-            let descriptor = FetchDescriptor<CachedContentItem>(
-                predicate: #Predicate { $0.teamId == teamId },
-                sortBy: [SortDescriptor(\.publishedAt, order: .reverse)]
-            )
-            return (try? context.fetch(descriptor)) ?? []
-        }
-    }
-
-    /// Delete items older than 30 days.
-    func purgeOldItems(context: ModelContext) async {
-        await MainActor.run {
-            let cutoff = Calendar.current.date(byAdding: .day, value: -30, to: Date())!
-            let descriptor = FetchDescriptor<CachedContentItem>(
-                predicate: #Predicate { $0.cachedAt < cutoff }
-            )
-            if let old = try? context.fetch(descriptor) {
-                for item in old {
-                    context.delete(item)
-                }
-                try? context.save()
-            }
-        }
-    }
-
-    /// Clear all cached items (used on team switch).
-    func clearAll(context: ModelContext) {
-        try? context.delete(model: CachedContentItem.self)
-        try? context.save()
     }
 }

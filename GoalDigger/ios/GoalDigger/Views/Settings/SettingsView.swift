@@ -1,132 +1,109 @@
 import SwiftUI
-import SwiftData
 import UserNotifications
 
-/// Settings screen with team change, notification status, about, and contact.
 struct SettingsView: View {
-    @Environment(AppState.self) var appState
-    @Environment(\.modelContext) var modelContext
-    @Environment(\.dismiss) var dismiss
-
-    @State private var showTeamChange = false
-    @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
-    @State private var showConfirmation = false
-    @State private var pendingTeam: Team?
+    @Environment(AppState.self) private var appState
+    @State private var notificationsEnabled = false
+    @State private var showingTeamChange = false
 
     var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    Button {
-                        showTeamChange = true
-                    } label: {
+        List {
+            // Your Team
+            Section {
+                Button {
+                    showingTeamChange = true
+                } label: {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Your Team")
+                                .font(Theme.settingsItem)
+                                .foregroundStyle(Theme.textSecondary)
+                            Text(appState.selectedTeam?.displayName ?? "None")
+                                .font(Theme.feedHeadline)
+                                .foregroundStyle(Theme.textPrimary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                }
+            }
+
+            // Notifications
+            Section {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Notifications")
+                            .font(Theme.settingsItem)
+                            .foregroundStyle(Theme.textSecondary)
+                        if notificationsEnabled {
+                            Text("Enabled")
+                                .font(Theme.feedHeadline)
+                                .foregroundStyle(Theme.accentGreen)
+                        } else {
+                            Text("Disabled")
+                                .font(Theme.feedHeadline)
+                                .foregroundStyle(Theme.textTertiary)
+                        }
+                    }
+                    Spacer()
+                    if !notificationsEnabled {
+                        Button("Open Settings") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
+                        .font(Theme.feedTimestamp)
+                        .foregroundStyle(Theme.accentWarm)
+                    }
+                }
+            }
+
+            // About
+            Section {
+                NavigationLink {
+                    aboutView
+                } label: {
+                    Text("About Goal Digger")
+                        .font(Theme.settingsItem)
+                        .foregroundStyle(Theme.textPrimary)
+                }
+
+                if let url = URL(string: "mailto:hello@goaldigger.app") {
+                    Link(destination: url) {
                         HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Your Team")
-                                    .font(.settingsItem)
-                                    .foregroundColor(.textSecondary)
-                                Text(appState.selectedTeam?.displayName ?? "None")
-                                    .font(.feedHeadline)
-                                    .foregroundColor(.textPrimary)
-                            }
+                            Text("Contact Us")
+                                .font(Theme.settingsItem)
+                                .foregroundStyle(Theme.textPrimary)
                             Spacer()
-                            Image(systemName: "chevron.right")
-                                .foregroundColor(.textTertiary)
+                            Image(systemName: "arrow.up.right")
+                                .font(.caption)
+                                .foregroundStyle(Theme.textTertiary)
                         }
                     }
                 }
+            }
 
-                Section {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Notifications")
-                                .font(.settingsItem)
-                                .foregroundColor(.textSecondary)
-
-                            if notificationStatus == .authorized {
-                                HStack(spacing: 4) {
-                                    Text("Enabled")
-                                        .font(.feedHeadline)
-                                        .foregroundColor(.textPrimary)
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(.accentGreen)
-                                }
-                            } else {
-                                Button {
-                                    if let url = URL(string: UIApplication.openSettingsURLString) {
-                                        UIApplication.shared.open(url)
-                                    }
-                                } label: {
-                                    HStack(spacing: 4) {
-                                        Text("Disabled \u{2014} Open Settings")
-                                            .font(.feedHeadline)
-                                            .foregroundColor(.textPrimary)
-                                        Image(systemName: "chevron.right")
-                                            .foregroundColor(.textTertiary)
-                                    }
-                                }
-                            }
-                        }
-                        Spacer()
-                    }
-                }
-
-                Section {
-                    NavigationLink {
-                        AboutView()
-                    } label: {
-                        Text("About Goal Digger")
-                            .font(.settingsItem)
-                            .foregroundColor(.textPrimary)
-                    }
-
-                    if let mailto = URL(string: "mailto:hello@goaldigger.app") {
-                        Link(destination: mailto) {
-                            HStack {
-                                Text("Contact Us")
-                                    .font(.settingsItem)
-                                    .foregroundColor(.textPrimary)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.textTertiary)
-                            }
-                        }
-                    }
-                }
-
-                Section {
-                    HStack {
-                        Spacer()
-                        Text("Version 1.0.0")
-                            .font(.feedTimestamp)
-                            .foregroundColor(.textTertiary)
-                        Spacer()
-                    }
-                    .listRowBackground(Color.clear)
+            // Version
+            Section {
+                HStack {
+                    Text("Version")
+                        .font(Theme.settingsItem)
+                        .foregroundStyle(Theme.textSecondary)
+                    Spacer()
+                    Text("1.0")
+                        .font(Theme.feedTimestamp)
+                        .foregroundStyle(Theme.textTertiary)
                 }
             }
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.large)
-            .sheet(isPresented: $showTeamChange) {
-                teamChangeSheet
-            }
-            .confirmationDialog(
-                "Switch to \(pendingTeam?.displayName ?? "")?",
-                isPresented: $showConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button("Switch Team") {
-                    if let team = pendingTeam {
-                        switchTeam(to: team)
-                    }
-                }
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("Your feed will update to show content for \(pendingTeam?.displayName ?? "the new team").")
-            }
-            .task {
-                notificationStatus = await NotificationService.shared.checkAuthorizationStatus()
-            }
+        }
+        .navigationTitle("Settings")
+        .sheet(isPresented: $showingTeamChange) {
+            teamChangeSheet
+        }
+        .task {
+            await checkNotificationStatus()
         }
     }
 
@@ -134,90 +111,89 @@ struct SettingsView: View {
 
     private var teamChangeSheet: some View {
         NavigationStack {
-            VStack(spacing: Layout.cardSpacing) {
-                Text("Switch Team")
-                    .font(.detailTitle)
-                    .foregroundColor(.textPrimary)
-                    .padding(.top, Layout.sectionSpacing)
+            VStack(spacing: Theme.sectionSpacing) {
+                Text("Change your team")
+                    .font(Theme.detailTitle)
+                    .foregroundStyle(Theme.textPrimary)
+                    .padding(.top, Theme.sectionSpacing)
 
-                ForEach(Team.allCases) { team in
-                    TeamPickerCard(
-                        team: team,
-                        isSelected: appState.selectedTeam == team
-                    ) {
-                        if team != appState.selectedTeam {
-                            pendingTeam = team
-                            showTeamChange = false
-                            showConfirmation = true
+                VStack(spacing: Theme.cardSpacing) {
+                    ForEach(Team.allCases) { team in
+                        Button {
+                            appState.selectedTeam = team
+                            NotificationService.shared.handleTeamChange(newTeam: team)
+                            showingTeamChange = false
+                        } label: {
+                            HStack {
+                                Text(team.displayName)
+                                    .font(Theme.feedHeadline)
+                                    .foregroundStyle(Theme.textPrimary)
+                                Spacer()
+                                if appState.selectedTeam == team {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(Theme.accentWarm)
+                                }
+                            }
+                            .padding(Theme.cardPadding)
+                            .background(Theme.cardBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: Theme.cardCornerRadius)
+                                    .stroke(
+                                        appState.selectedTeam == team ? Theme.accentWarm : .clear,
+                                        lineWidth: 2
+                                    )
+                            )
                         }
+                        .buttonStyle(.plain)
                     }
                 }
+                .padding(.horizontal, Theme.screenPadding)
 
                 Spacer()
             }
-            .padding(.horizontal, Layout.screenPadding)
-            .background(Color.appBackground)
+            .background(Theme.appBackground.ignoresSafeArea())
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { showTeamChange = false }
+                    Button("Done") {
+                        showingTeamChange = false
+                    }
+                    .foregroundStyle(Theme.accentWarm)
                 }
             }
         }
     }
 
-    // MARK: - Team Switch Logic
+    // MARK: - About View
 
-    private func switchTeam(to team: Team) {
-        let oldToken = UserDefaults.standard.string(forKey: "apnsToken")
-        appState.selectedTeam = team
-
-        if let token = oldToken {
-            Task {
-                try? await APIClient.shared.updateTokenTeam(token, newTeamId: team.rawValue)
-            }
-        }
-
-        Task { @MainActor in
-            CacheService.shared.clearAll(context: modelContext)
-        }
-
-        dismiss()
-    }
-}
-
-// MARK: - About View
-
-struct AboutView: View {
-    var body: some View {
+    private var aboutView: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: Layout.sectionSpacing) {
+            VStack(spacing: Theme.sectionSpacing) {
                 Text("Goal Digger")
-                    .font(.detailTitle)
-                    .foregroundColor(.textPrimary)
+                    .font(Theme.onboardingTitle)
+                    .foregroundStyle(Theme.textPrimary)
 
-                Text("Stay in the loop. Win the conversation.")
-                    .font(.detailBody)
-                    .foregroundColor(.textSecondary)
+                Text("Football news your way — warm, fun, and easy to talk about.")
+                    .font(Theme.onboardingBody)
+                    .foregroundStyle(Theme.textSecondary)
+                    .multilineTextAlignment(.center)
 
-                Text("Goal Digger helps you keep up with your partner's Premier League team \u{2014} without actually watching football. We send you the highlights, the talking points, and the things to say so you can connect over something he loves.")
-                    .font(.detailBody)
-                    .foregroundColor(.textPrimary)
-                    .lineSpacing(4)
-
-                Text("No jargon. No boring stats. Just the good stuff, explained like a friend would.")
-                    .font(.detailBody)
-                    .foregroundColor(.textSecondary)
-                    .lineSpacing(4)
+                Text("Built for partners, friends, and anyone who wants to connect through football without needing a degree in sports science.")
+                    .font(Theme.detailBody)
+                    .foregroundStyle(Theme.textTertiary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Theme.screenPadding)
             }
-            .padding(Layout.screenPadding)
+            .padding(Theme.screenPadding)
         }
-        .background(Color.appBackground)
+        .background(Theme.appBackground.ignoresSafeArea())
         .navigationTitle("About")
-        .navigationBarTitleDisplayMode(.inline)
     }
-}
 
-#Preview {
-    SettingsView()
-        .environment(AppState.shared)
+    // MARK: - Notification Check
+
+    private func checkNotificationStatus() async {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        notificationsEnabled = settings.authorizationStatus == .authorized
+    }
 }

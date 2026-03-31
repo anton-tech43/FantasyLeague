@@ -1,36 +1,32 @@
 import SwiftUI
 
-/// Reusable empty/error state view with icon, title, and message.
 struct EmptyStateView: View {
     let icon: String
     let title: String
     let message: String
 
+    init(icon: String = "bubble.left.and.bubble.right", title: String, message: String) {
+        self.icon = icon
+        self.title = title
+        self.message = message
+    }
+
     var body: some View {
-        VStack(spacing: Layout.elementSpacing) {
+        VStack(spacing: Theme.sectionSpacing) {
             Image(systemName: icon)
                 .font(.system(size: 50))
-                .foregroundColor(.textTertiary)
+                .foregroundStyle(Theme.textTertiary)
 
             Text(title)
-                .font(.feedHeadline)
-                .foregroundColor(.textSecondary)
+                .font(Theme.feedHeadline)
+                .foregroundStyle(Theme.textSecondary)
 
             Text(message)
-                .font(.onboardingBody)
-                .foregroundColor(.textTertiary)
+                .font(Theme.onboardingBody)
+                .foregroundStyle(Theme.textTertiary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 280)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(Theme.screenPadding)
     }
-}
-
-#Preview {
-    EmptyStateView(
-        icon: "bubble.left.and.bubble.right",
-        title: "No updates yet",
-        message: "We'll let you know when something happens with Arsenal."
-    )
-    .background(Color.appBackground)
 }
