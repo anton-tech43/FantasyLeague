@@ -5,10 +5,17 @@ struct ContentCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.elementSpacing) {
-            // Row 1: Badge + Timestamp
+            // Row 1: Badge + Mood + Timestamp
             HStack {
                 badgeView
+
+                if let mood = item.moodEmoji {
+                    Text(mood)
+                        .font(.system(size: 14))
+                }
+
                 Spacer()
+
                 Text(item.publishedAt.relativeFormatted)
                     .font(Theme.feedTimestamp)
                     .foregroundStyle(Theme.textTertiary)

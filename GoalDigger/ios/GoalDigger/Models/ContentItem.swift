@@ -61,6 +61,18 @@ struct ContentItem: Identifiable, Codable {
         return matchdayData?.metadata
     }
 
+    /// Mood emoji based on emotional context — only maps known backend values
+    var moodEmoji: String? {
+        switch emotionalContext {
+        case "exciting": return "🔥"
+        case "bad_news": return "😬"
+        case "drama":    return "👀"
+        case "funny":    return "😂"
+        case "nervous":  return "😰"
+        default:         return nil
+        }
+    }
+
     // MARK: - Custom Decoder
 
     init(from decoder: Decoder) throws {
