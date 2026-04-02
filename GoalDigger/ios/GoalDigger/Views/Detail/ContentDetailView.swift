@@ -27,7 +27,7 @@ struct ContentDetailView: View {
 
                 VStack(spacing: Theme.elementSpacing) {
                     ForEach(item.regularTalkingPoints, id: \.self) { point in
-                        TalkingPointCard(text: point)
+                        TalkingPointCard(text: point, headline: item.headline)
                     }
                 }
 
@@ -141,6 +141,13 @@ struct ContentDetailView: View {
 
 private struct TalkingPointCard: View {
     let text: String
+    var headline: String = ""
+    @State private var copied = false
+
+    /// Plain text only — no URLs, no sensitive data
+    private var shareText: String {
+        "\(text)\n\n— via Goal Digger"
+    }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -149,10 +156,48 @@ private struct TalkingPointCard: View {
                 .fill(Theme.accentWarm)
                 .frame(width: 3)
 
-            Text(text)
-                .font(Theme.talkingPointText)
-                .foregroundStyle(Theme.textPrimary)
-                .padding(14)
+            VStack(alignment: .leading, spacing: 8) {
+                Text(text)
+                    .font(Theme.talkingPointText)
+                    .foregroundStyle(Theme.textPrimary)
+                    .multilineTextAlignment(.leading)
+
+                // Action row: copy + share
+                HStack(spacing: 16) {
+                    Spacer()
+
+                    Button {
+                        UIPasteboard.general.string = text
+                        copied = true
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            withAnimation { copied = false }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                                .font(.system(size: 11))
+                            Text(copied ? "Copied" : "Copy")
+                                .font(.system(.caption2, design: .rounded, weight: .medium))
+                        }
+                        .foregroundStyle(copied ? Theme.accentGreen : Theme.textTertiary)
+                        .animation(.easeInOut(duration: 0.2), value: copied)
+                    }
+                    .buttonStyle(.plain)
+
+                    ShareLink(item: shareText) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.system(size: 11))
+                            Text("Share")
+                                .font(.system(.caption2, design: .rounded, weight: .medium))
+                        }
+                        .foregroundStyle(Theme.textTertiary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(14)
         }
         .background(Theme.accentSoft.opacity(0.3))
         .clipShape(RoundedRectangle(cornerRadius: 12))

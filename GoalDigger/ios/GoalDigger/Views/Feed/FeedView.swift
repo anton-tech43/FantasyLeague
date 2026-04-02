@@ -58,19 +58,42 @@ struct FeedView: View {
 
     // MARK: - Feed Content
 
+    private var greetingText: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        let team = appState.selectedTeam?.shortName ?? "your team"
+        switch hour {
+        case 5..<12:  return "Good morning — here's what's up with \(team)"
+        case 12..<17: return "Afternoon update for \(team)"
+        case 17..<21: return "Evening round-up for \(team)"
+        default:       return "Late night \(team) update"
+        }
+    }
+
     private var feedContent: some View {
         ScrollView {
             LazyVStack(spacing: Theme.cardSpacing) {
+                // Greeting header
+                Text(greetingText)
+                    .font(Theme.talkingPointText)
+                    .foregroundStyle(Theme.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.bottom, 4)
+
                 if let freshness = contentFreshness {
                     freshnessCard(freshness)
                 }
 
-                ForEach(items) { item in
+                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                     NavigationLink(value: item) {
                         ContentCard(item: item)
                     }
                     .buttonStyle(.plain)
-                    .sensoryFeedback(.selection, trigger: item.id)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(
+                        .spring(response: 0.4, dampingFraction: 0.8)
+                            .delay(Double(index) * 0.06),
+                        value: items.count
+                    )
                 }
             }
             .padding(.horizontal, Theme.screenPadding)
@@ -209,7 +232,9 @@ struct FeedView: View {
                 return
             }
         } catch {
+            #if DEBUG
             print("[Feed] API fetch failed: \(error)")
+            #endif
         }
 
         // Fall back to cache

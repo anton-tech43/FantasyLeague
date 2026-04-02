@@ -21,6 +21,17 @@ struct ContentCard: View {
                     .foregroundStyle(Theme.textTertiary)
             }
 
+            // Kickoff countdown for matchday items
+            if let countdown = item.kickoffCountdown {
+                HStack(spacing: 6) {
+                    Image(systemName: "clock")
+                        .font(.system(size: 11))
+                    Text(countdown)
+                        .font(Theme.feedBadge)
+                }
+                .foregroundStyle(Theme.accentGreen)
+            }
+
             // Row 2: Headline (max 3 lines)
             Text(item.headline)
                 .font(Theme.feedHeadline)

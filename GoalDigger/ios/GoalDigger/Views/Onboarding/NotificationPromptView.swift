@@ -62,7 +62,7 @@ struct NotificationPromptView: View {
 
     private func completeOnboarding() {
         appState.notificationPermissionRequested = true
-        appState.hasCompletedOnboarding = true
+        // Don't set hasCompletedOnboarding here — the celebration screen does that
         onComplete()
     }
 }
