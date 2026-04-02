@@ -24,9 +24,17 @@ struct FeedView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Text(appState.selectedTeam?.shortName ?? "Goal Digger")
-                        .font(Theme.detailTitle)
-                        .foregroundStyle(Theme.textPrimary)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(appState.selectedTeam?.displayName ?? "Goal Digger")
+                            .font(.system(.headline, design: .serif, weight: .bold))
+                            .foregroundStyle(Theme.textPrimary)
+
+                        if let partner = appState.partnerName {
+                            Text("\(partner)'s team")
+                                .font(.system(.caption, design: .rounded, weight: .medium))
+                                .foregroundStyle(Theme.textTertiary)
+                        }
+                    }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink(value: "settings") {
@@ -60,12 +68,12 @@ struct FeedView: View {
 
     private var greetingText: String {
         let hour = Calendar.current.component(.hour, from: Date())
-        let team = appState.selectedTeam?.shortName ?? "your team"
+        let partner = appState.partnerName ?? "him"
         switch hour {
-        case 5..<12:  return "Good morning ☀️ Here's the latest on \(team)"
-        case 12..<17: return "Afternoon catch-up on \(team) 💕"
-        case 17..<21: return "Evening round-up for \(team) ✨"
-        default:       return "Late night \(team) gossip 🌙"
+        case 5..<12:  return "Good morning \u{2014} here's what \(partner) might be talking about today"
+        case 12..<17: return "Quick afternoon intel on \(appState.selectedTeam?.shortName ?? "your team")"
+        case 17..<21: return "Evening update \u{2014} here's what to know before you see \(partner)"
+        default:       return "Late night catch-up \u{2014} tomorrow's talking points"
         }
     }
 
@@ -171,39 +179,43 @@ struct FeedView: View {
         Group {
             switch freshness {
             case .caughtUp:
-                VStack(spacing: Theme.elementSpacing) {
-                    Image(systemName: "checkmark.circle")
-                        .font(.system(size: 24))
-                        .foregroundStyle(Theme.accentGreen)
+                VStack(spacing: 10) {
+                    Text("🌙")
+                        .font(.system(size: 28))
 
-                    Text("You're all caught up")
+                    Text("All quiet tonight")
                         .font(Theme.feedHeadline)
-                        .foregroundStyle(Theme.textSecondary)
+                        .foregroundStyle(Theme.textPrimary)
 
-                    Text("Nothing new for \(appState.selectedTeam?.shortName ?? "your team") right now. We'll ping you when something happens.")
+                    Text("No big news. We'll nudge you before anything important \u{2014} no need to stay up.")
                         .font(Theme.onboardingBody)
                         .foregroundStyle(Theme.textTertiary)
                         .multilineTextAlignment(.center)
+                        .frame(maxWidth: 260)
                 }
-                .padding(Theme.cardPadding)
+                .padding(Theme.cardPadding + 4)
                 .frame(maxWidth: .infinity)
-                .background(Theme.feedDivider)
+                .background(Theme.cardBackgroundAlt)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius))
 
             case .quietWeek:
-                VStack(spacing: Theme.elementSpacing) {
-                    Text("Quiet week for \(appState.selectedTeam?.shortName ?? "your team")")
-                        .font(Theme.feedHeadline)
-                        .foregroundStyle(Theme.textSecondary)
+                VStack(spacing: 10) {
+                    Text("☀️")
+                        .font(.system(size: 28))
 
-                    Text("Not much happening right now. We'll let you know when there's something worth talking about.")
+                    Text("Quiet week")
+                        .font(Theme.feedHeadline)
+                        .foregroundStyle(Theme.textPrimary)
+
+                    Text("Not much drama with \(appState.selectedTeam?.shortName ?? "your team") right now. Enjoy the peace \u{2014} we'll let you know when there's something worth talking about.")
                         .font(Theme.onboardingBody)
                         .foregroundStyle(Theme.textTertiary)
                         .multilineTextAlignment(.center)
+                        .frame(maxWidth: 280)
                 }
-                .padding(Theme.cardPadding)
+                .padding(Theme.cardPadding + 4)
                 .frame(maxWidth: .infinity)
-                .background(Theme.feedDivider)
+                .background(Theme.cardBackgroundAlt)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius))
             }
         }

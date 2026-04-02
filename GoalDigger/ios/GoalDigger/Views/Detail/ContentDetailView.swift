@@ -143,6 +143,7 @@ private struct TalkingPointCard: View {
     let text: String
     var headline: String = ""
     @State private var copied = false
+    @State private var isSaved: Bool = false
 
     /// Plain text only — no URLs, no sensitive data
     private var shareText: String {
@@ -156,10 +157,28 @@ private struct TalkingPointCard: View {
                 .foregroundStyle(Theme.textPrimary)
                 .multilineTextAlignment(.leading)
 
-            // Action row: copy + share
-            HStack(spacing: 16) {
+            // Action row: save + copy + share
+            HStack(spacing: 14) {
+                // Save/bookmark
+                Button {
+                    SavedPointsService.shared.toggle(text)
+                    isSaved.toggle()
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: isSaved ? "heart.fill" : "heart")
+                            .font(.system(size: 12))
+                        Text(isSaved ? "Saved" : "Save")
+                            .font(.system(.caption2, design: .rounded, weight: .medium))
+                    }
+                    .foregroundStyle(isSaved ? Theme.accentWarm : Theme.textTertiary)
+                    .animation(.easeInOut(duration: 0.2), value: isSaved)
+                }
+                .buttonStyle(.plain)
+
                 Spacer()
 
+                // Copy
                 Button {
                     UIPasteboard.general.string = text
                     copied = true
@@ -179,6 +198,7 @@ private struct TalkingPointCard: View {
                 }
                 .buttonStyle(.plain)
 
+                // Share
                 ShareLink(item: shareText) {
                     HStack(spacing: 4) {
                         Image(systemName: "square.and.arrow.up")
@@ -193,11 +213,14 @@ private struct TalkingPointCard: View {
         }
         .padding(14)
         .background(Theme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Theme.accentWarm.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Theme.cardBorder, lineWidth: 1)
         )
+        .onAppear {
+            isSaved = SavedPointsService.shared.isSaved(text)
+        }
     }
 }
 

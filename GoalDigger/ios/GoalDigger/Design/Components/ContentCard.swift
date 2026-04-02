@@ -32,17 +32,40 @@ struct ContentCard: View {
                 .foregroundStyle(Theme.accentGreen)
             }
 
-            // Row 2: Headline (max 3 lines)
+            // Headline — serif, editorial
             Text(item.headline)
                 .font(Theme.feedHeadline)
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(3)
+                .multilineTextAlignment(.leading)
 
-            // Row 3: "Read more" right-aligned
+            // Conversation starter preview — first talking point as italic teaser
+            if let firstPoint = item.regularTalkingPoints.first {
+                HStack(spacing: 0) {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Theme.accentWarm.opacity(0.5))
+                        .frame(width: 2)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("CONVERSATION STARTER")
+                            .font(.system(.caption2, design: .rounded, weight: .bold))
+                            .foregroundStyle(Theme.accentWarm)
+
+                        Text("\"\(firstPoint.prefix(80))...\"")
+                            .font(Theme.conversationStarter)
+                            .foregroundStyle(Theme.textSecondary)
+                            .lineLimit(2)
+                    }
+                    .padding(.leading, 10)
+                }
+                .padding(.vertical, 4)
+            }
+
+            // "Full update" link
             HStack {
                 Spacer()
                 HStack(spacing: 4) {
-                    Text("Read more")
+                    Text("Full update")
                         .font(Theme.feedTimestamp)
                         .foregroundStyle(Theme.accentWarm)
                     Image(systemName: "arrow.right")
@@ -68,18 +91,29 @@ struct ContentCard: View {
     @ViewBuilder
     private var badgeView: some View {
         switch item.type {
-        case .news:
-            BadgeView(
-                text: "NEWS",
-                backgroundColor: Theme.accentSoft,
-                textColor: Theme.accentWarm
-            )
         case .matchday:
             BadgeView(
                 text: "MATCH DAY",
-                backgroundColor: Theme.accentGreen.opacity(0.2),
+                backgroundColor: Theme.accentGreen.opacity(0.15),
                 textColor: Theme.accentGreen
             )
+        case .news:
+            // Emotional framing: badge reflects how this affects him
+            BadgeView(
+                text: emotionalBadgeLabel,
+                backgroundColor: Theme.accentSoft.opacity(0.5),
+                textColor: Theme.accentWarm
+            )
+        }
+    }
+
+    private var emotionalBadgeLabel: String {
+        switch item.emotionalContext {
+        case "exciting": return "MOOD ALERT"
+        case "bad_news": return "HEADS UP"
+        case "drama":    return "MOOD ALERT"
+        case "funny":    return "CONVERSATION STARTER"
+        default:         return "UPDATE"
         }
     }
 }

@@ -8,35 +8,32 @@ struct WelcomeView: View {
         VStack(spacing: Theme.sectionSpacing) {
             Spacer()
 
-            // Playful emoji composition
+            // Warm illustration
             ZStack {
                 Circle()
-                    .fill(Theme.accentSoft.opacity(0.4))
-                    .frame(width: 160, height: 160)
-                    .scaleEffect(animate ? 1.0 : 0.9)
+                    .fill(Theme.accentSoft.opacity(0.3))
+                    .frame(width: 150, height: 150)
+                    .scaleEffect(animate ? 1.0 : 0.92)
 
-                VStack(spacing: 4) {
-                    Text("⚽💕")
-                        .font(.system(size: 50))
-                    Text("💬")
-                        .font(.system(size: 36))
-                }
-                .scaleEffect(animate ? 1.0 : 0.85)
+                Text("💬")
+                    .font(.system(size: 56))
+                    .scaleEffect(animate ? 1.0 : 0.88)
             }
-            .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: animate)
+            .animation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true), value: animate)
 
-            // App name
+            // App name — serif, editorial
             Text("Goal Digger")
                 .font(Theme.onboardingTitle)
                 .foregroundStyle(Theme.textPrimary)
 
-            // Tagline — conversational, not corporate
-            VStack(spacing: 8) {
-                Text("Football chat made easy.")
-                    .font(Theme.onboardingBody)
+            // Tagline — relationship-coded, not sporty
+            VStack(spacing: 10) {
+                Text("Your secret weapon for\nfootball conversations")
+                    .font(Theme.detailBodyItalic)
                     .foregroundStyle(Theme.textSecondary)
+                    .multilineTextAlignment(.center)
 
-                Text("Like your best friend who actually\nwatches the games.")
+                Text("We translate football into things\nyou'll actually want to say.")
                     .font(Theme.feedTimestamp)
                     .foregroundStyle(Theme.textTertiary)
                     .multilineTextAlignment(.center)
@@ -44,10 +41,10 @@ struct WelcomeView: View {
 
             Spacer()
 
-            // CTA Button
+            // CTA
             Button(action: onGetStarted) {
-                Text("Let's go ✨")
-                    .font(Theme.feedHeadline)
+                Text("Get started")
+                    .font(.system(.body, design: .rounded, weight: .semibold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 54)
@@ -59,11 +56,10 @@ struct WelcomeView: View {
                         )
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 18))
-                    .shadow(color: Theme.accentWarm.opacity(0.3), radius: 8, y: 4)
+                    .shadow(color: Theme.accentWarm.opacity(0.2), radius: 10, y: 4)
             }
 
-            Spacer()
-                .frame(height: 40)
+            Spacer().frame(height: 40)
         }
         .padding(.horizontal, Theme.screenPadding)
         .background(Theme.backgroundGradient.ignoresSafeArea())

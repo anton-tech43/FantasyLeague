@@ -42,14 +42,34 @@ struct OnboardingFlow: View {
                     withAnimation { currentStep = 1 }
                 }
             case 1:
-                TeamSelectionView {
-                    withAnimation { currentStep = 2 }
-                }
+                NameInputView(
+                    title: "What's your name?",
+                    subtitle: "So we can make this feel personal.",
+                    placeholder: "Your name",
+                    onContinue: { name in
+                        appState.userName = name.isEmpty ? nil : name
+                        withAnimation { currentStep = 2 }
+                    }
+                )
             case 2:
-                NotificationPromptView {
-                    withAnimation { currentStep = 3 }
-                }
+                NameInputView(
+                    title: "And his name?",
+                    subtitle: "We'll use it to make updates feel more relevant to you.",
+                    placeholder: "His name",
+                    onContinue: { name in
+                        appState.partnerName = name.isEmpty ? nil : name
+                        withAnimation { currentStep = 3 }
+                    }
+                )
             case 3:
+                TeamSelectionView {
+                    withAnimation { currentStep = 4 }
+                }
+            case 4:
+                NotificationPromptView {
+                    withAnimation { currentStep = 5 }
+                }
+            case 5:
                 OnboardingCelebrationView()
             default:
                 EmptyView()
@@ -59,6 +79,76 @@ struct OnboardingFlow: View {
             insertion: .move(edge: .trailing),
             removal: .move(edge: .leading)
         ))
+    }
+}
+
+// MARK: - Name Input View
+
+struct NameInputView: View {
+    let title: String
+    let subtitle: String
+    let placeholder: String
+    let onContinue: (String) -> Void
+
+    @State private var name = ""
+    @FocusState private var isFocused: Bool
+
+    var body: some View {
+        VStack(spacing: Theme.sectionSpacing) {
+            Spacer()
+
+            Text(title)
+                .font(Theme.onboardingTitle)
+                .foregroundStyle(Theme.textPrimary)
+                .multilineTextAlignment(.center)
+
+            Text(subtitle)
+                .font(Theme.onboardingBody)
+                .foregroundStyle(Theme.textSecondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 280)
+
+            TextField(placeholder, text: $name)
+                .font(Theme.detailTitle)
+                .foregroundStyle(Theme.textPrimary)
+                .multilineTextAlignment(.center)
+                .textInputAutocapitalization(.words)
+                .focused($isFocused)
+                .padding()
+                .background(Theme.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Theme.cardCornerRadius)
+                        .stroke(Theme.cardBorder, lineWidth: 1)
+                )
+                .padding(.horizontal, 40)
+
+            Spacer()
+
+            Button {
+                onContinue(name.trimmingCharacters(in: .whitespacesAndNewlines))
+            } label: {
+                Text(name.isEmpty ? "Skip" : "Continue")
+                    .font(Theme.feedHeadline)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 54)
+                    .background(
+                        LinearGradient(
+                            colors: [Theme.accentWarm, Theme.accentPeach],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                    .shadow(color: Theme.accentWarm.opacity(0.3), radius: 8, y: 4)
+            }
+
+            Spacer().frame(height: 40)
+        }
+        .padding(.horizontal, Theme.screenPadding)
+        .background(Theme.backgroundGradient.ignoresSafeArea())
+        .onAppear { isFocused = true }
     }
 }
 
