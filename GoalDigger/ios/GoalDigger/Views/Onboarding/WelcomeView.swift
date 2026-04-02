@@ -2,50 +2,71 @@ import SwiftUI
 
 struct WelcomeView: View {
     var onGetStarted: () -> Void
+    @State private var animate = false
 
     var body: some View {
         VStack(spacing: Theme.sectionSpacing) {
             Spacer()
 
-            // Illustration placeholder
-            VStack(spacing: 12) {
-                Image(systemName: "message.fill")
-                    .font(.system(size: 60))
-                    .foregroundStyle(Theme.accentWarm)
-                Image(systemName: "heart.fill")
-                    .font(.system(size: 30))
-                    .foregroundStyle(Theme.accentSoft)
+            // Playful emoji composition
+            ZStack {
+                Circle()
+                    .fill(Theme.accentSoft.opacity(0.4))
+                    .frame(width: 160, height: 160)
+                    .scaleEffect(animate ? 1.0 : 0.9)
+
+                VStack(spacing: 4) {
+                    Text("⚽💕")
+                        .font(.system(size: 50))
+                    Text("💬")
+                        .font(.system(size: 36))
+                }
+                .scaleEffect(animate ? 1.0 : 0.85)
             }
-            .frame(width: 200, height: 200)
+            .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: animate)
 
             // App name
             Text("Goal Digger")
                 .font(Theme.onboardingTitle)
                 .foregroundStyle(Theme.textPrimary)
 
-            // Tagline
-            Text("Stay in the loop. Win the conversation.")
-                .font(Theme.onboardingBody)
-                .foregroundStyle(Theme.textSecondary)
-                .multilineTextAlignment(.center)
+            // Tagline — conversational, not corporate
+            VStack(spacing: 8) {
+                Text("Football chat made easy.")
+                    .font(Theme.onboardingBody)
+                    .foregroundStyle(Theme.textSecondary)
+
+                Text("Like your best friend who actually\nwatches the games.")
+                    .font(Theme.feedTimestamp)
+                    .foregroundStyle(Theme.textTertiary)
+                    .multilineTextAlignment(.center)
+            }
 
             Spacer()
 
             // CTA Button
             Button(action: onGetStarted) {
-                Text("Get Started")
+                Text("Let's go ✨")
                     .font(Theme.feedHeadline)
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(Theme.accentWarm)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .frame(height: 54)
+                    .background(
+                        LinearGradient(
+                            colors: [Theme.accentWarm, Theme.accentPeach],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                    .shadow(color: Theme.accentWarm.opacity(0.3), radius: 8, y: 4)
             }
 
             Spacer()
                 .frame(height: 40)
         }
         .padding(.horizontal, Theme.screenPadding)
-        .background(Theme.appBackground.ignoresSafeArea())
+        .background(Theme.backgroundGradient.ignoresSafeArea())
+        .onAppear { animate = true }
     }
 }

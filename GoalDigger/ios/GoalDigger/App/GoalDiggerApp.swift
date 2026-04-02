@@ -73,17 +73,16 @@ struct OnboardingCelebrationView: View {
         VStack(spacing: Theme.sectionSpacing) {
             Spacer()
 
-            // Animated checkmark
+            // Animated celebration
             ZStack {
                 Circle()
-                    .fill(Theme.accentGreen.opacity(0.15))
-                    .frame(width: 120, height: 120)
+                    .fill(Theme.accentWarm.opacity(0.12))
+                    .frame(width: 130, height: 130)
                     .scaleEffect(showCheck ? 1.0 : 0.5)
                     .opacity(showCheck ? 1.0 : 0.0)
 
-                Image(systemName: "checkmark")
-                    .font(.system(size: 50, weight: .bold))
-                    .foregroundStyle(Theme.accentGreen)
+                Text("🎉")
+                    .font(.system(size: 60))
                     .scaleEffect(showCheck ? 1.0 : 0.0)
             }
             .animation(.spring(response: 0.5, dampingFraction: 0.6), value: showCheck)
@@ -93,7 +92,7 @@ struct OnboardingCelebrationView: View {
                     .font(Theme.onboardingTitle)
                     .foregroundStyle(Theme.textPrimary)
 
-                Text("We'll keep you in the loop on \(appState.selectedTeam?.shortName ?? "your team"). Time to impress.")
+                Text("We'll keep you in the loop on \(appState.selectedTeam?.shortName ?? "your team").\nTime to impress 💕")
                     .font(Theme.onboardingBody)
                     .foregroundStyle(Theme.textSecondary)
                     .multilineTextAlignment(.center)
@@ -106,7 +105,7 @@ struct OnboardingCelebrationView: View {
             Spacer()
         }
         .padding(.horizontal, Theme.screenPadding)
-        .background(Theme.appBackground.ignoresSafeArea())
+        .background(Theme.backgroundGradient.ignoresSafeArea())
         .onAppear {
             showCheck = true
             showText = true

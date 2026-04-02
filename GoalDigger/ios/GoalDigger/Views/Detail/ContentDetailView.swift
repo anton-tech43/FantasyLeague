@@ -23,7 +23,7 @@ struct ContentDetailView: View {
                 divider
 
                 // Talking Points Section
-                sectionHeader("Things to say")
+                sectionHeader("Your cheat sheet 💬")
 
                 VStack(spacing: Theme.elementSpacing) {
                     ForEach(item.regularTalkingPoints, id: \.self) { point in
@@ -35,7 +35,7 @@ struct ContentDetailView: View {
                 if let cheatSheet = item.postMatchCheatSheet {
                     divider
 
-                    sectionHeader("After the match")
+                    sectionHeader("After the final whistle 🎯")
 
                     VStack(spacing: Theme.elementSpacing) {
                         // If they WIN
@@ -67,7 +67,7 @@ struct ContentDetailView: View {
                 divider
 
                 // Body Section
-                sectionHeader("The backstory")
+                sectionHeader("The tea ☕")
 
                 Text(item.body)
                     .font(Theme.detailBody)
@@ -83,7 +83,7 @@ struct ContentDetailView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "square.and.arrow.up")
                             .font(.system(size: 14))
-                        Text("Share this with a friend")
+                        Text("Send to a friend")
                             .font(Theme.feedHeadline)
                     }
                     .foregroundStyle(Theme.accentWarm)
@@ -99,7 +99,7 @@ struct ContentDetailView: View {
             }
             .padding(.horizontal, Theme.screenPadding)
         }
-        .background(Theme.appBackground.ignoresSafeArea())
+        .background(Theme.backgroundGradient.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -150,57 +150,54 @@ private struct TalkingPointCard: View {
     }
 
     var body: some View {
-        HStack(spacing: 0) {
-            // Left accent bar
-            RoundedRectangle(cornerRadius: 2)
-                .fill(Theme.accentWarm)
-                .frame(width: 3)
+        VStack(alignment: .leading, spacing: 8) {
+            Text(text)
+                .font(Theme.talkingPointText)
+                .foregroundStyle(Theme.textPrimary)
+                .multilineTextAlignment(.leading)
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text(text)
-                    .font(Theme.talkingPointText)
-                    .foregroundStyle(Theme.textPrimary)
-                    .multilineTextAlignment(.leading)
+            // Action row: copy + share
+            HStack(spacing: 16) {
+                Spacer()
 
-                // Action row: copy + share
-                HStack(spacing: 16) {
-                    Spacer()
-
-                    Button {
-                        UIPasteboard.general.string = text
-                        copied = true
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                            withAnimation { copied = false }
-                        }
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: copied ? "checkmark" : "doc.on.doc")
-                                .font(.system(size: 11))
-                            Text(copied ? "Copied" : "Copy")
-                                .font(.system(.caption2, design: .rounded, weight: .medium))
-                        }
-                        .foregroundStyle(copied ? Theme.accentGreen : Theme.textTertiary)
-                        .animation(.easeInOut(duration: 0.2), value: copied)
+                Button {
+                    UIPasteboard.general.string = text
+                    copied = true
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        withAnimation { copied = false }
                     }
-                    .buttonStyle(.plain)
-
-                    ShareLink(item: shareText) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "square.and.arrow.up")
-                                .font(.system(size: 11))
-                            Text("Share")
-                                .font(.system(.caption2, design: .rounded, weight: .medium))
-                        }
-                        .foregroundStyle(Theme.textTertiary)
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                            .font(.system(size: 11))
+                        Text(copied ? "Copied!" : "Copy")
+                            .font(.system(.caption2, design: .rounded, weight: .medium))
                     }
-                    .buttonStyle(.plain)
+                    .foregroundStyle(copied ? Theme.accentGreen : Theme.textTertiary)
+                    .animation(.easeInOut(duration: 0.2), value: copied)
                 }
+                .buttonStyle(.plain)
+
+                ShareLink(item: shareText) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 11))
+                        Text("Share")
+                            .font(.system(.caption2, design: .rounded, weight: .medium))
+                    }
+                    .foregroundStyle(Theme.textTertiary)
+                }
+                .buttonStyle(.plain)
             }
-            .padding(14)
         }
-        .background(Theme.accentSoft.opacity(0.3))
+        .padding(14)
+        .background(Theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Theme.accentWarm.opacity(0.3), lineWidth: 1)
+        )
     }
 }
 
@@ -213,25 +210,22 @@ private struct PostMatchCard: View {
     let barColor: Color
 
     var body: some View {
-        HStack(spacing: 0) {
-            // Left accent bar
-            RoundedRectangle(cornerRadius: 2)
-                .fill(barColor)
-                .frame(width: 3)
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label.uppercased())
+                .font(Theme.feedBadge)
+                .foregroundStyle(barColor)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(label.uppercased())
-                    .font(Theme.feedBadge)
-                    .foregroundStyle(Theme.textTertiary)
-
-                Text(text)
-                    .font(Theme.talkingPointText)
-                    .foregroundStyle(Theme.textPrimary)
-            }
-            .padding(14)
+            Text(text)
+                .font(Theme.talkingPointText)
+                .foregroundStyle(Theme.textPrimary)
         }
+        .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(backgroundColor)
+        .background(Theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(barColor.opacity(0.4), lineWidth: 1)
+        )
     }
 }

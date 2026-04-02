@@ -10,7 +10,7 @@ struct FeedView: View {
     var body: some View {
         NavigationStack(path: $navigationPath) {
             ZStack {
-                Theme.appBackground.ignoresSafeArea()
+                Theme.backgroundGradient.ignoresSafeArea()
 
                 if isLoading && items.isEmpty {
                     loadingView
@@ -62,10 +62,10 @@ struct FeedView: View {
         let hour = Calendar.current.component(.hour, from: Date())
         let team = appState.selectedTeam?.shortName ?? "your team"
         switch hour {
-        case 5..<12:  return "Good morning — here's what's up with \(team)"
-        case 12..<17: return "Afternoon update for \(team)"
-        case 17..<21: return "Evening round-up for \(team)"
-        default:       return "Late night \(team) update"
+        case 5..<12:  return "Good morning ☀️ Here's the latest on \(team)"
+        case 12..<17: return "Afternoon catch-up on \(team) 💕"
+        case 17..<21: return "Evening round-up for \(team) ✨"
+        default:       return "Late night \(team) gossip 🌙"
         }
     }
 

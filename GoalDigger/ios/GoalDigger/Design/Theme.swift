@@ -5,19 +5,38 @@ import SwiftUI
 // Reference: Agent2_Instructions.md Design System section.
 
 enum Theme {
-    // MARK: - Colors
+    // MARK: - Colors (Blush & Playful palette)
 
-    static let appBackground = Color(hex: "FAF8F5")
+    static let appBackgroundTop = Color(hex: "FFF5F5")
+    static let appBackgroundBottom = Color(hex: "FFF0E8")
+    static let appBackground = Color(hex: "FFF5F5") // fallback for non-gradient contexts
     static let cardBackground = Color.white
-    static let feedDivider = Color(hex: "F0ECE6")
+    static let cardBorder = Color(hex: "E8A0BF").opacity(0.35)
+    static let feedDivider = Color(hex: "F5E0E8")
     static let textPrimary = Color(hex: "1A1A1A")
-    static let textSecondary = Color(hex: "8A8480")
-    static let textTertiary = Color(hex: "B8B2AA")
-    static let accentWarm = Color(hex: "D4956A")
-    static let accentSoft = Color(hex: "E8CEB8")
-    static let accentGreen = Color(hex: "7DB07E")
-    static let cardShadow = Color.black.opacity(0.04)
-    static let shimmer = Color(hex: "F5F0EA")
+    static let textSecondary = Color(hex: "8A7F85")
+    static let textTertiary = Color(hex: "B8AAAF")
+    static let accentWarm = Color(hex: "E8A0BF")   // blush pink — primary accent
+    static let accentSoft = Color(hex: "FFD6E0")    // soft pink — backgrounds
+    static let accentPeach = Color(hex: "FFCBA4")   // peach — secondary accent
+    static let accentGreen = Color(hex: "7EC8A8")   // fresh mint
+    static let cardShadow = Color(hex: "E8A0BF").opacity(0.08)
+    static let shimmer = Color(hex: "FFE8EE")
+
+    // Mood card tints — subtle background tint per emotional context
+    static let moodExciting = Color(hex: "FFF3E8").opacity(0.6)
+    static let moodBadNews = Color(hex: "F0EEF5").opacity(0.6)
+    static let moodDrama = Color(hex: "F5EEFF").opacity(0.6)
+    static let moodFunny = Color(hex: "FEFCE8").opacity(0.6)
+
+    /// Gradient background for screens
+    static var backgroundGradient: LinearGradient {
+        LinearGradient(
+            colors: [appBackgroundTop, appBackgroundBottom],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+    }
 
     // MARK: - Typography (all SF Rounded)
 
@@ -46,11 +65,17 @@ enum Theme {
 // MARK: - Card Style Modifier
 
 struct CardStyle: ViewModifier {
+    var moodTint: Color? = nil
+
     func body(content: Content) -> some View {
         content
             .padding(Theme.cardPadding)
-            .background(Theme.cardBackground)
+            .background(moodTint ?? Theme.cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.cardCornerRadius)
+                    .stroke(Theme.cardBorder, lineWidth: 1)
+            )
             .shadow(
                 color: Theme.cardShadow,
                 radius: Theme.cardShadowRadius,
@@ -61,8 +86,8 @@ struct CardStyle: ViewModifier {
 }
 
 extension View {
-    func cardStyle() -> some View {
-        modifier(CardStyle())
+    func cardStyle(moodTint: Color? = nil) -> some View {
+        modifier(CardStyle(moodTint: moodTint))
     }
 }
 

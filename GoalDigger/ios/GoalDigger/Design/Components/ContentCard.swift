@@ -51,7 +51,18 @@ struct ContentCard: View {
                 }
             }
         }
-        .cardStyle()
+        .cardStyle(moodTint: moodTint)
+    }
+
+    /// Subtle background tint based on emotional context
+    private var moodTint: Color? {
+        switch item.emotionalContext {
+        case "exciting": return Theme.moodExciting
+        case "bad_news": return Theme.moodBadNews
+        case "drama":    return Theme.moodDrama
+        case "funny":    return Theme.moodFunny
+        default:         return nil
+        }
     }
 
     @ViewBuilder

@@ -152,7 +152,7 @@ struct SettingsView: View {
 
                 Spacer()
             }
-            .background(Theme.appBackground.ignoresSafeArea())
+            .background(Theme.backgroundGradient.ignoresSafeArea())
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") {
@@ -186,7 +186,7 @@ struct SettingsView: View {
             }
             .padding(Theme.screenPadding)
         }
-        .background(Theme.appBackground.ignoresSafeArea())
+        .background(Theme.backgroundGradient.ignoresSafeArea())
         .navigationTitle("About")
     }
 
