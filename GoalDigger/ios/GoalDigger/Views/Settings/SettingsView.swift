@@ -69,7 +69,9 @@ struct SettingsView: View {
 
             // Saved Talking Points
             Section {
-                NavigationLink(value: "savedPoints") {
+                NavigationLink {
+                    SavedPointsView()
+                } label: {
                     HStack {
                         Text("Saved talking points")
                             .font(Theme.settingsItem)
@@ -153,11 +155,6 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Settings")
-        .navigationDestination(for: String.self) { value in
-            if value == "savedPoints" {
-                SavedPointsView()
-            }
-        }
         .sheet(isPresented: $showingTeamChange) {
             teamChangeSheet
         }
