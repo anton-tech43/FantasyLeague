@@ -135,9 +135,13 @@ struct ContentDetailView: View {
     }
 
     private func sectionHeader(_ title: String, emoji: String) -> some View {
-        Text("\(title) \(emoji)")
-            .font(.system(.callout, design: .serif, weight: .semibold))
-            .foregroundStyle(Theme.textSecondary)
+        HStack(spacing: 6) {
+            Text(emoji)
+                .font(.system(size: 16))
+            Text(title)
+                .font(.system(.callout, design: .serif, weight: .semibold))
+                .foregroundStyle(Theme.accentPink)
+        }
     }
 }
 

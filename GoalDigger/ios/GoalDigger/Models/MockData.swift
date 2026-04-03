@@ -1,5 +1,14 @@
 import Foundation
 
+// MARK: - Mock Data
+// 5 golden examples for development. Talking points are written as
+// CONVERSATION OPENERS — things she'd actually say to start a dialogue,
+// not facts to memorize. Leading with curiosity, not information.
+//
+// For other agents: Pipeline Agent needs to update Claude prompts to
+// generate this conversation-opener style. Current prompts produce
+// fact-based talking points. See DEVELOPMENT_NOTES.md.
+
 enum MockData {
     // MARK: - Example 1: News — Transfer Confirmed (Arsenal)
     static let arsenalTransfer = ContentItem(
@@ -23,10 +32,10 @@ enum MockData {
         "proposing to the TV screen." This is the kind of signing fans dream about. Let him have his moment.
         """,
         talkingPoints: [
-            "So Arsenal signed this guy called Viktor Gyokeres from Sporting Lisbon — he scored like 40 goals last season. If he brings it up, just say 'That's a massive signing' and watch his face light up.",
-            "He cost around £85 million, which is a LOT. If you want to wind him up a bit, say 'Was he really worth that much?' — guaranteed debate starter.",
-            "The reason this is big: Arsenal have been struggling to score in big games. This guy is supposed to fix that. So if he seems over the moon, that's why.",
-            "If his mates are texting about it too, you could casually drop 'I heard about the Gyokeres signing' into the group chat. Hero status."
+            "I saw Arsenal signed that Sporting goal scorer — do you think he'll actually perform in the Premier League?",
+            "Was Gyokeres really worth £85 million though? That seems like a lot for someone from Portugal.",
+            "Do you think this means Arsenal are actually going to challenge for the title now?",
+            "I saw the Gyokeres thing on my phone — are you happy or do you think they overpaid?"
         ],
         emotionalContext: "exciting",
         publishedAt: Calendar.current.date(byAdding: .hour, value: -2, to: Date())!
@@ -59,21 +68,21 @@ enum MockData {
         directed at anything else for about two hours. This is normal. Bring snacks.
         """,
         talkingPoints: [
-            "This is THE rivalry. Arsenal and Tottenham are both from North London and they genuinely despise each other. Think of it like two siblings who've been competing since birth. Bring it up and he'll have opinions.",
-            "If you want to seem like you're paying attention, ask him 'How do you think Saka's going to do tonight?' — Saka is Arsenal's star player and this is the kind of game where he usually turns up.",
-            "Fun fact you can casually drop: Arsenal haven't lost to Spurs at home in over 3 years. If he's nervous, remind him of that. Instant brownie points.",
-            "The game kicks off at 17:30. If he goes quiet about an hour before, that's normal. It's not about you. He's mentally preparing."
+            "So why is the Tottenham game such a big deal? Is it like the biggest match of the season?",
+            "How do you think Saka will do tonight? I heard he usually shows up for the big ones.",
+            "Didn't Arsenal beat Tottenham every time recently? Should you even be nervous?",
+            "What happens if they lose tonight — does it actually matter for the league or is it more of a pride thing?"
         ],
         matchdayData: MatchdayTalkingPoints(
             regular: [
-                "This is THE rivalry. Arsenal and Tottenham are both from North London and they genuinely despise each other. Think of it like two siblings who've been competing since birth. Bring it up and he'll have opinions.",
-                "If you want to seem like you're paying attention, ask him 'How do you think Saka's going to do tonight?' — Saka is Arsenal's star player and this is the kind of game where he usually turns up.",
-                "Fun fact you can casually drop: Arsenal haven't lost to Spurs at home in over 3 years. If he's nervous, remind him of that. Instant brownie points.",
-                "The game kicks off at 17:30. If he goes quiet about an hour before, that's normal. It's not about you. He's mentally preparing."
+                "So why is the Tottenham game such a big deal? Is it like the biggest match of the season?",
+                "How do you think Saka will do tonight? I heard he usually shows up for the big ones.",
+                "Didn't Arsenal beat Tottenham every time recently? Should you even be nervous?",
+                "What happens if they lose tonight — does it actually matter for the league or is it more of a pride thing?"
             ],
             postMatch: PostMatchCheatSheet(
                 ifTheyWin: "That was massive, right?! You must be buzzing.",
-                ifTheyLose: "Unlucky. They'll bounce back though.",
+                ifTheyLose: "Unlucky. They'll bounce back though — it's still early, right?",
                 boldPrediction: "2-1 Arsenal"
             ),
             metadata: MatchdayMetadata(
@@ -109,10 +118,10 @@ enum MockData {
         him — it's a guaranteed 20-minute conversation.
         """,
         talkingPoints: [
-            "The rumour is that Man United want Frenkie de Jong from Barcelona. This has been going on for YEARS — it's like a will-they-won't-they romance. If he mentions it, just roll your eyes and say 'Not this again' — he'll find it hilarious.",
-            "If he seems excited about it, ask 'Do you actually think it'll happen this time?' — it's the right question because fans have been burned before. He'll appreciate that you get it.",
-            "Quick context: Man United's midfield has been their weak spot. Getting de Jong would be like finally hiring a competent manager after years of chaos at work. Big upgrade.",
-            "Fair warning: transfer rumours can drag on for WEEKS. If he keeps refreshing Twitter and mumbling about 'reliable sources,' this is why."
+            "Not the de Jong thing again?! Do you actually think it's happening this time or is it the same as every year?",
+            "Why do United keep going back for de Jong when he clearly doesn't want to leave? Is there no one else?",
+            "If they actually sign him, would that fix midfield or do they need more than one player?",
+            "I saw something about de Jong to United — are the sources reliable or is it just Twitter nonsense?"
         ],
         emotionalContext: "drama",
         publishedAt: Calendar.current.date(byAdding: .hour, value: -8, to: Date())!
@@ -141,10 +150,10 @@ enum MockData {
         "it's only football." We cannot stress this enough: never say "it's only football."
         """,
         talkingPoints: [
-            "Jarrod Bowen is basically West Ham's best player — he scores the most goals and creates the most chances. So this is a big deal, kind of like a band's lead singer pulling out of a tour.",
-            "It's a hamstring injury (back of the thigh) and he could be out for 3-4 weeks. If he seems down about it, just say 'How long is Bowen out for?' — shows you know it matters.",
-            "The silver lining you can offer: 'At least it's not a long-term thing, right?' This is genuinely helpful because hamstring injuries CAN be worse. You'll sound informed and reassuring.",
-            "West Ham play Liverpool this weekend without him. If he's worried about that, he's right to be — Liverpool are top of the league. Maybe don't mention that bit though."
+            "I saw Bowen got injured — how long is he out for? That must be frustrating.",
+            "Is there anyone who can replace him or is it one of those situations where you're just stuck?",
+            "At least it's only a few weeks, right? Could have been way worse for a hamstring.",
+            "Are you worried about the Liverpool game without him or do you think they'll manage?"
         ],
         emotionalContext: "bad_news",
         publishedAt: Calendar.current.date(byAdding: .hour, value: -12, to: Date())!
@@ -173,9 +182,9 @@ enum MockData {
         talking passionately about squad dynamics while you nod supportively.
         """,
         talkingPoints: [
-            "The manager basically said he's 'not happy with the attitude of some players' — which in football speak means there's DRAMA behind the scenes. If he's talking about it, just say 'That sounded intense' and let him vent.",
-            "This kind of thing usually means one of two things: either a player is about to get dropped (benched), or someone's getting sold. Ask him 'Who do you think he's talking about?' — he'll have a theory.",
-            "Fun angle: football press conferences are basically like reality TV. The managers drop hints, journalists try to catch them out, and fans read into every single word. He's probably been analysing the body language all afternoon."
+            "Did you see what the manager said about 'certain individuals'? Who do you think he's talking about?",
+            "Do you think someone's actually getting dropped or is it just mind games?",
+            "I saw the press conference clip — that was so passive aggressive. Is he always like that?"
         ],
         emotionalContext: "funny",
         publishedAt: Calendar.current.date(byAdding: .day, value: -1, to: Date())!

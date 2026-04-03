@@ -93,13 +93,6 @@ enum Theme {
 
     // MARK: - Gradients
 
-    /// CTA gradient — pink to peach, the signature look
-    static let ctaGradient = LinearGradient(
-        colors: [Color(hex: "E8A0BF"), Color(hex: "FFD6C4")],
-        startPoint: .leading,
-        endPoint: .trailing
-    )
-
     /// Background gradient — subtle warmth from top to bottom
     static let backgroundGradient = LinearGradient(
         colors: [appBackgroundTop, appBackgroundBottom],
@@ -148,9 +141,8 @@ struct GradientButtonStyle: ViewModifier {
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .frame(height: 50)
-            .background(Theme.ctaGradient)
+            .background(Theme.accentPink)
             .clipShape(RoundedRectangle(cornerRadius: 16))
-            .shadow(color: Color(hex: "E8A0BF").opacity(0.3), radius: 8, y: 4)
     }
 }
 

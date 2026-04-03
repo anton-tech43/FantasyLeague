@@ -44,9 +44,9 @@ struct TeamSelectionView: View {
 
                             Spacer()
 
-                            Image(systemName: "chevron.right")
+                            Image(systemName: selectedTeam == team ? "checkmark.circle.fill" : "chevron.right")
                                 .font(.body)
-                                .foregroundStyle(Theme.textTertiary)
+                                .foregroundStyle(selectedTeam == team ? Theme.accentPink : Theme.textTertiary)
                         }
                         .padding(Theme.cardPadding)
                         .frame(height: 80)
@@ -55,7 +55,7 @@ struct TeamSelectionView: View {
                         .overlay(
                             RoundedRectangle(cornerRadius: Theme.cardCornerRadius)
                                 .stroke(
-                                    selectedTeam == team ? Theme.accentWarm : .clear,
+                                    selectedTeam == team ? Theme.accentPink : .clear,
                                     lineWidth: 2
                                 )
                         )

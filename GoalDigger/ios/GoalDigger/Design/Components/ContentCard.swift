@@ -1,17 +1,14 @@
 import SwiftUI
 
 // MARK: - ContentCard
-// The main feed card — "relationship translator" card.
+// The main feed card — designed to deliver value WITHOUT tapping.
 //
 // Design decisions for other agents:
-// - Mood emoji next to badge for emotional context at a glance
-// - Emotional badge labels ("MOOD ALERT", "HEADS UP") replace generic labels
-// - "CONVERSATION STARTER" label above italic teaser — makes the value obvious
-// - Clock icon on kickoff countdown for matchday items
-// - Body text preview (italic serif, 2 lines) gives context before tapping
-// - "Full update →" with underline for tappability
+// - No body preview — save that for the detail view
+// - Full conversation opener in quotes — the thing she'd actually SAY
+// - This is not a news briefing card, it's a conversation starter card
+// - Card gives enough to start talking, detail gives the full story
 // - Mood tinting keyed to API emotionalContext values
-// - Default badge is "UPDATE" not "NEWS" — more personal, less press-release
 
 struct ContentCard: View {
     let item: ContentItem
@@ -49,35 +46,22 @@ struct ContentCard: View {
             Text(item.headline)
                 .font(Theme.feedHeadline)
                 .foregroundStyle(Theme.textPrimary)
-                .lineLimit(3)
                 .multilineTextAlignment(.leading)
 
-            // Body preview (italic serif, 2 lines)
-            Text(item.body)
-                .font(Theme.detailBodyItalic)
-                .foregroundStyle(Theme.textSecondary)
-                .lineLimit(2)
-
-            // Conversation starter — first talking point with label
+            // Conversation opener — full talking point in quotes, no line limit
             if let firstPoint = item.regularTalkingPoints.first {
-                HStack(spacing: 0) {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(Theme.accentPink.opacity(0.6))
-                        .frame(width: 2)
+                HStack(alignment: .top, spacing: 10) {
+                    Text("💬")
+                        .font(.system(size: 16))
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("CONVERSATION STARTER")
-                            .font(.system(.caption2, design: .rounded, weight: .bold))
-                            .foregroundStyle(Theme.accentPink)
-
-                        Text("\"\(firstPoint.prefix(80))...\"")
-                            .font(Theme.conversationStarter)
-                            .foregroundStyle(Theme.textSecondary)
-                            .lineLimit(2)
-                    }
-                    .padding(.leading, 10)
+                    Text("\"\(firstPoint)\"")
+                        .font(Theme.conversationStarter)
+                        .foregroundStyle(Theme.textSecondary)
                 }
-                .padding(.vertical, 4)
+                .padding(.vertical, 6)
+                .padding(.horizontal, 12)
+                .background(Theme.accentPink.opacity(0.06))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
             // "Full update" link — underlined for tappability

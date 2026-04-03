@@ -43,14 +43,14 @@ struct FeedView: View {
                         if let partner = appState.partnerName {
                             Text("\(partner)'s team")
                                 .font(.system(.caption, design: .rounded, weight: .medium))
-                                .foregroundStyle(Theme.textTertiary)
+                                .foregroundStyle(Theme.accentPink)
                         }
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    NavigationLink(value: "settings") {
-                        Image(systemName: "gearshape")
-                            .foregroundStyle(Theme.textSecondary)
+                    NavigationLink(value: "profile") {
+                        Image(systemName: "person.circle")
+                            .foregroundStyle(Theme.accentPink)
                     }
                 }
             }
@@ -59,8 +59,8 @@ struct FeedView: View {
                 ContentDetailView(item: item)
             }
             .navigationDestination(for: String.self) { value in
-                if value == "settings" {
-                    SettingsView()
+                if value == "profile" {
+                    ProfileView()
                 }
             }
         }
