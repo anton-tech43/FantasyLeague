@@ -39,6 +39,13 @@ struct ContentCard: View {
                 .lineLimit(3)
                 .multilineTextAlignment(.leading)
 
+            // Body preview — plain English context, the "relationship translator"
+            Text(item.body.prefix(150) + "...")
+                .font(Theme.detailBodyItalic)
+                .foregroundStyle(Theme.textSecondary)
+                .lineLimit(3)
+                .multilineTextAlignment(.leading)
+
             // Conversation starter preview — first talking point as italic teaser
             if let firstPoint = item.regularTalkingPoints.first {
                 HStack(spacing: 0) {
