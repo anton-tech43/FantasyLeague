@@ -1056,4 +1056,27 @@ Then add a row to Blockers & Questions:
 
 ---
 
+---
+
+## 16. Contract 10: iOS Security Audit Findings (2026-04-03)
+
+Security audit performed by iOS Agent. These items affect multiple agents and must be resolved before App Store submission. Full details in `DEVELOPMENT_NOTES.md`.
+
+### Cross-Agent Items
+
+| # | Severity | Issue | Owner | Action Required |
+|---|----------|-------|-------|----------------|
+| S1 | CRITICAL | Supabase anon key hardcoded in `APIClient.swift:9` | iOS Agent | Move to `.xcconfig` excluded from git. Verify RLS policies lock down all tables (Backend Agent). |
+| S2 | CRITICAL | APNs device token stored in UserDefaults (plain text) | iOS Agent | Migrate to Keychain. |
+| S3 | HIGH | ISO8601DateFormatter race condition in `APIClient.swift:24` | iOS Agent | Use two separate formatter instances. |
+| S4 | HIGH | Deep link `content_id` from push not validated against user's team | iOS Agent + Backend Agent | iOS: verify `item.teamId == selectedTeam` after fetch. Backend: consider adding team_id to push payload (Contract 2). |
+| S5 | HIGH | Clipboard writes persist indefinitely + sync via Universal Clipboard | iOS Agent | Use `.localOnly: true` + 120s expiration. |
+| S6 | MEDIUM | `emotional_context` values in backend types.ts: `"exciting" | "bad_news" | "drama" | "informational" | "funny"`. iOS must map these exactly — not `"excited"`, `"nervous"` etc. | iOS Agent + Pipeline Agent | iOS mood mapping must match backend enum. Pipeline Agent prompts must output these exact values. |
+
+### Backend Agent Note
+
+The iOS app sends the full APNs device token to `POST /rest/v1/device_tokens`. The token is currently stored in UserDefaults on the client side. Backend RLS policies should ensure `device_tokens` table only allows INSERT/UPDATE (not SELECT) for the anon role, so tokens can't be enumerated via the REST API.
+
+---
+
 *This document is the handshake between agents. If something crosses agent boundaries, it must be defined here. No guessing, no assumptions, no "I thought the other agent would handle that."*

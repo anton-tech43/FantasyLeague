@@ -79,6 +79,46 @@ curl -H "x-apisports-key: $API_FOOTBALL_KEY" \
 
 ---
 
+## Security Audit (2026-04-03) — Agent 2
+
+Full audit of iOS codebase. Findings below must be resolved before App Store submission.
+
+### CRITICAL — Fix Before Launch
+
+| # | Issue | File | Action |
+|---|-------|------|--------|
+| 1 | **API key hardcoded in source** — Supabase anon key (`sb_publishable_...`) is in `APIClient.swift:9`. Even though it's a publishable key, it's grep-able in the repo and can't differ per environment. | `Services/APIClient.swift` | Move to `.xcconfig` file excluded from git. Load via `Bundle.main.infoDictionary`. |
+| 2 | **APNs device token stored in UserDefaults** — Full hex token stored unencrypted at `NotificationService.swift:34`. Readable on jailbroken devices or backup extraction. | `Services/NotificationService.swift` | Migrate to Keychain storage. Use `SecItemAdd`/`SecItemCopyMatching`. |
+
+### HIGH — Fix Before Beta
+
+| # | Issue | File | Action |
+|---|-------|------|--------|
+| 3 | **Clipboard writes without expiration** — Talking points copied to clipboard persist indefinitely and sync via Universal Clipboard. | `ContentDetailView.swift`, `SavedPointsView.swift` | Use `UIPasteboard.general.setItems()` with `.localOnly: true` and `.expirationDate: +120s`. |
+| 4 | **Deep link doesn't validate team** — Push notification with crafted `content_id` could navigate to content from another team. | `FeedView.swift:287` | After fetch, verify `item.teamId` matches `appState.selectedTeam?.rawValue`. |
+| 5 | **ISO8601DateFormatter race condition** — Decoder closure mutates shared `formatter.formatOptions`. Concurrent API calls corrupt parsing. | `Services/APIClient.swift:24` | Create two separate formatter instances (with/without fractional seconds). |
+
+### MEDIUM — Fix Before v1.1
+
+| # | Issue | File | Action |
+|---|-------|------|--------|
+| 6 | **SavedPointsService not thread-safe** — Read-modify-write on UserDefaults without atomicity. | `Services/SavedPointsService.swift` | Mark class `@MainActor`. |
+| 7 | **No input length validation on names** — TextField accepts unlimited text. | `App/GoalDiggerApp.swift:118` | Add `.onChange` with 50-char cap. |
+| 8 | **No storage limit on saved points** — Could exceed UserDefaults ~1MB limit. | `Services/SavedPointsService.swift` | Cap at 100 items in `toggle()`. |
+| 9 | **CacheService silently swallows errors** — `try?` discards save/fetch failures. | `Services/CacheService.swift` | Add `#if DEBUG` logging on catch. |
+| 10 | **selectedTeam nil not persisted** — `didSet` only saves non-nil values. | `Models/AppState.swift:12` | Call `removeObject(forKey:)` when nil. |
+
+### Passed
+
+- All `print()` wrapped in `#if DEBUG` — no production log leaks
+- `moodEmoji` uses hardcoded allowlist — no injection possible
+- Deep link UUID parsing validates format
+- Clipboard is plain text only — no HTML/rich text
+- No force unwraps in production code
+- No WebViews or URL scheme handlers
+
+---
+
 ## Next Steps
 
 - [ ] Set up Supabase (backend database)
