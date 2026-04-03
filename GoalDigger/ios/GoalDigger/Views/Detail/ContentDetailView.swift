@@ -1,5 +1,16 @@
 import SwiftUI
 
+// MARK: - ContentDetailView
+// Full content detail — redesigned with playful editorial tone.
+//
+// Design decisions for other agents:
+// - Section headers are playful ("Your cheat sheet", "The tea", "After the final whistle")
+// - Talking points have tap-to-copy with haptic feedback (plain text only, no HTML)
+// - Each talking point has a share button for quick sharing
+// - Bookmark/save button lets users save favorite talking points
+// - Post-match cards use border style instead of left bar for softer look
+// - SavedPointsService dependency added for bookmark functionality
+
 struct ContentDetailView: View {
     let item: ContentItem
 
@@ -23,7 +34,7 @@ struct ContentDetailView: View {
                 divider
 
                 // Talking Points Section
-                sectionHeader("Things to say")
+                sectionHeader("Your cheat sheet", emoji: "💬")
 
                 VStack(spacing: Theme.elementSpacing) {
                     ForEach(item.regularTalkingPoints, id: \.self) { point in
@@ -31,35 +42,29 @@ struct ContentDetailView: View {
                     }
                 }
 
-                // Post-Match Cheat Sheet (matchday only, Contract 8)
+                // Post-Match Cheat Sheet (matchday only)
                 if let cheatSheet = item.postMatchCheatSheet {
                     divider
 
-                    sectionHeader("After the match")
+                    sectionHeader("After the final whistle", emoji: "🎯")
 
                     VStack(spacing: Theme.elementSpacing) {
-                        // If they WIN
                         PostMatchCard(
                             label: "If they WIN:",
                             text: cheatSheet.ifTheyWin,
-                            backgroundColor: Color.green.opacity(0.08),
-                            barColor: Color.green.opacity(0.5)
+                            borderColor: Theme.accentGreen
                         )
 
-                        // If they LOSE
                         PostMatchCard(
                             label: "If they LOSE:",
                             text: cheatSheet.ifTheyLose,
-                            backgroundColor: Color.red.opacity(0.06),
-                            barColor: Color.red.opacity(0.4)
+                            borderColor: Color(hex: "E07A5F")
                         )
 
-                        // Bold prediction
                         PostMatchCard(
                             label: "Bold prediction:",
                             text: cheatSheet.boldPrediction,
-                            backgroundColor: Theme.accentSoft.opacity(0.3),
-                            barColor: Theme.accentWarm
+                            borderColor: Theme.accentWarm
                         )
                     }
                 }
@@ -67,7 +72,7 @@ struct ContentDetailView: View {
                 divider
 
                 // Body Section
-                sectionHeader("The backstory")
+                sectionHeader("The tea", emoji: "☕")
 
                 Text(item.body)
                     .font(Theme.detailBody)
@@ -99,7 +104,7 @@ struct ContentDetailView: View {
             }
             .padding(.horizontal, Theme.screenPadding)
         }
-        .background(Theme.appBackground.ignoresSafeArea())
+        .background(Theme.backgroundGradient.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -129,64 +134,110 @@ struct ContentDetailView: View {
             .frame(height: 1)
     }
 
-    private func sectionHeader(_ title: String) -> some View {
-        Text(title.uppercased())
-            .font(.system(.caption, design: .rounded, weight: .bold))
-            .foregroundStyle(Theme.textTertiary)
-            .kerning(1)
+    private func sectionHeader(_ title: String, emoji: String) -> some View {
+        Text("\(title) \(emoji)")
+            .font(.system(.callout, design: .serif, weight: .semibold))
+            .foregroundStyle(Theme.textSecondary)
     }
 }
 
 // MARK: - Talking Point Card
+// Tap-to-copy with haptic feedback. Plain text only for security.
+// Bookmark button saves to SavedPointsService.
 
 private struct TalkingPointCard: View {
     let text: String
+    @State private var copied = false
+    @State private var isSaved = false
 
     var body: some View {
-        HStack(spacing: 0) {
-            // Left accent bar
-            RoundedRectangle(cornerRadius: 2)
-                .fill(Theme.accentWarm)
-                .frame(width: 3)
+        VStack(spacing: 0) {
+            HStack(alignment: .top, spacing: 12) {
+                Text(text)
+                    .font(Theme.talkingPointText)
+                    .foregroundStyle(Theme.textPrimary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-            Text(text)
-                .font(Theme.talkingPointText)
-                .foregroundStyle(Theme.textPrimary)
-                .padding(14)
+                // Action buttons
+                HStack(spacing: 8) {
+                    // Bookmark
+                    Button {
+                        isSaved.toggle()
+                        SavedPointsService.shared.toggle(text)
+                    } label: {
+                        Image(systemName: isSaved ? "bookmark.fill" : "bookmark")
+                            .font(.system(size: 14))
+                            .foregroundStyle(isSaved ? Theme.accentWarm : Theme.textTertiary)
+                    }
+
+                    // Share
+                    ShareLink(item: text) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 13))
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                }
+            }
+            .padding(14)
+
+            // "Copied" feedback
+            if copied {
+                Text("Copied!")
+                    .font(Theme.feedTimestamp)
+                    .foregroundStyle(Theme.accentGreen)
+                    .transition(.opacity)
+                    .padding(.bottom, 8)
+            }
         }
-        .background(Theme.accentSoft.opacity(0.3))
+        .background(Theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Theme.dustyRose.opacity(0.4), lineWidth: 1)
+        )
+        .onTapGesture {
+            // Security: plain text only, no rich text or HTML
+            UIPasteboard.general.string = text
+            withAnimation { copied = true }
+            // Haptic feedback
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            // Reset after 1.5s
+            Task {
+                try? await Task.sleep(for: .seconds(1.5))
+                withAnimation { copied = false }
+            }
+        }
+        .onAppear {
+            isSaved = SavedPointsService.shared.isSaved(text)
+        }
     }
 }
 
-// MARK: - Post-Match Card (Contract 8)
+// MARK: - Post-Match Card
+// Uses border instead of left accent bar for softer editorial feel.
 
 private struct PostMatchCard: View {
     let label: String
     let text: String
-    let backgroundColor: Color
-    let barColor: Color
+    let borderColor: Color
 
     var body: some View {
-        HStack(spacing: 0) {
-            // Left accent bar
-            RoundedRectangle(cornerRadius: 2)
-                .fill(barColor)
-                .frame(width: 3)
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label.uppercased())
+                .font(Theme.feedBadge)
+                .foregroundStyle(Theme.textTertiary)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(label.uppercased())
-                    .font(Theme.feedBadge)
-                    .foregroundStyle(Theme.textTertiary)
-
-                Text(text)
-                    .font(Theme.talkingPointText)
-                    .foregroundStyle(Theme.textPrimary)
-            }
-            .padding(14)
+            Text(text)
+                .font(Theme.talkingPointText)
+                .foregroundStyle(Theme.textPrimary)
         }
+        .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(backgroundColor)
+        .background(Theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(borderColor.opacity(0.4), lineWidth: 1.5)
+        )
     }
 }

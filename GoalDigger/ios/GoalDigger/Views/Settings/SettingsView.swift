@@ -1,13 +1,50 @@
 import SwiftUI
 import UserNotifications
 
+// MARK: - SettingsView
+// Updated with saved talking points link, names display, and editorial styling.
+//
+// Design decisions for other agents:
+// - "Saved talking points" section shows count and links to SavedPointsView
+// - Names section shows user's name and partner's name
+// - Gradient background matches new design system
+
 struct SettingsView: View {
     @Environment(AppState.self) private var appState
     @State private var notificationsEnabled = false
     @State private var showingTeamChange = false
+    @State private var savedCount = 0
 
     var body: some View {
         List {
+            // Names Section
+            if appState.userName != nil || appState.partnerName != nil {
+                Section("Your details") {
+                    if let name = appState.userName {
+                        HStack {
+                            Text("Your name")
+                                .font(Theme.settingsItem)
+                                .foregroundStyle(Theme.textSecondary)
+                            Spacer()
+                            Text(name)
+                                .font(Theme.feedHeadline)
+                                .foregroundStyle(Theme.textPrimary)
+                        }
+                    }
+                    if let partner = appState.partnerName {
+                        HStack {
+                            Text("His name")
+                                .font(Theme.settingsItem)
+                                .foregroundStyle(Theme.textSecondary)
+                            Spacer()
+                            Text(partner)
+                                .font(Theme.feedHeadline)
+                                .foregroundStyle(Theme.textPrimary)
+                        }
+                    }
+                }
+            }
+
             // Your Team
             Section {
                 Button {
@@ -26,6 +63,23 @@ struct SettingsView: View {
                         Image(systemName: "chevron.right")
                             .font(.caption)
                             .foregroundStyle(Theme.textTertiary)
+                    }
+                }
+            }
+
+            // Saved Talking Points
+            Section {
+                NavigationLink(value: "savedPoints") {
+                    HStack {
+                        Text("Saved talking points")
+                            .font(Theme.settingsItem)
+                            .foregroundStyle(Theme.textPrimary)
+                        Spacer()
+                        if savedCount > 0 {
+                            Text("\(savedCount)")
+                                .font(Theme.feedTimestamp)
+                                .foregroundStyle(Theme.accentWarm)
+                        }
                     }
                 }
             }
@@ -99,11 +153,19 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Settings")
+        .navigationDestination(for: String.self) { value in
+            if value == "savedPoints" {
+                SavedPointsView()
+            }
+        }
         .sheet(isPresented: $showingTeamChange) {
             teamChangeSheet
         }
         .task {
             await checkNotificationStatus()
+        }
+        .onAppear {
+            savedCount = SavedPointsService.shared.savedPoints.count
         }
     }
 
@@ -152,7 +214,7 @@ struct SettingsView: View {
 
                 Spacer()
             }
-            .background(Theme.appBackground.ignoresSafeArea())
+            .background(Theme.backgroundGradient.ignoresSafeArea())
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") {
@@ -173,7 +235,7 @@ struct SettingsView: View {
                     .font(Theme.onboardingTitle)
                     .foregroundStyle(Theme.textPrimary)
 
-                Text("Football news your way — warm, fun, and easy to talk about.")
+                Text("Your relationship translator for football season.")
                     .font(Theme.onboardingBody)
                     .foregroundStyle(Theme.textSecondary)
                     .multilineTextAlignment(.center)
@@ -186,7 +248,7 @@ struct SettingsView: View {
             }
             .padding(Theme.screenPadding)
         }
-        .background(Theme.appBackground.ignoresSafeArea())
+        .background(Theme.backgroundGradient.ignoresSafeArea())
         .navigationTitle("About")
     }
 

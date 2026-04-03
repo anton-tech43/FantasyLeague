@@ -29,6 +29,22 @@ class AppState {
         }
     }
 
+    // MARK: - Personalization
+    // User's name and their partner's name — used for greetings and onboarding.
+    // Stored in UserDefaults (plain text only, no sensitive data).
+
+    var userName: String? {
+        didSet {
+            UserDefaults.standard.set(userName, forKey: "userName")
+        }
+    }
+
+    var partnerName: String? {
+        didSet {
+            UserDefaults.standard.set(partnerName, forKey: "partnerName")
+        }
+    }
+
     // MARK: - Navigation
 
     var deepLinkContentId: UUID?
@@ -40,5 +56,7 @@ class AppState {
         self.selectedTeam = teamRaw.flatMap { Team(rawValue: $0) }
         self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
         self.notificationPermissionRequested = UserDefaults.standard.bool(forKey: "notificationPermissionRequested")
+        self.userName = UserDefaults.standard.string(forKey: "userName")
+        self.partnerName = UserDefaults.standard.string(forKey: "partnerName")
     }
 }

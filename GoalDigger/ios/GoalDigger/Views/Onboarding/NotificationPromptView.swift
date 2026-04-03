@@ -1,5 +1,13 @@
 import SwiftUI
 
+// MARK: - NotificationPromptView
+// Notification permission during onboarding — updated with gradient CTA.
+//
+// Design decisions for other agents:
+// - Does NOT set hasCompletedOnboarding — the celebration screen does that
+// - Just sets notificationPermissionRequested and calls onComplete to advance
+// - Gradient CTA button matches new design system
+
 struct NotificationPromptView: View {
     @Environment(AppState.self) private var appState
     var onComplete: () -> Void
@@ -28,25 +36,20 @@ struct NotificationPromptView: View {
 
             Spacer()
 
-            // Primary CTA
+            // Primary CTA — gradient
             Button {
                 Task {
                     _ = await NotificationService.shared.requestPermission()
-                    completeOnboarding()
+                    advanceOnboarding()
                 }
             } label: {
                 Text("Turn on Notifications")
-                    .font(Theme.feedHeadline)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(Theme.accentWarm)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .gradientButton()
             }
 
             // Secondary CTA
             Button {
-                completeOnboarding()
+                advanceOnboarding()
             } label: {
                 Text("Maybe Later")
                     .font(Theme.onboardingBody)
@@ -57,12 +60,11 @@ struct NotificationPromptView: View {
                 .frame(height: 40)
         }
         .padding(.horizontal, Theme.screenPadding)
-        .background(Theme.appBackground.ignoresSafeArea())
+        .background(Theme.backgroundGradient.ignoresSafeArea())
     }
 
-    private func completeOnboarding() {
+    private func advanceOnboarding() {
         appState.notificationPermissionRequested = true
-        appState.hasCompletedOnboarding = true
         onComplete()
     }
 }

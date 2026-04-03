@@ -28,6 +28,8 @@
 		AA000019 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000019; };
 		AA000020 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB000020; };
 		AA000021 /* MockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000022; };
+		AA000022 /* SavedPointsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000023; };
+		AA000023 /* SavedPointsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000024; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -53,6 +55,8 @@
 		AB000020 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AB000021 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AB000022 /* MockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockData.swift; sourceTree = "<group>"; };
+		AB000023 /* SavedPointsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedPointsService.swift; sourceTree = "<group>"; };
+		AB000024 /* SavedPointsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedPointsView.swift; sourceTree = "<group>"; };
 		AB000099 /* GoalDigger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GoalDigger.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -162,6 +166,7 @@
 				AB000017 /* APIClient.swift */,
 				AB000018 /* CacheService.swift */,
 				AB000019 /* NotificationService.swift */,
+				AB000023 /* SavedPointsService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -178,6 +183,7 @@
 			isa = PBXGroup;
 			children = (
 				AB000016 /* SettingsView.swift */,
+				AB000024 /* SavedPointsView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -279,6 +285,8 @@
 				AA000018 /* CacheService.swift in Sources */,
 				AA000019 /* NotificationService.swift in Sources */,
 				AA000021 /* MockData.swift in Sources */,
+				AA000022 /* SavedPointsService.swift in Sources */,
+				AA000023 /* SavedPointsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

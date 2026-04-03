@@ -61,6 +61,45 @@ struct ContentItem: Identifiable, Codable {
         return matchdayData?.metadata
     }
 
+    // MARK: - Mood Emoji (Security: hardcoded allowlist, no user input)
+    // Maps emotionalContext string from API to a safe emoji.
+    // Only known values produce emoji; unknown values return nil.
+
+    var moodEmoji: String? {
+        guard let mood = emotionalContext?.lowercased() else { return nil }
+        switch mood {
+        case "excited": return "🔥"
+        case "nervous": return "😬"
+        case "confident": return "😎"
+        case "frustrated": return "😤"
+        case "hopeful": return "🤞"
+        case "relieved": return "😮‍💨"
+        case "devastated": return "💔"
+        case "celebratory": return "🎉"
+        default: return nil
+        }
+    }
+
+    // MARK: - Kickoff Countdown (matchday only)
+    // Returns a human-readable countdown string for upcoming matches.
+
+    var kickoffCountdown: String? {
+        guard type == .matchday, let kickoff = kickoffTime else { return nil }
+        let now = Date()
+        guard kickoff > now else { return nil }
+        let interval = kickoff.timeIntervalSince(now)
+        let hours = Int(interval / 3600)
+        let minutes = Int((interval.truncatingRemainder(dividingBy: 3600)) / 60)
+        if hours > 24 {
+            let days = hours / 24
+            return "\(days)d until kickoff"
+        } else if hours > 0 {
+            return "\(hours)h \(minutes)m until kickoff"
+        } else {
+            return "\(minutes)m until kickoff"
+        }
+    }
+
     // MARK: - Custom Decoder
 
     init(from decoder: Decoder) throws {

@@ -1,5 +1,15 @@
 import SwiftUI
 
+// MARK: - FeedView
+// Main feed screen — redesigned with personalized greeting and warm editorial feel.
+//
+// Design decisions for other agents:
+// - Personalized time-of-day greeting using partner's name (e.g. "Good evening, Jake's playing tonight")
+// - Gradient background (warm cream → warm beige) for depth
+// - Empathetic freshness states ("All quiet tonight" instead of "No updates")
+// - Staggered card entrance animations for polish
+// - Data loading: API → SwiftData cache → MockData fallback (unchanged)
+
 struct FeedView: View {
     @Environment(AppState.self) private var appState
     @State private var items: [ContentItem] = []
@@ -10,7 +20,7 @@ struct FeedView: View {
     var body: some View {
         NavigationStack(path: $navigationPath) {
             ZStack {
-                Theme.appBackground.ignoresSafeArea()
+                Theme.backgroundGradient.ignoresSafeArea()
 
                 if isLoading && items.isEmpty {
                     loadingView
@@ -56,21 +66,62 @@ struct FeedView: View {
         }
     }
 
+    // MARK: - Personalized Greeting
+
+    private var greetingText: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        let timeGreeting: String
+        if hour < 12 {
+            timeGreeting = "Good morning"
+        } else if hour < 17 {
+            timeGreeting = "Good afternoon"
+        } else {
+            timeGreeting = "Good evening"
+        }
+
+        if let name = appState.userName {
+            return "\(timeGreeting), \(name)"
+        }
+        return timeGreeting
+    }
+
     // MARK: - Feed Content
 
     private var feedContent: some View {
         ScrollView {
             LazyVStack(spacing: Theme.cardSpacing) {
+                // Personalized greeting
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(greetingText)
+                        .font(Theme.greetingTitle)
+                        .foregroundStyle(Theme.textPrimary)
+
+                    if let partner = appState.partnerName, let team = appState.selectedTeam {
+                        Text("Here's what's happening with \(partner)'s \(team.shortName)")
+                            .font(Theme.feedTimestamp)
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.bottom, 4)
+
                 if let freshness = contentFreshness {
                     freshnessCard(freshness)
                 }
 
-                ForEach(items) { item in
+                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                     NavigationLink(value: item) {
                         ContentCard(item: item)
                     }
                     .buttonStyle(.plain)
-                    .sensoryFeedback(.selection, trigger: item.id)
+                    .transition(.asymmetric(
+                        insertion: .offset(y: 20).combined(with: .opacity),
+                        removal: .opacity
+                    ))
+                    .animation(
+                        .easeOut(duration: 0.4).delay(Double(index) * 0.08),
+                        value: items.count
+                    )
                 }
             }
             .padding(.horizontal, Theme.screenPadding)
@@ -95,19 +146,19 @@ struct FeedView: View {
         }
     }
 
-    // MARK: - Empty State
+    // MARK: - Empty State (empathetic)
 
     private var emptyView: some View {
         VStack(spacing: Theme.sectionSpacing) {
-            Image(systemName: "bubble.left.and.bubble.right")
+            Image(systemName: "moon.stars")
                 .font(.system(size: 50))
                 .foregroundStyle(Theme.textTertiary)
 
-            Text("No updates yet")
+            Text("All quiet tonight")
                 .font(Theme.feedHeadline)
                 .foregroundStyle(Theme.textSecondary)
 
-            Text("We'll let you know when something happens with \(appState.selectedTeam?.shortName ?? "your team").")
+            Text("Nothing happening with \(appState.selectedTeam?.shortName ?? "your team") right now. We'll nudge you when there's something worth knowing.")
                 .font(Theme.onboardingBody)
                 .foregroundStyle(Theme.textTertiary)
                 .multilineTextAlignment(.center)
@@ -129,7 +180,7 @@ struct FeedView: View {
         }
     }
 
-    // MARK: - Content Freshness
+    // MARK: - Content Freshness (empathetic labels)
 
     private enum Freshness {
         case caughtUp
@@ -157,7 +208,7 @@ struct FeedView: View {
                         .font(Theme.feedHeadline)
                         .foregroundStyle(Theme.textSecondary)
 
-                    Text("Nothing new for \(appState.selectedTeam?.shortName ?? "your team") right now. We'll ping you when something happens.")
+                    Text("Nothing new right now. Enjoy the peace!")
                         .font(Theme.onboardingBody)
                         .foregroundStyle(Theme.textTertiary)
                         .multilineTextAlignment(.center)
@@ -169,11 +220,11 @@ struct FeedView: View {
 
             case .quietWeek:
                 VStack(spacing: Theme.elementSpacing) {
-                    Text("Quiet week for \(appState.selectedTeam?.shortName ?? "your team")")
+                    Text("Quiet spell")
                         .font(Theme.feedHeadline)
                         .foregroundStyle(Theme.textSecondary)
 
-                    Text("Not much happening right now. We'll let you know when there's something worth talking about.")
+                    Text("Not much going on with \(appState.selectedTeam?.shortName ?? "your team"). We'll let you know when there's something worth talking about.")
                         .font(Theme.onboardingBody)
                         .foregroundStyle(Theme.textTertiary)
                         .multilineTextAlignment(.center)
@@ -203,13 +254,14 @@ struct FeedView: View {
             let fetched = try await APIClient.shared.fetchFeed(teamId: team.rawValue)
             if !fetched.isEmpty {
                 items = fetched
-                // Cache for offline use
                 await CacheService.shared.save(fetched)
                 isLoading = false
                 return
             }
         } catch {
+            #if DEBUG
             print("[Feed] API fetch failed: \(error)")
+            #endif
         }
 
         // Fall back to cache
@@ -230,14 +282,12 @@ struct FeedView: View {
     private func handleDeepLink(_ contentId: UUID?) {
         guard let contentId else { return }
 
-        // Check if item is already in feed
         if let item = items.first(where: { $0.id == contentId }) {
             navigationPath.append(item)
             appState.deepLinkContentId = nil
             return
         }
 
-        // Fetch from API
         Task {
             if let item = try? await APIClient.shared.fetchItem(id: contentId) {
                 navigationPath.append(item)

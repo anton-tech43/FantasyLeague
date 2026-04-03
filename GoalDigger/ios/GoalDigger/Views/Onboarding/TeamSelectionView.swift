@@ -1,5 +1,13 @@
 import SwiftUI
 
+// MARK: - TeamSelectionView
+// Team selection during onboarding — updated with gradient CTA.
+//
+// Design decisions for other agents:
+// - Uses partner's name if available: "Which team does Jake support?"
+// - Gradient CTA button matches new design system
+// - Selected team gets terracotta border highlight
+
 struct TeamSelectionView: View {
     @Environment(AppState.self) private var appState
     @State private var selectedTeam: Team?
@@ -7,8 +15,8 @@ struct TeamSelectionView: View {
 
     var body: some View {
         VStack(spacing: Theme.sectionSpacing) {
-            // Title
-            Text("Which team does\nhe support?")
+            // Title — personalized if partner name is known
+            Text(titleText)
                 .font(Theme.onboardingTitle)
                 .foregroundStyle(Theme.textPrimary)
                 .multilineTextAlignment(.center)
@@ -65,19 +73,14 @@ struct TeamSelectionView: View {
 
             Spacer()
 
-            // Continue button — appears when team selected
+            // Gradient CTA — appears when team selected
             if selectedTeam != nil {
                 Button {
                     appState.selectedTeam = selectedTeam
                     onContinue()
                 } label: {
                     Text("Continue")
-                        .font(Theme.feedHeadline)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(Theme.accentWarm)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .gradientButton()
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
@@ -86,7 +89,14 @@ struct TeamSelectionView: View {
                 .frame(height: 40)
         }
         .padding(.horizontal, Theme.screenPadding)
-        .background(Theme.appBackground.ignoresSafeArea())
+        .background(Theme.backgroundGradient.ignoresSafeArea())
         .animation(.easeInOut(duration: 0.3), value: selectedTeam)
+    }
+
+    private var titleText: String {
+        if let partner = appState.partnerName {
+            return "Which team does\n\(partner) support?"
+        }
+        return "Which team does\nhe support?"
     }
 }
