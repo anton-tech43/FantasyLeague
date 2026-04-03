@@ -17,9 +17,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
     ) {
         let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
-        #if DEBUG
-        print("[APNs] Device token registered (\(token.prefix(8))...)")
-        #endif
+        print("[APNs] Device token: \(token)")
         NotificationService.shared.handleTokenRegistration(token)
     }
 
@@ -27,9 +25,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         _ application: UIApplication,
         didFailToRegisterForRemoteNotificationsWithError error: Error
     ) {
-        #if DEBUG
         print("[APNs] Failed to register: \(error.localizedDescription)")
-        #endif
     }
 
     // MARK: - Foreground Notification Handling

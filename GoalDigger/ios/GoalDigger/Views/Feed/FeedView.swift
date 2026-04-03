@@ -10,7 +10,7 @@ struct FeedView: View {
     var body: some View {
         NavigationStack(path: $navigationPath) {
             ZStack {
-                Theme.backgroundGradient.ignoresSafeArea()
+                Theme.appBackground.ignoresSafeArea()
 
                 if isLoading && items.isEmpty {
                     loadingView
@@ -24,17 +24,9 @@ struct FeedView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text(appState.selectedTeam?.displayName ?? "Goal Digger")
-                            .font(.system(.headline, design: .serif, weight: .bold))
-                            .foregroundStyle(Theme.textPrimary)
-
-                        if let partner = appState.partnerName {
-                            Text("\(partner)'s team")
-                                .font(.system(.caption, design: .rounded, weight: .medium))
-                                .foregroundStyle(Theme.textTertiary)
-                        }
-                    }
+                    Text(appState.selectedTeam?.shortName ?? "Goal Digger")
+                        .font(Theme.detailTitle)
+                        .foregroundStyle(Theme.textPrimary)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink(value: "settings") {
@@ -66,42 +58,19 @@ struct FeedView: View {
 
     // MARK: - Feed Content
 
-    private var greetingText: String {
-        let hour = Calendar.current.component(.hour, from: Date())
-        let partner = appState.partnerName ?? "him"
-        switch hour {
-        case 5..<12:  return "Good morning \u{2014} here's what \(partner) might be talking about today"
-        case 12..<17: return "Quick afternoon intel on \(appState.selectedTeam?.shortName ?? "your team")"
-        case 17..<21: return "Evening update \u{2014} here's what to know before you see \(partner)"
-        default:       return "Late night catch-up \u{2014} tomorrow's talking points"
-        }
-    }
-
     private var feedContent: some View {
         ScrollView {
             LazyVStack(spacing: Theme.cardSpacing) {
-                // Greeting header
-                Text(greetingText)
-                    .font(Theme.talkingPointText)
-                    .foregroundStyle(Theme.textSecondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.bottom, 4)
-
                 if let freshness = contentFreshness {
                     freshnessCard(freshness)
                 }
 
-                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                ForEach(items) { item in
                     NavigationLink(value: item) {
                         ContentCard(item: item)
                     }
                     .buttonStyle(.plain)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                    .animation(
-                        .spring(response: 0.4, dampingFraction: 0.8)
-                            .delay(Double(index) * 0.06),
-                        value: items.count
-                    )
+                    .sensoryFeedback(.selection, trigger: item.id)
                 }
             }
             .padding(.horizontal, Theme.screenPadding)
@@ -179,43 +148,39 @@ struct FeedView: View {
         Group {
             switch freshness {
             case .caughtUp:
-                VStack(spacing: 10) {
-                    Text("🌙")
-                        .font(.system(size: 28))
+                VStack(spacing: Theme.elementSpacing) {
+                    Image(systemName: "checkmark.circle")
+                        .font(.system(size: 24))
+                        .foregroundStyle(Theme.accentGreen)
 
-                    Text("All quiet tonight")
+                    Text("You're all caught up")
                         .font(Theme.feedHeadline)
-                        .foregroundStyle(Theme.textPrimary)
+                        .foregroundStyle(Theme.textSecondary)
 
-                    Text("No big news. We'll nudge you before anything important \u{2014} no need to stay up.")
+                    Text("Nothing new for \(appState.selectedTeam?.shortName ?? "your team") right now. We'll ping you when something happens.")
                         .font(Theme.onboardingBody)
                         .foregroundStyle(Theme.textTertiary)
                         .multilineTextAlignment(.center)
-                        .frame(maxWidth: 260)
                 }
-                .padding(Theme.cardPadding + 4)
+                .padding(Theme.cardPadding)
                 .frame(maxWidth: .infinity)
-                .background(Theme.cardBackgroundAlt)
+                .background(Theme.feedDivider)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius))
 
             case .quietWeek:
-                VStack(spacing: 10) {
-                    Text("☀️")
-                        .font(.system(size: 28))
-
-                    Text("Quiet week")
+                VStack(spacing: Theme.elementSpacing) {
+                    Text("Quiet week for \(appState.selectedTeam?.shortName ?? "your team")")
                         .font(Theme.feedHeadline)
-                        .foregroundStyle(Theme.textPrimary)
+                        .foregroundStyle(Theme.textSecondary)
 
-                    Text("Not much drama with \(appState.selectedTeam?.shortName ?? "your team") right now. Enjoy the peace \u{2014} we'll let you know when there's something worth talking about.")
+                    Text("Not much happening right now. We'll let you know when there's something worth talking about.")
                         .font(Theme.onboardingBody)
                         .foregroundStyle(Theme.textTertiary)
                         .multilineTextAlignment(.center)
-                        .frame(maxWidth: 280)
                 }
-                .padding(Theme.cardPadding + 4)
+                .padding(Theme.cardPadding)
                 .frame(maxWidth: .infinity)
-                .background(Theme.cardBackgroundAlt)
+                .background(Theme.feedDivider)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius))
             }
         }
@@ -244,9 +209,7 @@ struct FeedView: View {
                 return
             }
         } catch {
-            #if DEBUG
             print("[Feed] API fetch failed: \(error)")
-            #endif
         }
 
         // Fall back to cache

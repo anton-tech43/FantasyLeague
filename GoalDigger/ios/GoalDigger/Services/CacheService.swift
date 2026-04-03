@@ -80,9 +80,7 @@ class CacheService {
             let config = ModelConfiguration(isStoredInMemoryOnly: false)
             container = try ModelContainer(for: schema, configurations: [config])
         } catch {
-            #if DEBUG
             print("[Cache] Failed to create container: \(error)")
-            #endif
         }
     }
 

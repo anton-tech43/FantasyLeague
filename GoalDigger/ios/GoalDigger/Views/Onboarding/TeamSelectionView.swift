@@ -75,16 +75,9 @@ struct TeamSelectionView: View {
                         .font(Theme.feedHeadline)
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 54)
-                        .background(
-                            LinearGradient(
-                                colors: [Theme.accentWarm, Theme.accentPeach],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 18))
-                        .shadow(color: Theme.accentWarm.opacity(0.3), radius: 8, y: 4)
+                        .frame(height: 50)
+                        .background(Theme.accentWarm)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
@@ -93,7 +86,7 @@ struct TeamSelectionView: View {
                 .frame(height: 40)
         }
         .padding(.horizontal, Theme.screenPadding)
-        .background(Theme.backgroundGradient.ignoresSafeArea())
+        .background(Theme.appBackground.ignoresSafeArea())
         .animation(.easeInOut(duration: 0.3), value: selectedTeam)
     }
 }

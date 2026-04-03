@@ -60,52 +60,6 @@ struct SettingsView: View {
                 }
             }
 
-            // Saved Talking Points
-            Section {
-                NavigationLink {
-                    SavedPointsView()
-                } label: {
-                    HStack {
-                        Image(systemName: "heart.fill")
-                            .font(.system(size: 14))
-                            .foregroundStyle(Theme.accentWarm)
-                        Text("Saved talking points")
-                            .font(Theme.settingsItem)
-                            .foregroundStyle(Theme.textPrimary)
-                        Spacer()
-                        let count = SavedPointsService.shared.savedPoints.count
-                        if count > 0 {
-                            Text("\(count)")
-                                .font(Theme.feedBadge)
-                                .foregroundStyle(Theme.textTertiary)
-                        }
-                    }
-                }
-            }
-
-            // Names
-            Section {
-                HStack {
-                    Text("Your name")
-                        .font(Theme.settingsItem)
-                        .foregroundStyle(Theme.textSecondary)
-                    Spacer()
-                    Text(appState.userName ?? "Not set")
-                        .font(Theme.feedHeadline)
-                        .foregroundStyle(Theme.textPrimary)
-                }
-
-                HStack {
-                    Text("His name")
-                        .font(Theme.settingsItem)
-                        .foregroundStyle(Theme.textSecondary)
-                    Spacer()
-                    Text(appState.partnerName ?? "Not set")
-                        .font(Theme.feedHeadline)
-                        .foregroundStyle(Theme.textPrimary)
-                }
-            }
-
             // About
             Section {
                 NavigationLink {
@@ -198,7 +152,7 @@ struct SettingsView: View {
 
                 Spacer()
             }
-            .background(Theme.backgroundGradient.ignoresSafeArea())
+            .background(Theme.appBackground.ignoresSafeArea())
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") {
@@ -232,7 +186,7 @@ struct SettingsView: View {
             }
             .padding(Theme.screenPadding)
         }
-        .background(Theme.backgroundGradient.ignoresSafeArea())
+        .background(Theme.appBackground.ignoresSafeArea())
         .navigationTitle("About")
     }
 

@@ -15,9 +15,7 @@ class NotificationService {
             }
             return granted
         } catch {
-            #if DEBUG
             print("[Notifications] Permission request failed: \(error)")
-            #endif
             return false
         }
     }
@@ -38,13 +36,9 @@ class NotificationService {
         Task {
             do {
                 try await APIClient.shared.registerToken(token, teamId: team.rawValue)
-                #if DEBUG
                 print("[Notifications] Token registered with backend for \(team.rawValue)")
-                #endif
             } catch {
-                #if DEBUG
                 print("[Notifications] Failed to register token: \(error)")
-                #endif
             }
         }
     }
@@ -56,13 +50,9 @@ class NotificationService {
         Task {
             do {
                 try await APIClient.shared.updateTeam(token: token, newTeamId: newTeam.rawValue)
-                #if DEBUG
                 print("[Notifications] Team updated to \(newTeam.rawValue)")
-                #endif
             } catch {
-                #if DEBUG
                 print("[Notifications] Failed to update team: \(error)")
-                #endif
             }
         }
     }

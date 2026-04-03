@@ -61,32 +61,6 @@ struct ContentItem: Identifiable, Codable {
         return matchdayData?.metadata
     }
 
-    /// Kickoff countdown for matchday items — only shows if kickoff is in the future
-    var kickoffCountdown: String? {
-        guard type == .matchday, let kickoff = kickoffTime else { return nil }
-        let interval = kickoff.timeIntervalSince(Date())
-        guard interval > 0 else { return nil }
-        let hours = Int(interval) / 3600
-        let minutes = (Int(interval) % 3600) / 60
-        if hours > 0 {
-            return "Kickoff in \(hours)h \(minutes)m"
-        } else {
-            return "Kickoff in \(minutes)m"
-        }
-    }
-
-    /// Mood emoji based on emotional context — only maps known backend values
-    var moodEmoji: String? {
-        switch emotionalContext {
-        case "exciting": return "🔥"
-        case "bad_news": return "😬"
-        case "drama":    return "👀"
-        case "funny":    return "😂"
-        case "nervous":  return "😰"
-        default:         return nil
-        }
-    }
-
     // MARK: - Custom Decoder
 
     init(from decoder: Decoder) throws {
