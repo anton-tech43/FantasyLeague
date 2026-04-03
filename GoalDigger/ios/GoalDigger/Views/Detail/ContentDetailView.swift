@@ -91,12 +91,12 @@ struct ContentDetailView: View {
                         Text("Share this with a friend")
                             .font(Theme.feedHeadline)
                     }
-                    .foregroundStyle(Theme.accentWarm)
+                    .foregroundStyle(Theme.accentPink)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Theme.accentWarm, lineWidth: 2)
+                            .stroke(Theme.accentPink, lineWidth: 2)
                     )
                 }
 
@@ -115,14 +115,14 @@ struct ContentDetailView: View {
         switch item.type {
         case .news:
             BadgeView(
-                text: "NEWS",
-                backgroundColor: Theme.accentSoft,
-                textColor: Theme.accentWarm
+                text: "UPDATE",
+                backgroundColor: Theme.accentPink.opacity(0.15),
+                textColor: Theme.accentPink
             )
         case .matchday:
             BadgeView(
                 text: "MATCH DAY",
-                backgroundColor: Theme.accentGreen.opacity(0.2),
+                backgroundColor: Theme.accentGreen.opacity(0.15),
                 textColor: Theme.accentGreen
             )
         }
@@ -167,7 +167,7 @@ private struct TalkingPointCard: View {
                     } label: {
                         Image(systemName: isSaved ? "bookmark.fill" : "bookmark")
                             .font(.system(size: 14))
-                            .foregroundStyle(isSaved ? Theme.accentWarm : Theme.textTertiary)
+                            .foregroundStyle(isSaved ? Theme.accentPink : Theme.textTertiary)
                     }
 
                     // Share
@@ -193,7 +193,7 @@ private struct TalkingPointCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Theme.dustyRose.opacity(0.4), lineWidth: 1)
+                .stroke(Theme.accentPink.opacity(0.25), lineWidth: 1)
         )
         .onTapGesture {
             // Security: plain text only, no rich text or HTML

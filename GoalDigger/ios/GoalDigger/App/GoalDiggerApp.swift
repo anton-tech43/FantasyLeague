@@ -125,7 +125,7 @@ private struct NameInputView: View {
                 .padding(.vertical, 16)
                 .overlay(
                     Rectangle()
-                        .fill(Theme.dustyRose)
+                        .fill(Theme.accentPink)
                         .frame(height: 2),
                     alignment: .bottom
                 )
@@ -189,7 +189,7 @@ private struct OnboardingCelebrationView: View {
 
                 Text("Time to impress.")
                     .font(Theme.conversationStarter)
-                    .foregroundStyle(Theme.accentWarm)
+                    .foregroundStyle(Theme.accentPink)
             }
             .frame(maxWidth: 300)
 

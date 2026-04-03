@@ -1,64 +1,71 @@
 import SwiftUI
 
 // MARK: - Goal Digger Design System
-// "Relationship Translator" editorial design language.
-// Warm, approachable palette with serif headlines for an editorial feel.
-// Targets partners who want to connect through football conversations.
+// "Soft intel" — warm, editorial, intimate. Vogue meets WhatsApp.
+// Relationship-coded, not sports-coded.
 //
 // Design decisions documented for other agents:
 // - Serif headlines (.serif design) give editorial/magazine warmth
-// - Dusty terracotta replaces bright orange for sophistication
-// - Gradient CTA buttons add visual energy to key actions
+// - Pink (#E8A0BF) and peach (#FFD6C4) are the signature palette — feminine, warm
+// - Gradient CTA buttons use pink→peach for visual energy
 // - Mood tinting on cards ties emotional context to visual feedback
-// - Card borders (dusty rose) replace heavy shadows for lighter feel
+// - Card borders use soft terracotta for stationery feel
+// - Bigger corners (18pt) and spacing (14pt) for modern, airy layout
 
 enum Theme {
     // MARK: - Colors — Warm Editorial Palette
 
     /// Warm cream background — feels like stationery, not a sports app
+    static let appBackgroundTop = Color(hex: "FAF5EF")
+    static let appBackgroundBottom = Color(hex: "F5EDE4")
     static let appBackground = Color(hex: "FAF5EF")
 
-    /// Cards stay white for contrast against warm background
-    static let cardBackground = Color.white
+    /// Barely-warm white card — not pure white, warmer
+    static let cardBackground = Color(hex: "FFFBF7")
+
+    /// Warm tinted card for quiet states (freshness etc.)
+    static let cardBackgroundAlt = Color(hex: "F7F0E8")
+
+    /// Soft terracotta card border
+    static let cardBorder = Color(hex: "D4A989").opacity(0.25)
 
     /// Subtle warm divider
-    static let feedDivider = Color(hex: "F0ECE6")
+    static let feedDivider = Color(hex: "EDE5DA")
 
-    /// Text hierarchy: primary → secondary → tertiary
-    static let textPrimary = Color(hex: "1A1A1A")
-    static let textSecondary = Color(hex: "8A8480")
-    static let textTertiary = Color(hex: "B8B2AA")
+    /// Text hierarchy: warm near-black → warm brown-gray → light warm gray
+    static let textPrimary = Color(hex: "2C2420")
+    static let textSecondary = Color(hex: "8A7D74")
+    static let textTertiary = Color(hex: "B5A99E")
 
-    /// Dusty terracotta — the signature accent, warmer than before
+    /// Dusty terracotta — primary accent
     static let accentWarm = Color(hex: "C4785A")
 
-    /// Soft peach for badge backgrounds and subtle highlights
+    /// Signature pink — #E8A0BF — badges, highlights, personality
+    static let accentPink = Color(hex: "E8A0BF")
+
+    /// Signature peach — #FFD6C4 — CTA gradients, warm highlights
+    static let accentPeach = Color(hex: "FFD6C4")
+
+    /// Dusty rose — badge backgrounds, soft emphasis
     static let accentSoft = Color(hex: "EACFC0")
 
-    /// Muted sage green — less "sporty", more editorial
+    /// Muted sage green — matchday, not sporty
     static let accentGreen = Color(hex: "8EAE7E")
 
-    /// Dusty rose — card borders, subtle emphasis
-    static let dustyRose = Color(hex: "EACFC0")
-
-    /// Peach highlight for warm accents
-    static let peach = Color(hex: "E8B796")
-
     /// Shadow and shimmer
-    static let cardShadow = Color.black.opacity(0.04)
-    static let shimmer = Color(hex: "F5F0EA")
+    static let cardShadow = Color(hex: "C4785A").opacity(0.06)
+    static let shimmer = Color(hex: "F0E8DF")
 
     // MARK: - Mood Tint Colors
-    // Maps to emotionalContext from the API. Subtle background tints on cards.
+    // Subtle card background tints keyed to emotionalContext from API.
 
-    static let moodExcited = Color(hex: "E8B796").opacity(0.12)
-    static let moodNervous = Color(hex: "EACFC0").opacity(0.15)
-    static let moodConfident = Color(hex: "8EAE7E").opacity(0.10)
-    static let moodDefault = Color.clear
+    static let moodExciting = Color(hex: "FFF5EC")
+    static let moodBadNews = Color(hex: "F5F0ED")
+    static let moodDrama = Color(hex: "F8F0F5")
+    static let moodFunny = Color(hex: "FDFAEC")
 
     // MARK: - Typography
-    // Serif headlines give editorial/magazine feel.
-    // Body text stays rounded for readability.
+    // Serif for editorial warmth on headlines, rounded sans for readability.
 
     static let onboardingTitle = Font.system(.largeTitle, design: .serif, weight: .bold)
     static let onboardingBody = Font.system(.body, design: .rounded, weight: .regular)
@@ -70,32 +77,32 @@ enum Theme {
     static let detailBodyItalic = Font.system(.callout, design: .serif, weight: .regular).italic()
     static let talkingPointText = Font.system(.callout, design: .rounded, weight: .medium)
     static let settingsItem = Font.system(.body, design: .rounded, weight: .regular)
-    static let conversationStarter = Font.system(.subheadline, design: .serif, weight: .medium).italic()
+    static let conversationStarter = Font.system(.callout, design: .serif, weight: .medium).italic()
     static let greetingTitle = Font.system(.title3, design: .serif, weight: .semibold)
 
-    // MARK: - Spacing (unchanged)
+    // MARK: - Spacing — airy, modern
 
     static let screenPadding: CGFloat = 20
-    static let cardPadding: CGFloat = 16
-    static let cardSpacing: CGFloat = 12
-    static let cardCornerRadius: CGFloat = 16
-    static let cardShadowRadius: CGFloat = 8
+    static let cardPadding: CGFloat = 18
+    static let cardSpacing: CGFloat = 14
+    static let cardCornerRadius: CGFloat = 18
+    static let cardShadowRadius: CGFloat = 10
     static let cardShadowY: CGFloat = 4
     static let sectionSpacing: CGFloat = 24
     static let elementSpacing: CGFloat = 8
 
-    // MARK: - Gradient CTA
+    // MARK: - Gradients
 
-    /// Warm gradient for primary CTA buttons
+    /// CTA gradient — pink to peach, the signature look
     static let ctaGradient = LinearGradient(
-        colors: [Color(hex: "C4785A"), Color(hex: "E8B796")],
+        colors: [Color(hex: "E8A0BF"), Color(hex: "FFD6C4")],
         startPoint: .leading,
         endPoint: .trailing
     )
 
     /// Background gradient — subtle warmth from top to bottom
     static let backgroundGradient = LinearGradient(
-        colors: [Color(hex: "FAF5EF"), Color(hex: "F5EDE4")],
+        colors: [appBackgroundTop, appBackgroundBottom],
         startPoint: .top,
         endPoint: .bottom
     )
@@ -115,7 +122,7 @@ struct CardStyle: ViewModifier {
             .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: Theme.cardCornerRadius)
-                    .stroke(Theme.dustyRose.opacity(0.3), lineWidth: 1)
+                    .stroke(Theme.cardBorder, lineWidth: 1)
             )
             .shadow(
                 color: Theme.cardShadow,
@@ -143,6 +150,7 @@ struct GradientButtonStyle: ViewModifier {
             .frame(height: 50)
             .background(Theme.ctaGradient)
             .clipShape(RoundedRectangle(cornerRadius: 16))
+            .shadow(color: Color(hex: "E8A0BF").opacity(0.3), radius: 8, y: 4)
     }
 }
 

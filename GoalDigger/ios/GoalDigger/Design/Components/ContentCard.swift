@@ -1,22 +1,23 @@
 import SwiftUI
 
 // MARK: - ContentCard
-// The main feed card — redesigned as a "relationship translator" card.
+// The main feed card — "relationship translator" card.
 //
 // Design decisions for other agents:
-// - Mood emoji appears next to the badge for emotional context at a glance
-// - Emotional badge labels ("MOOD ALERT", "HEADS UP") replace generic "NEWS"
+// - Mood emoji next to badge for emotional context at a glance
+// - Emotional badge labels ("MOOD ALERT", "HEADS UP") replace generic labels
+// - "CONVERSATION STARTER" label above italic teaser — makes the value obvious
+// - Clock icon on kickoff countdown for matchday items
 // - Body text preview (italic serif, 2 lines) gives context before tapping
-// - First talking point shown as "conversation starter" teaser
-// - "Full update →" replaces "Read more →" to match editorial tone
-// - Mood tinting: cards have a faint background color based on emotionalContext
-// - Kickoff countdown shown for matchday items
+// - "Full update →" with underline for tappability
+// - Mood tinting keyed to API emotionalContext values
+// - Default badge is "UPDATE" not "NEWS" — more personal, less press-release
 
 struct ContentCard: View {
     let item: ContentItem
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.elementSpacing) {
+        VStack(alignment: .leading, spacing: 10) {
             // Row 1: Badge + Mood Emoji + Timestamp
             HStack {
                 badgeView
@@ -28,50 +29,64 @@ struct ContentCard: View {
 
                 Spacer()
 
-                if let countdown = item.kickoffCountdown {
-                    Text(countdown)
-                        .font(Theme.feedTimestamp)
-                        .foregroundStyle(Theme.accentGreen)
-                } else {
-                    Text(item.publishedAt.relativeFormatted)
-                        .font(Theme.feedTimestamp)
-                        .foregroundStyle(Theme.textTertiary)
-                }
+                Text(item.publishedAt.relativeFormatted)
+                    .font(Theme.feedTimestamp)
+                    .foregroundStyle(Theme.textTertiary)
             }
 
-            // Row 2: Headline (max 3 lines)
+            // Kickoff countdown with clock icon (matchday only)
+            if let countdown = item.kickoffCountdown {
+                HStack(spacing: 6) {
+                    Image(systemName: "clock")
+                        .font(.system(size: 11))
+                    Text(countdown)
+                        .font(Theme.feedBadge)
+                }
+                .foregroundStyle(Theme.accentGreen)
+            }
+
+            // Headline — serif, editorial
             Text(item.headline)
                 .font(Theme.feedHeadline)
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(3)
+                .multilineTextAlignment(.leading)
 
-            // Row 3: Body preview (italic serif, 2 lines)
+            // Body preview (italic serif, 2 lines)
             Text(item.body)
                 .font(Theme.detailBodyItalic)
                 .foregroundStyle(Theme.textSecondary)
                 .lineLimit(2)
 
-            // Row 4: Conversation starter teaser (first talking point)
+            // Conversation starter — first talking point with label
             if let firstPoint = item.regularTalkingPoints.first {
-                HStack(spacing: 6) {
-                    RoundedRectangle(cornerRadius: 1.5)
-                        .fill(Theme.accentWarm)
-                        .frame(width: 2, height: 16)
+                HStack(spacing: 0) {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Theme.accentPink.opacity(0.6))
+                        .frame(width: 2)
 
-                    Text(firstPoint)
-                        .font(Theme.conversationStarter)
-                        .foregroundStyle(Theme.textSecondary)
-                        .lineLimit(1)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("CONVERSATION STARTER")
+                            .font(.system(.caption2, design: .rounded, weight: .bold))
+                            .foregroundStyle(Theme.accentPink)
+
+                        Text("\"\(firstPoint.prefix(80))...\"")
+                            .font(Theme.conversationStarter)
+                            .foregroundStyle(Theme.textSecondary)
+                            .lineLimit(2)
+                    }
+                    .padding(.leading, 10)
                 }
-                .padding(.top, 2)
+                .padding(.vertical, 4)
             }
 
-            // Row 5: "Full update" right-aligned
+            // "Full update" link — underlined for tappability
             HStack {
                 Spacer()
                 HStack(spacing: 4) {
                     Text("Full update")
                         .font(Theme.feedTimestamp)
+                        .underline()
                         .foregroundStyle(Theme.accentWarm)
                     Image(systemName: "arrow.right")
                         .font(.system(size: 10))
@@ -79,51 +94,49 @@ struct ContentCard: View {
                 }
             }
         }
-        .cardStyle(moodTint: moodTintColor)
+        .cardStyle(moodTint: moodTint)
     }
 
-    // MARK: - Mood Tint
+    // MARK: - Mood Tint (keyed to API emotionalContext values)
 
-    private var moodTintColor: Color? {
-        guard let mood = item.emotionalContext?.lowercased() else { return nil }
-        switch mood {
-        case "excited", "celebratory": return Theme.moodExcited
-        case "nervous": return Theme.moodNervous
-        case "confident", "hopeful": return Theme.moodConfident
-        default: return nil
+    private var moodTint: Color? {
+        switch item.emotionalContext {
+        case "exciting": return Theme.moodExciting
+        case "bad_news": return Theme.moodBadNews
+        case "drama":    return Theme.moodDrama
+        case "funny":    return Theme.moodFunny
+        default:         return nil
         }
     }
 
     // MARK: - Emotional Badge Labels
-    // Instead of generic "NEWS" / "MATCH DAY", use emotional labels.
 
     @ViewBuilder
     private var badgeView: some View {
         switch item.type {
-        case .news:
-            BadgeView(
-                text: emotionalBadgeLabel,
-                backgroundColor: Theme.accentSoft,
-                textColor: Theme.accentWarm
-            )
         case .matchday:
             BadgeView(
                 text: "MATCH DAY",
-                backgroundColor: Theme.accentGreen.opacity(0.2),
+                backgroundColor: Theme.accentGreen.opacity(0.15),
                 textColor: Theme.accentGreen
+            )
+        case .news:
+            BadgeView(
+                text: emotionalBadgeLabel,
+                backgroundColor: Theme.accentPink.opacity(0.15),
+                textColor: Theme.accentPink
             )
         }
     }
 
     /// Map emotional context to badge labels that feel personal
     private var emotionalBadgeLabel: String {
-        guard let mood = item.emotionalContext?.lowercased() else { return "NEWS" }
-        switch mood {
-        case "excited", "celebratory": return "MOOD ALERT"
-        case "nervous", "frustrated": return "HEADS UP"
-        case "confident", "hopeful": return "GOOD VIBES"
-        case "devastated": return "BRACE YOURSELF"
-        default: return "NEWS"
+        switch item.emotionalContext {
+        case "exciting": return "MOOD ALERT"
+        case "bad_news": return "HEADS UP"
+        case "drama":    return "MOOD ALERT"
+        case "funny":    return "CONVERSATION STARTER"
+        default:         return "UPDATE"
         }
     }
 }

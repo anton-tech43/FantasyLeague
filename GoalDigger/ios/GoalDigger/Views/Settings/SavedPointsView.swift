@@ -119,7 +119,7 @@ private struct SavedPointRow: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Theme.dustyRose.opacity(0.4), lineWidth: 1)
+                .stroke(Theme.accentPink.opacity(0.25), lineWidth: 1)
         )
         .onTapGesture {
             UIPasteboard.general.string = text

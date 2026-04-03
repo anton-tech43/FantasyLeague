@@ -21,10 +21,10 @@ struct WelcomeView: View {
             VStack(spacing: 12) {
                 Image(systemName: "message.fill")
                     .font(.system(size: 60))
-                    .foregroundStyle(Theme.accentWarm)
+                    .foregroundStyle(Theme.accentPink)
                 Image(systemName: "heart.fill")
                     .font(.system(size: 30))
-                    .foregroundStyle(Theme.dustyRose)
+                    .foregroundStyle(Theme.accentPeach)
                     .scaleEffect(isBreathing ? 1.15 : 1.0)
                     .animation(
                         .easeInOut(duration: 1.5).repeatForever(autoreverses: true),

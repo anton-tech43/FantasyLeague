@@ -80,7 +80,7 @@ struct SettingsView: View {
                         if savedCount > 0 {
                             Text("\(savedCount)")
                                 .font(Theme.feedTimestamp)
-                                .foregroundStyle(Theme.accentWarm)
+                                .foregroundStyle(Theme.accentPink)
                         }
                     }
                 }

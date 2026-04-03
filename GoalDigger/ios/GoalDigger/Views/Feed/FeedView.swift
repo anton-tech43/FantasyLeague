@@ -1,13 +1,14 @@
 import SwiftUI
 
 // MARK: - FeedView
-// Main feed screen — redesigned with personalized greeting and warm editorial feel.
+// Main feed screen — "soft intel" editorial feel.
 //
 // Design decisions for other agents:
-// - Personalized time-of-day greeting using partner's name (e.g. "Good evening, Jake's playing tonight")
+// - Toolbar shows full team name + "Josh's team" subtitle for personalization
+// - Contextual greeting references partner by name with cheeky time-of-day phrasing
 // - Gradient background (warm cream → warm beige) for depth
-// - Empathetic freshness states ("All quiet tonight" instead of "No updates")
-// - Staggered card entrance animations for polish
+// - Empathetic freshness states with emoji ("All quiet tonight 🌙")
+// - Staggered card entrance animations with spring physics
 // - Data loading: API → SwiftData cache → MockData fallback (unchanged)
 
 struct FeedView: View {
@@ -34,9 +35,17 @@ struct FeedView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Text(appState.selectedTeam?.shortName ?? "Goal Digger")
-                        .font(Theme.detailTitle)
-                        .foregroundStyle(Theme.textPrimary)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(appState.selectedTeam?.displayName ?? "Goal Digger")
+                            .font(.system(.headline, design: .serif, weight: .bold))
+                            .foregroundStyle(Theme.textPrimary)
+
+                        if let partner = appState.partnerName {
+                            Text("\(partner)'s team")
+                                .font(.system(.caption, design: .rounded, weight: .medium))
+                                .foregroundStyle(Theme.textTertiary)
+                        }
+                    }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink(value: "settings") {
@@ -66,23 +75,19 @@ struct FeedView: View {
         }
     }
 
-    // MARK: - Personalized Greeting
+    // MARK: - Contextual Greeting
+    // Cheeky, time-aware, references partner by name.
 
     private var greetingText: String {
         let hour = Calendar.current.component(.hour, from: Date())
-        let timeGreeting: String
-        if hour < 12 {
-            timeGreeting = "Good morning"
-        } else if hour < 17 {
-            timeGreeting = "Good afternoon"
-        } else {
-            timeGreeting = "Good evening"
+        let partner = appState.partnerName ?? "him"
+        let team = appState.selectedTeam?.shortName ?? "your team"
+        switch hour {
+        case 5..<12:  return "Good morning \u{2014} here's what \(partner) might be talking about today"
+        case 12..<17: return "Quick afternoon intel on \(team)"
+        case 17..<21: return "Evening update \u{2014} here's what to know before you see \(partner)"
+        default:      return "Late night catch-up \u{2014} tomorrow's talking points"
         }
-
-        if let name = appState.userName {
-            return "\(timeGreeting), \(name)"
-        }
-        return timeGreeting
     }
 
     // MARK: - Feed Content
@@ -90,20 +95,12 @@ struct FeedView: View {
     private var feedContent: some View {
         ScrollView {
             LazyVStack(spacing: Theme.cardSpacing) {
-                // Personalized greeting
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(greetingText)
-                        .font(Theme.greetingTitle)
-                        .foregroundStyle(Theme.textPrimary)
-
-                    if let partner = appState.partnerName, let team = appState.selectedTeam {
-                        Text("Here's what's happening with \(partner)'s \(team.shortName)")
-                            .font(Theme.feedTimestamp)
-                            .foregroundStyle(Theme.textSecondary)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.bottom, 4)
+                // Contextual greeting
+                Text(greetingText)
+                    .font(Theme.talkingPointText)
+                    .foregroundStyle(Theme.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.bottom, 4)
 
                 if let freshness = contentFreshness {
                     freshnessCard(freshness)
@@ -114,12 +111,10 @@ struct FeedView: View {
                         ContentCard(item: item)
                     }
                     .buttonStyle(.plain)
-                    .transition(.asymmetric(
-                        insertion: .offset(y: 20).combined(with: .opacity),
-                        removal: .opacity
-                    ))
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                     .animation(
-                        .easeOut(duration: 0.4).delay(Double(index) * 0.08),
+                        .spring(response: 0.4, dampingFraction: 0.8)
+                            .delay(Double(index) * 0.06),
                         value: items.count
                     )
                 }
@@ -146,17 +141,16 @@ struct FeedView: View {
         }
     }
 
-    // MARK: - Empty State (empathetic)
+    // MARK: - Empty State (empathetic, with emoji)
 
     private var emptyView: some View {
         VStack(spacing: Theme.sectionSpacing) {
-            Image(systemName: "moon.stars")
-                .font(.system(size: 50))
-                .foregroundStyle(Theme.textTertiary)
+            Text("🌙")
+                .font(.system(size: 44))
 
             Text("All quiet tonight")
                 .font(Theme.feedHeadline)
-                .foregroundStyle(Theme.textSecondary)
+                .foregroundStyle(Theme.textPrimary)
 
             Text("Nothing happening with \(appState.selectedTeam?.shortName ?? "your team") right now. We'll nudge you when there's something worth knowing.")
                 .font(Theme.onboardingBody)
@@ -180,7 +174,7 @@ struct FeedView: View {
         }
     }
 
-    // MARK: - Content Freshness (empathetic labels)
+    // MARK: - Content Freshness (empathetic, with emoji)
 
     private enum Freshness {
         case caughtUp
@@ -199,30 +193,32 @@ struct FeedView: View {
         Group {
             switch freshness {
             case .caughtUp:
-                VStack(spacing: Theme.elementSpacing) {
-                    Image(systemName: "checkmark.circle")
-                        .font(.system(size: 24))
-                        .foregroundStyle(Theme.accentGreen)
+                VStack(spacing: 10) {
+                    Text("🌙")
+                        .font(.system(size: 28))
 
-                    Text("You're all caught up")
+                    Text("All quiet tonight")
                         .font(Theme.feedHeadline)
-                        .foregroundStyle(Theme.textSecondary)
+                        .foregroundStyle(Theme.textPrimary)
 
-                    Text("Nothing new right now. Enjoy the peace!")
+                    Text("No big news. We'll nudge you before anything important \u{2014} no need to stay up.")
                         .font(Theme.onboardingBody)
                         .foregroundStyle(Theme.textTertiary)
                         .multilineTextAlignment(.center)
                 }
                 .padding(Theme.cardPadding)
                 .frame(maxWidth: .infinity)
-                .background(Theme.feedDivider)
+                .background(Theme.cardBackgroundAlt)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius))
 
             case .quietWeek:
-                VStack(spacing: Theme.elementSpacing) {
-                    Text("Quiet spell")
+                VStack(spacing: 10) {
+                    Text("😴")
+                        .font(.system(size: 28))
+
+                    Text("Quiet week")
                         .font(Theme.feedHeadline)
-                        .foregroundStyle(Theme.textSecondary)
+                        .foregroundStyle(Theme.textPrimary)
 
                     Text("Not much going on with \(appState.selectedTeam?.shortName ?? "your team"). We'll let you know when there's something worth talking about.")
                         .font(Theme.onboardingBody)
@@ -231,7 +227,7 @@ struct FeedView: View {
                 }
                 .padding(Theme.cardPadding)
                 .frame(maxWidth: .infinity)
-                .background(Theme.feedDivider)
+                .background(Theme.cardBackgroundAlt)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius))
             }
         }
