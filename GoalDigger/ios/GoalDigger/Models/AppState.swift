@@ -13,6 +13,8 @@ class AppState {
         didSet {
             if let team = selectedTeam {
                 UserDefaults.standard.set(team.rawValue, forKey: "selectedTeam")
+            } else {
+                UserDefaults.standard.removeObject(forKey: "selectedTeam")
             }
         }
     }
@@ -35,13 +37,21 @@ class AppState {
 
     var userName: String? {
         didSet {
-            UserDefaults.standard.set(userName, forKey: "userName")
+            if let userName {
+                UserDefaults.standard.set(userName, forKey: "userName")
+            } else {
+                UserDefaults.standard.removeObject(forKey: "userName")
+            }
         }
     }
 
     var partnerName: String? {
         didSet {
-            UserDefaults.standard.set(partnerName, forKey: "partnerName")
+            if let partnerName {
+                UserDefaults.standard.set(partnerName, forKey: "partnerName")
+            } else {
+                UserDefaults.standard.removeObject(forKey: "partnerName")
+            }
         }
     }
 

@@ -54,7 +54,8 @@ struct OnboardingFlow: View {
                     subtitle: "So we can make this feel personal.",
                     placeholder: "Your name",
                     onContinue: { name in
-                        appState.userName = name.isEmpty ? nil : name
+                        let trimmed = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(50))
+                        appState.userName = trimmed.isEmpty ? nil : trimmed
                         withAnimation { currentStep = 2 }
                     }
                 )
@@ -64,7 +65,8 @@ struct OnboardingFlow: View {
                     subtitle: "The football fan in your life.",
                     placeholder: "His name",
                     onContinue: { name in
-                        appState.partnerName = name.isEmpty ? nil : name
+                        let trimmed = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(50))
+                        appState.partnerName = trimmed.isEmpty ? nil : trimmed
                         withAnimation { currentStep = 3 }
                     }
                 )

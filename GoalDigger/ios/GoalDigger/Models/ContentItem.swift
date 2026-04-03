@@ -66,17 +66,14 @@ struct ContentItem: Identifiable, Codable {
     // Only known values produce emoji; unknown values return nil.
 
     var moodEmoji: String? {
-        guard let mood = emotionalContext?.lowercased() else { return nil }
+        guard let mood = emotionalContext else { return nil }
         switch mood {
-        case "excited": return "🔥"
-        case "nervous": return "😬"
-        case "confident": return "😎"
-        case "frustrated": return "😤"
-        case "hopeful": return "🤞"
-        case "relieved": return "😮‍💨"
-        case "devastated": return "💔"
-        case "celebratory": return "🎉"
-        default: return nil
+        case "exciting":      return "🔥"
+        case "bad_news":      return "😬"
+        case "drama":         return "🍿"
+        case "funny":         return "😂"
+        case "informational": return nil
+        default:              return nil
         }
     }
 

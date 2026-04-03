@@ -200,8 +200,11 @@ private struct TalkingPointCard: View {
                 .stroke(Theme.accentPink.opacity(0.25), lineWidth: 1)
         )
         .onTapGesture {
-            // Security: plain text only, no rich text or HTML
-            UIPasteboard.general.string = text
+            // Security: plain text only, expires after 2 minutes
+            UIPasteboard.general.setItems(
+                [[UIPasteboard.typeAutomatic: text]],
+                options: [.expirationDate: Date().addingTimeInterval(120)]
+            )
             withAnimation { copied = true }
             // Haptic feedback
             UIImpactFeedbackGenerator(style: .light).impactOccurred()

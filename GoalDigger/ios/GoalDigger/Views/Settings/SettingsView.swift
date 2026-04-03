@@ -1,13 +1,10 @@
 import SwiftUI
 import UserNotifications
 
-// MARK: - SettingsView
-// Updated with saved talking points link, names display, and editorial styling.
-//
-// Design decisions for other agents:
-// - "Saved talking points" section shows count and links to SavedPointsView
-// - Names section shows user's name and partner's name
-// - Gradient background matches new design system
+// MARK: - SettingsView (DEPRECATED)
+// Replaced by ProfileView in GoalDiggerApp.swift.
+// ProfileView adds notification category preferences and improved layout.
+// This file is kept to avoid pbxproj churn — safe to delete in a future cleanup.
 
 struct SettingsView: View {
     @Environment(AppState.self) private var appState

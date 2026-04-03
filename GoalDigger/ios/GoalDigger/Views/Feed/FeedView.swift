@@ -277,16 +277,23 @@ struct FeedView: View {
 
     private func handleDeepLink(_ contentId: UUID?) {
         guard let contentId else { return }
+        let userTeam = appState.selectedTeam?.rawValue
 
         if let item = items.first(where: { $0.id == contentId }) {
-            navigationPath.append(item)
+            // Validate content belongs to user's selected team
+            if userTeam == nil || item.teamId == userTeam {
+                navigationPath.append(item)
+            }
             appState.deepLinkContentId = nil
             return
         }
 
         Task {
             if let item = try? await APIClient.shared.fetchItem(id: contentId) {
-                navigationPath.append(item)
+                // Validate fetched content belongs to user's selected team
+                if userTeam == nil || item.teamId == userTeam {
+                    navigationPath.append(item)
+                }
             }
             appState.deepLinkContentId = nil
         }

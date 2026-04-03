@@ -122,7 +122,11 @@ private struct SavedPointRow: View {
                 .stroke(Theme.accentPink.opacity(0.25), lineWidth: 1)
         )
         .onTapGesture {
-            UIPasteboard.general.string = text
+            // Security: plain text only, expires after 2 minutes
+            UIPasteboard.general.setItems(
+                [[UIPasteboard.typeAutomatic: text]],
+                options: [.expirationDate: Date().addingTimeInterval(120)]
+            )
             withAnimation { copied = true }
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
             Task {
