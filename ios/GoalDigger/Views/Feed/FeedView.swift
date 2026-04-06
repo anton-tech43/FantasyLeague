@@ -10,6 +10,7 @@ struct FeedView: View {
     @State private var hasError = false
     @State private var offset = 0
     @State private var canLoadMore = true
+    @State private var isLoadingMore = false
     @State private var freshnessCardDismissed = false
     @AppStorage("hasAutoExpandedFirstItem") private var hasAutoExpanded = false
 
@@ -225,7 +226,9 @@ struct FeedView: View {
     }
 
     private func loadMore() async {
-        guard canLoadMore, let teamId = appState.selectedTeam?.rawValue else { return }
+        guard canLoadMore, !isLoadingMore, let teamId = appState.selectedTeam?.rawValue else { return }
+        isLoadingMore = true
+        defer { isLoadingMore = false }
         do {
             let fetched = try await APIClient.shared.fetchFeed(teamId: teamId, limit: pageSize, offset: offset)
             items.append(contentsOf: fetched)

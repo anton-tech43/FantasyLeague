@@ -5,6 +5,7 @@ struct ContentDetailView: View {
     @Environment(AppState.self) var appState
     @State private var item: ContentItem?
     @State private var isLoading = true
+    @State private var onesToWatch: [PlayerCard] = []
 
     var body: some View {
         ZStack {
@@ -19,6 +20,11 @@ struct ContentDetailView: View {
 
                         if item.type == .matchday, let postMatch = item.postMatchCheatSheet {
                             postMatchSection(postMatch)
+                        }
+
+                        if item.type == .matchday, !onesToWatch.isEmpty {
+                            Divider().background(Color.feedDivider)
+                            OnesToWatchView(players: onesToWatch)
                         }
 
                         bodySection(item)
@@ -155,6 +161,11 @@ struct ContentDetailView: View {
             #endif
         }
         isLoading = false
+
+        // Fetch "ones to watch" player cards for matchday items
+        if let item, item.type == .matchday {
+            onesToWatch = (try? await APIClient.shared.fetchPlayerCards(teamId: item.teamId)) ?? []
+        }
     }
 
 }
