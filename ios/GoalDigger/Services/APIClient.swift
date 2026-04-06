@@ -4,27 +4,48 @@ class APIClient {
     static let shared = APIClient()
 
     // SECURITY: Credentials injected at build time via Configuration.xcconfig → Info.plist
-    private let baseURL: URL = {
+    // When credentials are missing (dev without backend), API calls throw and the app falls back to mock data.
+    var isConfigured: Bool { _baseURL != nil }
+
+    private let _baseURL: URL? = {
         guard let urlString = Bundle.main.infoDictionary?["SUPABASE_URL"] as? String,
               !urlString.isEmpty,
+              !urlString.contains("YOUR_PROJECT"),
+              !urlString.contains("xxxxx"),
               let url = URL(string: urlString + "/rest/v1") else {
-            fatalError("SUPABASE_URL not set in Configuration.xcconfig")
+            print("⚠️ SUPABASE_URL not set — running in offline/mock mode")
+            return nil
         }
         return url
     }()
 
-    private let functionsBaseURL: URL = {
+    private var baseURL: URL {
+        guard let url = _baseURL else { fatalError("API called without configuration") }
+        return url
+    }
+
+    private let _functionsBaseURL: URL? = {
         guard let urlString = Bundle.main.infoDictionary?["SUPABASE_URL"] as? String,
               !urlString.isEmpty,
+              !urlString.contains("YOUR_PROJECT"),
+              !urlString.contains("xxxxx"),
               let url = URL(string: urlString + "/functions/v1") else {
-            fatalError("SUPABASE_URL not set in Configuration.xcconfig")
+            return nil
         }
         return url
     }()
+
+    private var functionsBaseURL: URL {
+        guard let url = _functionsBaseURL else { fatalError("API called without configuration") }
+        return url
+    }
 
     private let apiKey: String = {
-        guard let key = Bundle.main.infoDictionary?["SUPABASE_ANON_KEY"] as? String, !key.isEmpty else {
-            fatalError("SUPABASE_ANON_KEY not set in Configuration.xcconfig")
+        guard let key = Bundle.main.infoDictionary?["SUPABASE_ANON_KEY"] as? String,
+              !key.isEmpty,
+              !key.contains("YOUR_ANON_KEY") else {
+            print("⚠️ SUPABASE_ANON_KEY not set — running in offline/mock mode")
+            return ""
         }
         return key
     }()
