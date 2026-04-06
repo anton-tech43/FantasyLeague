@@ -1072,16 +1072,16 @@ Every agent **must** follow this protocol. It keeps the work tracker honest and 
 
 | # | Task | Status | Agent | Started | Completed | Outcome |
 |---|------|--------|-------|---------|-----------|---------|
-| B1 | Database schema (`001_initial_schema.sql`) — all tables, indexes, RLS policies, seed data | `open` | Backend | — | — | — |
-| B2 | `_shared/` utilities — supabase-client, claude-client, types, trigger, pipeline-logger, anti-spam | `open` | Backend | — | — | — |
-| B3 | `data-fetcher` — RSS parsing, API-Football integration, raw_fetch_logs storage, deduplication | `open` | Backend | — | — | — |
-| B4 | `content-generator` — Claude API integration, newsworthiness check, draft creation, matchday JSONB formatting (Contract 3) | `open` | Backend | — | — | — |
-| B5 | `content-reviewer` — 3 parallel review bots, retry logic, approval/rejection flow | `open` | Backend | — | — | — |
-| B6 | `notification-sender` — APNs integration, anti-spam enforcement (Contract 4), payload format (Contract 2) | `open` | Backend | — | — | — |
-| B7 | `matchday-scheduler` — Daily 07:00 UTC, fixture detection, one-off pg_cron scheduling | `open` | Backend | — | — | — |
-| B8 | `health-check` — GET endpoint, system status JSON (Contract 9) | `open` | Backend | — | — | — |
-| B9 | pg_cron jobs — data-fetcher schedule, matchday-scheduler schedule, cleanup crons | `open` | Backend | — | — | — |
-| B10 | APNs .p8 key setup — JWT auth, sandbox + production config | `open` | Backend | — | — | — |
+| B1 | Database schema (`001_initial_schema.sql`) — all tables, indexes, RLS policies, seed data | `done` | Backend | 2026-04-06 | 2026-04-06 | Built 001 + 002 + 003 migrations. 7 tables, CHECK constraints, rate limit trigger, RLS on all tables. device_tokens UPDATE policy restricts anon to team_id/updated_at only. seed_teams.sql for 3 PL teams. |
+| B2 | `_shared/` utilities — supabase-client, claude-client, types, trigger, pipeline-logger, anti-spam | `done` | Backend | 2026-04-06 | 2026-04-06 | 8 shared modules: supabase-client, claude-client (retry logic), apns-client (JWT auth), types, trigger, pipeline-logger, anti-spam (tier-based limits), input-sanitizer (6 PROMPTS.md rules). |
+| B3 | `data-fetcher` — RSS parsing, API-Football integration, raw_fetch_logs storage, deduplication | `done` | Backend | 2026-04-06 | 2026-04-06 | 12 RSS feeds, 6 API-Football endpoints per team. Sanitizes input before storage. Computes team_context flags from standings. Triggers content-generator on new data. |
+| B4 | `content-generator` — Claude API integration, newsworthiness check, draft creation, matchday JSONB formatting (Contract 3) | `done` | Backend | 2026-04-06 | 2026-04-06 | News + matchday generators with full PROMPTS.md system prompts embedded. Tool definitions for structured output. Dedup check (60% word overlap). Matchday JSONB (Contract 3) with post_match and metadata. |
+| B5 | `content-reviewer` — 4 review bots, retry logic, approval/rejection flow | `done` | Backend | 2026-04-06 | 2026-04-06 | 4 bots: Tone, Accuracy, Brevity, Safety. First 3 parallel, Safety after. JSON.parse in try/catch — failure = FAIL. Single-bot-failure retry. Safety logged to pipeline_health as safety_review stage. |
+| B6 | `notification-sender` — APNs integration, anti-spam enforcement (Contract 4), payload format (Contract 2) | `done` | Backend | 2026-04-06 | 2026-04-06 | Tier-based anti-spam (1/2/3 daily limits). Result notifications bypass quiet hours. APNs error handling (410→deactivate, 403→CRITICAL stop). Payload matches Contract 2 exactly. |
+| B7 | `matchday-scheduler` — Daily 07:00 UTC, fixture detection, one-off pg_cron scheduling | `done` | Backend | 2026-04-06 | 2026-04-06 | Checks API-Football for today's PL fixtures. Schedules content-generator at kickoff-90min via pg_cron one-off jobs. Falls back to immediate trigger if cron fails. |
+| B8 | `health-check` — GET endpoint, system status JSON (Contract 9) | `done` | Backend | 2026-04-06 | 2026-04-06 | Returns healthy/degraded/unhealthy based on fetch recency (4h) and publish recency (48h). Per-team stats: last_fetch, last_published, published_today, errors, rejections. |
+| B9 | pg_cron jobs — data-fetcher schedule, matchday-scheduler schedule, cleanup crons | `done` | Backend | 2026-04-06 | 2026-04-06 | 003_pg_cron_jobs.sql: data-fetcher (*/30 8-23), matchday-scheduler (0 7), notification-sweep (15 *), cleanup-raw-logs (7d), cleanup-health-logs (90d), cleanup-rejected (14d). schedule_matchday_job() helper function. |
+| B10 | APNs .p8 key setup — JWT auth, sandbox + production config | `done` | Backend | 2026-04-06 | 2026-04-06 | apns-client.ts implements JWT auth with ES256 signing. Supports sandbox + production via APNS_ENVIRONMENT env var. Full error handling per Runbook Scenario 5. Awaits actual .p8 key from Apple Developer enrollment (Phase 5). |
 
 ### iOS Agent Tasks
 
