@@ -1,0 +1,24 @@
+# Secrets - never commit
+Configuration.xcconfig
+*.p8
+.env
+
+# Xcode
+*.xcuserdata
+*.xcworkspace
+build/
+DerivedData/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.moved-aside
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Swift Package Manager
+.build/
+Packages/
