@@ -67,7 +67,8 @@ class AppState {
         notificationPermissionRequested = false
         deepLinkContentId = nil
         let keys = ["herName", "hisName", "selectedTeam", "selectedTier",
-                     "hasCompletedOnboarding", "notificationPermissionRequested", "apnsToken"]
+                     "hasCompletedOnboarding", "notificationPermissionRequested", "apnsToken",
+                     "hasAutoExpandedFirstItem"]
         keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
     }
 }

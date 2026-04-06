@@ -11,7 +11,7 @@ struct FeedView: View {
     @State private var offset = 0
     @State private var canLoadMore = true
     @State private var freshnessCardDismissed = false
-    @State private var hasAutoExpanded = false
+    @AppStorage("hasAutoExpandedFirstItem") private var hasAutoExpanded = false
 
     private let pageSize = 20
 
