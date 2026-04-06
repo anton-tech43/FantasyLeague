@@ -1129,7 +1129,7 @@ If an agent encounters something that isn't covered by the contracts and can't p
 
 | # | Raised By | Date | Question / Blocker | Status | Resolution |
 |---|-----------|------|--------------------|--------|------------|
-| — | — | — | — | — | — |
+| Q1 | Pipeline | 2026-04-06 | RUNBOOK.md line 318 references "PROMPTS.md Section 8" but the Prompt Iteration Log is Section 14. RUNBOOK.md is read-only for agents, needs project owner to fix. | open | — |
 
 ---
 

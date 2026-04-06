@@ -163,7 +163,7 @@ Each example includes the full content item (headline, talking points, body) plu
 
 ### Talking Points
 
-1. "The rumour is that Man United want Frenkie de Jong from Barcelona. This has been going on for YEARS, it's like a will-they-won't-they romance. If he mentions it, just roll your eyes and say 'Not this again.' He'll find it hilarious."
+1. "Man United want Frenkie de Jong from Barcelona, and this has been going on for YEARS. If he mentions it, just roll your eyes and say 'Not this again.' He'll find it hilarious."
 
 2. "If he seems excited about it, ask 'Do you actually think it'll happen this time?' It's the right question because fans have been burned before. He'll appreciate that you get it."
 
@@ -215,13 +215,13 @@ Each example includes the full content item (headline, talking points, body) plu
 
 ### Talking Points
 
-1. "Jarrod Bowen is basically West Ham's best player. He scores the most goals and creates the most chances. So this is a big deal, kind of like a band's lead singer pulling out of a tour."
+1. "Jarrod Bowen is basically West Ham's best player, scores the most goals and creates the most chances. This is a big deal, kind of like a band's lead singer pulling out of a tour."
 
-2. "It's a hamstring injury (back of the thigh) and he could be out for 3-4 weeks. If he seems down about it, just say 'How long is Bowen out for?' Shows you know it matters."
+2. "It's a hamstring injury and he could be out for 3-4 weeks. If he seems down, just say 'How long is Bowen out for?' Shows you care."
 
 3. "The silver lining you can offer: 'At least it's not a long-term thing, right?' This is genuinely helpful because hamstring injuries CAN be worse. You'll sound informed and reassuring."
 
-4. "West Ham play Liverpool this weekend without him. If he's worried about that, he's right to be. Liverpool are top of the league. Maybe don't mention that bit though."
+4. "West Ham play Liverpool this weekend without him, and Liverpool are top of the league. If he's worried, he's right to be. Maybe don't mention that bit though."
 
 **Why they work:**
 - Point 1 uses the band analogy — she instantly understands the impact
@@ -358,7 +358,7 @@ These are examples of bad content that the review bots should catch.
 - Exhausting to read
 - Nobody would text like this
 
-**Brevity Bot should catch:** Fail — talking point exceeds 2 sentences by a mile
+**Brevity Bot should catch:** Fail — talking point exceeds 3 sentences by a mile
 
 ### Bad Example 6: Not Newsworthy (Spam)
 
@@ -385,12 +385,12 @@ These are examples of bad content that the review bots should catch.
 ### For Prompt Tuning
 1. After running the pipeline on real data, compare generated content to these examples
 2. Ask: "Would this example feel at home next to the golden examples?"
-3. If no — identify what's different and adjust the prompts
+3. If no, identify what's different and adjust the prompts
 4. Re-run and compare again
 
 ### For Review Bot Testing
-1. Feed each golden example through all 4 review bots — they should all pass
-2. Feed each anti-pattern through all 4 review bots — at least 1 should fail
+1. Feed each golden example through all 4 review bots. They should all pass.
+2. Feed each anti-pattern through all 4 review bots. At least 1 should fail.
 3. If a golden example fails review, the review bot prompt is too strict
 4. If an anti-pattern passes review, the review bot prompt is too lenient
 
