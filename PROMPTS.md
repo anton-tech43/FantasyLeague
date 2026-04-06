@@ -1236,4 +1236,4 @@ These patterns indicate prompt problems:
 
 ---
 
-*This document is versioned. Every prompt change must be logged in Section 8. Prompts are the product — treat them with the same care as production code.*
+*This document is versioned. Every prompt change must be logged in Section 14. Prompts are the product, treat them with the same care as production code.*
