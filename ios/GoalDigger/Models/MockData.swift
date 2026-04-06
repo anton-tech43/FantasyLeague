@@ -141,14 +141,15 @@ struct MockData {
 
     private static let mockDecoder: JSONDecoder = {
         let decoder = JSONDecoder()
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let fractionalFormatter = ISO8601DateFormatter()
+        fractionalFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let plainFormatter = ISO8601DateFormatter()
+        plainFormatter.formatOptions = [.withInternetDateTime]
         decoder.dateDecodingStrategy = .custom { decoder in
             let container = try decoder.singleValueContainer()
             let dateString = try container.decode(String.self)
-            if let date = formatter.date(from: dateString) { return date }
-            formatter.formatOptions = [.withInternetDateTime]
-            if let date = formatter.date(from: dateString) { return date }
+            if let date = fractionalFormatter.date(from: dateString) { return date }
+            if let date = plainFormatter.date(from: dateString) { return date }
             throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date")
         }
         return decoder

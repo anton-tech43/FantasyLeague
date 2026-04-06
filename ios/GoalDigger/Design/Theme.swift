@@ -35,8 +35,8 @@ extension Color {
     // Badge colors
     static let badgeMatchday = Color.accentGreen.opacity(0.2)
     static let badgeMatchdayText = Color.accentGreen
-    static let badgeNews = Color.hotRose.opacity(0.12)
-    static let badgeNewsText = Color.hotRose
+    static let badgeNews = Color.accentSoft
+    static let badgeNewsText = Color.accentWarm
 
     // Post-match card tints
     static let winTint = Color.green.opacity(0.08)
@@ -113,6 +113,23 @@ struct CardStyle: ViewModifier {
 extension View {
     func cardStyle() -> some View {
         modifier(CardStyle())
+    }
+}
+
+// MARK: - Shared Utilities
+
+extension Date {
+    var relativeTimestamp: String {
+        let interval = Date().timeIntervalSince(self)
+        if interval < 3600 {
+            return "\(max(1, Int(interval / 60)))m ago"
+        } else if interval < 86400 {
+            return "\(Int(interval / 3600))h ago"
+        } else if interval < 172800 {
+            return "Yesterday"
+        } else {
+            return "\(Int(interval / 86400)) days ago"
+        }
     }
 }
 

@@ -31,16 +31,15 @@ class APIClient {
 
     private let decoder: JSONDecoder = {
         let decoder = JSONDecoder()
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let fractionalFormatter = ISO8601DateFormatter()
+        fractionalFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let plainFormatter = ISO8601DateFormatter()
+        plainFormatter.formatOptions = [.withInternetDateTime]
         decoder.dateDecodingStrategy = .custom { decoder in
             let container = try decoder.singleValueContainer()
             let dateString = try container.decode(String.self)
-            // Try with fractional seconds first
-            if let date = formatter.date(from: dateString) { return date }
-            // Try without fractional seconds
-            formatter.formatOptions = [.withInternetDateTime]
-            if let date = formatter.date(from: dateString) { return date }
+            if let date = fractionalFormatter.date(from: dateString) { return date }
+            if let date = plainFormatter.date(from: dateString) { return date }
             throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date: \(dateString)")
         }
         return decoder
@@ -62,29 +61,27 @@ class APIClient {
     // MARK: - Feed
 
     func fetchFeed(teamId: String, limit: Int = 20, offset: Int = 0) async throws -> [ContentItem] {
-        var components = URLComponents(url: baseURL.appendingPathComponent("content_items"), resolvingAgainstBaseURL: false)!
-        components.queryItems = [
+        let url = try buildURL(path: "content_items", queryItems: [
             URLQueryItem(name: "team_id", value: "eq.\(teamId)"),
             URLQueryItem(name: "status", value: "eq.published"),
             URLQueryItem(name: "order", value: "published_at.desc"),
             URLQueryItem(name: "limit", value: "\(limit)"),
             URLQueryItem(name: "offset", value: "\(offset)"),
             URLQueryItem(name: "select", value: "id,team_id,type,headline,body,talking_points,kickoff_time,emotional_context,published_at")
-        ]
-        let request = makeRequest(url: components.url!)
+        ])
+        let request = makeRequest(url: url)
         let (data, response) = try await URLSession.shared.data(for: request)
         try validateResponse(response)
         return try decoder.decode([ContentItem].self, from: data)
     }
 
     func fetchItem(id: UUID) async throws -> ContentItem? {
-        var components = URLComponents(url: baseURL.appendingPathComponent("content_items"), resolvingAgainstBaseURL: false)!
-        components.queryItems = [
+        let url = try buildURL(path: "content_items", queryItems: [
             URLQueryItem(name: "id", value: "eq.\(id.uuidString)"),
             URLQueryItem(name: "status", value: "eq.published"),
             URLQueryItem(name: "select", value: "id,team_id,type,headline,body,talking_points,kickoff_time,emotional_context,published_at")
-        ]
-        let request = makeRequest(url: components.url!)
+        ])
+        let request = makeRequest(url: url)
         let (data, response) = try await URLSession.shared.data(for: request)
         try validateResponse(response)
         let items = try decoder.decode([ContentItem].self, from: data)
@@ -108,21 +105,23 @@ class APIClient {
     }
 
     func updateTokenTeam(_ token: String, newTeamId: String) async throws {
-        var components = URLComponents(url: baseURL.appendingPathComponent("device_tokens"), resolvingAgainstBaseURL: false)!
-        components.queryItems = [URLQueryItem(name: "apns_token", value: "eq.\(token)")]
+        let url = try buildURL(path: "device_tokens", queryItems: [
+            URLQueryItem(name: "apns_token", value: "eq.\(token)")
+        ])
         let body: [String: Any] = ["team_id": newTeamId, "updated_at": ISO8601DateFormatter().string(from: Date())]
         let bodyData = try JSONSerialization.data(withJSONObject: body)
-        let request = makeRequest(url: components.url!, method: "PATCH", body: bodyData)
+        let request = makeRequest(url: url, method: "PATCH", body: bodyData)
         let (_, response) = try await URLSession.shared.data(for: request)
         try validateResponse(response)
     }
 
     func updateTokenTier(_ token: String, tier: Int) async throws {
-        var components = URLComponents(url: baseURL.appendingPathComponent("device_tokens"), resolvingAgainstBaseURL: false)!
-        components.queryItems = [URLQueryItem(name: "apns_token", value: "eq.\(token)")]
+        let url = try buildURL(path: "device_tokens", queryItems: [
+            URLQueryItem(name: "apns_token", value: "eq.\(token)")
+        ])
         let body: [String: Any] = ["tier": tier, "updated_at": ISO8601DateFormatter().string(from: Date())]
         let bodyData = try JSONSerialization.data(withJSONObject: body)
-        let request = makeRequest(url: components.url!, method: "PATCH", body: bodyData)
+        let request = makeRequest(url: url, method: "PATCH", body: bodyData)
         let (_, response) = try await URLSession.shared.data(for: request)
         try validateResponse(response)
     }
@@ -130,24 +129,22 @@ class APIClient {
     // MARK: - Context Cards (Contract 10)
 
     func fetchPlayerCards(teamId: String) async throws -> [PlayerCard] {
-        var components = URLComponents(url: baseURL.appendingPathComponent("player_cards"), resolvingAgainstBaseURL: false)!
-        components.queryItems = [
+        let url = try buildURL(path: "player_cards", queryItems: [
             URLQueryItem(name: "team_id", value: "eq.\(teamId)"),
             URLQueryItem(name: "select", value: "player_name,position,age,summary,vibe,form")
-        ]
-        let request = makeRequest(url: components.url!)
+        ])
+        let request = makeRequest(url: url)
         let (data, response) = try await URLSession.shared.data(for: request)
         try validateResponse(response)
         return try decoder.decode([PlayerCard].self, from: data)
     }
 
     func fetchTeamPage(teamId: String) async throws -> TeamPageContent? {
-        var components = URLComponents(url: baseURL.appendingPathComponent("team_pages"), resolvingAgainstBaseURL: false)!
-        components.queryItems = [
+        let url = try buildURL(path: "team_pages", queryItems: [
             URLQueryItem(name: "team_id", value: "eq.\(teamId)"),
             URLQueryItem(name: "select", value: "content")
-        ]
-        let request = makeRequest(url: components.url!)
+        ])
+        let request = makeRequest(url: url)
         let (data, response) = try await URLSession.shared.data(for: request)
         try validateResponse(response)
         let pages = try decoder.decode([TeamPage].self, from: data)
@@ -165,6 +162,17 @@ class APIClient {
     }
 
     // MARK: - Helpers
+
+    private func buildURL(path: String, queryItems: [URLQueryItem]) throws -> URL {
+        guard var components = URLComponents(url: baseURL.appendingPathComponent(path), resolvingAgainstBaseURL: false) else {
+            throw APIError.invalidResponse
+        }
+        components.queryItems = queryItems
+        guard let url = components.url else {
+            throw APIError.invalidResponse
+        }
+        return url
+    }
 
     private func validateResponse(_ response: URLResponse) throws {
         guard let httpResponse = response as? HTTPURLResponse else {

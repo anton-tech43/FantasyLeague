@@ -38,8 +38,19 @@ struct MainTabView: View {
                     ContentDetailView(contentId: contentId)
                 }
                 .navigationDestination(for: String.self) { destination in
-                    if destination == "settings" {
+                    switch destination {
+                    case "settings":
                         SettingsView()
+                    case "teamPage":
+                        if let teamId = appState.selectedTeam?.rawValue {
+                            TeamPageView(teamId: teamId)
+                        }
+                    case "playerCards":
+                        if let teamId = appState.selectedTeam?.rawValue {
+                            PlayerCardsListView(teamId: teamId)
+                        }
+                    default:
+                        EmptyView()
                     }
                 }
         }

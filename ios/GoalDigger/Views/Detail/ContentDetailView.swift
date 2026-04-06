@@ -46,7 +46,7 @@ struct ContentDetailView: View {
         HStack {
             BadgeView(type: item.type)
             Spacer()
-            Text(relativeTimestamp(item.publishedAt))
+            Text(item.publishedAt.relativeTimestamp)
                 .font(.feedTimestamp)
                 .foregroundColor(.textTertiary)
         }
@@ -144,32 +144,19 @@ struct ContentDetailView: View {
     // MARK: - Loading
 
     private func loadItem() async {
-        // Try mock data first
-        if let mock = MockData.feed.first(where: { $0.id == contentId }) {
-            item = mock
-            isLoading = false
-            return
-        }
         do {
             item = try await APIClient.shared.fetchItem(id: contentId)
         } catch {
-            // Stay on loading state or show error
+            #if DEBUG
+            // Fall back to mock data during development
+            if let mock = MockData.feed.first(where: { $0.id == contentId }) {
+                item = mock
+            }
+            #endif
         }
         isLoading = false
     }
 
-    private func relativeTimestamp(_ date: Date) -> String {
-        let interval = Date().timeIntervalSince(date)
-        if interval < 3600 {
-            return "\(max(1, Int(interval / 60)))m ago"
-        } else if interval < 86400 {
-            return "\(Int(interval / 3600))h ago"
-        } else if interval < 172800 {
-            return "Yesterday"
-        } else {
-            return "\(Int(interval / 86400)) days ago"
-        }
-    }
 }
 
 // MARK: - Sub-components

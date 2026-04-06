@@ -10,7 +10,7 @@ struct ContentCard: View {
             HStack {
                 BadgeView(type: item.type)
                 Spacer()
-                Text(relativeTimestamp(item.publishedAt))
+                Text(item.publishedAt.relativeTimestamp)
                     .font(.feedTimestamp)
                     .foregroundColor(.textTertiary)
             }
@@ -27,31 +27,13 @@ struct ContentCard: View {
                 HStack(spacing: 4) {
                     Text("Read more")
                         .font(.feedTimestamp)
-                        .foregroundColor(.hotRose)
+                        .foregroundColor(.accentWarm)
                     Image(systemName: "arrow.right")
                         .font(.system(size: 10))
-                        .foregroundColor(.hotRose)
+                        .foregroundColor(.accentWarm)
                 }
             }
         }
         .cardStyle()
-    }
-
-    private func relativeTimestamp(_ date: Date) -> String {
-        let now = Date()
-        let interval = now.timeIntervalSince(date)
-
-        if interval < 3600 {
-            let minutes = max(1, Int(interval / 60))
-            return "\(minutes)m ago"
-        } else if interval < 86400 {
-            let hours = Int(interval / 3600)
-            return "\(hours)h ago"
-        } else if interval < 172800 {
-            return "Yesterday"
-        } else {
-            let days = Int(interval / 86400)
-            return "\(days) days ago"
-        }
     }
 }

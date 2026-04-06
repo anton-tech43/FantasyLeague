@@ -11,6 +11,7 @@ struct FeedView: View {
     @State private var offset = 0
     @State private var canLoadMore = true
     @State private var freshnessCardDismissed = false
+    @State private var hasAutoExpanded = false
 
     private let pageSize = 20
 
@@ -35,9 +36,16 @@ struct FeedView: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Text(appState.selectedTeam?.shortName ?? "Goal Digger")
-                    .font(.detailTitle)
-                    .foregroundColor(.textOnDark)
+                NavigationLink(value: "teamPage") {
+                    HStack(spacing: 6) {
+                        Text(appState.selectedTeam?.shortName ?? "Goal Digger")
+                            .font(.detailTitle)
+                            .foregroundColor(.textOnDark)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.textOnDark.opacity(0.5))
+                    }
+                }
             }
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink(value: "settings") {
@@ -71,6 +79,7 @@ struct FeedView: View {
                         ContentCard(item: item, appState: appState)
                     }
                     .buttonStyle(.plain)
+                    .sensoryFeedback(.selection, trigger: navigationPath.count)
                     .onAppear {
                         if item.id == items.suffix(3).first?.id {
                             Task { await loadMore() }
@@ -89,7 +98,7 @@ struct FeedView: View {
     // MARK: - Freshness States
 
     @ViewBuilder
-    private var freshnessCard: some View? {
+    private var freshnessCard: some View {
         if let latest = items.first {
             let age = Date().timeIntervalSince(latest.publishedAt)
             let hours = age / 3600
@@ -131,6 +140,8 @@ struct FeedView: View {
                     message: "No matches or major news right now. We'll wake up when things kick off again."
                 )
             }
+        } else {
+            EmptyView()
         }
     }
 
@@ -178,6 +189,12 @@ struct FeedView: View {
 
         // Purge old cache
         CacheService.shared.purgeOldItems(in: modelContext)
+
+        // Screen 8: auto-expand first item on initial launch after onboarding
+        if !hasAutoExpanded, let firstItem = items.first {
+            hasAutoExpanded = true
+            navigationPath.append(firstItem.id)
+        }
     }
 
     private func refresh() async {
@@ -190,14 +207,17 @@ struct FeedView: View {
             hasError = false
             CacheService.shared.upsertItems(fetched, in: modelContext)
         } catch {
-            // Fall back to mock data during development
             if items.isEmpty {
+                #if DEBUG
                 let mockItems = MockData.feed.filter { $0.teamId == teamId }
                 if !mockItems.isEmpty {
                     items = mockItems
                 } else {
                     hasError = true
                 }
+                #else
+                hasError = true
+                #endif
             }
         }
         isLoading = false
