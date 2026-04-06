@@ -1,16 +1,29 @@
-# Environment variables (secrets)
+# Secrets - never commit
 .env
 *.env.local
-
-# API keys
+Configuration.xcconfig
 *.p8
 
-# OS
+# Xcode
+*.xcuserdata
+*.xcworkspace
+build/
+DerivedData/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.moved-aside
+
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
 
 # IDE
 .vscode/
 .idea/
 
-# Xcode
-ios/GoalDigger/Configuration.xcconfig
+# Swift Package Manager
+.build/
+Packages/
