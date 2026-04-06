@@ -1,7 +1,7 @@
 # Goal Digger — Golden Content Examples
 
-**Version:** 1.0
-**Date:** February 8, 2026
+**Version:** 1.1
+**Date:** April 6, 2026 (em dashes removed to match writing rules)
 **Companion documents:** [PRD.md](./PRD.md) | [PROMPTS.md](./PROMPTS.md)
 
 ---
@@ -29,7 +29,7 @@ Each example includes the full content item (headline, talking points, body) plu
 
 ### Headline
 
-> Big news — Arsenal just signed a new striker and your boyfriend is probably losing his mind right now.
+> Big news, Arsenal just signed a new striker and your boyfriend is probably losing his mind right now.
 
 **Why it works:**
 - Doesn't start with "Arsenal" (boring)
@@ -40,9 +40,9 @@ Each example includes the full content item (headline, talking points, body) plu
 
 ### Talking Points
 
-1. "So Arsenal signed this guy called Viktor Gyokeres from Sporting Lisbon — he scored like 40 goals last season. If he brings it up, just say 'That's a massive signing' and watch his face light up."
+1. "So Arsenal signed this guy called Viktor Gyokeres from Sporting Lisbon. He scored like 40 goals last season. If he brings it up, just say 'That's a massive signing' and watch his face light up."
 
-2. "He cost around £85 million, which is a LOT. If you want to wind him up a bit, say 'Was he really worth that much?' — guaranteed debate starter."
+2. "He cost around £85 million, which is a LOT. If you want to wind him up a bit, say 'Was he really worth that much?' Guaranteed debate starter."
 
 3. "The reason this is big: Arsenal have been struggling to score in big games. This guy is supposed to fix that. So if he seems over the moon, that's why."
 
@@ -57,11 +57,11 @@ Each example includes the full content item (headline, talking points, body) plu
 
 ### Body
 
-> Arsenal just made their biggest signing in years. Viktor Gyokeres — a Swedish striker who's been absolutely tearing it up in Portugal — is officially joining the club for around £85 million.
+> Arsenal just made their biggest signing in years. Viktor Gyokeres, a Swedish striker who's been absolutely tearing it up in Portugal, is officially joining the club for around £85 million.
 >
 > To put that in perspective, that's one of the most expensive transfers in Arsenal's history. He scored 43 goals last season at Sporting Lisbon, which is genuinely ridiculous. For context, most strikers are happy with 15-20.
 >
-> Why it matters: Arsenal have been solid defensively (they're good at stopping the other team from scoring) but have been missing a proper goalscorer in the big games — the ones against the top teams that decide the title. Gyokeres is supposed to be that missing piece.
+> Why it matters: Arsenal have been solid defensively (they're good at stopping the other team from scoring) but have been missing a proper goalscorer in the big games, the ones against the top teams that decide the title. Gyokeres is supposed to be that missing piece.
 >
 > Your boyfriend's mood tonight: expect excitement levels somewhere between "kid at Christmas" and "proposing to the TV screen." This is the kind of signing fans dream about. Let him have his moment.
 
@@ -98,7 +98,7 @@ Each example includes the full content item (headline, talking points, body) plu
 
 1. "This is THE rivalry. Arsenal and Tottenham are both from North London and they genuinely despise each other. Think of it like two siblings who've been competing since birth. Bring it up and he'll have opinions."
 
-2. "If you want to seem like you're paying attention, ask him 'How do you think Saka's going to do tonight?' — Saka is Arsenal's star player and this is the kind of game where he usually turns up."
+2. "If you want to seem like you're paying attention, ask him 'How do you think Saka's going to do tonight?' Saka is Arsenal's star player and this is the kind of game where he usually turns up."
 
 3. "Fun fact you can casually drop: Arsenal haven't lost to Spurs at home in over 3 years. If he's nervous, remind him of that. Instant brownie points."
 
@@ -114,7 +114,7 @@ Each example includes the full content item (headline, talking points, body) plu
 
 > It's North London Derby day, which is basically the Super Bowl of Arsenal's season (okay not quite, but emotionally it's up there). Arsenal are hosting Tottenham at the Emirates tonight at 17:30, and your boyfriend has probably been thinking about this all week.
 >
-> Here's the deal: Arsenal and Tottenham are from the same part of London and they've been rivals for over a century. It's not just about football — it's about bragging rights. If Arsenal win, he gets to gloat to any Spurs-supporting mates. If they lose, he will be inconsolable. There is no middle ground.
+> Here's the deal: Arsenal and Tottenham are from the same part of London and they've been rivals for over a century. It's not just about football, it's about bragging rights. If Arsenal win, he gets to gloat to any Spurs-supporting mates. If they lose, he will be inconsolable. There is no middle ground.
 >
 > Good news: Arsenal are in great form. They've won 4 of their last 5 games, they're sitting 2nd in the league, and they haven't lost to Spurs at home since 2022. Saka has been their best player this season with 12 goals, and big games are where he shines.
 >
@@ -154,7 +154,7 @@ Each example includes the full content item (headline, talking points, body) plu
 
 ### Headline
 
-> Transfer gossip alert — there's a rumour Man United are trying to sign a midfielder from Barcelona. He'll definitely bring this up.
+> Transfer gossip alert. There's a rumour Man United are trying to sign a midfielder from Barcelona. He'll definitely bring this up.
 
 **Why it works:**
 - "Gossip alert" sets the tone — fun, not serious
@@ -163,9 +163,9 @@ Each example includes the full content item (headline, talking points, body) plu
 
 ### Talking Points
 
-1. "The rumour is that Man United want Frenkie de Jong from Barcelona. This has been going on for YEARS — it's like a will-they-won't-they romance. If he mentions it, just roll your eyes and say 'Not this again' — he'll find it hilarious."
+1. "The rumour is that Man United want Frenkie de Jong from Barcelona. This has been going on for YEARS, it's like a will-they-won't-they romance. If he mentions it, just roll your eyes and say 'Not this again.' He'll find it hilarious."
 
-2. "If he seems excited about it, ask 'Do you actually think it'll happen this time?' — it's the right question because fans have been burned before. He'll appreciate that you get it."
+2. "If he seems excited about it, ask 'Do you actually think it'll happen this time?' It's the right question because fans have been burned before. He'll appreciate that you get it."
 
 3. "Quick context: Man United's midfield has been their weak spot. Getting de Jong would be like finally hiring a competent manager after years of chaos at work. Big upgrade."
 
@@ -181,11 +181,11 @@ Each example includes the full content item (headline, talking points, body) plu
 
 > Every transfer window, Man United fans go through the same cycle: hope, excitement, rumour overload, and then usually disappointment. We might be entering that cycle again.
 >
-> Multiple sources are reporting that Man United are in talks to sign Frenkie de Jong from Barcelona. If that name sounds familiar, it should — this exact rumour has popped up basically every summer since 2022. It's the transfer that never quite happens.
+> Multiple sources are reporting that Man United are in talks to sign Frenkie de Jong from Barcelona. If that name sounds familiar, it should. This exact rumour has popped up basically every summer since 2022. It's the transfer that never quite happens.
 >
-> De Jong is a Dutch midfielder who's really good at controlling the game (think of the person at work who keeps everything running smoothly — that's what he does on the pitch). Man United have been desperate for someone like him because their midfield has been... let's say underwhelming.
+> De Jong is a Dutch midfielder who's really good at controlling the game (think of the person at work who keeps everything running smoothly, that's what he does on the pitch). Man United have been desperate for someone like him because their midfield has been... let's say underwhelming.
 >
-> The catch: Barcelona are reportedly asking for £75 million, and de Jong seems quite happy in Spain. So this could go either way. Your boyfriend will have strong opinions on whether it'll happen. Ask him — it's a guaranteed 20-minute conversation.
+> The catch: Barcelona are reportedly asking for £75 million, and de Jong seems quite happy in Spain. So this could go either way. Your boyfriend will have strong opinions on whether it'll happen. Ask him. It's a guaranteed 20-minute conversation.
 
 **Why it works:**
 - Opens by setting expectations about the transfer window cycle — this prepares her
@@ -205,7 +205,7 @@ Each example includes the full content item (headline, talking points, body) plu
 
 ### Headline
 
-> Heads up — Jarrod Bowen got injured in training today. He might be a bit gutted tonight.
+> Heads up, Jarrod Bowen got injured in training today. He might be a bit gutted tonight.
 
 **Why it works:**
 - "Heads up" frames it as practical info for her evening
@@ -215,13 +215,13 @@ Each example includes the full content item (headline, talking points, body) plu
 
 ### Talking Points
 
-1. "Jarrod Bowen is basically West Ham's best player — he scores the most goals and creates the most chances. So this is a big deal, kind of like a band's lead singer pulling out of a tour."
+1. "Jarrod Bowen is basically West Ham's best player. He scores the most goals and creates the most chances. So this is a big deal, kind of like a band's lead singer pulling out of a tour."
 
-2. "It's a hamstring injury (back of the thigh) and he could be out for 3-4 weeks. If he seems down about it, just say 'How long is Bowen out for?' — shows you know it matters."
+2. "It's a hamstring injury (back of the thigh) and he could be out for 3-4 weeks. If he seems down about it, just say 'How long is Bowen out for?' Shows you know it matters."
 
 3. "The silver lining you can offer: 'At least it's not a long-term thing, right?' This is genuinely helpful because hamstring injuries CAN be worse. You'll sound informed and reassuring."
 
-4. "West Ham play Liverpool this weekend without him. If he's worried about that, he's right to be — Liverpool are top of the league. Maybe don't mention that bit though."
+4. "West Ham play Liverpool this weekend without him. If he's worried about that, he's right to be. Liverpool are top of the league. Maybe don't mention that bit though."
 
 **Why they work:**
 - Point 1 uses the band analogy — she instantly understands the impact
@@ -231,13 +231,13 @@ Each example includes the full content item (headline, talking points, body) plu
 
 ### Body
 
-> Not great news for West Ham today. Jarrod Bowen — who's been their most important player this season — picked up a hamstring injury during training and is expected to miss 3-4 weeks.
+> Not great news for West Ham today. Jarrod Bowen, who's been their most important player this season, picked up a hamstring injury during training and is expected to miss 3-4 weeks.
 >
-> To understand why this matters: Bowen has scored 11 goals this season and created more chances than anyone else in the team. Without him, West Ham lose their biggest attacking threat. It's like removing the engine from a car — technically it still looks like a car, but it's not going anywhere fast.
+> To understand why this matters: Bowen has scored 11 goals this season and created more chances than anyone else in the team. Without him, West Ham lose their biggest attacking threat. It's like removing the engine from a car. Technically it still looks like a car, but it's not going anywhere fast.
 >
 > The timing is particularly rough because West Ham play Liverpool this Saturday. Liverpool are currently top of the league and are in incredible form. Without Bowen, that's gone from "tough game" to "we might get battered."
 >
-> For you: he might be in a bad mood about this, especially as the weekend approaches. The best thing you can do is acknowledge it — "Gutted about Bowen" goes a long way — and resist the urge to say "it's only football." We cannot stress this enough: never say "it's only football."
+> For you: he might be in a bad mood about this, especially as the weekend approaches. The best thing you can do is acknowledge it. "Gutted about Bowen" goes a long way. And resist the urge to say "it's only football." We cannot stress this enough: never say "it's only football."
 
 **Why it works:**
 - The car analogy is simple and effective
@@ -257,7 +257,7 @@ Each example includes the full content item (headline, talking points, body) plu
 
 ### Headline
 
-> This is more gossip than news but — Man United's manager just said something in a press conference that fans are losing it over.
+> This is more gossip than news, but Man United's manager just said something in a press conference that fans are losing it over.
 
 **Why it works:**
 - "More gossip than news" sets the right expectations
@@ -267,9 +267,9 @@ Each example includes the full content item (headline, talking points, body) plu
 
 ### Talking Points
 
-1. "The manager basically said he's 'not happy with the attitude of some players' — which in football speak means there's DRAMA behind the scenes. If he's talking about it, just say 'That sounded intense' and let him vent."
+1. "The manager basically said he's 'not happy with the attitude of some players,' which in football speak means there's DRAMA behind the scenes. If he's talking about it, just say 'That sounded intense' and let him vent."
 
-2. "This kind of thing usually means one of two things: either a player is about to get dropped (benched), or someone's getting sold. Ask him 'Who do you think he's talking about?' — he'll have a theory."
+2. "This kind of thing usually means one of two things: either a player is about to get dropped (benched), or someone's getting sold. Ask him 'Who do you think he's talking about?' He'll have a theory."
 
 3. "Fun angle: football press conferences are basically like reality TV. The managers drop hints, journalists try to catch them out, and fans read into every single word. He's probably been analysing the body language all afternoon."
 
@@ -286,7 +286,7 @@ Each example includes the full content item (headline, talking points, body) plu
 >
 > Fans are now going through the squad player by player trying to figure out who he's talking about. Twitter is a mess. Fantasy football teams are being reshuffled. It's chaos, and it's exactly the kind of chaos football fans secretly love.
 >
-> If he brings this up tonight — and he probably will — you don't need to have an opinion. Just ask "Who do you think he's on about?" and then sit back. You've just bought yourself 30 minutes of him talking passionately about squad dynamics while you nod supportively.
+> If he brings this up tonight (and he probably will) you don't need to have an opinion. Just ask "Who do you think he's on about?" and then sit back. You've just bought yourself 30 minutes of him talking passionately about squad dynamics while you nod supportively.
 
 **Why it works:**
 - "Sounds calm but is actually a grenade" — she gets the drama immediately
@@ -314,7 +314,7 @@ These are examples of bad content that the review bots should catch.
 
 ### Bad Example 2: Condescending
 
-> **Headline:** "Football can be confusing, but here's something cool — Arsenal signed a new player!"
+> **Headline:** "Football can be confusing, but here's something cool, Arsenal signed a new player!"
 
 **Why it's bad:**
 - "Football can be confusing" — she knows that, don't remind her

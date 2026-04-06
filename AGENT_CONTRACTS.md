@@ -1104,13 +1104,14 @@ Every agent **must** follow this protocol. It keeps the work tracker honest and 
 
 | # | Task | Status | Agent | Started | Completed | Outcome |
 |---|------|--------|-------|---------|-----------|---------|
-| P1 | News generator prompt — System prompt, user template, tool schema (PROMPTS.md Section 1) | `open` | Pipeline | — | — | — |
-| P2 | Matchday generator prompt — System prompt, user template, tool schema (PROMPTS.md Section 2) | `open` | Pipeline | — | — | — |
-| P3 | Tone review bot prompt — System prompt, input template, pass/fail criteria (PROMPTS.md Section 3) | `open` | Pipeline | — | — | — |
-| P4 | Accuracy review bot prompt — System prompt, input template, severity rules (PROMPTS.md Section 4) | `open` | Pipeline | — | — | — |
-| P5 | Brevity review bot prompt — System prompt, input template, length rules (PROMPTS.md Section 5) | `open` | Pipeline | — | — | — |
-| P6 | Prompt testing — Run all prompts against real data, compare output to golden examples, iterate | `open` | Pipeline | — | — | — |
-| P7 | Document prompt iterations — Log changes in PROMPTS.md Section 8 | `open` | Pipeline | — | — | — |
+| P1 | News generator prompt — System prompt, user template, tool schema (PROMPTS.md Section 1) | `done` | Pipeline | 2026-04-06 | 2026-04-06 | Tested with Arsenal transfer data. v1.2: removed em dashes from examples, added ONE STORY ONLY rule (rule 14), body hard limit (3-5 max). Added retry prompt template for review rejections. Validated: output em-dash-free, single story, 4 paragraphs. |
+| P2 | Matchday generator prompt — System prompt, user template, tool schema (PROMPTS.md Section 2) | `done` | Pipeline | 2026-04-06 | 2026-04-06 | Tested with Arsenal vs Tottenham derby. v1.2: removed em dashes from examples, added body paragraph hard limit. Output: good voice, correct mood/rivalry classification, actionable post-match cheat sheet. |
+| P3 | Tone review bot prompt — System prompt, input template, pass/fail criteria (PROMPTS.md Section 3) | `done` | Pipeline | 2026-04-06 | 2026-04-06 | Tested with golden example (PASS 0.92) and BBC Sport anti-pattern (FAIL 0.95). Catches: all banned phrases, semicolons, em dashes, unexplained jargon, formality. Added "no markdown code blocks" to response format. Backend note added about stripping markdown fences. |
+| P4 | Accuracy review bot prompt — System prompt, input template, severity rules (PROMPTS.md Section 4) | `done` | Pipeline | 2026-04-06 | 2026-04-06 | Tested with 5 deliberate errors (wrong fee, wrong date, wrong goals, wrong manager, wrong position). All 5 caught at 1.0 confidence. Severity classification correct. Added "no markdown code blocks" instruction. |
+| P5 | Brevity review bot prompt — System prompt, input template, length rules (PROMPTS.md Section 5) | `done` | Pipeline | 2026-04-06 | 2026-04-06 | Tested with over-long content (239-char headline, 7 TPs, 7 paragraphs). All violations caught at 0.95 confidence. Repetition detection working. Added "no markdown code blocks" instruction. |
+| P5b | Content Safety review bot prompt (PROMPTS.md Section 6) | `done` | Pipeline | 2026-04-06 | 2026-04-06 | Tested with personal life + defamation + discrimination content (FAIL 0.95, 4 block flags). Tested with clean injury content (PASS 0.92). Catches all 5 categories. Added "no markdown code blocks" instruction. |
+| P6 | Prompt testing — Run all prompts against real data, compare output to golden examples, iterate | `done` | Pipeline | 2026-04-06 | 2026-04-06 | 13 API tests run: 2 generators, 4 review bots (good+bad each), team page, player card, ones to watch, weekly summary, monthly summary. All producing on-voice output. Em dash removal validated. Single-story enforcement validated. |
+| P7 | Document prompt iterations — Log changes in PROMPTS.md Section 14 | `done` | Pipeline | 2026-04-06 | 2026-04-06 | 7 iteration log entries added to PROMPTS.md Section 14. All changes documented with reason and result. CONTENT_EXAMPLES.md updated to v1.1 (em dash removal). |
 
 ### Integration Tasks (All Agents)
 
