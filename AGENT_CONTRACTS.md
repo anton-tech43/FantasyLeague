@@ -354,10 +354,10 @@ This is the **exact** APNs payload format. Backend Agent sends it, iOS Agent par
 |-------|------|--------|-------------|
 | `aps.alert.title` | String | Always `"Goal Digger"` | App name, constant |
 | `aps.alert.subtitle` | String | `teams.short_name` | e.g. "Arsenal", "Man Utd", "West Ham" |
-| `aps.alert.body` | String | `content_items.headline` | Max 200 characters (enforced by brevity bot) |
+| `aps.alert.body` | String | `content_items.headline` | Max 200 characters (enforced by brevity bot). **Match day notifications must include one player name as a teaser** to drive her into the app (e.g., "Worth knowing: Saka is back from injury"). |
 | `aps.sound` | String | Always `"default"` | System notification sound |
 | `aps.mutable-content` | Int | Always `1` | Allows notification service extension (future) |
-| `aps.category` | String | Always `"CONTENT_UPDATE"` | For notification action grouping |
+| `aps.category` | String | One of: `"MATCHDAY_HEADS_UP"`, `"RESULT"`, `"NEWS"`, `"WEEKLY_SUMMARY"`, `"MONTHLY_SUMMARY"` | For notification action grouping and anti-spam type checking |
 | `content_id` | String (UUID) | `content_items.id` | Used by iOS for deep linking to detail view |
 
 ### iOS Parsing (AppDelegate)
@@ -502,10 +502,14 @@ These rules are defined in [PROMPTS.md Section 6](./PROMPTS.md#6-newsworthy-filt
 |------|---------------|----------------|
 | Max 2 notifications per day per team | `notification-sender` | Before sending: `SELECT COUNT(*) FROM content_items WHERE team_id = $1 AND status = 'published' AND published_at > NOW() - INTERVAL '24 hours'`. If >= 2, skip. |
 | Min 3 hours between notifications for same team | `notification-sender` | Before sending: `SELECT published_at FROM content_items WHERE team_id = $1 AND status = 'published' ORDER BY published_at DESC LIMIT 1`. If < 3 hours ago, delay to next hourly sweep. |
-| No notifications between 22:00 and 08:00 GMT | `notification-sender` | Check current UTC hour. If >= 22 or < 8, skip (hourly sweep will catch it tomorrow). |
+| No notifications between 22:00 and 08:00 GMT — **EXCEPT result notifications** | `notification-sender` | Check current UTC hour. If >= 22 or < 8, skip UNLESS `content_type = 'result'`. Result notifications bypass quiet hours because she wants to know what mood he's coming home in. |
 | No duplicate topics | `content-generator` | Deduplication check before generating (see BUILD_PLAN Step 1.4). |
 | Only publish if newsworthiness score >= 6 | `content-generator` | Check the `newsworthiness_score` from Claude's tool output. If < 6, don't insert into content_items. |
 | Matchday content always sends (counts toward daily max) | `notification-sender` | Matchday items bypass the 3-hour gap rule but still count toward the tier-based daily maximum. |
+| Matchday heads-up sent at 9am, includes player teaser | `matchday-scheduler` | Scheduled at 09:00 local time on match day. The headline MUST include one player name worth watching (e.g., "Worth knowing: Saka is back from injury") to drive her into the app. |
+| Result notification within 5-10 min of full time | `notification-sender` | Triggered by match status change from API-Football. Bypasses quiet hours AND 3-hour gap. Counts toward daily max. |
+| Weekly summary on Tue/Wed (Tier 2+ only) | `notification-sender` | Skip for Tier 1 users. One per team per week. |
+| Monthly summary (Tier 1 only) | `notification-sender` | Skip for Tier 2 and 3 users. One per team per month. |
 
 ### Tier-Dependent Notification Limits
 
@@ -530,12 +534,12 @@ interface SpamCheckResult {
 async function checkAntiSpamRules(
     supabase: SupabaseClient,
     teamId: string,
-    contentType: "news" | "matchday",
+    contentType: "news" | "matchday" | "result" | "weekly_summary" | "monthly_summary",
     tier: number = 2
 ): Promise<SpamCheckResult> {
-    // 1. Quiet hours check
+    // 1. Quiet hours check — result notifications bypass this
     const hour = new Date().getUTCHours();
-    if (hour >= 22 || hour < 8) {
+    if ((hour >= 22 || hour < 8) && contentType !== "result") {
         return { canSend: false, reason: "quiet_hours" };
     }
 

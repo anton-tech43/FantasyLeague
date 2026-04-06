@@ -12,7 +12,7 @@ These are the gold standard. Every piece of generated content should feel this g
 
 Use these examples to:
 - **Benchmark** generated content against (does it feel as good as these?)
-- **Test** the review bots (all 3 should pass every example here)
+- **Test** the review bots (all 4 should pass every example here)
 - **Seed** the staging database so the iOS app has content to display during development
 - **Train your eye** — after reading these, you'll know instantly when output is off
 
@@ -389,8 +389,8 @@ These are examples of bad content that the review bots should catch.
 4. Re-run and compare again
 
 ### For Review Bot Testing
-1. Feed each golden example through all 3 review bots — they should all pass
-2. Feed each anti-pattern through all 3 review bots — at least 1 should fail
+1. Feed each golden example through all 4 review bots — they should all pass
+2. Feed each anti-pattern through all 4 review bots — at least 1 should fail
 3. If a golden example fails review, the review bot prompt is too strict
 4. If an anti-pattern passes review, the review bot prompt is too lenient
 
