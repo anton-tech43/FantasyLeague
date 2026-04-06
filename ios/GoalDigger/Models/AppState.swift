@@ -76,6 +76,6 @@ class AppState {
 private extension Int {
     func clamped(to range: ClosedRange<Int>, default defaultValue: Int) -> Int {
         if self == 0 { return defaultValue }
-        return min(max(self, range.lowerBound), range.upperBound)
+        return Swift.min(Swift.max(self, range.lowerBound), range.upperBound)
     }
 }
