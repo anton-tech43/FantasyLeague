@@ -67,8 +67,8 @@ struct FeedView: View {
         ScrollView {
             LazyVStack(spacing: Layout.cardSpacing) {
                 // Freshness card
-                if !freshnessCardDismissed, let card = freshnessCard {
-                    card
+                if !freshnessCardDismissed {
+                    freshnessCard
                         .onTapGesture {
                             withAnimation { freshnessCardDismissed = true }
                         }
