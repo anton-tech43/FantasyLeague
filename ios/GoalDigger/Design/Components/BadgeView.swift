@@ -2,6 +2,7 @@ import SwiftUI
 
 struct BadgeView: View {
     let type: ContentItem.ContentType
+    var customLabel: String? = nil
 
     var body: some View {
         Text(label)
@@ -12,10 +13,11 @@ struct BadgeView: View {
             .padding(.vertical, 4)
             .padding(.horizontal, 8)
             .background(backgroundColor)
-            .cornerRadius(8)
+            .cornerRadius(Layout.badgeCornerRadius)
     }
 
     private var label: String {
+        if let custom = customLabel { return custom }
         switch type {
         case .news: return "NEWS"
         case .matchday: return "MATCH DAY"

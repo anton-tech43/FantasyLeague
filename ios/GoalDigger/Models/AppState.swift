@@ -34,6 +34,19 @@ class AppState {
     // Navigation
     var deepLinkContentId: UUID?
 
+    // Feed context — session-only, not persisted. Resets to .team(selectedTeam) on app launch.
+    var activeContext: FeedContext = .everyoneTalking
+    var isContextSwitcherOpen: Bool = false
+
+    // Feed style — persisted
+    var feedStyle: FeedStyle {
+        didSet { UserDefaults.standard.set(feedStyle.rawValue, forKey: "feedStyle") }
+    }
+
+    enum FeedStyle: String {
+        case immersive, classic
+    }
+
     init() {
         self.herName = UserDefaults.standard.string(forKey: "herName") ?? ""
         self.hisName = UserDefaults.standard.string(forKey: "hisName") ?? ""
@@ -42,9 +55,19 @@ class AppState {
         self.selectedTier = UserDefaults.standard.integer(forKey: "selectedTier").clamped(to: 1...3, default: 2)
         self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
         self.notificationPermissionRequested = UserDefaults.standard.bool(forKey: "notificationPermissionRequested")
+
+        // Feed style — persisted, defaults to immersive
+        let styleRaw = UserDefaults.standard.string(forKey: "feedStyle") ?? "immersive"
+        self.feedStyle = FeedStyle(rawValue: styleRaw) ?? .immersive
+
+        // Active context — always starts on team, session-only
+        if let team = self.selectedTeam {
+            self.activeContext = .team(team)
+        }
     }
 
-    /// Replace [his name] and [her name] placeholders in server-generated content at display time
+    /// Replace [his name] and [her name] placeholders in server-generated content at display time.
+    /// Also strips em dashes for cleaner copy.
     func personalise(_ text: String) -> String {
         var result = text
         if !hisName.isEmpty {
@@ -54,11 +77,18 @@ class AppState {
         if !herName.isEmpty {
             result = result.replacingOccurrences(of: "[her name]", with: herName)
         }
+        // Strip em dashes
+        result = result.replacingOccurrences(of: " \u{2014} ", with: ", ")
+        result = result.replacingOccurrences(of: "\u{2014}", with: ", ")
         return result
     }
 
     /// Clear all local data (for "Delete My Data" flow)
     func clearAllData() {
+        // Clear team page cache before resetting team
+        if let team = selectedTeam {
+            TeamPageCache.clear(teamId: team.rawValue)
+        }
         herName = ""
         hisName = ""
         selectedTeam = nil
@@ -66,10 +96,14 @@ class AppState {
         hasCompletedOnboarding = false
         notificationPermissionRequested = false
         deepLinkContentId = nil
+        activeContext = .everyoneTalking
+        isContextSwitcherOpen = false
+        feedStyle = .immersive
         let keys = ["herName", "hisName", "selectedTeam", "selectedTier",
                      "hasCompletedOnboarding", "notificationPermissionRequested", "apnsToken",
-                     "hasAutoExpandedFirstItem"]
+                     "hasAutoExpandedFirstItem", "feedStyle", "hasSeenImmersiveBanner"]
         keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
+        UnreadTracker.shared.clearAll()
     }
 }
 

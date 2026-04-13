@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "cards": {
+    "basics": {
+      "updated_at": "2026-04-07T00:00:00Z",
+      "nickname": "The Gunners",
+      "stadium": "Emirates Stadium, London",
+      "fun_fact": "Arsenal once went an entire 49-game Premier League run without losing. They literally called themselves 'The Invincibles' and honestly, fair enough. If [his name] ever mentions it, just nod, it's their proudest flex."
+    },
+    "manager": {
+      "updated_at": "2026-04-07T08:00:00Z",
+      "name": "Mikel Arteta",
+      "summary": "Been in charge since 2019. Used to be Pep Guardiola's assistant at Man City (that's basically like training under the best manager in the world). He's turned Arsenal from a bit of a mess into genuine title contenders. [his name] probably rates him highly."
+    },
+    "ones_to_know": {
+      "updated_at": "2026-04-07T08:00:00Z",
+      "players": [
+        {
+          "name": "Bukayo Saka",
+          "position": "Winger",
+          "one_liner": "Arsenal's golden boy. He's 24 and already their most important player. If [his name] could only keep one player, it'd be him."
+        },
+        {
+          "name": "William Saliba",
+          "position": "Centre-back",
+          "one_liner": "The reason Arsenal don't concede many goals. He's French, he's calm under pressure, and he's basically a brick wall in human form."
+        },
+        {
+          "name": "Declan Rice",
+          "position": "Midfielder",
+          "one_liner": "Cost £105 million. Does all the boring stuff in midfield that wins games. Think of him as the reliable colleague who keeps the whole office running."
+        }
+      ]
+    },
+    "rivalry": {
+      "updated_at": "2026-04-07T00:00:00Z",
+      "text": "Tottenham Hotspur, the North London Derby. They're from the same part of London and have been at each other's throats for over a century. Think of it like two siblings who fundamentally cannot let the other one have nice things. If Spurs lose, [his name] is happy. If Spurs win something (rare), he's annoyed for days. It's deeply personal."
+    },
+    "form": {
+      "updated_at": "2026-04-06T20:30:00Z",
+      "league_position": 2,
+      "league_position_label": "2nd in the Premier League",
+      "recent_form": "WWDLW",
+      "form_summary": "They've won 4 of their last 5, so [his name] is probably in a good mood about football right now. The one loss stung though, they don't like to talk about it."
+    },
+    "season": {
+      "updated_at": "2026-04-07T08:00:00Z",
+      "summary": "This season is all about the title race. Arsenal finished 2nd last year (again) and [his name] is desperate for them to finally win it. They've been close two years running now, so the pressure is massive. Every single game feels like a final. If he seems tense on weekends, this is probably why."
+    },
+    "next_fixture": {
+      "updated_at": "2026-04-06T20:30:00Z",
+      "opponent": "Tottenham",
+      "date": "2026-04-12T15:00:00Z",
+      "venue": "home",
+      "preview": "North London Derby at the Emirates. Arsenal haven't lost to Spurs at home in over three years."
+    }
+  }
+}

@@ -14,6 +14,9 @@ class CachedContentItem {
     var publishedAt: Date
     var cachedAt: Date
 
+    /// Whether this item appears in the "Everyone's talking about" cross-team feed.
+    var everyoneTalking: Bool = false
+
     init(from item: ContentItem) {
         self.id = item.id
         self.teamId = item.teamId
@@ -23,6 +26,7 @@ class CachedContentItem {
         self.kickoffTime = item.kickoffTime
         self.emotionalContext = item.emotionalContext
         self.publishedAt = item.publishedAt
+        self.everyoneTalking = item.everyoneTalking
         self.cachedAt = Date()
 
         // Encode the whole ContentItem as raw data for lossless caching.
@@ -53,6 +57,16 @@ class CacheService {
 
     func fetchCachedFeed(teamId: String, in context: ModelContext) -> [ContentItem] {
         let predicate = #Predicate<CachedContentItem> { $0.teamId == teamId }
+        let sort = SortDescriptor<CachedContentItem>(\.publishedAt, order: .reverse)
+        var descriptor = FetchDescriptor<CachedContentItem>(predicate: predicate, sortBy: [sort])
+        descriptor.fetchLimit = 50
+
+        guard let cached = try? context.fetch(descriptor) else { return [] }
+        return cached.compactMap { $0.toContentItem() }
+    }
+
+    func fetchCachedEveryoneFeed(in context: ModelContext) -> [ContentItem] {
+        let predicate = #Predicate<CachedContentItem> { $0.everyoneTalking == true }
         let sort = SortDescriptor<CachedContentItem>(\.publishedAt, order: .reverse)
         var descriptor = FetchDescriptor<CachedContentItem>(predicate: predicate, sortBy: [sort])
         descriptor.fetchLimit = 50

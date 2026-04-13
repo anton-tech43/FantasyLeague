@@ -16,6 +16,7 @@ interface APNsPayload {
     category: string;
   };
   content_id: string;
+  everyone_talking?: boolean;
 }
 
 interface APNsSendResult {
@@ -123,7 +124,8 @@ export function buildAPNsPayload(
   teamShortName: string,
   headline: string,
   contentId: string,
-  category: string
+  category: string,
+  everyoneTalking = false
 ): APNsPayload {
   return {
     aps: {
@@ -137,6 +139,7 @@ export function buildAPNsPayload(
       category,
     },
     content_id: contentId,
+    everyone_talking: everyoneTalking || undefined,
   };
 }
 

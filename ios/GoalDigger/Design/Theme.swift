@@ -17,30 +17,29 @@ extension Color {
     static let accentPrimary = Color.hotRose
     static let tierGold = Color.gold
 
+    // Text on light/blush surfaces
+    static let charcoal = Color(hex: "#2C2C2C")
+    static let mutedText = Color(hex: "#9B8FA0")
+
     // Derived text colors
-    static let textPrimaryOnCard = Color(hex: "#2D1B2E")
-    static let textSecondaryOnCard = Color(hex: "#8A7080")
-    static let textTertiary = Color(hex: "#B8A0AA")
+    static let textPrimaryOnCard = Color.charcoal
+    static let textSecondaryOnCard = Color.mutedText
+    static let textTertiary = Color.mutedText
 
     // Derived utility colors
     static let feedDivider = Color(hex: "#3D2B3E")
     static let cardShadowColor = Color.black.opacity(0.12)
     static let shimmer = Color(hex: "#3D2B3E")
 
-    // Accent colors (from BUILD_PLAN warm palette, adapted to Rose and Dusk)
-    static let accentWarm = Color(hex: "#D4725C")          // Warm terracotta — talking point bars, share button
-    static let accentSoft = Color(hex: "#F0DDD5")          // Soft warm — talking point card backgrounds
-    static let accentGreen = Color(hex: "#3DA66C")         // Muted green — matchday badges
-
     // Badge colors
-    static let badgeMatchday = Color.accentGreen.opacity(0.2)
-    static let badgeMatchdayText = Color.accentGreen
-    static let badgeNews = Color.accentSoft
-    static let badgeNewsText = Color.accentWarm
+    static let badgeMatchday = Color.gold
+    static let badgeMatchdayText = Color.charcoal
+    static let badgeNews = Color.hotRose
+    static let badgeNewsText = Color.warmWhite
 
-    // Post-match card tints
-    static let winTint = Color.green.opacity(0.08)
-    static let winBar = Color.green.opacity(0.5)
+    // Post-match card tints (no green — rose for wins, red for losses)
+    static let winTint = Color.hotRose.opacity(0.08)
+    static let winBar = Color.hotRose.opacity(0.5)
     static let loseTint = Color.red.opacity(0.06)
     static let loseBar = Color.red.opacity(0.4)
 }
@@ -59,28 +58,58 @@ extension Color {
     }
 }
 
-// MARK: - Typography (SF Rounded)
+// MARK: - Typography (Plus Jakarta Sans)
+// Font files bundled in Resources/Fonts/ and registered via Info.plist UIAppFonts.
+// PostScript names: PlusJakartaSans-Bold, PlusJakartaSans-SemiBold, PlusJakartaSans-Medium, PlusJakartaSans-Regular,
+//                   PlusJakartaSans-Italic, PlusJakartaSans-MediumItalic
 
 extension Font {
+    // MARK: - Plus Jakarta Sans helpers
+    static func jakarta(_ size: CGFloat, weight: JakartaWeight = .regular) -> Font {
+        .custom(weight.postScriptName, size: size)
+    }
+
+    enum JakartaWeight {
+        case regular, medium, semiBold, bold, italic, mediumItalic
+
+        var postScriptName: String {
+            switch self {
+            case .regular: return "PlusJakartaSans-Regular"
+            case .medium: return "PlusJakartaSans-Medium"
+            case .semiBold: return "PlusJakartaSans-SemiBold"
+            case .bold: return "PlusJakartaSans-Bold"
+            case .italic: return "PlusJakartaSans-Italic"
+            case .mediumItalic: return "PlusJakartaSans-MediumItalic"
+            }
+        }
+    }
+
+    // MARK: - Semantic tokens
+
     // Onboarding
-    static let onboardingTitle = Font.system(.largeTitle, design: .rounded, weight: .bold)
-    static let onboardingBody = Font.system(.body, design: .rounded, weight: .regular)
+    static let onboardingTitle = Font.jakarta(34, weight: .bold)      // ~largeTitle
+    static let onboardingBody = Font.jakarta(17, weight: .regular)    // ~body
 
     // Feed
-    static let feedHeadline = Font.system(.body, design: .rounded, weight: .semibold)
-    static let feedTimestamp = Font.system(.caption, design: .rounded, weight: .medium)
-    static let feedBadge = Font.system(.caption2, design: .rounded, weight: .bold)
+    static let feedHeadline = Font.jakarta(17, weight: .semiBold)     // ~body semibold
+    static let feedTimestamp = Font.jakarta(12, weight: .medium)      // ~caption
+    static let feedBadge = Font.jakarta(11, weight: .semiBold)        // ~caption2
 
     // Detail view
-    static let detailTitle = Font.system(.title2, design: .rounded, weight: .bold)
-    static let detailBody = Font.system(.body, design: .rounded, weight: .regular)
-    static let talkingPointText = Font.system(.callout, design: .rounded, weight: .medium)
+    static let detailTitle = Font.jakarta(22, weight: .bold)          // ~title2
+    static let detailBody = Font.jakarta(17, weight: .regular)        // ~body
+    static let talkingPointText = Font.jakarta(16, weight: .medium)   // ~callout
 
     // Section headers
-    static let sectionHeader = Font.system(.caption, design: .rounded, weight: .bold)
+    static let sectionHeader = Font.jakarta(12, weight: .semiBold)    // ~caption
 
     // Settings
-    static let settingsItem = Font.system(.body, design: .rounded, weight: .regular)
+    static let settingsItem = Font.jakarta(17, weight: .regular)      // ~body
+
+    // Immersive card
+    static let immersiveHeadline = Font.jakarta(64, weight: .bold)
+    static let immersiveContext = Font.jakarta(18, weight: .regular)
+    static let immersiveHint = Font.jakarta(13, weight: .regular)
 }
 
 // MARK: - Layout Constants
@@ -88,14 +117,20 @@ extension Font {
 struct Layout {
     static let screenPadding: CGFloat = 20
     static let cardPadding: CGFloat = 16
-    static let cardSpacing: CGFloat = 12
+    static let cardSpacing: CGFloat = 10
     static let cardCornerRadius: CGFloat = 16
+    static let badgeCornerRadius: CGFloat = 999
     static let cardShadowRadius: CGFloat = 8
     static let cardShadowY: CGFloat = 4
     static let sectionSpacing: CGFloat = 24
     static let elementSpacing: CGFloat = 8
     static let buttonHeight: CGFloat = 50
     static let buttonCornerRadius: CGFloat = 16
+
+    // Immersive card zones
+    static let immersiveCardHeightRatio: CGFloat = 0.88
+    static let immersiveZone1Ratio: CGFloat = 0.65
+    static let immersiveZone2Ratio: CGFloat = 0.35
 }
 
 // MARK: - Reusable Modifiers
@@ -138,7 +173,7 @@ struct PrimaryButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(.body, design: .rounded, weight: .semibold))
+            .font(.jakarta(17, weight: .semiBold))
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
             .frame(height: Layout.buttonHeight)

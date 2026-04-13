@@ -330,6 +330,23 @@ serve(async (req) => {
         }
       }
 
+      // If standings or fixtures data changed, update team page dynamic fields
+      // (league position, form, next fixture — no Claude call needed)
+      const hasStandings = apiResults.some((r) => r.source === "api_football_standings");
+      const hasFixtures = apiResults.some(
+        (r) => r.source === "api_football_fixtures_next" || r.source === "api_football_fixtures_last"
+      );
+      if (hasStandings || hasFixtures) {
+        try {
+          await triggerFunction("team-page-generator", {
+            mode: "dynamic_only",
+            team_id: team.id,
+          });
+        } catch (e) {
+          console.error(`Failed to trigger team-page-generator (dynamic) for ${team.id}:`, e);
+        }
+      }
+
       await logPipelineEvent(supabase, {
         team_id: team.id,
         stage: "fetch",

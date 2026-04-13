@@ -7,22 +7,19 @@ struct WelcomeView: View {
         VStack(spacing: 0) {
             Spacer()
 
-            // Illustration placeholder
-            Image(systemName: "bubble.left.and.bubble.right")
-                .font(.system(size: 70))
-                .foregroundStyle(Color.hotRose)
-                .padding(.bottom, 32)
+            VStack(spacing: 16) {
+                Image(systemName: "bubble.left")
+                    .font(.system(size: 60))
+                    .foregroundStyle(Color.hotRose)
 
-            Text("Goal Digger")
-                .font(.onboardingTitle)
-                .foregroundColor(.textOnDark)
-                .padding(.bottom, 12)
+                GoalDiggerWordmark(size: .jakarta(34, weight: .bold))
 
-            Text("You're here. He has no idea.\nLet's get you ready.")
-                .font(.onboardingBody)
-                .foregroundColor(.textOnDark.opacity(0.8))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, Layout.screenPadding)
+                Text("You're here. He has no idea.\nLet's get you ready.")
+                    .font(.onboardingBody)
+                    .foregroundColor(.textOnDark.opacity(0.8))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Layout.screenPadding)
+            }
 
             Spacer()
 

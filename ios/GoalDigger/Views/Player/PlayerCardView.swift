@@ -1,54 +1,66 @@
 import SwiftUI
 
-struct PlayerCardView: View {
+struct PlayerCardModal: View {
     let player: PlayerCard
     @Environment(AppState.self) var appState
+    @Environment(\.dismiss) var dismiss
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
+        ZStack(alignment: .topTrailing) {
+            Color.cardBackground.ignoresSafeArea()
+
+            VStack(alignment: .leading, spacing: 10) {
                 Text(player.playerName)
                     .font(.detailTitle)
                     .foregroundColor(.textPrimaryOnCard)
-                Spacer()
-                if let age = player.age {
-                    Text("Age \(age)")
-                        .font(.feedTimestamp)
-                        .foregroundColor(.textSecondaryOnCard)
+
+                Text(player.position)
+                    .font(.feedBadge)
+                    .textCase(.uppercase)
+                    .tracking(0.5)
+                    .foregroundColor(.hotRose)
+
+                Text(appState.personalise(player.summary))
+                    .font(.detailBody)
+                    .foregroundColor(.textPrimaryOnCard)
+                    .lineLimit(5)
+
+                if let vibe = player.vibe {
+                    HStack(spacing: 6) {
+                        Image(systemName: vibeIcon(vibe))
+                            .font(.system(size: 12))
+                        Text(vibe.capitalized)
+                            .font(.feedTimestamp)
+                    }
+                    .foregroundColor(.textSecondaryOnCard)
+                }
+
+                if let form = player.form {
+                    HStack(spacing: 6) {
+                        Image(systemName: "chart.line.uptrend.xyaxis")
+                            .font(.system(size: 12))
+                        Text(appState.personalise(form))
+                            .font(.feedTimestamp)
+                    }
+                    .foregroundColor(.textSecondaryOnCard)
                 }
             }
+            .padding(Layout.cardPadding)
+            .padding(.top, 24) // space for close button
 
-            Text(player.position)
-                .font(.feedBadge)
-                .textCase(.uppercase)
-                .tracking(0.5)
-                .foregroundColor(.hotRose)
-
-            Text(appState.personalise(player.summary))
-                .font(.detailBody)
-                .foregroundColor(.textPrimaryOnCard)
-
-            if let vibe = player.vibe {
-                HStack(spacing: 6) {
-                    Image(systemName: vibeIcon(vibe))
-                        .font(.system(size: 12))
-                    Text(vibe.capitalized)
-                        .font(.feedTimestamp)
-                }
-                .foregroundColor(.textSecondaryOnCard)
+            // Close button
+            Button { dismiss() } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.charcoal)
+                    .frame(width: 28, height: 28)
+                    .background(Color.softBlush)
+                    .clipShape(Circle())
             }
-
-            if let form = player.form {
-                HStack(spacing: 6) {
-                    Image(systemName: "chart.line.uptrend.xyaxis")
-                        .font(.system(size: 12))
-                    Text(appState.personalise(form))
-                        .font(.feedTimestamp)
-                }
-                .foregroundColor(.textSecondaryOnCard)
-            }
+            .padding(16)
         }
-        .cardStyle()
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
     }
 
     private func vibeIcon(_ vibe: String) -> String {
@@ -62,10 +74,12 @@ struct PlayerCardView: View {
     }
 }
 
+// Legacy list view (still used for navigation from feed)
 struct PlayerCardsListView: View {
     let teamId: String
     @State private var players: [PlayerCard] = []
     @State private var isLoading = true
+    @State private var presentedPlayer: PlayerCard?
 
     var body: some View {
         ZStack {
@@ -79,7 +93,12 @@ struct PlayerCardsListView: View {
                 ScrollView {
                     LazyVStack(spacing: Layout.cardSpacing) {
                         ForEach(players) { player in
-                            PlayerCardView(player: player)
+                            Button {
+                                presentedPlayer = player
+                            } label: {
+                                PlayerCardRow(player: player)
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.horizontal, Layout.screenPadding)
@@ -93,12 +112,41 @@ struct PlayerCardsListView: View {
         .toolbarBackground(Color.appBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .task { await loadPlayers() }
+        .sheet(item: $presentedPlayer) { player in
+            PlayerCardModal(player: player)
+        }
     }
 
     private func loadPlayers() async {
         do {
             players = try await APIClient.shared.fetchPlayerCards(teamId: teamId)
-        } catch {}
+        } catch {
+            #if DEBUG
+            print("⚠️ loadPlayers failed: \(error.localizedDescription)")
+            #endif
+        }
         isLoading = false
+    }
+}
+
+struct PlayerCardRow: View {
+    let player: PlayerCard
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(player.playerName)
+                    .font(.feedHeadline)
+                    .foregroundColor(.textPrimaryOnCard)
+                Text(player.position)
+                    .font(.feedTimestamp)
+                    .foregroundColor(.textSecondaryOnCard)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12))
+                .foregroundColor(.textSecondaryOnCard)
+        }
+        .cardStyle()
     }
 }

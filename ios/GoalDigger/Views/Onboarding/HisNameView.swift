@@ -10,18 +10,26 @@ struct HisNameView: View {
         VStack(spacing: 24) {
             Spacer()
 
-            Text("And what's his?")
+            Image(systemName: "soccerball")
+                .font(.system(size: 28))
+                .foregroundColor(.hotRose.opacity(0.6))
+
+            Text("And what's his name?")
                 .font(.onboardingTitle)
                 .foregroundColor(.textOnDark)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Layout.screenPadding)
 
             TextField("His name", text: $name)
-                .font(.system(.title3, design: .rounded, weight: .medium))
+                .font(.jakarta(20, weight: .medium))
                 .foregroundColor(.textPrimaryOnCard)
                 .padding(16)
                 .background(Color.cardBackground)
                 .cornerRadius(Layout.cardCornerRadius)
+                .overlay(
+                    RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
+                        .stroke(isFocused && !name.isEmpty ? Color.hotRose : Color.clear, lineWidth: 2)
+                )
                 .padding(.horizontal, Layout.screenPadding)
                 .focused($isFocused)
                 .textInputAutocapitalization(.words)

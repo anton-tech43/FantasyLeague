@@ -4,7 +4,7 @@ import Foundation
 /// Delete this file when connecting to live Supabase backend.
 struct MockData {
 
-    static let feed: [ContentItem] = [example1, example2, example3, example4, example5]
+    static let feed: [ContentItem] = [example1, example2, example3, example4, example5, example6Everyone]
 
     // MARK: - Example 1: News — Transfer Confirmed (Arsenal)
 
@@ -14,8 +14,8 @@ struct MockData {
             "id": "a1b2c3d4-e5f6-7890-abcd-000000000001",
             "team_id": "arsenal",
             "type": "news",
-            "headline": "Big news — Arsenal just signed a new striker and your boyfriend is probably losing his mind right now.",
-            "body": "Arsenal just made their biggest signing in years. Viktor Gyokeres — a Swedish striker who's been absolutely tearing it up in Portugal — is officially joining the club for around £85 million.\\n\\nTo put that in perspective, that's one of the most expensive transfers in Arsenal's history. He scored 43 goals last season at Sporting Lisbon, which is genuinely ridiculous. For context, most strikers are happy with 15-20.\\n\\nWhy it matters: Arsenal have been solid defensively (they're good at stopping the other team from scoring) but have been missing a proper goalscorer in the big games — the ones against the top teams that decide the title. Gyokeres is supposed to be that missing piece.\\n\\nYour boyfriend's mood tonight: expect excitement levels somewhere between \\"kid at Christmas\\" and \\"proposing to the TV screen.\\" This is the kind of signing fans dream about. Let him have his moment.",
+            "headline": "Big news — Arsenal just signed a new striker and [his name] is probably losing his mind right now.",
+            "body": "Arsenal just made their biggest signing in years. Viktor Gyokeres — a Swedish striker who's been absolutely tearing it up in Portugal — is officially joining the club for around £85 million.\\n\\nTo put that in perspective, that's one of the most expensive transfers in Arsenal's history. He scored 43 goals last season at Sporting Lisbon, which is genuinely ridiculous. For context, most strikers are happy with 15-20.\\n\\nWhy it matters: Arsenal have been solid defensively (they're good at stopping the other team from scoring) but have been missing a proper goalscorer in the big games — the ones against the top teams that decide the title. Gyokeres is supposed to be that missing piece.\\n\\n[his name]'s mood tonight: expect excitement levels somewhere between \\"kid at Christmas\\" and \\"proposing to the TV screen.\\" This is the kind of signing fans dream about. Let him have his moment.",
             "talking_points": [
                 "So Arsenal signed this guy called Viktor Gyokeres from Sporting Lisbon — he scored like 40 goals last season. If he brings it up, just say 'That's a massive signing' and watch his face light up.",
                 "He cost around £85 million, which is a LOT. If you want to wind him up a bit, say 'Was he really worth that much?' — guaranteed debate starter.",
@@ -40,7 +40,7 @@ struct MockData {
             "team_id": "arsenal",
             "type": "matchday",
             "headline": "Derby day. Arsenal vs Tottenham tonight and honestly, don't be surprised if he can't eat dinner.",
-            "body": "It's North London Derby day, which is basically the Super Bowl of Arsenal's season (okay not quite, but emotionally it's up there). Arsenal are hosting Tottenham at the Emirates tonight at 17:30, and your boyfriend has probably been thinking about this all week.\\n\\nHere's the deal: Arsenal and Tottenham are from the same part of London and they've been rivals for over a century. It's not just about football — it's about bragging rights. If Arsenal win, he gets to gloat to any Spurs-supporting mates. If they lose, he will be inconsolable. There is no middle ground.\\n\\nGood news: Arsenal are in great form. They've won 4 of their last 5 games, they're sitting 2nd in the league, and they haven't lost to Spurs at home since 2022. Saka has been their best player this season with 12 goals, and big games are where he shines.\\n\\nThe worry? Tottenham have actually been decent lately too. They've won their last 3 away games, and Son Heung-min (their captain, you might recognise him from those supermarket ads) always seems to score against Arsenal.\\n\\nTonight's atmosphere at home: expect pacing, shouting at the TV, and absolutely zero attention directed at anything else for about two hours. This is normal. Bring snacks.",
+            "body": "It's North London Derby day, which is basically the Super Bowl of Arsenal's season (okay not quite, but emotionally it's up there). Arsenal are hosting Tottenham at the Emirates tonight at 17:30, and [his name] has probably been thinking about this all week.\\n\\nHere's the deal: Arsenal and Tottenham are from the same part of London and they've been rivals for over a century. It's not just about football — it's about bragging rights. If Arsenal win, he gets to gloat to any Spurs-supporting mates. If they lose, he will be inconsolable. There is no middle ground.\\n\\nGood news: Arsenal are in great form. They've won 4 of their last 5 games, they're sitting 2nd in the league, and they haven't lost to Spurs at home since 2022. Saka has been their best player this season with 12 goals, and big games are where he shines.\\n\\nThe worry? Tottenham have actually been decent lately too. They've won their last 3 away games, and Son Heung-min (their captain, you might recognise him from those supermarket ads) always seems to score against Arsenal.\\n\\nTonight's atmosphere at home: expect pacing, shouting at the TV, and absolutely zero attention directed at anything else for about two hours. This is normal. Bring snacks.",
             "talking_points": {
                 "regular": [
                     "This is THE rivalry. Arsenal and Tottenham are both from North London and they genuinely despise each other. Think of it like two siblings who've been competing since birth. Bring it up and he'll have opinions.",
@@ -75,7 +75,7 @@ struct MockData {
             "team_id": "man_utd",
             "type": "news",
             "headline": "Transfer gossip alert — there's a rumour Man United are trying to sign a midfielder from Barcelona. He'll definitely bring this up.",
-            "body": "Every transfer window, Man United fans go through the same cycle: hope, excitement, rumour overload, and then usually disappointment. We might be entering that cycle again.\\n\\nMultiple sources are reporting that Man United are in talks to sign Frenkie de Jong from Barcelona. If that name sounds familiar, it should — this exact rumour has popped up basically every summer since 2022. It's the transfer that never quite happens.\\n\\nDe Jong is a Dutch midfielder who's really good at controlling the game (think of the person at work who keeps everything running smoothly — that's what he does on the pitch). Man United have been desperate for someone like him because their midfield has been... let's say underwhelming.\\n\\nThe catch: Barcelona are reportedly asking for £75 million, and de Jong seems quite happy in Spain. So this could go either way. Your boyfriend will have strong opinions on whether it'll happen. Ask him — it's a guaranteed 20-minute conversation.",
+            "body": "Every transfer window, Man United fans go through the same cycle: hope, excitement, rumour overload, and then usually disappointment. We might be entering that cycle again.\\n\\nMultiple sources are reporting that Man United are in talks to sign Frenkie de Jong from Barcelona. If that name sounds familiar, it should — this exact rumour has popped up basically every summer since 2022. It's the transfer that never quite happens.\\n\\nDe Jong is a Dutch midfielder who's really good at controlling the game (think of the person at work who keeps everything running smoothly — that's what he does on the pitch). Man United have been desperate for someone like him because their midfield has been... let's say underwhelming.\\n\\nThe catch: Barcelona are reportedly asking for £75 million, and de Jong seems quite happy in Spain. So this could go either way. [his name] will have strong opinions on whether it'll happen. Ask him — it's a guaranteed 20-minute conversation.",
             "talking_points": [
                 "The rumour is that Man United want Frenkie de Jong from Barcelona. This has been going on for YEARS — it's like a will-they-won't-they romance. If he mentions it, just roll your eyes and say 'Not this again' — he'll find it hilarious.",
                 "If he seems excited about it, ask 'Do you actually think it'll happen this time?' — it's the right question because fans have been burned before. He'll appreciate that you get it.",
@@ -136,6 +136,62 @@ struct MockData {
         """.data(using: .utf8)!
         return try! mockDecoder.decode(ContentItem.self, from: json)
     }()
+
+    // MARK: - Example 6: Everyone's Talking About — Major Transfer (Arsenal, cross-team)
+
+    static let example6Everyone: ContentItem = {
+        let json = """
+        {
+            "id": "a1b2c3d4-e5f6-7890-abcd-000000000006",
+            "team_id": "arsenal",
+            "type": "news",
+            "headline": "Big news — Arsenal just signed a new striker and [his name] is probably losing his mind right now.",
+            "body": "Arsenal just made their biggest signing in years. Viktor Gyokeres is officially joining.",
+            "talking_points": [
+                "So Arsenal signed this guy called Viktor Gyokeres from Sporting Lisbon.",
+                "He cost around 85 million, which is a LOT.",
+                "This guy is supposed to fix Arsenal's big-game problem."
+            ],
+            "kickoff_time": null,
+            "emotional_context": "exciting",
+            "published_at": "\(ISO8601DateFormatter().string(from: Date().addingTimeInterval(-1800)))",
+            "everyone_talking": true,
+            "everyone_talking_headline": "Arsenal just broke the bank. Gyokeres signs for 85 million.",
+            "everyone_talking_body": "Viktor Gyokeres has officially signed for Arsenal from Sporting Lisbon for 85 million pounds. He scored 43 goals last season, making him one of the most prolific strikers in Europe. This is Arsenal's statement of intent for the title race.",
+            "everyone_talking_talking_points": [
+                "Arsenal just signed Viktor Gyokeres for 85 million. If anyone mentions football today, this is what they're talking about.",
+                "He scored 43 goals last season in Portugal. That's genuinely ridiculous for any striker.",
+                "This is basically Arsenal saying 'we're serious about winning the league.' It's the biggest PL transfer of the summer.",
+                "If you want to sound informed, just say 'Gyokeres is a smart signing.' Short, confident, done."
+            ],
+            "worth_knowing": true,
+            "immersive_headline": "new in, gyokeres, striker.",
+            "immersive_context": "Like Hailey Bieber leaving Rhode to go all in with Dior. Massive.",
+            "immersive_context_fallback": "Arsenal's biggest signing in years. 85 million for a striker who scored 43 goals last season.",
+            "analogy_reviewed": true,
+            "analogy_approved": true,
+            "analogy_auto_published": false
+        }
+        """.data(using: .utf8)!
+        return try! mockDecoder.decode(ContentItem.self, from: json)
+    }()
+
+    // MARK: - Team Page Mock
+
+    /// Load mock team page from bundled JSON. Falls back to nil if no file for this team.
+    /// Structure matches Supabase team_pages.content JSONB exactly.
+    static func teamPage(for teamId: String) -> TeamPageContent? {
+        guard let url = Bundle.main.url(forResource: teamId, withExtension: "json", subdirectory: "MockData/team_pages"),
+              let data = try? Data(contentsOf: url) else {
+            // Try without subdirectory (flat bundle)
+            guard let url = Bundle.main.url(forResource: teamId, withExtension: "json"),
+                  let data = try? Data(contentsOf: url) else {
+                return nil
+            }
+            return try? JSONDecoder().decode(TeamPageContent.self, from: data)
+        }
+        return try? JSONDecoder().decode(TeamPageContent.self, from: data)
+    }
 
     // MARK: - Decoder
 
