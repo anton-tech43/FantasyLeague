@@ -10,6 +10,10 @@ struct HerNameView: View {
         VStack(spacing: 24) {
             Spacer()
 
+            Image(systemName: "sparkles")
+                .font(.system(size: 28))
+                .foregroundColor(.hotRose.opacity(0.6))
+
             Text("First things first,\nwhat's your name?")
                 .font(.onboardingTitle)
                 .foregroundColor(.textOnDark)
@@ -17,11 +21,15 @@ struct HerNameView: View {
                 .padding(.horizontal, Layout.screenPadding)
 
             TextField("Your name", text: $name)
-                .font(.system(.title3, design: .rounded, weight: .medium))
+                .font(.jakarta(20, weight: .medium))
                 .foregroundColor(.textPrimaryOnCard)
                 .padding(16)
                 .background(Color.cardBackground)
                 .cornerRadius(Layout.cardCornerRadius)
+                .overlay(
+                    RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
+                        .stroke(isFocused && !name.isEmpty ? Color.hotRose : Color.clear, lineWidth: 2)
+                )
                 .padding(.horizontal, Layout.screenPadding)
                 .focused($isFocused)
                 .textInputAutocapitalization(.words)

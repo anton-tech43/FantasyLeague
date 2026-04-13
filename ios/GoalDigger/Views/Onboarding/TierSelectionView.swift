@@ -5,11 +5,20 @@ struct TierSelectionView: View {
     @State private var selected: Int = 2
     let onContinue: () -> Void
 
-    private let tiers: [(number: Int, label: String, description: String)] = [
-        (1, "Just enough to get by", "Match day heads-up and one key talking point."),
-        (2, "Came to impress", "Regular news and talking points through the week."),
-        (3, "The one he brags about", "Everything including deep news, stats context and transfer rumours.")
+    private let tiers: [(number: Int, icon: String, label: String, description: String)] = [
+        (1, "cup.and.saucer", "Just enough to get by", "Just the essentials. No overload."),
+        (2, "bolt.fill", "Came to impress", "Enough to hold your own in any conversation."),
+        (3, "crown.fill", "The one he brags about", "She knows things he hasn't even googled yet.")
     ]
+
+    private var buttonText: String {
+        switch selected {
+        case 1: return "Sounds good"
+        case 2: return "Let's do this"
+        case 3: return "Say less"
+        default: return "Let's do this"
+        }
+    }
 
     var body: some View {
         VStack(spacing: 24) {
@@ -27,15 +36,21 @@ struct TierSelectionView: View {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             selected = tier.number
                         }
-                        let generator = UISelectionFeedbackGenerator()
-                        generator.selectionChanged()
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
                     } label: {
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
+                                Image(systemName: tier.icon)
+                                    .font(.system(size: 16))
+                                    .foregroundColor(tier.number == 3 ? .tierGold : .hotRose)
+                                    .frame(width: 24)
+
                                 Text(tier.label)
                                     .font(.feedHeadline)
                                     .foregroundColor(.textPrimaryOnCard)
+
                                 Spacer()
+
                                 if selected == tier.number {
                                     Image(systemName: "checkmark.circle.fill")
                                         .foregroundColor(tier.number == 3 ? .tierGold : .hotRose)
@@ -45,6 +60,7 @@ struct TierSelectionView: View {
                                 .font(.onboardingBody)
                                 .foregroundColor(.textSecondaryOnCard)
                                 .multilineTextAlignment(.leading)
+                                .padding(.leading, 24 + 8) // align with text after icon
                         }
                         .padding(Layout.cardPadding)
                         .background(Color.cardBackground)
@@ -66,7 +82,8 @@ struct TierSelectionView: View {
 
             Spacer()
 
-            Button("Continue") {
+            Button(buttonText) {
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                 appState.selectedTier = selected
                 onContinue()
             }

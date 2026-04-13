@@ -113,7 +113,13 @@ serve(async (req) => {
       }
 
       // Build APNs payload (Contract 2)
-      const payload = buildAPNsPayload(shortName, item.headline, item.id, category);
+      const payload = buildAPNsPayload(
+        shortName,
+        item.headline,
+        item.id,
+        category,
+        item.everyone_talking ?? false
+      );
 
       // Send to all eligible tokens
       let successCount = 0;

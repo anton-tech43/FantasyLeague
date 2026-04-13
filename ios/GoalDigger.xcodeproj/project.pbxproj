@@ -32,10 +32,27 @@
 		AA000031 /* HisNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000031; };
 		AA000032 /* OnboardingFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000032; };
 		AA000033 /* TierSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000033; };
-		AA000034 /* WhatToFollowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000034; };
 		AA000035 /* OnesToWatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000035; };
+		AA000040 /* ProgressDotsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000040; };
 		AA000036 /* PlayerCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000036; };
 		AA000037 /* TeamPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000037; };
+		AA000041 /* YourMoveCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000041; };
+		AA000042 /* MatchDayCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000042; };
+		AA000043 /* GoalDiggerWordmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000043; };
+		AA000050 /* arsenal.json in Resources */ = {isa = PBXBuildFile; fileRef = AB000050; };
+		AA000060 /* FeedContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000060; };
+		AA000061 /* UnreadTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000061; };
+		AA000062 /* ImmersiveCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000062; };
+		AA000063 /* ImmersiveSkeletonCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000063; };
+		AA000064 /* ContextSwitcherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000064; };
+		AA000065 /* EveryoneEmptyStateCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000065; };
+		AA000066 /* ClassicFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000066; };
+		AA000070 /* PlusJakartaSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000070; };
+		AA000071 /* PlusJakartaSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000071; };
+		AA000072 /* PlusJakartaSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000072; };
+		AA000073 /* PlusJakartaSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000073; };
+		AA000074 /* PlusJakartaSans-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000074; };
+		AA000075 /* PlusJakartaSans-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000075; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -68,11 +85,28 @@
 		AB000031 /* HisNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HisNameView.swift; sourceTree = "<group>"; };
 		AB000032 /* OnboardingFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlow.swift; sourceTree = "<group>"; };
 		AB000033 /* TierSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TierSelectionView.swift; sourceTree = "<group>"; };
-		AB000034 /* WhatToFollowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatToFollowView.swift; sourceTree = "<group>"; };
 		AB000035 /* OnesToWatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnesToWatchView.swift; sourceTree = "<group>"; };
+		AB000040 /* ProgressDotsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressDotsView.swift; sourceTree = "<group>"; };
 		AB000036 /* PlayerCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerCardView.swift; sourceTree = "<group>"; };
 		AB000037 /* TeamPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageView.swift; sourceTree = "<group>"; };
+		AB000041 /* YourMoveCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YourMoveCard.swift; sourceTree = "<group>"; };
+		AB000042 /* MatchDayCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDayCard.swift; sourceTree = "<group>"; };
+		AB000043 /* GoalDiggerWordmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalDiggerWordmark.swift; sourceTree = "<group>"; };
 		AB000099 /* GoalDigger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GoalDigger.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB000050 /* arsenal.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = arsenal.json; sourceTree = "<group>"; };
+		AB000060 /* FeedContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedContext.swift; sourceTree = "<group>"; };
+		AB000061 /* UnreadTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnreadTracker.swift; sourceTree = "<group>"; };
+		AB000062 /* ImmersiveCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImmersiveCard.swift; sourceTree = "<group>"; };
+		AB000063 /* ImmersiveSkeletonCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImmersiveSkeletonCard.swift; sourceTree = "<group>"; };
+		AB000064 /* ContextSwitcherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextSwitcherView.swift; sourceTree = "<group>"; };
+		AB000065 /* EveryoneEmptyStateCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EveryoneEmptyStateCard.swift; sourceTree = "<group>"; };
+		AB000066 /* ClassicFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassicFeedView.swift; sourceTree = "<group>"; };
+		AB000070 /* PlusJakartaSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Regular.ttf"; sourceTree = "<group>"; };
+		AB000071 /* PlusJakartaSans-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Medium.ttf"; sourceTree = "<group>"; };
+		AB000072 /* PlusJakartaSans-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-SemiBold.ttf"; sourceTree = "<group>"; };
+		AB000073 /* PlusJakartaSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Bold.ttf"; sourceTree = "<group>"; };
+		AB000074 /* PlusJakartaSans-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Italic.ttf"; sourceTree = "<group>"; };
+		AB000075 /* PlusJakartaSans-MediumItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-MediumItalic.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -93,6 +127,7 @@
 				AC000010 /* Models */,
 				AC000011 /* Services */,
 				AC000012 /* Resources */,
+				AC000020 /* MockData */,
 				AB000021 /* Info.plist */,
 				AB000023 /* GoalDigger.entitlements */,
 				AB000024 /* Configuration.xcconfig.example */,
@@ -126,6 +161,14 @@
 				AB000008 /* TeamPickerCard.swift */,
 				AB000009 /* BadgeView.swift */,
 				AB000010 /* EmptyStateView.swift */,
+				AB000040 /* ProgressDotsView.swift */,
+				AB000041 /* YourMoveCard.swift */,
+				AB000042 /* MatchDayCard.swift */,
+				AB000043 /* GoalDiggerWordmark.swift */,
+				AB000062 /* ImmersiveCard.swift */,
+				AB000063 /* ImmersiveSkeletonCard.swift */,
+				AB000064 /* ContextSwitcherView.swift */,
+				AB000065 /* EveryoneEmptyStateCard.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -151,7 +194,6 @@
 				AB000011 /* WelcomeView.swift */,
 				AB000030 /* HerNameView.swift */,
 				AB000031 /* HisNameView.swift */,
-				AB000034 /* WhatToFollowView.swift */,
 				AB000012 /* TeamSelectionView.swift */,
 				AB000033 /* TierSelectionView.swift */,
 				AB000013 /* NotificationPromptView.swift */,
@@ -163,6 +205,7 @@
 			isa = PBXGroup;
 			children = (
 				AB000014 /* FeedView.swift */,
+				AB000066 /* ClassicFeedView.swift */,
 			);
 			path = Feed;
 			sourceTree = "<group>";
@@ -182,6 +225,7 @@
 				AB000004 /* ContentItem.swift */,
 				AB000005 /* AppState.swift */,
 				AB000022 /* MockData.swift */,
+				AB000060 /* FeedContext.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -192,6 +236,7 @@
 				AB000017 /* APIClient.swift */,
 				AB000018 /* CacheService.swift */,
 				AB000019 /* NotificationService.swift */,
+				AB000061 /* UnreadTracker.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -200,8 +245,22 @@
 			isa = PBXGroup;
 			children = (
 				AB000020 /* Assets.xcassets */,
+				AC000022 /* Fonts */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		AC000022 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				AB000070 /* PlusJakartaSans-Regular.ttf */,
+				AB000071 /* PlusJakartaSans-Medium.ttf */,
+				AB000072 /* PlusJakartaSans-SemiBold.ttf */,
+				AB000073 /* PlusJakartaSans-Bold.ttf */,
+				AB000074 /* PlusJakartaSans-Italic.ttf */,
+				AB000075 /* PlusJakartaSans-MediumItalic.ttf */,
+			);
+			path = Fonts;
 			sourceTree = "<group>";
 		};
 		AC000013 /* Settings */ = {
@@ -242,6 +301,22 @@
 				AB000099 /* GoalDigger.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		AC000020 /* MockData */ = {
+			isa = PBXGroup;
+			children = (
+				AC000021 /* team_pages */,
+			);
+			path = MockData;
+			sourceTree = "<group>";
+		};
+		AC000021 /* team_pages */ = {
+			isa = PBXGroup;
+			children = (
+				AB000050 /* arsenal.json */,
+			);
+			path = team_pages;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -303,6 +378,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA000020 /* Assets.xcassets in Resources */,
+				AA000050 /* arsenal.json in Resources */,
+				AA000070 /* PlusJakartaSans-Regular.ttf in Resources */,
+				AA000071 /* PlusJakartaSans-Medium.ttf in Resources */,
+				AA000072 /* PlusJakartaSans-SemiBold.ttf in Resources */,
+				AA000073 /* PlusJakartaSans-Bold.ttf in Resources */,
+				AA000074 /* PlusJakartaSans-Italic.ttf in Resources */,
+				AA000075 /* PlusJakartaSans-MediumItalic.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -337,10 +419,20 @@
 				AA000031 /* HisNameView.swift in Sources */,
 				AA000032 /* OnboardingFlow.swift in Sources */,
 				AA000033 /* TierSelectionView.swift in Sources */,
-				AA000034 /* WhatToFollowView.swift in Sources */,
 				AA000035 /* OnesToWatchView.swift in Sources */,
+				AA000040 /* ProgressDotsView.swift in Sources */,
 				AA000036 /* PlayerCardView.swift in Sources */,
 				AA000037 /* TeamPageView.swift in Sources */,
+				AA000041 /* YourMoveCard.swift in Sources */,
+				AA000042 /* MatchDayCard.swift in Sources */,
+				AA000043 /* GoalDiggerWordmark.swift in Sources */,
+			AA000060 /* FeedContext.swift in Sources */,
+			AA000061 /* UnreadTracker.swift in Sources */,
+			AA000062 /* ImmersiveCard.swift in Sources */,
+			AA000063 /* ImmersiveSkeletonCard.swift in Sources */,
+			AA000064 /* ContextSwitcherView.swift in Sources */,
+			AA000065 /* EveryoneEmptyStateCard.swift in Sources */,
+			AA000066 /* ClassicFeedView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -425,7 +517,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = GoalDigger/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Goal Digger";
+				INFOPLIST_KEY_CFBundleDisplayName = GoalDigger;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -458,7 +550,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = GoalDigger/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Goal Digger";
+				INFOPLIST_KEY_CFBundleDisplayName = GoalDigger;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

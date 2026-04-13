@@ -19,8 +19,8 @@ class APIClient {
         return url
     }()
 
-    private var baseURL: URL {
-        guard let url = _baseURL else { fatalError("API called without configuration") }
+    private func requireBaseURL() throws -> URL {
+        guard let url = _baseURL else { throw APIError.notConfigured }
         return url
     }
 
@@ -35,8 +35,8 @@ class APIClient {
         return url
     }()
 
-    private var functionsBaseURL: URL {
-        guard let url = _functionsBaseURL else { fatalError("API called without configuration") }
+    private func requireFunctionsBaseURL() throws -> URL {
+        guard let url = _functionsBaseURL else { throw APIError.notConfigured }
         return url
     }
 
@@ -81,6 +81,9 @@ class APIClient {
 
     // MARK: - Feed
 
+    /// All columns needed for ContentItem decoding (base + everyone + immersive + analogy)
+    private static let contentSelectColumns = "id,team_id,type,headline,body,talking_points,kickoff_time,emotional_context,published_at,everyone_talking,everyone_talking_headline,everyone_talking_body,everyone_talking_talking_points,worth_knowing,immersive_headline,immersive_context,immersive_context_fallback,analogy_reviewed,analogy_approved,analogy_auto_published"
+
     func fetchFeed(teamId: String, limit: Int = 20, offset: Int = 0) async throws -> [ContentItem] {
         let url = try buildURL(path: "content_items", queryItems: [
             URLQueryItem(name: "team_id", value: "eq.\(teamId)"),
@@ -88,7 +91,22 @@ class APIClient {
             URLQueryItem(name: "order", value: "published_at.desc"),
             URLQueryItem(name: "limit", value: "\(limit)"),
             URLQueryItem(name: "offset", value: "\(offset)"),
-            URLQueryItem(name: "select", value: "id,team_id,type,headline,body,talking_points,kickoff_time,emotional_context,published_at")
+            URLQueryItem(name: "select", value: Self.contentSelectColumns)
+        ])
+        let request = makeRequest(url: url)
+        let (data, response) = try await URLSession.shared.data(for: request)
+        try validateResponse(response)
+        return try decoder.decode([ContentItem].self, from: data)
+    }
+
+    func fetchEveryoneFeed(limit: Int = 20, offset: Int = 0) async throws -> [ContentItem] {
+        let url = try buildURL(path: "content_items", queryItems: [
+            URLQueryItem(name: "everyone_talking", value: "eq.true"),
+            URLQueryItem(name: "status", value: "eq.published"),
+            URLQueryItem(name: "order", value: "published_at.desc"),
+            URLQueryItem(name: "limit", value: "\(limit)"),
+            URLQueryItem(name: "offset", value: "\(offset)"),
+            URLQueryItem(name: "select", value: Self.contentSelectColumns)
         ])
         let request = makeRequest(url: url)
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -100,7 +118,7 @@ class APIClient {
         let url = try buildURL(path: "content_items", queryItems: [
             URLQueryItem(name: "id", value: "eq.\(id.uuidString)"),
             URLQueryItem(name: "status", value: "eq.published"),
-            URLQueryItem(name: "select", value: "id,team_id,type,headline,body,talking_points,kickoff_time,emotional_context,published_at")
+            URLQueryItem(name: "select", value: Self.contentSelectColumns)
         ])
         let request = makeRequest(url: url)
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -112,7 +130,7 @@ class APIClient {
     // MARK: - Device Token
 
     func registerToken(_ token: String, teamId: String, tier: Int = 2) async throws {
-        let url = baseURL.appendingPathComponent("device_tokens")
+        let url = try requireBaseURL().appendingPathComponent("device_tokens")
         let body: [String: Any] = ["team_id": teamId, "apns_token": token, "tier": tier]
         let bodyData = try JSONSerialization.data(withJSONObject: body)
         let request = makeRequest(
@@ -175,7 +193,7 @@ class APIClient {
     // MARK: - Delete My Data
 
     func deleteMyData(token: String) async throws {
-        let url = functionsBaseURL.appendingPathComponent("delete-my-data")
+        let url = try requireFunctionsBaseURL().appendingPathComponent("delete-my-data")
         let body = try JSONSerialization.data(withJSONObject: ["apns_token": token])
         let request = makeRequest(url: url, method: "POST", body: body)
         let (_, response) = try await URLSession.shared.data(for: request)
@@ -185,7 +203,7 @@ class APIClient {
     // MARK: - Helpers
 
     private func buildURL(path: String, queryItems: [URLQueryItem]) throws -> URL {
-        guard var components = URLComponents(url: baseURL.appendingPathComponent(path), resolvingAgainstBaseURL: false) else {
+        guard var components = URLComponents(url: try requireBaseURL().appendingPathComponent(path), resolvingAgainstBaseURL: false) else {
             throw APIError.invalidResponse
         }
         components.queryItems = queryItems
@@ -206,11 +224,13 @@ class APIClient {
 }
 
 enum APIError: LocalizedError {
+    case notConfigured
     case invalidResponse
     case httpError(Int)
 
     var errorDescription: String? {
         switch self {
+        case .notConfigured: return "API not configured"
         case .invalidResponse: return "Invalid server response"
         case .httpError(let code): return "Server error (\(code))"
         }

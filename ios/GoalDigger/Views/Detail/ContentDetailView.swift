@@ -2,37 +2,49 @@ import SwiftUI
 
 struct ContentDetailView: View {
     let contentId: UUID
+    var scrollToTalkingPoints: Bool = false
+    var isEveryoneContext: Bool = false
     @Environment(AppState.self) var appState
     @State private var item: ContentItem?
     @State private var isLoading = true
     @State private var onesToWatch: [PlayerCard] = []
+    @State private var isBackstoryExpanded = false
 
     var body: some View {
         ZStack {
             Color.appBackground.ignoresSafeArea()
 
             if let item {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: Layout.sectionSpacing) {
-                        headerSection(item)
-                        headlineSection(item)
-                        talkingPointsSection(item)
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: Layout.sectionSpacing) {
+                            headerSection(item)
+                            headlineSection(item)
+                            talkingPointsSection(item)
 
-                        if item.type == .matchday, let postMatch = item.postMatchCheatSheet {
-                            postMatchSection(postMatch)
+                            if item.type == .matchday, let postMatch = item.postMatchCheatSheet {
+                                postMatchSection(postMatch)
+                            }
+
+                            if item.type == .matchday, !onesToWatch.isEmpty {
+                                Divider().background(Color.feedDivider)
+                                OnesToWatchView(players: onesToWatch)
+                            }
+
+                            backstorySection(item)
                         }
-
-                        if item.type == .matchday, !onesToWatch.isEmpty {
-                            Divider().background(Color.feedDivider)
-                            OnesToWatchView(players: onesToWatch)
-                        }
-
-                        bodySection(item)
-                        shareSection(item)
+                        .padding(.horizontal, Layout.screenPadding)
+                        .padding(.top, 16)
+                        .padding(.bottom, 40)
                     }
-                    .padding(.horizontal, Layout.screenPadding)
-                    .padding(.top, 16)
-                    .padding(.bottom, 40)
+                    .task {
+                        if scrollToTalkingPoints {
+                            try? await Task.sleep(for: .milliseconds(300))
+                            withAnimation {
+                                proxy.scrollTo("thingsToSay", anchor: .top)
+                            }
+                        }
+                    }
                 }
             } else if isLoading {
                 ProgressView()
@@ -42,6 +54,18 @@ struct ContentDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(Color.appBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
+        .toolbar {
+            if item != nil {
+                ToolbarItem(placement: .topBarTrailing) {
+                    ShareLink(
+                        item: "\(displayHeadline)\n\nvia GoalDigger"
+                    ) {
+                        Image(systemName: "square.and.arrow.up")
+                            .foregroundColor(.hotRose)
+                    }
+                }
+            }
+        }
         .task { await loadItem() }
     }
 
@@ -58,11 +82,37 @@ struct ContentDetailView: View {
         }
     }
 
+    // Context-aware content helpers
+    private var displayHeadline: String {
+        guard let item else { return "" }
+        if isEveryoneContext {
+            return item.everyoneTalkingHeadline ?? item.headline
+        }
+        return appState.personalise(item.headline)
+    }
+
+    private var displayBody: String {
+        guard let item else { return "" }
+        if isEveryoneContext {
+            return item.everyoneTalkingBody ?? item.body
+        }
+        return appState.personalise(item.body)
+    }
+
+    private var displayTalkingPoints: [String] {
+        guard let item else { return [] }
+        if isEveryoneContext {
+            return item.everyoneTalkingTalkingPoints ?? item.regularTalkingPoints
+        }
+        return item.regularTalkingPoints.map { appState.personalise($0) }
+    }
+
     @ViewBuilder
     private func headlineSection(_ item: ContentItem) -> some View {
-        Text(appState.personalise(item.headline))
-            .font(.detailTitle)
+        Text(displayHeadline)
+            .font(.jakarta(22, weight: .bold))
             .foregroundColor(.textOnDark)
+            .padding(.top, 4)
 
         Divider().background(Color.feedDivider)
     }
@@ -71,9 +121,10 @@ struct ContentDetailView: View {
     private func talkingPointsSection(_ item: ContentItem) -> some View {
         VStack(alignment: .leading, spacing: Layout.elementSpacing) {
             SectionHeaderView(title: "Things to say", icon: "bubble.left")
+                .id("thingsToSay")
 
-            ForEach(Array(item.regularTalkingPoints.enumerated()), id: \.offset) { _, point in
-                TalkingPointCard(text: appState.personalise(point))
+            ForEach(Array(displayTalkingPoints.enumerated()), id: \.offset) { _, point in
+                TalkingPointCard(text: point)
             }
         }
     }
@@ -101,49 +152,37 @@ struct ContentDetailView: View {
                 barColor: Color.loseBar
             )
 
-            // Bold prediction
-            PostMatchCard(
-                label: "Bold prediction:",
-                text: appState.personalise(postMatch.boldPrediction),
-                tintColor: Color.accentSoft.opacity(0.3),
-                barColor: Color.accentWarm
-            )
+            // Bold prediction removed — not part of the feed experience
         }
     }
 
     @ViewBuilder
-    private func bodySection(_ item: ContentItem) -> some View {
+    private func backstorySection(_ item: ContentItem) -> some View {
         Divider().background(Color.feedDivider)
 
         VStack(alignment: .leading, spacing: Layout.elementSpacing) {
-            SectionHeaderView(title: "The backstory", icon: "book")
-
-            Text(appState.personalise(item.body))
-                .font(.detailBody)
-                .foregroundColor(.textOnDark.opacity(0.9))
-                .lineSpacing(6)
-        }
-    }
-
-    @ViewBuilder
-    private func shareSection(_ item: ContentItem) -> some View {
-        Divider().background(Color.feedDivider)
-
-        ShareLink(
-            item: "\(appState.personalise(item.headline))\n\n\u{2014} via Goal Digger"
-        ) {
-            HStack(spacing: 8) {
-                Image(systemName: "square.and.arrow.up")
-                Text("Share this with a friend")
+            Button {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    isBackstoryExpanded.toggle()
+                }
+            } label: {
+                HStack {
+                    SectionHeaderView(title: "The backstory", icon: "book")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.hotRose)
+                        .rotationEffect(.degrees(isBackstoryExpanded ? 90 : 0))
+                }
             }
-            .font(.system(.body, design: .rounded, weight: .medium))
-            .foregroundColor(.accentWarm)
-            .frame(maxWidth: .infinity)
-            .frame(height: 44)
-            .overlay(
-                RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
-                    .stroke(Color.accentWarm, lineWidth: 2)
-            )
+
+            if isBackstoryExpanded {
+                Text(displayBody)
+                    .font(.detailBody)
+                    .foregroundColor(.textOnDark.opacity(0.9))
+                    .lineSpacing(6)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
     }
 
@@ -194,7 +233,7 @@ struct TalkingPointCard: View {
     var body: some View {
         HStack(spacing: 0) {
             RoundedRectangle(cornerRadius: 2)
-                .fill(Color.accentWarm)
+                .fill(Color.hotRose)
                 .frame(width: 3)
 
             Text(text)
@@ -202,7 +241,7 @@ struct TalkingPointCard: View {
                 .foregroundColor(.textPrimaryOnCard)
                 .padding(14)
         }
-        .background(Color.accentSoft.opacity(0.3))
+        .background(Color.hotRose.opacity(0.06))
         .background(Color.cardBackground)
         .cornerRadius(12)
     }

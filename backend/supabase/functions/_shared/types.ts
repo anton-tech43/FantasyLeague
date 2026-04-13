@@ -22,6 +22,34 @@ export interface ContentItem {
   match_id: string | null;
   created_at: string;
   published_at: string | null;
+
+  // Everyone's talking about — cross-team feed
+  everyone_talking: boolean;
+  everyone_talking_headline: string | null;
+  everyone_talking_body: string | null;
+  everyone_talking_talking_points: string[] | null;
+  worth_knowing: boolean;
+
+  // Immersive card fields
+  immersive_headline: string | null;
+  immersive_context: string | null;
+  immersive_context_fallback: string | null;
+
+  // Analogy review pipeline
+  analogy_reviewed: boolean;
+  analogy_approved: boolean;
+  analogy_auto_published: boolean;
+  analogy_critic_score: AnalogyScore | null;
+}
+
+export interface AnalogyScore {
+  naturalness: number;
+  relevance: number;
+  audience_fit: number;
+  cringe_risk: number;
+  total: number;
+  verdict: "approve" | "reject";
+  reason: string;
 }
 
 export interface MatchdayTalkingPoints {

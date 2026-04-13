@@ -8,10 +8,24 @@ struct NotificationPromptView: View {
         VStack(spacing: 24) {
             Spacer()
 
-            Image(systemName: "bell.badge")
-                .font(.system(size: 60))
-                .foregroundStyle(Color.hotRose)
-                .padding(.bottom, 8)
+            ZStack {
+                // Subtle rose glow behind bell
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [Color.hotRose.opacity(0.15), Color.clear],
+                            center: .center,
+                            startRadius: 10,
+                            endRadius: 80
+                        )
+                    )
+                    .frame(width: 160, height: 160)
+
+                Image(systemName: "bell.badge")
+                    .font(.system(size: 60))
+                    .foregroundStyle(Color.hotRose)
+            }
+            .padding(.bottom, 8)
 
             Text("We'll handle the rest.\nJust let us in.")
                 .font(.onboardingTitle)
@@ -36,7 +50,7 @@ struct NotificationPromptView: View {
                 }
                 .buttonStyle(PrimaryButtonStyle())
 
-                Button("maybe later") {
+                Button("I'll do this later") {
                     finish()
                 }
                 .font(.onboardingBody)
@@ -48,6 +62,7 @@ struct NotificationPromptView: View {
     }
 
     private func finish() {
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
         appState.notificationPermissionRequested = true
         // Register token with server if we have one
         if let token = UserDefaults.standard.string(forKey: "apnsToken"),
