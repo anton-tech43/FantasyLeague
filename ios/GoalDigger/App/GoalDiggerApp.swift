@@ -12,6 +12,7 @@ struct GoalDiggerApp: App {
             RootView()
                 .environment(appState)
                 .modelContainer(for: CachedContentItem.self)
+                .preferredColorScheme(.dark)
                 .onChange(of: scenePhase) { oldPhase, newPhase in
                     if oldPhase == .background && newPhase == .active {
                         // Reset to team context and notify FeedView to reset scroll positions
@@ -55,7 +56,6 @@ struct MainTabView: View {
     @State private var feedPath = NavigationPath()
 
     init() {
-        // Tab bar appearance: deep mauve background with rose top border
         let deepMauve = UIColor(red: 45/255, green: 27/255, blue: 46/255, alpha: 1)
         let hotRose = UIColor(red: 232/255, green: 57/255, blue: 125/255, alpha: 1)
         let warmWhiteDim = UIColor(red: 245/255, green: 240/255, blue: 240/255, alpha: 0.4)
@@ -63,33 +63,34 @@ struct MainTabView: View {
         let normalAttrs: [NSAttributedString.Key: Any] = [.foregroundColor: warmWhiteDim]
         let selectedAttrs: [NSAttributedString.Key: Any] = [.foregroundColor: hotRose]
 
-        // Configure both standard and scrollEdge identically so no iOS override can slip in
-        for appearance in [UITabBarAppearance(), UITabBarAppearance()] {
-            appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = deepMauve
-            appearance.shadowColor = UIColor(red: 232/255, green: 57/255, blue: 125/255, alpha: 0.2)
+        // Tab bar appearance
+        let tabAppearance = UITabBarAppearance()
+        tabAppearance.configureWithOpaqueBackground()
+        tabAppearance.backgroundColor = deepMauve
+        tabAppearance.shadowColor = UIColor(red: 232/255, green: 57/255, blue: 125/255, alpha: 0.2)
 
-            appearance.stackedLayoutAppearance.normal.iconColor = warmWhiteDim
-            appearance.stackedLayoutAppearance.normal.titleTextAttributes = normalAttrs
-            appearance.stackedLayoutAppearance.selected.iconColor = hotRose
-            appearance.stackedLayoutAppearance.selected.titleTextAttributes = selectedAttrs
-
-            appearance.inlineLayoutAppearance.normal.iconColor = warmWhiteDim
-            appearance.inlineLayoutAppearance.normal.titleTextAttributes = normalAttrs
-            appearance.inlineLayoutAppearance.selected.iconColor = hotRose
-            appearance.inlineLayoutAppearance.selected.titleTextAttributes = selectedAttrs
-
-            appearance.compactInlineLayoutAppearance.normal.iconColor = warmWhiteDim
-            appearance.compactInlineLayoutAppearance.normal.titleTextAttributes = normalAttrs
-            appearance.compactInlineLayoutAppearance.selected.iconColor = hotRose
-            appearance.compactInlineLayoutAppearance.selected.titleTextAttributes = selectedAttrs
-
-            UITabBar.appearance().standardAppearance = appearance
-            UITabBar.appearance().scrollEdgeAppearance = appearance
+        for layout in [tabAppearance.stackedLayoutAppearance, tabAppearance.inlineLayoutAppearance, tabAppearance.compactInlineLayoutAppearance] {
+            layout.normal.iconColor = warmWhiteDim
+            layout.normal.titleTextAttributes = normalAttrs
+            layout.selected.iconColor = hotRose
+            layout.selected.titleTextAttributes = selectedAttrs
         }
+
+        UITabBar.appearance().standardAppearance = tabAppearance
+        UITabBar.appearance().scrollEdgeAppearance = tabAppearance
         UITabBar.appearance().barTintColor = deepMauve
         UITabBar.appearance().isTranslucent = false
         UITabBar.appearance().unselectedItemTintColor = warmWhiteDim
+
+        // Navigation bar appearance
+        let navAppearance = UINavigationBarAppearance()
+        navAppearance.configureWithOpaqueBackground()
+        navAppearance.backgroundColor = deepMauve
+        navAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+        navAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+        UINavigationBar.appearance().standardAppearance = navAppearance
+        UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
+        UINavigationBar.appearance().compactAppearance = navAppearance
     }
 
     var body: some View {
@@ -133,6 +134,9 @@ struct MainTabView: View {
             .tag(2)
         }
         .tint(.hotRose)
+        .toolbarBackground(Color.appBackground, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
+        .background(Color.appBackground.ignoresSafeArea())
         .onChange(of: appState.deepLinkContentId) { _, newId in
             if let id = newId {
                 selectedTab = 0

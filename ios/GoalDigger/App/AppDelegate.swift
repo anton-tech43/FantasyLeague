@@ -15,6 +15,16 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         // Deep mauve overscroll background (prevents white flash on rubber-band)
         UIScrollView.appearance().backgroundColor = UIColor(red: 45/255, green: 27/255, blue: 46/255, alpha: 1)
 
+        // Verify custom fonts are registered correctly
+        #if DEBUG
+        for family in UIFont.familyNames.sorted() where family.contains("Jakarta") {
+            print("Font family: \(family)")
+            for name in UIFont.fontNames(forFamilyName: family) {
+                print("  - \(name)")
+            }
+        }
+        #endif
+
         return true
     }
 

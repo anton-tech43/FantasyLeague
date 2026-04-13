@@ -213,7 +213,6 @@ struct FeedView: View {
                             navigateToDetail(item: item, scrollToTalkingPoints: true, isEveryoneContext: isEveryoneCtx)
                         }
                     )
-                    .frame(height: screenHeight * Layout.immersiveCardHeightRatio)
                     .onAppear {
                         if item.id == displayItems.suffix(3).first?.id {
                             Task { await loadMore() }

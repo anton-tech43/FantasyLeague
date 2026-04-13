@@ -107,9 +107,12 @@ struct ImmersiveCard: View {
     var body: some View {
         VStack(spacing: 0) {
             zone1
+                .frame(height: cardHeight * Layout.immersiveZone1Ratio)
+                .clipped()
                 .contentShape(Rectangle())
                 .onTapGesture { onZone1Tap() }
             zone2
+                .frame(height: cardHeight * Layout.immersiveZone2Ratio)
                 .contentShape(Rectangle())
                 .onTapGesture { onZone2Tap() }
         }
@@ -129,10 +132,9 @@ struct ImmersiveCard: View {
                 // Headline
                 Text(headline)
                     .font(.immersiveHeadline)
-                    .minimumScaleFactor(0.75) // scales to 48pt minimum
+                    .minimumScaleFactor(0.5)
                     .lineLimit(3)
                     .foregroundColor(.warmWhite)
-                    .fixedSize(horizontal: false, vertical: true)
 
                 // Context/analogy line
                 if let context = contextLine, !context.isEmpty {
@@ -153,7 +155,6 @@ struct ImmersiveCard: View {
             }
             .padding(20)
         }
-        .frame(height: cardHeight * Layout.immersiveZone1Ratio)
         .overlay(
             // 3px inset rose border (top, left, right, bottom)
             Rectangle()
@@ -188,9 +189,9 @@ struct ImmersiveCard: View {
                 Text("scroll")
                     .font(.jakarta(12, weight: .medium))
             }
+            .foregroundColor(zone2TextColor.opacity(0.6))
             .padding(.bottom, 16)
         }
-        .frame(height: cardHeight * Layout.immersiveZone2Ratio)
         .frame(maxWidth: .infinity)
         .background(zone2Background)
         .foregroundColor(zone2TextColor)

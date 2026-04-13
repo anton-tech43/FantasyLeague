@@ -22,14 +22,13 @@ struct TeamPageView: View {
                     VStack(spacing: Layout.cardSpacing) {
                         // Club badge + name header
                         VStack(spacing: 12) {
-                            Image(appState.selectedTeam?.badgeImageName ?? "")
-                                .resizable()
-                                .scaledToFit()
+                            Circle()
+                                .fill(Color.hotRose)
                                 .frame(width: 80, height: 80)
-                                .background(
-                                    Circle()
-                                        .fill(Color.feedDivider)
-                                        .frame(width: 90, height: 90)
+                                .overlay(
+                                    Text(appState.selectedTeam?.shortName.prefix(3).uppercased() ?? "")
+                                        .font(.jakarta(24, weight: .bold))
+                                        .foregroundColor(.warmWhite)
                                 )
 
                             Text(appState.selectedTeam?.displayName ?? "")
@@ -61,7 +60,7 @@ struct TeamPageView: View {
                                     .font(.feedHeadline)
                                     .foregroundColor(.textPrimaryOnCard)
                                 Text(appState.personalise(manager.summary))
-                                    .font(.detailBody)
+                                    .font(.jakarta(15, weight: .regular))
                                     .foregroundColor(.textPrimaryOnCard)
                                     .padding(.top, 2)
                             }
