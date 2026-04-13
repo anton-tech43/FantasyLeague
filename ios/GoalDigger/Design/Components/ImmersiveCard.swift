@@ -44,7 +44,7 @@ struct ImmersiveCard: View {
     }
 
     private var zone2TextColor: Color {
-        isGoldVariant ? .black : .warmWhite
+        .black
     }
 
     // MARK: - Content
@@ -166,34 +166,40 @@ struct ImmersiveCard: View {
     // MARK: - Zone 2 (35%)
 
     private var zone2: some View {
-        VStack(spacing: 0) {
-            Spacer()
+        ZStack {
+            zone2Background
 
-            VStack(spacing: 8) {
-                Text(zone2Label)
-                    .font(.jakarta(17, weight: .bold))
-                Text(talkingPoint)
-                    .font(.jakarta(17, weight: .mediumItalic))
-                    .multilineTextAlignment(.center)
+            VStack(alignment: .leading, spacing: 0) {
+                Spacer()
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(zone2Label)
+                        .font(.jakarta(20, weight: .bold))
+                    Text(talkingPoint)
+                        .font(.jakarta(20, weight: .mediumItalic))
+                }
+
+                Spacer()
+
+                // Scroll indicator
+                HStack {
+                    Spacer()
+                    VStack(spacing: 2) {
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 14, weight: .bold))
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 14, weight: .bold))
+                        Text("scroll")
+                            .font(.jakarta(12, weight: .medium))
+                    }
+                    .foregroundColor(zone2TextColor.opacity(0.8))
+                    Spacer()
+                }
+                .padding(.bottom, 16)
             }
             .padding(.horizontal, 24)
-
-            Spacer()
-
-            // Scroll indicator
-            VStack(spacing: 2) {
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 12, weight: .medium))
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 12, weight: .medium))
-                Text("scroll")
-                    .font(.jakarta(12, weight: .medium))
-            }
-            .foregroundColor(zone2TextColor.opacity(0.6))
-            .padding(.bottom, 16)
+            .padding(.top, 16)
         }
-        .frame(maxWidth: .infinity)
-        .background(zone2Background)
         .foregroundColor(zone2TextColor)
     }
 }

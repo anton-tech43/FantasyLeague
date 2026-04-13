@@ -63,11 +63,11 @@ struct MainTabView: View {
         let normalAttrs: [NSAttributedString.Key: Any] = [.foregroundColor: warmWhiteDim]
         let selectedAttrs: [NSAttributedString.Key: Any] = [.foregroundColor: hotRose]
 
-        // Tab bar appearance
+        // Tab bar appearance — transparent so card shows through
         let tabAppearance = UITabBarAppearance()
-        tabAppearance.configureWithOpaqueBackground()
-        tabAppearance.backgroundColor = deepMauve
-        tabAppearance.shadowColor = UIColor(red: 232/255, green: 57/255, blue: 125/255, alpha: 0.2)
+        tabAppearance.configureWithTransparentBackground()
+        tabAppearance.backgroundColor = .clear
+        tabAppearance.shadowColor = .clear
 
         for layout in [tabAppearance.stackedLayoutAppearance, tabAppearance.inlineLayoutAppearance, tabAppearance.compactInlineLayoutAppearance] {
             layout.normal.iconColor = warmWhiteDim
@@ -78,8 +78,8 @@ struct MainTabView: View {
 
         UITabBar.appearance().standardAppearance = tabAppearance
         UITabBar.appearance().scrollEdgeAppearance = tabAppearance
-        UITabBar.appearance().barTintColor = deepMauve
-        UITabBar.appearance().isTranslucent = false
+        UITabBar.appearance().barTintColor = .clear
+        UITabBar.appearance().isTranslucent = true
         UITabBar.appearance().unselectedItemTintColor = warmWhiteDim
 
         // Navigation bar appearance
@@ -134,9 +134,6 @@ struct MainTabView: View {
             .tag(2)
         }
         .tint(.hotRose)
-        .toolbarBackground(Color.appBackground, for: .tabBar)
-        .toolbarBackground(.visible, for: .tabBar)
-        .background(Color.appBackground.ignoresSafeArea())
         .onChange(of: appState.deepLinkContentId) { _, newId in
             if let id = newId {
                 selectedTab = 0

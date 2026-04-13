@@ -53,6 +53,7 @@
 		AA000073 /* PlusJakartaSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000073; };
 		AA000074 /* PlusJakartaSans-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000074; };
 		AA000075 /* PlusJakartaSans-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000075; };
+		AA000076 /* PlusJakartaSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000076; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -107,6 +108,7 @@
 		AB000073 /* PlusJakartaSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Bold.ttf"; sourceTree = "<group>"; };
 		AB000074 /* PlusJakartaSans-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Italic.ttf"; sourceTree = "<group>"; };
 		AB000075 /* PlusJakartaSans-MediumItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-MediumItalic.ttf"; sourceTree = "<group>"; };
+		AB000076 /* PlusJakartaSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-ExtraBold.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -259,6 +261,7 @@
 				AB000073 /* PlusJakartaSans-Bold.ttf */,
 				AB000074 /* PlusJakartaSans-Italic.ttf */,
 				AB000075 /* PlusJakartaSans-MediumItalic.ttf */,
+				AB000076 /* PlusJakartaSans-ExtraBold.ttf */,
 			);
 			path = Fonts;
 			sourceTree = "<group>";
@@ -385,6 +388,7 @@
 				AA000073 /* PlusJakartaSans-Bold.ttf in Resources */,
 				AA000074 /* PlusJakartaSans-Italic.ttf in Resources */,
 				AA000075 /* PlusJakartaSans-MediumItalic.ttf in Resources */,
+				AA000076 /* PlusJakartaSans-ExtraBold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

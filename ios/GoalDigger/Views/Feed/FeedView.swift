@@ -92,6 +92,7 @@ struct FeedView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(Color.appBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarBackground(.hidden, for: .tabBar)
         .task { await loadInitial() }
     }
 
@@ -223,6 +224,7 @@ struct FeedView: View {
             .scrollTargetLayout()
         }
         .scrollTargetBehavior(.viewAligned)
+        .ignoresSafeArea(.container, edges: .bottom)
         .background(Color.deepMauve)
         .scrollContentBackground(.hidden)
         .refreshable { await refresh() }

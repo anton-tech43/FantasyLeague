@@ -45,6 +45,7 @@
 		<string>PlusJakartaSans-Bold.ttf</string>
 		<string>PlusJakartaSans-Italic.ttf</string>
 		<string>PlusJakartaSans-MediumItalic.ttf</string>
+		<string>PlusJakartaSans-ExtraBold.ttf</string>
 	</array>
 	<key>SUPABASE_URL</key>
 	<string>$(SUPABASE_URL)</string>

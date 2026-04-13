@@ -70,7 +70,7 @@ extension Font {
     }
 
     enum JakartaWeight {
-        case regular, medium, semiBold, bold, italic, mediumItalic
+        case regular, medium, semiBold, bold, extraBold, italic, mediumItalic
 
         var postScriptName: String {
             switch self {
@@ -78,6 +78,7 @@ extension Font {
             case .medium: return "PlusJakartaSans-Medium"
             case .semiBold: return "PlusJakartaSans-SemiBold"
             case .bold: return "PlusJakartaSans-Bold"
+            case .extraBold: return "PlusJakartaSans-ExtraBold"
             case .italic: return "PlusJakartaSans-Italic"
             case .mediumItalic: return "PlusJakartaSans-MediumItalic"
             }
@@ -107,7 +108,7 @@ extension Font {
     static let settingsItem = Font.jakarta(17, weight: .regular)      // ~body
 
     // Immersive card
-    static let immersiveHeadline = Font.jakarta(64, weight: .bold)
+    static let immersiveHeadline = Font.jakarta(64, weight: .extraBold)
     static let immersiveContext = Font.jakarta(18, weight: .regular)
     static let immersiveHint = Font.jakarta(13, weight: .regular)
 }
@@ -128,7 +129,7 @@ struct Layout {
     static let buttonCornerRadius: CGFloat = 16
 
     // Immersive card zones
-    static let immersiveCardHeightRatio: CGFloat = 0.88
+    static let immersiveCardHeightRatio: CGFloat = 1.0
     static let immersiveZone1Ratio: CGFloat = 0.65
     static let immersiveZone2Ratio: CGFloat = 0.35
 }
