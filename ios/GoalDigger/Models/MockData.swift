@@ -24,7 +24,9 @@ struct MockData {
             ],
             "kickoff_time": null,
             "emotional_context": "exciting",
-            "published_at": "\(ISO8601DateFormatter().string(from: Date().addingTimeInterval(-7200)))"
+            "published_at": "\(ISO8601DateFormatter().string(from: Date().addingTimeInterval(-7200)))",
+            "immersive_headline": "new in, gyokeres, striker.",
+            "immersive_context_fallback": "Arsenal's biggest signing in years. 85 million for a striker who scored 43 goals last season."
         }
         """.data(using: .utf8)!
         return try! mockDecoder.decode(ContentItem.self, from: json)
@@ -60,7 +62,9 @@ struct MockData {
             },
             "kickoff_time": "\(ISO8601DateFormatter().string(from: kickoff))",
             "emotional_context": "exciting",
-            "published_at": "\(ISO8601DateFormatter().string(from: Date().addingTimeInterval(-3600)))"
+            "published_at": "\(ISO8601DateFormatter().string(from: Date().addingTimeInterval(-3600)))",
+            "immersive_headline": "derby day, arsenal v spurs.",
+            "immersive_context_fallback": "North London Derby tonight at the Emirates. Arsenal haven't lost to Spurs at home since 2022."
         }
         """.data(using: .utf8)!
         return try! mockDecoder.decode(ContentItem.self, from: json)
@@ -84,7 +88,9 @@ struct MockData {
             ],
             "kickoff_time": null,
             "emotional_context": "drama",
-            "published_at": "\(ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400)))"
+            "published_at": "\(ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400)))",
+            "immersive_headline": "de jong to united, again.",
+            "immersive_context_fallback": "Man United have been trying to sign de Jong every summer since 2022. Fans are cautiously optimistic."
         }
         """.data(using: .utf8)!
         return try! mockDecoder.decode(ContentItem.self, from: json)
@@ -108,7 +114,9 @@ struct MockData {
             ],
             "kickoff_time": null,
             "emotional_context": "bad_news",
-            "published_at": "\(ISO8601DateFormatter().string(from: Date().addingTimeInterval(-172800)))"
+            "published_at": "\(ISO8601DateFormatter().string(from: Date().addingTimeInterval(-172800)))",
+            "immersive_headline": "bowen out, 3-4 weeks.",
+            "immersive_context_fallback": "West Ham's best player out with a hamstring injury. Liverpool this Saturday without him."
         }
         """.data(using: .utf8)!
         return try! mockDecoder.decode(ContentItem.self, from: json)
@@ -131,7 +139,9 @@ struct MockData {
             ],
             "kickoff_time": null,
             "emotional_context": "funny",
-            "published_at": "\(ISO8601DateFormatter().string(from: Date().addingTimeInterval(-259200)))"
+            "published_at": "\(ISO8601DateFormatter().string(from: Date().addingTimeInterval(-259200)))",
+            "immersive_headline": "the manager spoke, chaos.",
+            "immersive_context_fallback": "The manager called out 'certain individuals' in a press conference. Everyone's trying to figure out who."
         }
         """.data(using: .utf8)!
         return try! mockDecoder.decode(ContentItem.self, from: json)
