@@ -165,15 +165,13 @@ struct FeedView: View {
 
     @ViewBuilder
     private var feedContent: some View {
-        VStack(spacing: 0) {
-            // Migration banner for existing users
-            if !hasSeenImmersiveBanner && appState.feedStyle == .immersive {
-                migrationBanner
-            }
-
-            if appState.feedStyle == .immersive {
-                immersiveFeed
-            } else {
+        if appState.feedStyle == .immersive {
+            immersiveFeed
+        } else {
+            VStack(spacing: 0) {
+                if !hasSeenImmersiveBanner {
+                    migrationBanner
+                }
                 ClassicFeedView(
                     items: displayItems,
                     feedContext: appState.activeContext,
@@ -191,43 +189,43 @@ struct FeedView: View {
     // MARK: - Immersive Feed
 
     private var immersiveFeed: some View {
-        ScrollView(.vertical) {
-            LazyVStack(spacing: 0) {
-                ForEach(Array(displayItems.enumerated()), id: \.element.id) { index, item in
-                    let isYourMove = index == 0 && appState.activeContext != .everyoneTalking
-                    let isEveryoneCtx = appState.activeContext == .everyoneTalking
+        GeometryReader { geo in
+            ScrollView(.vertical) {
+                LazyVStack(spacing: 0) {
+                    ForEach(Array(displayItems.enumerated()), id: \.element.id) { index, item in
+                        let isYourMove = index == 0 && appState.activeContext != .everyoneTalking
+                        let isEveryoneCtx = appState.activeContext == .everyoneTalking
 
-                    ImmersiveCard(
-                        item: item,
-                        feedContext: appState.activeContext,
-                        appState: appState,
-                        cardHeight: screenHeight * Layout.immersiveCardHeightRatio,
-                        feedPosition: index,
-                        isYourMove: isYourMove,
-                        onZone1Tap: {
-                            appState.deepLinkContentId = nil
-                            // Navigate via ContentDetailDestination
-                            navigateToDetail(item: item, scrollToTalkingPoints: false, isEveryoneContext: isEveryoneCtx)
-                        },
-                        onZone2Tap: {
-                            appState.deepLinkContentId = nil
-                            navigateToDetail(item: item, scrollToTalkingPoints: true, isEveryoneContext: isEveryoneCtx)
-                        }
-                    )
-                    .onAppear {
-                        if item.id == displayItems.suffix(3).first?.id {
-                            Task { await loadMore() }
+                        ImmersiveCard(
+                            item: item,
+                            feedContext: appState.activeContext,
+                            appState: appState,
+                            cardHeight: geo.size.height,
+                            feedPosition: index,
+                            isYourMove: isYourMove,
+                            onZone1Tap: {
+                                appState.deepLinkContentId = nil
+                                navigateToDetail(item: item, scrollToTalkingPoints: false, isEveryoneContext: isEveryoneCtx)
+                            },
+                            onZone2Tap: {
+                                appState.deepLinkContentId = nil
+                                navigateToDetail(item: item, scrollToTalkingPoints: true, isEveryoneContext: isEveryoneCtx)
+                            }
+                        )
+                        .onAppear {
+                            if item.id == displayItems.suffix(3).first?.id {
+                                Task { await loadMore() }
+                            }
                         }
                     }
                 }
+                .scrollTargetLayout()
             }
-            .scrollTargetLayout()
+            .scrollTargetBehavior(.viewAligned)
+            .background(Color.deepMauve)
+            .scrollContentBackground(.hidden)
+            .refreshable { await refresh() }
         }
-        .scrollTargetBehavior(.viewAligned)
-        .ignoresSafeArea(.container, edges: .bottom)
-        .background(Color.deepMauve)
-        .scrollContentBackground(.hidden)
-        .refreshable { await refresh() }
     }
 
     // MARK: - Migration Banner
