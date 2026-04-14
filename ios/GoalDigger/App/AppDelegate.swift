@@ -17,7 +17,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 
         // Verify custom fonts are registered correctly
         #if DEBUG
-        for family in UIFont.familyNames.sorted() where family.contains("Jakarta") {
+        for family in UIFont.familyNames.sorted() where family.contains("Jakarta") || family.contains("Cabinet") {
             print("Font family: \(family)")
             for name in UIFont.fontNames(forFamilyName: family) {
                 print("  - \(name)")
