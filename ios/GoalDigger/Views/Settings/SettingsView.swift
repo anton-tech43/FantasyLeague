@@ -13,6 +13,7 @@ struct SettingsView: View {
     @State private var isDeleting = false
     @State private var editingHerName = false
     @State private var editingHisName = false
+    @State private var purchaseManager = PurchaseManager.shared
     @State private var herNameDraft = ""
     @State private var hisNameDraft = ""
 
@@ -190,7 +191,7 @@ struct SettingsView: View {
 
                         settingsRow {
                             Button {
-                                if let url = URL(string: "https://goaldigger.app/privacy") {
+                                if let url = URL(string: "https://getgoaldigger.com/privacy") {
                                     UIApplication.shared.open(url)
                                 }
                             } label: {
@@ -204,6 +205,28 @@ struct SettingsView: View {
                                         .font(.system(size: 12))
                                 }
                             }
+                        }
+
+                        settingsRow {
+                            Button {
+                                Task { await purchaseManager.restore() }
+                            } label: {
+                                HStack {
+                                    Text("Restore Purchases")
+                                        .font(.settingsItem)
+                                        .foregroundColor(.textPrimaryOnCard)
+                                    Spacer()
+                                    if purchaseManager.isLoading {
+                                        ProgressView()
+                                            .tint(.hotRose)
+                                    } else {
+                                        Image(systemName: "arrow.clockwise")
+                                            .foregroundColor(.textSecondaryOnCard)
+                                            .font(.system(size: 12))
+                                    }
+                                }
+                            }
+                            .disabled(purchaseManager.isLoading)
                         }
 
                         settingsRow {

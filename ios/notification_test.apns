@@ -1,0 +1,13 @@
+{
+  "Simulator Target Bundle": "com.goaldigger.app",
+  "aps": {
+    "alert": {
+      "title": "Match day",
+      "body": "Arsenal vs Tottenham, 7:45pm. Derby day. He won't be able to eat dinner."
+    },
+    "badge": 1,
+    "sound": "default"
+  },
+  "content_id": "a1b2c3d4-e5f6-7890-abcd-000000000002",
+  "everyone_talking": false
+}

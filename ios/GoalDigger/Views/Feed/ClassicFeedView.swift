@@ -124,7 +124,7 @@ struct ClassicFeedView: View {
                     icon: "sun.max",
                     iconColor: .tierGold,
                     title: "Season's over!",
-                    message: "The Premier League is on summer break. Enjoy the peace and quiet — we'll be back in August.\n\n(Transfer rumours might still pop up though)"
+                    message: "The Premier League is on summer break. Enjoy the peace and quiet. We'll be back in August.\n\n(Transfer rumours might still pop up though)"
                 )
             } else {
                 FreshnessCard(

@@ -151,8 +151,6 @@ struct ContentDetailView: View {
                 tintColor: Color.loseTint,
                 barColor: Color.loseBar
             )
-
-            // Bold prediction removed — not part of the feed experience
         }
     }
 

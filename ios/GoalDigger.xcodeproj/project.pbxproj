@@ -55,6 +55,8 @@
 		AA000075 /* PlusJakartaSans-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000075; };
 		AA000076 /* PlusJakartaSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000076; };
 		AA000077 /* LeagueSpartan-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000077; };
+		AA000080 /* PurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000080; };
+		AA000081 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000081; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -111,6 +113,8 @@
 		AB000075 /* PlusJakartaSans-MediumItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-MediumItalic.ttf"; sourceTree = "<group>"; };
 		AB000076 /* PlusJakartaSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-ExtraBold.ttf"; sourceTree = "<group>"; };
 		AB000077 /* LeagueSpartan-Black.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "LeagueSpartan-Black.ttf"; sourceTree = "<group>"; };
+		AB000080 /* PurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseManager.swift; sourceTree = "<group>"; };
+		AB000081 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -187,6 +191,7 @@
 				AC000014 /* Team */,
 				AC000015 /* Player */,
 				AC000016 /* Matchday */,
+				AB000081 /* PaywallView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -241,6 +246,7 @@
 				AB000018 /* CacheService.swift */,
 				AB000019 /* NotificationService.swift */,
 				AB000061 /* UnreadTracker.swift */,
+				AB000080 /* PurchaseManager.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -441,6 +447,8 @@
 			AA000064 /* ContextSwitcherView.swift in Sources */,
 			AA000065 /* EveryoneEmptyStateCard.swift in Sources */,
 			AA000066 /* ClassicFeedView.swift in Sources */,
+			AA000080 /* PurchaseManager.swift in Sources */,
+			AA000081 /* PaywallView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

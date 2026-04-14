@@ -136,12 +136,10 @@ struct MatchdayTalkingPoints: Codable {
 struct PostMatchCheatSheet: Codable {
     let ifTheyWin: String
     let ifTheyLose: String
-    let boldPrediction: String
 
     enum CodingKeys: String, CodingKey {
         case ifTheyWin = "if_they_win"
         case ifTheyLose = "if_they_lose"
-        case boldPrediction = "bold_prediction"
     }
 }
 

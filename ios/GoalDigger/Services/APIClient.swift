@@ -13,7 +13,7 @@ class APIClient {
               !urlString.contains("YOUR_PROJECT"),
               !urlString.contains("xxxxx"),
               let url = URL(string: urlString + "/rest/v1") else {
-            print("⚠️ SUPABASE_URL not set — running in offline/mock mode")
+            print("⚠️ SUPABASE_URL not set, running in offline/mock mode")
             return nil
         }
         return url
@@ -44,7 +44,7 @@ class APIClient {
         guard let key = Bundle.main.infoDictionary?["SUPABASE_ANON_KEY"] as? String,
               !key.isEmpty,
               !key.contains("YOUR_ANON_KEY") else {
-            print("⚠️ SUPABASE_ANON_KEY not set — running in offline/mock mode")
+            print("⚠️ SUPABASE_ANON_KEY not set, running in offline/mock mode")
             return ""
         }
         return key

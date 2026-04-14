@@ -40,10 +40,15 @@ struct ContentDetailDestination: Hashable {
 
 struct RootView: View {
     @Environment(AppState.self) var appState
+    @State private var purchaseManager = PurchaseManager.shared
 
     var body: some View {
         if appState.hasCompletedOnboarding {
-            MainTabView()
+            if purchaseManager.isPurchased {
+                MainTabView()
+            } else {
+                PaywallView()
+            }
         } else {
             OnboardingFlow()
         }
