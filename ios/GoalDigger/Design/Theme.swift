@@ -107,8 +107,8 @@ extension Font {
     // Settings
     static let settingsItem = Font.jakarta(17, weight: .regular)      // ~body
 
-    // Immersive card — Cabinet Grotesk Black for high-contrast impact headlines
-    static let immersiveHeadline = Font.custom("CabinetGrotesk-Black", size: 64)
+    // Immersive card — League Spartan Black for bold impact headlines
+    static let immersiveHeadline = Font.custom("LeagueSpartan-Black", size: 64)
     static let immersiveContext = Font.jakarta(18, weight: .regular)
     static let immersiveHint = Font.jakarta(13, weight: .regular)
 }
