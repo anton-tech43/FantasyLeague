@@ -42,12 +42,16 @@ struct RootView: View {
     @Environment(AppState.self) var appState
     @State private var purchaseManager = PurchaseManager.shared
 
+    private var isTestFlight: Bool {
+        Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
+    }
+
     var body: some View {
         if appState.hasCompletedOnboarding {
             #if DEBUG
             MainTabView()
             #else
-            if purchaseManager.isPurchased {
+            if purchaseManager.isPurchased || isTestFlight {
                 MainTabView()
             } else {
                 PaywallView()
