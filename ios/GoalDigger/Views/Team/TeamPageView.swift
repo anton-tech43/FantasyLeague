@@ -8,9 +8,21 @@ struct TeamPageView: View {
     @State private var isLoading = true
     @State private var hasError = false
     @State private var presentedPlayer: PlayerCard?
+    @State private var expandedCard: TeamCardType?
+
+    private enum TeamCardType: Hashable {
+        case basics, manager, onesToKnow, rivalry, form, season, comingUp
+    }
 
     private var hisNameOrHis: String {
         appState.hisName.isEmpty ? "His" : appState.hisName + "'s"
+    }
+
+    private var teamInitials: String {
+        guard let team = appState.selectedTeam else { return "" }
+        let words = team.displayName.split(separator: " ")
+        let letters = words.prefix(2).compactMap { $0.first.map { String($0).uppercased() } }
+        return letters.joined()
     }
 
     var body: some View {
@@ -19,140 +31,11 @@ struct TeamPageView: View {
 
             if let content {
                 ScrollView {
-                    VStack(spacing: Layout.cardSpacing) {
-                        // Club badge + name header
-                        VStack(spacing: 12) {
-                            Circle()
-                                .fill(Color.hotRose)
-                                .frame(width: 80, height: 80)
-                                .overlay(
-                                    Text(appState.selectedTeam?.shortName.prefix(3).uppercased() ?? "")
-                                        .font(.jakarta(24, weight: .bold))
-                                        .foregroundColor(.warmWhite)
-                                )
-
-                            Text(appState.selectedTeam?.displayName ?? "")
-                                .font(.detailTitle)
-                                .foregroundColor(.textOnDark)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 8)
-                        .padding(.bottom, 4)
-
-                        let cards = content.cards
-
-                        // Card 1: The basics
-                        if let basics = cards.basics {
-                            teamCard(title: "The basics", icon: "shield") {
-                                infoLine(label: "Known as", value: basics.nickname)
-                                infoLine(label: "Home ground", value: basics.stadium)
-                                Text(appState.personalise(basics.funFact))
-                                    .font(.feedTimestamp)
-                                    .foregroundColor(.textSecondaryOnCard)
-                                    .padding(.top, 4)
-                            }
-                        }
-
-                        // Card 2: The manager
-                        if let manager = cards.manager {
-                            teamCard(title: "The manager", icon: "person") {
-                                Text(manager.name)
-                                    .font(.feedHeadline)
-                                    .foregroundColor(.textPrimaryOnCard)
-                                Text(appState.personalise(manager.summary))
-                                    .font(.jakarta(15, weight: .regular))
-                                    .foregroundColor(.textPrimaryOnCard)
-                                    .padding(.top, 2)
-                            }
-                        }
-
-                        // Card 3: Ones to know
-                        if let onesToKnow = cards.onesToKnow, !onesToKnow.players.isEmpty {
-                            teamCard(title: "Ones to know", icon: "star") {
-                                ForEach(Array(onesToKnow.players.prefix(3))) { player in
-                                    let matchingCard = playerCards.first {
-                                        $0.playerName.lowercased() == player.name.lowercased()
-                                    }
-
-                                    if let matchingCard {
-                                        Button {
-                                            presentedPlayer = matchingCard
-                                        } label: {
-                                            playerRow(player: player, tappable: true)
-                                        }
-                                        .buttonStyle(.plain)
-                                    } else {
-                                        playerRow(player: player, tappable: false)
-                                    }
-                                }
-                            }
-                        }
-
-                        // Card 4: The rivalry
-                        if let rivalry = cards.rivalry {
-                            teamCard(title: "The rivalry", icon: "flame") {
-                                Text(appState.personalise(rivalry.text))
-                                    .font(.detailBody)
-                                    .foregroundColor(.textPrimaryOnCard)
-                            }
-                        }
-
-                        // Card 5: How they're doing
-                        if let form = cards.form {
-                            teamCard(title: "How they're doing", icon: "chart.line.uptrend.xyaxis") {
-                                Text(form.leaguePositionLabel)
-                                    .font(.feedHeadline)
-                                    .foregroundColor(.textPrimaryOnCard)
-
-                                FormDotsView(formString: form.recentForm)
-                                    .padding(.vertical, 4)
-
-                                Text(appState.personalise(form.formSummary))
-                                    .font(.detailBody)
-                                    .foregroundColor(.textSecondaryOnCard)
-                            }
-                        }
-
-                        // Card 6: The season so far
-                        if let season = cards.season {
-                            teamCard(title: "The season so far", icon: "calendar") {
-                                Text(appState.personalise(season.summary))
-                                    .font(.detailBody)
-                                    .foregroundColor(.textPrimaryOnCard)
-                            }
-                        }
-
-                        // Card 7: Coming up
-                        if let fixture = cards.nextFixture {
-                            teamCard(title: "Coming up", icon: "sportscourt") {
-                                HStack(spacing: 8) {
-                                    Text(fixture.opponent)
-                                        .font(.feedHeadline)
-                                        .foregroundColor(.textPrimaryOnCard)
-                                    Text(fixture.venue.uppercased())
-                                        .font(.system(size: 10, weight: .semibold))
-                                        .tracking(0.3)
-                                        .foregroundColor(.hotRose)
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(Color.hotRose.opacity(0.1))
-                                        .cornerRadius(4)
-                                }
-
-                                Text(formattedFixtureDate(fixture.date))
-                                    .font(.feedTimestamp)
-                                    .foregroundColor(.textSecondaryOnCard)
-
-                                if !fixture.preview.isEmpty {
-                                    Text(appState.personalise(fixture.preview))
-                                        .font(.detailBody)
-                                        .foregroundColor(.textSecondaryOnCard)
-                                        .padding(.top, 2)
-                                }
-                            }
-                        }
+                    VStack(spacing: 12) {
+                        headerSection
+                        cardsSection(content.cards)
                     }
-                    .padding(.horizontal, Layout.screenPadding)
+                    .padding(.horizontal, 16)
                     .padding(.bottom, 40)
                 }
             } else if isLoading {
@@ -160,7 +43,6 @@ struct TeamPageView: View {
             } else if hasError {
                 teamPageErrorView
             } else {
-                // Warm placeholder for teams with no content yet
                 warmPlaceholderView
             }
         }
@@ -173,35 +55,328 @@ struct TeamPageView: View {
         }
     }
 
-    // MARK: - Card builder
+    // MARK: - Header
+
+    private var headerSection: some View {
+        VStack(spacing: 12) {
+            Circle()
+                .fill(Color.hotRose)
+                .frame(width: 64, height: 64)
+                .overlay(
+                    Text(teamInitials)
+                        .font(.jakarta(24, weight: .bold))
+                        .foregroundColor(.warmWhite)
+                )
+
+            Text(appState.selectedTeam?.displayName ?? "")
+                .font(.jakarta(20, weight: .bold))
+                .foregroundColor(.warmWhite)
+
+            Text("\(hisNameOrHis) team")
+                .font(.jakarta(14, weight: .regular))
+                .foregroundColor(.mutedText)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 8)
+        .padding(.bottom, 4)
+    }
+
+    // MARK: - Cards section
 
     @ViewBuilder
-    private func teamCard<Content: View>(title: String, icon: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 12))
-                    .foregroundColor(.hotRose)
-                Text(title.uppercased())
-                    .font(.feedBadge)
-                    .tracking(0.5)
-                    .foregroundColor(.textSecondaryOnCard)
-            }
-
-            content()
+    private func cardsSection(_ cards: TeamPageCards) -> some View {
+        // Mood banner
+        if let mood = cards.mood {
+            TeamPageMoodBanner(mood: mood)
         }
-        .cardStyle()
+
+        // THIS WEEK hero
+        if let thisWeek = cards.thisWeek {
+            TeamPageThisWeek(card: thisWeek)
+        }
+
+        // Card 1: The basics
+        if let basics = cards.basics {
+            TeamPageCard(
+                title: "The basics",
+                primaryText: basics.nickname,
+                zone2Label: "Say this:",
+                talkingPoint: basics.talkingPoint.map { appState.personalise($0) },
+                isStatic: true,
+                isExpanded: expandedCard == .basics,
+                onTap: { toggleCard(.basics) },
+                zone1Collapsed: {
+                    Text(basics.stadium)
+                        .font(.jakarta(13, weight: .regular))
+                        .foregroundColor(.warmWhite.opacity(0.7))
+                        .lineLimit(1)
+                },
+                zone1Expanded: {
+                    VStack(alignment: .leading, spacing: 6) {
+                        infoLine(label: "Known as", value: basics.nickname)
+                        infoLine(label: "Home ground", value: basics.stadium)
+                        Text(appState.personalise(basics.funFact))
+                            .font(.jakarta(13, weight: .regular))
+                            .foregroundColor(.warmWhite.opacity(0.7))
+                            .padding(.top, 4)
+                    }
+                }
+            )
+        }
+
+        // Card 2: The manager
+        if let manager = cards.manager {
+            TeamPageCard(
+                title: "The manager",
+                primaryText: manager.name,
+                zone2Label: "Drop this:",
+                talkingPoint: manager.talkingPoint.map { appState.personalise($0) },
+                isStatic: true,
+                isExpanded: expandedCard == .manager,
+                onTap: { toggleCard(.manager) },
+                zone1Collapsed: { EmptyView() },
+                zone1Expanded: {
+                    Text(appState.personalise(manager.summary))
+                        .font(.jakarta(14, weight: .regular))
+                        .foregroundColor(.warmWhite.opacity(0.9))
+                        .padding(.top, 2)
+                }
+            )
+        }
+
+        // Card 3: Ones to know
+        if let onesToKnow = cards.onesToKnow, !onesToKnow.players.isEmpty {
+            TeamPageCard(
+                title: "Ones to know",
+                primaryText: onesToKnow.players.prefix(3).map(\.name).joined(separator: ", "),
+                zone2Label: "Your opener:",
+                talkingPoint: onesToKnow.talkingPoint.map { appState.personalise($0) },
+                isExpanded: expandedCard == .onesToKnow,
+                onTap: { toggleCard(.onesToKnow) },
+                zone1Collapsed: { EmptyView() },
+                zone1Expanded: {
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(Array(onesToKnow.players.prefix(3))) { player in
+                            let matchingCard = playerCards.first {
+                                $0.playerName.lowercased() == player.name.lowercased()
+                            }
+
+                            if let matchingCard {
+                                Button {
+                                    presentedPlayer = matchingCard
+                                } label: {
+                                    playerRow(player: player, tappable: true)
+                                }
+                                .buttonStyle(.plain)
+                            } else {
+                                playerRow(player: player, tappable: false)
+                            }
+                        }
+                    }
+                }
+            )
+        }
+
+        // Card 4: The rivalry
+        if let rivalry = cards.rivalry {
+            TeamPageCard(
+                title: "The rivalry",
+                primaryText: String(appState.personalise(rivalry.text).prefix(50)),
+                zone2Label: "Use this:",
+                talkingPoint: rivalry.talkingPoint.map { appState.personalise($0) },
+                isStatic: true,
+                isExpanded: expandedCard == .rivalry,
+                onTap: { toggleCard(.rivalry) },
+                zone1Collapsed: { EmptyView() },
+                zone1Expanded: {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(appState.personalise(rivalry.text))
+                            .font(.jakarta(14, weight: .regular))
+                            .foregroundColor(.warmWhite.opacity(0.9))
+
+                        if let intensity = cards.rivalryIntensity {
+                            TeamPageRivalryMeter(intensity: intensity)
+                        }
+                    }
+                }
+            )
+        }
+
+        // Card 5: How they're doing
+        if let form = cards.form {
+            TeamPageCard(
+                title: "How they're doing",
+                primaryText: form.leaguePositionLabel,
+                zone2Label: "Say this:",
+                talkingPoint: form.talkingPoint.map { appState.personalise($0) },
+                isExpanded: expandedCard == .form,
+                onTap: { toggleCard(.form) },
+                zone1Collapsed: {
+                    TeamPageFormDots(recentForm: form.recentForm, isExpanded: false)
+                },
+                zone1Expanded: {
+                    VStack(alignment: .leading, spacing: 6) {
+                        TeamPageFormDots(recentForm: form.recentForm, isExpanded: expandedCard == .form)
+
+                        Text(appState.personalise(form.formSummary))
+                            .font(.jakarta(14, weight: .regular))
+                            .foregroundColor(.warmWhite.opacity(0.9))
+                    }
+                }
+            )
+        }
+
+        // Card 6: The season so far
+        if let season = cards.season {
+            TeamPageCard(
+                title: "The season so far",
+                primaryText: String(appState.personalise(season.summary).prefix(50)),
+                zone2Label: "Drop this:",
+                talkingPoint: season.talkingPoint.map { appState.personalise($0) },
+                isExpanded: expandedCard == .season,
+                onTap: { toggleCard(.season) },
+                zone1Collapsed: { EmptyView() },
+                zone1Expanded: {
+                    Text(appState.personalise(season.summary))
+                        .font(.jakarta(14, weight: .regular))
+                        .foregroundColor(.warmWhite.opacity(0.9))
+                }
+            )
+        }
+
+        // Card 7: Coming up / Post-match
+        if showPostMatch, let postMatch = content?.cards.postMatch {
+            postMatchCard(postMatch)
+        } else if let fixture = cards.nextFixture {
+            comingUpCard(fixture)
+        }
+
+        // Freshness line
+        if let text = cards.freshnessText {
+            Text(text)
+                .font(.jakarta(12, weight: .regular))
+                .foregroundColor(.mutedText)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 8)
+        }
+    }
+
+    // MARK: - Coming up card
+
+    @ViewBuilder
+    private func comingUpCard(_ fixture: NextFixtureCard) -> some View {
+        TeamPageCard(
+            title: "Coming up",
+            primaryText: "\(fixture.opponent) (\(fixture.venue.uppercased()))",
+            zone2Label: comingUpLabel(for: fixture.date),
+            talkingPoint: fixture.talkingPoint.map { appState.personalise($0) },
+            isExpanded: expandedCard == .comingUp,
+            onTap: { toggleCard(.comingUp) },
+            zone1Collapsed: {
+                Text(formattedFixtureDate(fixture.date))
+                    .font(.jakarta(13, weight: .regular))
+                    .foregroundColor(.warmWhite.opacity(0.7))
+                    .lineLimit(1)
+            },
+            zone1Expanded: {
+                VStack(alignment: .leading, spacing: 6) {
+                    TeamPageCountdown(targetDate: fixture.date)
+
+                    if !fixture.preview.isEmpty {
+                        Text(appState.personalise(fixture.preview))
+                            .font(.jakarta(14, weight: .regular))
+                            .foregroundColor(.warmWhite.opacity(0.9))
+                            .padding(.top, 2)
+                    }
+                }
+            }
+        )
+    }
+
+    // MARK: - Post-match card
+
+    @ViewBuilder
+    private func postMatchCard(_ postMatch: TeamPostMatchCard) -> some View {
+        let tintColor: Color? = {
+            switch postMatch.state {
+            case .win: return Color.hotRose.opacity(0.06)
+            case .loss: return Color.red.opacity(0.04)
+            case .draw: return nil
+            }
+        }()
+
+        let label: String = {
+            switch postMatch.state {
+            case .win: return "Say this:"
+            case .loss: return "Tonight:"
+            case .draw: return "Ask him:"
+            }
+        }()
+
+        TeamPageCard(
+            title: postMatch.state == .win ? "After the win" : postMatch.state == .loss ? "After the loss" : "After the draw",
+            primaryText: String(appState.personalise(postMatch.text).prefix(50)),
+            zone2Label: label,
+            talkingPoint: appState.personalise(postMatch.talkingPoint),
+            isExpanded: expandedCard == .comingUp,
+            onTap: { toggleCard(.comingUp) },
+            tintColor: tintColor,
+            zone1Collapsed: { EmptyView() },
+            zone1Expanded: {
+                Text(appState.personalise(postMatch.text))
+                    .font(.jakarta(14, weight: .regular))
+                    .foregroundColor(.warmWhite.opacity(0.9))
+            }
+        )
+    }
+
+    // MARK: - Helpers
+
+    private func toggleCard(_ type: TeamCardType) {
+        withAnimation(.spring(duration: 0.3)) {
+            expandedCard = (expandedCard == type) ? nil : type
+        }
+    }
+
+    private var showPostMatch: Bool {
+        guard let pm = content?.cards.postMatch,
+              let expires = Self.isoFormatter.date(from: pm.expiresAt)
+        else { return false }
+        return Date() < expires
+    }
+
+    private static let isoFormatter: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f
+    }()
+
+    private func comingUpLabel(for dateString: String) -> String {
+        guard let date = Self.isoFormatter.date(from: dateString) else { return "Coming up:" }
+
+        if Calendar.current.isDateInToday(date) {
+            let hour = Calendar.current.component(.hour, from: date)
+            return hour >= 17 ? "Tonight:" : "This afternoon:"
+        }
+
+        let daysUntil = Calendar.current.dateComponents([.day], from: Date(), to: date).day ?? 0
+        if daysUntil <= 7 {
+            let weekday = Calendar.current.component(.weekday, from: date)
+            let isWeekend = weekday == 1 || weekday == 7 // Sun or Sat
+            return isWeekend ? "This weekend:" : "This week:"
+        }
+        return "Coming up:"
     }
 
     @ViewBuilder
     private func infoLine(label: String, value: String) -> some View {
         HStack(spacing: 8) {
             Text(label)
-                .font(.feedTimestamp)
-                .foregroundColor(.textSecondaryOnCard)
+                .font(.jakarta(12, weight: .regular))
+                .foregroundColor(.warmWhite.opacity(0.5))
             Text(value)
-                .font(.feedHeadline)
-                .foregroundColor(.textPrimaryOnCard)
+                .font(.jakarta(14, weight: .bold))
+                .foregroundColor(.warmWhite)
         }
     }
 
@@ -210,33 +385,29 @@ struct TeamPageView: View {
         VStack(alignment: .leading, spacing: 2) {
             HStack {
                 Text(player.name)
-                    .font(.feedHeadline)
-                    .foregroundColor(.textPrimaryOnCard)
+                    .font(.jakarta(14, weight: .bold))
+                    .foregroundColor(.warmWhite)
                 Text(player.position)
-                    .font(.feedTimestamp)
-                    .foregroundColor(.textSecondaryOnCard)
+                    .font(.jakarta(12, weight: .regular))
+                    .foregroundColor(.warmWhite.opacity(0.5))
                 Spacer()
                 if tappable {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 10))
-                        .foregroundColor(.textSecondaryOnCard)
+                        .foregroundColor(.warmWhite.opacity(0.5))
                 }
             }
             if let oneLiner = player.oneLiner {
                 Text(appState.personalise(oneLiner))
-                    .font(.feedTimestamp)
-                    .foregroundColor(.textSecondaryOnCard)
+                    .font(.jakarta(12, weight: .regular))
+                    .foregroundColor(.warmWhite.opacity(0.7))
             }
         }
         .padding(.vertical, 2)
     }
 
-    // MARK: - Form dots
-
     private func formattedFixtureDate(_ isoDate: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
-        guard let date = formatter.date(from: isoDate) else { return isoDate }
+        guard let date = Self.isoFormatter.date(from: isoDate) else { return isoDate }
 
         let display = DateFormatter()
         display.dateFormat = "EEEE d MMM, h:mma"
@@ -248,17 +419,24 @@ struct TeamPageView: View {
     // MARK: - Loading state
 
     private var teamPageLoadingView: some View {
-        VStack(spacing: Layout.cardSpacing) {
+        VStack(spacing: 12) {
             Circle()
                 .fill(Color.feedDivider)
-                .frame(width: 80, height: 80)
+                .frame(width: 64, height: 64)
                 .padding(.top, 16)
 
             ForEach(0..<5, id: \.self) { _ in
-                SkeletonCard()
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.deepMauve.opacity(0.5))
+                    .frame(height: 120)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.hotRose.opacity(0.2), lineWidth: 2)
+                            .padding(1)
+                    )
             }
         }
-        .padding(.horizontal, Layout.screenPadding)
+        .padding(.horizontal, 16)
     }
 
     // MARK: - Error state
@@ -266,13 +444,13 @@ struct TeamPageView: View {
     private var teamPageErrorView: some View {
         VStack(spacing: 16) {
             Text("Couldn't load \(hisNameOrHis.lowercased()) team right now.")
-                .font(.feedHeadline)
-                .foregroundColor(.textPrimaryOnCard)
+                .font(.jakarta(15, weight: .semiBold))
+                .foregroundColor(.warmWhite)
             Button {
                 Task { await loadTeamPage() }
             } label: {
                 Text("Try again")
-                    .font(.feedHeadline)
+                    .font(.jakarta(15, weight: .semiBold))
                     .foregroundColor(.warmWhite)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 10)
@@ -282,9 +460,14 @@ struct TeamPageView: View {
         }
         .padding(Layout.cardPadding)
         .frame(maxWidth: .infinity)
-        .background(Color.cardBackground)
+        .background(Color.deepMauve)
         .cornerRadius(Layout.cardCornerRadius)
-        .padding(.horizontal, Layout.screenPadding)
+        .overlay(
+            RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
+                .stroke(Color.hotRose.opacity(0.3), lineWidth: 2)
+                .padding(1)
+        )
+        .padding(.horizontal, 16)
     }
 
     // MARK: - Warm placeholder
@@ -295,16 +478,21 @@ struct TeamPageView: View {
                 .font(.system(size: 32))
                 .foregroundColor(.hotRose.opacity(0.6))
             Text("We're getting \(hisNameOrHis.lowercased()) team ready. Check back in a moment.")
-                .font(.feedHeadline)
-                .foregroundColor(.textSecondaryOnCard)
+                .font(.jakarta(15, weight: .medium))
+                .foregroundColor(.warmWhite.opacity(0.7))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
         }
         .padding(Layout.cardPadding)
         .frame(maxWidth: .infinity)
-        .background(Color.cardBackground)
+        .background(Color.deepMauve)
         .cornerRadius(Layout.cardCornerRadius)
-        .padding(.horizontal, Layout.screenPadding)
+        .overlay(
+            RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
+                .stroke(Color.hotRose.opacity(0.3), lineWidth: 2)
+                .padding(1)
+        )
+        .padding(.horizontal, 16)
     }
 
     // MARK: - Data loading with cache
@@ -328,7 +516,6 @@ struct TeamPageView: View {
                 content = fresh
                 TeamPageCache.save(content: fresh, teamId: teamId)
             }
-            // If network fails, keep showing cache (even if stale)
             return
         }
 
@@ -340,18 +527,15 @@ struct TeamPageView: View {
                 TeamPageCache.save(content: fetched, teamId: teamId)
                 playerCards = await fetchPlayerCards()
             } else {
-                // Row exists but no content — try mock data in DEBUG
                 #if DEBUG
                 if let mock = MockData.teamPage(for: teamId) {
                     content = mock
                 } else {
-                    // No data at all — show warm placeholder (not error)
                     content = nil
                 }
                 #endif
             }
         } catch {
-            // Network failed, no cache — try mock in DEBUG, else error
             #if DEBUG
             if let mock = MockData.teamPage(for: teamId) {
                 content = mock
@@ -371,31 +555,5 @@ struct TeamPageView: View {
 
     private func fetchPlayerCards() async -> [PlayerCard] {
         (try? await APIClient.shared.fetchPlayerCards(teamId: teamId)) ?? []
-    }
-}
-
-// MARK: - Form Dots View
-
-struct FormDotsView: View {
-    let formString: String
-
-    var body: some View {
-        HStack(spacing: 4) {
-            ForEach(Array(formString.enumerated()), id: \.offset) { _, char in
-                Circle()
-                    .fill(dotColor(for: char))
-                    .frame(width: 8, height: 8)
-            }
-            Spacer()
-        }
-    }
-
-    private func dotColor(for result: Character) -> Color {
-        switch result {
-        case "W": return .hotRose
-        case "D": return .mutedText
-        case "L": return Color.red.opacity(0.6)
-        default: return .mutedText.opacity(0.3)
-        }
     }
 }

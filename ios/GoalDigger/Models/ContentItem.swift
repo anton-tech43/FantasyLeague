@@ -229,6 +229,13 @@ struct TeamPageCards: Codable {
     let season: SeasonCard?
     let nextFixture: NextFixtureCard?
 
+    // Redesign additions
+    let mood: MoodCard?
+    let thisWeek: ThisWeekCard?
+    let rivalryIntensity: Double?
+    let postMatch: TeamPostMatchCard?
+    let freshnessText: String?
+
     enum CodingKeys: String, CodingKey {
         case basics
         case manager
@@ -237,6 +244,11 @@ struct TeamPageCards: Codable {
         case form
         case season
         case nextFixture = "next_fixture"
+        case mood
+        case thisWeek = "this_week"
+        case rivalryIntensity = "rivalry_intensity"
+        case postMatch = "post_match"
+        case freshnessText = "freshness_text"
     }
 }
 
@@ -245,12 +257,14 @@ struct BasicsCard: Codable {
     let nickname: String
     let stadium: String
     let funFact: String
+    let talkingPoint: String?
 
     enum CodingKeys: String, CodingKey {
         case updatedAt = "updated_at"
         case nickname
         case stadium
         case funFact = "fun_fact"
+        case talkingPoint = "talking_point"
     }
 }
 
@@ -258,21 +272,25 @@ struct ManagerCard: Codable {
     let updatedAt: String?
     let name: String
     let summary: String
+    let talkingPoint: String?
 
     enum CodingKeys: String, CodingKey {
         case updatedAt = "updated_at"
         case name
         case summary
+        case talkingPoint = "talking_point"
     }
 }
 
 struct OnesToKnowCard: Codable {
     let updatedAt: String?
     let players: [TopPlayer]
+    let talkingPoint: String?
 
     enum CodingKeys: String, CodingKey {
         case updatedAt = "updated_at"
         case players
+        case talkingPoint = "talking_point"
     }
 }
 
@@ -292,10 +310,12 @@ struct TopPlayer: Codable, Identifiable {
 struct RivalryCard: Codable {
     let updatedAt: String?
     let text: String
+    let talkingPoint: String?
 
     enum CodingKeys: String, CodingKey {
         case updatedAt = "updated_at"
         case text
+        case talkingPoint = "talking_point"
     }
 }
 
@@ -305,6 +325,7 @@ struct FormCard: Codable {
     let leaguePositionLabel: String
     let recentForm: String
     let formSummary: String
+    let talkingPoint: String?
 
     enum CodingKeys: String, CodingKey {
         case updatedAt = "updated_at"
@@ -312,16 +333,19 @@ struct FormCard: Codable {
         case leaguePositionLabel = "league_position_label"
         case recentForm = "recent_form"
         case formSummary = "form_summary"
+        case talkingPoint = "talking_point"
     }
 }
 
 struct SeasonCard: Codable {
     let updatedAt: String?
     let summary: String
+    let talkingPoint: String?
 
     enum CodingKeys: String, CodingKey {
         case updatedAt = "updated_at"
         case summary
+        case talkingPoint = "talking_point"
     }
 }
 
@@ -331,6 +355,7 @@ struct NextFixtureCard: Codable {
     let date: String
     let venue: String
     let preview: String
+    let talkingPoint: String?
 
     enum CodingKeys: String, CodingKey {
         case updatedAt = "updated_at"
@@ -338,6 +363,39 @@ struct NextFixtureCard: Codable {
         case date
         case venue
         case preview
+        case talkingPoint = "talking_point"
+    }
+}
+
+// MARK: - Team Page — New card types for redesign
+
+struct MoodCard: Codable {
+    let state: MoodState
+    let text: String
+    enum MoodState: String, Codable { case good, bad, neutral }
+}
+
+struct ThisWeekCard: Codable {
+    let text: String
+    let talkingPoint: String
+
+    enum CodingKeys: String, CodingKey {
+        case text
+        case talkingPoint = "talking_point"
+    }
+}
+
+struct TeamPostMatchCard: Codable {
+    let state: TeamPostMatchState
+    let text: String
+    let talkingPoint: String
+    let expiresAt: String
+    enum TeamPostMatchState: String, Codable { case win, loss, draw }
+
+    enum CodingKeys: String, CodingKey {
+        case state, text
+        case talkingPoint = "talking_point"
+        case expiresAt = "expires_at"
     }
 }
 

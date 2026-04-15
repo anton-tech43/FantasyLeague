@@ -57,6 +57,12 @@
 		AA000077 /* LeagueSpartan-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000077; };
 		AA000080 /* PurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000080; };
 		AA000081 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000081; };
+		AA000090 /* TeamPageCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000090; };
+		AA000091 /* TeamPageMoodBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000091; };
+		AA000092 /* TeamPageThisWeek.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000092; };
+		AA000093 /* TeamPageRivalryMeter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000093; };
+		AA000094 /* TeamPageCountdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000094; };
+		AA000095 /* TeamPageFormDots.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000095; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -115,6 +121,12 @@
 		AB000077 /* LeagueSpartan-Black.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "LeagueSpartan-Black.ttf"; sourceTree = "<group>"; };
 		AB000080 /* PurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseManager.swift; sourceTree = "<group>"; };
 		AB000081 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		AB000090 /* TeamPageCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageCard.swift; sourceTree = "<group>"; };
+		AB000091 /* TeamPageMoodBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageMoodBanner.swift; sourceTree = "<group>"; };
+		AB000092 /* TeamPageThisWeek.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageThisWeek.swift; sourceTree = "<group>"; };
+		AB000093 /* TeamPageRivalryMeter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageRivalryMeter.swift; sourceTree = "<group>"; };
+		AB000094 /* TeamPageCountdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageCountdown.swift; sourceTree = "<group>"; };
+		AB000095 /* TeamPageFormDots.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageFormDots.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -287,6 +299,12 @@
 			isa = PBXGroup;
 			children = (
 				AB000037 /* TeamPageView.swift */,
+				AB000090 /* TeamPageCard.swift */,
+				AB000091 /* TeamPageMoodBanner.swift */,
+				AB000092 /* TeamPageThisWeek.swift */,
+				AB000093 /* TeamPageRivalryMeter.swift */,
+				AB000094 /* TeamPageCountdown.swift */,
+				AB000095 /* TeamPageFormDots.swift */,
 			);
 			path = Team;
 			sourceTree = "<group>";
@@ -449,6 +467,12 @@
 			AA000066 /* ClassicFeedView.swift in Sources */,
 			AA000080 /* PurchaseManager.swift in Sources */,
 			AA000081 /* PaywallView.swift in Sources */,
+			AA000090 /* TeamPageCard.swift in Sources */,
+			AA000091 /* TeamPageMoodBanner.swift in Sources */,
+			AA000092 /* TeamPageThisWeek.swift in Sources */,
+			AA000093 /* TeamPageRivalryMeter.swift in Sources */,
+			AA000094 /* TeamPageCountdown.swift in Sources */,
+			AA000095 /* TeamPageFormDots.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
