@@ -44,11 +44,15 @@ struct RootView: View {
 
     var body: some View {
         if appState.hasCompletedOnboarding {
+            #if DEBUG
+            MainTabView()
+            #else
             if purchaseManager.isPurchased {
                 MainTabView()
             } else {
                 PaywallView()
             }
+            #endif
         } else {
             OnboardingFlow()
         }
