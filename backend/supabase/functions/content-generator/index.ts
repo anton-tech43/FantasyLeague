@@ -271,8 +271,9 @@ async function buildNewsPrompt(
     if (typeof log.source === "string" && log.source.startsWith("api_football_")) {
       statsData += `\n${log.source}: ${JSON.stringify(log.data).slice(0, 1000)}`;
     } else {
-      const articles = Array.isArray(log.data) ? log.data : [];
+      const articles = Array.isArray(log.data) ? log.data : [log.data];
       for (const article of articles) {
+        if (!article) continue;
         const sanitized = sanitizeText(`${article.title ?? ""}: ${article.description ?? ""}`);
         formattedArticles += `\n- ${sanitized.text}`;
       }
