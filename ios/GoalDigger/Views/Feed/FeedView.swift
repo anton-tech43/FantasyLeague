@@ -94,6 +94,17 @@ struct FeedView: View {
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(.hidden, for: .tabBar)
         .task { await loadInitial() }
+        .onChange(of: appState.selectedTeam) { oldTeam, newTeam in
+            guard oldTeam != newTeam, newTeam != nil else { return }
+            // Clear stale team data and reload for the new team
+            teamItems = []
+            teamOffset = 0
+            teamCanLoadMore = true
+            isLoading = true
+            freshnessCardDismissed = false
+            matchdayPlayers = []
+            Task { await loadTeamFeed() }
+        }
     }
 
     // MARK: - Context Pill

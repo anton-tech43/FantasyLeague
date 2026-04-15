@@ -444,6 +444,8 @@ struct TeamPickerSheet: View {
                     guard let team = selected else { return }
                     appState.selectedTeam = team
                     CacheService.shared.clearAll(in: modelContext)
+                    appState.activeContext = .team(team)
+                    appState.isContextSwitcherOpen = false
                     if let token = UserDefaults.standard.string(forKey: "apnsToken") {
                         Task {
                             try? await APIClient.shared.updateTokenTeam(token, newTeamId: team.rawValue)
