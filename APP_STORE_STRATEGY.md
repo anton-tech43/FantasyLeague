@@ -96,7 +96,7 @@ Just the stuff you need to hold a conversation.
 • We don't spam you. Quiet day? No notification. You're welcome.
 • We don't use jargon. No "xG", no "false nine", no "pressing triggers."
 • We don't send at 3am. Updates come at sensible times.
-• We don't track you. No accounts, no data collection, no ads.
+• We don't track you. No accounts, no ads, no personal data beyond what's needed to send you notifications.
 
 — WHO THIS IS FOR —
 

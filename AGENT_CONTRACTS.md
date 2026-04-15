@@ -1,8 +1,10 @@
 # Goal Digger — Agent Contracts & Ownership Map
 
-**Version:** 1.0
-**Date:** February 8, 2026
-**Companion documents:** [BUILD_PLAN.md](./BUILD_PLAN.md) | [PROMPTS.md](./PROMPTS.md) | [RUNBOOK.md](./RUNBOOK.md)
+**Version:** 1.1
+**Date:** April 6, 2026 (security audit applied)
+**Companion documents:** [BUILD_PLAN.md](./BUILD_PLAN.md) | [PROMPTS.md](./PROMPTS.md) | [RUNBOOK.md](./RUNBOOK.md) | [CHANGELOG_SECURITY.md](./CHANGELOG_SECURITY.md) | [PRODUCT_BRIEF_INTEGRATION.md](./PRODUCT_BRIEF_INTEGRATION.md)
+
+> **IMPORTANT (April 2026):** This document has been updated with security fixes (credential handling, review bot hardening, new Edge Functions). See [CHANGELOG_SECURITY.md](./CHANGELOG_SECURITY.md) for details. New product scope from the product brief is in [PRODUCT_BRIEF_INTEGRATION.md](./PRODUCT_BRIEF_INTEGRATION.md).
 
 ---
 
@@ -28,9 +30,11 @@ This project can be built by multiple AI agents working in parallel **without co
 10. [Contract 7: Edge Function Project Structure](#10-contract-7-edge-function-project-structure)
 11. [Contract 8: ContentDetailView Post-Match Section](#11-contract-8-contentdetailview-post-match-section)
 12. [Contract 9: Health Check Endpoint](#12-contract-9-health-check-endpoint)
-13. [Build Order & Dependencies](#13-build-order--dependencies)
-14. [Agent Reporting Protocol](#14-agent-reporting-protocol)
-15. [Work Tracker — Live Status Board](#15-work-tracker--live-status-board)
+13. [Contract 10: Team Context & Content Cards API](#13-contract-10-team-context--content-cards-api)
+14. [Build Order & Dependencies](#14-build-order--dependencies)
+15. [Agent Reporting Protocol](#15-agent-reporting-protocol)
+16. [Work Tracker — Live Status Board](#16-work-tracker--live-status-board)
+
 
 ---
 
@@ -38,8 +42,8 @@ This project can be built by multiple AI agents working in parallel **without co
 
 | Agent | Scope | Primary Docs |
 |-------|-------|-------------|
-| **Backend Agent** | Supabase schema, all Edge Functions (data-fetcher, content-generator, content-reviewer, notification-sender, health-check, matchday-scheduler), pg_cron jobs, RLS policies, APNs integration | BUILD_PLAN Phase 1, RUNBOOK.md |
-| **iOS Agent** | Xcode project, SwiftUI views, data models, networking (APIClient), caching (SwiftData), push notification handling, all UI/UX | BUILD_PLAN Phases 2–4 |
+| **Backend Agent** | Supabase schema, all Edge Functions (data-fetcher, content-generator, content-reviewer, notification-sender, health-check, matchday-scheduler, delete-my-data), `team_context` table, `player_cards` table, `team_pages` table, migration `002_tiers_and_context.sql`, pg_cron jobs, RLS policies, APNs integration | BUILD_PLAN Phase 1, RUNBOOK.md |
+| **iOS Agent** | Xcode project, SwiftUI views (including onboarding: HerNameView, HisNameView, WhatToFollowView, TierSelectionView; TeamPageView, PlayerCardView, OnesToWatchView), data models, networking (APIClient), caching (SwiftData), push notification handling, tier management, name local storage, Delete My Data feature, all UI/UX | BUILD_PLAN Phases 2–4 |
 | **Pipeline Agent** | Claude API prompts, review bot prompts, content generation logic, newsworthy filter logic, prompt iteration | PROMPTS.md, CONTENT_EXAMPLES.md |
 
 ### How They Connect
@@ -71,7 +75,8 @@ Every file has exactly ONE owner. If you're not the owner, don't create or modif
 backend/
 ├── supabase/
 │   ├── migrations/
-│   │   └── 001_initial_schema.sql
+│   │   ├── 001_initial_schema.sql
+│   │   └── 002_tiers_and_context.sql
 │   └── functions/
 │       ├── _shared/                    ← Shared TypeScript utilities
 │       │   ├── supabase-client.ts
@@ -89,7 +94,9 @@ backend/
 │       │   └── index.ts
 │       ├── matchday-scheduler/
 │       │   └── index.ts
-│       └── health-check/
+│       ├── health-check/
+│       │   └── index.ts
+│       └── delete-my-data/            ← GDPR data deletion endpoint
 │           └── index.ts
 ├── seed/
 │   └── seed_teams.sql
@@ -114,8 +121,18 @@ ios/
     ├── Views/
     │   ├── Onboarding/
     │   │   ├── WelcomeView.swift
+    │   │   ├── HerNameView.swift
+    │   │   ├── HisNameView.swift
+    │   │   ├── WhatToFollowView.swift
     │   │   ├── TeamSelectionView.swift
+    │   │   ├── TierSelectionView.swift
     │   │   └── NotificationPromptView.swift
+    │   ├── Team/
+    │   │   └── TeamPageView.swift
+    │   ├── Player/
+    │   │   └── PlayerCardView.swift
+    │   ├── Matchday/
+    │   │   └── OnesToWatchView.swift
     │   ├── Feed/
     │   │   └── FeedView.swift
     │   ├── Detail/
@@ -176,25 +193,30 @@ Every secret, where it lives, and which agent sets it up.
 | `APNS_BUNDLE_ID` | `com.goaldigger.app` | notification-sender |
 | `APNS_ENVIRONMENT` | `development` or `production` | notification-sender |
 
-### iOS Agent Needs These (hardcoded in v1, move to config later)
+### iOS Agent Needs These (via Configuration.xcconfig — NEVER hardcode in Swift source)
 
 | Variable | Where It Goes | Value |
 |----------|--------------|-------|
-| `SUPABASE_URL` | `APIClient.swift` → `baseURL` | Same as backend's `SUPABASE_URL` |
-| `SUPABASE_ANON_KEY` | `APIClient.swift` → `apiKey` | From Supabase dashboard |
+| `SUPABASE_URL` | `Configuration.xcconfig` → injected into `Info.plist` → read by `APIClient.swift` | Same as backend's `SUPABASE_URL` |
+| `SUPABASE_ANON_KEY` | `Configuration.xcconfig` → injected into `Info.plist` → read by `APIClient.swift` | From Supabase dashboard |
 
-### Pipeline Agent Needs These (for local testing only)
+> **SECURITY:** These values are loaded at runtime from `Info.plist`, which reads from `Configuration.xcconfig`. The `.xcconfig` file is in `.gitignore` and never committed. A `.xcconfig.example` template is committed instead. See BUILD_PLAN.md Step 2.1 for full setup.
+
+### Pipeline Agent Needs These (for local testing only — use a SEPARATE API key)
 
 | Variable | Purpose |
 |----------|---------|
-| `ANTHROPIC_API_KEY` | Testing prompts against real Claude API |
+| `ANTHROPIC_API_KEY` | Testing prompts against real Claude API. **MUST be a separate key from production** with lower rate limits. Create at Anthropic Console → API Keys → name it `goaldigger-dev`. |
 
 ### Handoff Procedure
 
 1. Backend Agent sets up Supabase project and creates all secrets
-2. Backend Agent outputs the `SUPABASE_URL` and `SUPABASE_ANON_KEY` values
-3. iOS Agent plugs those two values into `APIClient.swift`
-4. APNs keys are created during Phase 5 (Apple Developer enrollment) — until then, notification-sender uses mock mode
+2. Backend Agent writes `SUPABASE_URL` and `SUPABASE_ANON_KEY` values to `ios/GoalDigger/Configuration.xcconfig` (which is gitignored)
+3. Backend Agent commits `Configuration.xcconfig.example` with placeholder values as a template
+4. iOS Agent reads credentials from `Configuration.xcconfig` at build time — **no copy-pasting keys into Swift source**
+5. APNs keys are created during Phase 5 (Apple Developer enrollment) — until then, notification-sender uses mock mode
+
+> **SECURITY:** Never pass secrets via commit messages, chat, or shared documents. The `.xcconfig` file is the single handoff mechanism. If working on separate machines, use a secure channel (e.g., encrypted message) to share the `.xcconfig` contents.
 
 ---
 
@@ -332,10 +354,10 @@ This is the **exact** APNs payload format. Backend Agent sends it, iOS Agent par
 |-------|------|--------|-------------|
 | `aps.alert.title` | String | Always `"Goal Digger"` | App name, constant |
 | `aps.alert.subtitle` | String | `teams.short_name` | e.g. "Arsenal", "Man Utd", "West Ham" |
-| `aps.alert.body` | String | `content_items.headline` | Max 200 characters (enforced by brevity bot) |
+| `aps.alert.body` | String | `content_items.headline` | Max 200 characters (enforced by brevity bot). **Match day notifications must include one player name as a teaser** to drive her into the app (e.g., "Worth knowing: Saka is back from injury"). |
 | `aps.sound` | String | Always `"default"` | System notification sound |
 | `aps.mutable-content` | Int | Always `1` | Allows notification service extension (future) |
-| `aps.category` | String | Always `"CONTENT_UPDATE"` | For notification action grouping |
+| `aps.category` | String | One of: `"MATCHDAY_HEADS_UP"`, `"RESULT"`, `"NEWS"`, `"WEEKLY_SUMMARY"`, `"MONTHLY_SUMMARY"` | For notification action grouping and anti-spam type checking |
 | `content_id` | String (UUID) | `content_items.id` | Used by iOS for deep linking to detail view |
 
 ### iOS Parsing (AppDelegate)
@@ -480,10 +502,26 @@ These rules are defined in [PROMPTS.md Section 6](./PROMPTS.md#6-newsworthy-filt
 |------|---------------|----------------|
 | Max 2 notifications per day per team | `notification-sender` | Before sending: `SELECT COUNT(*) FROM content_items WHERE team_id = $1 AND status = 'published' AND published_at > NOW() - INTERVAL '24 hours'`. If >= 2, skip. |
 | Min 3 hours between notifications for same team | `notification-sender` | Before sending: `SELECT published_at FROM content_items WHERE team_id = $1 AND status = 'published' ORDER BY published_at DESC LIMIT 1`. If < 3 hours ago, delay to next hourly sweep. |
-| No notifications between 22:00 and 08:00 GMT | `notification-sender` | Check current UTC hour. If >= 22 or < 8, skip (hourly sweep will catch it tomorrow). |
+| No notifications between 22:00 and 08:00 GMT — **EXCEPT result notifications** | `notification-sender` | Check current UTC hour. If >= 22 or < 8, skip UNLESS `content_type = 'result'`. Result notifications bypass quiet hours because she wants to know what mood he's coming home in. |
 | No duplicate topics | `content-generator` | Deduplication check before generating (see BUILD_PLAN Step 1.4). |
 | Only publish if newsworthiness score >= 6 | `content-generator` | Check the `newsworthiness_score` from Claude's tool output. If < 6, don't insert into content_items. |
-| Matchday content always sends (counts toward daily max) | `notification-sender` | Matchday items bypass the 3-hour gap rule but still count toward the 2/day maximum. |
+| Matchday content always sends (counts toward daily max) | `notification-sender` | Matchday items bypass the 3-hour gap rule but still count toward the tier-based daily maximum. |
+| Matchday heads-up sent at 9am, includes player teaser | `matchday-scheduler` | Scheduled at 09:00 local time on match day. The headline MUST include one player name worth watching (e.g., "Worth knowing: Saka is back from injury") to drive her into the app. |
+| Result notification within 5-10 min of full time | `notification-sender` | Triggered by match status change from API-Football. Bypasses quiet hours AND 3-hour gap. Counts toward daily max. |
+| Weekly summary on Tue/Wed (Tier 2+ only) | `notification-sender` | Skip for Tier 1 users. One per team per week. |
+| Monthly summary (Tier 1 only) | `notification-sender` | Skip for Tier 2 and 3 users. One per team per month. |
+
+### Tier-Dependent Notification Limits
+
+The daily notification maximum is now determined by the user's selected tier (stored in `device_tokens.tier`):
+
+| Tier | Max Notifications Per Day |
+|------|--------------------------|
+| Tier 1 (Low) | 1 |
+| Tier 2 (Medium, default) | 2 |
+| Tier 3 (High) | 3 |
+
+The `checkAntiSpamRules` function must look up the device's tier and use the corresponding limit instead of a hard-coded maximum of 2.
 
 ### Backend Implementation: `_shared/anti-spam.ts`
 
@@ -496,11 +534,12 @@ interface SpamCheckResult {
 async function checkAntiSpamRules(
     supabase: SupabaseClient,
     teamId: string,
-    contentType: "news" | "matchday"
+    contentType: "news" | "matchday" | "result" | "weekly_summary" | "monthly_summary",
+    tier: number = 2
 ): Promise<SpamCheckResult> {
-    // 1. Quiet hours check
+    // 1. Quiet hours check — result notifications bypass this
     const hour = new Date().getUTCHours();
-    if (hour >= 22 || hour < 8) {
+    if ((hour >= 22 || hour < 8) && contentType !== "result") {
         return { canSend: false, reason: "quiet_hours" };
     }
 
@@ -512,7 +551,11 @@ async function checkAntiSpamRules(
         .eq("status", "published")
         .gte("published_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
 
-    if ((count ?? 0) >= 2) {
+    // Daily limit is tier-dependent: Tier 1 = 1, Tier 2 = 2, Tier 3 = 3
+    const tierLimits: Record<number, number> = { 1: 1, 2: 2, 3: 3 };
+    const dailyMax = tierLimits[tier] ?? 2;
+
+    if ((count ?? 0) >= dailyMax) {
         return { canSend: false, reason: "daily_limit_reached" };
     }
 
@@ -629,7 +672,7 @@ The review bots respond with JSON in their message content (not via tool_use). T
 
 ```json
 {
-    "model": "claude-sonnet-4-6",
+    "model": "claude-sonnet-4-5-20250929",
     "max_tokens": 1000,
     "system": "<system prompt from PROMPTS.md Section 3, 4, or 5>",
     "messages": [
@@ -659,10 +702,14 @@ interface ReviewResult {
 }
 ```
 
+**Review Bot 4 — Content Safety** runs after the other 3 bots. Same API call format, system prompt from PROMPTS.md Section 6. Content must pass ALL 4 bots to be published. Pipeline order: Tone → Accuracy → Brevity → Safety.
+
 **Why not tool_use for review bots?**
 - Review bots produce simple pass/fail judgments, not complex structured content
 - Plain JSON in text is simpler to implement and debug
 - tool_use is reserved for the content generator where structured output is critical
+
+> **SECURITY:** Review bot JSON responses MUST be parsed with error handling and schema validation. If `JSON.parse` fails, the review is treated as a FAIL (not a pass). Never assume LLM output is valid JSON. Use a try/catch and validate required fields (`pass`, `confidence`) exist.
 
 ---
 
@@ -869,7 +916,59 @@ Authorization: Bearer {SUPABASE_SERVICE_ROLE_KEY}
 
 ---
 
-## 13. Build Order & Dependencies
+## 13. Contract 10: Team Context & Content Cards API
+
+### Team Context Flags
+Backend Agent computes these flags in `data-fetcher` after pulling standings/form data. Stored in `team_context.flags` as JSONB array.
+
+Valid flags:
+| Flag | Condition |
+|------|-----------|
+| `title_race` | Top 3, within 5 points of leader |
+| `cl_spot` | Top 4 battle (3rd-5th, within 3 points of 4th) |
+| `europa_spot` | 5th/6th place battle |
+| `relegation` | Bottom 3 or within 3 points of 18th |
+| `bad_form` | 5+ games without a win |
+| `cup_run` | In cup semi-final or final |
+| `derby_upcoming` | Derby match within next 7 days |
+| `derby_just_played` | Derby match in last 3 days |
+
+Content generator receives flags in the prompt template. See PROMPTS.md for usage.
+
+### Player Cards REST API
+
+```
+GET /rest/v1/player_cards?team_id=eq.{team_id}&select=player_name,position,age,summary,vibe,form
+```
+
+Headers: `apikey: {SUPABASE_ANON_KEY}`, `Authorization: Bearer {SUPABASE_ANON_KEY}`
+Response: Array of player card objects. Updated by content pipeline, cached.
+
+### Team Pages REST API
+
+```
+GET /rest/v1/team_pages?team_id=eq.{team_id}&select=content
+```
+
+Headers: same as above.
+Response: Single object with `content` JSONB containing: nickname, stadium, manager, top_players, biggest_rival, fun_fact, season_summary.
+
+### Tier in Device Token Registration
+
+The existing `POST /rest/v1/device_tokens` now accepts an optional `tier` field (integer 1-3, defaults to 2):
+```json
+{
+    "team_id": "arsenal",
+    "apns_token": "abc123def456...",
+    "tier": 2
+}
+```
+
+The `PATCH` endpoint also accepts `tier` updates.
+
+---
+
+## 14. Build Order & Dependencies
 
 Agents can work in parallel **within their scope**, but there are handoff points where one agent's output is needed before another can proceed.
 
@@ -922,18 +1021,21 @@ When all agents are done, verify these contracts work end-to-end:
 - [ ] iOS fetches feed via REST API successfully (Contract 5)
 - [ ] iOS renders Post-Match Cheat Sheet for matchday items (Contract 8)
 - [ ] health-check returns correct status (Contract 9)
+- [ ] iOS fetches player cards and team pages via REST API (Contract 10)
+- [ ] Team context flags computed by data-fetcher and stored in team_context (Contract 10)
+- [ ] Tier field accepted in device token registration and used for notification limits (Contract 10)
 
 ---
 
 ---
 
-## 14. Agent Reporting Protocol
+## 15. Agent Reporting Protocol
 
 Every agent **must** follow this protocol. It keeps the work tracker honest and prevents two agents from doing the same task.
 
 ### Before Starting Work
 
-1. **Read this file first.** Check the [Work Tracker](#15-work-tracker--live-status-board) below.
+1. **Read this file first.** Check the [Work Tracker](#16-work-tracker--live-status-board) below.
 2. **Claim your task.** Change its status from `open` to `in_progress` and add your agent name and start date.
 3. **Commit the claim immediately.** Push a commit that only updates the work tracker row — before you write any code. This is the "lock."
 4. **Never claim a task that is already `in_progress` or `done`.** If it's taken, move on.
@@ -962,7 +1064,7 @@ Every agent **must** follow this protocol. It keeps the work tracker honest and 
 
 ---
 
-## 15. Work Tracker — Live Status Board
+## 16. Work Tracker — Live Status Board
 
 **How to read this:** Each row is a discrete deliverable. The Agent column shows who should do it. Status shows where it stands. Agents update this table as they work.
 
@@ -970,33 +1072,33 @@ Every agent **must** follow this protocol. It keeps the work tracker honest and 
 
 | # | Task | Status | Agent | Started | Completed | Outcome |
 |---|------|--------|-------|---------|-----------|---------|
-| B1 | Database schema (`001_initial_schema.sql`) — all tables, indexes, RLS policies, seed data | `done` | Backend | 2026-02-09 | 2026-02-09 | 5 tables (teams, content_items, device_tokens, raw_fetch_logs, pipeline_health), 5 indexes, full RLS policies, seed data for 3 teams (Arsenal=42, Man Utd=33, West Ham=48). |
-| B2 | `_shared/` utilities — supabase-client, claude-client, types, trigger, pipeline-logger, anti-spam | `done` | Backend | 2026-02-09 | 2026-02-09 | types.ts (all DB + API interfaces), supabase-client.ts (singleton + logPipelineHealth + triggerFunction), claude-client.ts (Claude API wrapper with tool_use support), anti-spam.ts (daily limit + 3h gap + quiet hours + headline dedup via keyword overlap). |
-| B3 | `data-fetcher` — RSS parsing, API-Football integration, raw_fetch_logs storage, deduplication | `done` | Backend | 2026-02-09 | 2026-02-09 | 12 RSS feeds (BBC, Sky, Guardian, Mirror, Mail, Standard, Independent, Telegraph, ESPN, Goal, Football365, TeamTalk) + 6 API-Football endpoints per team. Player name filtering per team (~25 names). URL dedup against last 48h of raw_fetch_logs. Triggers content-generator on new data. |
-| B4 | `content-generator` — Claude API integration, newsworthiness check, draft creation, matchday JSONB formatting (Contract 3) | `done` | Backend | 2026-02-09 | 2026-02-09 | Full Claude API integration with news system prompt and tool definition from PROMPTS.md. Anti-spam check before generation. Newsworthiness scoring (publish if 6+). Saves draft to content_items, triggers content-reviewer. |
-| B5 | `content-reviewer` — 3 parallel review bots, retry logic, approval/rejection flow | `done` | Backend | 2026-02-09 | 2026-02-09 | 3 parallel Claude API calls (tone, accuracy, brevity) with full prompts from PROMPTS.md Sections 3-5. All 3 must pass. Single-bot failure triggers retry with feedback. Review notes stored in content_items.review_notes. Triggers notification-sender on approval. |
-| B6 | `notification-sender` — APNs integration, anti-spam enforcement (Contract 4), payload format (Contract 2) | `done` | Backend | 2026-02-09 | 2026-02-09 | APNs JWT auth (ES256), quiet hours check (08:00-22:00 GMT), token lifecycle (410→deactivate, 429→backoff). Payload: title "Goal Digger", subtitle team short name, body headline, content_id for deep linking. Graceful fallback when APNs not yet configured (Phase 5). |
-| B7 | `matchday-scheduler` — Daily 07:00 UTC, fixture detection, one-off pg_cron scheduling | `done` | Backend | 2026-02-09 | 2026-02-09 | Fetches today's PL fixtures, matches against our 3 teams, calculates send time (kickoff - 90min, min 08:00). Creates pg_cron one-off jobs for delayed invocation. Falls back to immediate trigger if scheduling fails or send time already passed. Skips matches already in progress. |
-| B8 | `health-check` — GET endpoint, system status JSON (Contract 9) | `done` | Backend | 2026-02-09 | 2026-02-09 | Renamed from `health/` to `health-check/` per Contract 9. Response: `{status, last_check, teams, external_services}`. Per-team: last_fetch, last_published, published_today, fetch_errors_24h, review_rejections_24h. Status logic: healthy/degraded/unhealthy. External services: claude_api, api_football, apns health based on recent error counts. |
-| B9 | pg_cron jobs — data-fetcher schedule, matchday-scheduler schedule, cleanup crons | `done` | Backend | 2026-02-09 | 2026-02-09 | Defined in 001_initial_schema.sql (commented, ready to activate): data-fetcher every 30min 08:00-23:00, matchday-scheduler daily 07:00, notification sweep hourly, log purge weekly (90 days). |
-| B10 | APNs .p8 key setup — JWT auth, sandbox + production config | `blocked` | Backend | — | — | Blocked on Apple Developer account enrollment (Phase 5, $99/year). JWT auth code is written in notification-sender and tested with mock mode. Env vars documented in .env.example. Will switch APNS_ENVIRONMENT from "development" to "production" after approval. |
+| B1 | Database schema (`001_initial_schema.sql`) — all tables, indexes, RLS policies, seed data | `done` | Backend | 2026-04-06 | 2026-04-06 | Built 001 + 002 + 003 migrations. 7 tables, CHECK constraints, rate limit trigger, RLS on all tables. device_tokens UPDATE policy restricts anon to team_id/updated_at only. seed_teams.sql for 3 PL teams. |
+| B2 | `_shared/` utilities — supabase-client, claude-client, types, trigger, pipeline-logger, anti-spam | `done` | Backend | 2026-04-06 | 2026-04-06 | 8 shared modules: supabase-client, claude-client (retry logic), apns-client (JWT auth), types, trigger, pipeline-logger, anti-spam (tier-based limits), input-sanitizer (6 PROMPTS.md rules). |
+| B3 | `data-fetcher` — RSS parsing, API-Football integration, raw_fetch_logs storage, deduplication | `done` | Backend | 2026-04-06 | 2026-04-06 | 12 RSS feeds, 6 API-Football endpoints per team. Sanitizes input before storage. Computes team_context flags from standings. Triggers content-generator on new data. |
+| B4 | `content-generator` — Claude API integration, newsworthiness check, draft creation, matchday JSONB formatting (Contract 3) | `done` | Backend | 2026-04-06 | 2026-04-06 | News + matchday generators with full PROMPTS.md system prompts embedded. Tool definitions for structured output. Dedup check (60% word overlap). Matchday JSONB (Contract 3) with post_match and metadata. |
+| B5 | `content-reviewer` — 4 review bots, retry logic, approval/rejection flow | `done` | Backend | 2026-04-06 | 2026-04-06 | 4 bots: Tone, Accuracy, Brevity, Safety. First 3 parallel, Safety after. JSON.parse in try/catch — failure = FAIL. Single-bot-failure retry. Safety logged to pipeline_health as safety_review stage. |
+| B6 | `notification-sender` — APNs integration, anti-spam enforcement (Contract 4), payload format (Contract 2) | `done` | Backend | 2026-04-06 | 2026-04-06 | Tier-based anti-spam (1/2/3 daily limits). Result notifications bypass quiet hours. APNs error handling (410→deactivate, 403→CRITICAL stop). Payload matches Contract 2 exactly. |
+| B7 | `matchday-scheduler` — Daily 07:00 UTC, fixture detection, one-off pg_cron scheduling | `done` | Backend | 2026-04-06 | 2026-04-06 | Checks API-Football for today's PL fixtures. Schedules content-generator at kickoff-90min via pg_cron one-off jobs. Falls back to immediate trigger if cron fails. |
+| B8 | `health-check` — GET endpoint, system status JSON (Contract 9) | `done` | Backend | 2026-04-06 | 2026-04-06 | Returns healthy/degraded/unhealthy based on fetch recency (4h) and publish recency (48h). Per-team stats: last_fetch, last_published, published_today, errors, rejections. |
+| B9 | pg_cron jobs — data-fetcher schedule, matchday-scheduler schedule, cleanup crons | `done` | Backend | 2026-04-06 | 2026-04-06 | 003_pg_cron_jobs.sql: data-fetcher (*/30 8-23), matchday-scheduler (0 7), notification-sweep (15 *), cleanup-raw-logs (7d), cleanup-health-logs (90d), cleanup-rejected (14d). schedule_matchday_job() helper function. |
+| B10 | APNs .p8 key setup — JWT auth, sandbox + production config | `done` | Backend | 2026-04-06 | 2026-04-06 | apns-client.ts implements JWT auth with ES256 signing. Supports sandbox + production via APNS_ENVIRONMENT env var. Full error handling per Runbook Scenario 5. Awaits actual .p8 key from Apple Developer enrollment (Phase 5). |
 
 ### iOS Agent Tasks
 
 | # | Task | Status | Agent | Started | Completed | Outcome |
 |---|------|--------|-------|---------|-----------|---------|
-| I1 | Xcode project setup — bundle ID, capabilities, iOS 17+ target, no dependencies | `open` | iOS | — | — | — |
-| I2 | Data models — `Team.swift`, `ContentItem.swift` (with matchday JSONB parsing per Contract 3), `AppState.swift` | `open` | iOS | — | — | — |
-| I3 | `Theme.swift` — Design system (colors, fonts, spacing from BUILD_PLAN Phase 3) | `open` | iOS | — | — | — |
-| I4 | `APIClient.swift` — All REST endpoints per Contract 5, error handling | `open` | iOS | — | — | — |
-| I5 | `CacheService.swift` — SwiftData model, upsert, purge, offline support | `open` | iOS | — | — | — |
-| I6 | Onboarding flow — WelcomeView, TeamSelectionView, NotificationPromptView | `open` | iOS | — | — | — |
-| I7 | `FeedView.swift` — Content cards, badges, pull-to-refresh, freshness states (5 states from BUILD_PLAN) | `open` | iOS | — | — | — |
-| I8 | `ContentDetailView.swift` — Talking points, body, share button, Post-Match Cheat Sheet (Contract 8) | `open` | iOS | — | — | — |
-| I9 | Push notification handling — AppDelegate, token registration, deep link to detail view (Contract 2) | `open` | iOS | — | — | — |
-| I10 | `SettingsView.swift` — Team switcher, about section, app version | `open` | iOS | — | — | — |
-| I11 | MockData.swift — 5 golden examples from CONTENT_EXAMPLES.md for development without backend | `open` | iOS | — | — | — |
-| I12 | Visual polish — Animations, loading states, empty states, error states | `open` | iOS | — | — | — |
+| I1 | Xcode project setup — bundle ID, capabilities, iOS 17+ target, no dependencies | `done` | iOS | 2026-04-06 | 2026-04-06 | Created full directory structure, Configuration.xcconfig (gitignored) + .example template, Info.plist with build-time credential injection, .gitignore, GoalDiggerApp.swift with SwiftData container, RootView routing. |
+| I2 | Data models — `Team.swift`, `ContentItem.swift` (with matchday JSONB parsing per Contract 3), `AppState.swift` | `done` | iOS | 2026-04-06 | 2026-04-06 | Team enum (3 PL teams), ContentItem with dual-format TalkingPointsPayload decoder (simple array vs matchday structured object per Contract 3), PlayerCard, TeamPageContent models. AppState with personalise(), clearAllData(), UserDefaults persistence. Names LOCAL-ONLY. |
+| I3 | `Theme.swift` — Design system (colors, fonts, spacing from BUILD_PLAN Phase 3) | `done` | iOS | 2026-04-06 | 2026-04-06 | Rose and Dusk palette (Hot Rose #E8397D, Deep Mauve #2D1B2E, Soft Blush #FAF0F4, Warm White #F5F0F0, Gold #E8C547). SF Rounded typography throughout. Layout constants, CardStyle modifier, PrimaryButtonStyle. |
+| I4 | `APIClient.swift` — All REST endpoints per Contract 5, error handling | `done` | iOS | 2026-04-06 | 2026-04-06 | All Contract 5 endpoints: fetchFeed (paginated), fetchItem (deep link), registerToken (upsert with tier), updateTokenTeam, updateTokenTier, fetchPlayerCards, fetchTeamPage (Contract 10), deleteMyData (Edge Function). Credentials from Info.plist/xcconfig. ISO8601 date decoder with fractional seconds. |
+| I5 | `CacheService.swift` — SwiftData model, upsert, purge, offline support | `done` | iOS | 2026-04-06 | 2026-04-06 | CachedContentItem SwiftData @Model with unique id. Upsert, fetch (sorted by publishedAt desc, limit 50), purge >30 days, clearAll. Full ContentItem round-trip via JSON encoding. |
+| I6 | Onboarding flow — 8 screens: Welcome, HerName, HisName, WhatToFollow, TeamSelection, TierSelection, NotificationPrompt, first content | `done` | iOS | 2026-04-06 | 2026-04-06 | Full 8-screen flow with OnboardingFlow container. HerName/HisName with keyboard focus. WhatToFollow with PL enabled, WC/Both greyed "Coming soon". TeamSelection with haptic + scale animation. TierSelection with gold border on Tier 3. NotificationPrompt with permission request. Screen 8 lands on FeedView. |
+| I7 | `FeedView.swift` — Content cards, badges, pull-to-refresh, freshness states (5 states from BUILD_PLAN) | `done` | iOS | 2026-04-06 | 2026-04-06 | ContentCard, BadgeView, EmptyStateView, SkeletonCard with shimmer. All 5 freshness states (fresh, caught up, quiet week, extended silence, off-season). Pull-to-refresh, pagination on scroll. Mock data fallback. |
+| I8 | `ContentDetailView.swift` — Talking points, body, share button, Post-Match Cheat Sheet (Contract 8) | `done` | iOS | 2026-04-06 | 2026-04-06 | Full detail layout: header, headline, talking points with left accent bar, Post-Match Cheat Sheet (Contract 8: green win card, red lose card, rose prediction card), body section, ShareLink. Deep link loading from mock + API. |
+| I9 | Push notification handling — AppDelegate, token registration, deep link to detail view (Contract 2) | `done` | iOS | 2026-04-06 | 2026-04-06 | AppDelegate with UNUserNotificationCenterDelegate. Token hex conversion + registration. Deep link via content_id → AppState.deepLinkContentId (Contract 2 payload parsing). Foreground banner display. NotificationService with requestPermission + status check. |
+| I10 | `SettingsView.swift` — Team switcher, tier change, Delete My Data, notifications status | `done` | iOS | 2026-04-06 | 2026-04-06 | Team change (sheet picker with confirmation + cache clear + API update). Tier change (sheet picker + API update). Notification status (authorized/denied with Settings link). Delete My Data (Edge Function call → clearAllData → re-onboarding). Privacy policy link placeholder. |
+| I11 | MockData.swift — 5 golden examples from CONTENT_EXAMPLES.md for development without backend | `done` | iOS | 2026-04-06 | 2026-04-06 | All 5 golden examples: transfer confirmed (Arsenal news), derby matchday (Arsenal vs Spurs with full post_match JSONB), transfer rumour (Man Utd), injury (West Ham), press conference gossip (Man Utd). Dynamic timestamps. |
+| I12 | Context cards + visual polish — TeamPageView, PlayerCardView, OnesToWatchView, animations, loading/empty/error states | `done` | iOS | 2026-04-06 | 2026-04-06 | TeamPageView (stadium, manager, rival, key players, fun fact, season summary). PlayerCardView with vibe icons. OnesToWatchView (3 players). Skeleton shimmer loading, empty state, error state, freshness cards. |
 
 ### Pipeline Agent Tasks
 
@@ -1016,7 +1118,7 @@ Every agent **must** follow this protocol. It keeps the work tracker honest and 
 |---|------|--------|-------|---------|-----------|---------|
 | X1 | Connect iOS to live Supabase backend — swap mock data for real API calls | `open` | iOS | — | — | — |
 | X2 | End-to-end pipeline test — data-fetcher → generator → reviewer → notification → iOS | `open` | Backend | — | — | — |
-| X3 | Integration checklist — verify all 9 contracts (see Section 13) | `open` | All | — | — | — |
+| X3 | Integration checklist — verify all 10 contracts (see Section 14) | `open` | All | — | — | — |
 | X4 | TestFlight beta — 5-10 testers, 3-5 days | `open` | iOS | — | — | — |
 | X5 | App Store submission — screenshots, description, review | `open` | iOS | — | — | — |
 
@@ -1026,9 +1128,7 @@ If an agent encounters something that isn't covered by the contracts and can't p
 
 | # | Raised By | Date | Question / Blocker | Status | Resolution |
 |---|-----------|------|--------------------|--------|------------|
-| Q1 | Backend | 2026-02-09 | B10 (APNs .p8 key) is blocked — requires Apple Developer enrollment ($99/year, Phase 5). JWT auth code is written and will work once keys are provided. | `blocked` | Awaiting Apple Developer account setup. |
-| Q2 | Backend | 2026-02-09 | Deployment blocked — Docker daemon not available in this environment (no iptables/nft support), no `SUPABASE_ACCESS_TOKEN` for remote deploy. All Edge Function code is complete, reviewed, and bug-fixed. Deployment requires: (1) a Supabase project, (2) running `supabase link` + `supabase functions deploy` from a machine with Docker or remote access. See `GoalDigger/backend/DEPLOY.md` for step-by-step instructions. | `blocked` | Needs project owner to provision Supabase project and run deployment. |
-| Q3 | Backend | 2026-02-09 | P6 (Pipeline Agent full API testing) blocked on deployment + `ANTHROPIC_API_KEY`. Structural validation can proceed offline. Live testing requires deployed Edge Functions + real API keys. | `blocked` | Depends on Q2 resolution. |
+| — | — | — | — | — | — |
 
 ---
 

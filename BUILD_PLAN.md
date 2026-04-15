@@ -1,8 +1,10 @@
 # Goal Digger — Build Plan
 
-**Version:** 1.0
-**Date:** February 8, 2026
-**Companion documents:** [PRD.md](./PRD.md) | [AGENT_CONTRACTS.md](./AGENT_CONTRACTS.md)
+**Version:** 1.1
+**Date:** April 6, 2026 (security audit applied)
+**Companion documents:** [PRD.md](./PRD.md) | [AGENT_CONTRACTS.md](./AGENT_CONTRACTS.md) | [CHANGELOG_SECURITY.md](./CHANGELOG_SECURITY.md) | [PRODUCT_BRIEF_INTEGRATION.md](./PRODUCT_BRIEF_INTEGRATION.md)
+
+> **IMPORTANT (April 2026):** This document has been updated with security fixes. See [CHANGELOG_SECURITY.md](./CHANGELOG_SECURITY.md) for all changes. New product features from the product brief are tracked in [PRODUCT_BRIEF_INTEGRATION.md](./PRODUCT_BRIEF_INTEGRATION.md) — read that before starting new feature work.
 
 ---
 
@@ -67,12 +69,22 @@ GoalDigger/
 │       ├── Views/
 │       │   ├── Onboarding/
 │       │   │   ├── WelcomeView.swift
+│       │   │   ├── HerNameView.swift          # "First things first, what's your name?"
+│       │   │   ├── HisNameView.swift          # "And what's his?"
+│       │   │   ├── WhatToFollowView.swift     # PL only in v1, WC placeholder
 │       │   │   ├── TeamSelectionView.swift
+│       │   │   ├── TierSelectionView.swift    # "How far do you want to take this?"
 │       │   │   └── NotificationPromptView.swift
 │       │   ├── Feed/
 │       │   │   └── FeedView.swift
 │       │   ├── Detail/
 │       │   │   └── ContentDetailView.swift
+│       │   ├── Team/
+│       │   │   └── TeamPageView.swift         # His team page (club context)
+│       │   ├── Player/
+│       │   │   └── PlayerCardView.swift       # Tappable player cards
+│       │   ├── Matchday/
+│       │   │   └── OnesToWatchView.swift       # 3 key players per match
 │       │   └── Settings/
 │       │       └── SettingsView.swift
 │       ├── Models/
@@ -89,7 +101,8 @@ GoalDigger/
 ├── backend/
 │   ├── supabase/
 │   │   ├── migrations/                    # SQL schema migrations
-│   │   │   └── 001_initial_schema.sql
+│   │   │   ├── 001_initial_schema.sql
+│   │   │   └── 002_tiers_and_context.sql  # Tiers, team context, player cards, team pages
 │   │   └── functions/
 │   │       ├── _shared/                   # Shared utilities (see AGENT_CONTRACTS.md)
 │   │       │   ├── supabase-client.ts
@@ -97,6 +110,7 @@ GoalDigger/
 │   │       │   ├── apns-client.ts
 │   │       │   ├── types.ts
 │   │       │   ├── anti-spam.ts
+│   │       │   ├── input-sanitizer.ts     # RSS/API content sanitization (see PROMPTS.md)
 │   │       │   ├── trigger.ts
 │   │       │   └── pipeline-logger.ts
 │   │       ├── data-fetcher/
@@ -108,6 +122,8 @@ GoalDigger/
 │   │       ├── notification-sender/
 │   │       │   └── index.ts
 │   │       ├── matchday-scheduler/        # Daily 07:00 UTC, schedules game-day content
+│   │       │   └── index.ts
+│   │       ├── delete-my-data/            # GDPR data deletion endpoint
 │   │       │   └── index.ts
 │   │       └── health-check/              # GET endpoint for monitoring (see RUNBOOK.md)
 │   │           └── index.ts
@@ -188,14 +204,36 @@ CREATE TABLE content_items (
 );
 
 -- Device tokens for push notifications
+-- SECURITY: apns_token is validated as 64-char hex (standard APNs format)
+-- SECURITY: rate_limit_key tracks IP for abuse prevention
 CREATE TABLE device_tokens (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     team_id         TEXT NOT NULL REFERENCES teams(id),
-    apns_token      TEXT NOT NULL UNIQUE,
+    apns_token      TEXT NOT NULL UNIQUE
+                    CONSTRAINT valid_apns_token CHECK (apns_token ~ '^[a-fA-F0-9]{64}$'),
     is_active       BOOLEAN DEFAULT true,
     created_at      TIMESTAMPTZ DEFAULT NOW(),
     updated_at      TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- SECURITY: Rate limiting function for device token registration
+-- Prevents flooding: max 5 token registrations per IP per hour
+CREATE OR REPLACE FUNCTION check_token_rate_limit()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (
+        SELECT COUNT(*) FROM device_tokens
+        WHERE created_at > NOW() - INTERVAL '1 hour'
+    ) > 500 THEN
+        RAISE EXCEPTION 'Global rate limit exceeded for token registration';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER enforce_token_rate_limit
+    BEFORE INSERT ON device_tokens
+    FOR EACH ROW EXECUTE FUNCTION check_token_rate_limit();
 
 -- Raw fetched data for debugging and auditability
 CREATE TABLE raw_fetch_logs (
@@ -210,7 +248,7 @@ CREATE TABLE raw_fetch_logs (
 CREATE TABLE pipeline_health (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     team_id         TEXT NOT NULL REFERENCES teams(id),
-    stage           TEXT NOT NULL CHECK (stage IN ('fetch', 'generate', 'review', 'publish')),
+    stage           TEXT NOT NULL CHECK (stage IN ('fetch', 'generate', 'review', 'safety_review', 'publish')),
     status          TEXT NOT NULL CHECK (status IN ('success', 'failure', 'skipped')),
     duration_ms     INTEGER,
     message         TEXT,
@@ -226,6 +264,78 @@ CREATE INDEX idx_device_tokens_team ON device_tokens(team_id)
     WHERE is_active = true;
 CREATE INDEX idx_raw_fetch_team_date ON raw_fetch_logs(team_id, fetched_at DESC);
 CREATE INDEX idx_pipeline_health_recent ON pipeline_health(team_id, stage, created_at DESC);
+```
+
+### Migration 002: Tiers, Context & Content Cards — `002_tiers_and_context.sql`
+
+This migration adds support for content tiers, team context pressure flags, player cards, and team pages.
+
+```sql
+-- Add tier to device_tokens (user self-selects during onboarding)
+-- Tier 1 = "Just enough to get by", Tier 2 = "Came to impress", Tier 3 = "The one he brags about"
+ALTER TABLE device_tokens ADD COLUMN tier INTEGER DEFAULT 2 CHECK (tier IN (1, 2, 3));
+
+-- Team context: pressure flags that change the emotional weight of talking points
+-- Updated by data-fetcher after every standings/form pull
+CREATE TABLE team_context (
+    team_id    TEXT PRIMARY KEY REFERENCES teams(id),
+    flags      JSONB NOT NULL DEFAULT '[]',
+    -- flags is an array of strings, e.g.: ["title_race", "bad_form", "derby_upcoming"]
+    -- Valid flags: title_race, cl_spot, europa_spot, cup_run, relegation, bad_form,
+    --             derby_upcoming, derby_just_played, cup_knockout
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Player cards: cached player profiles in GoalDigger voice
+-- Generated by content pipeline, refreshed when player data changes
+CREATE TABLE player_cards (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    team_id     TEXT NOT NULL REFERENCES teams(id),
+    player_name TEXT NOT NULL,
+    position    TEXT NOT NULL,          -- plain English: "scores the goals", "stops the goals"
+    age         INTEGER,
+    summary     TEXT NOT NULL,          -- GoalDigger voice one-liner on why fans care about him
+    vibe        TEXT,                   -- "fan favourite", "controversial", "reliable", "flashy"
+    form        TEXT,                   -- current form in one sentence
+    updated_at  TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT unique_player_team UNIQUE (team_id, player_name)
+);
+
+-- Team page content: static-ish team profiles in GoalDigger voice
+-- Refreshed weekly or when significant changes happen (manager change, etc.)
+CREATE TABLE team_pages (
+    team_id      TEXT PRIMARY KEY REFERENCES teams(id),
+    content      JSONB NOT NULL,
+    -- JSONB structure:
+    -- {
+    --   "nickname": "The Gunners",
+    --   "stadium": "Emirates Stadium, London",
+    --   "manager": "Mikel Arteta. Been at Arsenal since 2019. Fans love him right now, which is rare.",
+    --   "top_players": [{"name": "Saka", "position": "winger", "one_liner": "..."}],
+    --   "biggest_rival": "Tottenham — it's called the North London Derby and it's personal.",
+    --   "fun_fact": "...",
+    --   "season_summary": "Currently sitting 2nd. Having a great season but City won't go away."
+    -- }
+    updated_at   TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes for new tables
+CREATE INDEX idx_player_cards_team ON player_cards(team_id);
+
+-- RLS for new tables
+ALTER TABLE team_context ENABLE ROW LEVEL SECURITY;
+ALTER TABLE player_cards ENABLE ROW LEVEL SECURITY;
+ALTER TABLE team_pages ENABLE ROW LEVEL SECURITY;
+
+-- Public read access for context cards (anon can SELECT)
+CREATE POLICY team_context_read ON team_context FOR SELECT TO anon USING (true);
+CREATE POLICY player_cards_read ON player_cards FOR SELECT TO anon USING (true);
+CREATE POLICY team_pages_read ON team_pages FOR SELECT TO anon USING (true);
+
+-- Write access only via service_role (backend)
+CREATE POLICY team_context_write ON team_context FOR ALL TO service_role USING (true);
+CREATE POLICY player_cards_write ON player_cards FOR ALL TO service_role USING (true);
+CREATE POLICY team_pages_write ON team_pages FOR ALL TO service_role USING (true);
 ```
 
 ### Seed Data: `seed_teams.sql`
@@ -244,10 +354,25 @@ INSERT INTO teams (id, display_name, api_football_id, short_name) VALUES
 Enable RLS on all tables. Policies:
 
 - `content_items`: Public read access WHERE `status = 'published'`. Write access only via `service_role` key (backend).
-- `device_tokens`: Insert/update via `anon` key (iOS client). Delete via `service_role` key.
+- `device_tokens`:
+  - **INSERT** via `anon` key: allowed, but CHECK constraint enforces valid 64-char hex APNs token format. Global rate limit trigger prevents flooding.
+  - **UPDATE** via `anon` key: allowed ONLY on `team_id` and `updated_at` columns. The `anon` role CANNOT update `apns_token`, `is_active`, or `id`. Enforce this with a column-level RLS policy or a BEFORE UPDATE trigger:
+    ```sql
+    -- RLS policy: anon can only update team_id
+    CREATE POLICY device_tokens_update ON device_tokens
+        FOR UPDATE TO anon
+        USING (true)
+        WITH CHECK (
+            apns_token = OLD.apns_token AND
+            is_active = OLD.is_active
+        );
+    ```
+  - **DELETE** via `service_role` key only.
 - `teams`: Public read access.
 - `raw_fetch_logs`: No public access. `service_role` only.
 - `pipeline_health`: No public access. `service_role` only.
+
+> **SECURITY NOTE:** The `anon` key is designed to be public-facing in Supabase. RLS is the real security boundary. These policies ensure that even with the anon key, an attacker can only: (a) register valid APNs tokens, (b) change which team a token follows. They cannot read other tokens, delete tokens, or access any backend-only tables.
 
 ---
 
@@ -622,6 +747,27 @@ Headers: apikey: {SUPABASE_ANON_KEY}
 - Limit: 60 requests/minute per IP
 - This prevents abuse without needing user authentication
 
+### New Endpoints (from Migration 002)
+
+#### Fetch Player Cards for a Team
+```
+GET /rest/v1/player_cards?team_id=eq.{team}&select=player_name,position,age,summary,vibe,form
+Headers: apikey: {SUPABASE_ANON_KEY}
+```
+
+#### Fetch Team Page
+```
+GET /rest/v1/team_pages?team_id=eq.{team}&select=content
+Headers: apikey: {SUPABASE_ANON_KEY}
+```
+
+#### Update Tier (with Team Change)
+```
+PATCH /rest/v1/device_tokens?apns_token=eq.{token}
+Headers: apikey: {SUPABASE_ANON_KEY}, Content-Type: application/json
+Body: { "tier": 3, "updated_at": "2026-04-06T12:00:00Z" }
+```
+
 ---
 
 # PHASE 2: iOS App — Core Architecture
@@ -644,6 +790,46 @@ Headers: apikey: {SUPABASE_ANON_KEY}
    - `SwiftUI` (UI)
    - `SwiftData` (local cache)
    - `UserNotifications` (push handling)
+
+### Secure Configuration Setup (REQUIRED before writing any networking code)
+
+Create `ios/GoalDigger/Configuration.xcconfig`:
+```
+// Configuration.xcconfig
+// SECURITY: This file is excluded from git via .gitignore
+// Each developer/agent creates their own copy from Configuration.xcconfig.example
+
+SUPABASE_URL = https:$(/)$(/)xxxxx.supabase.co
+SUPABASE_ANON_KEY = your_anon_key_here
+```
+
+Create `ios/GoalDigger/Configuration.xcconfig.example` (committed to git):
+```
+// Configuration.xcconfig.example
+// Copy this file to Configuration.xcconfig and fill in real values
+// NEVER commit Configuration.xcconfig to git
+
+SUPABASE_URL = https:$(/)$(/)YOUR_PROJECT.supabase.co
+SUPABASE_ANON_KEY = YOUR_ANON_KEY_HERE
+```
+
+Add to `Info.plist`:
+```xml
+<key>SUPABASE_URL</key>
+<string>$(SUPABASE_URL)</string>
+<key>SUPABASE_ANON_KEY</key>
+<string>$(SUPABASE_ANON_KEY)</string>
+```
+
+Add to `.gitignore`:
+```
+# Secrets - never commit
+Configuration.xcconfig
+*.p8
+.env
+```
+
+In Xcode: Project → Info → Configurations → set Configuration.xcconfig for both Debug and Release.
 
 ### Why No Dependencies
 - `URLSession` with `async/await` replaces Alamofire
@@ -724,12 +910,27 @@ class AppState {
     /// injected into the view hierarchy via .environment().
     static let shared = AppState()
 
-    // Persisted
+    // Persisted — names stored LOCAL-ONLY (never sent to server)
+    var herName: String {
+        didSet {
+            UserDefaults.standard.set(herName, forKey: "herName")
+        }
+    }
+    var hisName: String {
+        didSet {
+            UserDefaults.standard.set(hisName, forKey: "hisName")
+        }
+    }
     var selectedTeam: Team? {
         didSet {
             if let team = selectedTeam {
                 UserDefaults.standard.set(team.rawValue, forKey: "selectedTeam")
             }
+        }
+    }
+    var selectedTier: Int {
+        didSet {
+            UserDefaults.standard.set(selectedTier, forKey: "selectedTier")
         }
     }
     var hasCompletedOnboarding: Bool {
@@ -747,13 +948,53 @@ class AppState {
     var deepLinkContentId: UUID?
 
     init() {
+        self.herName = UserDefaults.standard.string(forKey: "herName") ?? ""
+        self.hisName = UserDefaults.standard.string(forKey: "hisName") ?? ""
         let teamRaw = UserDefaults.standard.string(forKey: "selectedTeam")
         self.selectedTeam = teamRaw.flatMap { Team(rawValue: $0) }
+        self.selectedTier = UserDefaults.standard.integer(forKey: "selectedTier").clamped(to: 1...3, default: 2)
         self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
         self.notificationPermissionRequested = UserDefaults.standard.bool(forKey: "notificationPermissionRequested")
     }
+
+    /// Replace `[his name]` placeholder in server-generated content with locally stored name
+    func personalise(_ text: String) -> String {
+        var result = text
+        if !hisName.isEmpty {
+            result = result.replacingOccurrences(of: "[his name]", with: hisName)
+            result = result.replacingOccurrences(of: "[his name's]", with: hisName + "'s")
+        }
+        if !herName.isEmpty {
+            result = result.replacingOccurrences(of: "[her name]", with: herName)
+        }
+        return result
+    }
+
+    /// Clear all local data (for "Delete My Data" flow)
+    func clearAllData() {
+        herName = ""
+        hisName = ""
+        selectedTeam = nil
+        selectedTier = 2
+        hasCompletedOnboarding = false
+        notificationPermissionRequested = false
+        deepLinkContentId = nil
+        // Also clear UserDefaults
+        let keys = ["herName", "hisName", "selectedTeam", "selectedTier",
+                     "hasCompletedOnboarding", "notificationPermissionRequested"]
+        keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
+    }
+}
+
+private extension Int {
+    func clamped(to range: ClosedRange<Int>, default defaultValue: Int) -> Int {
+        if self == 0 { return defaultValue } // UserDefaults returns 0 for unset integers
+        return min(max(self, range.lowerBound), range.upperBound)
+    }
 }
 ```
+
+> **PRIVACY NOTE:** `herName` and `hisName` are stored in UserDefaults ONLY. They are NEVER sent to the server, NEVER included in API calls, and NEVER used in push notifications. The `personalise()` function substitutes `[his name]` placeholders in server-generated content with the locally stored name at display time.
 
 ---
 
@@ -763,8 +1004,22 @@ class AppState {
 class APIClient {
     static let shared = APIClient()
 
-    private let baseURL = URL(string: "https://xxxxx.supabase.co/rest/v1")!
-    private let apiKey = "SUPABASE_ANON_KEY_HERE"  // Move to config/env in production
+    // SECURITY: Credentials are injected at build time via Configuration.xcconfig
+    // NEVER hardcode API keys in source code. See ios/GoalDigger/Configuration.xcconfig
+    private let baseURL: URL = {
+        guard let urlString = Bundle.main.infoDictionary?["SUPABASE_URL"] as? String,
+              let url = URL(string: urlString + "/rest/v1") else {
+            fatalError("SUPABASE_URL not set in Configuration.xcconfig")
+        }
+        return url
+    }()
+
+    private let apiKey: String = {
+        guard let key = Bundle.main.infoDictionary?["SUPABASE_ANON_KEY"] as? String, !key.isEmpty else {
+            fatalError("SUPABASE_ANON_KEY not set in Configuration.xcconfig")
+        }
+        return key
+    }()
 
     private var headers: [String: String] {
         [
@@ -974,32 +1229,43 @@ Deep link from push notification:
 
 ## Step 3.1: Design System — `Theme.swift`
 
-### Color Palette
+### Color Palette — Rose and Dusk (Active)
 
 ```swift
 extension Color {
-    // Backgrounds
-    static let appBackground = Color(hex: "#FAF8F5")    // Warm off-white
-    static let cardBackground = Color.white
-    static let feedDivider = Color(hex: "#F0ECE6")       // Subtle warm gray
+    // Core palette (Rose and Dusk)
+    static let primary = Color(hex: "#E8397D")            // Hot Rose — buttons, highlights, key moments
+    static let appBackground = Color(hex: "#2D1B2E")      // Deep Mauve — app background
+    static let cardBackground = Color(hex: "#FAF0F4")     // Soft Blush — all content cards
+    static let textOnDark = Color(hex: "#F5F0F0")         // Warm White — text on dark backgrounds
+    static let accent = Color(hex: "#E8C547")             // Gold — tier 3 details, premium moments
 
-    // Text
-    static let textPrimary = Color(hex: "#1A1A1A")       // Near-black, softer than pure black
-    static let textSecondary = Color(hex: "#8A8480")      // Warm gray
-    static let textTertiary = Color(hex: "#B8B2AA")       // Light warm gray (timestamps)
+    // Derived text colors
+    static let textPrimary = Color(hex: "#2D1B2E")        // Deep Mauve — text on light card backgrounds
+    static let textSecondary = Color(hex: "#8A7080")       // Muted mauve — secondary text on cards
+    static let textTertiary = Color(hex: "#B8A0AA")        // Light mauve — timestamps on cards
 
-    // Accents
-    static let accentWarm = Color(hex: "#D4956A")         // Warm terracotta/peach — primary accent
-    static let accentSoft = Color(hex: "#E8CEB8")         // Lighter warm accent — badge backgrounds
-    static let accentGreen = Color(hex: "#7DB07E")        // Soft sage green — for "matchday" badges
+    // Derived utility colors
+    static let feedDivider = Color(hex: "#3D2B3E")         // Slightly lighter than background
+    static let cardShadow = Color.black.opacity(0.12)      // Slightly stronger on dark bg
+    static let shimmer = Color(hex: "#3D2B3E")             // Loading skeleton on dark bg
 
-    // Utility
-    static let cardShadow = Color.black.opacity(0.04)
-    static let shimmer = Color(hex: "#F5F0EA")            // Loading skeleton color
+    // Badge colors
+    static let badgeMatchday = Color(hex: "#E8397D").opacity(0.15)  // Rose tint for matchday badges
+    static let badgeText = Color(hex: "#E8397D")                     // Rose text on badges
+
+    // Tier-specific
+    static let tierGold = Color(hex: "#E8C547")            // Gold for Tier 3 elements only
 }
 ```
 
-> **Why these colors:** The warm off-white background avoids the clinical feel of pure white. The terracotta accent is feminine without being pink. The sage green for matchday badges gives visual variety without introducing "sports app" colors. Every color is muted and warm.
+> **Why Rose and Dusk:** Premium, bold, and ownable. Nothing in the App Store in this space looks like it. The deep mauve background makes the rose pop. Gold is used sparingly — only for Tier 3 moments and aspirational copy. Soft blush cards on mauve create contrast without feeling clinical.
+
+> **Usage rules:**
+> - Rose is the action colour: buttons, tapped states, highlights, notification badges
+> - Gold is for Tier 3 only: tier badge, premium moments, trophy icons
+> - Never use white as a background — always soft blush on cards
+> - Text on dark background: Warm White. Text on cards: Deep Mauve.
 
 ### Typography
 
@@ -1064,74 +1330,109 @@ extension View {
 
 ---
 
-## Step 3.2: Onboarding — WelcomeView
+## Step 3.2: Onboarding Flow (8 screens)
 
-### Screen Description
-The first thing the user sees after downloading. It should feel warm, inviting, and immediately communicate what the app does without mentioning "football stats" or anything intimidating.
+**Target:** Under 90 seconds, one job per screen. Background: `appBackground` (Deep Mauve). All text in `textOnDark` (Warm White) unless on a card.
 
-### Layout (Top to Bottom)
+### Screen 1: WelcomeView
+
+**Copy:** "You're here. He has no idea. Let's get you ready."
+**Layout:**
 1. **Spacer** — push content to vertical center
-2. **Illustration area** (200x200pt) — A simple, warm illustration. Suggestions:
-   - Two people on a couch, one excited and one smiling (abstract/minimal style)
-   - Or: a speech bubble with a heart and a football inside
-   - Style: line art or flat illustration with the warm color palette, NOT realistic
-   - If no custom illustration available, use a large friendly emoji combination as placeholder: e.g. a text-based visual
-3. **App name** — "Goal Digger" in `onboardingTitle` font, `textPrimary` color
-4. **Tagline** — "Stay in the loop. Win the conversation." in `onboardingBody` font, `textSecondary` color
+2. **Illustration area** (200x200pt) — Minimal line art or abstract illustration. Style: warm, playful, NOT sports-themed. Use app color palette.
+3. **App name** — "Goal Digger" in `onboardingTitle` font, `textOnDark`
+4. **Tagline** — "You're here. He has no idea. Let's get you ready." in `onboardingBody`, `textOnDark` at 80% opacity
 5. **Spacer**
-6. **CTA Button** — "Get Started" — full-width, rounded rectangle, `accentWarm` background, white text, 50pt height, 16pt corner radius
+6. **CTA Button** — "Let's go" — full-width, `primary` (Hot Rose) background, white text, 50pt height, 16pt corner radius
 7. **Bottom padding** — 40pt
 
-### Behavior
-- Tapping "Get Started" navigates to TeamSelectionView
-- No skip, no back button. This is the only path forward.
+**Behavior:** Tapping "Let's go" navigates to HerNameView.
 
----
+### Screen 2: HerNameView
 
-## Step 3.3: Onboarding — TeamSelectionView
+**Copy:** "First things first, what's your name?"
+**Layout:**
+1. **Title** — "First things first, what's your name?" in `onboardingTitle`, `textOnDark`
+2. **Text field** — large, rounded, `cardBackground` background, `textPrimary` text, placeholder "Your name"
+3. **Continue button** — appears when field is non-empty, `primary` background
 
-### Screen Description
-User picks their partner's team. This is the most important onboarding step — it determines all future content.
+**Behavior:** Saves `herName` to `AppState` (local only). Navigates to HisNameView.
 
-### Layout
-1. **Title** — "Which team does he support?" in `onboardingTitle`, centered
-2. **Subtitle** — "Pick one and we'll keep you in the loop." in `onboardingBody`, `textSecondary`, centered
-3. **Spacer** (24pt)
-4. **Team cards** — 3 large, tappable cards stacked vertically with `cardSpacing` between them
+### Screen 3: HisNameView
 
-### Team Card Design
-Each card is a horizontal rectangle, full-width (minus `screenPadding`), 80pt tall:
+**Copy:** "And what's his?"
+**Layout:** Same as HerNameView but with title "And what's his?" and placeholder "His name"
+
+**Behavior:** Saves `hisName` to `AppState` (local only). Navigates to WhatToFollowView.
+
+### Screen 4: WhatToFollowView
+
+**Copy:** "What does [his name] care about?"
+**Layout:**
+1. **Title** — "What does {hisName} care about?" in `onboardingTitle`, `textOnDark`
+2. **Option cards** (vertical stack, tappable):
+   - "Premier League" — enabled, tappable
+   - "World Cup 2026" — greyed out with "Coming soon" badge (not yet available)
+   - "Both" — greyed out with "Coming soon" badge
+
+**Behavior:** In v1, only "Premier League" is selectable. Navigates to TeamSelectionView.
+
+> **WC NOTE:** When World Cup mode ships, this screen enables all 3 options. "World Cup 2026" goes to NationSelectionView. "Both" runs team + nation selection in sequence. See PRODUCT_BRIEF_INTEGRATION.md Phase WC.
+
+### Screen 5: TeamSelectionView
+
+**Copy:** "Who does {hisName} support?"
+**Layout:**
+1. **Title** — "Who does {hisName} support?" in `onboardingTitle`, `textOnDark`
+2. **Subtitle** — "Pick one and we'll keep you in the loop." in `onboardingBody`, `textOnDark` at 80% opacity
+3. **Team cards** — 3 large, tappable cards stacked vertically with `cardSpacing` between them
+
+**Team Card Design:**
+Each card is full-width (minus `screenPadding`), 80pt tall:
+- **Background:** `cardBackground` (Soft Blush) with `cardStyle()`
 - **Left:** Team display name in `feedHeadline` font, `textPrimary`
-- **Right:** A subtle chevron (SF Symbol: `chevron.right`) in `textTertiary`
-- **Background:** `cardBackground` with `cardStyle()`
-- **Selected state:** `accentWarm` 2pt border, subtle scale animation (1.02x)
+- **Right:** Subtle chevron in `textSecondary`
+- **Selected state:** `primary` (Hot Rose) 2pt border, subtle scale animation (1.02x)
 - **No team crests/logos** in v1 (avoids licensing issues)
 
-### Behavior
-- Tapping a card selects it (with haptic: `.selectionChanged`)
-- A "Continue" button appears at the bottom once a team is selected (same style as "Get Started")
-- Tapping "Continue" saves the team to AppState and navigates to NotificationPromptView
+**Behavior:** Tapping a card selects it (haptic: `.selectionChanged`). "Continue" button appears. Navigates to TierSelectionView.
 
----
+### Screen 6: TierSelectionView
 
-## Step 3.4: Onboarding — NotificationPromptView
+**Copy:** "How far do you want to take this?"
+**Layout:**
+1. **Title** — "How far do you want to take this?" in `onboardingTitle`, `textOnDark`
+2. **Tier cards** — 3 stacked cards on `cardBackground`:
 
-### Screen Description
-Explains why notifications matter in a friendly, non-pushy way. This screen is shown ONCE and never again.
+| Tier | Label | Description |
+|------|-------|-------------|
+| 1 | "Just enough to get by" | "Match day heads-up and one key talking point." |
+| 2 | "Came to impress" | "Regular news and talking points through the week." |
+| 3 | "The one he brags about" | "Everything including deep news, stats context and transfer rumours." |
 
-### Layout
-1. **Icon** — SF Symbol `bell.badge` in `accentWarm`, 60pt size
-2. **Title** — "Don't miss the good stuff" in `onboardingTitle`, centered
-3. **Body** — "We'll ping you when something interesting happens — just the highlights, never spam. Promise." in `onboardingBody`, `textSecondary`, centered, max 300pt width
-4. **Spacer**
-5. **Primary CTA** — "Turn on Notifications" — full-width, `accentWarm` background, white text
-6. **Secondary CTA** — "Maybe Later" — text-only button, `textSecondary`, no background
-7. **Bottom padding** — 40pt
+- Tier 3 card has a subtle `tierGold` border to convey premium feel
+- Default selection: Tier 2 (pre-selected with `primary` border)
 
-### Behavior
-- "Turn on Notifications" → calls `NotificationService.shared.requestPermission()`, which triggers the iOS system dialog. Regardless of the user's choice in the system dialog, mark `notificationPermissionRequested = true` and `hasCompletedOnboarding = true`, navigate to FeedView.
-- "Maybe Later" → mark `notificationPermissionRequested = true` and `hasCompletedOnboarding = true`, navigate to FeedView. No notification permission requested.
-- **No re-prompting, ever.** If they said no, they said no.
+**Behavior:** Saves `selectedTier` to `AppState`. Sends tier to server via API (included in device token registration). Navigates to NotificationPromptView.
+
+### Screen 7: NotificationPromptView
+
+**Copy:** "We'll handle the rest. Just let us in."
+**Layout:**
+1. **Icon** — SF Symbol `bell.badge` in `primary` (Hot Rose), 60pt size
+2. **Title** — "We'll handle the rest. Just let us in." in `onboardingTitle`, `textOnDark`
+3. **Body** — "We'll only ping you when it matters. Never spam. Promise." in `onboardingBody`, `textOnDark` at 80% opacity
+4. **Primary CTA** — "Yes, keep me posted" — `primary` background, white text
+5. **Secondary CTA** — "maybe later" — text-only, `textOnDark` at 60% opacity
+
+**Behavior:**
+- "Yes, keep me posted" → calls `NotificationService.shared.requestPermission()`, triggers iOS system dialog. Regardless of choice, mark `notificationPermissionRequested = true`, navigate to first talking point.
+- "maybe later" → mark `notificationPermissionRequested = true`, navigate to first talking point. No permission requested.
+- **No re-prompting, ever.**
+
+### Screen 8: First Talking Point
+
+**Not a dedicated view** — land directly on FeedView with the most recent content item for her selected team pre-expanded. Mark `hasCompletedOnboarding = true`. She sees immediate value before exploring anything else.
 
 ---
 
@@ -1626,16 +1927,49 @@ explained like a friend would.
 
 4. **Keywords:** premier league, football, girlfriend, partner, match day, talking points, arsenal, manchester united, west ham, relationship
 
-5. **Privacy Policy:** Create a simple static page disclosing:
-   - Device push notification token (collected for push delivery)
-   - Team selection (stored locally on device, sent to server for content delivery)
-   - No personal information collected
-   - No tracking
-   - No third-party analytics sharing
+5. **Privacy Policy:** Create a GDPR-compliant static page (hosted on a simple web page e.g. GitHub Pages). Must include:
+
+   **What we collect:**
+   - APNs device token (a unique identifier assigned by Apple to your device for push notifications)
+   - Your selected team preference (sent to our server to deliver relevant content)
+   - Basic anonymised usage analytics via TelemetryDeck (privacy-friendly, no personal data)
+
+   **Why we collect it (lawful basis — legitimate interest under GDPR Article 6(1)(f)):**
+   - Device token: required to deliver push notifications you opted into
+   - Team preference: required to send you relevant content for the team you selected
+   - Analytics: to understand which features are used so we can improve the app
+
+   **How long we keep it:**
+   - Device tokens: retained while active. Tokens marked inactive (APNs 410 response) are deleted within 7 days.
+   - Team preferences: retained as long as the device token is active.
+   - Analytics: anonymised, retained for 12 months.
+
+   **Your rights (GDPR / UK-GDPR):**
+   - **Right to deletion:** Use the "Delete My Data" button in the app's Settings screen. This immediately removes your device token and team preference from our servers. You will stop receiving notifications.
+   - **Right to access:** Contact privacy@goaldigger.app to request a copy of the data we hold about your device.
+   - **Right to object:** You can opt out of push notifications at any time via iOS Settings. You can delete your data at any time via the app.
+
+   **Data controller:** [Your Name / Company], [Contact Email]
+   **Data processor:** Supabase Inc. (database hosting). A Data Processing Agreement (DPA) is in place.
+   **Third parties:** TelemetryDeck GmbH (analytics, GDPR-compliant, no personal data shared). Apple Inc. (push notification delivery via APNs).
+   **Data transfers:** Data may be processed in the EU/US. Supabase provides Standard Contractual Clauses for international transfers.
+
+   > **IMPORTANT:** This privacy policy must be live at a public URL before App Store submission. Host it on GitHub Pages, Netlify, or similar.
 
 6. **App Privacy "Nutrition Label":**
    - Data linked to you: None
    - Data not linked to you: Identifiers (device token for push notifications)
+   - Data used to track you: None
+
+7. **"Delete My Data" Feature (REQUIRED for GDPR compliance):**
+
+   Add to the Settings screen: a "Delete My Data" button that:
+   1. Calls `DELETE /rest/v1/device_tokens?apns_token=eq.{stored_token}` (requires a new RLS policy allowing anon DELETE where the token matches — or use an Edge Function)
+   2. Clears local UserDefaults and SwiftData cache
+   3. Shows confirmation: "Your data has been deleted. You'll no longer receive notifications."
+   4. Returns user to the Welcome screen (re-onboarding flow)
+
+   > **Implementation note:** Since anon DELETE on device_tokens is risky (could delete others' tokens), implement this as a dedicated Edge Function `delete-my-data` that accepts the APNs token in the request body, validates it exists, deletes the row, and returns success. This is safer than direct table DELETE via anon key.
 
 ## Step 5.4: Screenshots
 
