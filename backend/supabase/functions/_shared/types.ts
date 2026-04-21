@@ -84,12 +84,15 @@ export interface PipelineHealthLog {
 
 export interface TriggerPayload {
   team_id: string;
-  trigger: "new_data" | "matchday" | "review_complete" | "approved";
+  trigger: "new_data" | "matchday" | "review_complete" | "approved" | "reviewer_retry";
   content_item_id?: string;
   fetch_log_ids?: string[];
   fixture_id?: string;
   kickoff_time?: string;
   opponent?: string;
+  // When trigger is "reviewer_retry": the reviewer's failure notes so the
+  // generator can address specific issues in the rewrite.
+  previous_failure_notes?: string;
 }
 
 export interface SpamCheckResult {

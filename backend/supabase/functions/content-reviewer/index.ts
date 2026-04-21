@@ -1,184 +1,278 @@
 // content-reviewer/index.ts
-// Goal Digger — 4 review bots: Tone, Accuracy, Brevity, Safety
-// All 4 must pass. JSON.parse failures = FAIL. One retry on single-bot failure.
+// Goal Digger — Single Claude call with tool_use that returns 4 verdicts at once.
+// Replaces the old 4-separate-call flow. No more JSON parse errors (tool_use
+// returns structured data), 4× cheaper, 4× faster.
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { callClaude } from "../_shared/claude-client.ts";
 import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 import { triggerFunction } from "../_shared/trigger.ts";
-import type { ReviewBotResult, ReviewNote } from "../_shared/types.ts";
+import { buildSourceSummary } from "../_shared/source-summarizer.ts";
+import type { ReviewNote } from "../_shared/types.ts";
 
 // ============================================================
-// REVIEW BOT SYSTEM PROMPTS (from PROMPTS.md Sections 3-6)
+// COMBINED SYSTEM PROMPT — one Claude call, four verdicts
 // ============================================================
 
-const TONE_SYSTEM_PROMPT = `You are a tone reviewer for Goal Digger, an app that explains Premier League football
-to girlfriends who don't care about football.
+const REVIEW_SYSTEM_PROMPT = `You are a content reviewer for Goal Digger — an app that explains Premier League
+football to girlfriends who don't follow football. You'll score ONE piece of
+generated content across 4 dimensions: TONE, ACCURACY, BREVITY, SAFETY.
 
-You are reviewing a generated content item. Your ONLY job is to evaluate the tone and voice.
+CALL the review_content tool with all 4 verdicts. Be LENIENT by default — your
+job is to catch real problems, not to find reasons to reject. Only ACCURACY
+should be strict.
 
-THE IDEAL VOICE:
-- Sounds like a fun, warm best friend texting her about her partner's hobby
-- Conspiratorial and slightly gossipy
-- Empathetic — understands she's doing this out of love, not interest
-- Playful — uses humour naturally, never forced
-- Confident — explains things simply without hedging
+══════════════════════════════════════════════════════════════════════════════
+UNIVERSAL CONTEXT — applies to ALL dimensions
+══════════════════════════════════════════════════════════════════════════════
 
-PASS IF: A 27-year-old woman with zero football knowledge would enjoy reading it. It sounds like a real person texting.
+1. "[his name]", "[her name]", "[his team]" are TEMPLATE PLACEHOLDERS. iOS
+   substitutes them at display time. DO NOT flag as bugs, fourth-wall breaks,
+   or meta-commentary. They are correct.
 
-FAIL IF: It reads like BBC Sport. Uses unexplained jargon. Condescending. Too formal.
-Uses passive voice extensively. Uses ANY banned phrases: "Additionally", "Furthermore",
-"Moreover", "It's worth noting", "Interestingly", "In conclusion", "As mentioned",
-"It should be noted", "At the end of the day", "That being said". Uses semicolons or em dashes.
+2. Empathetic commentary about HIS mood ("he'll be buzzing", "he might be
+   grumpy tonight", "give him space") is THE CORE PRODUCT. It's why users open
+   this app. NEVER flag as "patronizing", "meta", or "assumes emotional state".
 
-RESPONSE FORMAT:
-{
-    "pass": true/false,
-    "confidence": 0.0-1.0,
-    "notes": "Explanation of your decision",
-    "issues": ["Specific lines or phrases that need fixing"],
-    "suggestions": ["Specific rewording suggestions"]
-}`;
+3. Practical conversation advice for her ("ask him about X", "expect him
+   to be frustrated") is on-voice. Never flag.
 
-const ACCURACY_SYSTEM_PROMPT = `You are a fact-checker for Goal Digger. The app generates football content using AI,
-and your job is to make sure every claim is accurate.
+══════════════════════════════════════════════════════════════════════════════
+TONE — how it reads
+══════════════════════════════════════════════════════════════════════════════
 
-This is CRITICAL. The user will repeat this information to her partner, who is a
-passionate football fan. One wrong fact can lose a user forever.
+PASS by default. Slight formality or a match-report-ish sentence here or
+there is FINE. Real writing isn't maximally conversational every line.
 
-CHECK FOR: Player names (correct spelling, correct team), match dates/times, scores,
-league positions, injury/transfer info, quotes (must be from source data).
+ONLY fail if:
+- Contains banned jargon phrases: "Additionally", "Furthermore", "Moreover",
+  "It's worth noting", "Interestingly", "In conclusion", "As mentioned",
+  "It should be noted", "At the end of the day", "That being said".
+- Contains semicolons or em dashes anywhere.
+- Reads like raw BBC Sport copy end-to-end (zero warmth, pure reporter voice).
+- Condescending to the reader ("even if you don't follow football...").
 
-PASS IF: Every factual claim traces to the provided source data. No misspellings.
+══════════════════════════════════════════════════════════════════════════════
+ACCURACY — strict on hard facts, lenient on phrasing
+══════════════════════════════════════════════════════════════════════════════
 
-FAIL IF: ANY factual error, ANY unverifiable claim, ANY misspelled name.
+You'll be given structured source data (RECENT RESULTS, LEAGUE TABLE, LAST
+MATCH EVENTS, etc.) and news headlines. Verify every specific factual claim.
 
-RESPONSE FORMAT:
-{
-    "pass": true/false,
-    "confidence": 0.0-1.0,
-    "notes": "Summary of fact-check",
-    "errors": [{"claim": "...", "issue": "...", "source_says": "...", "severity": "critical/minor"}],
-    "unverifiable_claims": ["Claims not verifiable from source data"]
-}`;
+IMPORTANT — these are NOT errors, do NOT flag them:
+- Placeholders: "[his name]", "[her name]", "[his team]" — iOS replaces at display.
+- Paraphrasing: source says "2-1 defeat", content says "lost 2-1" — same thing.
+- Characterization: "huge blow to title hopes" if source says title race got harder.
+- News vs stale API data: when news headlines clearly describe a recent event
+  (manager change, new signing, injury) but the structured API data is outdated
+  and still shows the old state, TRUST THE NEWS. APIs lag behind news cycles
+  by 1-2 days, sometimes longer.
 
-const BREVITY_SYSTEM_PROMPT = `You are an editor for Goal Digger. Ensure content is concise, scannable, respects time.
+  EXAMPLE: News headlines say "Bournemouth confirm Marco Rose as new manager."
+  Structured API data still shows "current manager: J. Woodgate (since 2021)."
+  Content says "Bournemouth just announced their new manager. Marco Rose is
+  taking over." → This is CORRECT. PASS. Do NOT flag the API/content mismatch.
+  The API is stale, the news is fresh, the content follows the news.
 
-HEADLINE: 1-2 sentences, under 200 chars. Must NOT start with team name.
-TALKING POINTS: 3-5 items, each 1-2 sentences. Must be conversation starters.
-BODY: 3-5 paragraphs, each 2-4 sentences. Scannable in under 60 seconds.
-No repetition across sections. No filler phrases.
+  Rule: for CURRENT-STATE facts (current manager, current squad, injuries),
+  news headlines are authoritative. Only flag if content invents something
+  that appears nowhere in news OR API.
+- Stoppage-time minute variations: the API reports "elapsed: 90" for ANY second-half
+  stoppage goal; news headlines call them "95th minute", "100th minute", etc. All
+  correct for the same goal. Do NOT flag minute discrepancies on stoppage goals.
+- Relative timings: "just before halftime", "moments later", "two minutes after" —
+  fine if they're approximately right. Do the math before claiming a mismatch.
+- Possession percentages within 5% of source (59% vs 60% is fine).
+- Home/away framing: only fail this if it genuinely reverses which team was the host
+  AND that mistake affects the headline's emotional angle. Otherwise let it slide.
+- Ordinal/cardinal: "third in the table" vs "3rd place" — same thing.
 
-PASS IF: All length requirements met, scannable in 60s, no repetition.
-FAIL IF: Any length rule broken, significant repetition, takes >60s to scan.
+HARD fails (reject the content):
+- Wrong SCORE (content says 2-1, source says 3-1).
+- Wrong SCORER named (content says "Saka scored", source says it was Havertz).
+- Wrong DATE for a specific match (off by more than a day).
+- Completely INVENTED stats with specific numbers not in source.
+- Quotes attributed to a person that aren't in any source article.
+- Wrong standings by more than one position.
 
-RESPONSE FORMAT:
-{
-    "pass": true/false,
-    "confidence": 0.0-1.0,
-    "notes": "Summary",
-    "headline_chars": 142,
-    "headline_sentences": 2,
-    "talking_point_count": 4,
-    "body_paragraph_count": 4,
-    "estimated_read_seconds": 45,
-    "issues": ["Specific issues"],
-    "suggested_cuts": ["Sentences to remove or shorten"]
-}`;
+When failing, cite the EXACT contradiction in the errors array. Don't fail on
+minor wording if the underlying fact is correct.
 
-const SAFETY_SYSTEM_PROMPT = `You are a content safety reviewer for Goal Digger. Content goes directly to users as
-push notifications — there is no human review step after you. You are the last line of defense.
+══════════════════════════════════════════════════════════════════════════════
+BREVITY — format check (evidence required)
+══════════════════════════════════════════════════════════════════════════════
 
-FAIL IF IT CONTAINS:
-1. PERSONAL LIFE / OFF-PITCH: Comments about a player's partner, family, children,
-   relationships, religion, politics. Exception: officially announced retirements.
-2. DEFAMATION: Unverified accusations, speculation presented as fact, medical speculation.
-3. DISCRIMINATION: Stereotypes based on race, nationality, gender, religion.
-4. INAPPROPRIATE: Violence beyond normal football context, sexual content, excessive negativity.
-5. COPYRIGHT: Verbatim quotes >2 sentences, close paraphrases of single articles.
+Count BEFORE judging. The tool requires you to fill in the actual counts.
+Do NOT hallucinate — use the real numbers you can count.
 
-PASS IF: Football-focused, warm, universally appropriate.
+Rules (lenient):
+- HEADLINE: up to 200 characters, up to 2 sentences.
+- TALKING POINTS: 3 items total. Each must be either a question (ending with ?)
+  OR a short statement she can say verbatim. Instructions to the user
+  ("Ask him about...", "Don't bring up...", "Maybe wait...") are the one
+  hard fail — those are commentary, not talking points.
+- BODY: up to 3 paragraphs, under 180 words total.
 
-RESPONSE FORMAT:
-{
-    "pass": true/false,
-    "confidence": 0.0-1.0,
-    "notes": "Summary of safety review",
-    "flags": [{"text": "...", "category": "personal_life|defamation|discrimination|inappropriate|copyright", "severity": "block|warn", "suggestion": "..."}]
-}`;
+PASS by default when content is within these loose bounds.
+FAIL only on clear violations, and cite the actual count + offending text.
+
+══════════════════════════════════════════════════════════════════════════════
+SAFETY — block truly unsafe content
+══════════════════════════════════════════════════════════════════════════════
+
+PASS unless it contains:
+1. Personal life of a player (partner, family, religion, politics). Exception:
+   officially announced retirements.
+2. Defamation — unverified accusations or medical speculation stated as fact.
+3. Discrimination — stereotypes based on race, nationality, gender, religion.
+4. Sexual content or inappropriate intimacy references.
+5. Excessive violence beyond normal football context.
+6. Copyright violations — verbatim quotes >2 sentences from one article.
+
+"He'll be grumpy tonight" and "ask him about X" are the VOICE. Not safety issues.
+
+══════════════════════════════════════════════════════════════════════════════
+
+AUTO-CORRECT PATH (SAVES TIME):
+If any dimension fails but the problem is SMALL and fixable (wrong minute,
+wrong home/away, small numeric error, typo, banned phrase swap) — set
+can_autocorrect=true and fill corrected_content with the FULL fixed version
+of headline, body, and talking_points. We'll apply the patch and approve
+instead of a full regeneration.
+
+Only use auto-correct when:
+- ALL failures are truly minor edits (no deep rewrites needed)
+- None of them are safety issues
+- You can confidently produce the fixed text
+
+Do NOT use auto-correct for tone overhauls, wrong scorer/score, invented
+facts, missing source support, or safety problems. Those need a full regen.
+
+Now call review_content with all 4 verdicts based on the content + source data
+below. Remember: PASS by default except for accuracy.`;
+
+const REVIEW_TOOL = {
+  name: "review_content",
+  description: "Review generated football content across 4 dimensions. When a dimension fails with something small and fixable (wrong minute, wrong home/away, wrong percentage, typo, banned phrase), set can_autocorrect=true and return the corrected_content block — we'll patch and approve without a full regen.",
+  input_schema: {
+    type: "object",
+    properties: {
+      tone: {
+        type: "object",
+        properties: {
+          pass: { type: "boolean" },
+          confidence: { type: "number", minimum: 0, maximum: 1 },
+          notes: { type: "string", description: "Brief explanation. If fail, quote the exact offending phrase." },
+        },
+        required: ["pass", "confidence", "notes"],
+      },
+      accuracy: {
+        type: "object",
+        properties: {
+          pass: { type: "boolean" },
+          confidence: { type: "number", minimum: 0, maximum: 1 },
+          notes: { type: "string", description: "Summary of fact-check. If fail, name the specific contradictions." },
+          errors: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                claim: { type: "string", description: "What the content says" },
+                source_says: { type: "string", description: "What the source data actually says" },
+              },
+              required: ["claim", "source_says"],
+            },
+          },
+        },
+        required: ["pass", "confidence", "notes"],
+      },
+      brevity: {
+        type: "object",
+        properties: {
+          pass: { type: "boolean" },
+          confidence: { type: "number", minimum: 0, maximum: 1 },
+          notes: { type: "string", description: "If fail, cite actual counts and offending text." },
+          headline_char_count: { type: "integer", description: "Count the characters in the headline. MUST be actual count." },
+          body_word_count: { type: "integer", description: "Actual word count of body." },
+          body_paragraph_count: { type: "integer", description: "Actual paragraph count (by blank lines)." },
+          talking_point_count: { type: "integer", description: "Number of talking_points items." },
+        },
+        required: ["pass", "confidence", "notes", "headline_char_count", "body_word_count", "body_paragraph_count", "talking_point_count"],
+      },
+      safety: {
+        type: "object",
+        properties: {
+          pass: { type: "boolean" },
+          confidence: { type: "number", minimum: 0, maximum: 1 },
+          notes: { type: "string" },
+        },
+        required: ["pass", "confidence", "notes"],
+      },
+      // Inline auto-correct: if ALL fails are minor fixes (wrong minute, wrong
+      // home/away, possession off by a few %, typo, banned phrase swap), set
+      // can_autocorrect=true and fill corrected_content. We'll apply and approve.
+      // Do NOT set this if failures involve tone overhaul, wrong scorer/score,
+      // completely invented facts, or safety issues — those need a full regen.
+      can_autocorrect: {
+        type: "boolean",
+        description: "True if the failures can be fixed with the corrected_content below (no need to regenerate). False if a full regen is needed.",
+      },
+      corrected_content: {
+        type: "object",
+        description: "Required when can_autocorrect=true. The complete corrected version of whatever was wrong. Copy unchanged fields verbatim from the original.",
+        properties: {
+          headline: { type: "string" },
+          body: { type: "string" },
+          talking_points: { type: "array", items: { type: "string" } },
+          immersive_headline: { type: "string" },
+          immersive_context_fallback: { type: "string" },
+        },
+        required: ["headline", "body", "talking_points"],
+      },
+    },
+    required: ["tone", "accuracy", "brevity", "safety", "can_autocorrect"],
+  },
+};
 
 interface ReviewRequest {
   content_item_id: string;
-  team_id: string;
+  team_id?: string;
 }
 
-async function runReviewBot(
-  botName: string,
-  systemPrompt: string,
-  contentInput: string
-): Promise<ReviewNote> {
-  const reviewedAt = new Date().toISOString();
-
-  try {
-    const response = await callClaude({
-      system: systemPrompt,
-      messages: [{ role: "user", content: contentInput }],
-      max_tokens: 1000,
-    });
-
-    const text = response.content[0]?.text ?? "";
-
-    // SECURITY: JSON.parse must be wrapped in try/catch — parse failure = FAIL
-    let result: ReviewBotResult;
-    try {
-      result = JSON.parse(text);
-    } catch {
-      console.error(`${botName} returned invalid JSON:`, text.slice(0, 200));
-      return {
-        bot: botName as ReviewNote["bot"],
-        pass: false,
-        confidence: 0,
-        notes: `JSON parse failure — treating as FAIL. Raw: ${text.slice(0, 100)}`,
-        reviewed_at: reviewedAt,
-      };
-    }
-
-    // Validate required fields exist
-    if (typeof result.pass !== "boolean" || typeof result.confidence !== "number") {
-      return {
-        bot: botName as ReviewNote["bot"],
-        pass: false,
-        confidence: 0,
-        notes: `Missing required fields (pass, confidence) — treating as FAIL`,
-        reviewed_at: reviewedAt,
-      };
-    }
-
-    return {
-      bot: botName as ReviewNote["bot"],
-      pass: result.pass,
-      confidence: result.confidence,
-      notes: result.notes ?? "",
-      reviewed_at: reviewedAt,
-    };
-  } catch (e) {
-    return {
-      bot: botName as ReviewNote["bot"],
-      pass: false,
-      confidence: 0,
-      notes: `Bot error: ${e instanceof Error ? e.message : String(e)}`,
-      reviewed_at: reviewedAt,
-    };
-  }
+interface CombinedReviewResult {
+  tone: { pass: boolean; confidence: number; notes: string };
+  accuracy: { pass: boolean; confidence: number; notes: string; errors?: Array<{ claim: string; source_says: string }> };
+  brevity: {
+    pass: boolean;
+    confidence: number;
+    notes: string;
+    headline_char_count: number;
+    body_word_count: number;
+    body_paragraph_count: number;
+    talking_point_count: number;
+  };
+  safety: { pass: boolean; confidence: number; notes: string };
+  can_autocorrect: boolean;
+  corrected_content?: {
+    headline: string;
+    body: string;
+    talking_points: string[];
+    immersive_headline?: string;
+    immersive_context_fallback?: string;
+  };
 }
+
+// ============================================================
+// MAIN HANDLER
+// ============================================================
 
 serve(async (req) => {
   const startTime = Date.now();
   const supabase = getSupabaseClient();
 
   try {
-    const { content_item_id, team_id }: ReviewRequest = await req.json();
+    const { content_item_id }: ReviewRequest = await req.json();
 
     // Fetch the draft content item
     const { data: item, error: itemErr } = await supabase
@@ -189,25 +283,55 @@ serve(async (req) => {
 
     if (itemErr || !item) throw new Error(`Content item not found: ${content_item_id}`);
 
-    // Fetch raw source data for accuracy review
+    const teamId = item.team_id as string;
+
+    // Fetch the team's api_football_id (for injury filtering)
+    const { data: teamRow } = await supabase
+      .from("teams")
+      .select("api_football_id")
+      .eq("id", teamId)
+      .single();
+    const teamApiId = teamRow?.api_football_id as number | undefined;
+
+    // Fetch raw source data — same clean summary the generator saw.
     const { data: rawLogs } = await supabase
       .from("raw_fetch_logs")
-      .select("source, data")
-      .eq("team_id", team_id)
+      .select("source, data, fetched_at")
+      .eq("team_id", teamId)
       .order("fetched_at", { ascending: false })
-      .limit(10);
+      .limit(50);
 
-    const rawSourceData = (rawLogs ?? [])
-      .map((l) => `${l.source}: ${JSON.stringify(l.data).slice(0, 500)}`)
-      .join("\n\n");
+    const { articles, stats } = buildSourceSummary(
+      (rawLogs ?? []) as Array<{ source: string; data: unknown }>,
+      teamApiId
+    );
+
+    // Find most recent news date for context
+    const newsLogs = (rawLogs ?? []).filter((l) => !l.source.startsWith("api_football_"));
+    const apiLogs = (rawLogs ?? []).filter((l) => l.source.startsWith("api_football_"));
+    const newestNews = newsLogs[0]?.fetched_at?.slice(0, 10) ?? "unknown";
+    const newestApi = apiLogs[0]?.fetched_at?.slice(0, 10) ?? "unknown";
+
+    // News first — it's the current truth. Structured API data second — may lag
+    // behind real events by 1-2 days and should NOT override news on conflicts.
+    const sourceSummary = [
+      articles
+        ? `=== NEWS HEADLINES (current truth, fetched ${newestNews}) ===${articles}`
+        : "",
+      stats
+        ? `=== STRUCTURED API DATA (fetched ${newestApi}, may lag behind news) ===\n${stats}`
+        : "",
+    ]
+      .filter(Boolean)
+      .join("\n\n")
+      .trim();
 
     // Format talking points for display
     const talkingPoints = Array.isArray(item.talking_points)
       ? (item.talking_points as string[]).map((tp, i) => `${i + 1}. ${tp}`).join("\n")
       : JSON.stringify(item.talking_points);
 
-    // Build review input
-    const contentInput = `CONTENT TO REVIEW:
+    const fullInput = `GENERATED CONTENT TO REVIEW:
 
 Headline: ${item.headline}
 
@@ -218,51 +342,84 @@ Body:
 ${item.body}
 
 Emotional Context: ${item.emotional_context ?? "none"}
-Team: ${team_id}`;
+Team: ${teamId}
 
-    const accuracyInput = `GENERATED CONTENT:
+══════════════════════════════════════════════════════════════════════════
 
-Headline: ${item.headline}
+SOURCE DATA (for ACCURACY check):
 
-Talking Points:
-${talkingPoints}
+${sourceSummary}`;
 
-Body:
-${item.body}
+    // Single Claude call with tool_use — all 4 verdicts at once
+    const response = await callClaude({
+      system: REVIEW_SYSTEM_PROMPT,
+      messages: [{ role: "user", content: fullInput }],
+      tools: [REVIEW_TOOL],
+      tool_choice: { type: "tool", name: "review_content" },
+      max_tokens: 2500,
+    });
 
----
+    const toolUse = response.content.find((c) => c.type === "tool_use");
+    if (!toolUse?.input) {
+      throw new Error("Review bot did not return tool_use output");
+    }
 
-RAW SOURCE DATA THIS CONTENT WAS BASED ON:
+    const result = toolUse.input as unknown as CombinedReviewResult;
+    const reviewedAt = new Date().toISOString();
 
-${rawSourceData}`;
+    // Build the ReviewNote[] for storage/retry
+    const allResults: ReviewNote[] = [
+      {
+        bot: "tone",
+        pass: result.tone.pass,
+        confidence: result.tone.confidence,
+        notes: result.tone.notes,
+        reviewed_at: reviewedAt,
+      },
+      {
+        bot: "accuracy",
+        pass: result.accuracy.pass,
+        confidence: result.accuracy.confidence,
+        notes: result.accuracy.errors?.length
+          ? `${result.accuracy.notes}\nSpecific errors: ${JSON.stringify(result.accuracy.errors)}`
+          : result.accuracy.notes,
+        reviewed_at: reviewedAt,
+      },
+      {
+        bot: "brevity",
+        pass: result.brevity.pass,
+        confidence: result.brevity.confidence,
+        notes: `${result.brevity.notes} [headline=${result.brevity.headline_char_count}ch, body=${result.brevity.body_word_count}w/${result.brevity.body_paragraph_count}p, tps=${result.brevity.talking_point_count}]`,
+        reviewed_at: reviewedAt,
+      },
+      {
+        bot: "safety",
+        pass: result.safety.pass,
+        confidence: result.safety.confidence,
+        notes: result.safety.notes,
+        reviewed_at: reviewedAt,
+      },
+    ];
 
-    // Run all 4 review bots: Tone → Accuracy → Brevity → Safety
-    // First 3 run in parallel, Safety runs after
-    const [toneResult, accuracyResult, brevityResult] = await Promise.all([
-      runReviewBot("tone", TONE_SYSTEM_PROMPT, contentInput),
-      runReviewBot("accuracy", ACCURACY_SYSTEM_PROMPT, accuracyInput),
-      runReviewBot("brevity", BREVITY_SYSTEM_PROMPT, contentInput),
-    ]);
-
-    // Safety bot runs after the first 3
-    const safetyResult = await runReviewBot("safety", SAFETY_SYSTEM_PROMPT, contentInput);
-
-    const allResults = [toneResult, accuracyResult, brevityResult, safetyResult];
     const allPassed = allResults.every((r) => r.pass);
     const failedBots = allResults.filter((r) => !r.pass);
 
-    // Log safety review separately
     await logPipelineEvent(supabase, {
-      team_id,
+      team_id: teamId,
       stage: "safety_review",
-      status: safetyResult.pass ? "success" : "failure",
+      status: result.safety.pass ? "success" : "failure",
       duration_ms: Date.now() - startTime,
-      message: safetyResult.notes,
+      message: result.safety.notes,
       content_item_id,
     });
 
+    // Build feedback notes for possible retry
+    const failureNotes = failedBots
+      .map((r) => `- ${r.bot.toUpperCase()}: ${r.notes}`)
+      .join("\n");
+
     if (allPassed) {
-      // All 4 pass → approve
+      // All 4 pass → approve + notify
       await supabase
         .from("content_items")
         .update({
@@ -271,50 +428,89 @@ ${rawSourceData}`;
         })
         .eq("id", content_item_id);
 
-      // Trigger notification sender
       await triggerFunction("notification-sender", {
         content_item_id,
-        team_id,
+        team_id: teamId,
       });
 
       await logPipelineEvent(supabase, {
-        team_id,
+        team_id: teamId,
         stage: "review",
         status: "success",
         duration_ms: Date.now() - startTime,
-        message: `Approved — all 4 bots passed`,
+        message: `Approved — all 4 dimensions passed`,
         content_item_id,
       });
-    } else if (failedBots.length === 1 && item.status === "draft") {
-      // Only 1 bot failed on first attempt → retry once
-      // (Skip retry if this is already a retry)
+    } else if (result.can_autocorrect && result.corrected_content && !failedBots.some((b) => b.bot === "safety")) {
+      // INLINE AUTO-CORRECT: reviewer provided a fixed version and failures are
+      // minor. Apply the patch and approve without a full regen.
+      const patch: Record<string, unknown> = {
+        status: "approved",
+        review_notes: allResults,
+        headline: result.corrected_content.headline,
+        body: result.corrected_content.body,
+        talking_points: result.corrected_content.talking_points,
+      };
+      if (result.corrected_content.immersive_headline) {
+        patch.immersive_headline = result.corrected_content.immersive_headline;
+      }
+      if (result.corrected_content.immersive_context_fallback) {
+        patch.immersive_context_fallback = result.corrected_content.immersive_context_fallback;
+      }
+
+      await supabase
+        .from("content_items")
+        .update(patch)
+        .eq("id", content_item_id);
+
+      await triggerFunction("notification-sender", {
+        content_item_id,
+        team_id: teamId,
+      });
+
+      await logPipelineEvent(supabase, {
+        team_id: teamId,
+        stage: "review",
+        status: "success",
+        duration_ms: Date.now() - startTime,
+        message: `Auto-corrected ${failedBots.length} minor issue(s) (${failedBots.map((b) => b.bot).join(", ")}) and approved`,
+        content_item_id,
+      });
+    } else if (
+      failedBots.length <= 2 &&
+      item.status === "draft" &&
+      // Only retry on FIRST review — if review_notes already has entries,
+      // this is a re-review after a previous retry, so reject instead of
+      // looping forever.
+      (!item.review_notes || (Array.isArray(item.review_notes) && item.review_notes.length === 0))
+    ) {
+      // Up to 2 dimensions failed on first attempt → retry with feedback
       await supabase
         .from("content_items")
         .update({
-          status: "draft",
+          status: "retrying",
           review_notes: allResults,
         })
         .eq("id", content_item_id);
 
-      // Trigger content-generator with revision feedback
-      const failedBot = failedBots[0];
       await triggerFunction("content-generator", {
-        team_id,
-        trigger: "new_data",
+        team_id: teamId,
+        trigger: "reviewer_retry",
         content_item_id,
+        previous_failure_notes: failureNotes,
         fetch_log_ids: [],
       });
 
       await logPipelineEvent(supabase, {
-        team_id,
+        team_id: teamId,
         stage: "review",
         status: "failure",
         duration_ms: Date.now() - startTime,
-        message: `1 bot failed (${failedBot.bot}): ${failedBot.notes}. Retrying.`,
+        message: `${failedBots.length} dimension(s) failed (${failedBots.map((b) => b.bot).join(", ")}). Retrying with feedback.`,
         content_item_id,
       });
     } else {
-      // Multiple bots failed or retry also failed → reject
+      // 3+ dimensions failed OR this was already a retry → reject
       await supabase
         .from("content_items")
         .update({
@@ -324,11 +520,11 @@ ${rawSourceData}`;
         .eq("id", content_item_id);
 
       await logPipelineEvent(supabase, {
-        team_id,
+        team_id: teamId,
         stage: "review",
         status: "failure",
         duration_ms: Date.now() - startTime,
-        message: `Rejected — ${failedBots.length} bots failed: ${failedBots.map((b) => b.bot).join(", ")}`,
+        message: `Rejected — ${failedBots.length} dimensions failed: ${failedBots.map((b) => b.bot).join(", ")}`,
         content_item_id,
       });
     }

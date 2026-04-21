@@ -9,8 +9,17 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
     let isExpanded: Bool
     let onTap: () -> Void
     var tintColor: Color? = nil
+    var zone2Color: Color = .hotRose
+    var collapsedHeight: CGFloat = 120
     @ViewBuilder let zone1Collapsed: () -> CollapsedContent
     @ViewBuilder let zone1Expanded: () -> ExpandedContent
+
+    // Text color on zone 2 depends on background:
+    // - Soft blush → charcoal
+    // - Hot rose / gold / anything else → black
+    private var zone2TextColor: Color {
+        zone2Color == .softBlush ? .charcoal : .black
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -28,7 +37,7 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
         .clipped()
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.hotRose.opacity(isStatic ? 0.5 : 1.0), lineWidth: 2)
+                .stroke(Color.hotRose.opacity(isStatic ? 0.7 : 1.0), lineWidth: 2)
                 .padding(1)
         )
     }
@@ -61,7 +70,7 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(height: 84)
+        .frame(height: collapsedHeight * 0.7)
     }
 
     private var zone1ExpandedLayout: some View {
@@ -94,7 +103,7 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
 
     private var zone2View: some View {
         ZStack {
-            Color.hotRose
+            zone2Color
 
             if isExpanded {
                 zone2ExpandedContent
@@ -102,7 +111,7 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
                 zone2CollapsedContent
             }
         }
-        .frame(height: isExpanded ? nil : 36)
+        .frame(height: isExpanded ? nil : collapsedHeight * 0.3)
         .fixedSize(horizontal: false, vertical: isExpanded)
     }
 
@@ -111,12 +120,12 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
             if let point = talkingPoint {
                 Text(point)
                     .font(.jakarta(13, weight: .regular))
-                    .foregroundColor(.warmWhite)
+                    .foregroundColor(zone2TextColor)
                     .lineLimit(1)
             } else {
                 Text("Tap for more ›")
                     .font(.jakarta(13, weight: .regular))
-                    .foregroundColor(.warmWhite)
+                    .foregroundColor(zone2TextColor)
             }
             Spacer()
         }
@@ -128,10 +137,10 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
             if let point = talkingPoint {
                 Text(zone2Label)
                     .font(.jakarta(13, weight: .bold))
-                    .foregroundColor(.warmWhite)
+                    .foregroundColor(zone2TextColor)
                 Text(point)
                     .font(.jakarta(13, weight: .mediumItalic))
-                    .foregroundColor(.warmWhite)
+                    .foregroundColor(zone2TextColor)
                     .padding(.bottom, 4)
             }
 
@@ -139,7 +148,7 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
                 Spacer()
                 Text("Tap to close ›")
                     .font(.jakarta(11, weight: .regular))
-                    .foregroundColor(.warmWhite.opacity(0.7))
+                    .foregroundColor(zone2TextColor.opacity(0.7))
                 Spacer()
             }
         }

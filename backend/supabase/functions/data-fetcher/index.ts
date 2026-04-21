@@ -143,40 +143,93 @@ async function fetchAPIFootball(
     "x-rapidapi-host": "v3.football.api-sports.io",
   };
 
-  const endpoints = [
-    { name: "fixtures_next", path: `/fixtures?team=${team.api_football_id}&next=5` },
-    { name: "fixtures_last", path: `/fixtures?team=${team.api_football_id}&last=3` },
-    { name: "injuries", path: `/injuries?team=${team.api_football_id}&season=2025` },
-    { name: "standings", path: `/standings?league=39&season=2025` },
-    { name: "transfers", path: `/transfers?team=${team.api_football_id}` },
-    { name: "squad", path: `/players/squads?team=${team.api_football_id}` },
-  ];
-
-  for (const endpoint of endpoints) {
+  // Helper to fetch + store + return parsed data for chaining
+  const fetchEndpoint = async (name: string, path: string): Promise<unknown> => {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 15_000);
 
-      const response = await fetch(`${API_FOOTBALL_BASE}${endpoint.path}`, {
+      const response = await fetch(`${API_FOOTBALL_BASE}${path}`, {
         headers,
         signal: controller.signal,
       });
       clearTimeout(timeout);
 
       if (!response.ok) {
-        console.warn(`API-Football ${endpoint.name} returned ${response.status}`);
-        continue;
+        console.warn(`API-Football ${name} returned ${response.status}`);
+        return null;
       }
 
       const data = await response.json();
-      results.push({ source: `api_football_${endpoint.name}`, data });
+      results.push({ source: `api_football_${name}`, data });
+      return data;
     } catch (e) {
       console.warn(
-        `API-Football ${endpoint.name} failed:`,
+        `API-Football ${name} failed:`,
         e instanceof Error ? e.message : e
+      );
+      return null;
+    }
+  };
+
+  // Round 1: Direct endpoints (no lookups needed)
+  const [fixturesNext, fixturesLast] = await Promise.all([
+    fetchEndpoint("fixtures_next", `/fixtures?team=${team.api_football_id}&next=5`),
+    fetchEndpoint("fixtures_last", `/fixtures?team=${team.api_football_id}&last=3`),
+  ]);
+
+  await Promise.all([
+    fetchEndpoint("injuries", `/injuries?team=${team.api_football_id}&season=2025`),
+    fetchEndpoint("standings", `/standings?league=39&season=2025`),
+    fetchEndpoint("transfers", `/transfers?team=${team.api_football_id}`),
+    fetchEndpoint("squad", `/players/squads?team=${team.api_football_id}`),
+    fetchEndpoint("teams_statistics", `/teams/statistics?team=${team.api_football_id}&season=2025&league=39`),
+    fetchEndpoint("coachs", `/coachs?team=${team.api_football_id}`),
+    fetchEndpoint("topscorers", `/players/topscorers?league=39&season=2025`),
+    fetchEndpoint("topassists", `/players/topassists?league=39&season=2025`),
+  ]);
+
+  // Round 2: Endpoints that depend on fixture IDs discovered above
+
+  // Derive next + last fixture IDs
+  // deno-lint-ignore no-explicit-any
+  const nextFx = (fixturesNext as any)?.response?.[0];
+  // deno-lint-ignore no-explicit-any
+  const lastFx = (fixturesLast as any)?.response?.[0];
+  const nextFixtureId = nextFx?.fixture?.id;
+  const lastFixtureId = lastFx?.fixture?.id;
+
+  const round2: Promise<unknown>[] = [];
+
+  // Last match details — goals, cards, subs, shots, formations
+  if (lastFixtureId) {
+    round2.push(
+      fetchEndpoint("fixtures_events", `/fixtures/events?fixture=${lastFixtureId}`),
+      fetchEndpoint("fixtures_statistics", `/fixtures/statistics?fixture=${lastFixtureId}`),
+      fetchEndpoint("fixtures_lineups", `/fixtures/lineups?fixture=${lastFixtureId}`)
+    );
+  }
+
+  // Predictions for upcoming match
+  if (nextFixtureId) {
+    round2.push(
+      fetchEndpoint("predictions", `/predictions?fixture=${nextFixtureId}`)
+    );
+  }
+
+  // Head-to-head vs next opponent (last 5 meetings)
+  if (nextFx) {
+    const homeId = nextFx.teams?.home?.id;
+    const awayId = nextFx.teams?.away?.id;
+    const opponentId = homeId === team.api_football_id ? awayId : homeId;
+    if (opponentId) {
+      round2.push(
+        fetchEndpoint("fixtures_headtohead", `/fixtures/headtohead?h2h=${team.api_football_id}-${opponentId}&last=5`)
       );
     }
   }
+
+  await Promise.all(round2);
 
   return results;
 }
@@ -271,19 +324,28 @@ serve(async (req) => {
 
       const allResults = [...rssResults, ...apiResults];
 
-      // Deduplicate: check raw_fetch_logs for existing URLs from last 48 hours
+      // Build a set of article URLs we've already seen for this team in the
+      // last 48h. Used below to decide whether RSS returned anything NEW.
       const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+      const { data: recentLogs } = await supabase
+        .from("raw_fetch_logs")
+        .select("data")
+        .eq("team_id", team.id)
+        .gte("fetched_at", twoDaysAgo);
+
+      const seenUrls = new Set<string>();
+      for (const log of recentLogs ?? []) {
+        const d = log.data as unknown;
+        if (Array.isArray(d)) {
+          for (const article of d) {
+            const url = (article as { link?: string })?.link;
+            if (url) seenUrls.add(url);
+          }
+        }
+      }
 
       for (const result of allResults) {
-        // Check if we already have this source data recently
-        const { count } = await supabase
-          .from("raw_fetch_logs")
-          .select("*", { count: "exact", head: true })
-          .eq("team_id", team.id)
-          .eq("source", result.source)
-          .gte("fetched_at", twoDaysAgo);
-
-        // Store raw data (even if duplicate — dedup is at content level)
+        // Always store the raw data (history / debugging).
         const { data: insertedLog, error: insertError } = await supabase
           .from("raw_fetch_logs")
           .insert({
@@ -301,11 +363,19 @@ serve(async (req) => {
 
         fetchLogIds.push(insertedLog.id);
 
-        // For RSS sources, new data = we haven't seen these articles before
         if (result.source.startsWith("api_football_")) {
-          hasNewData = true; // Always process API data
-        } else if ((count ?? 0) === 0) {
+          // API data changes daily (fixtures, standings, injuries). Always process.
           hasNewData = true;
+        } else if (Array.isArray(result.data)) {
+          // RSS — only flag new data if at least one article URL is genuinely new.
+          const newUrls = (result.data as Array<{ link?: string }>)
+            .map((a) => a?.link)
+            .filter((u): u is string => !!u && !seenUrls.has(u));
+          if (newUrls.length > 0) {
+            hasNewData = true;
+            // Track these URLs so later sources in this batch see them as seen.
+            for (const u of newUrls) seenUrls.add(u);
+          }
         }
       }
 

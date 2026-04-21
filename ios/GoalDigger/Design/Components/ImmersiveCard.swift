@@ -107,12 +107,12 @@ struct ImmersiveCard: View {
     var body: some View {
         VStack(spacing: 0) {
             zone1
-                .frame(height: cardHeight * Layout.immersiveZone1Ratio)
+                .frame(height: cardHeight * 0.75)
                 .clipped()
                 .contentShape(Rectangle())
                 .onTapGesture { onZone1Tap() }
             zone2
-                .frame(height: cardHeight * Layout.immersiveZone2Ratio)
+                .frame(height: cardHeight * 0.25)
                 .contentShape(Rectangle())
                 .onTapGesture { onZone2Tap() }
         }
@@ -123,31 +123,30 @@ struct ImmersiveCard: View {
     // MARK: - Zone 1 (65%)
 
     private var zone1: some View {
-        ZStack(alignment: .bottomLeading) {
+        ZStack(alignment: .topLeading) {
             Color.deepMauve
 
             VStack(alignment: .leading, spacing: 0) {
-                Spacer()
-
-                // Headline
+                // Headline — starts lower in zone 1 so it sits centrally on card
                 Text(headline)
                     .font(.immersiveHeadline)
                     .minimumScaleFactor(0.5)
                     .lineLimit(3)
                     .foregroundColor(.warmWhite)
+                    .padding(.top, cardHeight * 0.22)  // moved down one notch
 
-                // Context/analogy line
+                // Context/analogy line (the "girl translation") — always show full
                 if let context = contextLine, !context.isEmpty {
                     Text(context)
                         .font(.immersiveContext)
                         .foregroundColor(.warmWhite)
-                        .padding(.top, 12)
-                        .lineLimit(3)
+                        .padding(.top, 14)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
-                Spacer()
+                Spacer(minLength: 20)
 
-                // Press hint
+                // Press hint — pinned near bottom of zone 1
                 Text("Press for more info and things to say")
                     .font(.immersiveHint)
                     .foregroundColor(.warmWhite.opacity(0.45))
@@ -155,11 +154,22 @@ struct ImmersiveCard: View {
             }
             .padding(20)
         }
+        // 5px rose border on TOP / LEFT / RIGHT only — no border on the bottom
+        // edge so the pink zone 2 below has zero visible border.
         .overlay(
-            // 3px inset rose border (top, left, right, bottom)
-            Rectangle()
-                .stroke(Color.hotRose, lineWidth: 3)
-                .padding(1.5)
+            GeometryReader { geo in
+                Path { path in
+                    let inset: CGFloat = 2.5
+                    let w = geo.size.width
+                    let h = geo.size.height
+                    // Start at bottom-left (open), go up, across top, back down to bottom-right (open)
+                    path.move(to: CGPoint(x: inset, y: h))
+                    path.addLine(to: CGPoint(x: inset, y: inset))
+                    path.addLine(to: CGPoint(x: w - inset, y: inset))
+                    path.addLine(to: CGPoint(x: w - inset, y: h))
+                }
+                .stroke(Color.hotRose, lineWidth: 5)
+            }
         )
     }
 
@@ -174,9 +184,10 @@ struct ImmersiveCard: View {
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text(zone2Label)
-                        .font(.jakarta(20, weight: .bold))
-                    Text(talkingPoint)
-                        .font(.jakarta(20, weight: .mediumItalic))
+                        .font(.jakarta(17, weight: .bold))
+                    Text("“\(talkingPoint)”")
+                        .font(.jakarta(17, weight: .mediumItalic))
+                        .lineLimit(3)
                 }
 
                 Spacer()

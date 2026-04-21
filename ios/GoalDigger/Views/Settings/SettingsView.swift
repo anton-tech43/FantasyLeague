@@ -191,7 +191,7 @@ struct SettingsView: View {
 
                         settingsRow {
                             Button {
-                                if let url = URL(string: "https://getgoaldigger.com/privacy") {
+                                if let url = URL(string: "https://getgoaldigger.com") {
                                     UIApplication.shared.open(url)
                                 }
                             } label: {

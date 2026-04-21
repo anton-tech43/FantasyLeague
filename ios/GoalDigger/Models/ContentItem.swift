@@ -30,6 +30,9 @@ struct ContentItem: Identifiable, Codable {
     let analogyApproved: Bool
     let analogyAutoPublished: Bool
 
+    // Match context pill (e.g. "Liverpool 2-1 Everton") — shown in detail view header
+    let matchResult: String?
+
     enum ContentType: String, Codable {
         case news
         case matchday
@@ -62,6 +65,9 @@ struct ContentItem: Identifiable, Codable {
         case analogyReviewed = "analogy_reviewed"
         case analogyApproved = "analogy_approved"
         case analogyAutoPublished = "analogy_auto_published"
+
+        // Match context pill
+        case matchResult = "match_result"
     }
 
     // Custom decoder for backward compatibility with cached items missing new fields
@@ -90,12 +96,18 @@ struct ContentItem: Identifiable, Codable {
         analogyReviewed = (try? container.decodeIfPresent(Bool.self, forKey: .analogyReviewed)) ?? false
         analogyApproved = (try? container.decodeIfPresent(Bool.self, forKey: .analogyApproved)) ?? false
         analogyAutoPublished = (try? container.decodeIfPresent(Bool.self, forKey: .analogyAutoPublished)) ?? false
+        matchResult = try? container.decodeIfPresent(String.self, forKey: .matchResult)
     }
 
     /// The context/analogy line to display on the immersive card.
-    /// Shows the approved analogy if reviewed, otherwise the safe fallback.
+    /// The AI critic screens analogies before they're stored — if
+    /// `immersive_context` is non-null, it has passed the critic (possibly
+    /// after a rewrite). Show the analogy; only fall back to factual context
+    /// if no analogy survived.
     var displayContext: String? {
-        if analogyApproved { return immersiveContext }
+        if let context = immersiveContext, !context.isEmpty {
+            return context
+        }
         return immersiveContextFallback
     }
 

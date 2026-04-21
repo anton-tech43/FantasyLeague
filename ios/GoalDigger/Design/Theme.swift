@@ -109,7 +109,7 @@ extension Font {
 
     // Immersive card — League Spartan Black for bold impact headlines
     static let immersiveHeadline = Font.custom("LeagueSpartan-Black", size: 64)
-    static let immersiveContext = Font.jakarta(18, weight: .regular)
+    static let immersiveContext = Font.jakarta(15, weight: .regular)
     static let immersiveHint = Font.jakarta(13, weight: .regular)
 }
 

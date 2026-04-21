@@ -141,10 +141,22 @@ struct FeedView: View {
     private var pillIcon: some View {
         switch appState.activeContext {
         case .team(let team):
-            Image(team.badgeImageName)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 16, height: 16)
+            if UIImage(named: team.badgeImageName) != nil {
+                Image(team.badgeImageName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 16, height: 16)
+            } else {
+                // Fallback: rose circle with team initial
+                Circle()
+                    .fill(Color.hotRose)
+                    .frame(width: 16, height: 16)
+                    .overlay(
+                        Text(String(team.displayName.prefix(1)))
+                            .font(.jakarta(10, weight: .bold))
+                            .foregroundColor(.warmWhite)
+                    )
+            }
         case .everyoneTalking:
             Image(systemName: "soccerball")
                 .font(.system(size: 14))

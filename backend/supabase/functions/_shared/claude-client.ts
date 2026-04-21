@@ -1,7 +1,7 @@
 // _shared/claude-client.ts
 // Goal Digger — Anthropic Claude API client with retry logic
 
-const CLAUDE_MODEL = "claude-haiku-4-5-20251001";
+const CLAUDE_MODEL = "claude-sonnet-4-5-20250929";
 const MAX_RETRIES = 3;
 const RETRY_DELAYS = [30_000, 120_000, 600_000]; // 30s, 2min, 10min
 

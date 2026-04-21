@@ -398,9 +398,10 @@ async function updateDynamicFields(
   // Parse standings data
   if (standingsLog?.data) {
     const standings = standingsLog.data as Record<string, unknown>;
+    const teamApiId = team.api_football_id as number;
     // API-Football standings response structure varies — extract what we can
-    const rank = extractLeaguePosition(standings);
-    const form = extractRecentForm(standings);
+    const rank = extractLeaguePosition(standings, teamApiId);
+    const form = extractRecentForm(standings, teamApiId);
 
     if (rank) {
       const ordinal = getOrdinal(rank);
@@ -418,7 +419,7 @@ async function updateDynamicFields(
 
   // Parse next fixture
   if (fixturesLog?.data) {
-    const nextFixture = extractNextFixture(fixturesLog.data, team.id);
+    const nextFixture = extractNextFixture(fixturesLog.data, team.api_football_id as number);
     if (nextFixture) {
       cards.next_fixture = {
         updated_at: now,
@@ -443,32 +444,41 @@ async function updateDynamicFields(
 // HELPERS — Parse API-Football responses
 // ============================================================
 
-function extractLeaguePosition(standings: Record<string, unknown>): number | null {
+// Find THIS team's entry in the league standings array.
+// Standings returns all 20 teams ranked — we must match by api_football_id,
+// not take element [0] (which is always the league leader).
+function extractLeaguePosition(
+  standings: Record<string, unknown>,
+  teamApiId: number
+): number | null {
   try {
-    // API-Football returns: { response: [{ league: { standings: [[{rank, form, ...}]] } }] }
     const response = standings.response as unknown[];
     if (!Array.isArray(response) || response.length === 0) return null;
     const league = (response[0] as Record<string, unknown>).league as Record<string, unknown>;
     const standingsArr = (league?.standings as unknown[][])?.[0];
-    if (!standingsArr) return null;
-    // Find our team's entry — it should be the one returned for this team_id filter
-    const entry = standingsArr[0] as Record<string, unknown>;
+    if (!Array.isArray(standingsArr)) return null;
+    // deno-lint-ignore no-explicit-any
+    const entry = standingsArr.find((s: any) => s?.team?.id === teamApiId) as Record<string, unknown> | undefined;
     return (entry?.rank as number) ?? null;
   } catch {
     return null;
   }
 }
 
-function extractRecentForm(standings: Record<string, unknown>): string | null {
+function extractRecentForm(
+  standings: Record<string, unknown>,
+  teamApiId: number
+): string | null {
   try {
     const response = standings.response as unknown[];
     if (!Array.isArray(response) || response.length === 0) return null;
     const league = (response[0] as Record<string, unknown>).league as Record<string, unknown>;
     const standingsArr = (league?.standings as unknown[][])?.[0];
-    if (!standingsArr) return null;
-    const entry = standingsArr[0] as Record<string, unknown>;
-    const form = entry?.form as string;
-    return form ? form.slice(-5) : null; // Last 5 results
+    if (!Array.isArray(standingsArr)) return null;
+    // deno-lint-ignore no-explicit-any
+    const entry = standingsArr.find((s: any) => s?.team?.id === teamApiId) as Record<string, unknown> | undefined;
+    const form = entry?.form as string | undefined;
+    return form ? form.slice(-5) : null;
   } catch {
     return null;
   }
@@ -476,7 +486,7 @@ function extractRecentForm(standings: Record<string, unknown>): string | null {
 
 function extractNextFixture(
   data: unknown,
-  _teamId: string
+  teamApiId: number
 ): { opponent: string; date: string; venue: string } | null {
   try {
     const response = (data as Record<string, unknown>).response as unknown[];
@@ -489,9 +499,9 @@ function extractNextFixture(
 
     if (!home || !away || !fixtureInfo) return null;
 
-    // Determine opponent and venue
-    const isHome = home.id !== undefined; // Simplified — the data-fetcher filters by team
-    const opponent = isHome ? away.name as string : home.name as string;
+    // Match by api_football_id to determine if this team is home or away.
+    const isHome = (home.id as number) === teamApiId;
+    const opponent = (isHome ? away.name : home.name) as string;
     const venue = isHome ? "home" : "away";
 
     return {

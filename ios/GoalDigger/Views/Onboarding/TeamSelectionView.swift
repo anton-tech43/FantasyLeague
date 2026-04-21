@@ -64,15 +64,27 @@ struct TeamSelectionView: View {
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         } label: {
                             HStack(spacing: 12) {
-                                Image(team.badgeImageName)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 32, height: 32)
-                                    .background(
+                                Group {
+                                    if UIImage(named: team.badgeImageName) != nil {
+                                        Image(team.badgeImageName)
+                                            .resizable()
+                                            .scaledToFit()
+                                    } else {
                                         Circle()
-                                            .fill(Color.mutedText.opacity(0.1))
-                                            .frame(width: 36, height: 36)
-                                    )
+                                            .fill(Color.hotRose)
+                                            .overlay(
+                                                Text(String(team.displayName.prefix(1)))
+                                                    .font(.jakarta(16, weight: .bold))
+                                                    .foregroundColor(.warmWhite)
+                                            )
+                                    }
+                                }
+                                .frame(width: 32, height: 32)
+                                .background(
+                                    Circle()
+                                        .fill(Color.mutedText.opacity(0.1))
+                                        .frame(width: 36, height: 36)
+                                )
 
                                 Text(team.displayName)
                                     .font(.feedHeadline)

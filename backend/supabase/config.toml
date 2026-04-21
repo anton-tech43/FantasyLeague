@@ -1,0 +1,32 @@
+project_id = "cwgpsmbunrocrofziqad"
+
+# ============================================================================
+# Edge function JWT verification
+# ============================================================================
+# Public-facing (called by iOS app — need JWT verification)
+[functions.delete-my-data]
+verify_jwt = true
+
+[functions.health-check]
+verify_jwt = true
+
+# Internal-only (called by other functions or pg_cron — no JWT needed)
+# verify_jwt = false allows inter-function HTTP invocation with just the
+# service-role key, without hitting Supabase's JWT gateway format check.
+[functions.content-generator]
+verify_jwt = false
+
+[functions.content-reviewer]
+verify_jwt = false
+
+[functions.data-fetcher]
+verify_jwt = false
+
+[functions.team-page-generator]
+verify_jwt = false
+
+[functions.matchday-scheduler]
+verify_jwt = false
+
+[functions.notification-sender]
+verify_jwt = false

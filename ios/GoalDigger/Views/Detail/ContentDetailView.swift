@@ -8,7 +8,7 @@ struct ContentDetailView: View {
     @State private var item: ContentItem?
     @State private var isLoading = true
     @State private var onesToWatch: [PlayerCard] = []
-    @State private var isBackstoryExpanded = false
+    @State private var isBackstoryExpanded = true
 
     var body: some View {
         ZStack {
@@ -73,12 +73,32 @@ struct ContentDetailView: View {
 
     @ViewBuilder
     private func headerSection(_ item: ContentItem) -> some View {
-        HStack {
-            BadgeView(type: item.type)
-            Spacer()
-            Text(item.publishedAt.relativeTimestamp)
-                .font(.feedTimestamp)
-                .foregroundColor(.textTertiary)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                BadgeView(type: item.type)
+                Spacer()
+                Text(item.publishedAt.relativeTimestamp)
+                    .font(.feedTimestamp)
+                    .foregroundColor(.textTertiary)
+            }
+
+            // Match context pill — shown when the story is about a specific match.
+            // Gives a quick "who and what" for users who skim and don't read the body.
+            if let result = item.matchResult, !result.isEmpty {
+                HStack(spacing: 6) {
+                    Image(systemName: "sportscourt.fill")
+                        .font(.system(size: 11, weight: .semibold))
+                    Text(result)
+                        .font(.jakarta(13, weight: .semiBold))
+                }
+                .foregroundColor(.warmWhite)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .background(
+                    Capsule()
+                        .fill(Color.hotRose)
+                )
+            }
         }
     }
 
@@ -165,7 +185,7 @@ struct ContentDetailView: View {
                 }
             } label: {
                 HStack {
-                    SectionHeaderView(title: "The backstory", icon: "book")
+                    SectionHeaderView(title: "Full story", icon: "book")
                     Spacer()
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12, weight: .medium))

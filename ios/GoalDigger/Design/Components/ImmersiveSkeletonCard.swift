@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Shimmer skeleton matching ImmersiveCard dimensions (65/35 zone split).
+/// Shimmer skeleton matching ImmersiveCard dimensions (75/25 zone split).
 /// Shown during initial feed load before content arrives.
 struct ImmersiveSkeletonCard: View {
     let cardHeight: CGFloat
@@ -9,24 +9,33 @@ struct ImmersiveSkeletonCard: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Zone 1 skeleton (65%)
+            // Zone 1 skeleton (75%) — 3-sided rose border (open at bottom)
             ZStack {
                 Color.deepMauve
                 shimmerOverlay(opacity: 0.08)
             }
-            .frame(height: cardHeight * Layout.immersiveZone1Ratio)
+            .frame(height: cardHeight * 0.75)
             .overlay(
-                Rectangle()
-                    .stroke(Color.hotRose, lineWidth: 3)
-                    .padding(1.5)
+                GeometryReader { geo in
+                    Path { path in
+                        let inset: CGFloat = 2.5
+                        let w = geo.size.width
+                        let h = geo.size.height
+                        path.move(to: CGPoint(x: inset, y: h))
+                        path.addLine(to: CGPoint(x: inset, y: inset))
+                        path.addLine(to: CGPoint(x: w - inset, y: inset))
+                        path.addLine(to: CGPoint(x: w - inset, y: h))
+                    }
+                    .stroke(Color.hotRose, lineWidth: 5)
+                }
             )
 
-            // Zone 2 skeleton (35%)
+            // Zone 2 skeleton (25%)
             ZStack {
                 Color.hotRose
                 shimmerOverlay(opacity: 0.10)
             }
-            .frame(height: cardHeight * Layout.immersiveZone2Ratio)
+            .frame(height: cardHeight * 0.25)
         }
         .frame(height: cardHeight)
         .clipped()

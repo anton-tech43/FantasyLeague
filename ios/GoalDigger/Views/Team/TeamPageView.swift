@@ -105,6 +105,8 @@ struct TeamPageView: View {
                 isStatic: true,
                 isExpanded: expandedCard == .basics,
                 onTap: { toggleCard(.basics) },
+                zone2Color: .softBlush,
+                collapsedHeight: 100,
                 zone1Collapsed: {
                     Text(basics.stadium)
                         .font(.jakarta(13, weight: .regular))
@@ -134,6 +136,8 @@ struct TeamPageView: View {
                 isStatic: true,
                 isExpanded: expandedCard == .manager,
                 onTap: { toggleCard(.manager) },
+                zone2Color: .softBlush,
+                collapsedHeight: 100,
                 zone1Collapsed: { EmptyView() },
                 zone1Expanded: {
                     Text(appState.personalise(manager.summary))
@@ -148,11 +152,15 @@ struct TeamPageView: View {
         if let onesToKnow = cards.onesToKnow, !onesToKnow.players.isEmpty {
             TeamPageCard(
                 title: "Ones to know",
-                primaryText: onesToKnow.players.prefix(3).map(\.name).joined(separator: ", "),
+                primaryText: {
+                    guard let first = onesToKnow.players.first else { return "" }
+                    return "\(first.name), \(first.position)"
+                }(),
                 zone2Label: "Your opener:",
                 talkingPoint: onesToKnow.talkingPoint.map { appState.personalise($0) },
                 isExpanded: expandedCard == .onesToKnow,
                 onTap: { toggleCard(.onesToKnow) },
+                collapsedHeight: 120,
                 zone1Collapsed: { EmptyView() },
                 zone1Expanded: {
                     VStack(alignment: .leading, spacing: 4) {
@@ -181,12 +189,24 @@ struct TeamPageView: View {
         if let rivalry = cards.rivalry {
             TeamPageCard(
                 title: "The rivalry",
-                primaryText: String(appState.personalise(rivalry.text).prefix(50)),
+                primaryText: {
+                    let text = rivalry.text
+                    // Format is typically "Brighton — the M23 Derby..." or "Brighton. Palace and Brighton..."
+                    if let dashRange = text.range(of: " — ") ?? text.range(of: " – ") ?? text.range(of: " - ") {
+                        return String(text[text.startIndex..<dashRange.lowerBound])
+                    }
+                    if let dotRange = text.range(of: ". ") {
+                        return String(text[text.startIndex..<dotRange.lowerBound])
+                    }
+                    return String(text.prefix(20))
+                }(),
                 zone2Label: "Use this:",
                 talkingPoint: rivalry.talkingPoint.map { appState.personalise($0) },
                 isStatic: true,
                 isExpanded: expandedCard == .rivalry,
                 onTap: { toggleCard(.rivalry) },
+                zone2Color: .softBlush,
+                collapsedHeight: 100,
                 zone1Collapsed: { EmptyView() },
                 zone1Expanded: {
                     VStack(alignment: .leading, spacing: 8) {
@@ -211,6 +231,7 @@ struct TeamPageView: View {
                 talkingPoint: form.talkingPoint.map { appState.personalise($0) },
                 isExpanded: expandedCard == .form,
                 onTap: { toggleCard(.form) },
+                collapsedHeight: 140,
                 zone1Collapsed: {
                     TeamPageFormDots(recentForm: form.recentForm, isExpanded: false)
                 },
@@ -235,6 +256,7 @@ struct TeamPageView: View {
                 talkingPoint: season.talkingPoint.map { appState.personalise($0) },
                 isExpanded: expandedCard == .season,
                 onTap: { toggleCard(.season) },
+                collapsedHeight: 120,
                 zone1Collapsed: { EmptyView() },
                 zone1Expanded: {
                     Text(appState.personalise(season.summary))
@@ -272,6 +294,8 @@ struct TeamPageView: View {
             talkingPoint: fixture.talkingPoint.map { appState.personalise($0) },
             isExpanded: expandedCard == .comingUp,
             onTap: { toggleCard(.comingUp) },
+            zone2Color: .gold,
+            collapsedHeight: 140,
             zone1Collapsed: {
                 Text(formattedFixtureDate(fixture.date))
                     .font(.jakarta(13, weight: .regular))
@@ -321,6 +345,7 @@ struct TeamPageView: View {
             isExpanded: expandedCard == .comingUp,
             onTap: { toggleCard(.comingUp) },
             tintColor: tintColor,
+            collapsedHeight: 140,
             zone1Collapsed: { EmptyView() },
             zone1Expanded: {
                 Text(appState.personalise(postMatch.text))
