@@ -143,21 +143,13 @@ struct ContentDetailView: View {
 
     @ViewBuilder
     private func headlineSection(_ item: ContentItem) -> some View {
+        // The headline carries inline name explanations now (handled in the
+        // generator prompt), so we don't need a separate factual sub-headline
+        // here. The user already saw the analogy on the immersive card.
         Text(displayHeadline)
             .font(.jakarta(22, weight: .bold))
             .foregroundColor(.textOnDark)
             .padding(.top, 4)
-
-        // The "girl reference" — Maya's cultural analogy. Mirrors what the
-        // immersive feed card shows; without it, tapping in feels like a
-        // different story.
-        if let context = item.displayContext, !context.isEmpty {
-            Text(appState.personalise(context))
-                .font(.jakarta(15, weight: .regular))
-                .foregroundColor(.textOnDark.opacity(0.75))
-                .lineSpacing(4)
-                .padding(.top, 8)
-        }
 
         Divider().background(Color.feedDivider)
     }

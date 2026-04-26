@@ -56,7 +56,10 @@ class AppState {
         self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
         self.notificationPermissionRequested = UserDefaults.standard.bool(forKey: "notificationPermissionRequested")
 
-        // Feed style — persisted, defaults to immersive
+        // Feed style — persisted, defaults to immersive (one full-screen card
+        // per scroll position). The "lands on article" complaint earlier was
+        // actually a separate auto-expand bug, now removed; the immersive feed
+        // itself is the intended default.
         let styleRaw = UserDefaults.standard.string(forKey: "feedStyle") ?? "immersive"
         self.feedStyle = FeedStyle(rawValue: styleRaw) ?? .immersive
 

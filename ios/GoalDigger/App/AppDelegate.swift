@@ -12,8 +12,12 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         UITextField.appearance().tintColor = roseTint
         UITextView.appearance().tintColor = roseTint
 
+        // TEST A: temporarily disabled — UIScrollView.appearance() applies to
+        // every scroll view in the app, including the one UITextField uses
+        // internally to scroll long text. That's why typing a long word turned
+        // the input field's background dark mauve.
         // Deep mauve overscroll background (prevents white flash on rubber-band)
-        UIScrollView.appearance().backgroundColor = UIColor(red: 45/255, green: 27/255, blue: 46/255, alpha: 1)
+        // UIScrollView.appearance().backgroundColor = UIColor(red: 45/255, green: 27/255, blue: 46/255, alpha: 1)
 
         // Verify custom fonts are registered correctly
         #if DEBUG

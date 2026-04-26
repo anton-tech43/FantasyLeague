@@ -136,13 +136,17 @@ struct ImmersiveCard: View {
                     .lineLimit(3)
                     .foregroundColor(.warmWhite)
 
-                // Context/analogy line
+                // Context/analogy line — the "girl reference". The whole thing
+                // has to land or the wit dies, so no truncation. We let it wrap
+                // and use minimumScaleFactor as the safety valve for very long
+                // analogies on smaller devices.
                 if let context = contextLine, !context.isEmpty {
                     Text(context)
                         .font(.immersiveContext)
                         .foregroundColor(.warmWhite)
                         .padding(.top, 12)
-                        .lineLimit(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .minimumScaleFactor(0.85)
                 }
 
                 Spacer()
@@ -156,10 +160,22 @@ struct ImmersiveCard: View {
             .padding(20)
         }
         .overlay(
-            // 3px inset rose border (top, left, right, bottom)
-            Rectangle()
-                .stroke(Color.hotRose, lineWidth: 3)
-                .padding(1.5)
+            // Rose border on three sides only — top, left, right. Open at the
+            // bottom so there's no visible seam between zone 1 (dark) and
+            // zone 2 (pink). Drawing a full Rectangle stroke leaves a faint
+            // line at the boundary and reads as a "border around the pink".
+            GeometryReader { proxy in
+                Path { path in
+                    let inset: CGFloat = 2.5
+                    let w = proxy.size.width
+                    let h = proxy.size.height
+                    path.move(to: CGPoint(x: inset, y: h))
+                    path.addLine(to: CGPoint(x: inset, y: inset))
+                    path.addLine(to: CGPoint(x: w - inset, y: inset))
+                    path.addLine(to: CGPoint(x: w - inset, y: h))
+                }
+                .stroke(Color.hotRose, lineWidth: 5)
+            }
         )
     }
 
@@ -169,19 +185,23 @@ struct ImmersiveCard: View {
         ZStack {
             zone2Background
 
+            // Anchor the label + talking point to the TOP of the pink zone
+            // (no leading Spacer). This pushes the text right below the
+            // dark/pink seam so it lands cleanly above the tab bar instead
+            // of getting partially covered by it.
             VStack(alignment: .leading, spacing: 0) {
-                Spacer()
-
                 VStack(alignment: .leading, spacing: 6) {
                     Text(zone2Label)
                         .font(.jakarta(20, weight: .bold))
                     Text(talkingPoint)
                         .font(.jakarta(20, weight: .mediumItalic))
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
                 Spacer()
 
-                // Scroll indicator
+                // Scroll indicator stays glued to the bottom (lives behind
+                // the tab bar where its translucency lets it hint through).
                 HStack {
                     Spacer()
                     VStack(spacing: 2) {

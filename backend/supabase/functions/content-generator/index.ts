@@ -102,7 +102,27 @@ The immersive_context is a cultural analogy. Make it:
 - Reference pop culture, brands, relationships, social media, work
 - Edgy and funny, like a WhatsApp message from her funniest friend
 - Max 2 sentences
-The immersive_context_fallback is the safe version: warm, factual, no analogy.
+The immersive_context_fallback is the safe, factual version. It runs as the
+primary line on the immersive card when the analogy is rejected. Warm,
+factual, no analogy. 2-3 sentences max.
+
+HEADLINE: NAME EXPLANATIONS
+The headline field is the big title in the detail view — what the user reads
+first when they tap into a story. The first time you name a person (manager,
+player, pundit, owner, ex-player) in the headline, add a brief 1-2 word
+parenthetical so a reader who doesn't follow football knows who they are.
+Examples:
+    "He might be fuming tonight. Bournemouth conceded a 97th-minute equaliser
+     and Iraola's (Bournemouth manager) convinced it should've been disallowed."
+    "Saka (Arsenal winger) just signed a new five-year deal."
+    "Klopp (former Liverpool boss) was on Sky and called it 'embarrassing.'"
+Skip the parenthetical when the role is already explicit in the same sentence
+("manager Andoni Iraola is furious..." needs nothing extra), or when the name
+is the team's biggest star and skipping the explanation feels natural
+("Haaland scored again" is fine — everyone knows him).
+Apply this only to the headline, not to the immersive_headline (which is the
+all-lowercase stylized variant) and not to the analogy (which is allowed to
+assume context).
 
 BAD ANALOGY EXAMPLES — never generate these:
 - Forced celebrity reference that does not map:

@@ -19,7 +19,6 @@ struct FeedView: View {
     @State private var isLoadingMore = false
     @State private var freshnessCardDismissed = false
     @State private var matchdayPlayers: [PlayerCard] = []
-    @AppStorage("hasAutoExpandedFirstItem") private var hasAutoExpanded = false
     @AppStorage("hasSeenImmersiveBanner") private var hasSeenImmersiveBanner = false
 
     private let pageSize = 20
@@ -211,7 +210,10 @@ struct FeedView: View {
                             item: item,
                             feedContext: appState.activeContext,
                             appState: appState,
-                            cardHeight: geo.size.height,
+                            // Use full screen height (not geo height) so each card
+                            // extends behind the tab bar — keeps the next card
+                            // fully off-screen instead of letting a slice peek.
+                            cardHeight: screenHeight,
                             feedPosition: index,
                             isYourMove: isYourMove,
                             onZone1Tap: {
@@ -376,12 +378,6 @@ struct FeedView: View {
 
         // Purge old cache
         CacheService.shared.purgeOldItems(in: modelContext)
-
-        // Auto-expand first item on initial launch after onboarding
-        if !hasAutoExpanded, let firstItem = teamItems.first {
-            hasAutoExpanded = true
-            appState.deepLinkContentId = firstItem.id
-        }
     }
 
     private func refresh() async {

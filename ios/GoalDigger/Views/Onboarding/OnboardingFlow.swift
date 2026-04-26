@@ -2,7 +2,7 @@ import SwiftUI
 
 struct OnboardingFlow: View {
     @Environment(AppState.self) var appState
-    @State private var step: OnboardingStep = .welcome
+    @State private var step: OnboardingStep = .herName // TEMP: skip welcome for testing
 
     enum OnboardingStep: Int, CaseIterable {
         case welcome = 0

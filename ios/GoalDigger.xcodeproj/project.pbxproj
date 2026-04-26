@@ -15,6 +15,7 @@
 		AA000006 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000006; };
 		AA000007 /* ContentCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000007; };
 		AA000008 /* TeamPickerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000008; };
+		AA000200 /* OnboardingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000200; };
 		AA000009 /* BadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000009; };
 		AA000010 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000010; };
 		AA000011 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000011; };
@@ -74,6 +75,7 @@
 		AB000006 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		AB000007 /* ContentCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentCard.swift; sourceTree = "<group>"; };
 		AB000008 /* TeamPickerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPickerCard.swift; sourceTree = "<group>"; };
+		AB000200 /* OnboardingTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingTextField.swift; sourceTree = "<group>"; };
 		AB000009 /* BadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeView.swift; sourceTree = "<group>"; };
 		AB000010 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
 		AB000011 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
@@ -189,6 +191,7 @@
 				AB000063 /* ImmersiveSkeletonCard.swift */,
 				AB000064 /* ContextSwitcherView.swift */,
 				AB000065 /* EveryoneEmptyStateCard.swift */,
+				AB000200 /* OnboardingTextField.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -473,6 +476,7 @@
 			AA000093 /* TeamPageRivalryMeter.swift in Sources */,
 			AA000094 /* TeamPageCountdown.swift in Sources */,
 			AA000095 /* TeamPageFormDots.swift in Sources */,
+			AA000200 /* OnboardingTextField.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
