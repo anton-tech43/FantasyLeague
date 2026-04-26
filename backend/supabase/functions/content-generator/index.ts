@@ -336,13 +336,31 @@ const ANALOGY_CRITIC_TOOL = {
   },
 };
 
-async function runAnalogyAICritic(
-  supabase: ReturnType<typeof getSupabaseClient>,
-  contentItemId: string,
+// Tool for the rewrite call — forces structured single-string output.
+const ANALOGY_REWRITE_TOOL = {
+  name: "rewrite_analogy",
+  description: "Rewrite a cultural analogy that the reviewer rejected, addressing their feedback",
+  input_schema: {
+    type: "object",
+    properties: {
+      analogy: {
+        type: "string",
+        description: "The new analogy. Cultural reference (pop culture, fashion, dating, work, social media). Max 2 sentences. Sounds like something her funniest friend would WhatsApp her.",
+      },
+    },
+    required: ["analogy"],
+  },
+};
+
+/**
+ * Score a single analogy. Returns the verdict + scores. No DB writes here —
+ * the caller decides what to do with the verdict (rewrite vs save vs fall back).
+ */
+async function scoreAnalogy(
   analogy: string,
   headline: string,
-  fallback: string
-): Promise<void> {
+  fallback: string,
+): Promise<AnalogyScore | null> {
   const criticResponse = await callClaude({
     system: `You are a quality gate for cultural analogies used in a football app for women aged 25-35.
 Score the analogy on these 4 dimensions (1-5 each):
@@ -352,7 +370,8 @@ Score the analogy on these 4 dimensions (1-5 each):
 - Cringe risk: 5 = zero cringe, 1 = maximum cringe.
 
 Approve if total >= 16/20 AND no single dimension <= 2.
-Reject otherwise. Be honest but not harsh.`,
+Reject otherwise. Be honest but not harsh — and when you reject, your reason
+must be SPECIFIC and ACTIONABLE so a writer can rework the analogy.`,
     messages: [{
       role: "user",
       content: `Headline: "${headline}"
@@ -366,17 +385,17 @@ Score this analogy.`,
   });
 
   const toolUse = criticResponse.content.find((c) => c.type === "tool_use");
-  if (!toolUse?.input) return;
+  if (!toolUse?.input) return null;
 
   const scores = toolUse.input as Record<string, unknown>;
   const total = (scores.naturalness as number) + (scores.relevance as number) +
     (scores.audience_fit as number) + (scores.cringe_risk as number);
   const minScore = Math.min(
     scores.naturalness as number, scores.relevance as number,
-    scores.audience_fit as number, scores.cringe_risk as number
+    scores.audience_fit as number, scores.cringe_risk as number,
   );
 
-  const criticScore: AnalogyScore = {
+  return {
     naturalness: scores.naturalness as number,
     relevance: scores.relevance as number,
     audience_fit: scores.audience_fit as number,
@@ -385,36 +404,152 @@ Score this analogy.`,
     verdict: (total >= 16 && minScore > 2) ? "approve" : "reject",
     reason: scores.reason as string,
   };
+}
 
-  if (criticScore.verdict === "reject") {
-    // Null out the analogy so fallback is used
-    await supabase
-      .from("content_items")
-      .update({
-        immersive_context: null,
-        analogy_critic_score: criticScore,
-      })
-      .eq("id", contentItemId);
+/**
+ * Rewrite a rejected analogy using the critic's specific feedback.
+ * Returns the new analogy text, or null if rewrite failed for any reason.
+ */
+async function rewriteAnalogy(
+  rejectedAnalogy: string,
+  criticReason: string,
+  headline: string,
+  fallback: string,
+): Promise<string | null> {
+  try {
+    const response = await callClaude({
+      system: `You are rewriting a cultural analogy for a football app whose readers are women aged 25-35.
 
-    // Log rejection for monitoring
-    await supabase.from("analogy_rejections").insert({
-      content_item_id: contentItemId,
-      rejected_analogy: analogy,
-      critic_scores: criticScore,
-      critic_reason: criticScore.reason,
-      rejected_by: "ai_critic",
+THE ANALOGY MUST:
+- Map a football situation onto her world: pop culture, fashion, dating, social media, friend group dynamics, work
+- Read like something her funniest friend would WhatsApp her
+- Land specifically — "imagine if X" or "this is the equivalent of Y" — not vague
+- Max 2 sentences
+- Be edgy and current. Reference 2024–2026 culture only.
+
+NEVER:
+- Use clichés or generic comparisons ("like a rollercoaster", "like a movie")
+- Write factual summaries pretending to be analogies ("Chelsea has had a hard season..." — that's NOT an analogy)
+- Be condescending or address her relationship with football
+- Use outdated references (anything pre-2020 culture)
+
+GOOD EXAMPLE:
+- Headline: "Gyökeres signs for Arsenal in record deal"
+- Analogy: "It's like Zendaya quietly leaving her label and joining Chanel after a stupid offer. Arsenal just bought the moment of the year."
+
+You will be given the analogy that was rejected and the reviewer's specific feedback. Write a NEW analogy that addresses that feedback.`,
+      messages: [{
+        role: "user",
+        content: `Headline: "${headline}"
+Factual context: "${fallback}"
+
+REJECTED analogy: "${rejectedAnalogy}"
+Reviewer's reason: "${criticReason}"
+
+Write a better analogy that addresses the reviewer's feedback.`,
+      }],
+      tools: [ANALOGY_REWRITE_TOOL],
+      tool_choice: { type: "tool", name: "rewrite_analogy" },
     });
 
-    console.log(`AI critic rejected analogy for ${contentItemId}: ${criticScore.reason} (${total}/20)`);
-  } else {
-    // Store scores, analogy stays for human review
+    const toolUse = response.content.find((c) => c.type === "tool_use");
+    const input = toolUse?.input as { analogy?: string } | undefined;
+    return input?.analogy ?? null;
+  } catch (err) {
+    console.error("Analogy rewrite failed:", err);
+    return null;
+  }
+}
+
+async function runAnalogyAICritic(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  contentItemId: string,
+  analogy: string,
+  headline: string,
+  fallback: string,
+): Promise<void> {
+  // PASS 1 — score the original analogy
+  let currentAnalogy = analogy;
+  let score = await scoreAnalogy(currentAnalogy, headline, fallback);
+  if (!score) {
+    // Critic call failed — leave the analogy as-is (human review will catch it)
+    return;
+  }
+
+  let wasRewritten = false;
+  let originalAnalogy: string | null = null;
+  let originalScore: AnalogyScore | null = null;
+
+  // PASS 2 — if rejected, rewrite using the critic's feedback and re-score once.
+  if (score.verdict === "reject") {
+    originalAnalogy = currentAnalogy;
+    originalScore = score;
+    console.log(`AI critic rejected analogy for ${contentItemId}: ${score.reason} (${score.total}/20). Attempting rewrite.`);
+
+    const rewritten = await rewriteAnalogy(currentAnalogy, score.reason, headline, fallback);
+    if (rewritten && rewritten.trim().length > 0) {
+      const rewriteScore = await scoreAnalogy(rewritten, headline, fallback);
+      if (rewriteScore) {
+        currentAnalogy = rewritten;
+        score = rewriteScore;
+        wasRewritten = true;
+      }
+    }
+  }
+
+  if (score.verdict === "approve") {
+    // Save the (possibly rewritten) analogy + final score
+    const update: Record<string, unknown> = {
+      analogy_critic_score: score,
+    };
+    if (wasRewritten) {
+      // Replace the analogy with the rewritten version
+      update.immersive_context = currentAnalogy;
+    }
     await supabase
       .from("content_items")
-      .update({ analogy_critic_score: criticScore })
+      .update(update)
       .eq("id", contentItemId);
 
-    console.log(`AI critic approved analogy for ${contentItemId} (${total}/20)`);
+    // If we rewrote, log the original rejection so we can tune the generator over time
+    if (wasRewritten && originalAnalogy && originalScore) {
+      await supabase.from("analogy_rejections").insert({
+        content_item_id: contentItemId,
+        rejected_analogy: originalAnalogy,
+        critic_scores: originalScore,
+        critic_reason: originalScore.reason,
+        rejected_by: "ai_critic_then_rewritten",
+      });
+    }
+
+    console.log(
+      wasRewritten
+        ? `AI critic approved REWRITE for ${contentItemId} (${score.total}/20). Original rejected with: ${originalScore?.reason}`
+        : `AI critic approved analogy for ${contentItemId} (${score.total}/20)`,
+    );
+    return;
   }
+
+  // Both attempts failed — null the analogy and let the fallback show.
+  await supabase
+    .from("content_items")
+    .update({
+      immersive_context: null,
+      analogy_critic_score: score,
+    })
+    .eq("id", contentItemId);
+
+  await supabase.from("analogy_rejections").insert({
+    content_item_id: contentItemId,
+    rejected_analogy: currentAnalogy,
+    critic_scores: score,
+    critic_reason: score.reason,
+    rejected_by: wasRewritten ? "ai_critic_rewrite_also_rejected" : "ai_critic",
+  });
+
+  console.log(
+    `AI critic ${wasRewritten ? "rejected REWRITE" : "rejected analogy"} for ${contentItemId}: ${score.reason} (${score.total}/20). Falling back.`,
+  );
 }
 
 serve(async (req) => {
