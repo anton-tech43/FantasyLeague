@@ -21,8 +21,10 @@ struct HerNameView: View {
                 .padding(.horizontal, Layout.screenPadding)
 
             TextField("Your name", text: $name)
+                .textFieldStyle(.plain)
                 .font(.jakarta(20, weight: .medium))
                 .foregroundColor(.textPrimaryOnCard)
+                .tint(.hotRose)
                 .padding(16)
                 .background(Color.cardBackground)
                 .cornerRadius(Layout.cardCornerRadius)

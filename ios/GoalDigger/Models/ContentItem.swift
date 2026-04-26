@@ -93,9 +93,13 @@ struct ContentItem: Identifiable, Codable {
     }
 
     /// The context/analogy line to display on the immersive card.
-    /// Shows the approved analogy if reviewed, otherwise the safe fallback.
+    /// The AI critic screens analogies before they reach the DB — if `immersive_context`
+    /// is non-null, it has passed the critic (possibly after a rewrite). Show that.
+    /// Only fall back to the factual line if no analogy survived review.
     var displayContext: String? {
-        if analogyApproved { return immersiveContext }
+        if let context = immersiveContext, !context.isEmpty {
+            return context
+        }
         return immersiveContextFallback
     }
 
@@ -117,6 +121,17 @@ struct ContentItem: Identifiable, Codable {
         guard case .matchday(let data) = talkingPointsRaw else { return nil }
         return data.metadata
     }
+}
+
+// MARK: - Hashable conformance (id-based)
+//
+// SwiftUI's NavigationStack requires destination values to be Hashable. Two
+// items with the same id are considered the same content; comparing other
+// fields would cause spurious "different" results when the same item is
+// loaded twice from different sources (cache vs API).
+extension ContentItem: Hashable {
+    static func == (lhs: ContentItem, rhs: ContentItem) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
 
 // MARK: - Matchday Talking Points Types

@@ -314,14 +314,14 @@ struct FeedView: View {
     // MARK: - Navigation Helper
 
     private func navigateToDetail(item: ContentItem, scrollToTalkingPoints: Bool, isEveryoneContext: Bool) {
-        // Deep link approach: set deepLinkContentId which GoalDiggerApp picks up
-        // For now, set it and let the onChange handler in MainTabView navigate
+        // Pass the full item along — the detail view renders it immediately, no re-fetch needed.
+        // (Push-notification deep links go through a different path with no item available.)
         let dest = ContentDetailDestination(
             contentId: item.id,
             scrollToTalkingPoints: scrollToTalkingPoints,
-            isEveryoneContext: isEveryoneContext
+            isEveryoneContext: isEveryoneContext,
+            preloadedItem: item
         )
-        // Post notification with destination for MainTabView to handle
         NotificationCenter.default.post(
             name: .feedNavigateToDetail,
             object: dest
