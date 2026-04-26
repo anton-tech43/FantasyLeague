@@ -5,15 +5,26 @@ class APIClient {
 
     // SECURITY: Credentials injected at build time via Configuration.xcconfig → Info.plist
     // When credentials are missing (dev without backend), API calls throw and the app falls back to mock data.
+    //
+    // NOTE: We read SUPABASE_HOST (bare hostname) and prepend "https://" here. Earlier configs stored
+    // a full URL, which broke silently because xcconfig/Info.plist treated `//` in `https://` as a
+    // comment marker — the host got truncated and every API call resolved to "https://rest/v1/...".
     var isConfigured: Bool { _baseURL != nil }
 
+    private static func resolveHost() -> String? {
+        guard let host = Bundle.main.infoDictionary?["SUPABASE_HOST"] as? String,
+              !host.isEmpty,
+              !host.contains("YOUR_PROJECT"),
+              !host.contains("xxxxx") else {
+            return nil
+        }
+        return host
+    }
+
     private let _baseURL: URL? = {
-        guard let urlString = Bundle.main.infoDictionary?["SUPABASE_URL"] as? String,
-              !urlString.isEmpty,
-              !urlString.contains("YOUR_PROJECT"),
-              !urlString.contains("xxxxx"),
-              let url = URL(string: urlString + "/rest/v1") else {
-            print("⚠️ SUPABASE_URL not set, running in offline/mock mode")
+        guard let host = APIClient.resolveHost(),
+              let url = URL(string: "https://\(host)/rest/v1") else {
+            print("⚠️ SUPABASE_HOST not set, running in offline/mock mode")
             return nil
         }
         return url
@@ -25,11 +36,8 @@ class APIClient {
     }
 
     private let _functionsBaseURL: URL? = {
-        guard let urlString = Bundle.main.infoDictionary?["SUPABASE_URL"] as? String,
-              !urlString.isEmpty,
-              !urlString.contains("YOUR_PROJECT"),
-              !urlString.contains("xxxxx"),
-              let url = URL(string: urlString + "/functions/v1") else {
+        guard let host = APIClient.resolveHost(),
+              let url = URL(string: "https://\(host)/functions/v1") else {
             return nil
         }
         return url

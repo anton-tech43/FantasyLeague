@@ -2,13 +2,23 @@ import SwiftUI
 
 struct ContentDetailView: View {
     let contentId: UUID
-    var scrollToTalkingPoints: Bool = false
-    var isEveryoneContext: Bool = false
+    let scrollToTalkingPoints: Bool
+    let isEveryoneContext: Bool
     @Environment(AppState.self) var appState
     @State private var item: ContentItem?
-    @State private var isLoading = true
+    @State private var isLoading: Bool
     @State private var onesToWatch: [PlayerCard] = []
     @State private var isBackstoryExpanded = true
+
+    /// Preloaded item lets the feed render the detail view instantly without re-fetching.
+    /// When opened from a push deep link, `preloadedItem` is nil and `loadItem()` fetches by id.
+    init(contentId: UUID, scrollToTalkingPoints: Bool = false, isEveryoneContext: Bool = false, preloadedItem: ContentItem? = nil) {
+        self.contentId = contentId
+        self.scrollToTalkingPoints = scrollToTalkingPoints
+        self.isEveryoneContext = isEveryoneContext
+        self._item = State(initialValue: preloadedItem)
+        self._isLoading = State(initialValue: preloadedItem == nil)
+    }
 
     var body: some View {
         ZStack {
@@ -49,6 +59,30 @@ struct ContentDetailView: View {
             } else if isLoading {
                 ProgressView()
                     .tint(.hotRose)
+            } else {
+                // Empty/error state — never fall through to a blank screen.
+                VStack(spacing: 16) {
+                    Text("Couldn't load this story")
+                        .font(.feedHeadline)
+                        .foregroundColor(.textOnDark)
+                    Text("It might have been removed, or your connection dropped.")
+                        .font(.onboardingBody)
+                        .foregroundColor(.textTertiary)
+                        .multilineTextAlignment(.center)
+                    Button {
+                        isLoading = true
+                        Task { await loadItem() }
+                    } label: {
+                        Text("Try again")
+                            .font(.feedHeadline)
+                            .foregroundColor(.warmWhite)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 10)
+                            .background(Color.hotRose)
+                            .cornerRadius(Layout.buttonCornerRadius)
+                    }
+                }
+                .padding(Layout.screenPadding)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -129,6 +163,9 @@ struct ContentDetailView: View {
 
     @ViewBuilder
     private func headlineSection(_ item: ContentItem) -> some View {
+        // The headline carries inline name explanations now (handled in the
+        // generator prompt), so we don't need a separate factual sub-headline
+        // here. The user already saw the analogy on the immersive card.
         Text(displayHeadline)
             .font(.jakarta(22, weight: .bold))
             .foregroundColor(.textOnDark)
@@ -207,15 +244,19 @@ struct ContentDetailView: View {
     // MARK: - Loading
 
     private func loadItem() async {
-        do {
-            item = try await APIClient.shared.fetchItem(id: contentId)
-        } catch {
-            #if DEBUG
-            // Fall back to mock data during development
-            if let mock = MockData.feed.first(where: { $0.id == contentId }) {
-                item = mock
+        // Skip the network round-trip when the feed already passed the item.
+        // Re-fetch only when we arrived here from a push deep link (no preload).
+        if item == nil {
+            do {
+                item = try await APIClient.shared.fetchItem(id: contentId)
+            } catch {
+                #if DEBUG
+                // Fall back to mock data during development
+                if let mock = MockData.feed.first(where: { $0.id == contentId }) {
+                    item = mock
+                }
+                #endif
             }
-            #endif
         }
         isLoading = false
 

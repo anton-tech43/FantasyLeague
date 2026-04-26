@@ -128,7 +128,10 @@ struct Layout {
     static let buttonHeight: CGFloat = 50
     static let buttonCornerRadius: CGFloat = 16
 
-    // Immersive card zones
+    // Immersive card zones — 65% dark (headline + analogy + hint), 35% pink
+    // (Your move). The card extends behind the tab bar at full screen height,
+    // so zone 2 needs ~35% to keep its label + 2-line talking point fully
+    // readable above the tab bar with breathing room.
     static let immersiveCardHeightRatio: CGFloat = 1.0
     static let immersiveZone1Ratio: CGFloat = 0.65
     static let immersiveZone2Ratio: CGFloat = 0.35

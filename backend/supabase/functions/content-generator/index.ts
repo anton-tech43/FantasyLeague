@@ -8,7 +8,6 @@ import { callClaude } from "../_shared/claude-client.ts";
 import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 import { triggerFunction } from "../_shared/trigger.ts";
 import { sanitizeText, wrapExternalData } from "../_shared/input-sanitizer.ts";
-import { buildSourceSummary } from "../_shared/source-summarizer.ts";
 import type { TriggerPayload, MatchdayTalkingPoints, AnalogyScore } from "../_shared/types.ts";
 
 // ============================================================
@@ -45,43 +44,6 @@ WRITING RULES:
 3. CONVERSATION FRAMING: Every talking point should be something she can naturally
    say or ask. Frame them as conversation starters, not facts to memorize.
 
-   HEADLINE RULES — ENFORCE STRICTLY:
-   - Max 180 characters. Max 2 sentences.
-   - NEVER start with "Heads up:", "Update:", "Big news:", "Breaking:" style prefixes.
-   - Avoid starting with the team name as a dry summary ("Arsenal lost to Man City...").
-     If you must use the team name at the start, make it part of a hook, not a report.
-   - Player names at the start are FINE when they ARE the story
-     (e.g. "Igor Thiago is closing in on the Golden Boot").
-   - Good: "The title race just slipped through their fingers tonight."
-   - Good: "Igor Thiago is suddenly second in the Golden Boot race."
-   - Good: "Tonight stung. And it'll stay stinging for a while."
-   - Bad: "Heads up: Arsenal lost to Man City..."
-   - Bad: "Arsenal beat Leeds 5-0 tonight." (dry summary — rewrite to lead with feeling)
-
-   TALKING POINTS RULE — CRITICAL:
-   - Produce EXACTLY 3 talking points. Not 4, not 5. Three.
-   - Every single one must be EITHER:
-     (a) A question ending with "?" that she can ask him verbatim, OR
-     (b) A short statement under 15 words she can say aloud verbatim.
-   - NEVER write instructions to the user. Forbidden patterns in talking points:
-     "Ask him about...", "Don't bring up...", "You can acknowledge...",
-     "Maybe wait until...", "Try to...". These are META commentary, not talking points.
-   - Every talking point must use specific names (player, team, competition).
-     Never "them" or "it".
-
-   Good: "How gutting is it losing to City in a title decider?"
-   Good: "That Gabriel-Haaland clash was wild, did you see it?"
-   Good: "Saka's performance vs Leeds was ridiculous."
-   Bad: "Maybe ask how he's feeling about the loss."
-     → Rewrite as: "How are you holding up after that?"
-   Bad: "Don't bring up the match if he seems in a bad mood."
-     → Delete. That's instruction, not a talking point.
-
-   BODY RULES:
-   - Aim for 2 short paragraphs. 3 is acceptable if the story needs it.
-   - Keep total under 180 words. Tighter is better.
-   - No filler like "This was a massive match, the kind where...". Cut to the point.
-
 4. EMOTIONAL INTELLIGENCE: Connect the football to something she'd understand.
 
 5. TONE CALIBRATION:
@@ -90,43 +52,8 @@ WRITING RULES:
    - Drama → lean into the gossip angle
    - Boring admin → probably not worth a notification
 
-6. NEWSWORTHINESS SCORING (be honest, use the rubric):
-
-   MATCH CONTENT IS ALWAYS PUBLISHED — no score check needed:
-   - Match result (win/loss/draw, ANY scoreline)
-   - Matchday preview (fixture today or tomorrow)
-   - In-match event (goal, card, injury during a game)
-   - Post-match reaction (manager quotes, fan mood)
-   → Set is_match_related=true. It ships regardless of drama.
-   → A 0-0 draw IS worth a content card for the team's fans.
-
-   NON-MATCH CONTENT — needs score ≥ 5 to publish:
-   Rate honestly against this rubric. Don't inflate.
-
-   10 — Once-in-a-decade: title won, relegation confirmed, manager sacked
-        same day and replaced, record signing (£100M+).
-    9 — Major news cycle: star player signed, cup final reached, Champions
-        League qualification locked in, manager officially leaves.
-    8 — Everyone's talking about it: derby-week drama, new manager hired,
-        star player sold, off-field scandal.
-    7 — Serious storyline: long-term injury to key player, European race
-        swing, public contract breakdown.
-    6 — Notable news with substance: confirmed transfer rumour with multiple
-        sources, 3+ losses form crisis, suspension drama.
-    5 — Real storyline, not filler: player returning from injury, form
-        turnaround, confirmed contract talks, loan deal finalised, serious
-        minor transfer rumour.  ← THE BAR FOR PUBLISHING NON-MATCH
-    4 — Marginal: press conference quote, minor injury doubt, U21 news,
-        generic manager comment on form.
-    3 — Barely anything: routine stat, pundit opinion without news hook.
-    2 — Trivia: "on this day" historical repackaging.
-    1 — Literally nothing to report.
-
-   Rule of thumb: would a CASUAL fan bring this up unprompted to mates?
-   If yes → 5 or higher. If only hardcore fans would care → 4 or lower.
-
-   For NON-match content scoring 4 or less: set is_newsworthy=false and
-   skip. Do not inflate scores to sneak filler through.
+6. HONESTY: If the news is genuinely boring or too niche, say so. Return
+   is_newsworthy: false. We NEVER spam.
 
 7. ACCURACY: Never make up facts, stats, or quotes.
 
@@ -138,9 +65,10 @@ WRITING RULES:
    religion, politics, or family. No defamatory statements. No hate speech or
    discrimination. No copyrighted text verbatim.
 
-10. BODY LENGTH OVERRIDES EVERYTHING: Regardless of tier, the BODY RULES above (max 2
-    paragraphs, under 120 words total) are absolute. Tier depth = how much you cram
-    INTO those 2 paragraphs, not license to write more paragraphs.
+10. TIER DEPTH: Adjust depth to the target tier:
+    - Tier 1: One sentence what happened, one sentence mood, one thing to say/do.
+    - Tier 2: More context on why it matters, mood, a usable talking point.
+    - Tier 3: Full context including table implications, form, fan sentiment.
 
 11. CONTEXT FLAGS: Use pressure flags to set emotional weight (title_race = everything
     matters more, bad_form = empathy, derby = personal).
@@ -174,7 +102,27 @@ The immersive_context is a cultural analogy. Make it:
 - Reference pop culture, brands, relationships, social media, work
 - Edgy and funny, like a WhatsApp message from her funniest friend
 - Max 2 sentences
-The immersive_context_fallback is the safe version: warm, factual, no analogy.
+The immersive_context_fallback is the safe, factual version. It runs as the
+primary line on the immersive card when the analogy is rejected. Warm,
+factual, no analogy. 2-3 sentences max.
+
+HEADLINE: NAME EXPLANATIONS
+The headline field is the big title in the detail view — what the user reads
+first when they tap into a story. The first time you name a person (manager,
+player, pundit, owner, ex-player) in the headline, add a brief 1-2 word
+parenthetical so a reader who doesn't follow football knows who they are.
+Examples:
+    "He might be fuming tonight. Bournemouth conceded a 97th-minute equaliser
+     and Iraola's (Bournemouth manager) convinced it should've been disallowed."
+    "Saka (Arsenal winger) just signed a new five-year deal."
+    "Klopp (former Liverpool boss) was on Sky and called it 'embarrassing.'"
+Skip the parenthetical when the role is already explicit in the same sentence
+("manager Andoni Iraola is furious..." needs nothing extra), or when the name
+is the team's biggest star and skipping the explanation feels natural
+("Haaland scored again" is fine — everyone knows him).
+Apply this only to the headline, not to the immersive_headline (which is the
+all-lowercase stylized variant) and not to the analogy (which is allowed to
+assume context).
 
 BAD ANALOGY EXAMPLES — never generate these:
 - Forced celebrity reference that does not map:
@@ -245,18 +193,12 @@ const NEWS_TOOL = {
   input_schema: {
     type: "object",
     properties: {
-      is_newsworthy: { type: "boolean", description: "Is this worth telling her about?" },
-      is_match_related: { type: "boolean", description: "Is the story primarily about a specific match result, matchday preview, or a goal/card/injury inside a match? If YES, this automatically passes the newsworthiness bar — match content is always delivered to fans." },
-      match_result: {
-        type: "string",
-        description: "If is_match_related=true and the match has finished, provide the final score in the format 'Home 2-1 Away' using full club names (e.g. 'Liverpool 2-1 Everton'). For upcoming fixtures use 'Home vs Away'. Leave empty for non-match content.",
-        maxLength: 80,
-      },
+      is_newsworthy: { type: "boolean", description: "Is this genuinely worth notifying her about?" },
       skip_reason: { type: "string", description: "If not newsworthy: explain why" },
-      newsworthiness_score: { type: "integer", description: "1-10 scale. For NON-match content, publish only if 5+. For match-related content (is_match_related=true) we publish regardless of score.", minimum: 1, maximum: 10 },
-      headline: { type: "string", description: "Push notification text. Max 140 chars. Must NOT start with team name, player name, or prefixes like 'Heads up:', 'Update:', 'Breaking:'.", maxLength: 140 },
-      body: { type: "string", description: "Max 2 short paragraphs, under 120 words total. No filler." },
-      talking_points: { type: "array", items: { type: "string" }, description: "EXACTLY 3 items. Each must be a question ending with ? OR a <15-word statement she can say verbatim. Never instructions like 'Ask him about...'.", minItems: 3, maxItems: 3 },
+      newsworthiness_score: { type: "integer", description: "1-10 scale. Only publish if 6+.", minimum: 1, maximum: 10 },
+      headline: { type: "string", description: "Push notification text. Max 200 chars.", maxLength: 200 },
+      body: { type: "string", description: "Full detail view content in markdown." },
+      talking_points: { type: "array", items: { type: "string" }, description: "3-5 conversation starters.", minItems: 3, maxItems: 5 },
       emotional_context: { type: "string", enum: ["exciting", "bad_news", "drama", "informational", "funny"] },
       source_summary: { type: "string", description: "Which source(s) this is based on" },
       team_page_impact: {
@@ -303,7 +245,7 @@ const NEWS_TOOL = {
         description: "If everyone_talking true: is this THE single most important football story today? Only one per day across all clubs. Most everyone_talking stories are NOT worth_knowing.",
       },
     },
-    required: ["is_newsworthy", "is_match_related", "newsworthiness_score"],
+    required: ["is_newsworthy", "newsworthiness_score"],
   },
 };
 
@@ -312,9 +254,9 @@ const MATCHDAY_TOOL = {
   input_schema: {
     type: "object",
     properties: {
-      headline: { type: "string", maxLength: 140 },
+      headline: { type: "string", maxLength: 200 },
       body: { type: "string" },
-      talking_points: { type: "array", items: { type: "string" }, minItems: 3, maxItems: 3 },
+      talking_points: { type: "array", items: { type: "string" }, minItems: 3, maxItems: 5 },
       pre_match_mood: { type: "string", enum: ["confident", "nervous", "excited", "meh"] },
       rivalry_level: { type: "string", enum: ["derby", "big_game", "normal", "dead_rubber"] },
       if_they_win: { type: "string" },
@@ -326,192 +268,6 @@ const MATCHDAY_TOOL = {
     required: ["headline", "body", "talking_points", "pre_match_mood", "rivalry_level", "if_they_win", "if_they_lose"],
   },
 };
-
-// Inline summarizeAPIFootball moved to _shared/source-summarizer.ts
-// The function below is retained only as dead code if anything references it.
-// deno-lint-ignore no-explicit-any
-function _unused_summarizeAPIFootball(source: string, raw: any, _teamId: string): string {
-  const resp = raw?.response;
-  if (!resp) return "";
-  const kind = source.replace(/^api_football_/, "");
-
-  try {
-    switch (kind) {
-      case "fixtures_next": {
-        if (!Array.isArray(resp) || resp.length === 0) return "";
-        const lines = resp.slice(0, 3).map((f) => {
-          const home = f.teams?.home?.name ?? "?";
-          const away = f.teams?.away?.name ?? "?";
-          const date = f.fixture?.date ?? "";
-          const venue = f.fixture?.venue?.name ?? "";
-          return `  ${home} vs ${away} — ${date.slice(0, 16)} at ${venue}`;
-        });
-        return `UPCOMING FIXTURES:\n${lines.join("\n")}`;
-      }
-      case "fixtures_last": {
-        if (!Array.isArray(resp) || resp.length === 0) return "";
-        const lines = resp.slice(0, 3).map((f) => {
-          const home = f.teams?.home?.name ?? "?";
-          const away = f.teams?.away?.name ?? "?";
-          const hg = f.goals?.home ?? "?";
-          const ag = f.goals?.away ?? "?";
-          const date = (f.fixture?.date ?? "").slice(0, 10);
-          const status = f.fixture?.status?.short ?? "";
-          return `  ${date}: ${home} ${hg}-${ag} ${away} (${status})`;
-        });
-        return `RECENT RESULTS:\n${lines.join("\n")}`;
-      }
-      case "fixtures_events": {
-        if (!Array.isArray(resp) || resp.length === 0) return "";
-        const lines = resp.slice(0, 20).map((e) => {
-          const min = e.time?.elapsed ?? "?";
-          const team = e.team?.name ?? "?";
-          const player = e.player?.name ?? "?";
-          const type = e.type ?? "";
-          const detail = e.detail ?? "";
-          const assist = e.assist?.name ? ` (assist: ${e.assist.name})` : "";
-          return `  ${min}' ${team} — ${player}: ${type} ${detail}${assist}`;
-        });
-        return `LAST MATCH EVENTS:\n${lines.join("\n")}`;
-      }
-      case "fixtures_statistics": {
-        if (!Array.isArray(resp) || resp.length === 0) return "";
-        const lines = resp.map((t) => {
-          const team = t.team?.name ?? "?";
-          const keyStats = (t.statistics ?? [])
-            .filter((s: { type: string }) =>
-              ["Ball Possession", "Total Shots", "Shots on Goal", "Corner Kicks", "Fouls", "Yellow Cards", "Red Cards"].includes(s.type)
-            )
-            .map((s: { type: string; value: unknown }) => `${s.type}: ${s.value}`)
-            .join(", ");
-          return `  ${team} — ${keyStats}`;
-        });
-        return `LAST MATCH STATS:\n${lines.join("\n")}`;
-      }
-      case "fixtures_lineups": {
-        if (!Array.isArray(resp) || resp.length === 0) return "";
-        const lines = resp.map((t) => {
-          const team = t.team?.name ?? "?";
-          const formation = t.formation ?? "?";
-          const coach = t.coach?.name ?? "?";
-          const starters = (t.startXI ?? [])
-            .map((p: { player?: { name?: string } }) => p.player?.name)
-            .filter(Boolean)
-            .join(", ");
-          return `  ${team} (${coach}, ${formation}): ${starters}`;
-        });
-        return `LAST MATCH LINEUPS:\n${lines.join("\n")}`;
-      }
-      case "fixtures_headtohead": {
-        if (!Array.isArray(resp) || resp.length === 0) return "";
-        const lines = resp.slice(0, 5).map((f) => {
-          const home = f.teams?.home?.name ?? "?";
-          const away = f.teams?.away?.name ?? "?";
-          const hg = f.goals?.home ?? "?";
-          const ag = f.goals?.away ?? "?";
-          const date = (f.fixture?.date ?? "").slice(0, 10);
-          return `  ${date}: ${home} ${hg}-${ag} ${away}`;
-        });
-        return `HEAD-TO-HEAD (last 5 vs next opponent):\n${lines.join("\n")}`;
-      }
-      case "standings": {
-        const table = resp?.[0]?.league?.standings?.[0];
-        if (!Array.isArray(table)) return "";
-        const lines = table.slice(0, 8).map((s) => {
-          const form = s.form ? ` form=${s.form}` : "";
-          return `  #${s.rank} ${s.team?.name}: ${s.points}pts${form}`;
-        });
-        return `LEAGUE TABLE (top 8):\n${lines.join("\n")}`;
-      }
-      case "injuries": {
-        if (!Array.isArray(resp) || resp.length === 0) return "";
-        const lines = resp.slice(0, 10).map((i) => {
-          const name = i.player?.name ?? "?";
-          const reason = i.player?.reason ?? "unknown";
-          const type = i.player?.type ?? "";
-          return `  ${name}: ${reason} (${type})`;
-        });
-        return `INJURIES:\n${lines.join("\n")}`;
-      }
-      case "teams_statistics": {
-        const s = resp;
-        if (!s) return "";
-        const fx = s.fixtures;
-        const g = s.goals;
-        const cs = s.clean_sheet?.total;
-        const form = s.form ? s.form.slice(-10) : "";
-        return `SEASON STATS: P${fx?.played?.total} W${fx?.wins?.total} D${fx?.draws?.total} L${fx?.loses?.total}, GF${g?.for?.total?.total} GA${g?.against?.total?.total}, clean sheets: ${cs}, form(last 10): ${form}`;
-      }
-      case "coachs": {
-        if (!Array.isArray(resp) || resp.length === 0) return "";
-        const current = resp[0]; // first is usually current
-        const name = current?.name ?? "?";
-        const age = current?.age ?? "?";
-        const nationality = current?.nationality ?? "";
-        const careerThisTeam = (current?.career ?? []).find(
-          (c: { team?: { id?: number } }) => c.team?.id
-        );
-        const startDate = careerThisTeam?.start ?? "";
-        return `MANAGER: ${name} (${nationality}, age ${age}), since ${startDate}`;
-      }
-      case "predictions": {
-        const p = resp?.[0]?.predictions;
-        if (!p) return "";
-        const advice = p.advice ?? "";
-        const percent = p.percent ? `home ${p.percent.home}, draw ${p.percent.draw}, away ${p.percent.away}` : "";
-        const winner = p.winner?.name ?? "";
-        return `NEXT MATCH PREDICTION: ${winner ? `favored: ${winner}. ` : ""}${percent}. ${advice}`;
-      }
-      case "topscorers": {
-        if (!Array.isArray(resp) || resp.length === 0) return "";
-        const lines = resp.slice(0, 8).map((p) => {
-          const name = p.player?.name ?? "?";
-          const team = p.statistics?.[0]?.team?.name ?? "?";
-          const goals = p.statistics?.[0]?.goals?.total ?? 0;
-          return `  ${name} (${team}): ${goals} goals`;
-        });
-        return `LEAGUE TOP SCORERS:\n${lines.join("\n")}`;
-      }
-      case "topassists": {
-        if (!Array.isArray(resp) || resp.length === 0) return "";
-        const lines = resp.slice(0, 5).map((p) => {
-          const name = p.player?.name ?? "?";
-          const team = p.statistics?.[0]?.team?.name ?? "?";
-          const assists = p.statistics?.[0]?.goals?.assists ?? 0;
-          return `  ${name} (${team}): ${assists} assists`;
-        });
-        return `LEAGUE TOP ASSISTS:\n${lines.join("\n")}`;
-      }
-      case "transfers": {
-        // Only show transfers from last 6 months
-        if (!Array.isArray(resp) || resp.length === 0) return "";
-        const sixMonthsAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000);
-        const recent: string[] = [];
-        for (const p of resp.slice(0, 20)) {
-          for (const t of p.transfers ?? []) {
-            const date = new Date(t.date ?? 0);
-            if (date > sixMonthsAgo) {
-              const name = p.player?.name ?? "?";
-              const from = t.teams?.out?.name ?? "?";
-              const to = t.teams?.in?.name ?? "?";
-              recent.push(`  ${t.date}: ${name} ${from} → ${to}`);
-              if (recent.length >= 8) break;
-            }
-          }
-          if (recent.length >= 8) break;
-        }
-        return recent.length ? `RECENT TRANSFERS (last 6mo):\n${recent.join("\n")}` : "";
-      }
-      case "squad":
-        return ""; // too large, not useful as news input
-      default:
-        return "";
-    }
-  } catch (e) {
-    console.warn(`summarizeAPIFootball failed for ${source}:`, e instanceof Error ? e.message : e);
-    return "";
-  }
-}
 
 async function buildNewsPrompt(
   supabase: ReturnType<typeof getSupabaseClient>,
@@ -527,19 +283,22 @@ async function buildNewsPrompt(
     .select("source, data")
     .in("id", fetchLogIds);
 
-  // Fetch team row for api_football_id (for injuries filtering)
-  const { data: teamRow } = await supabase
-    .from("teams")
-    .select("api_football_id")
-    .eq("id", teamId)
-    .single();
-  const teamApiId = teamRow?.api_football_id as number | undefined;
+  // Format articles
+  let formattedArticles = "";
+  let statsData = "";
 
-  // Use shared summarizer — both generator and reviewer see same clean facts
-  const { articles: formattedArticles, stats: statsData } = buildSourceSummary(
-    (logs ?? []) as Array<{ source: string; data: unknown }>,
-    teamApiId
-  );
+  for (const log of logs ?? []) {
+    if (typeof log.source === "string" && log.source.startsWith("api_football_")) {
+      statsData += `\n${log.source}: ${JSON.stringify(log.data).slice(0, 1000)}`;
+    } else {
+      const articles = Array.isArray(log.data) ? log.data : [log.data];
+      for (const article of articles) {
+        if (!article) continue;
+        const sanitized = sanitizeText(`${article.title ?? ""}: ${article.description ?? ""}`);
+        formattedArticles += `\n- ${sanitized.text}`;
+      }
+    }
+  }
 
   // Get recent published headlines for dedup
   const { data: recent } = await supabase
@@ -554,9 +313,9 @@ async function buildNewsPrompt(
 
   return `Here is the latest data for ${teamDisplayName}:
 
-${wrapExternalData(`--- NEWS HEADLINES (current truth, most recent) ---${formattedArticles}`, "rss_feeds")}
+${wrapExternalData(`--- RAW NEWS ARTICLES ---${formattedArticles}`, "rss_feeds")}
 
-${wrapExternalData(`--- STRUCTURED API DATA (may lag behind news by 1-2 days; if news contradicts it, the news is correct) ---${statsData}`, "api_football")}
+${wrapExternalData(`--- TEAM STATS ---${statsData}`, "api_football")}
 
 --- TEAM CONTEXT ---
 Current pressure flags: ${contextFlags.join(", ") || "none"}
@@ -597,13 +356,31 @@ const ANALOGY_CRITIC_TOOL = {
   },
 };
 
-async function runAnalogyAICritic(
-  supabase: ReturnType<typeof getSupabaseClient>,
-  contentItemId: string,
+// Tool for the rewrite call — forces structured single-string output.
+const ANALOGY_REWRITE_TOOL = {
+  name: "rewrite_analogy",
+  description: "Rewrite a cultural analogy that the reviewer rejected, addressing their feedback",
+  input_schema: {
+    type: "object",
+    properties: {
+      analogy: {
+        type: "string",
+        description: "The new analogy. Cultural reference (pop culture, fashion, dating, work, social media). Max 2 sentences. Sounds like something her funniest friend would WhatsApp her.",
+      },
+    },
+    required: ["analogy"],
+  },
+};
+
+/**
+ * Score a single analogy. Returns the verdict + scores. No DB writes here —
+ * the caller decides what to do with the verdict (rewrite vs save vs fall back).
+ */
+async function scoreAnalogy(
   analogy: string,
   headline: string,
-  fallback: string
-): Promise<void> {
+  fallback: string,
+): Promise<AnalogyScore | null> {
   const criticResponse = await callClaude({
     system: `You are a quality gate for cultural analogies used in a football app for women aged 25-35.
 Score the analogy on these 4 dimensions (1-5 each):
@@ -613,7 +390,8 @@ Score the analogy on these 4 dimensions (1-5 each):
 - Cringe risk: 5 = zero cringe, 1 = maximum cringe.
 
 Approve if total >= 16/20 AND no single dimension <= 2.
-Reject otherwise. Be honest but not harsh.`,
+Reject otherwise. Be honest but not harsh — and when you reject, your reason
+must be SPECIFIC and ACTIONABLE so a writer can rework the analogy.`,
     messages: [{
       role: "user",
       content: `Headline: "${headline}"
@@ -627,17 +405,17 @@ Score this analogy.`,
   });
 
   const toolUse = criticResponse.content.find((c) => c.type === "tool_use");
-  if (!toolUse?.input) return;
+  if (!toolUse?.input) return null;
 
   const scores = toolUse.input as Record<string, unknown>;
   const total = (scores.naturalness as number) + (scores.relevance as number) +
     (scores.audience_fit as number) + (scores.cringe_risk as number);
   const minScore = Math.min(
     scores.naturalness as number, scores.relevance as number,
-    scores.audience_fit as number, scores.cringe_risk as number
+    scores.audience_fit as number, scores.cringe_risk as number,
   );
 
-  const criticScore: AnalogyScore = {
+  return {
     naturalness: scores.naturalness as number,
     relevance: scores.relevance as number,
     audience_fit: scores.audience_fit as number,
@@ -646,169 +424,152 @@ Score this analogy.`,
     verdict: (total >= 16 && minScore > 2) ? "approve" : "reject",
     reason: scores.reason as string,
   };
-
-  if (criticScore.verdict === "reject") {
-    // Log the first-attempt rejection for analytics
-    await supabase.from("analogy_rejections").insert({
-      content_item_id: contentItemId,
-      rejected_analogy: analogy,
-      critic_scores: criticScore,
-      critic_reason: criticScore.reason,
-      rejected_by: "ai_critic",
-    });
-
-    console.log(`AI critic rejected analogy for ${contentItemId}: ${criticScore.reason} (${total}/20). Attempting rewrite.`);
-
-    // === AUTO-REWRITE attempt ===
-    // Rather than fall back to the boring factual line, ask Claude to rewrite
-    // the analogy with stronger guidance. If the rewrite also fails, only then
-    // null out to the fallback.
-    const rewritten = await rewriteAnalogy(headline, analogy, criticScore.reason);
-    if (!rewritten) {
-      // Rewrite call failed entirely — fall back
-      await supabase
-        .from("content_items")
-        .update({ immersive_context: null, analogy_critic_score: criticScore })
-        .eq("id", contentItemId);
-      return;
-    }
-
-    // Re-score the rewrite with the same critic
-    const rewriteScoreResp = await callClaude({
-      system: `You are a quality gate for cultural analogies used in a football app for women aged 25-35.
-Score the analogy on these 4 dimensions (1-5 each):
-- Naturalness: Does it flow like something a real person would say?
-- Relevance: Does the analogy map accurately onto the football situation?
-- Audience fit: Would a 25-35 year old woman immediately get this?
-- Cringe risk: 5 = zero cringe, 1 = maximum cringe.
-
-Approve if total >= 16/20 AND no single dimension <= 2.
-Reject otherwise. Be honest but not harsh.`,
-      messages: [{
-        role: "user",
-        content: `Headline: "${headline}"
-Analogy: "${rewritten}"
-Fallback (for context): "${fallback}"
-
-Score this analogy.`,
-      }],
-      tools: [ANALOGY_CRITIC_TOOL],
-      tool_choice: { type: "tool", name: "score_analogy" },
-    });
-    const rewriteTool = rewriteScoreResp.content.find((c) => c.type === "tool_use");
-    const rewriteInput = rewriteTool?.input as Record<string, unknown> | undefined;
-    if (!rewriteInput) {
-      await supabase
-        .from("content_items")
-        .update({ immersive_context: null, analogy_critic_score: criticScore })
-        .eq("id", contentItemId);
-      return;
-    }
-    const rewriteTotal = (rewriteInput.naturalness as number) + (rewriteInput.relevance as number) +
-      (rewriteInput.audience_fit as number) + (rewriteInput.cringe_risk as number);
-    const rewriteMinScore = Math.min(
-      rewriteInput.naturalness as number, rewriteInput.relevance as number,
-      rewriteInput.audience_fit as number, rewriteInput.cringe_risk as number
-    );
-    const rewriteScore: AnalogyScore = {
-      naturalness: rewriteInput.naturalness as number,
-      relevance: rewriteInput.relevance as number,
-      audience_fit: rewriteInput.audience_fit as number,
-      cringe_risk: rewriteInput.cringe_risk as number,
-      total: rewriteTotal,
-      verdict: (rewriteTotal >= 16 && rewriteMinScore > 2) ? "approve" : "reject",
-      reason: rewriteInput.reason as string,
-    };
-
-    if (rewriteScore.verdict === "approve") {
-      // Rewrite passes — save as the active analogy
-      await supabase
-        .from("content_items")
-        .update({
-          immersive_context: rewritten,
-          analogy_critic_score: rewriteScore,
-        })
-        .eq("id", contentItemId);
-      console.log(`AI critic rewrite approved for ${contentItemId} (${rewriteTotal}/20)`);
-    } else {
-      // Rewrite also failed — log both attempts, null the field
-      await supabase.from("analogy_rejections").insert({
-        content_item_id: contentItemId,
-        rejected_analogy: rewritten,
-        critic_scores: rewriteScore,
-        critic_reason: `[rewrite attempt] ${rewriteScore.reason}`,
-        rejected_by: "ai_critic",
-      });
-      await supabase
-        .from("content_items")
-        .update({ immersive_context: null, analogy_critic_score: rewriteScore })
-        .eq("id", contentItemId);
-      console.log(`AI critic rejected rewrite for ${contentItemId}: ${rewriteScore.reason} (${rewriteTotal}/20)`);
-    }
-  } else {
-    // Store scores, analogy stays
-    await supabase
-      .from("content_items")
-      .update({ analogy_critic_score: criticScore })
-      .eq("id", contentItemId);
-
-    console.log(`AI critic approved analogy for ${contentItemId} (${total}/20)`);
-  }
 }
 
 /**
- * Rewrite a rejected analogy with specific guidance based on the rejection reason.
- * Returns the new analogy string, or null if the Claude call fails.
+ * Rewrite a rejected analogy using the critic's specific feedback.
+ * Returns the new analogy text, or null if rewrite failed for any reason.
  */
 async function rewriteAnalogy(
+  rejectedAnalogy: string,
+  criticReason: string,
   headline: string,
-  originalAnalogy: string,
-  rejectionReason: string
+  fallback: string,
 ): Promise<string | null> {
   try {
-    const rewriteResp = await callClaude({
-      system: `You are the voice of Goal Digger — an app that helps 25-35 year old women stay
-in the loop about their partner's football team.
+    const response = await callClaude({
+      system: `You are rewriting a cultural analogy for a football app whose readers are women aged 25-35.
 
-You're rewriting a CULTURAL ANALOGY that was just rejected by a quality critic.
-Your job: produce ONE fresh analogy (not the same one) that:
-
-- Sounds like a text from her funniest friend, not a sports journalist
-- References something she'd actually care about: relationships, pop culture,
-  social media, fashion, food, work, dating, travel
-- Uses specific nameable brands/people/shows where possible
-  (Depop, Hinge, Zara, Taylor Swift, Love Island, Hailey Bieber — not generic)
-- Maps ACCURATELY onto the football situation described in the headline
-- Is edgy, specific, slightly gossipy
+THE ANALOGY MUST:
+- Map a football situation onto her world: pop culture, fashion, dating, social media, friend group dynamics, work
+- Read like something her funniest friend would WhatsApp her
+- Land specifically — "imagine if X" or "this is the equivalent of Y" — not vague
 - Max 2 sentences
+- Be edgy and current. Reference 2024–2026 culture only.
 
-AVOID:
-- Sports jargon
-- Generic "like when X happens" openings without a specific thing
-- Trying too hard — no forced references
-- Things that would make her cringe
+NEVER:
+- Use clichés or generic comparisons ("like a rollercoaster", "like a movie")
+- Write factual summaries pretending to be analogies ("Chelsea has had a hard season..." — that's NOT an analogy)
+- Be condescending or address her relationship with football
+- Use outdated references (anything pre-2020 culture)
 
-Respond with ONLY the rewritten analogy. No intro, no explanation. Just the analogy text.`,
+GOOD EXAMPLE:
+- Headline: "Gyökeres signs for Arsenal in record deal"
+- Analogy: "It's like Zendaya quietly leaving her label and joining Chanel after a stupid offer. Arsenal just bought the moment of the year."
+
+You will be given the analogy that was rejected and the reviewer's specific feedback. Write a NEW analogy that addresses that feedback.`,
       messages: [{
         role: "user",
         content: `Headline: "${headline}"
+Factual context: "${fallback}"
 
-Rejected analogy: "${originalAnalogy}"
+REJECTED analogy: "${rejectedAnalogy}"
+Reviewer's reason: "${criticReason}"
 
-Why it was rejected: ${rejectionReason}
-
-Write a fresh analogy that fixes the problem.`,
+Write a better analogy that addresses the reviewer's feedback.`,
       }],
-      max_tokens: 200,
+      tools: [ANALOGY_REWRITE_TOOL],
+      tool_choice: { type: "tool", name: "rewrite_analogy" },
     });
-    const text = rewriteResp.content.find((c) => c.type === "text")?.text?.trim();
-    if (!text) return null;
-    // Strip any surrounding quotes Claude might add
-    return text.replace(/^["']|["']$/g, "").trim();
-  } catch (e) {
-    console.error("rewriteAnalogy failed:", e instanceof Error ? e.message : e);
+
+    const toolUse = response.content.find((c) => c.type === "tool_use");
+    const input = toolUse?.input as { analogy?: string } | undefined;
+    return input?.analogy ?? null;
+  } catch (err) {
+    console.error("Analogy rewrite failed:", err);
     return null;
   }
+}
+
+async function runAnalogyAICritic(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  contentItemId: string,
+  analogy: string,
+  headline: string,
+  fallback: string,
+): Promise<void> {
+  // PASS 1 — score the original analogy
+  let currentAnalogy = analogy;
+  let score = await scoreAnalogy(currentAnalogy, headline, fallback);
+  if (!score) {
+    // Critic call failed — leave the analogy as-is (human review will catch it)
+    return;
+  }
+
+  let wasRewritten = false;
+  let originalAnalogy: string | null = null;
+  let originalScore: AnalogyScore | null = null;
+
+  // PASS 2 — if rejected, rewrite using the critic's feedback and re-score once.
+  if (score.verdict === "reject") {
+    originalAnalogy = currentAnalogy;
+    originalScore = score;
+    console.log(`AI critic rejected analogy for ${contentItemId}: ${score.reason} (${score.total}/20). Attempting rewrite.`);
+
+    const rewritten = await rewriteAnalogy(currentAnalogy, score.reason, headline, fallback);
+    if (rewritten && rewritten.trim().length > 0) {
+      const rewriteScore = await scoreAnalogy(rewritten, headline, fallback);
+      if (rewriteScore) {
+        currentAnalogy = rewritten;
+        score = rewriteScore;
+        wasRewritten = true;
+      }
+    }
+  }
+
+  if (score.verdict === "approve") {
+    // Save the (possibly rewritten) analogy + final score
+    const update: Record<string, unknown> = {
+      analogy_critic_score: score,
+    };
+    if (wasRewritten) {
+      // Replace the analogy with the rewritten version
+      update.immersive_context = currentAnalogy;
+    }
+    await supabase
+      .from("content_items")
+      .update(update)
+      .eq("id", contentItemId);
+
+    // If we rewrote, log the original rejection so we can tune the generator over time
+    if (wasRewritten && originalAnalogy && originalScore) {
+      await supabase.from("analogy_rejections").insert({
+        content_item_id: contentItemId,
+        rejected_analogy: originalAnalogy,
+        critic_scores: originalScore,
+        critic_reason: originalScore.reason,
+        rejected_by: "ai_critic_then_rewritten",
+      });
+    }
+
+    console.log(
+      wasRewritten
+        ? `AI critic approved REWRITE for ${contentItemId} (${score.total}/20). Original rejected with: ${originalScore?.reason}`
+        : `AI critic approved analogy for ${contentItemId} (${score.total}/20)`,
+    );
+    return;
+  }
+
+  // Both attempts failed — null the analogy and let the fallback show.
+  await supabase
+    .from("content_items")
+    .update({
+      immersive_context: null,
+      analogy_critic_score: score,
+    })
+    .eq("id", contentItemId);
+
+  await supabase.from("analogy_rejections").insert({
+    content_item_id: contentItemId,
+    rejected_analogy: currentAnalogy,
+    critic_scores: score,
+    critic_reason: score.reason,
+    rejected_by: wasRewritten ? "ai_critic_rewrite_also_rejected" : "ai_critic",
+  });
+
+  console.log(
+    `AI critic ${wasRewritten ? "rejected REWRITE" : "rejected analogy"} for ${contentItemId}: ${score.reason} (${score.total}/20). Falling back.`,
+  );
 }
 
 serve(async (req) => {
@@ -817,8 +578,7 @@ serve(async (req) => {
 
   try {
     const payload: TriggerPayload = await req.json();
-    const { team_id, trigger, fetch_log_ids, fixture_id, kickoff_time, opponent, previous_failure_notes, content_item_id: retryTargetId } = payload;
-    const isRetry = trigger === "reviewer_retry";
+    const { team_id, trigger, fetch_log_ids, fixture_id, kickoff_time, opponent } = payload;
 
     // Get team info
     const { data: team } = await supabase
@@ -919,53 +679,17 @@ Generate the match day briefing.`;
       if (insertErr) throw new Error(`Insert failed: ${insertErr.message}`);
       contentItemId = inserted.id;
 
-    } else if ((trigger === "new_data" || trigger === "reviewer_retry") && (fetch_log_ids || isRetry)) {
-      // === NEWS CONTENT (or retry with reviewer feedback) ===
+    } else if (trigger === "new_data" && fetch_log_ids) {
+      // === NEWS CONTENT ===
 
       const systemPrompt = NEWS_SYSTEM_PROMPT.replace(
         /\{\{team_display_name\}\}/g,
         team.display_name
       );
 
-      // On retry with empty fetch_log_ids, pull the newest raw_fetch_logs for this team
-      let effectiveFetchIds = fetch_log_ids ?? [];
-      if (isRetry && effectiveFetchIds.length === 0) {
-        const { data: recentLogs } = await supabase
-          .from("raw_fetch_logs")
-          .select("id")
-          .eq("team_id", team_id)
-          .order("fetched_at", { ascending: false })
-          .limit(5);
-        effectiveFetchIds = (recentLogs ?? []).map((l) => l.id);
-      }
-
-      let userMessage = await buildNewsPrompt(
-        supabase, team_id, team.display_name, effectiveFetchIds, tier, contextFlags
+      const userMessage = await buildNewsPrompt(
+        supabase, team_id, team.display_name, fetch_log_ids, tier, contextFlags
       );
-
-      // If this is a retry, prepend reviewer feedback so Claude addresses specific issues
-      if (isRetry && previous_failure_notes) {
-        userMessage = `╔══════════════════════════════════════════════════════════════╗
-║  THIS IS A RETRY. YOUR PREVIOUS ATTEMPT WAS REJECTED.        ║
-╚══════════════════════════════════════════════════════════════╝
-
-REVIEWER FEEDBACK — fix every single one of these:
-
-${previous_failure_notes}
-
-ACTION REQUIRED:
-- If accuracy failed with specific errors, change EVERY named fact to match the
-  source data. Look at the "source_says" values and use THOSE exact numbers/names.
-- If tone failed, rewrite problem phrases the reviewer cited.
-- If brevity failed, trim until you hit the counts the reviewer named.
-- Do not resubmit the same content. This is a different attempt.
-
-AFTER the fixes, follow all the normal rules below.
-
-═══════════════════════════════════════════════════════════════
-
-${userMessage}`;
-      }
 
       const response = await callClaude({
         system: systemPrompt,
@@ -979,13 +703,8 @@ ${userMessage}`;
 
       const input = toolUse.input as Record<string, unknown>;
 
-      // Newsworthiness gate — match-related content ALWAYS passes. Non-match
-      // content needs score 5+. Retries bypass the check entirely (we already
-      // decided it was worth generating the first time).
-      const score = input.newsworthiness_score as number;
-      const isMatchRelated = input.is_match_related === true;
-      const passesNewsworthiness = isMatchRelated || (input.is_newsworthy && score >= 5);
-      if (!isRetry && !passesNewsworthiness) {
+      // Check newsworthiness
+      if (!input.is_newsworthy || (input.newsworthiness_score as number) < 6) {
         await logPipelineEvent(supabase, {
           team_id,
           stage: "generate",
@@ -999,36 +718,20 @@ ${userMessage}`;
         });
       }
 
-      // Dedup check: similar content in the last 24 hours.
-      // SKIP dedup on retry — we're deliberately regenerating the same story.
-      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      // Dedup check: similar headline in last 6 hours
+      const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
       const { data: recentItems } = await supabase
         .from("content_items")
-        .select("id, headline, match_result")
+        .select("headline")
         .eq("team_id", team_id)
-        .gte("created_at", twentyFourHoursAgo);
+        .gte("created_at", sixHoursAgo);
 
       const newHeadline = (input.headline as string).toLowerCase();
-      const newMatchResult = (isMatchRelated && input.match_result)
-        ? ((input.match_result as string).toLowerCase().trim())
-        : null;
-
-      const isDuplicate = !isRetry && (recentItems ?? []).some((item) => {
-        // Skip the row we're updating in place
-        if (retryTargetId && item.id === retryTargetId) return false;
-
-        // Match-result dedup: same score/fixture string = same story regardless of wording.
-        // "Arsenal 1-2 Man City" today matches "Arsenal 1-2 Man City" yesterday.
-        if (newMatchResult && item.match_result) {
-          const existing = (item.match_result as string).toLowerCase().trim();
-          if (existing === newMatchResult) return true;
-        }
-
-        // Word-overlap dedup for non-match stories (or headline variants).
+      const isDuplicate = (recentItems ?? []).some((item) => {
         const existingWords = new Set(item.headline.toLowerCase().split(/\s+/));
         const newWords = newHeadline.split(/\s+/);
         const overlap = newWords.filter((w) => existingWords.has(w)).length;
-        return overlap / newWords.length > 0.45; // tightened from 0.6
+        return overlap / newWords.length > 0.6; // >60% word overlap = duplicate
       });
 
       if (isDuplicate) {
@@ -1065,47 +768,33 @@ ${userMessage}`;
         }
       }
 
-      const itemFields = {
-        team_id,
-        type: "news",
-        headline: input.headline,
-        body: input.body,
-        talking_points: input.talking_points,
-        emotional_context: input.emotional_context,
-        status: "draft" as const,
-        source_urls: [],
-        // Match context pill (null for non-match content)
-        match_result: isMatchRelated ? (input.match_result as string) || null : null,
-        // Immersive card fields
-        immersive_headline: (input.immersive_headline as string) || null,
-        immersive_context: (input.immersive_context as string) || null,
-        immersive_context_fallback: (input.immersive_context_fallback as string) || null,
-        // Everyone's talking about fields
-        everyone_talking: isEveryoneTalking,
-        everyone_talking_headline: isEveryoneTalking ? (input.neutral_headline as string) || null : null,
-        everyone_talking_body: isEveryoneTalking ? (input.neutral_body as string) || null : null,
-        everyone_talking_talking_points: isEveryoneTalking ? (input.neutral_talking_points as string[]) || null : null,
-        worth_knowing: isWorthKnowing,
-      };
+      const { data: inserted, error: insertErr } = await supabase
+        .from("content_items")
+        .insert({
+          team_id,
+          type: "news",
+          headline: input.headline,
+          body: input.body,
+          talking_points: input.talking_points,
+          emotional_context: input.emotional_context,
+          status: "draft",
+          source_urls: [],
+          // Immersive card fields
+          immersive_headline: (input.immersive_headline as string) || null,
+          immersive_context: (input.immersive_context as string) || null,
+          immersive_context_fallback: (input.immersive_context_fallback as string) || null,
+          // Everyone's talking about fields
+          everyone_talking: isEveryoneTalking,
+          everyone_talking_headline: isEveryoneTalking ? (input.neutral_headline as string) || null : null,
+          everyone_talking_body: isEveryoneTalking ? (input.neutral_body as string) || null : null,
+          everyone_talking_talking_points: isEveryoneTalking ? (input.neutral_talking_points as string[]) || null : null,
+          worth_knowing: isWorthKnowing,
+        })
+        .select("id")
+        .single();
 
-      if (isRetry && retryTargetId) {
-        // Update the existing rejected/retrying item in place
-        const { error: updateErr } = await supabase
-          .from("content_items")
-          .update(itemFields)
-          .eq("id", retryTargetId);
-        if (updateErr) throw new Error(`Retry update failed: ${updateErr.message}`);
-        contentItemId = retryTargetId;
-      } else {
-        // Fresh insert
-        const { data: inserted, error: insertErr } = await supabase
-          .from("content_items")
-          .insert(itemFields)
-          .select("id")
-          .single();
-        if (insertErr) throw new Error(`Insert failed: ${insertErr.message}`);
-        contentItemId = inserted.id;
-      }
+      if (insertErr) throw new Error(`Insert failed: ${insertErr.message}`);
+      contentItemId = inserted.id;
 
       // AI Critic Stage 1: score the analogy before it enters human review
       if (contentItemId && input.immersive_context) {

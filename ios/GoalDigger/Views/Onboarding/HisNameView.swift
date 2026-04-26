@@ -3,8 +3,14 @@ import SwiftUI
 struct HisNameView: View {
     @Environment(AppState.self) var appState
     @State private var name = ""
-    @FocusState private var isFocused: Bool
     let onContinue: () -> Void
+
+    private func submit() {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        appState.hisName = trimmed
+        onContinue()
+    }
 
     var body: some View {
         VStack(spacing: 24) {
@@ -20,36 +26,37 @@ struct HisNameView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Layout.screenPadding)
 
-            TextField("His name", text: $name)
-                .font(.jakarta(20, weight: .medium))
-                .foregroundColor(.textPrimaryOnCard)
-                .padding(16)
-                .background(Color.cardBackground)
-                .cornerRadius(Layout.cardCornerRadius)
-                .overlay(
-                    RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
-                        .stroke(isFocused && !name.isEmpty ? Color.hotRose : Color.clear, lineWidth: 2)
-                )
-                .padding(.horizontal, Layout.screenPadding)
-                .focused($isFocused)
-                .textInputAutocapitalization(.words)
-                .autocorrectionDisabled()
+            // UIKit-backed field — bypasses SwiftUI TextField's focus-state
+            // background bug under forced dark mode (see OnboardingTextField).
+            OnboardingTextField(
+                text: $name,
+                placeholder: "His name",
+                autofocus: true,
+                onSubmit: submit
+            )
+            .frame(height: 28)
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
+                    .fill(Color.cardBackground)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
+                    .stroke(!name.isEmpty ? Color.hotRose : Color.clear, lineWidth: 2)
+            )
+            .padding(.horizontal, Layout.screenPadding)
 
             Spacer()
 
             if !name.trimmingCharacters(in: .whitespaces).isEmpty {
-                Button("Continue") {
-                    appState.hisName = name.trimmingCharacters(in: .whitespaces)
-                    onContinue()
-                }
-                .buttonStyle(PrimaryButtonStyle())
-                .padding(.horizontal, Layout.screenPadding)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                Button("Continue", action: submit)
+                    .buttonStyle(PrimaryButtonStyle())
+                    .padding(.horizontal, Layout.screenPadding)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
             Spacer().frame(height: 40)
         }
         .animation(.easeOut(duration: 0.2), value: name.isEmpty)
-        .onAppear { isFocused = true }
     }
 }

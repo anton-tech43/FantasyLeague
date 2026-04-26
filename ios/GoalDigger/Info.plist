@@ -51,8 +51,8 @@
 		<string>PlusJakartaSans-ExtraBold.ttf</string>
 		<string>LeagueSpartan-Black.ttf</string>
 	</array>
-	<key>SUPABASE_URL</key>
-	<string>$(SUPABASE_URL)</string>
+	<key>SUPABASE_HOST</key>
+	<string>$(SUPABASE_HOST)</string>
 	<key>SUPABASE_ANON_KEY</key>
 	<string>$(SUPABASE_ANON_KEY)</string>
 </dict>

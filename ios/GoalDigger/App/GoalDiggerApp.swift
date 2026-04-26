@@ -30,11 +30,15 @@ struct ContentDetailDestination: Hashable {
     let contentId: UUID
     let scrollToTalkingPoints: Bool
     let isEveryoneContext: Bool
+    /// Item to render immediately. Set when navigating from a feed (we already have the item in memory).
+    /// Push-notification deep links pass `nil`; the detail view falls back to `fetchItem(id:)` in that case.
+    let preloadedItem: ContentItem?
 
-    init(contentId: UUID, scrollToTalkingPoints: Bool, isEveryoneContext: Bool = false) {
+    init(contentId: UUID, scrollToTalkingPoints: Bool, isEveryoneContext: Bool = false, preloadedItem: ContentItem? = nil) {
         self.contentId = contentId
         self.scrollToTalkingPoints = scrollToTalkingPoints
         self.isEveryoneContext = isEveryoneContext
+        self.preloadedItem = preloadedItem
     }
 }
 
@@ -112,7 +116,12 @@ struct MainTabView: View {
             NavigationStack(path: $feedPath) {
                 FeedView()
                     .navigationDestination(for: ContentDetailDestination.self) { dest in
-                        ContentDetailView(contentId: dest.contentId, scrollToTalkingPoints: dest.scrollToTalkingPoints, isEveryoneContext: dest.isEveryoneContext)
+                        ContentDetailView(
+                            contentId: dest.contentId,
+                            scrollToTalkingPoints: dest.scrollToTalkingPoints,
+                            isEveryoneContext: dest.isEveryoneContext,
+                            preloadedItem: dest.preloadedItem
+                        )
                     }
                     .navigationDestination(for: String.self) { destination in
                         if destination == "playerCards",
