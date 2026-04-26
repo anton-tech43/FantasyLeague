@@ -1,6 +1,10 @@
 // Configuration.xcconfig.example
 // Copy this file to Configuration.xcconfig and fill in real values
 // NEVER commit Configuration.xcconfig to git
+//
+// IMPORTANT: SUPABASE_HOST holds the bare hostname only (no scheme, no slashes).
+// xcconfig + Info.plist build pipeline strips anything after `//` as a comment,
+// which silently broke earlier full-URL configs. The Swift code prepends https://.
 
-SUPABASE_URL = https:$(/)$(/)YOUR_PROJECT.supabase.co
+SUPABASE_HOST = YOUR_PROJECT.supabase.co
 SUPABASE_ANON_KEY = YOUR_ANON_KEY_HERE
