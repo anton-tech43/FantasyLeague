@@ -1,0 +1,161 @@
+# Goal Digger — iOS / SwiftUI Gotchas
+
+Hard-won lessons from real bugs we shipped and fixed. Read before debugging the same thing twice.
+
+---
+
+## 1. xcconfig + `//` is a comment trap
+
+**Symptom:** Built `Info.plist` shows `SUPABASE_URL = "https:"` even though the source is `https://cwgpsmbunrocrofziqad.supabase.co`. All API calls resolve to `https://rest/v1/...` and fail with `-1003 hostname not found`.
+
+**Cause:** The `//` after `https:` is treated as a comment start by xcconfig and/or the Info.plist build phase. Everything after `//` is silently stripped at build time.
+
+**Fix (canonical, in `Configuration.xcconfig`):** Store the bare hostname; prepend the scheme in Swift.
+
+```xcconfig
+SUPABASE_HOST = cwgpsmbunrocrofziqad.supabase.co
+```
+```swift
+let url = URL(string: "https://\(host)/rest/v1")
+```
+
+**Don't try:** `https:/$()/host` style escapes — fragile and fails when Info.plist preprocessing runs after xcconfig substitution.
+
+---
+
+## 2. Multiple `.xcodeproj` copies (worktree confusion)
+
+**Symptom:** You edit a Swift file, rebuild in Xcode — the change isn't in the build. The compiled dylib still has the old code.
+
+**Cause:** Two copies of `GoalDigger.xcodeproj` exist (one in main repo, one in a `.claude/worktrees/<name>/` worktree). Xcode is open on the worktree copy; you've been editing the main-repo copy.
+
+**Fix:** Always confirm which `.xcodeproj` Xcode is reading from. Quickest check:
+```bash
+cat ~/Library/Developer/Xcode/DerivedData/GoalDigger-*/info.plist | \
+  /usr/libexec/PlistBuddy -c 'Print :WorkspacePath' /dev/stdin
+```
+or look at the open project path in Xcode's title bar.
+
+---
+
+## 3. `UIScrollView.appearance().backgroundColor` poisons every text field
+
+**Symptom:** `TextField` background becomes opaque dark when focused/typing. `.background(Color.X)` modifier is ignored. Only happens once you start typing — empty field looks fine.
+
+**Cause:** `UIScrollView.appearance()` is a UIKit appearance proxy that affects **every UIScrollView in the entire app** — including the internal one `UITextField` uses to scroll long text. We had this in `AppDelegate.swift`:
+```swift
+// THIS POISONS EVERY TEXT FIELD
+UIScrollView.appearance().backgroundColor = UIColor(deepMauve)
+```
+
+**Fix:** Remove the global appearance proxy. Set scroll-view backgrounds per-view in SwiftUI (`.background(Color.deepMauve)` on the actual ScrollViews that need it). Never set `UIScrollView.appearance()` globally in an app that uses any text input.
+
+**Time wasted before finding this:** several hours of poking at `.textFieldStyle(.plain)`, ZStacks, `RoundedRectangle.fill`, even a UIViewRepresentable wrapper. None of it worked because the fix had to be at the `UIScrollView.appearance()` level.
+
+---
+
+## 4. SwiftUI `.environment(\.colorScheme, .light)` doesn't reach UIKit
+
+**Symptom:** App forces dark mode (`UIUserInterfaceStyle = Dark` in Info.plist + `.preferredColorScheme(.dark)` on root). Adding `.environment(\.colorScheme, .light)` to a TextField subtree changes nothing — UIKit-rendered controls still show dark visuals.
+
+**Cause:** SwiftUI environment values only flow through SwiftUI views. UIKit views (which TextField uses internally) read `UITraitCollection`, which is set at the window/UIViewController level — not by SwiftUI environment.
+
+**Fix:** Use `overrideUserInterfaceStyle = .light` on the actual UIKit view (e.g. via UIViewRepresentable). Or accept system defaults and don't try to mix forced dark + light overrides.
+
+---
+
+## 5. SwiftUI `TextField` + `@FocusState` background overrides
+
+**Symptom:** Even without `UIScrollView.appearance()` issues, focused TextField sometimes paints a system background that defeats `.background(Color.X)`.
+
+**Cause:** SwiftUI internal: focus state can render system styling that sits *above* the `.background()` modifier in the layer order.
+
+**Fix (proven):** Use `.background(SomeShape().fill(Color.X))` with an explicit Shape — survives focus better than `.background(Color.X)`. Or anchor a `RoundedRectangle.fill(...)` *behind* the TextField inside a ZStack. Or fall back to `UIViewRepresentable` wrapping `UITextField` if both fail.
+
+---
+
+## 6. `cardHeight = geo.size.height` vs `UIScreen.main.bounds.height`
+
+**Symptom:** Either (a) you see a slice of the next card peeking under the current one, or (b) the bottom of the current card disappears behind the tab bar.
+
+**Cause:**
+- `geo.size.height` = visible viewport (excludes tab bar safe area)
+- `UIScreen.main.bounds.height` = full device screen (includes everything)
+
+**Fix:** Pick based on intent:
+- "Each card fills the visible viewport, accept brief next-card-peek during scroll transitions" → `geo.size.height`
+- "Each card extends behind tab bar, next card hidden at full screen height" → `UIScreen.main.bounds.height` AND adjust zone ratios so content stays in the visible portion (don't put the talking-point in the bottom 15% behind the tab bar)
+
+---
+
+## 7. SwiftData cache masks API failures
+
+**Symptom:** App appears to load fresh content even when API calls are silently failing. Hours debugging "is the API broken?" and finding it's actually working — just the iOS app is showing yesterday's cached data.
+
+**Cause:** `FeedView.loadInitial()` shows SwiftData-cached items immediately (good UX), then re-fetches in the background. If re-fetch fails silently, the UI keeps showing cache — no error visible to user.
+
+**Fix:** Two things:
+1. Always check what the actual API response is (curl the endpoint with the iOS-shape `select=...` query string)
+2. Add explicit error states in `FeedView` so silent fetch failures surface, not just cache fallback
+
+---
+
+## 8. `displayContext` was gated on the wrong flag
+
+**Symptom:** Analogies generated and AI-critic-approved (`analogy_critic_score.verdict = "approve"` in DB), but iOS shows the factual fallback line instead.
+
+**Cause:** `displayContext` checked `analogyApproved` — the **human review flag**, always `false` for auto-pipeline content. So even AI-approved analogies got hidden behind fallbacks.
+
+**Fix:** Trust the AI critic. Show `immersive_context` if non-null (the pipeline already nulls rejected ones at the DB level). Flag `analogyApproved` is for a future human-in-the-loop workflow that doesn't exist yet.
+
+---
+
+## 9. AI critic was rejecting and silently nulling analogies
+
+**Symptom:** Most cards showed factual fallback, not the witty analogy that's the actual product.
+
+**Cause:** Critic flow was: score → if reject, null out `immersive_context` → fallback shown. No second chance.
+
+**Fix:** `runAnalogyAICritic` now does score → if reject, **rewrite using critic's specific feedback** → re-score → save the rewrite if it now passes, else fall back. Most analogies now survive into production. The `analogy_rejections` table logs both the original failure and the saving rewrite for audit.
+
+---
+
+## 10. Detail view going blank on tap
+
+**Symptom:** Tap a feed card → detail screen is blank except for the back button.
+
+**Cause:** `ContentDetailView.loadItem()` fetched by ID. If `fetchItem(id:)` returned empty (stale UUID, transient network blip, etc.), `item` stayed `nil`, `isLoading` flipped false, and the body rendered nothing — no `else` branch.
+
+**Fix:** Two things:
+1. Pass the full `ContentItem` through navigation as `preloadedItem` — feed already has it, no re-fetch needed
+2. Add explicit error state ("Couldn't load this story" + retry button) so silent failures never blank-screen
+
+---
+
+## 11. New Swift files need a fresh build before Xcode indexes them
+
+**Symptom:** Created `OnboardingTextField.swift`, build fails with `Cannot find 'OnboardingTextField' in scope`.
+
+**Cause:** Xcode auto-syncs file-system additions to `.xcodeproj` but the project hasn't been re-indexed yet. The next build picks them up.
+
+**Fix:** `Cmd+Shift+K` (Clean Build Folder) then `Cmd+R`. Or just hit Run a second time.
+
+---
+
+## 12. `Configuration.xcconfig` is gitignored
+
+**Symptom:** Cloned repo on a new machine, app silently runs in mock mode.
+
+**Cause:** `Configuration.xcconfig` holds Supabase credentials and is intentionally gitignored. New checkouts have no real config.
+
+**Fix:** Copy `Configuration.xcconfig.example` to `Configuration.xcconfig` and fill in real values (or grab them from another machine / 1Password).
+
+---
+
+## 13. Two plan files in `~/.claude/plans/` cause confusion
+
+**Symptom:** Plan UI shows stale plan content even after I overwrite it.
+
+**Cause:** Multiple plan files exist in `~/.claude/plans/` from different sessions. The "active" file is the one referenced in the most recent system reminder. Other files linger with stale content.
+
+**Fix:** When in doubt, look at `ls -la ~/.claude/plans/` and check mod times. Mark stale files as superseded explicitly.

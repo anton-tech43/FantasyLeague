@@ -739,3 +739,47 @@ Recurring patterns that caused bugs or required fixes during development. Refere
 ### 11. Build destination matters
 **What happened:** Initial build commands used `iPhone 16 Pro` which doesn't exist on Xcode 26. The correct simulator is `iPhone 17 Pro` with `OS=26.4`.
 **Rule:** Always run `xcodebuild -showdestinations` or check the error output for available destinations before scripting builds. The destination string must match exactly: platform, OS version, and device name.
+
+### 12. xcconfig values get truncated at `//`
+**What happened:** `SUPABASE_URL = https://cwgpsmbunrocrofziqad.supabase.co` was stored in `Configuration.xcconfig`. The built `Info.plist` contained `"https:"` — the host was silently stripped because the `//` was treated as a comment marker by the Info.plist build phase. Every API call resolved to `https://rest/v1/...` (host = "rest") and failed. The iOS app silently fell back to SwiftData cache, so the bug was invisible until someone tapped a team that wasn't cached.
+**Rule:** Never store a full URL with `://` in xcconfig. Store the bare hostname (`SUPABASE_HOST = cwg...supabase.co`) and prepend `https://` in Swift. Also: print Info.plist values at app launch in DEBUG and verify what actually built in.
+
+### 13. `UIScrollView.appearance()` poisons every text field
+**What happened:** Onboarding name fields rendered with a dark transparent background when typing — black text became invisible. Spent hours trying SwiftUI fixes (`.textFieldStyle(.plain)`, ZStack, `RoundedRectangle.fill`, even a UIViewRepresentable wrapping `UITextField`). Real culprit: `UIScrollView.appearance().backgroundColor = UIColor(deepMauve)` in `AppDelegate.swift`, added to fix overscroll flash. Appearance proxies apply globally — including to the `UIScrollView` `UITextField` uses internally to scroll long text.
+**Rule:** Never call `UIScrollView.appearance().backgroundColor = ...` in an app with text input. If you need overscroll backgrounds, set them per-ScrollView in SwiftUI (`.background(...)` directly on the ScrollView). UIKit appearance proxies cast a wider net than you expect — they hit *every* instance of that class anywhere in the app, including views nested inside other controls.
+
+### 14. Forced dark mode + SwiftUI `.environment(\.colorScheme, .light)` doesn't override UIKit
+**What happened:** App forces dark mode via `UIUserInterfaceStyle = Dark` in Info.plist + `.preferredColorScheme(.dark)` on root. Trying to override for a single TextField with `.environment(\.colorScheme, .light)` had no effect — UIKit-rendered controls inside still rendered dark.
+**Rule:** SwiftUI environment values flow only through SwiftUI views; UIKit reads `UITraitCollection` set at the window/UIViewController level. To force light treatment on a specific UIKit control, use `overrideUserInterfaceStyle = .light` directly on the `UIView` (e.g. via UIViewRepresentable) — not SwiftUI environment values.
+
+### 15. `displayContext` was gated on the wrong approval flag
+**What happened:** AI critic was approving analogies (`analogy_critic_score.verdict = "approve"`), but iOS still showed the factual fallback line because `displayContext` checked `analogyApproved` — a *human review flag* that's always `false` for auto-pipeline content. Result: the entire "girl reference" feature was hidden behind fallbacks.
+**Rule:** When the pipeline has multiple approval signals (AI critic, human review, auto-publish), be deliberate about which one the UI trusts. Default to the one that's actually populated by your live pipeline. Document the ladder: AI critic gates the data into the DB; if the field is non-null, it's safe to show.
+
+### 16. AI critic without a rewrite path = product features quietly disappearing
+**What happened:** Original critic flow was score → if reject, null out → fallback shown. Most analogies got rejected and silently nulled. The product feature (witty cross-world analogies = the actual "girl reference") was disappearing into the fallback for the majority of items.
+**Rule:** When the AI critic gates content into production, give it a rewrite-on-reject path. Score → reject → rewrite using the critic's specific feedback → re-score → save the rewrite if it now passes, else fall back. Most "rejected" content can be rescued by a focused rewrite. Log both the original failure and the rewrite for audit.
+
+### 17. SwiftData cache masks API failures
+**What happened:** `FeedView.loadInitial()` shows SwiftData-cached items immediately for fast UX, then re-fetches in the background. When the URL bug (#12) broke fetches, users saw cached items and assumed the app was fine. Hours wasted debugging "why isn't the API returning fresh data?" when the API was working — iOS just couldn't reach it.
+**Rule:** Cache-first patterns need explicit error states surfaced when the background re-fetch fails — don't let a fetch error fall through silently while the cache UI keeps showing. When debugging "no fresh data," always confirm the iOS app is actually receiving the API response (curl with the iOS-shape `select=` query string, check Xcode console for `-1003` or decoding errors).
+
+### 18. Detail view blank screen from a missed empty-state branch
+**What happened:** Tapping a feed card sometimes led to a fully blank detail screen (only the back button). `ContentDetailView.loadItem()` did `fetchItem(id:)` which sometimes returned empty (transient blip, stale UUID from cache). `item` stayed `nil`, `isLoading` flipped `false`, and the body had `if let item { ... } else if isLoading { spinner }` — *no else branch* for `item == nil && !isLoading`.
+**Rule:** Two things. First, always have an explicit empty/error state in any view that conditionally renders based on loaded data — never fall off the end of an `if/else if` chain. Second, when navigating from a list view to a detail view, pass the loaded model through navigation (`preloadedItem`) so detail renders immediately. Re-fetching by ID is brittle and unnecessary when the source view already has the data.
+
+### 19. Worktree confusion with multiple `.xcodeproj` copies
+**What happened:** Edited Swift files in `/ios/GoalDigger/`, rebuilt in Xcode — change wasn't in the build. Compiled dylib still had the old code. Cause: Xcode was open on a worktree at `.claude/worktrees/intelligent-thompson/ios/GoalDigger.xcodeproj`, not the main repo.
+**Rule:** Every time you start an editing session, confirm Xcode's project path matches your edit path. Check via `cat ~/Library/Developer/Xcode/DerivedData/<APP>-*/info.plist | PlistBuddy -c 'Print :WorkspacePath' /dev/stdin` or just look at the Xcode title bar.
+
+### 20. Auto-expand-first-item dressed up as a feature, felt like a bug
+**What happened:** First-launch-after-onboarding logic auto-set `appState.deepLinkContentId = firstItem.id`, which routed the user straight into a detail view of the first article. Users perceived this as "the app starts on an article, not a feed." Tapping back was the only way out.
+**Rule:** "Magic moment" auto-actions (auto-open, auto-expand, auto-play) almost always read as bugs — users don't have the mental model that explains them. Default to neutral starting state. If you really want a guided first-experience, do it visibly (e.g. tooltip overlay) so the user sees it as intentional.
+
+### 21. `geo.size.height` vs `UIScreen.main.bounds.height` for full-screen cards
+**What happened:** Immersive feed cards built with `cardHeight = geo.size.height` — each card filled the visible viewport, but a sliver of the next card peeked under the bottom during scroll. Switched to `UIScreen.main.bounds.height` to extend the card behind the tab bar — but didn't adjust zone proportions, so zone 2 (the talking-point pink area) ended up mostly *behind* the tab bar, making the talking point invisible.
+**Rule:** When choosing card height, the trade-off is "viewport-fitting (next card peeks during scroll)" vs "screen-fitting (card extends behind tab bar)". Pick one deliberately, and if you go screen-fitting, recalculate zone ratios so all important content stays inside the visible viewport (~85% of screen height on iPhone). Don't put the most-readable content in the bottom 15% of a full-screen card.
+
+### 22. Multiple plan files in `~/.claude/plans/` cause confusion
+**What happened:** During a long session, multiple plan files were created in `~/.claude/plans/`. The "active" one was referenced in system reminders but old ones lingered with stale content, leading to UI showing outdated plan headlines.
+**Rule:** When in doubt, `ls -la ~/.claude/plans/` and check mod times. Mark stale plans as superseded. Better: write to a single named plan file per multi-day work stream rather than letting random-name files accumulate.
