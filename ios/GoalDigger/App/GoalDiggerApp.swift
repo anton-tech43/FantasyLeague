@@ -44,25 +44,26 @@ struct ContentDetailDestination: Hashable {
 
 struct RootView: View {
     @Environment(AppState.self) var appState
-    @State private var purchaseManager = PurchaseManager.shared
+    @Environment(\.modelContext) private var modelContext
 
-    private var isTestFlight: Bool {
-        Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
-    }
-
+    // Paid app on App Store (£4.99) — no in-app paywall. Purchase is enforced at the
+    // storefront before download. PurchaseManager + PaywallView are kept in the
+    // codebase but unreferenced; can be re-wired if we add an IAP later
+    // (e.g. World Cup pass).
     var body: some View {
-        if appState.hasCompletedOnboarding {
-            #if DEBUG
-            MainTabView()
-            #else
-            if purchaseManager.isPurchased || isTestFlight {
+        Group {
+            if appState.hasCompletedOnboarding {
                 MainTabView()
             } else {
-                PaywallView()
+                OnboardingFlow()
             }
-            #endif
-        } else {
-            OnboardingFlow()
+        }
+        .task(id: "cache-schema-purge") {
+            // Drop cached rows from a previous app version with an older
+            // CacheService.cacheSchemaVersion. Prevents decoding crashes when
+            // the ContentItem schema changes between releases. Cheap on every
+            // launch — no-op if the cache is already on the current version.
+            CacheService.shared.purgeStaleVersionItems(in: modelContext)
         }
     }
 }

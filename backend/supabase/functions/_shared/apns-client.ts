@@ -8,7 +8,11 @@ interface APNsPayload {
   aps: {
     alert: {
       title: string;
-      subtitle: string;
+      // Subtitle is optional. The end-user push (built by buildAPNsPayload)
+      // omits it — the title carries the sister-voice opener and the body
+      // carries the fact, no need for a middle line. The dev-alert push
+      // (client-error-alert/index.ts) still sets it for app-version metadata.
+      subtitle?: string;
       body: string;
     };
     sound: string;
@@ -71,22 +75,32 @@ async function generateJWT(): Promise<string> {
   return `${signingInput}.${encodedSignature}`;
 }
 
-function getAPNsHost(): string {
-  const env = Deno.env.get("APNS_ENVIRONMENT") ?? "development";
+type APNsEnvironment = "development" | "production";
+
+function getAPNsHost(env: APNsEnvironment): string {
   return env === "production"
     ? "https://api.push.apple.com"
     : "https://api.sandbox.push.apple.com";
 }
 
+/// Default environment when no per-token value is provided. Falls back to
+/// the legacy APNS_ENVIRONMENT secret for compatibility, then to development.
+function defaultAPNsEnvironment(): APNsEnvironment {
+  const fromSecret = Deno.env.get("APNS_ENVIRONMENT");
+  return fromSecret === "production" ? "production" : "development";
+}
+
 export async function sendPushNotification(
   token: string,
-  payload: APNsPayload
+  payload: APNsPayload,
+  environment?: APNsEnvironment,
 ): Promise<APNsSendResult> {
   const bundleId = Deno.env.get("APNS_BUNDLE_ID") ?? "com.goaldigger.app";
+  const env = environment ?? defaultAPNsEnvironment();
 
   try {
     const jwt = await generateJWT();
-    const host = getAPNsHost();
+    const host = getAPNsHost(env);
 
     const response = await fetch(`${host}/3/device/${token}`, {
       method: "POST",
@@ -125,14 +139,33 @@ export function buildAPNsPayload(
   headline: string,
   contentId: string,
   category: string,
-  everyoneTalking = false
+  everyoneTalking = false,
+  pushText?: string | null,
+  pushTitle?: string | null,
 ): APNsPayload {
+  // Lock-screen layout decisions:
+  // - title = push_title when present (≤35 chars, sister-voice opener like
+  //   "Stories incoming" / "Six weeks of moping" / "Crisis averted"), else
+  //   the team short_name as fallback ("Forest") for legacy rows written
+  //   before migration 012. iOS already shows the app icon + name above
+  //   the alert, so the title slot is for the conversational hook, not
+  //   identification.
+  // - subtitle = omitted.
+  // - body = push_text when present (≤90 chars, lock-screen-optimized), else
+  //   the headline (fallback for rows pre-migration 011), truncated to 200
+  //   chars to match iOS expanded-push limits.
+  const title = (pushTitle && pushTitle.trim().length > 0)
+    ? pushTitle.trim()
+    : teamShortName;
+  const body = (pushText && pushText.trim().length > 0)
+    ? pushText.trim()
+    : headline.slice(0, 200);
+
   return {
     aps: {
       alert: {
-        title: "Goal Digger",
-        subtitle: teamShortName,
-        body: headline.slice(0, 200),
+        title,
+        body,
       },
       sound: "default",
       "mutable-content": 1,
@@ -143,4 +176,4 @@ export function buildAPNsPayload(
   };
 }
 
-export type { APNsPayload, APNsSendResult };
+export type { APNsPayload, APNsSendResult, APNsEnvironment };

@@ -692,6 +692,388 @@ All phases (2–12) reviewed and corrected. Fixes applied:
 
 ---
 
+## Phase 16: Pre-App Store Submission Cleanup — COMPLETE (2026-05-04)
+
+Final pass before clicking *Submit for Review*. Two goals: collapse the in-app paywall (the app is shipping as a paid £4.99 App Store app, not Free+IAP, so the paywall would either double-charge users or brick the app for them), and verify the content + push pipeline so users actually receive notifications when news drops.
+
+**Files modified:** `ios/GoalDigger/App/GoalDiggerApp.swift`, `ios/GoalDigger/Views/Settings/SettingsView.swift`, `backend/supabase/functions/notification-sender/index.ts`, `/Users/anton/goaldigger-routines/post_news.sh`
+
+### 16.1 Paywall removed from RootView
+- `GoalDiggerApp.swift` — removed the `#if DEBUG / #else / #endif` block in `RootView`. Post-onboarding always shows `MainTabView`. No more `purchaseManager.isPurchased || isTestFlight` gate.
+- `PurchaseManager.swift` and `PaywallView.swift` left in the codebase but unreferenced. Dormant code, no rejection risk; we can re-wire them if we add an IAP later (e.g. World Cup pass for v1.1).
+
+### 16.2 "Restore Purchases" row removed from Settings
+- `SettingsView.swift` — removed the row at lines ~210–230 plus the now-unused `@State private var purchaseManager = PurchaseManager.shared`. Paid apps don't need an in-app restore button; the App Store handles redownloads automatically when the user reinstalls.
+
+### 16.3 Backend pipeline audit (no changes needed)
+- `data-fetcher` content-generator trigger already gated behind `CONTENT_GENERATOR_ENABLED` env var (line 309). Verified the routine pipeline is the sole content source — DB shows 149 routine items in the last 7 days, 0 edge_function items.
+- `goaldigger-daily-pipeline` cron (07:00 UTC daily) is the actual data-fetcher trigger; not a duplicate (earlier audit confused it with `matchday-scheduler` from migration 003 which never landed remote).
+- `match-watcher-5min` cron (every 5 min) deployed and live. Migration `008_match_watcher_cron.sql` applied. Polls API-Football for PL fixture status transitions, fires `gd-matchday` routine on FT/AET/PEN.
+
+### 16.4 Push notification gap — fixed
+**Problem found:** `gd-news` and `gd-matchday` routines insert into `content_items` directly with `status='published'` via `post_news.sh`. The notification-sender function only fired when called by `content-reviewer` (gated off) and its query filtered for `status='approved' AND published_at IS NULL` — routine items never matched. **Routine-published items appeared in the feed but no APNs push ever fired.** For a notification-driven app, that's the whole product gone.
+
+**Fix — two changes:**
+
+1. **`notification-sender/index.ts`** — added a "specific item, already published" mode. When called with `content_item_id`, the function fetches that row regardless of status (drops the `status='approved'` and `published_at IS NULL` filters). Skips the "flip to published" update step if the item is already published — preserves the original timestamp from `post_news.sh`. Sweep mode (no `content_item_id` passed) still works for the legacy edge-function flow.
+
+   Also fixed the no-tokens early-return path that was unconditionally writing `published_at = NOW()` — now skipped if already published.
+
+2. **`post_news.sh`** — switched insert from `Prefer: return=minimal` to `return=representation` to capture the new item id, then fires `POST /functions/v1/notification-sender` with `{content_item_id: <id>}`. Push trigger is best-effort — if the curl fails, the script logs and exits 0 (item is already in the feed; push is bonus, not blocking).
+
+**Effect:** every `gd-news` + `gd-matchday` post now triggers APNs pushes within ~1 second of insert. Anti-spam rules, tier limits, quiet hours, and result-bypass logic all keep working — none of that lives in `post_news.sh`, all in notification-sender.
+
+**Deployed:** `notification-sender` redeployed via `npx supabase functions deploy notification-sender`.
+
+**Smoke test pending:** `device_tokens` table is empty (no real users yet). End-to-end push validation needs: build app to phone → register token → fire `gd-news` for that team → confirm push lands. First real test is the user's; if APNs auth fails it'll show in `notification-sender` function logs.
+
+### 16.5 Out of scope (intentional)
+- World Cup support — deferred to v1.1, must ship before 2026-06-11
+- IAP / subscription flows — keeping `PurchaseManager` dormant for future use
+- App Store description copy update (remove "no subscriptions" wording from Free+IAP draft) — manual edit in App Store Connect, not in repo
+
+**Build status:** Code changes ready; iOS Archive + upload via Xcode is the next step.
+
+---
+
+## Phase 17: Decoupled push_text from headline — COMPLETE (2026-05-04)
+
+The push notification body is the single most important piece of text the app produces. It's what lands on the user's lock screen, it's what they read at a glance, and it determines whether they open the app or eventually delete it. Pre-launch audit found that two of the three most recent routine items had headlines exceeding the 160-char "soft" cap (173 and 156 chars), so ~67% of pushes were truncating mid-word on real iPhone lock screens. The headline serves the immersive feed card well — long, story-style, with parenthetical name explanations — but those same properties make for a terrible push.
+
+Decoupled the two by adding a `push_text` field, written by the routine alongside the headline, optimized specifically for the lock screen.
+
+**Files modified:** `backend/supabase/migrations/011_push_text.sql` (new), `backend/supabase/functions/_shared/apns-client.ts`, `backend/supabase/functions/notification-sender/index.ts`, `/Users/anton/goaldigger-routines/schema.json`, `/Users/anton/goaldigger-routines/PROMPT.md`, `/Users/anton/goaldigger-routines/MATCHDAY_PROMPT.md`, `/Users/anton/goaldigger-routines/post_news.sh`.
+
+### 17.1 Schema migration
+- New column `push_text TEXT` on `content_items`. Soft target ≤90 chars; DB CHECK enforces ≤100 as a safety net. NULL allowed for backward compatibility with pre-migration rows.
+- Migration `011_push_text.sql` created and pushed to remote DB. Verified via `information_schema.columns` query.
+
+### 17.2 Routine prompt updates
+- `schema.json` — added `push_text` as a required field with `minLength: 5, maxLength: 90`.
+- `PROMPT.md` — added a new section **PUSH TEXT RULES (the most important text in the app)** between NAME EXPLANATIONS and IMMERSIVE HEADLINE RULES. Hard constraints: max 90 chars, self-contained, no parenthetical name explanations (those clutter a tiny push), no emoji, no "click to read" cliffhangers. Voice rules: lead with the WHAT not the build-up, lead with quotes when present, active voice. Includes 3 worked before/after examples drawn from real recent items in the DB (Forest 3-1 Chelsea, Cunha on Carrick, City vs Everton).
+- `MATCHDAY_PROMPT.md` — added matchday-specific `push_text` examples (win, loss, expected-win draw, underdog draw) and pointer to the canonical rules in PROMPT.md.
+
+### 17.3 Backend wiring
+- `apns-client.ts` `buildAPNsPayload()` — added optional `pushText` parameter. When present, used as the lock-screen body. When absent (pre-migration items), falls back to `headline.slice(0, 200)`.
+- Also restructured the lock-screen layout: dropped the redundant `title: "Goal Digger"` (iOS already shows the app icon + name automatically) and the `subtitle: teamShortName`. Now: `title = teamShortName` (e.g. "Forest"), no subtitle, `body = push_text || headline`. Frees a line for the actual content.
+- `notification-sender/index.ts` — passes `item.push_text` through to `buildAPNsPayload`.
+- Deployed via `npx supabase functions deploy notification-sender`.
+
+### 17.4 Hard validation in post_news.sh
+The model has a track record of ignoring soft length rules in the prompt. Soft caps don't work; hard rejection in the post script does. Added pre-insert validation that exits 1 (forcing the routine to retry with a compliant payload) when:
+- `push_text` is missing or empty
+- `push_text` length > 90 chars
+- `headline` length > 160 chars
+
+Validation runs after the em-dash sanitizer but before the Supabase POST, so a bad payload never reaches the DB. Exit-1 surfaces a clear error message in the routine session log explaining what to fix.
+
+Verified by feeding the script invalid payloads with no `SUPABASE_URL` set:
+- Missing push_text → "ERROR: push_text is required" + payload dump → exit 1 ✓
+- Push_text 145 chars → "ERROR: push_text is 145 chars (max 90)" → exit 1 ✓
+
+### 17.5 Lock-screen rendering before vs after
+
+**Before (headline-as-push):**
+```
+Goal Digger
+Forest
+Forest beat Chelsea 3-1 away from home today and are now six points
+clear of relegation danger. Their manager Vitor Pereira (Forest's…
+```
+4 lines, last line truncates mid-word.
+
+**After (push_text dedicated):**
+```
+Forest
+Forest beat Chelsea 3-1, now six points clear of relegation.
+```
+2 lines, complete thought, no truncation.
+
+### 17.6 Out of scope (future)
+- Backfill of `push_text` for the 149 existing `pipeline_source='routine'` rows. Old items won't trigger fresh pushes (they're already published past the throttle window) so no user impact, but if we ever want to re-push them, they'll fall back to the long headline.
+- Per-team push tone tuning (e.g. ironic vs deferential per club). v2 territory.
+- A/B testing different push styles. Need scale first.
+
+**Smoke test pending:** real-device push validation. `device_tokens` is still empty until first build hits TestFlight or App Store. First user with push enabled will be the test.
+
+---
+
+## Phase 18: Older-sister voice for push notifications — COMPLETE (2026-05-05)
+
+Phase 17 decoupled `push_text` from headline so the body could be lock-screen-optimized. This phase pushes further: it gives the push its own sister-voice **title** (replacing the team short name in the title slot), introduces a brand-voice character spec, and locks in 22+ canonical examples in the prompt as in-context training so the routine consistently nails the voice.
+
+The motivation: even with a tight 90-char `push_text`, draft examples were reading as either app-y newsroom prose ("Plot twist", "Big swing", "Worth knowing") or unintentionally crisis-coded ("Brace yourself", "He'll be unbearable", "Pretend you didn't see"). Both register as "this is from a sports app" — the second category is worse, framing him as a threat she has to survive instead of a goofy boy who cares too much. For an app whose whole product premise is "your funny older sister tells you what's about to happen with your boyfriend," that voice mismatch IS the product failing.
+
+**Files modified:** `backend/supabase/migrations/012_push_title.sql` (new), `backend/supabase/functions/_shared/apns-client.ts`, `backend/supabase/functions/notification-sender/index.ts`, `/Users/anton/goaldigger-routines/schema.json`, `/Users/anton/goaldigger-routines/PROMPT.md`, `/Users/anton/goaldigger-routines/MATCHDAY_PROMPT.md`, `/Users/anton/goaldigger-routines/post_news.sh`.
+
+### 18.1 New `push_title` field
+- Migration `012_push_title.sql`: `ALTER TABLE content_items ADD COLUMN push_title TEXT CHECK (length ≤ 35)`. Soft target ≤25 chars. NULL allowed for backward compat.
+- `schema.json` — added `push_title` as required, minLength 3, maxLength 35.
+
+### 18.2 Lock-screen layout
+- `apns-client.ts` `buildAPNsPayload()` — added optional `pushTitle` param. Lock-screen title now reads `push_title` when present (the sister-voice opener), falls back to `team.short_name` for legacy rows.
+- `notification-sender/index.ts` — passes `item.push_title` through.
+- Deployed.
+
+### 18.3 PROMPT.md — full rewrite of PUSH RULES section
+The replaced section is now ~150 lines defining: the character (older sister, fond not threatened by him), four kinds of titles she can write (observational about him / sister advice / vivid scene / wry mood-naming), kicker craft rules (must be full sentences, idioms, or imperatives — never bare noun phrases that dangle), banned patterns (sports-app categories, Twitter clickbait, crisis-counsellor framing, wire-service tags), and 22 locked canonical examples covering:
+- Match wins (5 examples)
+- Match losses (5 examples)
+- Draws (2)
+- Last-minute drama (2)
+- Transfer news (3)
+- Manager news (2)
+- Player / injury news (2)
+- Quotes (3)
+- League context (2)
+
+Each example is the bar — the routine reads them as in-context examples and matches the voice. Self-check rubric at the bottom (read aloud, sister or sports-app? sentence or chyron? warm or threat-coded?).
+
+### 18.4 MATCHDAY_PROMPT.md
+Replaced the bullet-list push examples with 9 full lock-screen renders (title + body) in the new sister voice, covering big wins, derbies, last-minute drama, derby losses, draws when expected to win, etc. Cross-references `PROMPT.md` PUSH RULES for full spec.
+
+### 18.5 Voice character (the spec we're writing as)
+
+The character is the **older sister**:
+- Smart, observational, warm but dry
+- Affectionate without being saccharine
+- Knows him better than he knows himself, finds his football obsession sweet
+- Lets HER in on the joke
+- NEVER warns, manages, or victim-frames her relative to him
+
+The voice rule that crystallised after iteration: **observational about him, never threatened by him.** Flag-and-rewrite triggers include "brace yourself", "he'll be unbearable", "pretend you didn't see", "bad mood loading" — anything that frames him as a problem rather than a boy.
+
+### 18.6 Kicker craft rule
+The body's optional kicker (e.g. "He'll narrate every goal twice." after "Forest just beat Chelsea 3-1 away.") must be either:
+- A full sentence with subject + verb
+- A complete idiom with implied verb ("Crisis averted." / "T-shirt material." / "Comfort-food night.")
+- A short imperative ("Order in tonight." / "Brace for the analysis.")
+
+It must NOT be a bare noun phrase. The rejected example was "The whole address book." — reads as a press-release tag, not human speech. Replaced with "He'll work the whole address book." — same image, completes as a sentence. The test: read the kicker aloud on its own; if it sounds like a chyron under a TV news segment, rewrite.
+
+### 18.7 Hard validation in post_news.sh
+Extended the existing length-validation block:
+- `push_title` is required (was: only push_text + headline). Missing → exit 1.
+- `push_title` length > 35 chars → exit 1.
+
+Verified: missing `push_title` → "ERROR: push_title is required" + exit 1. 56-char title → "ERROR: push_title is 56 chars (max 35)" + exit 1.
+
+### 18.8 Lock-screen rendering — full evolution
+
+Phase 16 (pre-fix):
+```
+Goal Digger
+Forest
+Forest beat Chelsea 3-1 away from home today and are now six points
+clear of relegation danger. Their manager Vitor Pereira (Forest's…
+```
+
+Phase 17:
+```
+Forest
+Forest just beat Chelsea 3-1, now six points clear of relegation.
+```
+
+Phase 18 (now):
+```
+Stories incoming
+Forest just beat Chelsea 3-1 away. He'll narrate every goal twice.
+```
+
+That last one is what should land on her phone. The title is the conversational opener, the body is the fact + the wise-and-fond kicker. It reads like a text from an older sister who knows him too well, and lets her in on the joke.
+
+### 18.9 Out of scope (future)
+- Backfill `push_title` for the 149 existing routine rows. Not needed (they won't re-fire pushes).
+- A/B testing voice variants per user. Need scale first.
+- Per-team voice nuance (more cynical for clubs in long decline, more reverent for elite clubs). v2.
+
+**Build status:** Backend deployed. Routine prompts updated. Next gd-news fire produces the new format.
+
+---
+
+## Phase 19: Pre-Submission Ultrareview Fixes — COMPLETE (2026-05-05)
+
+Three parallel pre-launch audit agents (iOS / backend / routine+content) surfaced one true ship-blocker, one confabulation risk, and several polish items. Fixed all of them before App Store submission.
+
+**Files modified:** `ios/GoalDigger/Services/APIClient.swift`, `ios/GoalDigger/Views/Settings/SettingsView.swift`, `ios/GoalDigger/Models/AppState.swift`, `backend/supabase/functions/_shared/apns-client.ts`, `/Users/anton/goaldigger-routines/post_news.sh`, `/Users/anton/goaldigger-routines/PROMPT.md`.
+
+### 19.1 (✗ critical) APNs environment now sent on token registration
+- **Bug:** `APIClient.registerToken()` didn't include `apns_environment` in the device_tokens insert. The DB column defaults to `'development'` → all production App Store tokens would have been routed to APNs sandbox endpoint → sandbox would have rejected them with 400 → tokens deactivated → **zero pushes after launch**. The conversation summary said this was fixed earlier; verified via grep that it never landed in this worktree.
+- **Fix:** added `APIClient.apnsEnvironment` static computed property (`#if DEBUG → "development" #else → "production"`). `registerToken()` now sends it in the body.
+- **Impact:** push notifications will actually work in App Store builds.
+
+### 19.2 (✗ confabulation risk) PROMPT.md GROUNDING + SAFE-REWRITE tightened
+- **Bug:** Audit found two recent routine items with confabulated facts: a Spurs item naming "Conor Gallagher (Spurs midfielder)" — Gallagher was never at Spurs — and a Chelsea item naming "interim boss Calum McFarlane" — name appears fabricated. Both passed `post_news.sh` validation because the validator only checks length, not facts. The GROUNDING rule existed but was being ignored.
+- **Fix:** added a new **PLAYER AFFILIATIONS** subsection — explicit rule that the player's current club must appear next to their name in the RSS text before the routine can claim the affiliation. Added a **SAFE-REWRITE PRINCIPLE** subsection with worked examples: "A Chelsea midfielder said..." beats "Gallagher said..." when the club isn't verified. Added the two new failure modes (Gallagher, McFarlane) to the past-failures list. Extended the post-run sanity check to include a SOURCE TRACE audit step with a DELETE-row example for items that can't be traced.
+- **Impact:** the prompt now has 5 concrete "this exact failure happened" examples. The model has stronger negative training signal.
+
+### 19.3 (⚠ silent failure) iOS Delete My Data now surfaces server errors
+- **Bug:** `SettingsView.deleteData()` used `try? await APIClient.shared.deleteMyData(token:)`. Server failures (500, network) were silently swallowed; the success alert showed regardless. User would believe their data was deleted when it wasn't — privacy-impact, possible GDPR issue.
+- **Fix:** replaced `try?` with `do/catch`. On error, shows a new `Couldn't Delete` alert ("We couldn't reach the server. Check your connection and try again."). Local data is NOT cleared on error so the user can retry. Added `@State showDeleteError`. Edge case: if there's no `apnsToken` in UserDefaults at all (never granted permission), success path runs immediately since there's nothing server-side to delete.
+
+### 19.4 (⚠ rendering bug) `personalise()` now handles capitalised + possessive variants
+- **Bug:** Audit query found 29 of ~150 routine rows use `[His name]` / `[Her name]` capitalised at sentence-start. `AppState.personalise()` only substituted lowercase forms. Those 29 items would render with the literal placeholder visible in the UI on iPhone — clearly broken.
+- **Fix:** `personalise()` now handles `[his name]`, `[His name]`, `[her name]`, `[Her name]`, plus the `'s` possessive variant of each (8 patterns total). Empty-name fallback returns "your partner" / "Your partner" / "you" / "You" so the field is always grammatical.
+
+### 19.5 (⚠ AI tell) Em-dash sanitizer now catches all four glyphs
+- **Bug:** Audit hex-dumped recent DB rows and found em-dashes (U+2014) still present in body text. The jq regex was using literal — and –, missing rarer glyphs the model had been producing (e.g. U+2015 horizontal bar, U+2212 minus sign).
+- **Fix:** `post_news.sh` now uses a bracket character class `[–—―−]` covering U+2013, U+2014, U+2015, U+2212. Verified syntax-OK and end-to-end strip via test payload.
+- Also added matching strip in iOS `personalise()` as defence-in-depth.
+
+### 19.6 (⚠ style violation) ALL-CAPS validator added to post_news.sh
+- **Bug:** PROMPT.md style rule line 124 forbids ALL-CAPS emphasis ("DOUBLED", "MASSIVE"). A West Ham item shipped with "...DOUBLED in 48 hours...". Soft rule ignored, validation didn't catch it.
+- **Fix:** new validator in `post_news.sh` that greps every string field for words matching `[A-Z]{4,}` and rejects if any found. Allowlists known acronyms (UEFA, FIFA, EFL, VAR, USA, GOAT, MOTD, XBOX). Verified: "DOUBLED" → exit 1 with clear error message. Acronym false positives are easy to grow as needed.
+
+### 19.7 (⚠ TS hygiene) APNsPayload subtitle now optional in interface
+- **Bug:** `apns-client.ts` interface declared `subtitle: string` as required, but `notification-sender` (correctly) omits it under the new lock-screen layout. Deno doesn't strictly enforce TS interfaces at runtime, so APNs received clean payloads. Cosmetic but misleading for future readers.
+- **Fix:** changed to `subtitle?: string`. Comment notes `client-error-alert` still uses it for app-version metadata. Redeployed `notification-sender`.
+
+### 19.8 (✓ non-blocker) Configuration.xcconfig "credentials" finding dismissed
+Audit flagged the `SUPABASE_ANON_KEY` in xcconfig as a "showstopper for App Store review." This was wrong — anon keys are public-by-design (the Supabase equivalent of a Firebase API key). They only grant access to whatever RLS policies allow for `role=anon`. The service-role key (which would be a real leak) is server-side only. No action taken.
+
+### Final pre-submission verification
+Smoke test plan from the plan file:
+1. APNs env on registration: query `device_tokens` after Release build install — confirmed prep, awaits real-device test
+2. Push e2e: fire `gd-news` for test team, watch lock screen — pending
+3. Routine field population: `push_title`/`push_text` non-NULL — pending fresh fire
+4. Em-dash absence in new rows — pending fresh fire
+5. Confabulation spot-check — pending fresh fire + manual audit
+6. Delete My Data error path: verified via code review + alert wired
+
+**Build status:** All known launch blockers fixed. Awaiting one fresh routine fire to validate push fields populate, then iOS Archive + upload + Submit.
+
+---
+
+## Phase 20: Bulletproofing — silent-failure detection across the pipeline (2026-05-06/07)
+
+After the ultrareview shipped, two near-misses arrived during the actual launch sequence — both from blind spots that the audit hadn't catalogued: routine ran with stale uncommitted code, and 9 NULL-`published_at` rows pushed real items off the feed. Both were silent failures discovered only because the user happened to look. At launch scale, "discovered by chance" doesn't scale — silent failures become uninstalls before we hear about them.
+
+We then ran three parallel deep-review agents covering all 9 pipeline stages. ~50 failure modes triaged into 6 P0 fixes that ship before submission, 5 P1 nice-to-haves, and 9 P2 v1.1 backlog items. This phase shipped the P0 set. Principle: every silent failure must become a loud failure; every stage that "should be working" must prove itself without a human watching.
+
+**Files modified:** `backend/supabase/migrations/013_cron_heartbeat_alert.sql` (new), `backend/supabase/migrations/014_pushed_at.sql` (new), `backend/supabase/functions/notification-sender/index.ts`, `ios/GoalDigger/Services/APIClient.swift`, `ios/GoalDigger/Services/CacheService.swift`, `ios/GoalDigger/App/GoalDiggerApp.swift`, `/Users/anton/goaldigger-routines/PROMPT.md`, `/Users/anton/goaldigger-routines/post_news.sh`.
+
+### 20.1 Cron silent-failure alarm
+- **Bug:** if pg_cron stops firing `data-fetcher` (Supabase issue, secret rotation, job removed), nobody notices until users complain about a stale feed days later.
+- **Fix:** new SQL function `check_pipeline_heartbeat()` queries `pipeline_health` for the most-recent successful `fetch` row. If older than 26h (data-fetcher runs daily), inserts a `cron_silent_failure` row into `client_errors` AND fires the existing `client-error-alert` edge function via `pg_net.http_post`, which pushes the alert to the dev iPhone via APNs. Throttled to one alert per 2h. Migration 013 schedules the check every 30 min via pg_cron.
+- **Effect:** cron failure → push to dev phone within 30 min, instead of finding out tomorrow.
+
+### 20.2 `pushed_at` column + re-push sweep
+- **Bug:** no record of which items actually shipped pushes vs not. If APNs is down for 30 min, items publish but pushes are lost forever; no audit trail, no recovery.
+- **Fix:** migration 014 adds `pushed_at TIMESTAMPTZ` to `content_items`. Backfilled all existing published rows so the sweep doesn't re-fire 150+ historical items. `notification-sender` writes `pushed_at` on every terminal outcome (successful send, anti-spam blocked, no eligible tokens). Sweep mode (called by hourly `notification-sweep` cron) now picks up `status='published' AND pushed_at IS NULL AND published_at < NOW() - 5 min` — 5-min grace window prevents racing post_news.sh's own push trigger.
+- **Effect:** any push miss self-heals within 1 hour. Queryable audit ("which items haven't been pushed").
+
+### 20.3 APNs 403 → loud alert
+- **Bug:** APNs auth failure (`.p8` rotated, wrong Team ID, expired key) was logged as CRITICAL and stopped iteration, but no alert. Discovered only when users complain.
+- **Fix:** `notification-sender` now fires `client-error-alert` via internal HTTP fetch on 403, with `error_type='apns_auth_failure'`. Existing throttling (30 min per error_type) prevents spam if multiple items hit the bad auth in sequence.
+- **Effect:** auth break → push on dev phone within minutes.
+
+### 20.4 Partial decode resilience for `[ContentItem]`
+- **Bug:** `JSONDecoder.decode([ContentItem].self, ...)` is all-or-nothing. One bad row in a 20-item feed → entire array throws → user sees blank feed. Server-side filters help against specific causes but don't generalize. Today's `published_at=NULL` was one such instance, but field renames/type changes could trigger the same.
+- **Fix:** new `APIClient.decodeContentItems(from:)` private helper. Parses the JSON as `[Any]`, then attempts per-item `decoder.decode(ContentItem.self, ...)`, swallowing per-item failures with a `#if DEBUG print()` log. All three feed/item call sites now use the helper. One bad row → 19 visible items instead of 0.
+- **Effect:** schema drift no longer turns into user-facing blank screens. Bug is loud in DEBUG, gracefully degraded in Release.
+
+### 20.5 SwiftData cache schema-version invalidation
+- **Bug:** `CachedContentItem` is `@Model` and persists across upgrades. If a future release renames or restructures any persisted field, users on old caches can crash on first read (per past pitfall #6).
+- **Fix:** new `CacheService.cacheSchemaVersion: Int = 1` constant. `CachedContentItem` gains `var schemaVersion: Int = CacheService.cacheSchemaVersion`. New `purgeStaleVersionItems(in:)` method deletes rows whose version doesn't match current. Called from `RootView.task(id:)` on app launch — cheap no-op when versions match, transparent purge when they don't.
+- **Effect:** future schema bumps don't crash anyone. Bumping the constant is the only change needed when adding required fields.
+
+### 20.6 Routine git-staleness preflight
+- **Bug:** the bug we hit during launch prep — local edits to `post_news.sh` and `PROMPT.md` weren't committed; routine pulled `origin/main` (old code) and shipped a broken Arsenal item. No way to tell from the routine log which code was running.
+- **Fix:** PROMPT.md step 0 now instructs the routine to print `[ROUTINE VERSION] <sha> <commit-message>` first thing on every run. `post_news.sh` separately prints its own `[POST_NEWS VERSION] <sha>` on every invocation. Both visible in the dashboard log; mismatch with what's on origin/main is a flag to push and re-fire.
+- **Effect:** "is this version of the prompt running?" is answerable at a glance. Lock screen against the recurring "summary said it shipped, but it didn't" failure mode.
+
+### 20.7 Verification
+
+| # | Check | Expected | Done |
+|---|---|---|---|
+| 1 | `SELECT column_name FROM information_schema.columns WHERE table_name='content_items' AND column_name='pushed_at'` | row returned | ✓ |
+| 2 | `SELECT jobname FROM cron.job WHERE jobname='goaldigger-cron-heartbeat-check'` | row returned, schedule `*/30 * * * *` | ✓ |
+| 3 | `notification-sender` deployed with new sweep + 403 alert + pushed_at writes | Supabase deploy success | ✓ |
+| 4 | `purgeStaleVersionItems` wired into RootView's `.task` | code review | ✓ |
+| 5 | post_news.sh syntax-OK + new version-tag echo present | bash -n + grep | ✓ |
+| 6 | PROMPT.md step 0 instructs routine to print [ROUTINE VERSION] | grep | ✓ |
+
+Outstanding live tests (need fresh routine fire + real device):
+- Cron alarm fires when no fetch row exists in 26h window
+- pushed_at populates after a real fire
+- APNs 403 alert lands on phone (would require deliberately corrupting `APNS_KEY_P8` — only worth doing if we suspect the path is broken)
+
+### 20.8 Out of scope (P2 backlog)
+
+Logged for v1.1 work; not blocking submission:
+- Per-token push audit log (`push_audit` table)
+- Per-user-timezone quiet hours
+- Idempotency-Key headers on Supabase POSTs
+- CAPS allowlist sourced from external file
+- Onboarding uninitialized-state recovery
+- Background-fetch error surfaced to UI ("stale" badge)
+- Schema-version field embedded in JSON for routine
+- Exponential backoff on 5xx in post_news.sh
+- RSS / API-Football fetch retry loop
+
+**Build status:** P0 bulletproofing shipped. Backend + iOS + routine prompts all updated. Pipeline now has 3 alerting layers (cron heartbeat, APNs 403, sweep retry) and 2 client-side resilience layers (partial decode, schema-version cache invalidation). Ready for App Store Archive + upload.
+
+---
+
+## Phase 21: Match-day pipeline unblocked + every-minute polling (2026-05-07)
+
+The actual Phase 20 verification revealed THREE silent failures in the production pipeline that the bulletproofing work itself didn't catch — and one false start (a manager-name whitelist that was rolled back the same day after the user correctly questioned the maintenance burden). End of day, the matchday auto-trigger pipeline is — for the first time — actually capable of firing for a real Premier League match.
+
+**Files modified:** new migrations `015_fix_cron_settings.sql`, `016_notification_sweep_cron.sql`, `017_match_watcher_every_minute.sql`. Routine repo: PROMPT.md, MATCHDAY_PROMPT.md, post_news.sh (multiple back-and-forth commits ending at `70d6021`).
+
+### 21.1 Match-watcher cron: 2,444 silent failures since deployment
+- **Discovery:** queried `cron.job_run_details` and saw `match-watcher-5min` with 2,444 runs and **zero** successes. Every tick had been failing with `ERROR: unrecognized configuration parameter "app.settings.supabase_url"`. The cron command from migration 008 referenced `current_setting('app.settings.supabase_url')` — a Postgres GUC that was never configured on this Supabase project (and `ALTER DATABASE ... SET` is blocked for our role).
+- **Same bug in my own bulletproofing:** the heartbeat check from migration 013 used the same broken pattern with `current_setting(..., true)` (silent NULL return). My alarm system was itself broken because of the very issue it was meant to detect. Galaxy-brain blind spot.
+- **Fix:** migration 015 unschedules both broken jobs and re-creates them with hardcoded URL + service-role key (matching the working `goaldigger-daily-pipeline` cron pattern from migration 006). Replaced `check_pipeline_heartbeat()` function with a version that hardcodes the URL too. Verified next tick succeeded ("1 row" return at 18:50 UTC).
+
+### 21.2 Notification-sweep cron didn't exist
+- **Discovery:** `notification-sweep` cron was supposed to exist per migration 003. Querying `cron.job` showed it was never actually scheduled — same pattern as match-watcher's broken cron. Without this, Phase 20's `pushed_at` resilience mechanism couldn't actually retry: items would just sit with `pushed_at IS NULL` forever.
+- **Fix:** migration 016 schedules `notification-sweep` hourly at `:15`, hardcoded URL + key. Manually invoked notification-sender once (curl with service-role key) to flush the existing 23-item backlog (5 from the day's broken-prompt run + 18 from earlier). Confirmed `pushed_at` populated for all of them.
+
+### 21.3 Routine git-staleness verified working
+- First fire of `gd-news` after pushing commit `71f22b1` produced items with the OLD format (no `push_title`/`push_text`). The `[ROUTINE VERSION]` log line — added in `a77ab3d` — was absent from stdout, confirming the routine had pulled `origin/main` BEFORE the commit landed.
+- Second fire after pushing `a77ab3d` showed `[ROUTINE VERSION] a77ab3d Add git-staleness preflight: ...` as the first log line, and the resulting Chelsea item had populated `push_title="He'll take sides"` and `push_text` with the sister-voice format.
+- The git-staleness preflight from Phase 20 worked exactly as designed: when the version mismatch was visible, we knew immediately to re-fire after the push completed.
+
+### 21.4 False start: manager-name whitelist (rolled back)
+- The Chelsea item that proved push_title/push_text worked also contained "interim boss Calum McFarlane" — a fabricated name (same class as "Liam Rosenior" earlier). Built a hard whitelist: `data/managers.json` source of truth, `{{manager}}` placeholder requirement in prompt, post_news.sh substitution + validation block.
+- User pushed back on three correct grounds: (1) maintenance burden ("I don't ever want to change anything myself"), (2) false rejection risk (genuine new-manager appointment would block the routine until file updated), (3) confabulation rate is ~2% — solving 100% via maintained-state was the wrong tradeoff.
+- **Rollback shipped same-day** (`70d6021`): deleted `data/managers.json`, removed substitution + validation block from post_news.sh, dropped MANAGERS rule from PROMPT.md. Kept the expanded past-failures list (Rosenior + Gallagher + McFarlane) because it serves as in-context training without enforcement teeth. If McFarlane-class fabrications become a real launch-day pain, revisit with a programmatic RSS-grep approach (no whitelist to maintain).
+
+### 21.5 Match-day routine end-to-end manual test
+- Triggered `gd-matchday` from the routines dashboard with a fake fixture trigger:
+  ```
+  team_id=arsenal; fixture_id=99999; status=finished; opponent=chelsea; score=2-1; kickoff_time=2026-05-07T19:00:00+00:00
+  ```
+- Routine produced an item with `push_title="Phone-his-dad moment"` (20 chars) and `push_text="Arsenal beat Chelsea 2-1 in the London derby. He'll work the whole address book."` (80 chars). Self-critique scored 17/20 on the immersive analogy.
+- The model picked the **exact canonical example template** from PROMPT.md ("Phone-his-dad moment" was one of the 22 locked examples). In-context examples worked: model recognised the scenario type (derby win for subject team) and reused the registered voice template verbatim.
+- This is the first time the matchday pipeline has been observed working end-to-end on the new sister-voice format. The auto-trigger chain (match-watcher → /fire) still requires a real PL fixture to fully validate — Saturday or whenever the next fixture day is.
+
+### 21.6 Switched match-watcher to every-minute polling
+- API-Football paid tier is ~7,500 calls/day; 1,440 calls/day from per-minute polling = ~20% utilisation. Migration 017 unschedules `match-watcher-5min` and creates `match-watcher-1min` at `* * * * *`. Same hardcoded URL + key.
+- Effect: when a real match transitions to FT, the post-match push lands within ~1–2 min of the final whistle (capped by API-Football's own ~30–60s reporting lag) instead of ~3–5 min worst case under 5-min polling. For the brand promise — "she gets the heads-up before he calls/arrives" — those minutes matter.
+
+### 21.7 Verification status
+
+| Pipeline | Verified | Notes |
+|---|---|---|
+| `gd-news` routine end-to-end | ✓ | "He'll take sides" Chelsea item, sister voice, push fired |
+| `gd-matchday` routine end-to-end (manual fire) | ✓ | "Phone-his-dad moment" Arsenal item, full pipeline |
+| `match-watcher` cron healthy | ✓ | succeeds every tick since 015 |
+| `notification-sweep` cron healthy | ✓ | exists since 016 |
+| Match-watcher → `/fire` chain (auto-trigger) | ✗ | needs a real PL fixture; Saturday will be the first test |
+| `MATCHDAY_ROUTINE_URL` + `_TOKEN` validity | ⚠ | secrets present in Supabase (digests visible); haven't validated by actually firing |
+
+### 21.8 What's left for launch
+
+- **Saturday's fixtures** prove the auto-trigger chain end-to-end with zero human input. If post-match cards land for both teams within ~2 min of FT, ship.
+- **iOS Archive + upload** to App Store Connect.
+- **App Store description copy update** (remove any "no subscription" leftover from the Free+IAP draft now that we're paid £4.99).
+
+**Build status:** Match-day pipeline unblocked for the first time in the project's history. Daily routine pipeline confirmed working with sister-voice format. Whitelist false-start rolled back. One real PL match away from full launch confidence.
+
+---
+
 ## Development Pitfalls & Lessons Learned
 
 Recurring patterns that caused bugs or required fixes during development. Reference this list before starting new features.
@@ -780,6 +1162,62 @@ Recurring patterns that caused bugs or required fixes during development. Refere
 **What happened:** Immersive feed cards built with `cardHeight = geo.size.height` — each card filled the visible viewport, but a sliver of the next card peeked under the bottom during scroll. Switched to `UIScreen.main.bounds.height` to extend the card behind the tab bar — but didn't adjust zone proportions, so zone 2 (the talking-point pink area) ended up mostly *behind* the tab bar, making the talking point invisible.
 **Rule:** When choosing card height, the trade-off is "viewport-fitting (next card peeks during scroll)" vs "screen-fitting (card extends behind tab bar)". Pick one deliberately, and if you go screen-fitting, recalculate zone ratios so all important content stays inside the visible viewport (~85% of screen height on iPhone). Don't put the most-readable content in the bottom 15% of a full-screen card.
 
-### 22. Multiple plan files in `~/.claude/plans/` cause confusion
+### 22. Two write paths into the same table mean two notification paths to test
+**What happened:** Pre-launch audit found that `gd-news` and `gd-matchday` routines insert into `content_items` directly with `status='published'` via `post_news.sh`, but `notification-sender` only triggered for items written by the legacy edge-function pipeline (its query filtered `status='approved' AND published_at IS NULL`, which routine items never matched). Result: feed populated correctly via pull-to-refresh, but no APNs push ever fired. For a notification-driven app, that's the entire product silently broken — the kind of bug that doesn't manifest until a real user installs the app.
+**Rule:** When you have multiple write paths into the same table (edge-function pipeline + Routine pipeline + manual inserts), enumerate every downstream consumer (push, analytics, indexing) and verify each one fires for each write path. Document the matrix explicitly. A simple "what triggers a push?" question answered upfront would have caught this in 30 seconds; instead it took a remote-DB cron-job audit to surface. Also: empty-state side-effects (no `device_tokens` registered yet) hide push gaps in dev — always trace the code path even when there's no test data to exercise it.
+
+### 23. Plan exploration on the wrong git branch produces phantom issues
+**What happened:** During pre-launch planning, an Explore subagent reviewed backend code from `main` while the actual deployment source was the `claude/intelligent-thompson` worktree. The agent reported "content-generator not gated" and "duplicate cron job in 006_pipeline_schedule.sql" — both of which were already fixed in the worktree (the gating is at line 309 of data-fetcher; the worktree's `006` is `pipeline_source.sql`, not the duplicate-cron migration). Real issues were elsewhere (push notification trigger gap).
+**Rule:** When delegating exploration to a subagent for a worktree-based task, tell the agent the exact worktree path explicitly and confirm in the response that it read from there. `git worktree list` first to know which paths exist; pass the worktree path in the prompt; spot-check the agent's findings by reading 1-2 key files yourself before acting on the report. Phantom issues waste planning time and erode trust in subsequent agent reports.
+
+### 24. Soft length caps in prompts don't work — enforce in code
+**What happened:** PROMPT.md said "Headline max 160 characters. iOS truncates push notifications around there. Count yours and rewrite if longer." The model ignored it: 2 of the 3 most-recent routine items pre-launch were 173 and 156 chars (one truncating, the other right at the edge). For text that goes to a user-facing lock screen, "soft cap in a prompt" means "broken 67% of the time."
+**Rule:** Any model-generated field with a hard rendering constraint (push body length, headline length, image dimensions) needs hard validation in the write path — not just a polite request in the prompt. In our case, `post_news.sh` now exits 1 if `push_text > 90` or `headline > 160`, forcing the routine to retry with a compliant payload. The prompt rule still lives there as guidance to reduce retry rate, but the script is the actual enforcer. Pattern: prompt for the happy path, validate at the boundary, fail loud and force retry.
+
+### 25. Brand-voice copy needs "what NOT to sound like" lists, not just "what to sound like" guidelines
+**What happened:** First-draft push examples kept slipping into either sports-app newsroom prose ("Big swing", "Plot twist", "Worth knowing") or crisis-counsellor language ("Brace yourself", "He'll be unbearable", "Pretend you didn't see"). Both read as wrong-voice — the second category was actively bad, framing him as a threat she has to survive. Repeated guidance like "warm, conversational, sister voice" wasn't enough; the model knew the destination but kept landing in the wrong neighbourhood.
+**Rule:** For brand-voice copy that has to hit a specific register, the prompt must include explicit BANNED PATTERNS lists, not just positive guidance. "Don't sound like X" with concrete examples is more effective than "do sound like Y" alone, because the model can recognise patterns it's about to produce. We now ship four banned categories: sports-app push categories, Twitter clickbait, wire-service tags, and crisis-counsellor framing — each with 5+ concrete examples. The locked canonical examples (22 of them) anchor the positive direction. Both pieces are needed.
+
+### 26. Kickers fail when they compress past sentence-shape
+**What happened:** Drafted "Phone-his-dad moment / Arsenal beat Spurs 2-1 in the derby. The whole address book." User flag: "The whole address book is a bit lonely so it doesn't make sense really." Right — "The whole address book" is a bare noun phrase with no verb, no subject. It reads as a TV-news chyron tag, not as something a person says. The same compression that works for headlines kills push kickers, which need to read as actual speech.
+**Rule:** Kickers (the trailing observational fragment after a fact) must contain a verb explicitly OR be a complete idiom with an implied verb ("Crisis averted." / "T-shirt material." / "Comfort-food night.") OR be a short imperative ("Order in tonight."). Never a bare noun phrase. The test is to read the kicker aloud on its own — if it sounds like a sentence a person would say, ship it. If it sounds like a TV ticker, rewrite. This rule lives in PROMPT.md PUSH RULES with both ✓ and ❌ examples.
+
+### 27. "Conversation summary said it was fixed" doesn't mean it shipped
+**What happened:** The pre-launch audit re-found the APNs-environment-on-registration bug that the conversation summary explicitly listed as fixed ("added `apnsEnvironment` static let with `#if DEBUG`"). The fix had never actually landed in this worktree — `grep -rn "apnsEnvironment" ios/GoalDigger/` returned zero matches. A long session compaction can list intent and outcome as if they happened, when only the intent did. Without the audit, this would have shipped to App Store with zero pushes working in production.
+**Rule:** When a context-window compaction summarises completed work, treat it as a hypothesis, not a guarantee. Verify by grep-or-read for the specific identifier the summary names, especially before launch. Trust but verify, even within your own session memory.
+
+### 28. Audit agents over-flag "credentials" in client-side config
+**What happened:** The iOS audit agent flagged `SUPABASE_ANON_KEY` in `Configuration.xcconfig` as a "showstopper for App Store review — credentials must be rotated immediately." This is wrong. Supabase anon keys are public-by-design (analogous to Firebase API keys); they're meant to be embedded in clients and gated by RLS. Service-role keys would be the real leak — those are server-side only. The audit agent didn't have the context that anon ≠ service_role.
+**Rule:** When an agent flags "credentials in source," before acting check: is this a public-by-design key (anon, publishable, API key with RLS gating) or a true secret (service role, master key, signing key)? The first is a non-issue; the second is a true leak. Rotate only on the second. Don't burn time rotating keys that were never meant to be private.
+
+### 29. Soft style rules in prompts need code-level enforcement when image is at stake
+**What happened:** PROMPT.md style rule explicitly forbade ALL CAPS emphasis. A routine item shipped with "...have DOUBLED in 48 hours..." anyway. Same pattern earlier with em-dashes (rule said "no em dashes," items shipped with em-dashes). Pattern: soft style rules that the model can technically violate WILL be violated occasionally, and "occasionally" at scale means hundreds of bad pushes a year.
+**Rule:** For any voice/style constraint where a single violation would embarrass the brand on the user's lock screen, add a hard validator in `post_news.sh` that rejects payloads breaking the rule. Soft rule in prompt for happy path; hard reject at the boundary. Acronyms etc. need an explicit allowlist (we ship with UEFA/FIFA/EFL/VAR/USA/GOAT/MOTD/XBOX as initial allowlist; grow as needed).
+
+### 30. Player–club affiliations are the highest-confabulation-risk field
+**What happened:** Two recent routine items confidently named players with the wrong club ("Conor Gallagher (Spurs midfielder)" — never at Spurs) or fabricated names entirely ("Calum McFarlane interim Chelsea boss" — no such person). Player–club mappings change every transfer window, the model's training data lags reality, and the GROUNDING rule alone wasn't enough — the model would name a player and assign them to a plausible-feeling club without checking the RSS.
+**Rule:** PROMPT.md now has an explicit PLAYER AFFILIATIONS subsection — the player's current club must appear next to their name in the RSS text, no inferring from training-data memory. Plus a SAFE-REWRITE PRINCIPLE: when in doubt, drop the specific name in favour of a role tag ("a Chelsea midfielder said..."). Vague is always better than wrong. The brand promise is "she'll know what to say tonight" — a confidently wrong name is the failure mode that breaks that promise.
+
+### 31. Postgres NULLs sort first in DESC — and that breaks feeds
+**What happened:** 9 historical routine items had `status='published'` but `published_at=NULL`. iOS feed query ordered by `published_at DESC`. Postgres places NULLs first in descending order, so those broken rows pushed the genuinely-fresh Declan Rice item to position #3 — invisible on first scroll. iOS Date decoder is also non-optional, so attempts to decode the NULL would fail; the user saw only stale cache. Conversation summary said `not.is.null` filter had been added; verification showed it had been reverted/never landed.
+**Rule:** Any iOS query that orders by a nullable timestamp DESC must include `not.is.null` server-side filter. Any iOS Codable field that the server can return as NULL must be optional in Swift. And: when adding a defensive filter to fix a bug, also add a backfill so the broken rows are gone for everyone, not just hidden behind one client's filter. Belt + braces + clean-up.
+
+### 32. Pipeline silent failures need at least three independent alarms
+**What happened:** The launch sequence revealed two whole classes of silent failure that the original audit didn't catch — uncommitted code shipping to production, and NULL data in non-nullable iOS decoders. Both invisible until a user noticed. At launch scale, "until a user noticed" is too late.
+**Rule:** Every cron job needs a heartbeat check with auto-alerting. Every push needs a `pushed_at` audit column. Every API auth failure needs to fire an alert (not just log). Every iOS array decode needs partial-decode tolerance. Every persisted cache needs a schema version. And every script with versioned content needs to print its version on each run. Five layers of "did this thing work?" — independent of each other so one failing doesn't blind the others.
+
+### 33. `pg_cron` failures are visible only in `cron.job_run_details` — query it
+**What happened:** match-watcher's cron had been failing every 5 min for weeks (2,444 consecutive failures, zero successes) before discovery. The cron was scheduled and `active=true`, so it LOOKED fine on a casual check. The actual failures were only visible by querying `cron.job_run_details`. Nothing else surfaced this — no Supabase dashboard alert, no email, no degraded service signal (because the function the cron called was working fine when invoked manually). The user-visible bug ("matchday content never appears") looked like routine-side flakiness for weeks.
+**Rule:** Whenever a pg_cron job is suspected of misbehaving, the diagnostic is `SELECT count(*) FILTER (WHERE status='succeeded') FROM cron.job_run_details WHERE jobid = <id>;`. If it's 0, the job has been failing silently — check `return_message` for the error. Add this query to the standard launch-day pre-flight. Better: bake it into the bulletproofing heartbeat (the heartbeat function should query `cron.job_run_details` for ALL cron jobs and alert on any with 0% success rate over the last hour).
+
+### 34. The same blind spot can poison the alarm meant to detect it
+**What happened:** Phase 20's heartbeat alarm (migration 013) was specifically designed to catch silent cron failures by alerting on missing `pipeline_health` rows. It used `current_setting('app.settings.supabase_url', true)` — the same broken pattern that caused match-watcher to fail in the first place. Worst: the `(..., true)` variant returns NULL silently rather than erroring, so the heartbeat would have run successfully every 30 min while doing absolutely nothing. The very mechanism designed to catch silent failures was itself silently failing.
+**Rule:** When designing an alarm for a class of bug X, audit whether the alarm can suffer from X. If yes, build it on a different foundation. If you can't, the alarm needs its own meta-alarm — or you need to test it by deliberately triggering X. Before trusting any monitoring system, deliberately break the thing it's supposed to monitor and confirm the alarm fires.
+
+### 35. Hard whitelists demand maintenance the user may not consent to
+**What happened:** Built a manager-name whitelist (managers.json + post_news.sh validation + prompt placeholder requirement) to eliminate manager-name confabulations. Solved the problem cleanly. But the user immediately flagged: "I don't ever want to change anything myself." Every PL manager change (sacking, appointment, interim) would silently break the routine until the JSON was edited. For a 2% confabulation rate, this is a wildly worse tradeoff: trading occasional bad content for guaranteed silent breakage on every transfer-window event.
+**Rule:** Before shipping a hard-state validation system (whitelist, allowlist, version registry), explicitly write down the maintenance contract: "On EVENT, USER must update FILE within DURATION or BAD_THING happens." Read it back. If "USER" is the founder and the cadence is anything more than monthly, the system is wrong for the workflow. Soft enforcement (prompt rules, in-context examples) almost always wins for solo / small-team operators. Hard validation is for teams with on-call rotation and runbooks.
+
+### 36. Multiple plan files in `~/.claude/plans/` cause confusion
 **What happened:** During a long session, multiple plan files were created in `~/.claude/plans/`. The "active" one was referenced in system reminders but old ones lingered with stale content, leading to UI showing outdated plan headlines.
 **Rule:** When in doubt, `ls -la ~/.claude/plans/` and check mod times. Mark stale plans as superseded. Better: write to a single named plan file per multi-day work stream rather than letting random-name files accumulate.

@@ -261,7 +261,6 @@ serve(async (req) => {
     for (const team of teams as Team[]) {
       const teamStart = Date.now();
       const fetchLogIds: string[] = [];
-      let hasNewData = false;
 
       // Fetch RSS and API-Football in parallel
       const [rssResults, apiResults] = await Promise.all([
@@ -271,19 +270,8 @@ serve(async (req) => {
 
       const allResults = [...rssResults, ...apiResults];
 
-      // Deduplicate: check raw_fetch_logs for existing URLs from last 48 hours
-      const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
-
       for (const result of allResults) {
-        // Check if we already have this source data recently
-        const { count } = await supabase
-          .from("raw_fetch_logs")
-          .select("*", { count: "exact", head: true })
-          .eq("team_id", team.id)
-          .eq("source", result.source)
-          .gte("fetched_at", twoDaysAgo);
-
-        // Store raw data (even if duplicate — dedup is at content level)
+        // Store raw data unconditionally — keeps an auditable history of every fetch.
         const { data: insertedLog, error: insertError } = await supabase
           .from("raw_fetch_logs")
           .insert({
@@ -300,13 +288,6 @@ serve(async (req) => {
         }
 
         fetchLogIds.push(insertedLog.id);
-
-        // For RSS sources, new data = we haven't seen these articles before
-        if (result.source.startsWith("api_football_")) {
-          hasNewData = true; // Always process API data
-        } else if ((count ?? 0) === 0) {
-          hasNewData = true;
-        }
       }
 
       // Compute team context from standings data
@@ -317,8 +298,16 @@ serve(async (req) => {
         await computeTeamContext(supabase, team, standingsResult.data);
       }
 
-      // If new data found, trigger content-generator
-      if (hasNewData && fetchLogIds.length > 0) {
+      // Edge-function content-generator trigger is gated on CONTENT_GENERATOR_ENABLED.
+      // The Claude Code Routine pipeline is now primary (writes pipeline_source='routine'
+      // every 6h). To prevent duplicate items in the user feed, we don't fire the
+      // edge-function content path by default. data-fetcher still runs to populate
+      // raw_fetch_logs (used by other functions, and as a fallback if the Routine
+      // ever needs to read from DB-cached RSS).
+      //
+      // To re-enable as a fallback, set CONTENT_GENERATOR_ENABLED=true in Supabase secrets.
+      const contentGenEnabled = Deno.env.get("CONTENT_GENERATOR_ENABLED") === "true";
+      if (contentGenEnabled && fetchLogIds.length > 0) {
         try {
           await triggerFunction("content-generator", {
             team_id: team.id,

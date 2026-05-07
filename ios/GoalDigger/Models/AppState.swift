@@ -70,19 +70,40 @@ class AppState {
     }
 
     /// Replace [his name] and [her name] placeholders in server-generated content at display time.
+    /// Handles lowercase, capitalised (sentence-start), and possessive variants.
     /// Also strips em dashes for cleaner copy.
+    ///
+    /// Why both cases: routine items written with `[His name]` at sentence start
+    /// (audited: 29 of ~150 routine rows). Without capitalised handling, those
+    /// sentences render the literal placeholder in the UI. Lowercase fallback
+    /// also returns "your partner" / "Your partner" if the user hasn't filled
+    /// in the name in onboarding.
     func personalise(_ text: String) -> String {
         var result = text
-        if !hisName.isEmpty {
-            result = result.replacingOccurrences(of: "[his name]", with: hisName)
-            result = result.replacingOccurrences(of: "[his name's]", with: hisName + "'s")
-        }
-        if !herName.isEmpty {
-            result = result.replacingOccurrences(of: "[her name]", with: herName)
-        }
-        // Strip em dashes
+
+        let hisDisplay = hisName.isEmpty ? "your partner" : hisName
+        let hisDisplayCapitalised = hisName.isEmpty ? "Your partner" : hisName
+        let herDisplay = herName.isEmpty ? "you" : herName
+        let herDisplayCapitalised = herName.isEmpty ? "You" : herName
+
+        // His name — lowercase, capitalised, possessive
+        result = result.replacingOccurrences(of: "[his name's]", with: hisDisplay + "'s")
+        result = result.replacingOccurrences(of: "[His name's]", with: hisDisplayCapitalised + "'s")
+        result = result.replacingOccurrences(of: "[his name]", with: hisDisplay)
+        result = result.replacingOccurrences(of: "[His name]", with: hisDisplayCapitalised)
+
+        // Her name — lowercase, capitalised, possessive
+        result = result.replacingOccurrences(of: "[her name's]", with: herDisplay + "'s")
+        result = result.replacingOccurrences(of: "[Her name's]", with: herDisplayCapitalised + "'s")
+        result = result.replacingOccurrences(of: "[her name]", with: herDisplay)
+        result = result.replacingOccurrences(of: "[Her name]", with: herDisplayCapitalised)
+
+        // Strip em + en dashes (defence-in-depth; post_news.sh also strips them)
         result = result.replacingOccurrences(of: " \u{2014} ", with: ", ")
         result = result.replacingOccurrences(of: "\u{2014}", with: ", ")
+        result = result.replacingOccurrences(of: " \u{2013} ", with: ", ")
+        result = result.replacingOccurrences(of: "\u{2013}", with: ", ")
+
         return result
     }
 

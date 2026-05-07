@@ -10,10 +10,10 @@ struct SettingsView: View {
     @State private var showTierPicker = false
     @State private var showDeleteConfirmation = false
     @State private var showDeleteSuccess = false
+    @State private var showDeleteError = false
     @State private var isDeleting = false
     @State private var editingHerName = false
     @State private var editingHisName = false
-    @State private var purchaseManager = PurchaseManager.shared
     @State private var herNameDraft = ""
     @State private var hisNameDraft = ""
 
@@ -207,27 +207,9 @@ struct SettingsView: View {
                             }
                         }
 
-                        settingsRow {
-                            Button {
-                                Task { await purchaseManager.restore() }
-                            } label: {
-                                HStack {
-                                    Text("Restore Purchases")
-                                        .font(.settingsItem)
-                                        .foregroundColor(.textPrimaryOnCard)
-                                    Spacer()
-                                    if purchaseManager.isLoading {
-                                        ProgressView()
-                                            .tint(.hotRose)
-                                    } else {
-                                        Image(systemName: "arrow.clockwise")
-                                            .foregroundColor(.textSecondaryOnCard)
-                                            .font(.system(size: 12))
-                                    }
-                                }
-                            }
-                            .disabled(purchaseManager.isLoading)
-                        }
+                        // Restore Purchases removed: paid app on App Store, no IAP. The
+                        // App Store handles redownload/restore automatically when a user
+                        // reinstalls; an in-app button would just confuse them.
 
                         settingsRow {
                             Button { showDeleteConfirmation = true } label: {
@@ -301,6 +283,11 @@ struct SettingsView: View {
             }
         } message: {
             Text("Your data has been deleted. You'll no longer receive notifications.")
+        }
+        .alert("Couldn't Delete", isPresented: $showDeleteError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("We couldn't reach the server to delete your data. Check your connection and try again.")
         }
     }
 
@@ -388,11 +375,28 @@ struct SettingsView: View {
 
     private func deleteData() async {
         isDeleting = true
-        if let token = UserDefaults.standard.string(forKey: "apnsToken") {
-            try? await APIClient.shared.deleteMyData(token: token)
+        defer { isDeleting = false }
+
+        // Privacy-impact: a silent failure here would tell the user their data
+        // is gone when it isn't. Surface server errors as an alert so the user
+        // can retry.
+        guard let token = UserDefaults.standard.string(forKey: "apnsToken") else {
+            // No token registered (rare — user never granted notification
+            // permission). Nothing to delete server-side; clearing local state
+            // is enough.
+            showDeleteSuccess = true
+            return
         }
-        isDeleting = false
-        showDeleteSuccess = true
+
+        do {
+            try await APIClient.shared.deleteMyData(token: token)
+            showDeleteSuccess = true
+        } catch {
+            #if DEBUG
+            print("⚠️ deleteMyData failed: \(error)")
+            #endif
+            showDeleteError = true
+        }
     }
 }
 

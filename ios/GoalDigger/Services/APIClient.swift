@@ -11,6 +11,20 @@ class APIClient {
     // comment marker — the host got truncated and every API call resolved to "https://rest/v1/...".
     var isConfigured: Bool { _baseURL != nil }
 
+    // APNs token environment. The backend uses this to route push notifications
+    // to the correct Apple endpoint:
+    //   - DEBUG (Xcode-built builds → development APNs sandbox tokens)
+    //   - RELEASE (TestFlight + App Store → production APNs tokens)
+    // Sent on every device_tokens insert; without it, the column defaults to
+    // 'development' on the DB side and production builds get 0 pushes.
+    static var apnsEnvironment: String {
+        #if DEBUG
+        return "development"
+        #else
+        return "production"
+        #endif
+    }
+
     private static func resolveHost() -> String? {
         guard let host = Bundle.main.infoDictionary?["SUPABASE_HOST"] as? String,
               !host.isEmpty,
@@ -92,10 +106,45 @@ class APIClient {
     /// All columns needed for ContentItem decoding (base + everyone + immersive + analogy)
     private static let contentSelectColumns = "id,team_id,type,headline,body,talking_points,kickoff_time,emotional_context,published_at,everyone_talking,everyone_talking_headline,everyone_talking_body,everyone_talking_talking_points,worth_knowing,immersive_headline,immersive_context,immersive_context_fallback,analogy_reviewed,analogy_approved,analogy_auto_published"
 
+    /// Decode a JSON array of ContentItems, skipping any individual item that fails to decode.
+    ///
+    /// `JSONDecoder.decode([ContentItem].self, ...)` is all-or-nothing: one bad row throws and
+    /// the entire feed is lost. That happened today with NULL `published_at` rows. Server-side
+    /// filters help, but they're one guard against one specific class of failure. This helper
+    /// turns a potential blank-feed crash into "you see 19 items instead of 20" — which is
+    /// dramatically better UX. The bad item is logged in DEBUG so we still notice schema drift.
+    private func decodeContentItems(from data: Data) throws -> [ContentItem] {
+        // First parse as a heterogeneous array to get per-item JSON we can decode separately.
+        let rawItems = try JSONSerialization.jsonObject(with: data, options: []) as? [Any] ?? []
+        var decoded: [ContentItem] = []
+        decoded.reserveCapacity(rawItems.count)
+        for (index, raw) in rawItems.enumerated() {
+            do {
+                let itemData = try JSONSerialization.data(withJSONObject: raw, options: [])
+                let item = try decoder.decode(ContentItem.self, from: itemData)
+                decoded.append(item)
+            } catch {
+                #if DEBUG
+                let id = (raw as? [String: Any])?["id"] as? String ?? "unknown"
+                print("⚠️ ContentItem decode failed at index \(index) (id=\(id)): \(error)")
+                #endif
+                // Continue: one bad row doesn't kill the feed.
+            }
+        }
+        return decoded
+    }
+
     func fetchFeed(teamId: String, limit: Int = 20, offset: Int = 0) async throws -> [ContentItem] {
+        // `published_at=not.is.null` filter is critical: some legacy rows have
+        // status='published' but published_at=NULL. Postgres sorts NULLs first
+        // in DESC ordering, which would push genuinely fresh items below stale
+        // ones in the feed. Plus the iOS Date decoder is non-optional — a NULL
+        // would break the whole array decode. Belt and braces: server-side
+        // filter + non-optional Date catch errors at both ends.
         let url = try buildURL(path: "content_items", queryItems: [
             URLQueryItem(name: "team_id", value: "eq.\(teamId)"),
             URLQueryItem(name: "status", value: "eq.published"),
+            URLQueryItem(name: "published_at", value: "not.is.null"),
             URLQueryItem(name: "order", value: "published_at.desc"),
             URLQueryItem(name: "limit", value: "\(limit)"),
             URLQueryItem(name: "offset", value: "\(offset)"),
@@ -104,13 +153,14 @@ class APIClient {
         let request = makeRequest(url: url)
         let (data, response) = try await URLSession.shared.data(for: request)
         try validateResponse(response)
-        return try decoder.decode([ContentItem].self, from: data)
+        return try decodeContentItems(from: data)
     }
 
     func fetchEveryoneFeed(limit: Int = 20, offset: Int = 0) async throws -> [ContentItem] {
         let url = try buildURL(path: "content_items", queryItems: [
             URLQueryItem(name: "everyone_talking", value: "eq.true"),
             URLQueryItem(name: "status", value: "eq.published"),
+            URLQueryItem(name: "published_at", value: "not.is.null"),
             URLQueryItem(name: "order", value: "published_at.desc"),
             URLQueryItem(name: "limit", value: "\(limit)"),
             URLQueryItem(name: "offset", value: "\(offset)"),
@@ -119,7 +169,7 @@ class APIClient {
         let request = makeRequest(url: url)
         let (data, response) = try await URLSession.shared.data(for: request)
         try validateResponse(response)
-        return try decoder.decode([ContentItem].self, from: data)
+        return try decodeContentItems(from: data)
     }
 
     func fetchItem(id: UUID) async throws -> ContentItem? {
@@ -131,7 +181,7 @@ class APIClient {
         let request = makeRequest(url: url)
         let (data, response) = try await URLSession.shared.data(for: request)
         try validateResponse(response)
-        let items = try decoder.decode([ContentItem].self, from: data)
+        let items = try decodeContentItems(from: data)
         return items.first
     }
 
@@ -139,7 +189,16 @@ class APIClient {
 
     func registerToken(_ token: String, teamId: String, tier: Int = 2) async throws {
         let url = try requireBaseURL().appendingPathComponent("device_tokens")
-        let body: [String: Any] = ["team_id": teamId, "apns_token": token, "tier": tier]
+        let body: [String: Any] = [
+            "team_id": teamId,
+            "apns_token": token,
+            "tier": tier,
+            // Tells the server which APNs endpoint to use for this token.
+            // Without this, the DB column defaults to 'development' and
+            // App Store / TestFlight tokens get pushed to the sandbox endpoint
+            // (which rejects them with 400, deactivating the token → no pushes).
+            "apns_environment": APIClient.apnsEnvironment,
+        ]
         let bodyData = try JSONSerialization.data(withJSONObject: body)
         let request = makeRequest(
             url: url,

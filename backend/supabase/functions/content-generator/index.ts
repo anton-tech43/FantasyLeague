@@ -672,6 +672,7 @@ Generate the match day briefing.`;
           emotional_context: input.emotional_context ?? "exciting",
           status: "draft",
           source_urls: [],
+          pipeline_source: "edge_function",
         })
         .select("id")
         .single();
@@ -789,6 +790,7 @@ Generate the match day briefing.`;
           everyone_talking_body: isEveryoneTalking ? (input.neutral_body as string) || null : null,
           everyone_talking_talking_points: isEveryoneTalking ? (input.neutral_talking_points as string[]) || null : null,
           worth_knowing: isWorthKnowing,
+          pipeline_source: "edge_function",
         })
         .select("id")
         .single();
