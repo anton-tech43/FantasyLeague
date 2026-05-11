@@ -64,7 +64,11 @@ class CacheService {
     ///
     /// Bump history:
     ///   1 = initial
-    static let cacheSchemaVersion: Int = 1
+    ///
+    /// `nonisolated` so CachedContentItem's nonisolated init (Swift 6 strict
+    /// concurrency) and any other off-MainActor reader can access it. Safe
+    /// because the value is an immutable constant — no race possible.
+    nonisolated static let cacheSchemaVersion: Int = 1
 
     /// Drop any cached rows that don't match the current schema version.
     /// Called on app launch (see GoalDiggerApp.swift) so cache poisoning from
