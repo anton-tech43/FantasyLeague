@@ -1221,3 +1221,183 @@ Recurring patterns that caused bugs or required fixes during development. Refere
 ### 36. Multiple plan files in `~/.claude/plans/` cause confusion
 **What happened:** During a long session, multiple plan files were created in `~/.claude/plans/`. The "active" one was referenced in system reminders but old ones lingered with stale content, leading to UI showing outdated plan headlines.
 **Rule:** When in doubt, `ls -la ~/.claude/plans/` and check mod times. Mark stale plans as superseded. Better: write to a single named plan file per multi-day work stream rather than letting random-name files accumulate.
+
+---
+
+## Phase 22: Match-watcher rescue, JWT rotation, Round-4 voice, first auto-fire — COMPLETE (2026-05-11)
+
+Single day. Roughly 12 hours of work that turned the matchday auto-trigger from "never produced a single item end-to-end" into "first ever auto-fired matchday content landed at 21:13 UTC, 5 minutes after Spurs-Leeds final whistle." Plus an emergency JWT rotation closing a 4-day public-repo leak. Plus four rounds of iteration on the content quality recipe with the user. Plus iOS team-list + team-page fixes for the three 2025-26 promoted clubs.
+
+### 22.1 Match-watcher fix #1: missing API-Football `season` param
+
+**Symptom:** `match_status_state` empty for weeks. Manual curl to the edge function returned `fixtures_seen: 0` every day, even on Saturdays with a full PL slate. The cron itself was firing correctly.
+
+**Root cause:** `backend/supabase/functions/match-watcher/index.ts` built the API-Football URL as `/fixtures?league=39&date=<today>` — missing the required `season` parameter. Without it, the endpoint returned an empty array (or an errors object), and the code's `fixturesJson.response ?? []` swallowed the failure. Every fire processed an empty loop.
+
+**Fix (commit `04996fd`):**
+- Added `const SEASON = 2025;` with a "BUMP THIS EACH AUGUST" comment.
+- Loud error guard: if response shape is wrong or `errors` non-empty, return 500. The original silent-swallow pattern is exactly the failure mode we're locking against.
+- Switched `today` computation from UTC to `Europe/London` via `Intl.DateTimeFormat` to stabilise the date across BST/GMT transitions.
+
+After redeploy, manual curl returned `fixtures_seen: 1` — but `state_updates: 0`. The API call now worked; somewhere else was the next bug.
+
+### 22.2 Match-watcher fix #2: stale `teams` table
+
+**Symptom:** With `fixtures_seen: 1` we expected at least one row in `match_status_state`. Got zero. The function was silently `continue`ing past every fixture.
+
+**Diagnosis approach:** Deployed a new `diagnose-matchday` edge function that returns: env-var presence, today's fixtures from API-Football, the next 7 days, the full 2025-26 PL roster from API-Football, the contents of our `teams` table, and a diff. The diff revealed it instantly:
+
+```json
+"pl_teams_missing_from_our_db": [
+    {"id": 44, "name": "Burnley"},
+    {"id": 63, "name": "Leeds"},
+    {"id": 746, "name": "Sunderland"}
+]
+```
+
+The `teams` table was seeded in migration 004 with the 2024-25 PL squad. Three teams have since been relegated (Ipswich, Leicester, Southampton) and three promoted (Burnley, Leeds, Sunderland). The watcher's `if (!homeTeamId || !awayTeamId) continue` guard short-circuited on every fixture involving a promoted team — including tonight's Spurs vs Leeds and the upcoming May 16-17 weekend.
+
+**Fix (commit `9edc51f`, migration 018):** Insert the three promoted teams. Kept the relegated three for historical content_items backfill compatibility (Postgres FK on match_status_state and content_items both point at `teams(id)`).
+
+After insert, the watcher immediately tracked Spurs-Leeds with `status=NS` and started firing every minute. Pipeline alive.
+
+### 22.3 Content quality audit + Round-4 voice recipe
+
+In parallel, ran a content quality audit on 25 recent routine items, identified 6 systematic patterns (talking-points formulaic, headlines as prompts, body verbosity, Cyrillic typos, verbose openings, repeated role tags). The user pushed back on most and approved a focused set of fixes. Then four rounds of iteration on 10 representative cards:
+
+- **Round 1:** Establish the voice — action-first verbs, time markers, single dry payoffs.
+- **Round 2:** Push for sharper images, more specific named anchors.
+- **Round 3:** Different angles, fresh references.
+- **Round 4:** Apply learnings, tighten to a 16-word girl-ref ceiling.
+
+The user identified that I had been confusing fields (push title ≠ "girl ref" — that's `immersive_context`, the analogy paragraph). Voice rules locked: directionality matters, the football payoff pivots from the setup, anchors must be in HER world (no creative-industry roles), references must snap on first read, TPs respect what HE already knows.
+
+**Committed (routines repo `bb51c26`):** PROMPT.md "BATTLE-TESTED VOICE RULES" section with 18 rules + ~60 SHIP / NEVER-SHIP canonical examples. New TP1 broadcast-question validator in `post_news.sh` (`Did you know` / `Did you see` reject pattern).
+
+### 22.4 Emergency: legacy service_role JWT was in the public repo
+
+A `/security-review` slash command on the branch surfaced one HIGH-confidence finding the routine audits had missed: migrations 015, 016, 017 each embedded the full legacy service_role JWT verbatim in a `cron.schedule` body, and the repo is publicly readable on GitHub. The JWT bypasses RLS, expires in 2090, and was committed on 2026-05-07 — a 4-day exposure window before discovery.
+
+Migrated to the new Supabase API key model in a graceful, no-downtime sequence:
+
+1. User created `sb_publishable_*` + `sb_secret_*` keys in dashboard.
+2. User stored the new secret in Postgres Vault under name `cron_service_key` (one-off SQL editor).
+3. Migration 019 dropped the three crons that embedded the JWT and re-created them reading from `vault.decrypted_secrets` by name.
+4. Migration 020 added a SECURITY DEFINER accessor `get_cron_service_key()` because pg_cron's role couldn't read Vault directly — see Pitfall #38 below.
+5. Edge functions: added a new `SERVICE_KEY` custom secret in Supabase. Updated `_shared/supabase-client.ts` (+ four direct readers) to prefer `SERVICE_KEY` with a fallback to the legacy `SUPABASE_SERVICE_ROLE_KEY` for the transition window.
+6. iOS `Configuration.xcconfig` updated to `sb_publishable_*`.
+7. Routines (`goaldigger-routines`) had `SUPABASE_SERVICE_KEY` env var updated in the Anthropic Routine dashboard for both `gd-news` and `gd-matchday`.
+8. Deployed cron-called and inter-function-called edge functions with `--no-verify-jwt` — see Pitfall #37 below.
+9. User disabled legacy `anon` + `service_role` keys via Settings → API Keys → Legacy tab.
+10. User rotated the legacy JWT signing key: added a new ES256 standby in JWT Signing Keys, promoted it to current, then revoked the old HS256.
+
+Post-rotation tests:
+- Legacy JWT as `apikey: ...` → 401 "Legacy API keys are disabled" ✓
+- Legacy JWT as `Authorization: Bearer ...` → 401 "No suitable key was found to decode the JWT" (cryptographic invalidation) ✓
+- `sb_secret_*` → 200 ✓
+- `sb_publishable_*` → 200 via PostgREST ✓
+- Watcher continued ticking throughout ✓
+
+**Compromise audit** (commit `b11497f`) over the 4-day window: 109 `content_items` all `pipeline_source=routine`, zero `device_tokens` (no users yet), zero `dev_alert_devices`, only one stale `client_errors` from May 4 (a self-test). No exploitation traces.
+
+**Pre-commit hook** installed (`scripts/pre-commit-secret-scan.sh`, hooks-dir copy) blocking any future commit containing `eyJhbGciOi[A-Za-z0-9_-]{8,}` (JWT header) or `sb_secret_[A-Za-z0-9_-]{8,}`. Allows `sb_publishable_*` by design. Smoke-tested against legitimate and rogue payloads.
+
+### 22.5 First end-to-end matchday auto-fire test
+
+Real PL match: Tottenham vs Leeds, kickoff 19:00 UTC, May 11. The watcher tracked the fixture from `NS` → `1H` → `HT` → `2H` and detected `FT` at 21:08:03 UTC. Within the same tick:
+
+- `fired_finished_at: 2026-05-11T21:08:03` populated on the fixture row.
+- Routine fired for both teams via the Anthropic Routine API.
+- Leeds matchday content_item landed at 21:11:49 (3 min 46 s after FT).
+- Spurs matchday content_item landed at 21:13:19 (5 min 16 s after FT).
+
+Both items passed the Round-4 voice tests:
+- Spurs title: `spurs 1-1 leeds.\ntel put them ahead, then a penalty.\nstill 17th.` — three-line designed, score + scorer + league-position-context.
+- Spurs push: *"Twenty minutes of huffing — Tel scored, Leeds got a penalty to level it. Spurs drew 1-1. He'll replay the call."* — locked-example title + new kicker.
+- Spurs girl ref (post user feedback): *"Your situationship cancelling at the venue door. Spurs took the punch at 74'."* — gossip-zone anchor, specific timing.
+- Spurs TP1: *"Tell him you thought Tel ran the show in the second half. He'll confirm or top it."* — Tell-him + named player + reaction prediction.
+
+### 22.6 Two bugs caught in production output
+
+**The slash bug (routines repo `18a8b28`):** When the Round-4 canonical examples landed in PROMPT.md, the title SHIP/NEVER-SHIP code blocks used `/` as chat-shorthand for a line break (e.g. `arsenal won. / chelsea trudged home.`). The routine read this literally and produced `immersive_headline` strings with visible " / " characters. Fix: rewrote the canonical examples to use JSON-encoded `\n` (`"arsenal won.\nchelsea trudged home."`) and added a "CRITICAL" preamble explicitly stating the format. Also patched the two existing affected items via direct PostgREST UPDATE.
+
+**Team-page hallucination (routines repo `f8dbb87`):** When user clicked into Leeds in the simulator, the "His Team" page said *"2nd in the Championship, chasing promotion back to the Premier League."* Wrong — Leeds is in the 2025-26 PL. Root cause: `data-fetcher` (which reads from the `teams` table) had been picking up the new teams, but `fetch_news.sh` still had the 2024-25 hardcoded TEAMS array. With no fresh RSS data for Leeds in `raw_fetch_logs`, `team-page-generator`'s Claude call had nothing to ground on and fell back to its 2024-25 training-data view. Fix: updated `fetch_news.sh` and `MATCHDAY_PROMPT.md` to include the promoted teams; deleted the three bad team_pages rows; triggered `data-fetcher` to populate `raw_fetch_logs`; re-ran `team-page-generator` with mode=full for each team. Final result: all three now correctly show "X in the Premier League" with real form data, real recent results.
+
+### 22.7 iOS roster cleanup
+
+- `Team.swift` enum: added Leeds / Sunderland / Burnley; removed Ipswich / Leicester / Southampton.
+- Swift 6 strict concurrency: `nonisolated static let cacheSchemaVersion: Int = 1` to satisfy the non-isolated `CachedContentItem` init reading a MainActor-isolated static. See Pitfall #39 below.
+
+### 22.8 Known remaining issues (non-blocking)
+
+- **THE MANAGER card shows `<UNKNOWN>`** for the three promoted teams in the regenerated team_pages. The team-page-generator correctly refuses to confabulate (lesson learned from the earlier McFarlane saga). Needs a real manager source — either API-Football's `/coachs?team=<id>&season=2025` endpoint, or a hand-curated `managers.json` (rejected once already for maintenance burden). Next task.
+- **Player name spelling** — Leeds page surfaced "Brandan Aaronson" (real name: Brenden Aaronson). Specific names from Claude's training data drift one letter when not read verbatim from RSS source. Acceptable for v1; will tighten in the team-page-generator prompt to prefer API-Football squad data over freeform generation.
+
+### 22.9 Where we are at end of day
+
+Launch-critical pipeline fully alive:
+- ✓ `match-watcher` polls API-Football every minute on the new auth path (Vault + SECURITY DEFINER + verify_jwt=false + sb_secret_*)
+- ✓ `match_status_state` populates fixtures, tracks state transitions
+- ✓ `gd-matchday` Routine fires on FT, produces correctly-voiced matchday items in 3-5 minutes
+- ✓ Round-4 voice recipe verified in production (Spurs item is the proof)
+- ✓ Public-repo JWT leak fully closed (rotation + revoke)
+- ✓ Pre-commit hook prevents recurrence
+- ✓ iOS team picker matches the 2025-26 PL roster
+- ✓ All three promoted teams have correct, RSS-grounded "His Team" pages (modulo `<UNKNOWN>` manager)
+
+**Files modified or added today (across two repos):**
+
+Worktree (`FantasyLeague` / `claude/intelligent-thompson`):
+- `backend/supabase/functions/match-watcher/index.ts` — SEASON const, error guard, London tz
+- `backend/supabase/functions/_shared/supabase-client.ts` — SERVICE_KEY with legacy fallback
+- `backend/supabase/functions/_shared/trigger.ts` — same fallback
+- `backend/supabase/functions/matchday-scheduler/index.ts` — same fallback
+- `backend/supabase/functions/notification-sender/index.ts` — same fallback
+- `backend/supabase/functions/diagnose-matchday/index.ts` — new diagnostic endpoint
+- `backend/supabase/migrations/018_add_2025_26_promoted_teams.sql` — Leeds/Sunderland/Burnley
+- `backend/supabase/migrations/019_crons_use_vault_secret.sql` — first cron refactor
+- `backend/supabase/migrations/020_vault_read_via_security_definer.sql` — SECURITY DEFINER accessor
+- `ios/GoalDigger/Configuration.xcconfig` + `.example` — sb_publishable_*
+- `ios/GoalDigger/Models/Team.swift` — 2025-26 PL roster
+- `ios/GoalDigger/Services/CacheService.swift` — nonisolated static let
+- `scripts/pre-commit-secret-scan.sh` + hook install
+
+Routines (`goaldigger-routines` / `main`):
+- `PROMPT.md` — Round-4 voice rules + canonical examples; slash bug fix
+- `MATCHDAY_PROMPT.md` — updated team mapping list
+- `fetch_news.sh` — added promoted teams to TEAMS array
+- `post_news.sh` — TP1 broadcast-question validator
+
+---
+
+### 37. Edge Function gateway rejects `sb_secret_*` / `sb_publishable_*` as "Invalid JWT format"
+
+**What happened:** After rotating from legacy `service_role` JWT to the new `sb_secret_*` model and routing it through Vault to cron, every cron tick returned HTTP 200 from `net.http_post` (request queued) but `pg_net._http_response` showed every response was `401 UNAUTHORIZED_INVALID_JWT_FORMAT`. The function gateway specifically expects a JWT-format Authorization header. The new sb_secret keys are not JWTs — they're a different format entirely. The gateway hadn't been updated for the new model.
+**Rule:** Edge Functions called with the new `sb_secret_*` or `sb_publishable_*` keys need `verify_jwt = false` (or `--no-verify-jwt` at deploy time) so the gateway skips the JWT-format check. Functions then need to validate auth downstream themselves (via env var comparison, signed payload, etc). This applies to **every** function called by cron, every inter-function fetch, every iOS call. Public functions called by the iOS app are the exception — they can keep `verify_jwt = true` only if the iOS app continues sending a legacy JWT (which means the legacy key model has to stay alive). For our pre-launch state we set internal functions to `--no-verify-jwt` and kept the legacy anon JWT alive for iOS's single edge-function call (`delete-my-data`). Long-term, when Supabase updates the gateway to accept the new key format, we can re-enable verify_jwt on all of them.
+
+### 38. pg_cron's role can't read `vault.decrypted_secrets` directly
+
+**What happened:** Migration 019 wired cron job bodies to read the service-role key from `vault.decrypted_secrets` by name at fire time, so the secret value never appeared in committed SQL. Looked correct. After deploy, every cron tick returned `succeeded` from `cron.job_run_details` (because `net.http_post` queued the request successfully), but `pg_net._http_response` showed `401 UNAUTHORIZED_INVALID_JWT_FORMAT` — and the actual `Authorization` header sent by the cron's `net.http_post` was `Bearer ` (empty). The Vault read inside the cron body returned NULL because the role pg_cron runs as didn't have read access to that view. `'Bearer ' || NULL = NULL` in Postgres string concatenation, so the header degenerated to empty.
+**Rule:** Vault read access is restricted by the platform. Wrap any Vault read needed by pg_cron in a `SECURITY DEFINER` Postgres function owned by a role that DOES have access. Lock down the function's `search_path` to `''` to prevent search-path injection. Grant EXECUTE only to specific roles, REVOKE PUBLIC. Single-purpose accessors (one function per named secret) are safer than a generic Vault-reader. See migration 020 for the pattern.
+
+### 39. Swift 6 strict concurrency rejects non-isolated reads of `@MainActor static let`
+
+**What happened:** Build failed on `Main actor-isolated static property 'cacheSchemaVersion' can not be referenced from a nonisolated context`. The constant was declared on a `@MainActor` class (CacheService) and read from a `CachedContentItem` initialiser that wasn't on the main actor. Under Swift 6 strict concurrency, this is a compile error (Swift 5 would have warned).
+**Rule:** Static `let` constants that are read across actor boundaries should be marked `nonisolated`. The value is immutable, so there's no race; the keyword just tells the compiler "this can be read from any actor context." Apply to any constant declared inside a `@MainActor` type that needs to be read from background actors, non-isolated inits, Codable conformances, or SwiftData model contexts.
+
+### 40. Multiple parallel team-list sources of truth
+
+**What happened:** After adding Leeds / Sunderland / Burnley to the `teams` DB table, the iOS picker still didn't show them. Once iOS was fixed, the "His Team" page hallucinated for Leeds saying "2nd in the Championship". Investigation revealed at least five separate code paths each carried their own copy of the team list:
+1. Supabase `teams` table (authoritative — updated via migration 018)
+2. iOS `Team.swift` enum (Swift CaseIterable)
+3. `backend/.../data-fetcher/index.ts` — reads from `teams` table at runtime (already correct)
+4. `goaldigger-routines/fetch_news.sh` — hardcoded TEAMS array
+5. `goaldigger-routines/MATCHDAY_PROMPT.md` — hardcoded mapping list
+
+The mismatch produced a cascade: fetch_news.sh never fetched RSS for Leeds → `raw_fetch_logs` empty for Leeds → team-page-generator's Claude call had no source data → fell back to training data → produced 2024-25-Championship narrative.
+**Rule:** Every system with a "list of N entities" that maps to user-facing functionality (PL teams, supported currencies, language list, etc) should have **one** runtime source of truth, and every consumer should read from it. Hardcoded arrays in scripts are technical debt — they look fine until a season transition exposes the cross-pipeline drift. The remediation order: identify every consumer of the list, update them to a single source, deprecate the hardcoded copies. For routines that can't query the DB at startup, generate the list from the DB at deploy time and commit the snapshot — with a "regenerate from DB" pre-commit hook to keep it fresh.
+
+### 41. Chat shorthand bleeds into prompt examples bleeds into production output
+
+**What happened:** During Round-4 voice iteration, I used `/` in chat as a readable line-break marker for multi-line immersive titles (`derby done. / arsenal beat chelsea.`). When the locked recipe landed in PROMPT.md, the canonical SHIP examples preserved that `/` shorthand. The routine read the literal slash and produced `immersive_headline` strings with visible " / " characters, which iOS rendered as visible slashes on the swipe card.
+**Rule:** Prompt examples that show structured output must be encoded **exactly** as the model should reproduce them. For JSON string fields, write them as quoted JSON values with `\n` for newlines, not human-readable line breaks or visual separators. If chat shorthand is needed for human readability, translate it to the production format before committing to the prompt. Better: include both the "wrong" version and the "right" version side-by-side in the prompt as a deliberate teaching pair (we added the `/` bug pattern to the NEVER-SHIP list after this).
