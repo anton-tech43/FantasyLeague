@@ -233,6 +233,7 @@ async function generateFullPage(
   let squadData = "";
   let fixturesData = "";
   let injuriesData = "";
+  let coachsData = "";
 
   for (const log of rawLogs) {
     const jsonStr = JSON.stringify(log.data).slice(0, 2000);
@@ -240,6 +241,7 @@ async function generateFullPage(
     else if (log.source === "api_football_squad") squadData = jsonStr;
     else if (log.source.includes("fixtures")) fixturesData += `\n${log.source}: ${jsonStr}`;
     else if (log.source === "api_football_injuries") injuriesData = jsonStr;
+    else if (log.source === "api_football_coachs") coachsData = jsonStr;
   }
 
   const systemPrompt = TEAM_PAGE_SYSTEM_PROMPT.replace(
@@ -257,11 +259,18 @@ ${wrapExternalData(`Fixtures: ${fixturesData || "not available"}`, "api_football
 
 ${wrapExternalData(`Injuries: ${injuriesData || "not available"}`, "api_football")}
 
+${wrapExternalData(`Coaches (head coach is the FIRST entry whose career.end is null or matches this team's id — use that name verbatim for manager_name): ${coachsData || "not available"}`, "api_football")}
+
 Context flags: ${contextFlags.join(", ") || "none"}
 
 Generate the team page content. For top_players, pick the 3 most relevant right now.
 Use [his name] placeholder where personal.
-If no upcoming fixture data is available, omit the next_fixture fields.`;
+If no upcoming fixture data is available, omit the next_fixture fields.
+
+For manager_name: use ONLY the head coach's name as it appears in the Coaches data
+above. If Coaches data is "not available", set manager_name to "<UNKNOWN>" and
+manager_summary to "Manager information will appear when the team's coach data
+is available." — do NOT guess or use a name from prior knowledge.`;
 
   const response = await callClaude({
     system: systemPrompt,

@@ -150,6 +150,12 @@ async function fetchAPIFootball(
     { name: "standings", path: `/standings?league=39&season=2025` },
     { name: "transfers", path: `/transfers?team=${team.api_football_id}` },
     { name: "squad", path: `/players/squads?team=${team.api_football_id}` },
+    // Coaches: API-Football's authoritative manager source. Added 2026-05-11
+    // after the team-page-generator was caught producing `<UNKNOWN>` for the
+    // three promoted teams' MANAGER card — it had no source for the name
+    // and (correctly) refused to confabulate. Now feeds Claude with the
+    // real current head coach + their career history.
+    { name: "coachs", path: `/coachs?team=${team.api_football_id}` },
   ];
 
   for (const endpoint of endpoints) {
