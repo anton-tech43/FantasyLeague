@@ -1,5 +1,5 @@
 // match-watcher/index.ts
-// Goal Digger — Polls API-Football every 5 min for PL fixture status,
+// Goal Digger — Polls API-Football every 1 min for PL fixture status,
 // detects transitions to "finished", and fires the gd-matchday Claude
 // Code Routine for both teams in the match.
 //
@@ -8,13 +8,21 @@
 // routine — only fire on a transition we observe firsthand. Prevents
 // mass-firing on initial deploy when several matches are already FT.
 //
-// Schedule: every 5 min via pg_cron (see migration 008).
+// Schedule: every 1 min via pg_cron (see migration 017).
+//
+// SEASON constant: bump each August when a new PL season starts. The
+// season number is the year it BEGAN (Aug 2025 → May 2026 = SEASON=2025).
+// API-Football's /fixtures?league=39 endpoint requires `season` — without
+// it the response is empty (or an error object that gets silently
+// swallowed), which is exactly the bug that ran for weeks and left
+// match_status_state empty. Loud error guard below catches a recurrence.
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 
 const FINISHED_STATUSES = new Set(["FT", "AET", "PEN"]);
 const PL_LEAGUE_ID = 39;
+const SEASON = 2025; // BUMP THIS EACH AUGUST: Aug 2026 → May 2027 = SEASON=2026
 const API_FOOTBALL_BASE = "https://v3.football.api-sports.io";
 
 interface ApiFixture {
@@ -39,14 +47,45 @@ serve(async (_req) => {
     );
   }
 
-  // Fetch today's PL fixtures from API-Football
-  const today = new Date().toISOString().slice(0, 10);
+  // Fetch today's PL fixtures from API-Football.
+  //
+  // `today` is computed in Europe/London so that late-kickoff games (e.g.
+  // a 20:00 GMT winter Saturday finishing 22:00 GMT) stay attached to
+  // their kickoff day rather than rolling to UTC tomorrow at 00:00 UTC.
+  // BST is +01:00, so this matters in winter more than summer, but the
+  // code is calendar-stable year-round this way.
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/London",
+  }).format(new Date()); // en-CA gives YYYY-MM-DD shape
   const apiResp = await fetch(
-    `${API_FOOTBALL_BASE}/fixtures?league=${PL_LEAGUE_ID}&date=${today}`,
+    `${API_FOOTBALL_BASE}/fixtures?league=${PL_LEAGUE_ID}&season=${SEASON}&date=${today}`,
     { headers: { "x-apisports-key": apiFootballKey } },
   );
   const fixturesJson = await apiResp.json();
-  const fixtures: ApiFixture[] = fixturesJson.response ?? [];
+
+  // Loud error guard. API-Football returns { errors: { ... } } when the
+  // query is malformed (e.g. missing `season`) or when the key is rate-
+  // limited / invalid. Without this guard, the original code silently
+  // proceeded with an empty fixture list — which was the actual bug that
+  // ran for weeks. Now: bail with 500 + log so the next silent failure is
+  // a loud one.
+  if (
+    !Array.isArray(fixturesJson.response) ||
+    (fixturesJson.errors &&
+      Object.keys(fixturesJson.errors).length > 0)
+  ) {
+    const errMsg = `API-Football returned unexpected shape: errors=${JSON.stringify(fixturesJson.errors ?? {})}, response_type=${typeof fixturesJson.response}`;
+    console.error("match-watcher:", errMsg);
+    return new Response(
+      JSON.stringify({
+        error: errMsg,
+        date: today,
+        season: SEASON,
+      }),
+      { status: 500, headers: { "Content-Type": "application/json" } },
+    );
+  }
+  const fixtures: ApiFixture[] = fixturesJson.response;
 
   // Map api_football_id → our team_id slug
   const { data: teams, error: teamsErr } = await supabase
@@ -166,6 +205,7 @@ serve(async (_req) => {
       state_updates: stateUpdates,
       fires_dispatched: firesDispatched,
       date: today,
+      season: SEASON,
     }),
     { headers: { "Content-Type": "application/json" } },
   );
