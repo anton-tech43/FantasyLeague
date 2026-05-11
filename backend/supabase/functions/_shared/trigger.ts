@@ -19,10 +19,16 @@ export async function triggerFunction(
   payload: Record<string, unknown>,
 ): Promise<void> {
   const url = `${Deno.env.get("SUPABASE_URL")}/functions/v1/${functionName}`;
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  // SERVICE_KEY = new-model sb_secret_*; fallback to legacy JWT during transition.
+  // See _shared/supabase-client.ts for full context.
+  const serviceKey =
+    Deno.env.get("SERVICE_KEY") ??
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
   if (!url || !serviceKey) {
-    throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY for trigger");
+    throw new Error(
+      "Missing SUPABASE_URL or SERVICE_KEY (legacy SUPABASE_SERVICE_ROLE_KEY also unset) for trigger",
+    );
   }
 
   const fetchPromise = fetch(url, {

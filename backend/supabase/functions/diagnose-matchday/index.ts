@@ -34,7 +34,8 @@ serve(async (_req) => {
     MATCHDAY_ROUTINE_URL: Deno.env.get("MATCHDAY_ROUTINE_URL") ? "set" : "MISSING",
     MATCHDAY_ROUTINE_TOKEN: Deno.env.get("MATCHDAY_ROUTINE_TOKEN") ? "set" : "MISSING",
     SUPABASE_URL: Deno.env.get("SUPABASE_URL") ? "set" : "MISSING",
-    SUPABASE_SERVICE_ROLE_KEY: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ? "set" : "MISSING",
+    SERVICE_KEY: Deno.env.get("SERVICE_KEY") ? "set" : "MISSING",
+    SUPABASE_SERVICE_ROLE_KEY_legacy: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ? "set" : "MISSING",
   };
 
   if (!apiFootballKey) {

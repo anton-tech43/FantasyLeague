@@ -7,4 +7,6 @@
 // which silently broke earlier full-URL configs. The Swift code prepends https://.
 
 SUPABASE_HOST = YOUR_PROJECT.supabase.co
-SUPABASE_ANON_KEY = YOUR_ANON_KEY_HERE
+// SUPABASE_ANON_KEY now holds a new-model publishable key (sb_publishable_*).
+// Variable name preserved for Info.plist + APIClient compatibility.
+SUPABASE_ANON_KEY = sb_publishable_YOUR_KEY_HERE

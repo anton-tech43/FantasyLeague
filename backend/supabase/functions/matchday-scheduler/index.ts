@@ -99,7 +99,10 @@ serve(async (_req) => {
         const jobName = `matchday-${ourTeam.id}-${today}`;
 
         const supabaseUrl = Deno.env.get("SUPABASE_URL");
-        const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+        // SERVICE_KEY = new-model sb_secret_*; legacy JWT as transition fallback.
+        const serviceKey =
+          Deno.env.get("SERVICE_KEY") ??
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
         // Create one-off pg_cron job
         const { error: cronError } = await supabase.rpc("schedule_matchday_job", {

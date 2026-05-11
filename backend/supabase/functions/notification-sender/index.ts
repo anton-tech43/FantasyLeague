@@ -204,7 +204,10 @@ serve(async (req) => {
             // Best-effort: don't block the break-out on failure here.
             try {
               const supabaseUrl = Deno.env.get("SUPABASE_URL");
-              const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+              // SERVICE_KEY = new sb_secret_*; legacy JWT as transition fallback.
+              const serviceKey =
+                Deno.env.get("SERVICE_KEY") ??
+                Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
               if (supabaseUrl && serviceKey) {
                 await fetch(`${supabaseUrl}/functions/v1/client-error-alert`, {
                   method: "POST",
