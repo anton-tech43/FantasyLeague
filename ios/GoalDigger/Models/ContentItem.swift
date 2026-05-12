@@ -224,6 +224,21 @@ struct PlayerCard: Identifiable, Codable {
         case vibe
         case form
     }
+
+    /// Empty-summary placeholder for a player whose dossier hasn't been
+    /// generated yet. `PlayerCardModal` reads `summary.isEmpty` to switch
+    /// to the .empty rendering branch.
+    static func stub(teamId: String, playerName: String, position: String) -> PlayerCard {
+        PlayerCard(
+            teamId: teamId,
+            playerName: playerName,
+            position: position,
+            age: nil,
+            summary: "",
+            vibe: nil,
+            form: nil
+        )
+    }
 }
 
 // MARK: - Team Page — Versioned JSONB schema (matches Supabase team_pages.content)

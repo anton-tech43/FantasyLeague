@@ -26,10 +26,7 @@ struct TeamPageView: View {
         return letters.joined()
     }
 
-    /// Word-aware truncation. Plain `String.prefix(n)` cuts mid-word ("Chelsea
-    /// and Brentford, Fulham are sandwiched betwe") which looks broken. This
-    /// trims at the last whitespace at or before `maxChars` and appends an
-    /// ellipsis. Falls back to the raw prefix if the text has no whitespace.
+    /// Word-aware truncation; avoids mid-word cuts.
     private func truncateAtWord(_ text: String, maxChars: Int) -> String {
         if text.count <= maxChars { return text }
         let cutEnd = text.index(text.startIndex, offsetBy: maxChars)
@@ -40,12 +37,8 @@ struct TeamPageView: View {
         return String(head) + "…"
     }
 
-    /// Extract just the rival team names from a rivalry blurb. The team-page
-    /// generator emits texts shaped like `"<rivals> — <context>..."` (em or
-    /// en dash separator), so splitting on the dash gives us the punchy
-    /// headline ("Chelsea and Brentford" instead of "Chelsea and Brentford,
-    /// Fulham are sandwiched betwe…"). Falls back to word-trim for any text
-    /// that doesn't have a dash splitter — defensive for older rows.
+    /// Rivalry blurbs from team-page-generator are shaped `"<rivals> — <context>..."`.
+    /// Split on the dash to surface just the rival names as a headline.
     private func rivalsHeadline(_ text: String) -> String {
         let separators: [Character] = ["—", "–", "-"]
         if let dashIdx = text.firstIndex(where: { separators.contains($0) }) {
@@ -185,42 +178,25 @@ struct TeamPageView: View {
                 onTap: { toggleCard(.onesToKnow) },
                 zone1Collapsed: { EmptyView() },
                 zone1Expanded: {
+                    // Always tappable. Diacritic-folded + lowercased contains
+                    // so "Odegaard" matches "Martin Ødegaard" and "Saka"
+                    // matches "Bukayo Saka". Stub-with-empty-summary triggers
+                    // PlayerCardModal's .empty branch when no dossier exists.
+                    let foldedPlayerCards: [(card: PlayerCard, foldedName: String)] = playerCards.map {
+                        ($0, $0.playerName.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current))
+                    }
                     VStack(alignment: .leading, spacing: 4) {
                         ForEach(Array(onesToKnow.players.prefix(3))) { player in
-                            // Always tappable. The matchingCard lookup is
-                            // diacritic-folded + lowercased contains so:
-                            //   - "Saka" (OnesToKnow curated short name) matches
-                            //     "Bukayo Saka" (routine pulls full name from
-                            //     API-Football squad / training data)
-                            //   - "Odegaard" (OnesToKnow) matches "Martin Ødegaard"
-                            //     (routine, with diacritic) — without folding,
-                            //     the Ø ≠ O code-point mismatch would break it
-                            // If no row exists yet, we build a stub PlayerCard
-                            // with empty summary — PlayerCardModal then renders
-                            // the .empty branch ("lands Sunday"). T1/T2 users
-                            // get the .locked teaser. Tap is always allowed so
-                            // discovery works on every tier.
-                            let matchingCard = playerCards.first { card in
-                                let cardName = card.playerName.folding(
-                                    options: [.diacriticInsensitive, .caseInsensitive],
-                                    locale: .current
-                                )
-                                let onesName = player.name.folding(
-                                    options: [.diacriticInsensitive, .caseInsensitive],
-                                    locale: .current
-                                )
-                                return cardName.contains(onesName) || onesName.contains(cardName)
-                            }
+                            let onesName = player.name.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
+                            let matchingCard = foldedPlayerCards.first { entry in
+                                entry.foldedName.contains(onesName) || onesName.contains(entry.foldedName)
+                            }?.card
 
                             Button {
-                                presentedPlayer = matchingCard ?? PlayerCard(
+                                presentedPlayer = matchingCard ?? PlayerCard.stub(
                                     teamId: teamId,
                                     playerName: player.name,
-                                    position: player.position,
-                                    age: nil,
-                                    summary: "",
-                                    vibe: nil,
-                                    form: nil
+                                    position: player.position
                                 )
                             } label: {
                                 playerRow(player: player, tappable: true)

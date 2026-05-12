@@ -283,7 +283,7 @@ class APIClient {
     func fetchTeamSeasonState(teamId: String) async throws -> TeamSeasonState? {
         let url = try buildURL(path: "team_season_state", queryItems: [
             URLQueryItem(name: "team_id", value: "eq.\(teamId)"),
-            URLQueryItem(name: "select", value: "team_id,phase,state_line,feeling_line,summary,key_fact,welcome_lines,next_fixture")
+            URLQueryItem(name: "select", value: "team_id,phase,state_line,feeling_line,next_fixture")
         ])
         var request = makeRequest(url: url)
         // Short timeout: the primer is on the user's first-launch critical path.
@@ -404,24 +404,17 @@ class APIClient {
         let body = try JSONSerialization.data(withJSONObject: ["apns_token": token])
         let request = makeRequest(url: url, method: "POST", body: body)
         let (data, response) = try await URLSession.shared.data(for: request)
+        // 404 (no token row) or 400 "Invalid token format" (iOS-17+ extended
+        // device-token rejected by the server's strict 64-char-hex regex) both
+        // mean her token isn't stored server-side. Same end state as a real
+        // delete → return success. Other 400s (missing field, malformed JSON)
+        // do not contain this body and still throw via validateResponse.
         if let http = response as? HTTPURLResponse {
-            // 404 "No matching device_token row" → nothing to delete → success.
-            // Common after a prior successful delete, or when the device never
-            // registered server-side.
-            if http.statusCode == 404 {
+            if http.statusCode == 404 { return }
+            if http.statusCode == 400,
+               let body = String(data: data, encoding: .utf8),
+               body.contains("Invalid token format") {
                 return
-            }
-            // 400 "Invalid token format" → the server's strict 64-char-hex regex
-            // rejected the token before any DB lookup. Happens on simulator builds
-            // (iOS-17+ extended device-token format is 160 chars hex). Same end
-            // state: the token can't be in `device_tokens`, so her data isn't on
-            // the server. Other 400s (missing apns_token field, malformed JSON)
-            // do NOT contain this exact phrase and still throw.
-            if http.statusCode == 400 {
-                let body = String(data: data, encoding: .utf8) ?? ""
-                if body.contains("Invalid token format") {
-                    return
-                }
             }
         }
         try validateResponse(response)
