@@ -31,27 +31,18 @@ struct GlossaryText: View {
                 activeTerm = term
                 return .handled
             })
-            .popover(item: $activeTerm) { term in
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(term.term.capitalized)
-                        .font(.feedHeadline)
-                        .foregroundColor(.textPrimaryOnCard)
-                    Text(term.explanation)
-                        .font(.onboardingBody)
-                        .foregroundColor(.textPrimaryOnCard)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .padding(16)
-                .frame(maxWidth: 280)
-                // Force a light blush background under the popover so the
-                // charcoal text is legible. Without this, the popover
-                // inherits the app's preferredColorScheme(.dark) and renders
-                // dark-on-dark — the term explanation is unreadable. We also
-                // disable iOS's auto-tinting of popover chrome so the system
-                // arrow/balloon picks up our colour.
-                .background(Color.cardBackground)
-                .presentationCompactAdaptation(.popover)
-                .presentationBackground(Color.cardBackground)
+            // Custom bottom sheet instead of the system popover. The popover's
+            // bubble + system chrome was off-brand and the dark-on-dark
+            // default colours rendered the explanation invisible. The sheet
+            // is styled to the app's dark + hot-rose language: deep mauve
+            // background, vertical rose accent bar, warm-white text. Sized
+            // tight to the content so it doesn't feel like a full-screen
+            // modal; swipe-down dismisses.
+            .sheet(item: $activeTerm) { term in
+                GlossaryTermSheet(term: term)
+                    .presentationDetents([.height(220), .medium])
+                    .presentationDragIndicator(.visible)
+                    .presentationBackground(Color.deepMauve)
             }
     }
 
@@ -124,5 +115,54 @@ struct GlossaryText: View {
             ? false
             : raw[range.upperBound].isLetter
         return !prevIsLetter && !nextIsLetter
+    }
+}
+
+/// Bottom-sheet content for an active glossary term. Uses the app's dark
+/// theme — deep mauve background (set on the presentation), vertical rose
+/// accent bar on the left, warm-white text. No bubble, no system chrome.
+private struct GlossaryTermSheet: View {
+    let term: GlossaryTerm
+
+    /// Display the term with its first letter capitalised, preserving any
+    /// existing casing (so "VAR" / "xG" / "Champions League" stay intact
+    /// instead of becoming "Var" / "Xg" / "Champions league").
+    private var displayTerm: String {
+        guard let first = term.term.first else { return term.term }
+        return String(first).uppercased() + term.term.dropFirst()
+    }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 14) {
+            // Vertical rose accent bar — same visual motif as TalkingPointCard
+            // and the matchday post-match sections. Anchors the sheet to the
+            // GoalDigger card language.
+            RoundedRectangle(cornerRadius: 2)
+                .fill(Color.hotRose)
+                .frame(width: 3)
+
+            VStack(alignment: .leading, spacing: 10) {
+                Text("GLOSSARY")
+                    .font(.sectionHeader)
+                    .tracking(1.5)
+                    .foregroundColor(.hotRose)
+
+                Text(displayTerm)
+                    .font(.jakarta(22, weight: .bold))
+                    .foregroundColor(.textOnDark)
+
+                Text(term.explanation)
+                    .font(.onboardingBody)
+                    .foregroundColor(.textOnDark.opacity(0.85))
+                    .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, Layout.screenPadding)
+        .padding(.top, 24)
+        .padding(.bottom, 28)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 }
