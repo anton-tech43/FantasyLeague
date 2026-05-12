@@ -90,6 +90,7 @@ struct ContentDetailView: View {
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbar {
             if item != nil {
+                ToolbarItem(placement: .topBarTrailing) { listenToolbarButton }
                 ToolbarItem(placement: .topBarTrailing) {
                     ShareLink(
                         item: "\(displayHeadline)\n\nvia GoalDigger"
@@ -101,6 +102,25 @@ struct ContentDetailView: View {
             }
         }
         .task { await loadItem() }
+        .onDisappear { AudioPlayerService.shared.stop() }
+    }
+
+    // MARK: - Listen button
+
+    @ViewBuilder
+    private var listenToolbarButton: some View {
+        let audio = AudioPlayerService.shared
+        Button {
+            switch audio.state {
+            case .idle:    audio.speak("\(displayHeadline). \(displayBody)")
+            case .playing: audio.pause()
+            case .paused:  audio.resume()
+            }
+        } label: {
+            Image(systemName: audio.state == .playing ? "pause.circle" : "play.circle")
+                .foregroundColor(.hotRose)
+        }
+        .accessibilityLabel(audio.state == .playing ? "Pause listening" : "Listen")
     }
 
     // MARK: - Sections
@@ -212,7 +232,7 @@ struct ContentDetailView: View {
             }
 
             if isBackstoryExpanded {
-                Text(displayBody)
+                GlossaryText(raw: displayBody)
                     .font(.detailBody)
                     .foregroundColor(.textOnDark.opacity(0.9))
                     .lineSpacing(6)

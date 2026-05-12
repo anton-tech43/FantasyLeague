@@ -30,6 +30,9 @@ class AppState {
     var notificationPermissionRequested: Bool {
         didSet { UserDefaults.standard.set(notificationPermissionRequested, forKey: "notificationPermissionRequested") }
     }
+    var calendarSyncEnabled: Bool {
+        didSet { UserDefaults.standard.set(calendarSyncEnabled, forKey: "calendarSyncEnabled") }
+    }
 
     // Navigation
     var deepLinkContentId: UUID?
@@ -55,6 +58,7 @@ class AppState {
         self.selectedTier = UserDefaults.standard.integer(forKey: "selectedTier").clamped(to: 1...3, default: 2)
         self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
         self.notificationPermissionRequested = UserDefaults.standard.bool(forKey: "notificationPermissionRequested")
+        self.calendarSyncEnabled = UserDefaults.standard.bool(forKey: "calendarSyncEnabled")
 
         // Feed style — persisted, defaults to immersive (one full-screen card
         // per scroll position). The "lands on article" complaint earlier was
@@ -119,13 +123,15 @@ class AppState {
         selectedTier = 2
         hasCompletedOnboarding = false
         notificationPermissionRequested = false
+        calendarSyncEnabled = false
         deepLinkContentId = nil
         activeContext = .everyoneTalking
         isContextSwitcherOpen = false
         feedStyle = .immersive
         let keys = ["herName", "hisName", "selectedTeam", "selectedTier",
                      "hasCompletedOnboarding", "notificationPermissionRequested", "apnsToken",
-                     "hasAutoExpandedFirstItem", "feedStyle", "hasSeenImmersiveBanner"]
+                     "hasAutoExpandedFirstItem", "feedStyle", "hasSeenImmersiveBanner",
+                     "calendarSyncEnabled"]
         keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
         UnreadTracker.shared.clearAll()
     }
