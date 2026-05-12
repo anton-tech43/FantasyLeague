@@ -104,12 +104,20 @@ struct SeasonPrimerView: View {
 
             Spacer()
 
-            // Single full-width Continue CTA. No second link — orientation
-            // takes one action.
-            Button("Continue", action: onSkipToFeed)
-                .buttonStyle(PrimaryButtonStyle())
-                .padding(.horizontal, Layout.screenPadding)
-                .padding(.bottom, 32)
+            // Two CTAs — restored on request after first sim test.
+            // Primary nudges her to learn more about the team (the higher-
+            // intent path); secondary text link skips straight to the feed.
+            VStack(spacing: 10) {
+                Button("Teach me more about the team", action: onTeachMore)
+                    .buttonStyle(PrimaryButtonStyle())
+
+                Button("Take me to the news", action: onSkipToFeed)
+                    .font(.feedHeadline)
+                    .foregroundColor(.hotRose)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .padding(.horizontal, Layout.screenPadding)
+            .padding(.bottom, 32)
         }
     }
 }
