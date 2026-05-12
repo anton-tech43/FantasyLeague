@@ -19,7 +19,12 @@ struct TierGating {
         switch feature {
         case .sundayBrief, .insiderCard, .matchDayLive:
             return tier >= 2
-        case .saturdayQuiz, .playerDossier, .groupChatPrep:
+        case .playerDossier:
+            // Dossiers are basic "who is this player" info — more like
+            // onboarding than a premium feature. Ungated so a casual taps-around
+            // on the team page always reveals real content, never a paywall.
+            return true
+        case .saturdayQuiz, .groupChatPrep:
             return tier >= 3
         }
     }
