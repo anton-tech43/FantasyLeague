@@ -31,6 +31,11 @@ struct FeedView: View {
     /// is active. Cleared when the poll returns 204 (no live match).
     @State private var liveBrief: LiveMatchBrief?
     @State private var liveBriefPollTask: Task<Void, Never>?
+    /// Saturday Quiz surface (V1.1 task C3). T3+ tier-gated. Fetched once
+    /// on view load and on team change via the same `.task(id:)` that
+    /// loads the live brief poll — no poll loop. The 36-hour freshness
+    /// window lives server-side; iOS just renders whatever it gets back.
+    @State private var currentQuiz: SaturdayQuiz?
     @AppStorage("hasSeenImmersiveBanner") private var hasSeenImmersiveBanner = false
 
     private let pageSize = 20
@@ -112,6 +117,14 @@ struct FeedView: View {
             // change, app suspend). T1 users opt-out via TierGating.
             await runLiveBriefPoll()
         }
+        .task(id: appState.selectedTeam?.rawValue) {
+            // Saturday Quiz fetch (V1.1 task C3). Single-shot, not a poll
+            // — the routine writes once a week and the server gates on a
+            // 36-hour freshness window. T3+ only; T1/T2 users skip the
+            // fetch entirely. Failure (network blip, 5xx) silently leaves
+            // currentQuiz nil so the card simply doesn't render.
+            await loadSaturdayQuiz()
+        }
         .onChange(of: appState.selectedTeam) { oldTeam, newTeam in
             guard oldTeam != newTeam, newTeam != nil else { return }
             // Clear stale team data and reload for the new team
@@ -122,6 +135,7 @@ struct FeedView: View {
             freshnessCardDismissed = false
             matchdayPlayers = []
             liveBrief = nil   // drop stale live card from prior team
+            currentQuiz = nil // and stale quiz card for prior team
             Task { await loadTeamFeed() }
         }
         .onChange(of: scenePhase) { _, newPhase in
@@ -175,6 +189,31 @@ struct FeedView: View {
             } catch {
                 return
             }
+        }
+    }
+
+    // MARK: - Saturday Quiz fetch (V1.1 task C3)
+
+    /// Single-shot fetch for the weekend's Saturday Quiz. T3+ users only.
+    /// The server returns 204 outside the 36-hour weekend window, which
+    /// maps to nil here and hides the card. Failures leave `currentQuiz`
+    /// untouched (either nil from this load, or the previously-fetched
+    /// value if a transient error hit a refresh) so a hiccup never blows
+    /// away a card the user was about to tap.
+    private func loadSaturdayQuiz() async {
+        guard TierGating.isAvailable(.saturdayQuiz, tier: appState.selectedTier),
+              let teamId = appState.selectedTeam?.rawValue else {
+            currentQuiz = nil
+            return
+        }
+        do {
+            currentQuiz = try await APIClient.shared.fetchCurrentQuiz(teamId: teamId)
+        } catch {
+            #if DEBUG
+            print("⚠️ saturday quiz fetch error: \(error)")
+            #endif
+            // Leave currentQuiz at its existing value — don't blank a
+            // visible card on a transient failure.
         }
     }
 
@@ -267,6 +306,15 @@ struct FeedView: View {
                                 .padding(.vertical, 8)
                                 .transition(.move(edge: .top).combined(with: .opacity))
                         }
+                        // SaturdayQuizCard sits below the live card — live
+                        // takes priority during matches, quiz is the
+                        // Saturday-morning surface that lasts the weekend.
+                        if shouldShowQuiz, let quiz = currentQuiz {
+                            SaturdayQuizCard(quiz: quiz)
+                                .padding(.horizontal, Layout.screenPadding)
+                                .padding(.vertical, 8)
+                                .transition(.opacity)
+                        }
                         ClassicFeedView(
                             items: displayItems,
                             feedContext: appState.activeContext,
@@ -281,6 +329,7 @@ struct FeedView: View {
                 .refreshable { await refresh() }
             }
             .animation(.easeInOut(duration: 0.25), value: liveBrief?.id)
+            .animation(.easeInOut(duration: 0.25), value: currentQuiz?.id)
         }
     }
 
@@ -290,6 +339,16 @@ struct FeedView: View {
     private var shouldShowLiveBrief: Bool {
         liveBrief != nil &&
         TierGating.isAvailable(.matchDayLive, tier: appState.selectedTier) &&
+        appState.activeContext != .everyoneTalking
+    }
+
+    /// Whether the SaturdayQuizCard should render right now. T3+ only,
+    /// data must be loaded, and the team context must be active (the
+    /// quiz is team-specific). Sits BELOW LiveMatchCard in render order
+    /// — during a live match the live card takes visual priority.
+    private var shouldShowQuiz: Bool {
+        currentQuiz != nil &&
+        TierGating.isAvailable(.saturdayQuiz, tier: appState.selectedTier) &&
         appState.activeContext != .everyoneTalking
     }
 
@@ -310,6 +369,15 @@ struct FeedView: View {
                             .padding(.horizontal, Layout.screenPadding)
                             .padding(.vertical, 8)
                             .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+                    // Quiz below live card. Same scroll-with-feed treatment
+                    // as the live card so neither pins to the top of the
+                    // immersive scroll view.
+                    if shouldShowQuiz, let quiz = currentQuiz {
+                        SaturdayQuizCard(quiz: quiz)
+                            .padding(.horizontal, Layout.screenPadding)
+                            .padding(.vertical, 8)
+                            .transition(.opacity)
                     }
                     ForEach(Array(displayItems.enumerated()), id: \.element.id) { index, item in
                         let isYourMove = index == 0 && appState.activeContext != .everyoneTalking

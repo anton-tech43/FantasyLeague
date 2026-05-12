@@ -360,6 +360,43 @@ class APIClient {
         return try decoder.decode(LiveMatchBrief.self, from: data)
     }
 
+    // MARK: - Saturday Quiz (V1.1 task C3)
+
+    /// Fetch the freshest Saturday Quiz for the team, if one was published
+    /// within the last 36 hours (Saturday 07:00 UTC through Sunday 19:00 UTC).
+    ///
+    /// Goes through the quiz-current Edge Function (NOT direct REST) for two
+    /// reasons: (1) the freshness window logic lives server-side so iOS
+    /// stays simple, (2) symmetric envelope with fetchCurrentLiveBrief —
+    /// both return nil on 204, throw on real errors. T3+ tier-gated; the
+    /// caller decides whether to invoke this at all.
+    ///
+    /// Returns nil on 204 (expected outside Sat/Sun window). Callers
+    /// suppress nil + thrown errors identically — neither blocks the feed.
+    func fetchCurrentQuiz(teamId: String) async throws -> SaturdayQuiz? {
+        let base = try requireFunctionsBaseURL()
+        guard var components = URLComponents(url: base.appendingPathComponent("quiz-current"), resolvingAgainstBaseURL: false) else {
+            throw APIError.invalidResponse
+        }
+        components.queryItems = [URLQueryItem(name: "team_id", value: teamId)]
+        guard let url = components.url else { throw APIError.invalidResponse }
+        var request = makeRequest(url: url)
+        // Quiz is fetched once on view load — no poll loop. 10s timeout is
+        // generous; if the request takes longer we just skip the card.
+        request.timeoutInterval = 10
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        if httpResponse.statusCode == 204 {
+            return nil   // No quiz in window — expected outside Sat/Sun.
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.httpError(httpResponse.statusCode)
+        }
+        return try decoder.decode(SaturdayQuiz.self, from: data)
+    }
+
     // MARK: - Delete My Data
 
     func deleteMyData(token: String) async throws {
