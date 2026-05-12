@@ -283,7 +283,7 @@ class APIClient {
     func fetchTeamSeasonState(teamId: String) async throws -> TeamSeasonState? {
         let url = try buildURL(path: "team_season_state", queryItems: [
             URLQueryItem(name: "team_id", value: "eq.\(teamId)"),
-            URLQueryItem(name: "select", value: "team_id,phase,summary,key_fact,welcome_lines,next_fixture")
+            URLQueryItem(name: "select", value: "team_id,phase,state_line,feeling_line,summary,key_fact,welcome_lines,next_fixture")
         ])
         var request = makeRequest(url: url)
         // Short timeout: the primer is on the user's first-launch critical path.
