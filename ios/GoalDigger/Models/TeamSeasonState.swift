@@ -31,18 +31,31 @@ struct TeamSeasonState: Codable, Equatable {
 
     let teamId: String
     let phase: Phase
-    /// Two sentences. Plain English. Where the team is right now.
-    let summary: String
-    /// One notable line about this week or last week.
-    let keyFact: String
-    /// Exactly 3 short text-message-style openers she can send him today.
-    let welcomeLines: [String]
+
+    // MARK: One-beat redesign (the canonical fields the new primer reads)
+    /// 2-5 word personalised headline ("Arsenal are flying", "Spurs are slipping").
+    let stateLine: String?
+    /// 1-2 sentences (≤220 chars) on how HE will feel/act this week. Sister-voice.
+    let feelingLine: String?
+
+    // MARK: Legacy fields (deprecated for this surface, kept optional for
+    // backward compatibility with rows generated before the redesign).
+    /// Two sentences. Plain English. Where the team is right now. DEPRECATED.
+    let summary: String?
+    /// One notable line about this week or last week. DEPRECATED.
+    let keyFact: String?
+    /// Exactly 3 short text-message-style openers she can send him today. DEPRECATED.
+    let welcomeLines: [String]?
+
     /// Optional — omitted in pre-season / off-season when no concrete next match exists.
     let nextFixture: NextFixture?
 
     enum CodingKeys: String, CodingKey {
         case teamId = "team_id"
-        case phase, summary
+        case phase
+        case stateLine = "state_line"
+        case feelingLine = "feeling_line"
+        case summary
         case keyFact = "key_fact"
         case welcomeLines = "welcome_lines"
         case nextFixture = "next_fixture"
