@@ -47,21 +47,28 @@ serve(async (req) => {
 
   const supabase = getSupabaseClient();
 
-  // 1. Is there a fixture for this team currently in the live window?
-  // match_status_state holds today's fixtures with their kickoff_time. We
-  // look for any row where the team is either home or away AND kickoff
-  // sits inside [now - PRE, now + (POST - PRE)]... rephrased: kickoff is
-  // such that now is inside [kickoff - 10min, kickoff + 130min].
+  // 1. Is there a fixture for this team that's actually IN PLAY?
+  // Two filters compose: (a) status must be a live in-play state and
+  // (b) kickoff is within a sane window. Status alone is the stronger
+  // signal — a FT/AET/PEN match shouldn't trigger the card even if it
+  // ended within the window. Kickoff window is a defensive backstop in
+  // case the match-watcher fails to update status promptly.
+  //
+  // LIVE_STATUSES = ['1H', 'HT', '2H', 'ET', 'P', 'BT'] — same set the
+  // match-watcher uses to detect live fixtures. Mirroring it keeps the
+  // two pieces of code in sync.
+  const LIVE_STATUSES = ["1H", "HT", "2H", "ET", "P", "BT"];
   const now = Date.now();
   const windowStartIso = new Date(now - POST_KICKOFF_BUFFER_MS).toISOString();
   const windowEndIso = new Date(now + PRE_KICKOFF_BUFFER_MS).toISOString();
 
   const { data: stateRows, error: stateErr } = await supabase
     .from("match_status_state")
-    .select("fixture_id")
+    .select("fixture_id, status")
     .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
     .gte("kickoff_time", windowStartIso)
     .lte("kickoff_time", windowEndIso)
+    .in("status", LIVE_STATUSES)
     .limit(1);
 
   if (stateErr) {
