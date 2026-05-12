@@ -7,6 +7,7 @@ struct ContentDetailView: View {
     @Environment(AppState.self) var appState
     @State private var item: ContentItem?
     @State private var isLoading: Bool
+    @State private var loadError: APIError?
     @State private var onesToWatch: [PlayerCard] = []
     @State private var isBackstoryExpanded = false
 
@@ -59,30 +60,24 @@ struct ContentDetailView: View {
             } else if isLoading {
                 ProgressView()
                     .tint(.hotRose)
+            } else if let error = loadError {
+                ErrorStateView(error: error) {
+                    isLoading = true
+                    loadError = nil
+                    Task { await loadItem() }
+                }
             } else {
-                // Empty/error state — never fall through to a blank screen.
-                VStack(spacing: 16) {
-                    Text("Couldn't load this story")
-                        .font(.feedHeadline)
-                        .foregroundColor(.textOnDark)
-                    Text("It might have been removed, or your connection dropped.")
-                        .font(.onboardingBody)
-                        .foregroundColor(.textTertiary)
-                        .multilineTextAlignment(.center)
-                    Button {
+                // Fallback when the item is nil with no captured error
+                // (deep link to a removed/unknown id).
+                ErrorStateView(
+                    title: "Couldn't load this story",
+                    body: "It might have been removed. Try opening it from your feed.",
+                    buttonLabel: "Try again",
+                    onRetry: {
                         isLoading = true
                         Task { await loadItem() }
-                    } label: {
-                        Text("Try again")
-                            .font(.feedHeadline)
-                            .foregroundColor(.warmWhite)
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 10)
-                            .background(Color.hotRose)
-                            .cornerRadius(Layout.buttonCornerRadius)
                     }
-                }
-                .padding(Layout.screenPadding)
+                )
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -229,12 +224,17 @@ struct ContentDetailView: View {
         if item == nil {
             do {
                 item = try await APIClient.shared.fetchItem(id: contentId)
+                loadError = nil
             } catch {
                 #if DEBUG
                 // Fall back to mock data during development
                 if let mock = MockData.feed.first(where: { $0.id == contentId }) {
                     item = mock
+                } else {
+                    loadError = APIError.from(error)
                 }
+                #else
+                loadError = APIError.from(error)
                 #endif
             }
         }

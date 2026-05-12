@@ -1,9 +1,11 @@
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 struct FeedView: View {
     @Environment(AppState.self) var appState
     @Environment(\.modelContext) var modelContext
+    @Environment(\.scenePhase) private var scenePhase
 
     // Dual data sources
     @State private var teamItems: [ContentItem] = []
@@ -11,7 +13,7 @@ struct FeedView: View {
 
     // Per-context loading state
     @State private var isLoading = true
-    @State private var hasError = false
+    @State private var loadError: APIError?
     @State private var teamOffset = 0
     @State private var everyoneOffset = 0
     @State private var teamCanLoadMore = true
@@ -19,6 +21,7 @@ struct FeedView: View {
     @State private var isLoadingMore = false
     @State private var freshnessCardDismissed = false
     @State private var matchdayPlayers: [PlayerCard] = []
+    @State private var notifBannerDismissedThisSession = false
     @AppStorage("hasSeenImmersiveBanner") private var hasSeenImmersiveBanner = false
 
     private let pageSize = 20
@@ -38,49 +41,56 @@ struct FeedView: View {
     }
 
     var body: some View {
-        ZStack {
-            Color.appBackground.ignoresSafeArea()
-
-            if isLoading && displayItems.isEmpty {
-                loadingView
-            } else if displayItems.isEmpty && hasError {
-                errorView
-            } else if displayItems.isEmpty && appState.activeContext == .everyoneTalking {
-                EveryoneEmptyStateCard(
-                    cardHeight: screenHeight * Layout.immersiveCardHeightRatio,
-                    teamName: appState.selectedTeam?.shortName ?? "your team",
-                    onBackToTeam: {
-                        if let team = appState.selectedTeam {
-                            switchContext(to: .team(team))
-                        }
-                    }
-                )
-            } else if displayItems.isEmpty {
-                emptyView
-            } else {
-                feedContent
+        VStack(spacing: 0) {
+            if showNotifReEnableBanner {
+                notifReEnableBanner
             }
+            ZStack {
+                Color.appBackground.ignoresSafeArea()
 
-            // Context switcher overlay
-            if appState.isContextSwitcherOpen {
-                ContextSwitcherView(
-                    appState: appState,
-                    teamItems: teamItems,
-                    everyoneItems: everyoneItems,
-                    onSelect: { context in
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            appState.isContextSwitcherOpen = false
-                        }
-                        switchContext(to: context)
-                    },
-                    onDismiss: {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            appState.isContextSwitcherOpen = false
-                        }
+                if isLoading && displayItems.isEmpty {
+                    loadingView
+                } else if displayItems.isEmpty, let error = loadError, appState.activeContext != .everyoneTalking {
+                    ErrorStateView(error: error) {
+                        Task { await refresh() }
                     }
-                )
-                .transition(.opacity.combined(with: .move(edge: .top)))
-                .zIndex(100)
+                } else if displayItems.isEmpty && appState.activeContext == .everyoneTalking {
+                    EveryoneEmptyStateCard(
+                        cardHeight: screenHeight * Layout.immersiveCardHeightRatio,
+                        teamName: appState.selectedTeam?.shortName ?? "your team",
+                        onBackToTeam: {
+                            if let team = appState.selectedTeam {
+                                switchContext(to: .team(team))
+                            }
+                        }
+                    )
+                } else if displayItems.isEmpty {
+                    emptyView
+                } else {
+                    feedContent
+                }
+
+                // Context switcher overlay
+                if appState.isContextSwitcherOpen {
+                    ContextSwitcherView(
+                        appState: appState,
+                        teamItems: teamItems,
+                        everyoneItems: everyoneItems,
+                        onSelect: { context in
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                appState.isContextSwitcherOpen = false
+                            }
+                            switchContext(to: context)
+                        },
+                        onDismiss: {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                appState.isContextSwitcherOpen = false
+                            }
+                        }
+                    )
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                    .zIndex(100)
+                }
             }
         }
         .toolbar {
@@ -92,7 +102,10 @@ struct FeedView: View {
         .toolbarBackground(Color.appBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(.hidden, for: .tabBar)
-        .task { await loadInitial() }
+        .task {
+            await loadInitial()
+            await refreshNotificationStatus()
+        }
         .onChange(of: appState.selectedTeam) { oldTeam, newTeam in
             guard oldTeam != newTeam, newTeam != nil else { return }
             // Clear stale team data and reload for the new team
@@ -104,6 +117,54 @@ struct FeedView: View {
             matchdayPlayers = []
             Task { await loadTeamFeed() }
         }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                Task { await refreshNotificationStatus() }
+            }
+        }
+    }
+
+    // MARK: - Notification Re-enable Banner
+
+    private var showNotifReEnableBanner: Bool {
+        appState.notificationStatus == .denied && !notifBannerDismissedThisSession
+    }
+
+    private var notifReEnableBanner: some View {
+        HStack(spacing: 8) {
+            Button {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            } label: {
+                HStack {
+                    Text("Turn notifications on so you're never the last to know. Tap to fix.")
+                        .font(.jakarta(12, weight: .regular))
+                        .foregroundColor(.charcoal)
+                        .multilineTextAlignment(.leading)
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                withAnimation { notifBannerDismissedThisSession = true }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.hotRose)
+                    .padding(4)
+                    .contentShape(Rectangle())
+            }
+        }
+        .padding(12)
+        .background(Color.softBlush)
+        .transition(.move(edge: .top).combined(with: .opacity))
+    }
+
+    private func refreshNotificationStatus() async {
+        appState.notificationStatus = await NotificationService.shared.checkNotificationStatus()
     }
 
     // MARK: - Context Pill
@@ -282,33 +343,6 @@ struct FeedView: View {
         }
     }
 
-    private var errorView: some View {
-        VStack(spacing: 16) {
-            Text("Something went wrong")
-                .font(.feedHeadline)
-                .foregroundColor(.textPrimaryOnCard)
-            Text("We'll try again in a sec.")
-                .font(.onboardingBody)
-                .foregroundColor(.textSecondaryOnCard)
-            Button {
-                Task { await refresh() }
-            } label: {
-                Text("Try again")
-                    .font(.feedHeadline)
-                    .foregroundColor(.warmWhite)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 10)
-                    .background(Color.hotRose)
-                    .cornerRadius(Layout.buttonCornerRadius)
-            }
-        }
-        .padding(Layout.cardPadding)
-        .frame(maxWidth: .infinity)
-        .background(Color.cardBackground)
-        .cornerRadius(Layout.cardCornerRadius)
-        .padding(.horizontal, Layout.screenPadding)
-    }
-
     private var emptyView: some View {
         EmptyStateView(teamName: appState.selectedTeam?.shortName ?? "your team")
     }
@@ -394,7 +428,7 @@ struct FeedView: View {
             teamItems = fetched
             teamOffset = fetched.count
             teamCanLoadMore = fetched.count == pageSize
-            hasError = false
+            loadError = nil
             CacheService.shared.upsertItems(fetched, in: modelContext)
         } catch {
             if teamItems.isEmpty {
@@ -403,10 +437,10 @@ struct FeedView: View {
                 if !mockItems.isEmpty {
                     teamItems = mockItems
                 } else {
-                    hasError = true
+                    loadError = APIError.from(error)
                 }
                 #else
-                hasError = true
+                loadError = APIError.from(error)
                 #endif
             }
         }

@@ -6,7 +6,7 @@ struct TeamPageView: View {
     @State private var content: TeamPageContent?
     @State private var playerCards: [PlayerCard] = []
     @State private var isLoading = true
-    @State private var hasError = false
+    @State private var loadError: APIError?
     @State private var presentedPlayer: PlayerCard?
     @State private var expandedCard: TeamCardType?
 
@@ -40,8 +40,10 @@ struct TeamPageView: View {
                 }
             } else if isLoading {
                 teamPageLoadingView
-            } else if hasError {
-                teamPageErrorView
+            } else if let error = loadError {
+                ErrorStateView(error: error) {
+                    Task { await loadTeamPage() }
+                }
             } else {
                 warmPlaceholderView
             }
@@ -439,37 +441,6 @@ struct TeamPageView: View {
         .padding(.horizontal, 16)
     }
 
-    // MARK: - Error state
-
-    private var teamPageErrorView: some View {
-        VStack(spacing: 16) {
-            Text("Couldn't load \(hisNameOrHis.lowercased()) team right now.")
-                .font(.jakarta(15, weight: .semiBold))
-                .foregroundColor(.warmWhite)
-            Button {
-                Task { await loadTeamPage() }
-            } label: {
-                Text("Try again")
-                    .font(.jakarta(15, weight: .semiBold))
-                    .foregroundColor(.warmWhite)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 10)
-                    .background(Color.hotRose)
-                    .cornerRadius(Layout.buttonCornerRadius)
-            }
-        }
-        .padding(Layout.cardPadding)
-        .frame(maxWidth: .infinity)
-        .background(Color.deepMauve)
-        .cornerRadius(Layout.cardCornerRadius)
-        .overlay(
-            RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
-                .stroke(Color.hotRose.opacity(0.3), lineWidth: 2)
-                .padding(1)
-        )
-        .padding(.horizontal, 16)
-    }
-
     // MARK: - Warm placeholder
 
     private var warmPlaceholderView: some View {
@@ -499,7 +470,7 @@ struct TeamPageView: View {
 
     private func loadTeamPage() async {
         isLoading = true
-        hasError = false
+        loadError = nil
 
         // Check cache first
         if let cached = TeamPageCache.load(teamId: teamId) {
@@ -540,10 +511,10 @@ struct TeamPageView: View {
             if let mock = MockData.teamPage(for: teamId) {
                 content = mock
             } else {
-                hasError = true
+                loadError = APIError.from(error)
             }
             #else
-            hasError = true
+            loadError = APIError.from(error)
             #endif
         }
         isLoading = false

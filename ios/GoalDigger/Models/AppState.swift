@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 @Observable
 class AppState {
@@ -30,6 +31,11 @@ class AppState {
     var notificationPermissionRequested: Bool {
         didSet { UserDefaults.standard.set(notificationPermissionRequested, forKey: "notificationPermissionRequested") }
     }
+
+    /// Current iOS notification authorization status. Session-only, refreshed on
+    /// app launch and every foreground transition so the Feed re-prompt banner
+    /// hides the moment the user enables notifications in iOS Settings.
+    var notificationStatus: UNAuthorizationStatus = .notDetermined
 
     // Navigation
     var deepLinkContentId: UUID?

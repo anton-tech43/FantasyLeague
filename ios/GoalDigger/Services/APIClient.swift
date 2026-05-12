@@ -151,9 +151,9 @@ class APIClient {
             URLQueryItem(name: "select", value: Self.contentSelectColumns)
         ])
         let request = makeRequest(url: url)
-        let (data, response) = try await URLSession.shared.data(for: request)
-        try validateResponse(response)
-        return try decodeContentItems(from: data)
+        let data = try await performRequest(request)
+        do { return try decodeContentItems(from: data) }
+        catch { throw APIError.from(error) }
     }
 
     func fetchEveryoneFeed(limit: Int = 20, offset: Int = 0) async throws -> [ContentItem] {
@@ -167,9 +167,9 @@ class APIClient {
             URLQueryItem(name: "select", value: Self.contentSelectColumns)
         ])
         let request = makeRequest(url: url)
-        let (data, response) = try await URLSession.shared.data(for: request)
-        try validateResponse(response)
-        return try decodeContentItems(from: data)
+        let data = try await performRequest(request)
+        do { return try decodeContentItems(from: data) }
+        catch { throw APIError.from(error) }
     }
 
     func fetchItem(id: UUID) async throws -> ContentItem? {
@@ -179,10 +179,11 @@ class APIClient {
             URLQueryItem(name: "select", value: Self.contentSelectColumns)
         ])
         let request = makeRequest(url: url)
-        let (data, response) = try await URLSession.shared.data(for: request)
-        try validateResponse(response)
-        let items = try decodeContentItems(from: data)
-        return items.first
+        let data = try await performRequest(request)
+        do {
+            let items = try decodeContentItems(from: data)
+            return items.first
+        } catch { throw APIError.from(error) }
     }
 
     // MARK: - Device Token
@@ -206,8 +207,7 @@ class APIClient {
             body: bodyData,
             extraHeaders: ["Prefer": "resolution=merge-duplicates"]
         )
-        let (_, response) = try await URLSession.shared.data(for: request)
-        try validateResponse(response)
+        _ = try await performRequest(request)
     }
 
     func updateTokenTeam(_ token: String, newTeamId: String) async throws {
@@ -217,8 +217,7 @@ class APIClient {
         let body: [String: Any] = ["team_id": newTeamId, "updated_at": ISO8601DateFormatter().string(from: Date())]
         let bodyData = try JSONSerialization.data(withJSONObject: body)
         let request = makeRequest(url: url, method: "PATCH", body: bodyData)
-        let (_, response) = try await URLSession.shared.data(for: request)
-        try validateResponse(response)
+        _ = try await performRequest(request)
     }
 
     func updateTokenTier(_ token: String, tier: Int) async throws {
@@ -228,8 +227,7 @@ class APIClient {
         let body: [String: Any] = ["tier": tier, "updated_at": ISO8601DateFormatter().string(from: Date())]
         let bodyData = try JSONSerialization.data(withJSONObject: body)
         let request = makeRequest(url: url, method: "PATCH", body: bodyData)
-        let (_, response) = try await URLSession.shared.data(for: request)
-        try validateResponse(response)
+        _ = try await performRequest(request)
     }
 
     // MARK: - Context Cards (Contract 10)
@@ -240,9 +238,9 @@ class APIClient {
             URLQueryItem(name: "select", value: "player_name,position,age,summary,vibe,form")
         ])
         let request = makeRequest(url: url)
-        let (data, response) = try await URLSession.shared.data(for: request)
-        try validateResponse(response)
-        return try decoder.decode([PlayerCard].self, from: data)
+        let data = try await performRequest(request)
+        do { return try decoder.decode([PlayerCard].self, from: data) }
+        catch { throw APIError.from(error) }
     }
 
     func fetchTeamPage(teamId: String) async throws -> TeamPageContent? {
@@ -251,10 +249,11 @@ class APIClient {
             URLQueryItem(name: "select", value: "content")
         ])
         let request = makeRequest(url: url)
-        let (data, response) = try await URLSession.shared.data(for: request)
-        try validateResponse(response)
-        let pages = try decoder.decode([TeamPage].self, from: data)
-        return pages.first?.content
+        let data = try await performRequest(request)
+        do {
+            let pages = try decoder.decode([TeamPage].self, from: data)
+            return pages.first?.content
+        } catch { throw APIError.from(error) }
     }
 
     // MARK: - Delete My Data
@@ -263,8 +262,7 @@ class APIClient {
         let url = try requireFunctionsBaseURL().appendingPathComponent("delete-my-data")
         let body = try JSONSerialization.data(withJSONObject: ["apns_token": token])
         let request = makeRequest(url: url, method: "POST", body: body)
-        let (_, response) = try await URLSession.shared.data(for: request)
-        try validateResponse(response)
+        _ = try await performRequest(request)
     }
 
     // MARK: - Helpers
@@ -284,22 +282,85 @@ class APIClient {
         guard let httpResponse = response as? HTTPURLResponse else {
             throw APIError.invalidResponse
         }
-        guard (200...299).contains(httpResponse.statusCode) else {
-            throw APIError.httpError(httpResponse.statusCode)
+        let code = httpResponse.statusCode
+        if (200...299).contains(code) { return }
+        if (500...599).contains(code) { throw APIError.serverDown(code) }
+        throw APIError.httpError(code)
+    }
+
+    /// Centralised network call. Wraps URLSession + response validation and converts
+    /// URLError into a presentation-ready APIError so call sites only deal in APIError.
+    private func performRequest(_ request: URLRequest) async throws -> Data {
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            try validateResponse(response)
+            return data
+        } catch let apiError as APIError {
+            throw apiError
+        } catch let urlError as URLError {
+            throw APIError.from(urlError)
+        } catch {
+            throw APIError.invalidResponse
         }
     }
 }
 
-enum APIError: LocalizedError {
+enum APIError: LocalizedError, Equatable {
     case notConfigured
+    case offline
+    case timeout
+    case serverDown(Int)
+    case decoding
     case invalidResponse
     case httpError(Int)
+
+    /// Maps any Error into an APIError. Use at the boundary so view layers
+    /// can switch on a stable, presentation-ready case.
+    static func from(_ error: Error) -> APIError {
+        if let api = error as? APIError { return api }
+        if let url = error as? URLError {
+            switch url.code {
+            case .notConnectedToInternet,
+                 .cannotFindHost,
+                 .networkConnectionLost,
+                 .dataNotAllowed,
+                 .internationalRoamingOff:
+                return .offline
+            case .timedOut:
+                return .timeout
+            default:
+                return .invalidResponse
+            }
+        }
+        if error is DecodingError { return .decoding }
+        return .invalidResponse
+    }
 
     var errorDescription: String? {
         switch self {
         case .notConfigured: return "API not configured"
+        case .offline: return "Offline"
+        case .timeout: return "Request timed out"
+        case .serverDown(let code): return "Server error (\(code))"
+        case .decoding: return "Unexpected response shape"
         case .invalidResponse: return "Invalid server response"
         case .httpError(let code): return "Server error (\(code))"
+        }
+    }
+
+    /// Copy variants for the in-app error card. Voice: conversational, no em dashes.
+    var presentation: (title: String, body: String, button: String) {
+        switch self {
+        case .offline:
+            return ("You're offline", "We'll catch you up the second you're back.", "Try again")
+        case .timeout:
+            return ("Taking a minute", "The connection is being dramatic. Give it another go.", "Try again")
+        case .serverDown:
+            return ("We're having a moment", "Our side, not yours. Back shortly.", "Try again")
+        case .decoding:
+            return ("Something looks off", "We got a weird response. Tap to retry.", "Try again")
+        case .notConfigured, .invalidResponse, .httpError:
+            return ("Something went wrong", "Not sure what, but tap to retry.", "Try again")
         }
     }
 }

@@ -140,10 +140,10 @@ struct SettingsView: View {
                                             }
                                         } label: {
                                             HStack(spacing: 4) {
-                                                Text("Disabled")
+                                                Text("Off.")
                                                     .font(.feedHeadline)
                                                     .foregroundColor(.textPrimaryOnCard)
-                                                Text("Open Settings")
+                                                Text("Tap to turn back on.")
                                                     .font(.feedTimestamp)
                                                     .foregroundColor(.hotRose)
                                             }
