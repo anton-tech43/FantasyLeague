@@ -114,21 +114,32 @@ class APIClient {
     /// turns a potential blank-feed crash into "you see 19 items instead of 20" — which is
     /// dramatically better UX. The bad item is logged in DEBUG so we still notice schema drift.
     private func decodeContentItems(from data: Data) throws -> [ContentItem] {
-        // First parse as a heterogeneous array to get per-item JSON we can decode separately.
+        try decodeArrayLoosely(data: data)
+    }
+
+    /// Decode a JSON array, skipping any individual item that fails to decode.
+    /// `JSONDecoder.decode([T].self, ...)` is all-or-nothing: one bad row
+    /// throws and the entire response is lost. This helper turns a potential
+    /// blank-feed crash into "you see N-1 items instead of N" — much better
+    /// UX. The bad item is logged in DEBUG so schema drift is still visible.
+    /// Used by `fetchFeed`, `fetchEveryoneFeed`, and `fetchInsiderItems` —
+    /// any list endpoint where future schema changes could trip older
+    /// clients on production data they don't yet recognize.
+    private func decodeArrayLoosely<T: Decodable>(data: Data) throws -> [T] {
         let rawItems = try JSONSerialization.jsonObject(with: data, options: []) as? [Any] ?? []
-        var decoded: [ContentItem] = []
+        var decoded: [T] = []
         decoded.reserveCapacity(rawItems.count)
         for (index, raw) in rawItems.enumerated() {
             do {
                 let itemData = try JSONSerialization.data(withJSONObject: raw, options: [])
-                let item = try decoder.decode(ContentItem.self, from: itemData)
+                let item = try decoder.decode(T.self, from: itemData)
                 decoded.append(item)
             } catch {
                 #if DEBUG
                 let id = (raw as? [String: Any])?["id"] as? String ?? "unknown"
-                print("⚠️ ContentItem decode failed at index \(index) (id=\(id)): \(error)")
+                print("⚠️ \(T.self) decode failed at index \(index) (id=\(id)): \(error)")
                 #endif
-                // Continue: one bad row doesn't kill the feed.
+                // Continue: one bad row doesn't kill the response.
             }
         }
         return decoded
@@ -305,7 +316,10 @@ class APIClient {
         request.timeoutInterval = 10
         let (data, response) = try await URLSession.shared.data(for: request)
         try validateResponse(response)
-        return try decoder.decode([InsiderItem].self, from: data)
+        // Loose decode: one bad row (e.g., a new type enum value added
+        // server-side before iOS knows about it) doesn't sink the entire
+        // response. The user just sees fewer items.
+        return try decodeArrayLoosely(data: data)
     }
 
     // MARK: - Delete My Data
