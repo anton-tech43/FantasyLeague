@@ -6,6 +6,8 @@
 
 > **IMPORTANT (April 2026):** This document has been updated with security fixes. See [CHANGELOG_SECURITY.md](./CHANGELOG_SECURITY.md) for all changes. New product features from the product brief are tracked in [PRODUCT_BRIEF_INTEGRATION.md](./PRODUCT_BRIEF_INTEGRATION.md) — read that before starting new feature work.
 
+> **Status as of 2026-05-12:** v1 build is feature-complete through Phase 22 (see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md)). Next bundle of work is tracked in [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md). The phase-by-phase build steps below are historical and reflect the original April plan. They are kept for reference and audit, not for new work.
+
 ---
 
 ## How to Read This Document
