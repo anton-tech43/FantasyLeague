@@ -404,6 +404,14 @@ class APIClient {
         let body = try JSONSerialization.data(withJSONObject: ["apns_token": token])
         let request = makeRequest(url: url, method: "POST", body: body)
         let (_, response) = try await URLSession.shared.data(for: request)
+        // 404 from delete-my-data means "no matching device_token row" — i.e.,
+        // there was nothing to delete server-side (common on simulator builds
+        // that never registered a real APNs token, or after a prior successful
+        // delete). End-state is the same: her data isn't on the server. Treat
+        // as success so the UI doesn't show a misleading error.
+        if let http = response as? HTTPURLResponse, http.statusCode == 404 {
+            return
+        }
         try validateResponse(response)
     }
 
