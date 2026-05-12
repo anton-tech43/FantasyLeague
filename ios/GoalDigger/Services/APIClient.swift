@@ -403,14 +403,26 @@ class APIClient {
         let url = try requireFunctionsBaseURL().appendingPathComponent("delete-my-data")
         let body = try JSONSerialization.data(withJSONObject: ["apns_token": token])
         let request = makeRequest(url: url, method: "POST", body: body)
-        let (_, response) = try await URLSession.shared.data(for: request)
-        // 404 from delete-my-data means "no matching device_token row" — i.e.,
-        // there was nothing to delete server-side (common on simulator builds
-        // that never registered a real APNs token, or after a prior successful
-        // delete). End-state is the same: her data isn't on the server. Treat
-        // as success so the UI doesn't show a misleading error.
-        if let http = response as? HTTPURLResponse, http.statusCode == 404 {
-            return
+        let (data, response) = try await URLSession.shared.data(for: request)
+        if let http = response as? HTTPURLResponse {
+            // 404 "No matching device_token row" → nothing to delete → success.
+            // Common after a prior successful delete, or when the device never
+            // registered server-side.
+            if http.statusCode == 404 {
+                return
+            }
+            // 400 "Invalid token format" → the server's strict 64-char-hex regex
+            // rejected the token before any DB lookup. Happens on simulator builds
+            // (iOS-17+ extended device-token format is 160 chars hex). Same end
+            // state: the token can't be in `device_tokens`, so her data isn't on
+            // the server. Other 400s (missing apns_token field, malformed JSON)
+            // do NOT contain this exact phrase and still throw.
+            if http.statusCode == 400 {
+                let body = String(data: data, encoding: .utf8) ?? ""
+                if body.contains("Invalid token format") {
+                    return
+                }
+            }
         }
         try validateResponse(response)
     }
