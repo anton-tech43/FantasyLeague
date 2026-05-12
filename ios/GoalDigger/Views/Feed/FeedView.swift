@@ -247,43 +247,50 @@ struct FeedView: View {
 
     @ViewBuilder
     private var feedContent: some View {
-        VStack(spacing: 0) {
-            // LiveMatchCard sits above whichever feed style is selected.
-            // V1.1 task C5. Visible only while a live PL match window is
-            // open for the user's team AND the user is T2+. Polled in
-            // runLiveBriefPoll(); cleared when poll returns 204 or on
-            // team change.
-            if let brief = liveBrief,
-               TierGating.isAvailable(.matchDayLive, tier: appState.selectedTier),
-               appState.activeContext != .everyoneTalking {
-                LiveMatchCard(brief: brief)
-                    .padding(.horizontal, Layout.screenPadding)
-                    .padding(.top, 8)
-                    .padding(.bottom, 6)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-            }
-
-            if appState.feedStyle == .immersive {
-                immersiveFeed
-            } else {
-                VStack(spacing: 0) {
-                    if !hasSeenImmersiveBanner {
-                        migrationBanner
-                    }
-                    ClassicFeedView(
-                        items: displayItems,
-                        feedContext: appState.activeContext,
-                        appState: appState,
-                        matchdayPlayers: matchdayPlayers,
-                        freshnessCardDismissed: $freshnessCardDismissed,
-                        isOffSeason: isOffSeason,
-                        onLoadMore: { await loadMore() }
-                    )
-                    .refreshable { await refresh() }
+        // V1.1 task C5: LiveMatchCard renders as the first item INSIDE the
+        // feed's scroll view so it scrolls away with content rather than
+        // pinning to the top. See immersiveFeed and classic feed branches
+        // for the prepend; both gate on `shouldShowLiveBrief` so the card
+        // never appears for T1 users or in the "Everyone Talking" context.
+        if appState.feedStyle == .immersive {
+            immersiveFeed
+        } else {
+            VStack(spacing: 0) {
+                if !hasSeenImmersiveBanner {
+                    migrationBanner
                 }
+                ScrollView(.vertical) {
+                    LazyVStack(spacing: 0) {
+                        if shouldShowLiveBrief, let brief = liveBrief {
+                            LiveMatchCard(brief: brief)
+                                .padding(.horizontal, Layout.screenPadding)
+                                .padding(.vertical, 8)
+                                .transition(.move(edge: .top).combined(with: .opacity))
+                        }
+                        ClassicFeedView(
+                            items: displayItems,
+                            feedContext: appState.activeContext,
+                            appState: appState,
+                            matchdayPlayers: matchdayPlayers,
+                            freshnessCardDismissed: $freshnessCardDismissed,
+                            isOffSeason: isOffSeason,
+                            onLoadMore: { await loadMore() }
+                        )
+                    }
+                }
+                .refreshable { await refresh() }
             }
+            .animation(.easeInOut(duration: 0.25), value: liveBrief?.id)
         }
-        .animation(.easeInOut(duration: 0.25), value: liveBrief?.id)
+    }
+
+    /// Whether the LiveMatchCard should render right now. Combines the
+    /// data check (we have a brief), the tier gate, and the context check
+    /// ("Everyone Talking" surface shouldn't show team-specific live).
+    private var shouldShowLiveBrief: Bool {
+        liveBrief != nil &&
+        TierGating.isAvailable(.matchDayLive, tier: appState.selectedTier) &&
+        appState.activeContext != .everyoneTalking
     }
 
     // MARK: - Immersive Feed
@@ -292,6 +299,18 @@ struct FeedView: View {
         GeometryReader { geo in
             ScrollView(.vertical) {
                 LazyVStack(spacing: 0) {
+                    // Live brief sits as the first item INSIDE the
+                    // immersive scroll view so it scrolls away with the
+                    // rest of the feed (V1.1 task C5). Placed BEFORE the
+                    // ForEach so it sits above the "Your move" card. The
+                    // animation modifier on the outer scroll view fades
+                    // it in/out as the poll loop updates `liveBrief`.
+                    if shouldShowLiveBrief, let brief = liveBrief {
+                        LiveMatchCard(brief: brief)
+                            .padding(.horizontal, Layout.screenPadding)
+                            .padding(.vertical, 8)
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
                     ForEach(Array(displayItems.enumerated()), id: \.element.id) { index, item in
                         let isYourMove = index == 0 && appState.activeContext != .everyoneTalking
                         let isEveryoneCtx = appState.activeContext == .everyoneTalking
