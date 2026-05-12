@@ -275,10 +275,25 @@ struct TalkingPointCard: View {
                 .fill(Color.hotRose)
                 .frame(width: 3)
 
-            Text(text)
-                .font(.talkingPointText)
-                .foregroundColor(.textPrimaryOnCard)
-                .padding(14)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(text)
+                    .font(.talkingPointText)
+                    .foregroundColor(.textPrimaryOnCard)
+
+                HStack(spacing: 4) {
+                    Spacer()
+                    CopyButton(text: text)
+                    ShareLink(item: text, preview: SharePreview("From GoalDigger")) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.hotRose)
+                            .frame(width: 32, height: 32)
+                            .contentShape(Rectangle())
+                    }
+                    .accessibilityLabel("Share talking point")
+                }
+            }
+            .padding(14)
         }
         .background(Color.hotRose.opacity(0.06))
         .background(Color.cardBackground)
