@@ -407,9 +407,11 @@ async function updateDynamicFields(
   // Parse standings data
   if (standingsLog?.data) {
     const standings = standingsLog.data as Record<string, unknown>;
-    // API-Football standings response structure varies — extract what we can
-    const rank = extractLeaguePosition(standings);
-    const form = extractRecentForm(standings);
+    // Filter the league-wide standings response by this team's API-Football
+    // id. The helpers used to take standingsArr[0] which was always the
+    // league leader — see findTeamStandingsEntry.
+    const rank = extractLeaguePosition(standings, team.api_football_id);
+    const form = extractRecentForm(standings, team.api_football_id);
 
     if (rank) {
       const ordinal = getOrdinal(rank);
@@ -452,35 +454,47 @@ async function updateDynamicFields(
 // HELPERS — Parse API-Football responses
 // ============================================================
 
-function extractLeaguePosition(standings: Record<string, unknown>): number | null {
+/// Find this team's row in the full-league standings array. API-Football's
+/// /standings?league=39 returns ALL 20 teams' rows ordered by rank — the
+/// previous helper took `standingsArr[0]` which was always the league
+/// leader. Every team page got "1st in the Premier League" stamped on it.
+/// Filter by api_football_id to pick the correct row.
+function findTeamStandingsEntry(
+  standings: Record<string, unknown>,
+  teamApiFootballId: number,
+): Record<string, unknown> | null {
   try {
-    // API-Football returns: { response: [{ league: { standings: [[{rank, form, ...}]] } }] }
     const response = standings.response as unknown[];
     if (!Array.isArray(response) || response.length === 0) return null;
     const league = (response[0] as Record<string, unknown>).league as Record<string, unknown>;
     const standingsArr = (league?.standings as unknown[][])?.[0];
-    if (!standingsArr) return null;
-    // Find our team's entry — it should be the one returned for this team_id filter
-    const entry = standingsArr[0] as Record<string, unknown>;
-    return (entry?.rank as number) ?? null;
+    if (!Array.isArray(standingsArr)) return null;
+    const entry = standingsArr.find((row) => {
+      const r = row as Record<string, unknown>;
+      const t = r.team as Record<string, unknown> | undefined;
+      return (t?.id as number) === teamApiFootballId;
+    });
+    return (entry as Record<string, unknown>) ?? null;
   } catch {
     return null;
   }
 }
 
-function extractRecentForm(standings: Record<string, unknown>): string | null {
-  try {
-    const response = standings.response as unknown[];
-    if (!Array.isArray(response) || response.length === 0) return null;
-    const league = (response[0] as Record<string, unknown>).league as Record<string, unknown>;
-    const standingsArr = (league?.standings as unknown[][])?.[0];
-    if (!standingsArr) return null;
-    const entry = standingsArr[0] as Record<string, unknown>;
-    const form = entry?.form as string;
-    return form ? form.slice(-5) : null; // Last 5 results
-  } catch {
-    return null;
-  }
+function extractLeaguePosition(
+  standings: Record<string, unknown>,
+  teamApiFootballId: number,
+): number | null {
+  const entry = findTeamStandingsEntry(standings, teamApiFootballId);
+  return (entry?.rank as number) ?? null;
+}
+
+function extractRecentForm(
+  standings: Record<string, unknown>,
+  teamApiFootballId: number,
+): string | null {
+  const entry = findTeamStandingsEntry(standings, teamApiFootballId);
+  const form = entry?.form as string | undefined;
+  return form ? form.slice(-5) : null; // Last 5 results
 }
 
 function extractNextFixture(
