@@ -5,7 +5,7 @@
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { SpamCheckResult } from "./types.ts";
 
-type ContentType = "news" | "matchday" | "result" | "weekly_summary" | "monthly_summary";
+type ContentType = "news" | "matchday" | "result" | "weekly_summary" | "monthly_summary" | "sunday_brief";
 
 const TIER_LIMITS: Record<number, number> = { 1: 1, 2: 2, 3: 3 };
 

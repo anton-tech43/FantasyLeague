@@ -98,11 +98,21 @@ serve(async (req) => {
         continue;
       }
 
+      // Sunday Brief (V1.1 C2) is a T2+ surface — the weekly forward-look
+      // is part of the "Came to impress" upgrade. T1 users opted into the
+      // quieter tier and shouldn't get a Sunday push. Drop T1 tokens
+      // before anti-spam so we don't pollute the log with "blocked by
+      // anti-spam" entries for an intentional exclusion. Future tier-gated
+      // content types (Saturday Quiz, Player Dossier — both T3) will use
+      // the same pattern with their own minTier threshold.
+      const minTierForType = item.type === "sunday_brief" ? 2 : 1;
+
       // Group tokens by tier (carry env alongside) for anti-spam checking
       type TokenEntry = { token: string; env: "development" | "production" };
       const tokensByTier: Record<number, TokenEntry[]> = {};
       for (const t of tokens) {
         const tier = t.tier ?? 2;
+        if (tier < minTierForType) continue;
         const env = (t.apns_environment === "production" ? "production" : "development") as "development" | "production";
         if (!tokensByTier[tier]) tokensByTier[tier] = [];
         tokensByTier[tier].push({ token: t.apns_token, env });
@@ -112,7 +122,7 @@ serve(async (req) => {
       const eligibleTokens: TokenEntry[] = [];
       for (const [tierStr, tierTokens] of Object.entries(tokensByTier)) {
         const tier = parseInt(tierStr);
-        const contentType = isResult ? "result" as const : item.type as "news" | "matchday";
+        const contentType = isResult ? "result" as const : item.type as "news" | "matchday" | "sunday_brief";
 
         const spamCheck = await checkAntiSpamRules(supabase, teamId, contentType, tier);
         if (spamCheck.canSend) {

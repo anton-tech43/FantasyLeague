@@ -420,7 +420,11 @@ struct FeedView: View {
         guard let teamId = appState.selectedTeam?.rawValue else { return }
         do {
             let fetched = try await APIClient.shared.fetchFeed(teamId: teamId, limit: pageSize, offset: 0)
-            teamItems = fetched
+            // Sunday Brief (V1.1 C2) is T2+. Filter client-side so a T1
+            // user never sees the card even if it slipped into the response.
+            // Server-side push gating in notification-sender stops the
+            // notification; this guard handles the feed render.
+            teamItems = Self.applyTierFilter(fetched, tier: appState.selectedTier)
             teamOffset = fetched.count
             teamCanLoadMore = fetched.count == pageSize
             hasError = false
@@ -474,7 +478,7 @@ struct FeedView: View {
 
         do {
             let fetched = try await APIClient.shared.fetchEveryoneFeed(limit: pageSize, offset: 0)
-            everyoneItems = fetched
+            everyoneItems = Self.applyTierFilter(fetched, tier: appState.selectedTier)
             everyoneOffset = fetched.count
             everyoneCanLoadMore = fetched.count == pageSize
             // Cache everyone items alongside team items
@@ -502,7 +506,7 @@ struct FeedView: View {
             guard teamCanLoadMore, let teamId = appState.selectedTeam?.rawValue else { return }
             do {
                 let fetched = try await APIClient.shared.fetchFeed(teamId: teamId, limit: pageSize, offset: teamOffset)
-                teamItems.append(contentsOf: fetched)
+                teamItems.append(contentsOf: Self.applyTierFilter(fetched, tier: appState.selectedTier))
                 teamOffset += fetched.count
                 teamCanLoadMore = fetched.count == pageSize
                 CacheService.shared.upsertItems(fetched, in: modelContext)
@@ -516,7 +520,7 @@ struct FeedView: View {
             guard everyoneCanLoadMore else { return }
             do {
                 let fetched = try await APIClient.shared.fetchEveryoneFeed(limit: pageSize, offset: everyoneOffset)
-                everyoneItems.append(contentsOf: fetched)
+                everyoneItems.append(contentsOf: Self.applyTierFilter(fetched, tier: appState.selectedTier))
                 everyoneOffset += fetched.count
                 everyoneCanLoadMore = fetched.count == pageSize
                 CacheService.shared.upsertItems(fetched, in: modelContext)
@@ -524,6 +528,23 @@ struct FeedView: View {
                 #if DEBUG
                 print("⚠️ loadMore failed: \(error.localizedDescription)")
                 #endif
+            }
+        }
+    }
+
+    // MARK: - Tier filter
+
+    /// Strips content items above the user's tier. Sunday Brief (V1.1 C2)
+    /// is T2+. Future tier-3-only types (Saturday Quiz, Player Dossier,
+    /// Group-chat Prep) hook in here. Server-side gating handles push;
+    /// this is the read/render side.
+    static func applyTierFilter(_ items: [ContentItem], tier: Int) -> [ContentItem] {
+        items.filter { item in
+            switch item.type {
+            case .news, .matchday:
+                return true   // all tiers see the basics
+            case .sundayBrief:
+                return tier >= 2
             }
         }
     }
