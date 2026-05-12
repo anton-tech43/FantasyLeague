@@ -52,10 +52,22 @@ final class CalendarSyncService {
         for fixture in fixtures {
             let event = EKEvent(eventStore: store)
             event.calendar = calendar
-            event.title = "\(teamShortName) vs \(fixture.opponent)"
+            // Encode home/away into the title rather than event.location.
+            // `fixture.venue` upstream is just the literal "home" / "away"
+            // enum from team-page-generator (no stadium name available), so
+            // putting it in Calendar's Location field would surface
+            // "home" / "away" as the event location — confusing in iOS
+            // Calendar where Location is typically an address. Title-suffix
+            // approach keeps the signal without misusing the field.
+            let venueSuffix: String = {
+                guard let v = fixture.venue?.lowercased() else { return "" }
+                if v == "home" { return " (Home)" }
+                if v == "away" { return " (Away)" }
+                return ""
+            }()
+            event.title = "\(teamShortName) vs \(fixture.opponent)\(venueSuffix)"
             event.startDate = fixture.kickoffTime
             event.endDate = fixture.kickoffTime.addingTimeInterval(2 * 60 * 60)
-            event.location = fixture.venue
             event.notes = "Match day. Open GoalDigger for prep."
             try? store.save(event, span: .thisEvent, commit: false)
         }

@@ -206,6 +206,12 @@ async function generateForTeam(
   let recentResults = "";
   let nextFixtureData = "";
 
+  // The query above orders fetched_at DESCENDING (newest first). We want the
+  // FRESHEST row per category, so we take the first match and skip subsequent
+  // hits in the same category — otherwise we'd overwrite with older rows on
+  // later iterations and end up with stale prompt context. (This was the
+  // original bug: function was dormant when caught, kept the fix anyway since
+  // the path can be reactivated.)
   for (const log of (logs ?? []) as RawFetchLog[]) {
     const jsonStr = JSON.stringify(log.data).slice(0, 2000);
     // Source names written by data-fetcher (see data-fetcher/index.ts L147-158):
@@ -213,12 +219,16 @@ async function generateForTeam(
     //   api_football_fixtures_last  -> recent results
     //   api_football_standings      -> table position
     // Match generously so renames don't silently empty the prompt.
-    if (log.source === "api_football_standings") standingsData = jsonStr;
-    else if (log.source.includes("fixtures_last") || log.source.includes("fixtures_recent") || log.source.includes("results")) {
+    if (!standingsData && log.source === "api_football_standings") {
+      standingsData = jsonStr;
+    } else if (!recentResults && (log.source.includes("fixtures_last") || log.source.includes("fixtures_recent") || log.source.includes("results"))) {
       recentResults = jsonStr;
-    } else if (log.source.includes("fixtures_next") || log.source.includes("fixtures_upcoming")) {
+    } else if (!nextFixtureData && (log.source.includes("fixtures_next") || log.source.includes("fixtures_upcoming"))) {
       nextFixtureData = jsonStr;
     }
+    // Early exit once all three categories are filled — common case after a
+    // recent data-fetcher run, saves a few iterations.
+    if (standingsData && recentResults && nextFixtureData) break;
   }
 
   const systemPrompt = SEASON_PRIMER_SYSTEM_PROMPT.replace(
