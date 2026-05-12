@@ -71,13 +71,17 @@
 		AA000200 /* OnboardingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000200 /* OnboardingTextField.swift */; };
 		AC8165AEE3D87BDE0DF13AA8 /* GlossaryTerm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 270994EEE49DF138BC2540A0 /* GlossaryTerm.swift */; };
 		B5994EBA3DC6541DF77F9768 /* ShareableCardRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B6B4EAC55CB925992D81ED /* ShareableCardRenderer.swift */; };
+		C6106E6CA3714FF9402A1F68 /* TeamSeasonState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19D7EA257F3133FF29F0A866 /* TeamSeasonState.swift */; };
+		C8D06CD38DF3FEBE15567E43 /* SeasonPrimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B5B3A50DCC8E9B41626BB81 /* SeasonPrimerView.swift */; };
 		CEE0AA64A8A71768C7DAE896 /* AudioPlayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36F66AB00E15F67DAA68C18A /* AudioPlayerService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		1969411F418AE27184440E14 /* GlossaryText.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlossaryText.swift; sourceTree = "<group>"; };
+		19D7EA257F3133FF29F0A866 /* TeamSeasonState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TeamSeasonState.swift; sourceTree = "<group>"; };
 		270994EEE49DF138BC2540A0 /* GlossaryTerm.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlossaryTerm.swift; sourceTree = "<group>"; };
 		2AD6B0120F684DF2FDE52DDA /* GlossaryService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlossaryService.swift; sourceTree = "<group>"; };
+		2B5B3A50DCC8E9B41626BB81 /* SeasonPrimerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SeasonPrimerView.swift; sourceTree = "<group>"; };
 		36F66AB00E15F67DAA68C18A /* AudioPlayerService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioPlayerService.swift; sourceTree = "<group>"; };
 		37D3E46E7BC8929DF2B09425 /* CalendarSyncService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarSyncService.swift; sourceTree = "<group>"; };
 		427A2A492E809AB52CDF85A0 /* TierGating.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TierGating.swift; sourceTree = "<group>"; };
@@ -249,6 +253,7 @@
 				AB000012 /* TeamSelectionView.swift */,
 				AB000033 /* TierSelectionView.swift */,
 				AB000013 /* NotificationPromptView.swift */,
+				2B5B3A50DCC8E9B41626BB81 /* SeasonPrimerView.swift */,
 			);
 			path = Onboarding;
 			sourceTree = "<group>";
@@ -280,6 +285,7 @@
 				AB000060 /* FeedContext.swift */,
 				427A2A492E809AB52CDF85A0 /* TierGating.swift */,
 				270994EEE49DF138BC2540A0 /* GlossaryTerm.swift */,
+				19D7EA257F3133FF29F0A866 /* TeamSeasonState.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -519,6 +525,8 @@
 				AC8165AEE3D87BDE0DF13AA8 /* GlossaryTerm.swift in Sources */,
 				5C6D265B75886BF7277447B7 /* GlossaryService.swift in Sources */,
 				14474256E2DD1E7DA90DA178 /* GlossaryText.swift in Sources */,
+				C6106E6CA3714FF9402A1F68 /* TeamSeasonState.swift in Sources */,
+				C8D06CD38DF3FEBE15567E43 /* SeasonPrimerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

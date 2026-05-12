@@ -52,10 +52,26 @@ struct RootView: View {
     // (e.g. World Cup pass).
     var body: some View {
         Group {
-            if appState.hasCompletedOnboarding {
-                MainTabView()
-            } else {
+            if !appState.hasCompletedOnboarding {
                 OnboardingFlow()
+            } else if !appState.hasSeenSeasonPrimer {
+                // One-time Season Primer screen (V1.1 task A1). Shows where
+                // his team is in the season + 3 text-message-style openers
+                // she can send him now. Dismissed permanently for the install
+                // when either CTA fires; re-shown only after Settings →
+                // Delete My Data → re-onboard.
+                SeasonPrimerView(
+                    onTeachMore: {
+                        appState.pendingTabAfterPrimer = 1   // His Team tab
+                        appState.hasSeenSeasonPrimer = true
+                    },
+                    onSkipToFeed: {
+                        appState.pendingTabAfterPrimer = 0   // Feed tab (explicit)
+                        appState.hasSeenSeasonPrimer = true
+                    }
+                )
+            } else {
+                MainTabView()
             }
         }
         .task(id: "cache-schema-purge") {
@@ -173,6 +189,16 @@ struct MainTabView: View {
             if let dest = notification.object as? ContentDetailDestination {
                 selectedTab = 0
                 feedPath.append(dest)
+            }
+        }
+        .onAppear {
+            // Consume the Season Primer's "Teach me more" / "Take me to the
+            // news" preference, set by SeasonPrimerView's CTAs before the
+            // primer dismissed. Clear immediately so subsequent re-appears
+            // (e.g., scenePhase background→active) don't snap back to it.
+            if let tab = appState.pendingTabAfterPrimer {
+                selectedTab = tab
+                appState.pendingTabAfterPrimer = nil
             }
         }
     }

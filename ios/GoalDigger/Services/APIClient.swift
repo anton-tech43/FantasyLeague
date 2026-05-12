@@ -257,6 +257,33 @@ class APIClient {
         return pages.first?.content
     }
 
+    // MARK: - Team Season State (post-onboarding Season Primer)
+
+    /// Fetch the one-row season-state snapshot for the given team. Returns nil
+    /// when there's no row yet (e.g., a brand-new team the routine hasn't
+    /// generated for yet). The Season Primer view treats nil + thrown errors
+    /// identically — both mean "skip the primer, go to feed".
+    ///
+    /// Uses direct REST (not the `team-season-state` Edge Function) because
+    /// the function was deployed without `--no-verify-jwt` and the
+    /// `sb_publishable_*` key model isn't JWT-encoded. Direct REST through
+    /// PostgREST accepts the publishable key fine; the table has an RLS
+    /// policy allowing public read.
+    func fetchTeamSeasonState(teamId: String) async throws -> TeamSeasonState? {
+        let url = try buildURL(path: "team_season_state", queryItems: [
+            URLQueryItem(name: "team_id", value: "eq.\(teamId)"),
+            URLQueryItem(name: "select", value: "team_id,phase,summary,key_fact,welcome_lines,next_fixture")
+        ])
+        var request = makeRequest(url: url)
+        // Short timeout: the primer is on the user's first-launch critical path.
+        // If the backend is slow, skip it rather than block onboarding completion.
+        request.timeoutInterval = 10
+        let (data, response) = try await URLSession.shared.data(for: request)
+        try validateResponse(response)
+        let rows = try decoder.decode([TeamSeasonState].self, from: data)
+        return rows.first
+    }
+
     // MARK: - Delete My Data
 
     func deleteMyData(token: String) async throws {
