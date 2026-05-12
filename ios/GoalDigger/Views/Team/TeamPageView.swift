@@ -40,6 +40,21 @@ struct TeamPageView: View {
         return String(head) + "…"
     }
 
+    /// Extract just the rival team names from a rivalry blurb. The team-page
+    /// generator emits texts shaped like `"<rivals> — <context>..."` (em or
+    /// en dash separator), so splitting on the dash gives us the punchy
+    /// headline ("Chelsea and Brentford" instead of "Chelsea and Brentford,
+    /// Fulham are sandwiched betwe…"). Falls back to word-trim for any text
+    /// that doesn't have a dash splitter — defensive for older rows.
+    private func rivalsHeadline(_ text: String) -> String {
+        let separators: [Character] = ["—", "–", "-"]
+        if let dashIdx = text.firstIndex(where: { separators.contains($0) }) {
+            let head = text[..<dashIdx].trimmingCharacters(in: .whitespaces)
+            if !head.isEmpty && head.count <= 60 { return head }
+        }
+        return truncateAtWord(text, maxChars: 50)
+    }
+
     var body: some View {
         ZStack {
             Color.appBackground.ignoresSafeArea()
@@ -221,7 +236,7 @@ struct TeamPageView: View {
         if let rivalry = cards.rivalry {
             TeamPageCard(
                 title: "The rivalry",
-                primaryText: truncateAtWord(appState.personalise(rivalry.text), maxChars: 50),
+                primaryText: rivalsHeadline(appState.personalise(rivalry.text)),
                 zone2Label: "Use this:",
                 talkingPoint: rivalry.talkingPoint.map { appState.personalise($0) },
                 isStatic: true,
