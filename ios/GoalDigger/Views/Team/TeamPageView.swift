@@ -158,20 +158,35 @@ struct TeamPageView: View {
                 zone1Expanded: {
                     VStack(alignment: .leading, spacing: 4) {
                         ForEach(Array(onesToKnow.players.prefix(3))) { player in
-                            let matchingCard = playerCards.first {
-                                $0.playerName.lowercased() == player.name.lowercased()
+                            // Always tappable. The matchingCard lookup is
+                            // lowercased-contains to handle "Saka" (OnesToKnow
+                            // curated name) vs "Bukayo Saka" (routine pulls
+                            // from API-Football squad). If no row exists yet,
+                            // we build a stub PlayerCard with empty summary —
+                            // PlayerCardModal renders an "empty state" branch
+                            // for those, and a tier-locked branch for T1/T2.
+                            // This way tap is always allowed (discovery), and
+                            // the modal explains what the user is seeing.
+                            let matchingCard = playerCards.first { card in
+                                let cardName = card.playerName.lowercased()
+                                let onesName = player.name.lowercased()
+                                return cardName.contains(onesName) || onesName.contains(cardName)
                             }
 
-                            if let matchingCard {
-                                Button {
-                                    presentedPlayer = matchingCard
-                                } label: {
-                                    playerRow(player: player, tappable: true)
-                                }
-                                .buttonStyle(.plain)
-                            } else {
-                                playerRow(player: player, tappable: false)
+                            Button {
+                                presentedPlayer = matchingCard ?? PlayerCard(
+                                    teamId: teamId,
+                                    playerName: player.name,
+                                    position: player.position,
+                                    age: nil,
+                                    summary: "",
+                                    vibe: nil,
+                                    form: nil
+                                )
+                            } label: {
+                                playerRow(player: player, tappable: true)
                             }
+                            .buttonStyle(.plain)
                         }
                     }
                 }
