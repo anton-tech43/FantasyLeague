@@ -451,7 +451,14 @@ struct SettingsView: View {
             }
             let teamId = team.rawValue
             let cached = TeamPageCache.load(teamId: teamId)?.content
-            let teamPage = cached ?? (try? await APIClient.shared.fetchTeamPage(teamId: teamId))
+            // Avoid `??` here: the operator's right-hand side is an
+            // `@autoclosure () throws -> T` and does not support `await`.
+            let teamPage: TeamPageContent?
+            if let cached {
+                teamPage = cached
+            } else {
+                teamPage = try? await APIClient.shared.fetchTeamPage(teamId: teamId)
+            }
             guard let nextFixture = teamPage?.cards.nextFixture,
                   let kickoff = Self.fixtureDateFormatter.date(from: nextFixture.date) else {
                 // Permission granted but no fixture to add yet. Mark on so we

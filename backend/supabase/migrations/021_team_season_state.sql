@@ -36,8 +36,12 @@ CREATE POLICY "team_season_state is publicly readable"
 -- ---------------------------------------------------------------------------
 -- pg_cron: regenerate daily at 06:00 UTC
 -- ---------------------------------------------------------------------------
--- Pattern mirrors migration 019 (vault-based service-role lookup, no JWT in
--- the cron body). Hits the generator function which iterates over all teams.
+-- Use the get_cron_service_key() SECURITY DEFINER accessor introduced in
+-- migration 020. The inline `SELECT FROM vault.decrypted_secrets` pattern
+-- (used by migration 019) silently fails because pg_cron's execution role
+-- cannot read the Vault view directly — the SELECT returns NULL and
+-- `'Bearer ' || NULL = NULL`, leaving an empty Authorization header.
+-- The accessor function bypasses that with SECURITY DEFINER.
 
 SELECT cron.schedule(
     'team-season-state-daily',
@@ -46,12 +50,7 @@ SELECT cron.schedule(
         url := 'https://cwgpsmbunrocrofziqad.supabase.co/functions/v1/team-season-state-generator',
         headers := jsonb_build_object(
             'Content-Type', 'application/json',
-            'Authorization', 'Bearer ' || (
-                SELECT decrypted_secret
-                FROM vault.decrypted_secrets
-                WHERE name = 'cron_service_key'
-                LIMIT 1
-            )
+            'Authorization', 'Bearer ' || get_cron_service_key()
         ),
         body := '{}'::jsonb
     )$$

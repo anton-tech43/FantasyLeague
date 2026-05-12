@@ -208,10 +208,15 @@ async function generateForTeam(
 
   for (const log of (logs ?? []) as RawFetchLog[]) {
     const jsonStr = JSON.stringify(log.data).slice(0, 2000);
+    // Source names written by data-fetcher (see data-fetcher/index.ts L147-158):
+    //   api_football_fixtures_next  -> upcoming
+    //   api_football_fixtures_last  -> recent results
+    //   api_football_standings      -> table position
+    // Match generously so renames don't silently empty the prompt.
     if (log.source === "api_football_standings") standingsData = jsonStr;
-    else if (log.source.includes("fixtures_recent") || log.source.includes("results")) {
+    else if (log.source.includes("fixtures_last") || log.source.includes("fixtures_recent") || log.source.includes("results")) {
       recentResults = jsonStr;
-    } else if (log.source.includes("fixtures_upcoming") || log.source.includes("fixtures_next")) {
+    } else if (log.source.includes("fixtures_next") || log.source.includes("fixtures_upcoming")) {
       nextFixtureData = jsonStr;
     }
   }
