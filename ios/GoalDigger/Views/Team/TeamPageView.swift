@@ -5,6 +5,7 @@ struct TeamPageView: View {
     @Environment(AppState.self) var appState
     @State private var content: TeamPageContent?
     @State private var playerCards: [PlayerCard] = []
+    @State private var latestInsider: InsiderItem?
     @State private var isLoading = true
     @State private var hasError = false
     @State private var presentedPlayer: PlayerCard?
@@ -249,6 +250,25 @@ struct TeamPageView: View {
             postMatchCard(postMatch)
         } else if let fixture = cards.nextFixture {
             comingUpCard(fixture)
+        }
+
+        // Card 8 (T2+ only): "Things he doesn't know" — niche stat /
+        // anecdote / history / oddity refreshed daily by the gd-insider
+        // cloud routine. Gating: TierGating.isAvailable(.insiderCard,
+        // tier:) returns true for tier 2 and 3 — T1 users never see it.
+        // Latest item only; the History page (if we add one) would show the
+        // last N.
+        if TierGating.isAvailable(.insiderCard, tier: appState.selectedTier),
+           let insider = latestInsider {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("THINGS HE DOESN'T KNOW")
+                    .font(.sectionHeader)
+                    .tracking(1)
+                    .foregroundColor(.mutedText)
+                    .padding(.leading, 4)
+                InsiderCard(item: insider)
+            }
+            .padding(.top, 8)
         }
 
         // Freshness line
@@ -506,11 +526,13 @@ struct TeamPageView: View {
             content = cached.content
             isLoading = false
 
-            // Fetch player cards in parallel with fresh data
+            // Fetch player cards + latest insider item in parallel with fresh data
             async let freshContent = fetchFromNetwork()
             async let players = fetchPlayerCards()
+            async let insider = fetchLatestInsider()
 
             playerCards = await players
+            latestInsider = await insider
 
             if let fresh = await freshContent {
                 content = fresh
@@ -525,7 +547,10 @@ struct TeamPageView: View {
             if let fetched {
                 content = fetched
                 TeamPageCache.save(content: fetched, teamId: teamId)
-                playerCards = await fetchPlayerCards()
+                async let players = fetchPlayerCards()
+                async let insider = fetchLatestInsider()
+                playerCards = await players
+                latestInsider = await insider
             } else {
                 #if DEBUG
                 if let mock = MockData.teamPage(for: teamId) {
@@ -555,5 +580,13 @@ struct TeamPageView: View {
 
     private func fetchPlayerCards() async -> [PlayerCard] {
         (try? await APIClient.shared.fetchPlayerCards(teamId: teamId)) ?? []
+    }
+
+    /// Fetches the most recent insider item for the current team. Returns
+    /// nil on error or when the team has no items yet — caller treats both
+    /// identically (no card rendered).
+    private func fetchLatestInsider() async -> InsiderItem? {
+        let items = (try? await APIClient.shared.fetchInsiderItems(teamId: teamId, limit: 1)) ?? []
+        return items.first
     }
 }

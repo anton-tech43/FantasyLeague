@@ -284,6 +284,30 @@ class APIClient {
         return rows.first
     }
 
+    // MARK: - Insider items (V1.1 task C1)
+
+    /// Fetch the N most recent insider items for a team, newest first.
+    /// Used by both the "Things he doesn't know" card on His Team and the
+    /// Feed empty-state surface when there's no news for the team.
+    ///
+    /// Returns an empty array if the team has no items yet (brand-new team
+    /// the routine hasn't generated for yet, or a team that's been skipped
+    /// for a few days). Callers treat empty-array and thrown-error
+    /// identically — neither blocks the UI.
+    func fetchInsiderItems(teamId: String, limit: Int = 5) async throws -> [InsiderItem] {
+        let url = try buildURL(path: "team_insider_items", queryItems: [
+            URLQueryItem(name: "team_id", value: "eq.\(teamId)"),
+            URLQueryItem(name: "order", value: "published_at.desc"),
+            URLQueryItem(name: "limit", value: "\(limit)"),
+            URLQueryItem(name: "select", value: "id,team_id,type,title,body,source_url,published_at")
+        ])
+        var request = makeRequest(url: url)
+        request.timeoutInterval = 10
+        let (data, response) = try await URLSession.shared.data(for: request)
+        try validateResponse(response)
+        return try decoder.decode([InsiderItem].self, from: data)
+    }
+
     // MARK: - Delete My Data
 
     func deleteMyData(token: String) async throws {

@@ -19,6 +19,11 @@ struct FeedView: View {
     @State private var isLoadingMore = false
     @State private var freshnessCardDismissed = false
     @State private var matchdayPlayers: [PlayerCard] = []
+    /// Filled in when the team feed is empty AND the user is T2+. Lets us
+    /// surface an Insider item ("Things he doesn't know") instead of the
+    /// generic "nothing today" empty state, so the user always has
+    /// something to read on opening the app. V1.1 task C1.
+    @State private var emptyStateInsider: InsiderItem?
     @AppStorage("hasSeenImmersiveBanner") private var hasSeenImmersiveBanner = false
 
     private let pageSize = 20
@@ -309,8 +314,29 @@ struct FeedView: View {
         .padding(.horizontal, Layout.screenPadding)
     }
 
+    @ViewBuilder
     private var emptyView: some View {
-        EmptyStateView(teamName: appState.selectedTeam?.shortName ?? "your team")
+        // T2+ users with an insider item available get a useful card to
+        // read instead of the generic "nothing today" empty state. T1 users
+        // and teams without an insider row fall back to the original empty
+        // state. Fetched in loadTeamFeed once teamItems is confirmed empty.
+        if TierGating.isAvailable(.insiderCard, tier: appState.selectedTier),
+           let insider = emptyStateInsider {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("NO NEWS RIGHT NOW. WORTH KNOWING:")
+                        .font(.sectionHeader)
+                        .tracking(1)
+                        .foregroundColor(.mutedText)
+                        .padding(.leading, 4)
+                    InsiderCard(item: insider)
+                }
+                .padding(.horizontal, Layout.screenPadding)
+                .padding(.top, 24)
+            }
+        } else {
+            EmptyStateView(teamName: appState.selectedTeam?.shortName ?? "your team")
+        }
     }
 
     // MARK: - Navigation Helper
@@ -417,6 +443,21 @@ struct FeedView: View {
         if teamItems.contains(where: { $0.type == .matchday }),
            let teamId = appState.selectedTeam?.rawValue {
             matchdayPlayers = (try? await APIClient.shared.fetchPlayerCards(teamId: teamId)) ?? []
+        }
+
+        // When the team feed is empty for a T2+ user, pull the latest
+        // insider item to surface in emptyView instead of "nothing today".
+        // Cleared when items come back so the empty-state insider doesn't
+        // flash if the user reloads into populated content. The fetch is
+        // best-effort: failure leaves emptyStateInsider nil and emptyView
+        // falls back to the generic state.
+        if teamItems.isEmpty,
+           TierGating.isAvailable(.insiderCard, tier: appState.selectedTier),
+           let teamId = appState.selectedTeam?.rawValue {
+            let items = (try? await APIClient.shared.fetchInsiderItems(teamId: teamId, limit: 1)) ?? []
+            emptyStateInsider = items.first
+        } else {
+            emptyStateInsider = nil
         }
     }
 
