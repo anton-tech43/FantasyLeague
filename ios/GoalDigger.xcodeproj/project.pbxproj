@@ -7,66 +7,85 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AA000001 /* GoalDiggerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001; };
-		AA000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002; };
-		AA000003 /* Team.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003; };
-		AA000004 /* ContentItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000004; };
-		AA000005 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000005; };
-		AA000006 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000006; };
-		AA000007 /* ContentCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000007; };
-		AA000008 /* TeamPickerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000008; };
-		AA000200 /* OnboardingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000200; };
-		AA000009 /* BadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000009; };
-		AA000010 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000010; };
-		AA000011 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000011; };
-		AA000012 /* TeamSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000012; };
-		AA000013 /* NotificationPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000013; };
-		AA000014 /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000014; };
-		AA000015 /* ContentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000015; };
-		AA000016 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000016; };
-		AA000017 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000017; };
-		AA000018 /* CacheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000018; };
-		AA000019 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000019; };
-		AA000020 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB000020; };
-		AA000021 /* MockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000022; };
-		AA000030 /* HerNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000030; };
-		AA000031 /* HisNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000031; };
-		AA000032 /* OnboardingFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000032; };
-		AA000033 /* TierSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000033; };
-		AA000035 /* OnesToWatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000035; };
-		AA000040 /* ProgressDotsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000040; };
-		AA000036 /* PlayerCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000036; };
-		AA000037 /* TeamPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000037; };
-		AA000041 /* YourMoveCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000041; };
-		AA000042 /* MatchDayCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000042; };
-		AA000043 /* GoalDiggerWordmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000043; };
-		AA000050 /* arsenal.json in Resources */ = {isa = PBXBuildFile; fileRef = AB000050; };
-		AA000060 /* FeedContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000060; };
-		AA000061 /* UnreadTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000061; };
-		AA000062 /* ImmersiveCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000062; };
-		AA000063 /* ImmersiveSkeletonCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000063; };
-		AA000064 /* ContextSwitcherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000064; };
-		AA000065 /* EveryoneEmptyStateCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000065; };
-		AA000066 /* ClassicFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000066; };
-		AA000070 /* PlusJakartaSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000070; };
-		AA000071 /* PlusJakartaSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000071; };
-		AA000072 /* PlusJakartaSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000072; };
-		AA000073 /* PlusJakartaSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000073; };
-		AA000074 /* PlusJakartaSans-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000074; };
-		AA000075 /* PlusJakartaSans-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000075; };
-		AA000076 /* PlusJakartaSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000076; };
-		AA000077 /* LeagueSpartan-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000077; };
-		AA000080 /* PurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000080; };
-		AA000081 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000081; };
-		AA000090 /* TeamPageCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000090; };
-		AA000091 /* TeamPageMoodBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000091; };
-		AA000092 /* TeamPageThisWeek.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000092; };
-		AA000093 /* TeamPageRivalryMeter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000093; };
-		AA000094 /* TeamPageCountdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000094; };
-		AA000095 /* TeamPageFormDots.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000095; };
+		11668C80EB1ED7F740D84481 /* TierGating.swift in Sources */ = {isa = PBXBuildFile; fileRef = 427A2A492E809AB52CDF85A0 /* TierGating.swift */; };
+		14474256E2DD1E7DA90DA178 /* GlossaryText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1969411F418AE27184440E14 /* GlossaryText.swift */; };
+		52553E77A05FC21AFD39FE05 /* glossary.json in Resources */ = {isa = PBXBuildFile; fileRef = 842AE9AEAF418CB78FA4589A /* glossary.json */; };
+		52636A01D4C19FDD19072096 /* CalendarSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37D3E46E7BC8929DF2B09425 /* CalendarSyncService.swift */; };
+		5C6D265B75886BF7277447B7 /* GlossaryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AD6B0120F684DF2FDE52DDA /* GlossaryService.swift */; };
+		AA000001 /* GoalDiggerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001 /* GoalDiggerApp.swift */; };
+		AA000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002 /* AppDelegate.swift */; };
+		AA000003 /* Team.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003 /* Team.swift */; };
+		AA000004 /* ContentItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000004 /* ContentItem.swift */; };
+		AA000005 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000005 /* AppState.swift */; };
+		AA000006 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000006 /* Theme.swift */; };
+		AA000007 /* ContentCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000007 /* ContentCard.swift */; };
+		AA000008 /* TeamPickerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000008 /* TeamPickerCard.swift */; };
+		AA000009 /* BadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000009 /* BadgeView.swift */; };
+		AA000010 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000010 /* EmptyStateView.swift */; };
+		AA000011 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000011 /* WelcomeView.swift */; };
+		AA000012 /* TeamSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000012 /* TeamSelectionView.swift */; };
+		AA000013 /* NotificationPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000013 /* NotificationPromptView.swift */; };
+		AA000014 /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000014 /* FeedView.swift */; };
+		AA000015 /* ContentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000015 /* ContentDetailView.swift */; };
+		AA000016 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000016 /* SettingsView.swift */; };
+		AA000017 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000017 /* APIClient.swift */; };
+		AA000018 /* CacheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000018 /* CacheService.swift */; };
+		AA000019 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000019 /* NotificationService.swift */; };
+		AA000020 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB000020 /* Assets.xcassets */; };
+		AA000021 /* MockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000022 /* MockData.swift */; };
+		AA000030 /* HerNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000030 /* HerNameView.swift */; };
+		AA000031 /* HisNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000031 /* HisNameView.swift */; };
+		AA000032 /* OnboardingFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000032 /* OnboardingFlow.swift */; };
+		AA000033 /* TierSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000033 /* TierSelectionView.swift */; };
+		AA000035 /* OnesToWatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000035 /* OnesToWatchView.swift */; };
+		AA000036 /* PlayerCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000036 /* PlayerCardView.swift */; };
+		AA000037 /* TeamPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000037 /* TeamPageView.swift */; };
+		AA000040 /* ProgressDotsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000040 /* ProgressDotsView.swift */; };
+		AA000041 /* YourMoveCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000041 /* YourMoveCard.swift */; };
+		AA000042 /* MatchDayCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000042 /* MatchDayCard.swift */; };
+		AA000043 /* GoalDiggerWordmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000043 /* GoalDiggerWordmark.swift */; };
+		AA000050 /* arsenal.json in Resources */ = {isa = PBXBuildFile; fileRef = AB000050 /* arsenal.json */; };
+		AA000060 /* FeedContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000060 /* FeedContext.swift */; };
+		AA000061 /* UnreadTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000061 /* UnreadTracker.swift */; };
+		AA000062 /* ImmersiveCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000062 /* ImmersiveCard.swift */; };
+		AA000063 /* ImmersiveSkeletonCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000063 /* ImmersiveSkeletonCard.swift */; };
+		AA000064 /* ContextSwitcherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000064 /* ContextSwitcherView.swift */; };
+		AA000065 /* EveryoneEmptyStateCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000065 /* EveryoneEmptyStateCard.swift */; };
+		AA000066 /* ClassicFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000066 /* ClassicFeedView.swift */; };
+		AA000070 /* PlusJakartaSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000070 /* PlusJakartaSans-Regular.ttf */; };
+		AA000071 /* PlusJakartaSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000071 /* PlusJakartaSans-Medium.ttf */; };
+		AA000072 /* PlusJakartaSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000072 /* PlusJakartaSans-SemiBold.ttf */; };
+		AA000073 /* PlusJakartaSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000073 /* PlusJakartaSans-Bold.ttf */; };
+		AA000074 /* PlusJakartaSans-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000074 /* PlusJakartaSans-Italic.ttf */; };
+		AA000075 /* PlusJakartaSans-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000075 /* PlusJakartaSans-MediumItalic.ttf */; };
+		AA000076 /* PlusJakartaSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000076 /* PlusJakartaSans-ExtraBold.ttf */; };
+		AA000077 /* LeagueSpartan-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000077 /* LeagueSpartan-Black.ttf */; };
+		AA000080 /* PurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000080 /* PurchaseManager.swift */; };
+		AA000081 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000081 /* PaywallView.swift */; };
+		AA000090 /* TeamPageCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000090 /* TeamPageCard.swift */; };
+		AA000091 /* TeamPageMoodBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000091 /* TeamPageMoodBanner.swift */; };
+		AA000092 /* TeamPageThisWeek.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000092 /* TeamPageThisWeek.swift */; };
+		AA000093 /* TeamPageRivalryMeter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000093 /* TeamPageRivalryMeter.swift */; };
+		AA000094 /* TeamPageCountdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000094 /* TeamPageCountdown.swift */; };
+		AA000095 /* TeamPageFormDots.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000095 /* TeamPageFormDots.swift */; };
+		AA000200 /* OnboardingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000200 /* OnboardingTextField.swift */; };
+		AC8165AEE3D87BDE0DF13AA8 /* GlossaryTerm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 270994EEE49DF138BC2540A0 /* GlossaryTerm.swift */; };
+		B5994EBA3DC6541DF77F9768 /* ShareableCardRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B6B4EAC55CB925992D81ED /* ShareableCardRenderer.swift */; };
+		C6106E6CA3714FF9402A1F68 /* TeamSeasonState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19D7EA257F3133FF29F0A866 /* TeamSeasonState.swift */; };
+		C8D06CD38DF3FEBE15567E43 /* SeasonPrimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B5B3A50DCC8E9B41626BB81 /* SeasonPrimerView.swift */; };
+		CEE0AA64A8A71768C7DAE896 /* AudioPlayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36F66AB00E15F67DAA68C18A /* AudioPlayerService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1969411F418AE27184440E14 /* GlossaryText.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlossaryText.swift; sourceTree = "<group>"; };
+		19D7EA257F3133FF29F0A866 /* TeamSeasonState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TeamSeasonState.swift; sourceTree = "<group>"; };
+		270994EEE49DF138BC2540A0 /* GlossaryTerm.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlossaryTerm.swift; sourceTree = "<group>"; };
+		2AD6B0120F684DF2FDE52DDA /* GlossaryService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlossaryService.swift; sourceTree = "<group>"; };
+		2B5B3A50DCC8E9B41626BB81 /* SeasonPrimerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SeasonPrimerView.swift; sourceTree = "<group>"; };
+		36F66AB00E15F67DAA68C18A /* AudioPlayerService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioPlayerService.swift; sourceTree = "<group>"; };
+		37D3E46E7BC8929DF2B09425 /* CalendarSyncService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarSyncService.swift; sourceTree = "<group>"; };
+		427A2A492E809AB52CDF85A0 /* TierGating.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TierGating.swift; sourceTree = "<group>"; };
+		842AE9AEAF418CB78FA4589A /* glossary.json */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json; path = glossary.json; sourceTree = "<group>"; };
 		AB000001 /* GoalDiggerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalDiggerApp.swift; sourceTree = "<group>"; };
 		AB000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		AB000003 /* Team.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Team.swift; sourceTree = "<group>"; };
@@ -75,7 +94,6 @@
 		AB000006 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		AB000007 /* ContentCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentCard.swift; sourceTree = "<group>"; };
 		AB000008 /* TeamPickerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPickerCard.swift; sourceTree = "<group>"; };
-		AB000200 /* OnboardingTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingTextField.swift; sourceTree = "<group>"; };
 		AB000009 /* BadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeView.swift; sourceTree = "<group>"; };
 		AB000010 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
 		AB000011 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
@@ -91,20 +109,19 @@
 		AB000021 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AB000022 /* MockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockData.swift; sourceTree = "<group>"; };
 		AB000023 /* GoalDigger.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GoalDigger.entitlements; sourceTree = "<group>"; };
-		AB000024 /* Configuration.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Configuration.xcconfig.example"; sourceTree = "<group>"; };
+		AB000024 /* Configuration.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration.xcconfig.example; sourceTree = "<group>"; };
 		AB000025 /* Configuration.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration.xcconfig; sourceTree = "<group>"; };
 		AB000030 /* HerNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HerNameView.swift; sourceTree = "<group>"; };
 		AB000031 /* HisNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HisNameView.swift; sourceTree = "<group>"; };
 		AB000032 /* OnboardingFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlow.swift; sourceTree = "<group>"; };
 		AB000033 /* TierSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TierSelectionView.swift; sourceTree = "<group>"; };
 		AB000035 /* OnesToWatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnesToWatchView.swift; sourceTree = "<group>"; };
-		AB000040 /* ProgressDotsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressDotsView.swift; sourceTree = "<group>"; };
 		AB000036 /* PlayerCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerCardView.swift; sourceTree = "<group>"; };
 		AB000037 /* TeamPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageView.swift; sourceTree = "<group>"; };
+		AB000040 /* ProgressDotsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressDotsView.swift; sourceTree = "<group>"; };
 		AB000041 /* YourMoveCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YourMoveCard.swift; sourceTree = "<group>"; };
 		AB000042 /* MatchDayCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDayCard.swift; sourceTree = "<group>"; };
 		AB000043 /* GoalDiggerWordmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalDiggerWordmark.swift; sourceTree = "<group>"; };
-		AB000099 /* GoalDigger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GoalDigger.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB000050 /* arsenal.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = arsenal.json; sourceTree = "<group>"; };
 		AB000060 /* FeedContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedContext.swift; sourceTree = "<group>"; };
 		AB000061 /* UnreadTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnreadTracker.swift; sourceTree = "<group>"; };
@@ -129,10 +146,23 @@
 		AB000093 /* TeamPageRivalryMeter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageRivalryMeter.swift; sourceTree = "<group>"; };
 		AB000094 /* TeamPageCountdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageCountdown.swift; sourceTree = "<group>"; };
 		AB000095 /* TeamPageFormDots.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageFormDots.swift; sourceTree = "<group>"; };
+		AB000099 /* GoalDigger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GoalDigger.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB000200 /* OnboardingTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingTextField.swift; sourceTree = "<group>"; };
+		E5B6B4EAC55CB925992D81ED /* ShareableCardRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareableCardRenderer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFrameworksBuildPhase section */
+		AD000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
 /* Begin PBXGroup section */
-		AC000001 /* Root */ = {
+		AC000001 = {
 			isa = PBXGroup;
 			children = (
 				AC000002 /* GoalDigger */,
@@ -153,7 +183,7 @@
 				AB000021 /* Info.plist */,
 				AB000023 /* GoalDigger.entitlements */,
 				AB000024 /* Configuration.xcconfig.example */,
-			AB000025 /* Configuration.xcconfig */,
+				AB000025 /* Configuration.xcconfig */,
 			);
 			path = GoalDigger;
 			sourceTree = "<group>";
@@ -192,6 +222,8 @@
 				AB000064 /* ContextSwitcherView.swift */,
 				AB000065 /* EveryoneEmptyStateCard.swift */,
 				AB000200 /* OnboardingTextField.swift */,
+				E5B6B4EAC55CB925992D81ED /* ShareableCardRenderer.swift */,
+				1969411F418AE27184440E14 /* GlossaryText.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -221,6 +253,7 @@
 				AB000012 /* TeamSelectionView.swift */,
 				AB000033 /* TierSelectionView.swift */,
 				AB000013 /* NotificationPromptView.swift */,
+				2B5B3A50DCC8E9B41626BB81 /* SeasonPrimerView.swift */,
 			);
 			path = Onboarding;
 			sourceTree = "<group>";
@@ -250,6 +283,9 @@
 				AB000005 /* AppState.swift */,
 				AB000022 /* MockData.swift */,
 				AB000060 /* FeedContext.swift */,
+				427A2A492E809AB52CDF85A0 /* TierGating.swift */,
+				270994EEE49DF138BC2540A0 /* GlossaryTerm.swift */,
+				19D7EA257F3133FF29F0A866 /* TeamSeasonState.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -262,6 +298,9 @@
 				AB000019 /* NotificationService.swift */,
 				AB000061 /* UnreadTracker.swift */,
 				AB000080 /* PurchaseManager.swift */,
+				36F66AB00E15F67DAA68C18A /* AudioPlayerService.swift */,
+				37D3E46E7BC8929DF2B09425 /* CalendarSyncService.swift */,
+				2AD6B0120F684DF2FDE52DDA /* GlossaryService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -271,23 +310,9 @@
 			children = (
 				AB000020 /* Assets.xcassets */,
 				AC000022 /* Fonts */,
+				842AE9AEAF418CB78FA4589A /* glossary.json */,
 			);
 			path = Resources;
-			sourceTree = "<group>";
-		};
-		AC000022 /* Fonts */ = {
-			isa = PBXGroup;
-			children = (
-				AB000070 /* PlusJakartaSans-Regular.ttf */,
-				AB000071 /* PlusJakartaSans-Medium.ttf */,
-				AB000072 /* PlusJakartaSans-SemiBold.ttf */,
-				AB000073 /* PlusJakartaSans-Bold.ttf */,
-				AB000074 /* PlusJakartaSans-Italic.ttf */,
-				AB000075 /* PlusJakartaSans-MediumItalic.ttf */,
-				AB000076 /* PlusJakartaSans-ExtraBold.ttf */,
-				AB000077 /* LeagueSpartan-Black.ttf */,
-			);
-			path = Fonts;
 			sourceTree = "<group>";
 		};
 		AC000013 /* Settings */ = {
@@ -328,14 +353,6 @@
 			path = Matchday;
 			sourceTree = "<group>";
 		};
-		AC000099 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				AB000099 /* GoalDigger.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		AC000020 /* MockData */ = {
 			isa = PBXGroup;
 			children = (
@@ -350,6 +367,29 @@
 				AB000050 /* arsenal.json */,
 			);
 			path = team_pages;
+			sourceTree = "<group>";
+		};
+		AC000022 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				AB000070 /* PlusJakartaSans-Regular.ttf */,
+				AB000071 /* PlusJakartaSans-Medium.ttf */,
+				AB000072 /* PlusJakartaSans-SemiBold.ttf */,
+				AB000073 /* PlusJakartaSans-Bold.ttf */,
+				AB000074 /* PlusJakartaSans-Italic.ttf */,
+				AB000075 /* PlusJakartaSans-MediumItalic.ttf */,
+				AB000076 /* PlusJakartaSans-ExtraBold.ttf */,
+				AB000077 /* LeagueSpartan-Black.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
+		AC000099 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AB000099 /* GoalDigger.app */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -395,7 +435,7 @@
 				en,
 				Base,
 			);
-			mainGroup = AC000001 /* Root */;
+			mainGroup = AC000001;
 			productRefGroup = AC000099 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -420,6 +460,7 @@
 				AA000075 /* PlusJakartaSans-MediumItalic.ttf in Resources */,
 				AA000076 /* PlusJakartaSans-ExtraBold.ttf in Resources */,
 				AA000077 /* LeagueSpartan-Black.ttf in Resources */,
+				52553E77A05FC21AFD39FE05 /* glossary.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -461,36 +502,35 @@
 				AA000041 /* YourMoveCard.swift in Sources */,
 				AA000042 /* MatchDayCard.swift in Sources */,
 				AA000043 /* GoalDiggerWordmark.swift in Sources */,
-			AA000060 /* FeedContext.swift in Sources */,
-			AA000061 /* UnreadTracker.swift in Sources */,
-			AA000062 /* ImmersiveCard.swift in Sources */,
-			AA000063 /* ImmersiveSkeletonCard.swift in Sources */,
-			AA000064 /* ContextSwitcherView.swift in Sources */,
-			AA000065 /* EveryoneEmptyStateCard.swift in Sources */,
-			AA000066 /* ClassicFeedView.swift in Sources */,
-			AA000080 /* PurchaseManager.swift in Sources */,
-			AA000081 /* PaywallView.swift in Sources */,
-			AA000090 /* TeamPageCard.swift in Sources */,
-			AA000091 /* TeamPageMoodBanner.swift in Sources */,
-			AA000092 /* TeamPageThisWeek.swift in Sources */,
-			AA000093 /* TeamPageRivalryMeter.swift in Sources */,
-			AA000094 /* TeamPageCountdown.swift in Sources */,
-			AA000095 /* TeamPageFormDots.swift in Sources */,
-			AA000200 /* OnboardingTextField.swift in Sources */,
+				AA000060 /* FeedContext.swift in Sources */,
+				AA000061 /* UnreadTracker.swift in Sources */,
+				AA000062 /* ImmersiveCard.swift in Sources */,
+				AA000063 /* ImmersiveSkeletonCard.swift in Sources */,
+				AA000064 /* ContextSwitcherView.swift in Sources */,
+				AA000065 /* EveryoneEmptyStateCard.swift in Sources */,
+				AA000066 /* ClassicFeedView.swift in Sources */,
+				AA000080 /* PurchaseManager.swift in Sources */,
+				AA000081 /* PaywallView.swift in Sources */,
+				AA000090 /* TeamPageCard.swift in Sources */,
+				AA000091 /* TeamPageMoodBanner.swift in Sources */,
+				AA000092 /* TeamPageThisWeek.swift in Sources */,
+				AA000093 /* TeamPageRivalryMeter.swift in Sources */,
+				AA000094 /* TeamPageCountdown.swift in Sources */,
+				AA000095 /* TeamPageFormDots.swift in Sources */,
+				AA000200 /* OnboardingTextField.swift in Sources */,
+				11668C80EB1ED7F740D84481 /* TierGating.swift in Sources */,
+				B5994EBA3DC6541DF77F9768 /* ShareableCardRenderer.swift in Sources */,
+				CEE0AA64A8A71768C7DAE896 /* AudioPlayerService.swift in Sources */,
+				52636A01D4C19FDD19072096 /* CalendarSyncService.swift in Sources */,
+				AC8165AEE3D87BDE0DF13AA8 /* GlossaryTerm.swift in Sources */,
+				5C6D265B75886BF7277447B7 /* GlossaryService.swift in Sources */,
+				14474256E2DD1E7DA90DA178 /* GlossaryText.swift in Sources */,
+				C6106E6CA3714FF9402A1F68 /* TeamSeasonState.swift in Sources */,
+				C8D06CD38DF3FEBE15567E43 /* SeasonPrimerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXFrameworksBuildPhase section */
-		AD000004 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXFrameworksBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
 		AE000010 /* Debug */ = {
@@ -636,7 +676,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
 	};
 	rootObject = AF000001 /* Project object */;
 }

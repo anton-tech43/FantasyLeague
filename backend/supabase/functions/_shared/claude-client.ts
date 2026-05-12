@@ -1,7 +1,12 @@
 // _shared/claude-client.ts
 // Goal Digger — Anthropic Claude API client with retry logic
 
-const CLAUDE_MODEL = "claude-haiku-4-5-20251001";
+// Default model is Sonnet. Haiku 4.5 (the previous default) consistently
+// drifted on tone — fan voice instead of the gf-to-bf older-sister voice the
+// product needs — and was caught hallucinating CL semis for Arsenal on the
+// first A1 generation when only PL data was in the prompt input. Sonnet 4.5
+// is the model BUILD_PLAN.md / PROMPTS.md originally specified.
+const CLAUDE_MODEL = "claude-sonnet-4-5-20250929";
 const MAX_RETRIES = 3;
 const RETRY_DELAYS = [30_000, 120_000, 600_000]; // 30s, 2min, 10min
 
@@ -22,6 +27,8 @@ interface ClaudeRequest {
   tools?: ClaudeTool[];
   tool_choice?: { type: string; name?: string };
   max_tokens?: number;
+  /** Optional per-call model override. Defaults to CLAUDE_MODEL (Sonnet). */
+  model?: string;
 }
 
 interface ClaudeResponse {
@@ -39,7 +46,7 @@ export async function callClaude(request: ClaudeRequest): Promise<ClaudeResponse
   if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
 
   const body = {
-    model: CLAUDE_MODEL,
+    model: request.model ?? CLAUDE_MODEL,
     max_tokens: request.max_tokens ?? 2000,
     system: request.system,
     messages: request.messages,

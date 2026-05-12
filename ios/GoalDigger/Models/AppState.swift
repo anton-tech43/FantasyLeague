@@ -30,9 +30,26 @@ class AppState {
     var notificationPermissionRequested: Bool {
         didSet { UserDefaults.standard.set(notificationPermissionRequested, forKey: "notificationPermissionRequested") }
     }
+    var calendarSyncEnabled: Bool {
+        didSet { UserDefaults.standard.set(calendarSyncEnabled, forKey: "calendarSyncEnabled") }
+    }
+    /// Whether the user has dismissed the post-onboarding Season Primer screen.
+    /// True after they tap either CTA on `SeasonPrimerView`, OR after a fetch
+    /// failure (defensive: we never block twice on a slow/broken backend).
+    /// Reset to false in `clearAllData()` so re-onboarding shows it again.
+    var hasSeenSeasonPrimer: Bool {
+        didSet { UserDefaults.standard.set(hasSeenSeasonPrimer, forKey: "hasSeenSeasonPrimer") }
+    }
 
     // Navigation
     var deepLinkContentId: UUID?
+    /// Transient, session-only. Set by `SeasonPrimerView` CTAs to direct the
+    /// user to the right tab when `MainTabView` first appears. The "Teach me
+    /// more" CTA sets this to 1 (His Team); "Take me to the news" sets 0
+    /// (Feed). Consumed and cleared on `MainTabView.onAppear` so a later
+    /// re-appear (e.g., scenePhase change) doesn't snap back.
+    /// NOT persisted.
+    var pendingTabAfterPrimer: Int?
 
     // Feed context — session-only, not persisted. Resets to .team(selectedTeam) on app launch.
     var activeContext: FeedContext = .everyoneTalking
@@ -55,6 +72,8 @@ class AppState {
         self.selectedTier = UserDefaults.standard.integer(forKey: "selectedTier").clamped(to: 1...3, default: 2)
         self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
         self.notificationPermissionRequested = UserDefaults.standard.bool(forKey: "notificationPermissionRequested")
+        self.calendarSyncEnabled = UserDefaults.standard.bool(forKey: "calendarSyncEnabled")
+        self.hasSeenSeasonPrimer = UserDefaults.standard.bool(forKey: "hasSeenSeasonPrimer")
 
         // Feed style — persisted, defaults to immersive (one full-screen card
         // per scroll position). The "lands on article" complaint earlier was
@@ -119,13 +138,17 @@ class AppState {
         selectedTier = 2
         hasCompletedOnboarding = false
         notificationPermissionRequested = false
+        calendarSyncEnabled = false
+        hasSeenSeasonPrimer = false
         deepLinkContentId = nil
+        pendingTabAfterPrimer = nil
         activeContext = .everyoneTalking
         isContextSwitcherOpen = false
         feedStyle = .immersive
         let keys = ["herName", "hisName", "selectedTeam", "selectedTier",
                      "hasCompletedOnboarding", "notificationPermissionRequested", "apnsToken",
-                     "hasAutoExpandedFirstItem", "feedStyle", "hasSeenImmersiveBanner"]
+                     "hasAutoExpandedFirstItem", "feedStyle", "hasSeenImmersiveBanner",
+                     "calendarSyncEnabled", "hasSeenSeasonPrimer"]
         keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
         UnreadTracker.shared.clearAll()
     }
