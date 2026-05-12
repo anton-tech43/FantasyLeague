@@ -322,6 +322,44 @@ class APIClient {
         return try decodeArrayLoosely(data: data)
     }
 
+    // MARK: - Live match brief (V1.1 task C5)
+
+    /// Fetch the current live match brief for the team — the LiveMatchCard
+    /// surface that polls every 60s during a live window.
+    ///
+    /// Goes through the live-brief-current Edge Function (NOT direct REST)
+    /// because the function holds the "is there a live match right now?"
+    /// logic — it joins match_status_state's kickoff window with
+    /// live_match_briefs and returns 204 if no live window is active. iOS
+    /// just polls; the server decides whether to render.
+    ///
+    /// Returns nil on 204 (expected — no live match for this team), and
+    /// throws on real errors. Callers (FeedView) suppress nil + thrown
+    /// errors identically — neither blocks the feed render.
+    func fetchCurrentLiveBrief(teamId: String) async throws -> LiveMatchBrief? {
+        let base = try requireFunctionsBaseURL()
+        guard var components = URLComponents(url: base.appendingPathComponent("live-brief-current"), resolvingAgainstBaseURL: false) else {
+            throw APIError.invalidResponse
+        }
+        components.queryItems = [URLQueryItem(name: "team_id", value: teamId)]
+        guard let url = components.url else { throw APIError.invalidResponse }
+        var request = makeRequest(url: url)
+        // Tight timeout: poll cadence is 60s, no point waiting longer than
+        // 8s for a response we'll re-request shortly.
+        request.timeoutInterval = 8
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        if httpResponse.statusCode == 204 {
+            return nil   // No live match in window — expected, not an error.
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.httpError(httpResponse.statusCode)
+        }
+        return try decoder.decode(LiveMatchBrief.self, from: data)
+    }
+
     // MARK: - Delete My Data
 
     func deleteMyData(token: String) async throws {

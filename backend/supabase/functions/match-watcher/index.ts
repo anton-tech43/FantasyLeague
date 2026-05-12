@@ -21,13 +21,21 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 
 const FINISHED_STATUSES = new Set(["FT", "AET", "PEN"]);
+// Live = match is in play (or in HT pause). Both halves + extra time
+// brackets. We DON'T include "TBD"/"PST" (postponed) or "INT" (interrupted)
+// — those aren't moments worth commenting on.
+const LIVE_STATUSES = new Set(["1H", "HT", "2H", "ET", "P", "BT"]);
 const PL_LEAGUE_ID = 39;
 const SEASON = 2025; // BUMP THIS EACH AUGUST: Aug 2026 → May 2027 = SEASON=2026
 const API_FOOTBALL_BASE = "https://v3.football.api-sports.io";
 
 interface ApiFixture {
-  fixture: { id: number; status: { short: string }; date: string };
-  teams: { home: { id: number }; away: { id: number } };
+  fixture: {
+    id: number;
+    status: { short: string; elapsed: number | null };
+    date: string;
+  };
+  teams: { home: { id: number; name: string }; away: { id: number; name: string } };
   goals: { home: number | null; away: number | null };
 }
 
@@ -37,6 +45,12 @@ serve(async (_req) => {
   const apiFootballKey = Deno.env.get("API_FOOTBALL_KEY");
   const routineUrl = Deno.env.get("MATCHDAY_ROUTINE_URL");
   const routineToken = Deno.env.get("MATCHDAY_ROUTINE_TOKEN");
+  // V1.1 C5: live-brief routine for HT / 75' triggers. Optional — if either
+  // env var is missing we still run the FT-transition flow but skip live
+  // brief firing. This keeps the watcher resilient during phased rollout.
+  const liveBriefUrl = Deno.env.get("LIVE_BRIEF_ROUTINE_URL");
+  const liveBriefToken = Deno.env.get("LIVE_BRIEF_ROUTINE_TOKEN");
+  const liveBriefConfigured = !!liveBriefUrl && !!liveBriefToken;
 
   if (!apiFootballKey || !routineUrl || !routineToken) {
     return new Response(
@@ -104,6 +118,7 @@ serve(async (_req) => {
   let firesDispatched = 0;
   let firstSeen = 0;
   let stateUpdates = 0;
+  let liveBriefFires = 0;
 
   for (const fx of fixtures) {
     const fixtureId = fx.fixture.id;
@@ -122,7 +137,7 @@ serve(async (_req) => {
 
     const { data: prior } = await supabase
       .from("match_status_state")
-      .select("status, fired_finished_at")
+      .select("status, fired_finished_at, briefs_fired")
       .eq("fixture_id", fixtureId)
       .maybeSingle();
 
@@ -132,6 +147,42 @@ serve(async (_req) => {
       FINISHED_STATUSES.has(status) &&
       prior !== null &&
       !prior.fired_finished_at;
+
+    // ─── V1.1 C5: live-brief trigger detection ────────────────────────
+    // For LIVE fixtures, decide which (if any) trigger label to fire
+    // this minute. The briefs_fired JSONB array on match_status_state is
+    // the idempotency guard — once a label is in the array, we won't
+    // re-fire it. First observation also skips (we don't know how long
+    // we've been past the trigger window).
+    const elapsed = fx.fixture.status.elapsed;
+    const briefsFired: string[] = Array.isArray(prior?.briefs_fired)
+      ? prior!.briefs_fired as string[]
+      : [];
+    const isLive = LIVE_STATUSES.has(status);
+    const newTriggers: string[] = [];
+
+    if (isLive && prior !== null && liveBriefConfigured) {
+      // HT trigger: status == "HT" (the literal break) OR status == "2H"
+      // AND we haven't fired HT yet (catches the case where we missed
+      // the HT window because the cron didn't tick during the break).
+      if (
+        !briefsFired.includes("HT") &&
+        (status === "HT" || status === "2H")
+      ) {
+        newTriggers.push("HT");
+      }
+      // 75' trigger: status == "2H" AND elapsed >= 75. Note: API-Football's
+      // `elapsed` includes added time, so 90+1 = 91 etc. — the >= 75 check
+      // still works because we're only asking "are we past the 75' mark?".
+      if (
+        !briefsFired.includes("75") &&
+        status === "2H" &&
+        elapsed !== null &&
+        elapsed >= 75
+      ) {
+        newTriggers.push("75");
+      }
+    }
 
     if (justFinished) {
       // Fire the routine for both teams. Each fan sees the match through their lens.
@@ -170,6 +221,67 @@ serve(async (_req) => {
       }
     }
 
+    // V1.1 C5: fire gd-live-brief for any new in-match trigger windows.
+    // One fire per (team, trigger) pair — both home and away teams get
+    // briefs, each tailored to their own perspective.
+    for (const trigger of newTriggers) {
+      for (const [teamId, opponentTeamId, isHome] of [
+        [homeTeamId, awayTeamId, true],
+        [awayTeamId, homeTeamId, false],
+      ] as const) {
+        const userScore = isHome ? homeGoals : awayGoals;
+        const opponentScore = isHome ? awayGoals : homeGoals;
+        const homeName = fx.teams.home.name;
+        const awayName = fx.teams.away.name;
+        const briefMinute = elapsed ?? (trigger === "HT" ? 46 : 75);
+        // Compose the payload the routine expects. Semicolon-separated
+        // key=value pairs match the existing gd-matchday convention.
+        const text = [
+          `home_team_id=${homeTeamId}`,
+          `away_team_id=${awayTeamId}`,
+          `home_team_name=${homeName}`,
+          `away_team_name=${awayName}`,
+          `user_team_id=${teamId}`,
+          `home_goals=${homeGoals ?? 0}`,
+          `away_goals=${opponentScore ?? userScore ?? 0}`,
+          `minute=${briefMinute}`,
+          `trigger=${trigger}`,
+          `fixture_id=${fixtureId}`,
+        ].join("; ");
+
+        try {
+          const fireResp = await fetch(liveBriefUrl!, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${liveBriefToken}`,
+              "anthropic-beta": "experimental-cc-routine-2026-04-01",
+              "anthropic-version": "2023-06-01",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ text }),
+          });
+          if (fireResp.ok) {
+            liveBriefFires++;
+            console.log(`live-brief fired for ${teamId}/${fixtureId} [${trigger}]`);
+          } else {
+            const body = await fireResp.text().catch(() => "");
+            console.error(
+              `live-brief fire failed for ${teamId}/${fixtureId} [${trigger}]: ${fireResp.status} ${body.slice(0, 200)}`,
+            );
+          }
+        } catch (e) {
+          console.error(`live-brief fire threw for ${teamId}/${fixtureId} [${trigger}]:`, e);
+        }
+      }
+    }
+
+    // Compute the updated briefs_fired array (append newTriggers, dedupe).
+    // We write this into the upsert below so a second tick within the
+    // same trigger window won't re-fire — even if the prior row never
+    // existed (first-observation skip case is handled by the
+    // `prior !== null` guard on trigger detection above).
+    const updatedBriefsFired = [...new Set([...briefsFired, ...newTriggers])];
+
     // Upsert state. If we just fired, mark fired_finished_at so we don't re-fire.
     const { error: upsertErr } = await supabase
       .from("match_status_state")
@@ -184,6 +296,7 @@ serve(async (_req) => {
           away_goals: awayGoals,
           kickoff_time: kickoffTime,
           last_checked: new Date().toISOString(),
+          briefs_fired: updatedBriefsFired,
           ...(justFinished
             ? { fired_finished_at: new Date().toISOString() }
             : {}),
@@ -204,6 +317,8 @@ serve(async (_req) => {
       first_seen: firstSeen,
       state_updates: stateUpdates,
       fires_dispatched: firesDispatched,
+      live_brief_fires: liveBriefFires,
+      live_brief_configured: liveBriefConfigured,
       date: today,
       season: SEASON,
     }),

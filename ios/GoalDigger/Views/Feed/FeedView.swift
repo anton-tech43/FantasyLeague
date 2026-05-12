@@ -4,6 +4,7 @@ import SwiftData
 struct FeedView: View {
     @Environment(AppState.self) var appState
     @Environment(\.modelContext) var modelContext
+    @Environment(\.scenePhase) private var scenePhase
 
     // Dual data sources
     @State private var teamItems: [ContentItem] = []
@@ -24,6 +25,12 @@ struct FeedView: View {
     /// generic "nothing today" empty state, so the user always has
     /// something to read on opening the app. V1.1 task C1.
     @State private var emptyStateInsider: InsiderItem?
+    /// LiveMatchCard surface (V1.1 task C5). When non-nil, a top-of-feed
+    /// card renders showing live in-match commentary. Populated by a
+    /// 60-second poll loop while the user is on the feed AND scenePhase
+    /// is active. Cleared when the poll returns 204 (no live match).
+    @State private var liveBrief: LiveMatchBrief?
+    @State private var liveBriefPollTask: Task<Void, Never>?
     @AppStorage("hasSeenImmersiveBanner") private var hasSeenImmersiveBanner = false
 
     private let pageSize = 20
@@ -98,6 +105,13 @@ struct FeedView: View {
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(.hidden, for: .tabBar)
         .task { await loadInitial() }
+        .task(id: appState.selectedTeam?.rawValue) {
+            // Live brief poll lifecycle. Kicks off on first appear and on
+            // team change. The task body is the poll loop itself; it
+            // exits when SwiftUI cancels the task (view disappear, id
+            // change, app suspend). T1 users opt-out via TierGating.
+            await runLiveBriefPoll()
+        }
         .onChange(of: appState.selectedTeam) { oldTeam, newTeam in
             guard oldTeam != newTeam, newTeam != nil else { return }
             // Clear stale team data and reload for the new team
@@ -107,7 +121,60 @@ struct FeedView: View {
             isLoading = true
             freshnessCardDismissed = false
             matchdayPlayers = []
+            liveBrief = nil   // drop stale live card from prior team
             Task { await loadTeamFeed() }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            // SwiftUI's .task auto-cancels on scenePhase background on
+            // some iOS versions but not others; explicitly cancel here so
+            // the 60s poll doesn't keep burning battery in the background.
+            // .task(id:) re-fires on the next active phase via the
+            // selectedTeam id, restarting the poll cleanly.
+            if newPhase == .background {
+                liveBriefPollTask?.cancel()
+                liveBriefPollTask = nil
+            }
+        }
+    }
+
+    // MARK: - Live brief poll loop (V1.1 task C5)
+
+    /// Polls the live-brief-current Edge Function every 60 seconds for the
+    /// user's selected team. On 200 sets `liveBrief`; on 204 clears it.
+    /// T1 users skip the poll entirely. Cancelled by SwiftUI when the
+    /// view disappears or scenePhase transitions to .background.
+    private func runLiveBriefPoll() async {
+        // Cancel any prior task (defensive — .task(id:) should have done
+        // this, but the explicit nil-out keeps our state honest).
+        liveBriefPollTask?.cancel()
+
+        guard TierGating.isAvailable(.matchDayLive, tier: appState.selectedTier),
+              let teamId = appState.selectedTeam?.rawValue else {
+            liveBrief = nil
+            return
+        }
+
+        // Loop until cancelled. CancellationError exits cleanly.
+        while !Task.isCancelled {
+            do {
+                let brief = try await APIClient.shared.fetchCurrentLiveBrief(teamId: teamId)
+                liveBrief = brief
+            } catch {
+                // Network blip or backend hiccup. Don't blow away an
+                // existing card on a transient error — keep the last
+                // good value visible until the next successful poll.
+                #if DEBUG
+                print("⚠️ live brief poll error: \(error)")
+                #endif
+            }
+            // 60s between polls. Task.sleep is cancellation-aware; if the
+            // view disappears mid-sleep, this throws CancellationError and
+            // we exit the loop.
+            do {
+                try await Task.sleep(for: .seconds(60))
+            } catch {
+                return
+            }
         }
     }
 
@@ -180,25 +247,43 @@ struct FeedView: View {
 
     @ViewBuilder
     private var feedContent: some View {
-        if appState.feedStyle == .immersive {
-            immersiveFeed
-        } else {
-            VStack(spacing: 0) {
-                if !hasSeenImmersiveBanner {
-                    migrationBanner
+        VStack(spacing: 0) {
+            // LiveMatchCard sits above whichever feed style is selected.
+            // V1.1 task C5. Visible only while a live PL match window is
+            // open for the user's team AND the user is T2+. Polled in
+            // runLiveBriefPoll(); cleared when poll returns 204 or on
+            // team change.
+            if let brief = liveBrief,
+               TierGating.isAvailable(.matchDayLive, tier: appState.selectedTier),
+               appState.activeContext != .everyoneTalking {
+                LiveMatchCard(brief: brief)
+                    .padding(.horizontal, Layout.screenPadding)
+                    .padding(.top, 8)
+                    .padding(.bottom, 6)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+
+            if appState.feedStyle == .immersive {
+                immersiveFeed
+            } else {
+                VStack(spacing: 0) {
+                    if !hasSeenImmersiveBanner {
+                        migrationBanner
+                    }
+                    ClassicFeedView(
+                        items: displayItems,
+                        feedContext: appState.activeContext,
+                        appState: appState,
+                        matchdayPlayers: matchdayPlayers,
+                        freshnessCardDismissed: $freshnessCardDismissed,
+                        isOffSeason: isOffSeason,
+                        onLoadMore: { await loadMore() }
+                    )
+                    .refreshable { await refresh() }
                 }
-                ClassicFeedView(
-                    items: displayItems,
-                    feedContext: appState.activeContext,
-                    appState: appState,
-                    matchdayPlayers: matchdayPlayers,
-                    freshnessCardDismissed: $freshnessCardDismissed,
-                    isOffSeason: isOffSeason,
-                    onLoadMore: { await loadMore() }
-                )
-                .refreshable { await refresh() }
             }
         }
+        .animation(.easeInOut(duration: 0.25), value: liveBrief?.id)
     }
 
     // MARK: - Immersive Feed
