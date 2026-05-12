@@ -26,6 +26,20 @@ struct TeamPageView: View {
         return letters.joined()
     }
 
+    /// Word-aware truncation. Plain `String.prefix(n)` cuts mid-word ("Chelsea
+    /// and Brentford, Fulham are sandwiched betwe") which looks broken. This
+    /// trims at the last whitespace at or before `maxChars` and appends an
+    /// ellipsis. Falls back to the raw prefix if the text has no whitespace.
+    private func truncateAtWord(_ text: String, maxChars: Int) -> String {
+        if text.count <= maxChars { return text }
+        let cutEnd = text.index(text.startIndex, offsetBy: maxChars)
+        let head = text[..<cutEnd]
+        if let lastSpace = head.lastIndex(where: { $0.isWhitespace }) {
+            return String(text[..<lastSpace]) + "…"
+        }
+        return String(head) + "…"
+    }
+
     var body: some View {
         ZStack {
             Color.appBackground.ignoresSafeArea()
@@ -207,7 +221,7 @@ struct TeamPageView: View {
         if let rivalry = cards.rivalry {
             TeamPageCard(
                 title: "The rivalry",
-                primaryText: String(appState.personalise(rivalry.text).prefix(50)),
+                primaryText: truncateAtWord(appState.personalise(rivalry.text), maxChars: 50),
                 zone2Label: "Use this:",
                 talkingPoint: rivalry.talkingPoint.map { appState.personalise($0) },
                 isStatic: true,
@@ -256,7 +270,7 @@ struct TeamPageView: View {
         if let season = cards.season {
             TeamPageCard(
                 title: "The season so far",
-                primaryText: String(appState.personalise(season.summary).prefix(50)),
+                primaryText: truncateAtWord(appState.personalise(season.summary), maxChars: 50),
                 zone2Label: "Drop this:",
                 talkingPoint: season.talkingPoint.map { appState.personalise($0) },
                 isExpanded: expandedCard == .season,
@@ -363,7 +377,7 @@ struct TeamPageView: View {
 
         TeamPageCard(
             title: postMatch.state == .win ? "After the win" : postMatch.state == .loss ? "After the loss" : "After the draw",
-            primaryText: String(appState.personalise(postMatch.text).prefix(50)),
+            primaryText: truncateAtWord(appState.personalise(postMatch.text), maxChars: 50),
             zone2Label: label,
             talkingPoint: appState.personalise(postMatch.talkingPoint),
             isExpanded: expandedCard == .comingUp,
