@@ -159,17 +159,27 @@ struct TeamPageView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         ForEach(Array(onesToKnow.players.prefix(3))) { player in
                             // Always tappable. The matchingCard lookup is
-                            // lowercased-contains to handle "Saka" (OnesToKnow
-                            // curated name) vs "Bukayo Saka" (routine pulls
-                            // from API-Football squad). If no row exists yet,
-                            // we build a stub PlayerCard with empty summary —
-                            // PlayerCardModal renders an "empty state" branch
-                            // for those, and a tier-locked branch for T1/T2.
-                            // This way tap is always allowed (discovery), and
-                            // the modal explains what the user is seeing.
+                            // diacritic-folded + lowercased contains so:
+                            //   - "Saka" (OnesToKnow curated short name) matches
+                            //     "Bukayo Saka" (routine pulls full name from
+                            //     API-Football squad / training data)
+                            //   - "Odegaard" (OnesToKnow) matches "Martin Ødegaard"
+                            //     (routine, with diacritic) — without folding,
+                            //     the Ø ≠ O code-point mismatch would break it
+                            // If no row exists yet, we build a stub PlayerCard
+                            // with empty summary — PlayerCardModal then renders
+                            // the .empty branch ("lands Sunday"). T1/T2 users
+                            // get the .locked teaser. Tap is always allowed so
+                            // discovery works on every tier.
                             let matchingCard = playerCards.first { card in
-                                let cardName = card.playerName.lowercased()
-                                let onesName = player.name.lowercased()
+                                let cardName = card.playerName.folding(
+                                    options: [.diacriticInsensitive, .caseInsensitive],
+                                    locale: .current
+                                )
+                                let onesName = player.name.folding(
+                                    options: [.diacriticInsensitive, .caseInsensitive],
+                                    locale: .current
+                                )
                                 return cardName.contains(onesName) || onesName.contains(cardName)
                             }
 
