@@ -43,7 +43,15 @@ struct GlossaryText: View {
                 }
                 .padding(16)
                 .frame(maxWidth: 280)
+                // Force a light blush background under the popover so the
+                // charcoal text is legible. Without this, the popover
+                // inherits the app's preferredColorScheme(.dark) and renders
+                // dark-on-dark — the term explanation is unreadable. We also
+                // disable iOS's auto-tinting of popover chrome so the system
+                // arrow/balloon picks up our colour.
+                .background(Color.cardBackground)
                 .presentationCompactAdaptation(.popover)
+                .presentationBackground(Color.cardBackground)
             }
     }
 

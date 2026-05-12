@@ -73,6 +73,25 @@ struct ImmersiveCard: View {
         return appState.personalise(item.regularTalkingPoints.first ?? "")
     }
 
+    // MARK: - Share
+
+    /// Text package shared by the bottom-right ShareLink on the immersive
+    /// card. Combines headline + analogy + talking point + a soft attribution.
+    /// Multi-line so it pastes cleanly into iMessage / WhatsApp.
+    private var shareText: String {
+        var lines: [String] = []
+        lines.append(headline)
+        if let context = contextLine, !context.isEmpty {
+            lines.append("")
+            lines.append(context)
+        }
+        lines.append("")
+        lines.append("\(zone2Label) \(talkingPoint)")
+        lines.append("")
+        lines.append("via GoalDigger")
+        return lines.joined(separator: "\n")
+    }
+
     // MARK: - Zone 2 label rotation
 
     private var zone2Label: String {
@@ -191,8 +210,29 @@ struct ImmersiveCard: View {
             // of getting partially covered by it.
             VStack(alignment: .leading, spacing: 0) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(zone2Label)
-                        .font(.jakarta(20, weight: .bold))
+                    // Top row: rotating label on the left, share button on
+                    // the right. The share button has to live up here (not
+                    // bottom-right of zone 2) because the bottom of zone 2
+                    // sits behind the translucent tab bar — anything tappable
+                    // there is invisible and ungrabbable.
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(zone2Label)
+                            .font(.jakarta(20, weight: .bold))
+                        Spacer()
+                        // Share the full card (headline + analogy + talking
+                        // point + attribution) as a text package she can
+                        // paste into iMessage / a group chat. ShareLink
+                        // consumes the tap so the parent zone2 onTapGesture
+                        // (which opens the detail view) doesn't also fire.
+                        ShareLink(item: shareText) {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(zone2TextColor)
+                                .frame(width: 40, height: 40)
+                                .contentShape(Rectangle())
+                        }
+                        .accessibilityLabel("Share this card")
+                    }
                     Text(talkingPoint)
                         .font(.jakarta(20, weight: .mediumItalic))
                         .fixedSize(horizontal: false, vertical: true)
