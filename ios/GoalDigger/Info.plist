@@ -57,5 +57,7 @@
 	<string>$(SUPABASE_HOST)</string>
 	<key>SUPABASE_ANON_KEY</key>
 	<string>$(SUPABASE_ANON_KEY)</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>We add his team's fixtures to your calendar so you're never blindsided. You can turn this off anytime in Settings.</string>
 </dict>
 </plist>

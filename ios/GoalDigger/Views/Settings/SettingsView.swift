@@ -16,6 +16,9 @@ struct SettingsView: View {
     @State private var editingHisName = false
     @State private var herNameDraft = ""
     @State private var hisNameDraft = ""
+    @State private var isSyncingCalendar = false
+    @State private var showCalendarRemoveConfirm = false
+    @State private var calendarErrorMessage: String?
 
     var body: some View {
         ZStack {
@@ -155,6 +158,39 @@ struct SettingsView: View {
                         }
                     }
 
+                    // CALENDAR
+                    settingsSection(header: "CALENDAR") {
+                        settingsRow {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Add his fixtures to your calendar")
+                                        .font(.feedTimestamp)
+                                        .foregroundColor(.textSecondaryOnCard)
+                                    Text(appState.calendarSyncEnabled ? "On" : "Off")
+                                        .font(.feedHeadline)
+                                        .foregroundColor(.textPrimaryOnCard)
+                                }
+                                Spacer()
+                                if isSyncingCalendar {
+                                    ProgressView().tint(.hotRose)
+                                } else {
+                                    Toggle("", isOn: Binding(
+                                        get: { appState.calendarSyncEnabled },
+                                        set: { newValue in
+                                            if newValue {
+                                                Task { await enableCalendarSync() }
+                                            } else {
+                                                showCalendarRemoveConfirm = true
+                                            }
+                                        }
+                                    ))
+                                    .labelsHidden()
+                                    .tint(.hotRose)
+                                }
+                            }
+                        }
+                    }
+
                     // ABOUT
                     settingsSection(header: "ABOUT") {
                         settingsRow {
@@ -289,6 +325,22 @@ struct SettingsView: View {
         } message: {
             Text("We couldn't reach the server to delete your data. Check your connection and try again.")
         }
+        .alert("Remove fixtures from your calendar?", isPresented: $showCalendarRemoveConfirm) {
+            Button("Remove", role: .destructive) {
+                Task { await removeCalendarSync() }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This deletes the GoalDigger calendar and all its events. You can turn this back on anytime.")
+        }
+        .alert("Calendar sync", isPresented: Binding(
+            get: { calendarErrorMessage != nil },
+            set: { if !$0 { calendarErrorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(calendarErrorMessage ?? "")
+        }
     }
 
     // MARK: - Feed Format Section
@@ -372,6 +424,69 @@ struct SettingsView: View {
         default: return "Came to impress"
         }
     }
+
+    // MARK: - Calendar sync
+
+    /// Toggle-on handler: request permission, fetch the next fixture, push to
+    /// the system calendar. Reverts the toggle if anything fails.
+    @MainActor
+    private func enableCalendarSync() async {
+        isSyncingCalendar = true
+        defer { isSyncingCalendar = false }
+
+        do {
+            let granted = try await CalendarSyncService.shared.requestAccess()
+            guard granted else {
+                calendarErrorMessage = "Calendar access was denied. You can enable it in iOS Settings."
+                return
+            }
+
+            // Fixtures: today's source is the team page's next-fixture card.
+            // Full-season sync needs a dedicated backend endpoint (see
+            // V1.1_FEATURE_BUNDLE.md, F1 notes). Until then, sync only the
+            // next fixture we know about.
+            guard let team = appState.selectedTeam else {
+                appState.calendarSyncEnabled = true
+                return
+            }
+            let teamId = team.rawValue
+            let cached = TeamPageCache.load(teamId: teamId)?.content
+            let teamPage = cached ?? (try? await APIClient.shared.fetchTeamPage(teamId: teamId))
+            guard let nextFixture = teamPage?.cards.nextFixture,
+                  let kickoff = Self.fixtureDateFormatter.date(from: nextFixture.date) else {
+                // Permission granted but no fixture to add yet. Mark on so we
+                // sync the next time fixtures land.
+                appState.calendarSyncEnabled = true
+                return
+            }
+            let fixture = GDFixture(opponent: nextFixture.opponent, kickoffTime: kickoff, venue: nextFixture.venue)
+            try await CalendarSyncService.shared.sync(teamShortName: team.shortName, fixtures: [fixture])
+            appState.calendarSyncEnabled = true
+        } catch {
+            calendarErrorMessage = "Something went wrong adding the events. Try again in a sec."
+            appState.calendarSyncEnabled = false
+        }
+    }
+
+    /// Toggle-off handler invoked after the user confirms in the alert.
+    @MainActor
+    private func removeCalendarSync() async {
+        isSyncingCalendar = true
+        defer { isSyncingCalendar = false }
+        do {
+            try CalendarSyncService.shared.removeAllGoalDiggerCalendars()
+        } catch {
+            // Best-effort: even if remove fails, treat the toggle as off so
+            // the UI does not lie.
+        }
+        appState.calendarSyncEnabled = false
+    }
+
+    private static let fixtureDateFormatter: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f
+    }()
 
     private func deleteData() async {
         isDeleting = true
