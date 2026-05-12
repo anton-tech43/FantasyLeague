@@ -328,7 +328,10 @@ struct FeedView: View {
                         .font(.sectionHeader)
                         .tracking(1)
                         .foregroundColor(.mutedText)
-                        .padding(.leading, 4)
+                        // 14pt aligns with the InsiderCard's inner padding
+                        // around the rose bar — keeps tracker label flush
+                        // with card content edge.
+                        .padding(.leading, 14)
                     InsiderCard(item: insider)
                 }
                 .padding(.horizontal, Layout.screenPadding)
@@ -436,21 +439,11 @@ struct FeedView: View {
                 #endif
             }
         }
-        isLoading = false
-        freshnessCardDismissed = false
-
-        // Fetch player cards for matchday card if needed
-        if teamItems.contains(where: { $0.type == .matchday }),
-           let teamId = appState.selectedTeam?.rawValue {
-            matchdayPlayers = (try? await APIClient.shared.fetchPlayerCards(teamId: teamId)) ?? []
-        }
-
         // When the team feed is empty for a T2+ user, pull the latest
-        // insider item to surface in emptyView instead of "nothing today".
-        // Cleared when items come back so the empty-state insider doesn't
-        // flash if the user reloads into populated content. The fetch is
+        // insider item BEFORE flipping isLoading to false so the UI never
+        // flashes the generic "nothing today" state. The fetch is
         // best-effort: failure leaves emptyStateInsider nil and emptyView
-        // falls back to the generic state.
+        // falls back to the generic state. Cleared when items come back.
         if teamItems.isEmpty,
            TierGating.isAvailable(.insiderCard, tier: appState.selectedTier),
            let teamId = appState.selectedTeam?.rawValue {
@@ -458,6 +451,15 @@ struct FeedView: View {
             emptyStateInsider = items.first
         } else {
             emptyStateInsider = nil
+        }
+
+        isLoading = false
+        freshnessCardDismissed = false
+
+        // Fetch player cards for matchday card if needed
+        if teamItems.contains(where: { $0.type == .matchday }),
+           let teamId = appState.selectedTeam?.rawValue {
+            matchdayPlayers = (try? await APIClient.shared.fetchPlayerCards(teamId: teamId)) ?? []
         }
     }
 

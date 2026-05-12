@@ -265,7 +265,10 @@ struct TeamPageView: View {
                     .font(.sectionHeader)
                     .tracking(1)
                     .foregroundColor(.mutedText)
-                    .padding(.leading, 4)
+                    // Align with the InsiderCard's inner padding (14pt
+                    // around the rose bar + content) so the tracker label
+                    // sits visually flush with the card's content edge.
+                    .padding(.leading, 14)
                 InsiderCard(item: insider)
             }
             .padding(.top, 8)
