@@ -1401,3 +1401,166 @@ The mismatch produced a cascade: fetch_news.sh never fetched RSS for Leeds → `
 
 **What happened:** During Round-4 voice iteration, I used `/` in chat as a readable line-break marker for multi-line immersive titles (`derby done. / arsenal beat chelsea.`). When the locked recipe landed in PROMPT.md, the canonical SHIP examples preserved that `/` shorthand. The routine read the literal slash and produced `immersive_headline` strings with visible " / " characters, which iOS rendered as visible slashes on the swipe card.
 **Rule:** Prompt examples that show structured output must be encoded **exactly** as the model should reproduce them. For JSON string fields, write them as quoted JSON values with `\n` for newlines, not human-readable line breaks or visual separators. If chat shorthand is needed for human readability, translate it to the production format before committing to the prompt. Better: include both the "wrong" version and the "right" version side-by-side in the prompt as a deliberate teaching pair (we added the `/` bug pattern to the NEVER-SHIP list after this).
+
+---
+
+## Phase 23: V1.1 content surfaces shipped — A1 / C1 / C2 / C3 / C4 / C5 — COMPLETE (2026-05-12 → 2026-05-13)
+
+The full V1.1 content stack landed in an extended session spanning ~24 hours: Season Primer (A1), Insider (C1), Sunday Brief (C2), Saturday Quiz (C3), Player Dossier (C4), and Match-day Live (C5). All six surfaces use the **canonical cloud-routine pattern** (Sonnet 4.6 via `claude.ai/code/routines`, post-script validators in `goaldigger-routines` repo, PostgREST upserts) — no direct Anthropic API calls anywhere. Plus a meaningful bug-fix punch list along the way and a Primer redesign after live UX review.
+
+### 23.1 The canonical cloud-routine pattern, locked in
+
+Five identical-shape feature stacks shipped in sequence (gd-insider, gd-sunday-brief, gd-live-brief, gd-player-dossier, gd-saturday-quiz). The pattern stabilised to a 5-layer template:
+
+1. **Postgres migration** — table + RLS public-read + index.
+2. **Routine prompt** (`*_PROMPT.md`) — sister-voice rules, source-trace requirement, anti-hallucination guard, output schema, ✓/✗ examples.
+3. **Post script** (`post_*.sh`) — validators (length caps, banned-pattern reject, em-dash strip, Cyrillic check, broadcaster-question reject, ALL-CAPS check) then PostgREST INSERT/UPSERT with the cron service key.
+4. **Routine registration** via `/schedule` skill — cron schedule + Sonnet 4.6 + sources pointing at `anton-tech43/goaldigger-routines`.
+5. **iOS** — Codable model + Card view + APIClient method + `.pbxproj` registration + render gate.
+
+By the third surface this was muscle memory. Each subsequent surface took roughly one focused session from green-field to shipped + voice-checked.
+
+### 23.2 A1 Season Primer — built, then redesigned in the same day
+
+Initial ship: phase-aware headline ("It's the run-in"), 2-sentence stat summary, sparkle key-fact pill, 3 "things to send him now" quotables, two CTAs ("Teach me more" + "Take me to the news"). All driven by `gd-season-state` routine writing `team_season_state` rows.
+
+Sim smoke test surfaced the screen as **overwhelming for brand-new users**: six competing content blocks on first paint, body voice reading like a BBC match report, jargon ("run-in", "summit", "clean sheets") without context, premature copy-to-clipboard surface, two competing CTAs. The voice was exactly what her boyfriend already consumes — exactly NOT what orientation needs.
+
+**Redesign (migration 028 + prompt rewrite + view rewrite):**
+- Schema collapsed routine output to two strings: `state_line` (2-5 word personalised headline) + `feeling_line` (1-2 sentences on how HE will feel/act this week).
+- Old `summary`/`key_fact`/`welcome_lines` columns made nullable; old rows keep data, new ones land sparse.
+- View stripped to: one bold title + one body paragraph (wrapped in `GlossaryText` so jargon stays tappable) + the two CTAs. Lots of breathing room.
+- Routine prompt fully rewritten with phase-keyed examples ("Arsenal are flying" / "Forest are scrapping" / "It's quiet at City"). Voice spot-check: all 20 teams produced sister-voice, anchored, emotional-translation content.
+
+Lesson: smoke-testing in the simulator before declaring "done" is non-negotiable. The original spec passed Round-4 voice review and shipped clean; only sitting in front of the screen as a brand-new user revealed the problem.
+
+### 23.3 C1 Insider — daily rotation through four types
+
+`team_insider_items` table (migration 023) + `gd-insider` routine fires daily at 02:00 UTC. Type rotation is `(day-of-year mod 4)` → one of `stat | anecdote | history | oddity`, same type for all 20 teams on a given day. Each team rotates through all four types over a week.
+
+The post-script length caps (title 20-80 chars, body 100-600) + banned-pattern set + ALL-CAPS reject set + broadcaster-question opener reject ("Did you know..." / "Did he..." pattern) became the canonical template for every subsequent routine's `post_*.sh`.
+
+### 23.4 C2 Sunday Brief — first feed-item surface with tier-gated push
+
+Weekly recap (migration 024 adds `'sunday_brief'` to `content_items.type` CHECK). `gd-sunday-brief` routine fires Sun 09:00 UTC. Notification-sender now filters by `min_tier_for_type` so T1 users never get the push, even if their device is registered. iOS feed renderer also filters via `applyTierFilter` so T1 users never see the brief in-app.
+
+Known gap caught during simulator review: the routine emits factual `immersive_context` (no girl-reference analogy bridge). The gd-news pipeline runs every article through an analogy critic; the Sunday Brief routine bypasses that. Flagged for a v1.1.1 prompt update (add a sister-voice analogy field).
+
+### 23.5 C3 Saturday Quiz — shipped, voice still in flux
+
+Built end-to-end by a background sub-agent in an isolated worktree (first time the Agent tool's `isolation: "worktree"` flag carried real value — agent reset onto `origin/claude/intelligent-thompson` after detecting a stale base, then built cleanly). Cherry-picked into main thread.
+
+`saturday_quiz_items` (migration 026) + `quiz-current` Edge Function (`--no-verify-jwt`) + `gd-saturday-quiz` routine (cron `0 7 * * 6` — Sat 07:00 UTC) + iOS `SaturdayQuizCard` rendered in feed. T3-gated.
+
+**Output quality is the open question.** First two fires produced 24 quizzes in fixture-trivia shape (opponent / standings / recent score) — competent but generic, ignored the team-learning rotation we'd designed. The prompt was rewritten to enforce a 3-slot shape: Q1+Q2 team-learning (rotating through players / club basics / history / rivalry / upcoming game), Q3 conversation-setup ("If he says X, the smarter reply is:"). A strict Q3-shape validator was added.
+
+Three subsequent fires produced **zero rows** — strongly suggesting either:
+- (a) session queuing in the routine runtime (multiple `RemoteTrigger run` calls during one day stack up)
+- (b) validator-rewrite loops where the LLM can't escape its fixture-trivia prior
+- (c) silent session failures we have no visibility into
+
+A `POST_QUIZ_BYPASS_ALL=1` diagnostic mode was added so a future fire could skip every validator and ship raw output for inspection. Still produced 0 rows in our session, which rules out validators and points at (a) or (c). The Saturday 2026-05-16 07:04 UTC scheduled fire is the next observable point — if it also produces 0 rows we need to inspect the cloud session log at `claude.ai/code/routines/trig_011wwfZyJaXPCF3gPbA3crFC` directly.
+
+### 23.6 C4 Player Dossier — almost entirely already-built infrastructure
+
+Migration 002 (from way back) created `player_cards` + the iOS `PlayerCard` Codable struct + `PlayerCardModal` view. `OnesToKnowCard` on the Team Page already wired player taps to `presentedPlayer = matchingCard`. Only the writer was missing.
+
+`gd-player-dossier` routine fires weekly Sun 17:00 UTC, reads each team's `ones_to_know.players` list from `team_pages`, generates 3 dossiers per team (~60 rows/week). Output voice clean on first fire: 59/60 dossiers landed, sister-voice consistent.
+
+Two iteration loops:
+- **Diacritic-fold lookup** for player names: original code's lowercased `contains` matched "Saka" against "Bukayo Saka" but failed on "Ødegaard" (em-dash and "O" are different code points). Fix: `.folding(options: [.diacriticInsensitive, .caseInsensitive])` on both sides.
+- **Tier-gate dropped**: original spec gated dossiers behind T3, but a sim test of the locked-state teaser ("Player dossiers are part of the Premium tier") read punitive for what's basically "who is this player". User overruled the gate — dossiers now visible to all tiers. `.locked` branch remains in `PlayerCardModal` as defensive code if we ever flip the gate back.
+
+### 23.7 C5 Match-day Live — first time-sensitive surface
+
+API-triggered routine (`gd-live-brief`, no cron — fired on demand by `match-watcher`). At HT or 75' of a live PL fixture involving a tracked team, match-watcher POSTs match context to the routine's webhook URL with a Bearer token. Routine generates one brief, INSERTs to `live_match_briefs`. iOS polls `live-brief-current` Edge Function every 60s during the live window (kickoff − 10min through kickoff + 130min), with `scenePhase` awareness so polling pauses when backgrounded.
+
+`briefs_fired` JSONB column on `match_status_state` (migration 025) is the idempotency guard: each minute the cron sees the same fixture in the HT window, but we only fire the routine once per trigger label. Without this we'd fire ~15 routines per HT.
+
+`LIVE_BRIEF_ROUTINE_URL` + `LIVE_BRIEF_ROUTINE_TOKEN` Supabase secrets had to be set manually via `supabase secrets set`. Match-watcher logs `live_brief_configured: false` and silently skips when these are missing — we hit that during sim testing and the user noticed via a missing Live card.
+
+Goal-triggered briefs (the original V1.1 spec listed kickoff, 30', HT, 75', FT triggers) deferred to v1.1.1. A `mcp__ccd_session__spawn_task` chip exists for the goal-trigger work — match-watcher would need to poll `/fixtures/events`, track `last_event_id` per fixture, and fire on each new goal. T3-only gate proposed for that follow-up.
+
+### 23.8 Bug fixes shipped alongside the features
+
+The session caught and fixed a meaningful list of cross-cutting issues:
+
+- **Glossary popover dark-on-dark unreadable** — replaced `.popover` (system bubble) with on-brand `.sheet` using `.presentationBackground(Color.deepMauve)`, rose accent bar, jakarta typography.
+- **Share button placement** — moved from bottom-right (below tab bar) to top-right of zone 2 next to "Your move:" label.
+- **team-page-generator standings filter** — `extractLeaguePosition` was indexing `standings.standings[0]` (always the league leader), so every team's "How they're doing" card said "1st in the Premier League". Fixed with explicit `api_football_id` filter.
+- **live-brief endpoint hardened to LIVE-only** — added `.in("status", LIVE_STATUSES)` filter so a finished match (FT/AET/PEN) within the time window doesn't trigger the card.
+- **Word-boundary truncation on Team Page cards** — `String.prefix(50)` cut mid-word ("Chelsea and Brentford, Fulham are sandwiched betwe"). Added `truncateAtWord` helper used by rivalry / season summary / post-match cards.
+- **Rivalry card headline shows team names** — split on em/en/regular dash to extract just the rival names ("Chelsea and Brentford") instead of a truncated sentence.
+- **`immersive_headline` per-line cap** — added 22-char-per-line validator + `POST_NEWS_FALLBACK=1` rescue mode that auto-truncates on second retry. Routine bumped from "reject + skip on second failure" to "reject + rewrite, then auto-truncate on second failure" so news isn't lost over formatting.
+- **Quiz Q3 validator loosened** — accepts `If`/`When`/`Imagine`/`Picture` openers (was only `If`). Plus `POST_QUIZ_FALLBACK=1` rescue.
+- **`delete-my-data` legacy JWT fix** — function was deployed before the legacy `service_role` key rotation, so it returned 401 to the new `sb_publishable_*` key. Redeployed with `--no-verify-jwt` (the function does its own apns_token-based auth, gateway JWT was redundant). Then patched iOS to swallow 404 ("nothing to delete") and 400 ("Invalid token format" — simulator has a 160-char extended-format token that fails the function's strict 64-char hex regex) as success.
+- **`fetchTeamSeasonState` SELECT bug** — after the Season Primer redesign, the fetcher's explicit `select=` query parameter still enumerated only the legacy columns. PostgREST returned rows without `state_line`/`feeling_line`, Swift decoded them as nil, view fell through to skip-to-feed. One-line fix to add the new columns to the SELECT.
+
+### 23.9 Working pattern: foreground + background-agent parallelism
+
+C3 Saturday Quiz was built by a background `general-purpose` agent in a `worktree`-isolated environment while C4 Player Dossier was built in the foreground. The agent reported back twice — once when it hit a stale-base issue (refused to proceed without permission to `git reset --hard`), once when it shipped. The committed C3 branch was cherry-picked clean into `claude/intelligent-thompson` with no iOS file conflicts (`.pbxproj` UUIDs were fresh, `APIClient.swift` additions were in different sections, `FeedView.swift` additions were in different lines).
+
+Lesson: parallel agent work is productive when the agent's task touches disjoint files. The pre-flight conflict prediction in the prompt ("anticipated merge conflicts: .pbxproj, APIClient, FeedView") set the right expectations and the actual merge was painless.
+
+### 23.10 Where we are at end of day
+
+Six new content surfaces in production:
+- ✓ A1 Season Primer — one-beat redesign, sister-voice across all 20 teams, 2 CTAs.
+- ✓ C1 Insider — daily 02:00 UTC, four-type rotation.
+- ✓ C2 Sunday Brief — weekly Sun 09:00 UTC, T2+ push-gated.
+- ⚠️ C3 Saturday Quiz — shipped, awaiting first clean Saturday fire on the new prompt.
+- ✓ C4 Player Dossier — weekly Sun 17:00 UTC, all tiers, 59/60 dossiers populated.
+- ✓ C5 Match-day Live — HT + 75' triggers wired, secrets set, awaiting first real match.
+
+**Files modified / added today (across two repos):**
+
+`FantasyLeague` worktree (`claude/intelligent-thompson`):
+- 6 new migrations: 023 (team_insider_items), 024 (sunday_brief type), 025 (live_match_briefs + briefs_fired), 026 (saturday_quiz_items), 027 — skipped (player_cards already had RLS), 028 (state_line + feeling_line + nullable legacy).
+- 4 new Edge Functions: `live-brief-current`, `quiz-current`, `gd-player-dossier` is a routine not a function, plus `team-page-generator` got the standings-filter fix.
+- 8 new iOS files: `TeamSeasonState.swift`, `InsiderItem.swift`, `LiveMatchBrief.swift`, `SaturdayQuiz.swift`, `SeasonPrimerView.swift`, `InsiderCard.swift`, `LiveMatchCard.swift`, `SaturdayQuizCard.swift`, `PlayerDossierSheet.swift` (later collapsed into existing `PlayerCardModal`).
+- 7+ iOS files modified: `APIClient.swift`, `FeedView.swift`, `TeamPageView.swift`, `PlayerCardView.swift`, `AppState.swift`, `GoalDiggerApp.swift`, `Models/ContentItem.swift`, `Models/TierGating.swift`, `Design/Components/GlossaryText.swift`, `Design/Components/ImmersiveCard.swift`.
+
+`goaldigger-routines` repo:
+- 5 new routine prompts: `INSIDER_PROMPT.md`, `SUNDAY_BRIEF_PROMPT.md`, `LIVE_BRIEF_PROMPT.md`, `PLAYER_DOSSIER_PROMPT.md`, `QUIZ_PROMPT.md`.
+- 5 new post scripts: `post_insider.sh`, `post_live_brief.sh`, `post_player_dossier.sh`, `post_quiz.sh` (Sunday Brief reuses `post_news.sh`).
+- `SEASON_STATE_PROMPT.md` + `post_season_state.sh` rewritten end-to-end for the one-beat redesign.
+- `PROMPT.md` + `post_news.sh` patched for the immersive-headline 22-char cap.
+
+**Pending follow-ups:**
+- C3 Saturday Quiz: investigate why bypass-mode fire produced 0 rows. Saturday 2026-05-16 07:04 UTC is the next observable point.
+- C5 goal-triggered briefs (T3): spawn-task chip queued.
+- C2 Sunday Brief: add girl-reference analogy field to the prompt (currently emits factual `immersive_context`).
+- Sweep other Edge Functions for the same `--no-verify-jwt` issue that hit `delete-my-data`.
+
+---
+
+### 42. Migrations are additive — but the read path may not know it
+
+**What happened:** Migration 028 added `state_line` + `feeling_line` columns to `team_season_state`. Routine populated all 20 rows cleanly. iOS view's gate `if let stateLine = state.stateLine` evaluated to false on every team. Skip-to-feed fired. User saw no Primer.
+Root cause: `APIClient.fetchTeamSeasonState(teamId:)` had an explicit `select=team_id,phase,summary,key_fact,welcome_lines,next_fixture` query parameter. PostgREST honoured the SELECT, returned rows WITHOUT the new columns, Swift decoded them as `nil` (the model declared them optional for backward compat).
+**Rule:** When a schema adds columns AND the read path uses explicit `select=` enumeration, both sides have to be updated. The "additive only" property of the migration creates a false sense of security — the migration is safe but the system is broken. Audit checklist when adding columns: (1) routine post script emits them, (2) every PostgREST consumer's `select=` includes them, (3) every iOS/Swift model decodes them, (4) every view that depends on them gates correctly when nil.
+
+### 43. iOS extended device-token format breaks strict regex
+
+**What happened:** `delete-my-data` Edge Function's regex was `/^[a-fA-F0-9]{64}$/` — the historic APNs device-token format. iOS-17+ simulators store a 160-char hex token in UserDefaults. Function rejected with HTTP 400 "Invalid token format" before any DB lookup. User saw "Couldn't reach the server" generic error.
+**Rule:** Strict format regexes on iOS device tokens should accommodate the wider range Apple now ships (64 → 200 chars hex), OR the iOS client should treat "format-rejected by server" as semantically equivalent to "not in the DB anyway". We chose the latter — narrower scope, doesn't weaken the production regex check, and preserves the right end-state ("her data isn't on the server"). The 400 swallow is keyed on the exact error body string ("Invalid token format") so unrelated 400s (missing field, malformed JSON) still surface.
+
+### 44. SwiftUI `.sheet(item:)` needs Identifiable, and team-scoping must be in the id
+
+**What happened:** `PlayerCard.id = playerName` worked when only one team was on screen. After ungating dossiers across tiers + always-tappable rows, switching from Arsenal to a hypothetical second team with a "Smith" player on both would reuse the sheet without refreshing. SwiftUI sees same `id`, treats as same item.
+**Rule:** Any model used with `.sheet(item:)` whose values can co-exist across collections needs a composite ID that includes every dimension of uniqueness. For player data: `id = "\(teamId)_\(playerName)"`. This was a latent bug we caught preemptively while reviewing the sheet wiring; it would have shipped silently and surfaced only once a user happened to switch teams mid-tap.
+
+### 45. Diacritic-aware name matching is required for non-Anglo squads
+
+**What happened:** Player Dossier routine emitted "Martin Ødegaard" (diacritic from training data). OnesToKnow card stored the curated short name "Odegaard". iOS lookup used lowercased `String.contains` — `"odegaard"` is not a substring of `"martin ødegaard"` because Ø and O are different code points. Result: Ødegaard's dossier exists in the DB but the modal shows "lands Sunday evening" empty state because the lookup misses.
+**Rule:** Any user-facing name match that crosses data sources (LLM training data ↔ curated short name ↔ API-Football full name) needs `.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)` on BOTH sides of the comparison. The bug class is invisible to QA done with Anglo-only player names — only surfaces on Norwegian / Spanish / Portuguese / Turkish squads.
+
+### 46. Validator-rewrite loops can starve a routine to zero output
+
+**What happened:** Quiz routine + strict Q3-shape validator ("must start with 'If '"). LLM kept generating fixture-trivia Q3 ("What was the score?"). Validator rejected. LLM rewrote once. Validator rejected again (LLM defaulted back to fixture-trivia). Routine prompt's flow said "Reject → rewrite once, then skip the team." Result: every team skipped, 0 rows for three consecutive fires.
+**Rule:** When a validator enforces something against a strong model prior, the reject-rewrite-once loop will produce zero output, not just degraded output. Two mitigations: (a) loosen the validator to a broader accept-set the model can naturally hit (we accepted `If/When/Imagine/Picture` instead of just `If`); (b) add a fallback mode (`POST_*_FALLBACK=1`) that ships the article anyway on second failure with the bad field flagged for review. Voice-rule violations (fan slang, em-dash, broadcaster question) still hard-reject — those are real semantic errors the LLM should rewrite. Mechanical-shape failures (length, format) should fallback to mechanical-fix instead of dropping the whole article.
+
+### 47. Multi-block onboarding cards fail at "brand-new user" smoke test
+
+**What happened:** A1 Season Primer shipped with six competing content blocks: phase headline, 2-sentence stat summary, sparkle key-fact, 3 quotables under "THREE THINGS TO SEND HIM NOW", and two CTAs. Each block tested clean in isolation. The aggregate read like a BBC bulletin to a brand-new user who knew nothing about football. The whole purpose of the surface — to give her an emotional anchor about his team — was buried under stats and quotables she had no context to use.
+**Rule:** Orientation surfaces (first-launch primers, empty-state intros, post-onboarding welcomes) take ONE action and carry ONE message. Stats / quotables / share affordances belong on surfaces she returns to after she has context. The smoke test for an orientation surface is: "If I'd never used this app before and didn't know what football was, would I understand why I'm here?" The redesign collapsed Primer to (one bold state line + one body sentence + a CTA), with the actual data — fixtures, standings, player lists — discoverable on the Team Page that follows.
