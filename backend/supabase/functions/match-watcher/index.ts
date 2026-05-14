@@ -39,8 +39,16 @@ interface ApiFixture {
   goals: { home: number | null; away: number | null };
 }
 
-serve(async (_req) => {
+serve(async (req) => {
   const supabase = getSupabaseClient();
+
+  // Optional ?date=YYYY-MM-DD override for replay diagnostics. When set,
+  // the watcher queries the API for that specific date instead of "today
+  // in Europe/London". Used to replay a past matchday and see whether the
+  // upsert path actually works. NOT meant for normal cron operation — the
+  // cron sends no params so today's London date is computed below.
+  const url = new URL(req.url);
+  const dateOverride = url.searchParams.get("date");
 
   const apiFootballKey = Deno.env.get("API_FOOTBALL_KEY");
   const routineUrl = Deno.env.get("MATCHDAY_ROUTINE_URL");
@@ -68,7 +76,7 @@ serve(async (_req) => {
   // their kickoff day rather than rolling to UTC tomorrow at 00:00 UTC.
   // BST is +01:00, so this matters in winter more than summer, but the
   // code is calendar-stable year-round this way.
-  const today = new Intl.DateTimeFormat("en-CA", {
+  const today = dateOverride ?? new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/London",
   }).format(new Date()); // en-CA gives YYYY-MM-DD shape
   const apiResp = await fetch(
@@ -119,6 +127,7 @@ serve(async (_req) => {
   let firstSeen = 0;
   let stateUpdates = 0;
   let liveBriefFires = 0;
+  const upsertErrors: Array<{ fixture_id: number; message: string }> = [];
 
   for (const fx of fixtures) {
     const fixtureId = fx.fixture.id;
@@ -305,6 +314,7 @@ serve(async (_req) => {
       );
     if (upsertErr) {
       console.warn(`state upsert failed for ${fixtureId}:`, upsertErr.message);
+      upsertErrors.push({ fixture_id: fixtureId, message: upsertErr.message });
     } else {
       stateUpdates++;
       if (!prior) firstSeen++;
@@ -319,6 +329,7 @@ serve(async (_req) => {
       fires_dispatched: firesDispatched,
       live_brief_fires: liveBriefFires,
       live_brief_configured: liveBriefConfigured,
+      upsert_errors: upsertErrors,
       date: today,
       season: SEASON,
     }),
