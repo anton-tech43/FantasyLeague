@@ -193,6 +193,14 @@ serve(async (req) => {
       }
     }
 
+    // Track per-perspective fire success. We only mark fired_finished_at
+    // when BOTH home and away routine POSTs succeed — otherwise the failed
+    // perspective never retries on the next tick, and half the audience for
+    // this fixture silently gets no matchday content. The routine post-script
+    // should idempotently upsert content_items on (team_id, match_id) so the
+    // re-fire on the successful side is a no-op rather than a duplicate row.
+    let homeFireOk = false;
+    let awayFireOk = false;
     if (justFinished) {
       // Fire the routine for both teams. Each fan sees the match through their lens.
       for (const [teamId, opponent, isHome] of [
@@ -217,6 +225,8 @@ serve(async (req) => {
           });
           if (fireResp.ok) {
             firesDispatched++;
+            if (isHome) homeFireOk = true;
+            else awayFireOk = true;
             console.log(`fired routine for ${teamId}/${fixtureId}`);
           } else {
             const body = await fireResp.text().catch(() => "");
@@ -234,17 +244,20 @@ serve(async (req) => {
     // One fire per (team, trigger) pair — both home and away teams get
     // briefs, each tailored to their own perspective.
     for (const trigger of newTriggers) {
-      for (const [teamId, opponentTeamId, isHome] of [
+      for (const [teamId, _opponentTeamId, _isHome] of [
         [homeTeamId, awayTeamId, true],
         [awayTeamId, homeTeamId, false],
       ] as const) {
-        const userScore = isHome ? homeGoals : awayGoals;
-        const opponentScore = isHome ? awayGoals : homeGoals;
         const homeName = fx.teams.home.name;
         const awayName = fx.teams.away.name;
         const briefMinute = elapsed ?? (trigger === "HT" ? 46 : 75);
         // Compose the payload the routine expects. Semicolon-separated
         // key=value pairs match the existing gd-matchday convention.
+        // home_goals and away_goals always refer to the literal home/away
+        // teams (NOT user/opponent). The routine derives user-vs-opponent
+        // by matching `user_team_id` against `home_team_id`/`away_team_id`.
+        // An earlier version used a user/opponent indirection that inverted
+        // the away team's brief score — fixed.
         const text = [
           `home_team_id=${homeTeamId}`,
           `away_team_id=${awayTeamId}`,
@@ -252,7 +265,7 @@ serve(async (req) => {
           `away_team_name=${awayName}`,
           `user_team_id=${teamId}`,
           `home_goals=${homeGoals ?? 0}`,
-          `away_goals=${opponentScore ?? userScore ?? 0}`,
+          `away_goals=${awayGoals ?? 0}`,
           `minute=${briefMinute}`,
           `trigger=${trigger}`,
           `fixture_id=${fixtureId}`,
@@ -291,7 +304,12 @@ serve(async (req) => {
     // `prior !== null` guard on trigger detection above).
     const updatedBriefsFired = [...new Set([...briefsFired, ...newTriggers])];
 
-    // Upsert state. If we just fired, mark fired_finished_at so we don't re-fire.
+    // Upsert state. fired_finished_at is set ONLY when justFinished AND both
+    // home and away routine fires succeeded — if one failed, the next tick
+    // will retry both perspectives. The routine post-script must upsert
+    // content_items on (team_id, match_id) so the successful side's re-fire
+    // is a no-op rather than a duplicate.
+    const bothFiresOk = justFinished && homeFireOk && awayFireOk;
     const { error: upsertErr } = await supabase
       .from("match_status_state")
       .upsert(
@@ -306,7 +324,7 @@ serve(async (req) => {
           kickoff_time: kickoffTime,
           last_checked: new Date().toISOString(),
           briefs_fired: updatedBriefsFired,
-          ...(justFinished
+          ...(bothFiresOk
             ? { fired_finished_at: new Date().toISOString() }
             : {}),
         },

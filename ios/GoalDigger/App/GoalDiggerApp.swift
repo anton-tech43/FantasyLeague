@@ -200,6 +200,21 @@ struct MainTabView: View {
                 selectedTab = tab
                 appState.pendingTabAfterPrimer = nil
             }
+            // Cold-launch deep-link catch. If the user tapped a notification
+            // while the app was killed, AppDelegate sets deepLinkContentId
+            // during launch — which may run BEFORE this view first mounts.
+            // The `.onChange` below only fires on subsequent transitions, so
+            // an already-set value would otherwise be silently dropped.
+            if let id = appState.deepLinkContentId {
+                selectedTab = 0
+                let isEveryone = appState.activeContext == .everyoneTalking
+                feedPath.append(ContentDetailDestination(
+                    contentId: id,
+                    scrollToTalkingPoints: false,
+                    isEveryoneContext: isEveryone
+                ))
+                appState.deepLinkContentId = nil
+            }
         }
     }
 }
