@@ -44,12 +44,18 @@ serve(async (req) => {
       query = query.eq("id", specificItemId);
     } else {
       // Sweep: union of (a) and (b) above. Limit to 50 per run so a long
-      // outage doesn't trigger a flood when the sweep recovers.
+      // outage doesn't trigger a flood when the sweep recovers. The 24h
+      // lower bound on published_at prevents a stuck row from pushing
+      // days later — a "Spurs drew 1-1" push five days after the match
+      // is creepier than no push at all.
+      const now = Date.now();
+      const fiveMinAgo = new Date(now - 5 * 60_000).toISOString();
+      const twentyFourHoursAgo = new Date(now - 24 * 60 * 60_000).toISOString();
       query = query
         .or(
           "and(status.eq.approved,published_at.is.null)," +
           "and(status.eq.published,pushed_at.is.null,published_at.lt." +
-          new Date(Date.now() - 5 * 60_000).toISOString() + ")"
+          fiveMinAgo + ",published_at.gt." + twentyFourHoursAgo + ")"
         )
         .limit(50);
     }

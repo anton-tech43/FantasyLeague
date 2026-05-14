@@ -34,7 +34,16 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 
     func application(_ application: UIApplication,
                      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+        // Real iOS devices emit a 32-byte (64 hex char) APNs token. iOS 17+
+        // simulators can emit a longer "extended" format (80 bytes / 160 hex
+        // chars) intended for simulator-only push testing. Backend validators
+        // — both the `register-dev-device` Edge Function regex and the
+        // `valid_apns_token` DB CHECK constraint — reject anything that isn't
+        // exactly 64 hex chars. Truncating here keeps sim flow valid for
+        // local smoke tests; on a real device the prefix is a no-op since
+        // the raw string is already 64 chars.
+        let raw = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+        let token = String(raw.prefix(64))
         NotificationService.shared.handleTokenRegistration(token)
     }
 
