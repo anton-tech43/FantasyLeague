@@ -84,13 +84,13 @@
 
 /* Begin PBXFileReference section */
 		0E9B40C83CE30947DD4E9AB4 /* LiveMatchBrief.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveMatchBrief.swift; sourceTree = "<group>"; };
-		1BC4A29F62D389F4A4751E27 /* SaturdayQuiz.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SaturdayQuiz.swift; sourceTree = "<group>"; };
 		1969411F418AE27184440E14 /* GlossaryText.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlossaryText.swift; sourceTree = "<group>"; };
-		2CD5B3A073E49AF5B5862F38 /* SaturdayQuizCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SaturdayQuizCard.swift; sourceTree = "<group>"; };
 		19D7EA257F3133FF29F0A866 /* TeamSeasonState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TeamSeasonState.swift; sourceTree = "<group>"; };
+		1BC4A29F62D389F4A4751E27 /* SaturdayQuiz.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SaturdayQuiz.swift; sourceTree = "<group>"; };
 		270994EEE49DF138BC2540A0 /* GlossaryTerm.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlossaryTerm.swift; sourceTree = "<group>"; };
 		2AD6B0120F684DF2FDE52DDA /* GlossaryService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlossaryService.swift; sourceTree = "<group>"; };
 		2B5B3A50DCC8E9B41626BB81 /* SeasonPrimerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SeasonPrimerView.swift; sourceTree = "<group>"; };
+		2CD5B3A073E49AF5B5862F38 /* SaturdayQuizCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SaturdayQuizCard.swift; sourceTree = "<group>"; };
 		36F66AB00E15F67DAA68C18A /* AudioPlayerService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioPlayerService.swift; sourceTree = "<group>"; };
 		37D3E46E7BC8929DF2B09425 /* CalendarSyncService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarSyncService.swift; sourceTree = "<group>"; };
 		427A2A492E809AB52CDF85A0 /* TierGating.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TierGating.swift; sourceTree = "<group>"; };
@@ -118,9 +118,9 @@
 		AB000021 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AB000022 /* MockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockData.swift; sourceTree = "<group>"; };
 		AB000023 /* GoalDigger.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GoalDigger.entitlements; sourceTree = "<group>"; };
-		AB000026 /* GoalDigger-Release.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "GoalDigger-Release.entitlements"; sourceTree = "<group>"; };
 		AB000024 /* Configuration.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration.xcconfig.example; sourceTree = "<group>"; };
 		AB000025 /* Configuration.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration.xcconfig; sourceTree = "<group>"; };
+		AB000026 /* GoalDigger-Release.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "GoalDigger-Release.entitlements"; sourceTree = "<group>"; };
 		AB000030 /* HerNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HerNameView.swift; sourceTree = "<group>"; };
 		AB000031 /* HisNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HisNameView.swift; sourceTree = "<group>"; };
 		AB000032 /* OnboardingFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlow.swift; sourceTree = "<group>"; };
@@ -623,7 +623,7 @@
 				CODE_SIGN_ENTITLEMENTS = GoalDigger/GoalDigger.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = XG9549JP5L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = GoalDigger/Info.plist;
@@ -656,7 +656,7 @@
 				CODE_SIGN_ENTITLEMENTS = "GoalDigger/GoalDigger-Release.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = XG9549JP5L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = GoalDigger/Info.plist;

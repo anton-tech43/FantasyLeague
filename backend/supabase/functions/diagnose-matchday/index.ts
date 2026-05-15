@@ -197,8 +197,9 @@ serve(async (_req) => {
   //     redacted to a 8-char prefix to avoid leaking through diagnostics.
   const { data: deviceTokens } = await supabase
     .from("device_tokens")
-    .select("team_id, is_active, apns_token")
-    .eq("is_active", true);
+    .select("team_id, is_active, apns_token, apns_environment, created_at, tier")
+    .order("created_at", { ascending: false })
+    .limit(20);
   const tokensByTeam: Record<string, number> = {};
   const samplePrefixByTeam: Record<string, string> = {};
   for (const row of deviceTokens ?? []) {
@@ -212,7 +213,35 @@ serve(async (_req) => {
     total: deviceTokens?.length ?? 0,
     by_team: tokensByTeam,
     sample_prefix_by_team: samplePrefixByTeam,
+    rows: (deviceTokens ?? []).map((r) => {
+      const row = r as { team_id: string; is_active: boolean; apns_token: string; apns_environment: string; created_at: string; tier: number };
+      return {
+        team_id: row.team_id,
+        is_active: row.is_active,
+        apns_environment: row.apns_environment,
+        tier: row.tier,
+        created_at: row.created_at,
+        token_prefix: (row.apns_token ?? "").slice(0, 12),
+      };
+    }),
   };
+
+  // 12. Recent client_errors (last 24h) — might reveal a 4xx from the iOS
+  //     registerToken call if the app's error-reporting path caught it.
+  const { data: recentErrors } = await supabase
+    .from("client_errors")
+    .select("error_type, message, created_at, app_version")
+    .gte("created_at", new Date(Date.now() - 24 * 60 * 60_000).toISOString())
+    .order("created_at", { ascending: false })
+    .limit(20);
+  out.client_errors_last_24h = recentErrors ?? [];
+
+  // 13. RLS policies + grants on device_tokens — diagnose why the
+  //     publishable-key INSERT is being rejected with 42501.
+  const { data: rlsInfo, error: rlsErr } = await supabase.rpc(
+    "get_device_tokens_acl",
+  );
+  out.device_tokens_acl = rlsErr ? { error: rlsErr.message } : rlsInfo;
 
   // 10. Synthetic write probe — attempt a sentinel upsert into
   //     match_status_state with a fake fixture_id. If this fails, the
