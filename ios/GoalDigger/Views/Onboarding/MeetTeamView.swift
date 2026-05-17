@@ -54,7 +54,9 @@ struct MeetTeamView: View {
                 .padding(.bottom, 24)
             }
 
-            Button("Show me how this works") {
+            // V2.0: matches the actual next-screen (MeetManagerView) rather
+            // than the old misleading "Show me how this works" copy.
+            Button("Meet the boss") {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 onContinue()
             }

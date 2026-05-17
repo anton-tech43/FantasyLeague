@@ -157,8 +157,11 @@ struct TeamPageView: View {
             )
         }
 
-        // Card 2: The manager
-        if let manager = cards.manager {
+        // Card 2: The manager. Skip when the backend's "<UNKNOWN>" placeholder
+        // landed in the data (team-page-generator's fallback for missing
+        // API-Football coach data). Otherwise the card would render the
+        // literal string to users.
+        if let manager = cards.manager, manager.name != "<UNKNOWN>" {
             TeamPageCard(
                 title: "The manager",
                 primaryText: manager.name,

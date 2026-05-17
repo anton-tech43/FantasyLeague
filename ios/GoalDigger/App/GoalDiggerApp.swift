@@ -120,11 +120,35 @@ struct MainTabView: View {
     @State private var selectedTab = 0
     @State private var feedPath = NavigationPath()
 
-    /// V2.0: The "His Team" tab renders whichever entity the user has —
-    /// country preferred (WC primary), team as fallback. The teamId string
-    /// keys into the same `team_pages` table either way.
+    /// V2.0: The "His Team" tab follows the active feed context, so the team
+    /// page shows whatever the user has currently selected in the switcher.
+    /// Fallback (when on the cross-team `.everyoneTalking` feed): country
+    /// preferred over team, matching AppState's activeContext default picker.
+    /// teamId keys into the same `team_pages` table for both entity types.
     private var teamPageEntityId: String? {
-        appState.selectedCountry?.rawValue ?? appState.selectedTeam?.rawValue
+        switch appState.activeContext {
+        case .team(let team):
+            return team.rawValue
+        case .country(let country):
+            return country.rawValue
+        case .everyoneTalking:
+            return appState.selectedCountry?.rawValue ?? appState.selectedTeam?.rawValue
+        }
+    }
+
+    /// V2.0: Tab label tracks the active entity so the user sees "Arsenal"
+    /// or "Sweden" rather than the generic "His Team" — clarifies which
+    /// entity the tab is currently showing. On the cross-team feed we fall
+    /// back to "His Team" since neither entity is primary.
+    private var teamTabLabel: String {
+        switch appState.activeContext {
+        case .team(let team):
+            return team.displayName
+        case .country(let country):
+            return country.displayName
+        case .everyoneTalking:
+            return "His Team"
+        }
     }
 
     init() {
@@ -203,7 +227,7 @@ struct MainTabView: View {
                 }
             }
             .tabItem {
-                Label("His Team", systemImage: "shield")
+                Label(teamTabLabel, systemImage: "shield")
             }
             .tag(1)
 

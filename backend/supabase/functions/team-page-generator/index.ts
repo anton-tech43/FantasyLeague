@@ -255,7 +255,41 @@ async function generateFullPage(
     else if (log.source === "api_football_squad") squadData = jsonStr;
     else if (log.source.includes("fixtures")) fixturesData += `\n${log.source}: ${jsonStr}`;
     else if (log.source === "api_football_injuries") injuriesData = jsonStr;
-    else if (log.source === "api_football_coachs") coachsData = jsonStr;
+    else if (log.source === "api_football_coachs") {
+      // V2.0 hardening: API-Football's /coachs returns every coach who's
+      // EVER coached this team (Sweden returns 4: Hamrén, Andersson,
+      // Tomasson, Bäckström). Two of them can show career.end == null
+      // because API-Football doesn't always backdate the previous coach's
+      // departure when a new one starts. Asking Claude to "pick the first
+      // with career.end == null" got us the wrong coach (Hamrén instead of
+      // current J. Tomasson). Deterministic pre-filter here removes the
+      // ambiguity entirely: keep ONLY the coach with the most recent
+      // career.start among those with career.end == null and team matching
+      // this team's api_football_id.
+      const coachesArr = (log.data as { response?: Array<Record<string, unknown>> }).response;
+      if (Array.isArray(coachesArr) && coachesArr.length > 0) {
+        type CoachCareerRow = { team?: { id?: number }; start?: string; end?: string | null };
+        type CoachRow = { name?: string; photo?: string; career?: CoachCareerRow[] };
+        const teamApiId = team.api_football_id;
+        const current = (coachesArr as CoachRow[])
+          .map((coach) => {
+            const stintHere = (coach.career ?? []).find(
+              (c) => c.team?.id === teamApiId && (c.end === null || c.end === undefined),
+            );
+            return stintHere ? { coach, startedAt: stintHere.start ?? "" } : null;
+          })
+          .filter((x): x is { coach: CoachRow; startedAt: string } => x !== null)
+          .sort((a, b) => (a.startedAt < b.startedAt ? 1 : -1))[0];
+        if (current) {
+          // Hand Claude a single coach object — unambiguous, no fallback needed.
+          coachsData = JSON.stringify([current.coach]).slice(0, 2000);
+        } else {
+          coachsData = jsonStr;  // genuinely no current coach with end=null
+        }
+      } else {
+        coachsData = jsonStr;
+      }
+    }
   }
 
   // V2.0: league_context tells Claude whether this is a PL club or WC country.
@@ -280,7 +314,7 @@ ${wrapExternalData(`Fixtures: ${fixturesData || "not available"}`, "api_football
 
 ${wrapExternalData(`Injuries: ${injuriesData || "not available"}`, "api_football")}
 
-${wrapExternalData(`Coaches (head coach is the FIRST entry whose career.end is null or matches this team's id — use that name verbatim for manager_name): ${coachsData || "not available"}`, "api_football")}
+${wrapExternalData(`Coaches (pre-filtered to the single current head coach when one exists — use that name verbatim for manager_name): ${coachsData || "not available"}`, "api_football")}
 
 Context flags: ${contextFlags.join(", ") || "none"}
 

@@ -24,7 +24,14 @@ struct MeetManagerView: View {
 
                     if isLoading {
                         loadingSkeleton
-                    } else if let manager = content?.cards.manager {
+                    } else if let manager = content?.cards.manager, manager.name != "<UNKNOWN>" {
+                        // Belt-and-suspenders: the backend team-page-generator
+                        // emits the literal "<UNKNOWN>" placeholder when
+                        // API-Football has no current head coach. Rendering
+                        // that string verbatim looks broken; treat it as
+                        // "no real manager data" and fall through to the
+                        // soft fallback below. The fix-the-source-data path
+                        // lives in team-page-generator's coach pre-filter.
                         managerCard(manager: manager)
                     } else {
                         // No manager card — render a soft fallback so the
