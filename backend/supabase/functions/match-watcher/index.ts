@@ -53,6 +53,55 @@ serve(async (req) => {
   }
 });
 
+// V2.x observability: record every routine-fire attempt into pipeline_health.
+// stage = 'matchday_fire' | 'live_brief_fire'. Captures success, failure
+// (non-2xx from the routine API), and throws (network errors). The
+// observability rule is: never let a hop fail silently — every attempt
+// produces a row.
+//
+// Wrapped in try/catch so a logging failure can never break the actual
+// fire loop. logging is best-effort.
+async function logFire(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  args: {
+    stage: "matchday_fire" | "live_brief_fire";
+    teamId: string;
+    fixtureId: number;
+    trigger?: string; // "HT" | "75" for live_brief; absent for matchday
+    httpStatus: number | null;
+    success: boolean;
+    threw: boolean;
+    bodyExcerpt: string | null;
+  },
+): Promise<void> {
+  try {
+    const target = args.trigger
+      ? `${args.stage}:${args.teamId}:${args.fixtureId}:${args.trigger}`
+      : `${args.stage}:${args.teamId}:${args.fixtureId}`;
+    await supabase.from("pipeline_health").insert({
+      team_id: args.teamId,
+      stage: args.stage,
+      status: args.success ? "success" : "failure",
+      target,
+      http_status: args.httpStatus,
+      response_excerpt: args.bodyExcerpt,
+      error_class: args.success
+        ? "success"
+        : args.threw
+          ? "fire_threw"
+          : "fire_failed",
+      message: args.success
+        ? null
+        : args.threw
+          ? "Network error reaching routine API"
+          : `Routine API returned non-2xx: ${args.httpStatus}`,
+    });
+  } catch (e) {
+    // Logging is best-effort. Don't break the fire loop.
+    console.error("logFire failed (non-fatal):", e);
+  }
+}
+
 async function handleRequest(req: Request): Promise<Response> {
   const supabase = getSupabaseClient();
 
@@ -240,6 +289,10 @@ async function handleRequest(req: Request): Promise<Response> {
           : `${awayGoals}-${homeGoals}`;
         const text = `team_id=${teamId}; fixture_id=${fixtureId}; status=finished; opponent=${opponent}; score=${score}; kickoff_time=${kickoffTime}`;
 
+        let matchdayHttpStatus: number | null = null;
+        let matchdayBodyExcerpt: string | null = null;
+        let matchdaySuccess = false;
+        let matchdayThrew = false;
         try {
           const fireResp = await fetch(routineUrl, {
             method: "POST",
@@ -251,20 +304,34 @@ async function handleRequest(req: Request): Promise<Response> {
             },
             body: JSON.stringify({ text }),
           });
+          matchdayHttpStatus = fireResp.status;
           if (fireResp.ok) {
             firesDispatched++;
+            matchdaySuccess = true;
             if (isHome) homeFireOk = true;
             else awayFireOk = true;
             console.log(`fired routine for ${teamId}/${fixtureId}`);
           } else {
             const body = await fireResp.text().catch(() => "");
+            matchdayBodyExcerpt = body.slice(0, 200);
             console.error(
-              `fire failed for ${teamId}/${fixtureId}: ${fireResp.status} ${body.slice(0, 200)}`,
+              `fire failed for ${teamId}/${fixtureId}: ${fireResp.status} ${matchdayBodyExcerpt}`,
             );
           }
         } catch (e) {
+          matchdayThrew = true;
+          matchdayBodyExcerpt = e instanceof Error ? e.message.slice(0, 200) : null;
           console.error(`fire threw for ${teamId}/${fixtureId}:`, e);
         }
+        await logFire(supabase, {
+          stage: "matchday_fire",
+          teamId,
+          fixtureId,
+          httpStatus: matchdayHttpStatus,
+          success: matchdaySuccess,
+          threw: matchdayThrew,
+          bodyExcerpt: matchdayBodyExcerpt,
+        });
       }
     }
 
@@ -299,6 +366,10 @@ async function handleRequest(req: Request): Promise<Response> {
           `fixture_id=${fixtureId}`,
         ].join("; ");
 
+        let liveHttpStatus: number | null = null;
+        let liveBodyExcerpt: string | null = null;
+        let liveSuccess = false;
+        let liveThrew = false;
         try {
           const fireResp = await fetch(liveBriefUrl!, {
             method: "POST",
@@ -310,18 +381,33 @@ async function handleRequest(req: Request): Promise<Response> {
             },
             body: JSON.stringify({ text }),
           });
+          liveHttpStatus = fireResp.status;
           if (fireResp.ok) {
             liveBriefFires++;
+            liveSuccess = true;
             console.log(`live-brief fired for ${teamId}/${fixtureId} [${trigger}]`);
           } else {
             const body = await fireResp.text().catch(() => "");
+            liveBodyExcerpt = body.slice(0, 200);
             console.error(
-              `live-brief fire failed for ${teamId}/${fixtureId} [${trigger}]: ${fireResp.status} ${body.slice(0, 200)}`,
+              `live-brief fire failed for ${teamId}/${fixtureId} [${trigger}]: ${fireResp.status} ${liveBodyExcerpt}`,
             );
           }
         } catch (e) {
+          liveThrew = true;
+          liveBodyExcerpt = e instanceof Error ? e.message.slice(0, 200) : null;
           console.error(`live-brief fire threw for ${teamId}/${fixtureId} [${trigger}]:`, e);
         }
+        await logFire(supabase, {
+          stage: "live_brief_fire",
+          teamId,
+          fixtureId,
+          trigger,
+          httpStatus: liveHttpStatus,
+          success: liveSuccess,
+          threw: liveThrew,
+          bodyExcerpt: liveBodyExcerpt,
+        });
       }
     }
 
