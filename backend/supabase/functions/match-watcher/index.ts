@@ -257,17 +257,13 @@ async function handleRequest(req: Request): Promise<Response> {
       ) {
         newTriggers.push("HT");
       }
-      // 75' trigger: status == "2H" AND elapsed >= 75. Note: API-Football's
-      // `elapsed` includes added time, so 90+1 = 91 etc. — the >= 75 check
-      // still works because we're only asking "are we past the 75' mark?".
-      if (
-        !briefsFired.includes("75") &&
-        status === "2H" &&
-        elapsed !== null &&
-        elapsed >= 75
-      ) {
-        newTriggers.push("75");
-      }
+      // 75' trigger DROPPED 2026-05-17 — fired 2 per match × 2 perspectives = 4
+      // routine runs each, doubling live_brief budget for marginal UX value.
+      // HT is the high-leverage in-match moment (gives her something to send
+      // him at half-time). 75' was redundant for most users and ate quota
+      // that match-day matchday_fire runs needed. Quota cap is 25/day; a busy
+      // PL Saturday with 6 matches needs every run for matchday output.
+      // See IMPLEMENTATION_PROGRESS Lesson 63 (routine quota economics).
     }
 
     // Track per-perspective fire success. We only mark fired_finished_at
