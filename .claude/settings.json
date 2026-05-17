@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(curl:*)",
+
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git stash list:*)",
+
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(jq:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(sort:*)",
+      "Bash(uniq:*)",
+      "Bash(date:*)",
+      "Bash(echo:*)",
+      "Bash(which:*)",
+
+      "Bash(xcodebuild:*)",
+      "Bash(xcrun simctl:*)",
+
+      "Bash(supabase:*)",
+      "Bash(/opt/homebrew/Cellar/libpq/*)",
+      "Bash(/opt/homebrew/opt/libpq/bin/psql:*)"
+    ]
+  }
+}
