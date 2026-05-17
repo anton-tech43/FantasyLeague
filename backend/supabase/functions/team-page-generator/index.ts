@@ -266,6 +266,12 @@ async function generateFullPage(
       // ambiguity entirely: keep ONLY the coach with the most recent
       // career.start among those with career.end == null and team matching
       // this team's api_football_id.
+      //
+      // Also: rawLogs is iterated newest-first but the loop OVERWRITES
+      // coachsData each time — so older rows (which may include rate-limit
+      // error responses with empty response arrays) would win. Skip if
+      // coachsData has already been populated by a newer good row.
+      if (coachsData) continue;
       const coachesArr = (log.data as { response?: Array<Record<string, unknown>> }).response;
       if (Array.isArray(coachesArr) && coachesArr.length > 0) {
         type CoachCareerRow = { team?: { id?: number }; start?: string; end?: string | null };
@@ -282,7 +288,20 @@ async function generateFullPage(
           .sort((a, b) => (a.startedAt < b.startedAt ? 1 : -1))[0];
         if (current) {
           // Hand Claude a single coach object — unambiguous, no fallback needed.
-          coachsData = JSON.stringify([current.coach]).slice(0, 2000);
+          // Strip career history to just the current stint (the others are
+          // irrelevant once we've picked the right coach AND keep the JSON
+          // compact so we don't truncate mid-object on long careers like
+          // Koeman's 12 stints). Photo, name, age stay so Claude has what
+          // it needs for manager_photo_url + manager_summary.
+          const coachCompact: Record<string, unknown> = { ...current.coach };
+          const careerArr = (current.coach.career ?? []);
+          const currentStint = careerArr.find(
+            (c) => c.team?.id === teamApiId && (c.end === null || c.end === undefined),
+          );
+          if (currentStint) {
+            coachCompact.career = [currentStint];
+          }
+          coachsData = JSON.stringify([coachCompact]);
         } else {
           coachsData = jsonStr;  // genuinely no current coach with end=null
         }
