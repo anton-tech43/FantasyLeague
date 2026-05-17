@@ -1,12 +1,23 @@
 // notification-sender/index.ts
-// Goal Digger — Sends push notifications for approved content
-// Enforces anti-spam rules (Contract 4), tier-based limits, quiet hours
-// Result notifications bypass quiet hours (22:00-08:00)
+// Goal Digger — Sends push notifications for approved content.
+//
+// Volume control is tier-based content-type filtering (minTierForType in the
+// per-item loop). Anti-spam rules removed 2026-05-17 — they were redundant
+// with tier segmentation and the gap check had a bug. See
+// _shared/anti-spam.ts header for the full rationale.
+//
+// Quiet hours are handled by iOS Do Not Disturb on the device, not server-side.
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { sendPushNotification, buildAPNsPayload } from "../_shared/apns-client.ts";
-import { checkAntiSpamRules } from "../_shared/anti-spam.ts";
+// Anti-spam removed 2026-05-17 — see _shared/anti-spam.ts header for rationale.
+// Volume control now lives in tier-based content-type filtering (minTierForType)
+// + iOS-side Do Not Disturb. Server no longer applies quiet-hours, daily limits,
+// or 3-hour gap checks. Those rules were redundant with tier segmentation and
+// had a real bug: the gap check compared the item being pushed against itself
+// (it's already 'published' before the check runs), so any item with no prior
+// pushed item in 24h would silently fail.
 import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 
 function getCategoryFromType(
@@ -113,46 +124,33 @@ serve(async (req) => {
         continue;
       }
 
-      // Sunday Brief (V1.1 C2) is a T2+ surface — the weekly forward-look
-      // is part of the "Came to impress" upgrade. T1 users opted into the
-      // quieter tier and shouldn't get a Sunday push. Drop T1 tokens
-      // before anti-spam so we don't pollute the log with "blocked by
-      // anti-spam" entries for an intentional exclusion. Future tier-gated
-      // content types (Saturday Quiz, Player Dossier — both T3) will use
-      // the same pattern with their own minTier threshold.
+      // Tier-based content-type filter. Each content type declares the
+      // minimum tier that receives it. Today only sunday_brief is T2+; all
+      // other types reach T1+. As we add new tier-gated surfaces (Saturday
+      // Quiz, Player Dossier), extend the mapping below.
+      //
+      // No anti-spam rules. Tier segmentation IS the volume control:
+      //   T1 ≈ matchday + result + news (3-4 pushes/day on busy days)
+      //   T2 ≈ T1 + sunday_brief
+      //   T3 ≈ T2 + future T3-only surfaces
+      // Quiet hours handled by iOS Do Not Disturb on the device, not by the
+      // server (server-side quiet hours meant matchday pushes for late-evening
+      // games never reached the user — bad trade for a feature iOS does natively).
       const minTierForType = item.type === "sunday_brief" ? 2 : 1;
 
-      // Group tokens by tier (carry env alongside) for anti-spam checking
       type TokenEntry = { token: string; env: "development" | "production" };
-      const tokensByTier: Record<number, TokenEntry[]> = {};
+      const eligibleTokens: TokenEntry[] = [];
       for (const t of tokens) {
         const tier = t.tier ?? 2;
         if (tier < minTierForType) continue;
         const env = (t.apns_environment === "production" ? "production" : "development") as "development" | "production";
-        if (!tokensByTier[tier]) tokensByTier[tier] = [];
-        tokensByTier[tier].push({ token: t.apns_token, env });
-      }
-
-      // Check anti-spam for each tier group
-      const eligibleTokens: TokenEntry[] = [];
-      for (const [tierStr, tierTokens] of Object.entries(tokensByTier)) {
-        const tier = parseInt(tierStr);
-        const contentType = isResult ? "result" as const : item.type as "news" | "matchday" | "sunday_brief";
-
-        const spamCheck = await checkAntiSpamRules(supabase, teamId, contentType, tier);
-        if (spamCheck.canSend) {
-          eligibleTokens.push(...tierTokens);
-        } else {
-          console.log(
-            `Anti-spam blocked for tier ${tier} (${teamId}): ${spamCheck.reason}`
-          );
-        }
+        eligibleTokens.push({ token: t.apns_token, env });
       }
 
       if (eligibleTokens.length === 0) {
-        // All tiers blocked — skip but don't reject. Mark pushed_at so the
-        // sweep won't keep re-picking this item; the anti-spam decision is
-        // a deliberate "we considered this and chose not to send."
+        // No devices match the min-tier filter — all subscribers are at a
+        // lower tier than this content type targets. Mark pushed_at so the
+        // sweep doesn't keep re-picking this item.
         await supabase
           .from("content_items")
           .update({ pushed_at: new Date().toISOString() })
@@ -162,7 +160,7 @@ serve(async (req) => {
           stage: "publish",
           status: "skipped",
           duration_ms: Date.now() - startTime,
-          message: "All tiers blocked by anti-spam rules",
+          message: `No tokens at or above min tier ${minTierForType} for type=${item.type}`,
           content_item_id: item.id,
         });
         continue;
