@@ -2,7 +2,7 @@
 
 > **For:** Anton (routines repo owner)
 > **From:** V2.0 backend + iOS work (this repo)
-> **Status:** ⏳ Pending action in the `anton-tech43/goaldigger-routines` repo
+> **Status:** ✅ Prompts updated + new `gd-news-wc` routine landed 2026-05-17 (anton-tech43/goaldigger-routines `b724f5d` → `fe6e3c2` → gd-news-wc setup). Smoke test pending first scheduled fire.
 > **Deadline:** Routine prompts updated + redeployed before **June 4** so first WC content surfaces a few days before kickoff (June 11). Daily routines fire from June 5 onwards to validate, with full production traffic from June 11.
 
 ---
@@ -57,25 +57,27 @@ Then update other PL-assumption text to be entity-agnostic ("his team" → "his 
 
 ## Per-routine changes
 
-### 1. `gd-news` (daily, 06:00 UTC)
+### 1. `gd-news` (daily, 06:30 12:30 18:30 00:30 UTC, 4 fires/day) — **PL CLUBS ONLY**
 
 **File:** `PROMPT.md` and `post_news.sh`
 
-**Changes:**
-- Add `{{league_context}}` injection.
-- News sources currently include 6 PL-focused RSS feeds (BBC, Guardian, Sky, Telegraph, Daily Mail, Independent). For country mode, add a fallback path that uses ESPN_FC + relevant national-team coverage. The data-fetcher already attempts both for country teams (we saw espn_fc in the May 16 fetch).
-- Voice shift: PL news is about clubs; WC news is about national squad form, manager decisions, "is X going to be picked", form leading into the tournament. Tone stays friend-talking-to-friend.
-- For pre-tournament content (May 17 - June 10), focus on:
-  - Squad announcements
-  - Pre-tournament friendly results
-  - Tactical previews
-  - Storylines ("revenge for 2022", "first WC for player X", etc.)
-- During tournament (June 11 - July 19):
-  - Group stage match previews + reactions
-  - Knockout bracket implications
-  - "What does this mean for the next match"
+**Changes landed 2026-05-17:**
+- COMPETITION CONTEXT block at top + WC-MODE NOTES block at bottom (both inserted by the iOS/backend agent).
+- Workflow Step 2 `a-bis` instructs Claude to run the entity_type lookup per team (no-op for `gd-news` since all 20 PL clubs are `entity_type='club'`, but the structure exists for parity with `gd-news-wc`).
+- This routine stays scoped to **20 PL clubs** to avoid context blowout.
 
-**Verify:** Trigger `gd-news` manually for `team_id=england`. Verify a content_items row lands with `team_id='england'` and the headline reads like national-team news, not a club piece.
+### 1b. `gd-news-wc` (daily, 06:35 12:35 18:35 00:35 UTC, 4 fires/day) — **48 WC COUNTRIES**
+
+**File:** `PROMPT_WC.md` and `fetch_news_wc.sh` (NEW — added 2026-05-17)
+
+**Changes landed 2026-05-17:**
+- New `fetch_news_wc.sh` script: hardcoded 48 WC country mappings (id:api_football_id:display_name), queries `league=1&season=2026`, curated 4-RSS international shortlist (BBC Sport, Guardian, ESPN FC, Goal.com), shared global standings fetch (single call for all 12 groups instead of per-country).
+- New `PROMPT_WC.md` (~80 lines): delta-on-PROMPT.md. Reuses all voice rules + GROUNDING + SAFE-REWRITE + BATTLE-TESTED rules + post pipeline; only diffs are entity scope (48 countries), fetch script (`fetch_news_wc.sh`), and pacing (compact every 6 countries vs 5).
+- `gd-news-wc` cloud routine created via RemoteTrigger, 5-min offset from `gd-news` to avoid API-Football rate-limit overlap.
+
+**Per-country processing**: same `b → h` sub-steps as PROMPT.md. RSS filtering uses the `display_name` field from the fetch output (`"Argentina"` not `"argentina"`).
+
+**Verify:** Trigger `gd-news-wc` manually. Audit recent `content_items` rows where `team_id IN (SELECT id FROM teams WHERE entity_type='country')`. Check 5 rows: voice country-aware, `team_id` matches a country row, no club-affiliation hallucinations for national-team players.
 
 ### 2. `gd-matchday` (post-FT, fired by match-watcher)
 
