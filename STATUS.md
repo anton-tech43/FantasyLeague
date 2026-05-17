@@ -24,6 +24,20 @@ Five-phase verification pass run autonomously, all gates green except as noted:
 
 ---
 
+## Verified today (May 17 late evening — gd-news-wc + App Store assets)
+
+Continuation pass after the 5-phase verification closeout above. Two more streams landed:
+
+- **Phase F — `gd-news-wc` routine shipped:** New `fetch_news_wc.sh` (48 country mappings hardcoded, league=1&season=2026 queries, 4-RSS international shortlist, shared global standings fetch) and new `PROMPT_WC.md` (delta-on-PROMPT.md, ~80 lines). Routines repo commits: `48c651b` (initial files) + `97843a0` (contamination-prevention rule tightened after first-fire audit). Cloud routine `trig_0128pyjoweWumZGSDDFp9fa5` created via `RemoteTrigger`, cron `35 6,12,18,0 * * *` UTC (5-min offset from gd-news). First fire at 12:35 UTC produced **4 clean country items** (argentina/Messi-Spain hypothetical, brazil/Casemiro farewell, england/Kane 4th hat-trick, south_korea/Son captains 4th WC) — voice country-aware, all 22-char-per-line caps respected, no hallucinations spotted. **1 contamination caught**: a Liverpool news item — gd-news-wc found a Liverpool story in shared RSS and posted it despite the 48-country scope. Item is real + well-written (not harmful, not archived), but the PROMPT_WC.md update (`97843a0`) now has a CRITICAL section forbidding non-country team_ids and forcing alphabetical iteration. Next fire at 18:35 UTC will validate the fix.
+
+- **Phase G — App Store V2.0 launch assets drafted:** Three new docs in this repo:
+    - `APP_STORE_V2.0_COPY.md` — paste-ready listing copy (subtitle, promo, What's New, full description, keywords) with the WC pivot baked in. ~210 lines.
+    - `APP_STORE_V2.0_SCREENSHOT_PLAN.md` — 6-screenshot spec for the V2.0 submission. New shots #2 (CountrySelectionView with Argentina selected) and #3 (OptionalPLTeamView with Arsenal + Argentina dual fandom) carry the WC story. Demo persona (Sophie/Ben/Argentina/Arsenal) for consistent storytelling. ~189 lines.
+    - `APP_STORE_V2.0_SUBMISSION.md` — T-3 / T-2 / T-1 / Day-0 submission checklist with Xcode archive walkthrough, App Store Connect form-fill steps, export-compliance answers, and worst-case fallback plan. ~118 lines.
+- All three are paste-ready for June 4 submission day. Submission, archive, and screenshot capture are all manual (require user's Mac + Apple ID + Xcode).
+
+---
+
 ---
 
 ## What's done
@@ -108,9 +122,9 @@ Value-first restructure. New order: `Welcome → Her name → His name → Team 
 
 | Week | Focus | Done by |
 |---|---|---|
-| **Week 2 (May 17-23)** | ✅ DONE. iOS V2.0 onboarding + backend parameterisation + Phase 28 JWT hardening + WC routine prompts (8 prompts structural pass + per-routine WC NOTES) complete. | May 17 |
-| **Week 3 (May 24-30)** | Set up **`gd-news-wc`** routine in claude.ai/code/routines pointing at PROMPT.md with a country-loop session (48 countries, separate cron slot ~06:30 UTC). Optional: deeper voice tuning per routine after first live runs surface issues. | May 30 |
-| **Week 4 (May 31 – Jun 6)** | TestFlight beta with V2.0 build, smoke testing (onboard dev device with country selection, confirm country-routing push delivery), marketing assets, App Store submission by **June 4** (7-day Apple review buffer). | Jun 6 |
+| **Week 2 (May 17-23)** | ✅ DONE. iOS V2.0 + Phase 28 JWT hardening + WC routine prompts + **`gd-news-wc` routine shipped** + App Store V2.0 launch assets drafted. All on May 17. | May 17 |
+| **Week 3 (May 24-30)** | Validate gd-news-wc output quality across multiple fires (first fire delivered 4 clean country items + 1 contamination caught). Optional: deeper voice tuning per routine after first live runs surface quality issues. Onboard the dev iPhone through V2.0 flow + populate `device_tokens.country_id` for the missing E2E push test. | May 30 |
+| **Week 4 (May 31 – Jun 6)** | TestFlight beta with V2.0 build, screenshot capture per `APP_STORE_V2.0_SCREENSHOT_PLAN.md`, App Store submission by **June 4** following `APP_STORE_V2.0_SUBMISSION.md`. | Jun 6 |
 | **June 7-10** | Buffer for review fixes / final polish. | Jun 10 |
 | **June 11** | World Cup kicks off. App live. | Jun 11 |
 
@@ -118,11 +132,11 @@ Value-first restructure. New order: `Welcome → Her name → His name → Team 
 
 ## Pre-launch manual checklist (needs the user, can't be automated)
 
-- [ ] Onboard a dev iPhone through the V2.0 flow, pick a WC country, confirm `device_tokens.country_id` populates (psql query). Required to E2E-test V2.0 push routing.
-- [ ] Create `gd-news-wc` cloud routine at claude.ai/code/routines: cron `30 6,12,18,0 * * *` (or similar offset from gd-news), repo `anton-tech43/goaldigger-routines`, prompt `Read PROMPT.md and follow it for the 48 WC countries`. Update the prompt or pass a per-trigger arg to scope the loop to countries only.
-- [ ] TestFlight: archive V2.0 build in Xcode, upload via Transporter or directly, distribute to internal testers.
-- [ ] App Store Connect: V2.0 listing copy update (pitch the WC angle), 6 fresh screenshots showing the WC onboarding flow + country-context empty state ("We're warming up his [country] coverage").
-- [ ] Submit V2.0 to App Store review by **June 4** to leave a 7-day Apple buffer before June 11 kickoff.
+- [ ] **Onboard a dev iPhone through the V2.0 flow**, pick a WC country, confirm `device_tokens.country_id` populates (psql query). Required to E2E-test V2.0 push routing.
+- [x] ~~Create `gd-news-wc` cloud routine~~ — **DONE May 17**, routine `trig_0128pyjoweWumZGSDDFp9fa5` is live. First fire at 12:35 UTC produced 4 clean country items + 1 contamination caught and fixed in PROMPT_WC.md `97843a0`.
+- [ ] **TestFlight**: archive V2.0 build in Xcode (per `APP_STORE_V2.0_SUBMISSION.md` T-1 walkthrough), upload via Transporter or directly, distribute to internal testers.
+- [ ] **App Store Connect**: V2.0 listing copy paste from `APP_STORE_V2.0_COPY.md`, 12 screenshots (6 × 2 device sizes) captured per `APP_STORE_V2.0_SCREENSHOT_PLAN.md`.
+- [ ] **Submit V2.0 to App Store review by June 4** to leave a 7-day Apple buffer before June 11 kickoff. Step-by-step in `APP_STORE_V2.0_SUBMISSION.md`.
 
 ---
 
