@@ -2037,3 +2037,42 @@ I (and the prior agents) kept pattern-matching: "another silent push failure ≈
 **Rule:** When investigating "no push arrived," don't assume the failure mode is the same as the last incident. Always trace the full path: pg_cron → Edge Function → routine API → routine session → content_items insert → notification-sender → APNs. Each hop has its own failure modes. The symptom (no push) is identical across all of them; the cause is not.
 
 **Specific anti-pattern caught here:** anti-spam was logging `"Anti-spam blocked for tier N: <reason>"` to `console.log` (Edge Function stderr — not in the DB) AND writing `"All tiers blocked by anti-spam rules"` to `pipeline_health` WITHOUT preserving the reason. The aggregated log surface erased the specific failure mode. **Rule for future logging:** always preserve the specific reason, not just the high-level outcome. If the high-level outcome is "blocked," the reason field is doing 80% of the work.
+
+### 63. Routine quota economics — schedule for the busy day, not the average day
+
+**What happened (May 17 2026):** Phase J observability (just-shipped pipeline_health rows on every match-watcher fire attempt) immediately surfaced 4 matchday_fire failures with HTTP 429 from the Anthropic routine API. Initial hypothesis: per-second rate limiting on concurrent fires. Actual cause from claude.ai/code/routines UI: **"25/25 included remote daily runs used"**. The project hit the daily routine-run quota.
+
+The math we'd been ignoring:
+
+Routine fires consumed today (Saturday):
+- gd-season-state (03:00 daily): 1
+- gd-insider (04:00 daily): 1
+- gd-news (00:30 06:30 12:30 18:30 daily): 4
+- gd-news-wc (00:35 06:35 12:35 18:35 daily): 4
+- gd-saturday-quiz (Sat 09:00): 1
+- iclttm-pipeline (22:02 daily, different project): 1
+- Match-driven (6 PL matches today × 4 live-brief fires + 2 matchday fires): up to 36
+
+Total demand on a 6-match Saturday: ~48. Quota: 25.
+
+The scheduled cron routines were sized for an "average day" but PL Saturdays have 4-8 matches. We never modeled the match-day surge. The matchday fires for 4 PL clubs (Crystal Palace, Brentford, Leeds, Brighton) silently 429'd this afternoon — users got no FT push.
+
+**Fix shipped 2026-05-17:**
+
+*Tier 1 — weekday-only routines:* `gd-insider` cron `0 2 * * *` → `0 2 * * 1-5`; `gd-season-state` cron `0 1 * * *` → `0 1 * * 1-5`. These are background/curiosity content that doesn't need weekend coverage when match content dominates. Saves 2 runs each weekend day.
+
+*Tier 2 — reduce news cadence:* `gd-news` cron `30 6,12,18,0 * * *` → `30 6,18 * * *` (4×/day → 2×/day, morning + evening). Same for `gd-news-wc`. Saves 4 runs per day across both, every day. Less news cadence but the gd-matchday FT push covers the weekend marquee content.
+
+*Tier 3 — drop 75' live-brief trigger:* match-watcher only fires `live_brief` at HT now. The 75' trigger fired 2 × 2 perspectives = 4 routine runs per match for marginal UX value. HT brief is the high-leverage in-match moment; 75' was redundant for most users. Cuts live_brief fires from 4/match to 2/match.
+
+**Future-state quota fit (typical 4-match PL Saturday):**
+
+- Scheduled (after Tier 1+2 cuts): 0 (insider+season-state) + 2 (gd-news+gd-news-wc once daily fires) + 1 (gd-saturday-quiz) = 3
+- Match-driven (after Tier 3 cut): 4 matches × (2 HT live-brief + 2 matchday) = 16
+- Total: 19/25 → fits comfortably
+
+**Rules:**
+1. **Model the busy day, not the average.** Routine quotas are a daily cap; schedule for your peak match-day load, not your typical Tuesday.
+2. **Weekend-content vs. weekday-content.** If a routine produces background data (insider snippets, state primers), it doesn't need to compete with match-day fires. Move it to weekdays.
+3. **Per-perspective fires double everything.** If your routine fires once per (home, away) pair, you're using 2× the slots per match. Consider whether the "away perspective" is actually different content or if one shared output works.
+4. **Phase J observability paid off within 5 minutes of deploy.** Before this work, the 429s would have been invisible. Always instrument every pipeline hop with a durable DB row — `console.error` is a black hole.
