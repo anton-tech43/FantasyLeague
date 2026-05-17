@@ -2190,3 +2190,36 @@ The risk wasn't credential theft — each function's privilege was bounded — b
 **LOW-confidence-7 finding intentionally deferred:** `device_tokens` anon SELECT (migration 030) exposes full 64-char APNs tokens to anyone with the publishable key. Already documented in migration 030's own header as a V1.1 follow-up. Not a launch blocker; will tighten via RLS policy post-WC.
 
 **The night-finale commit:** `6448a22`. Branch state: pushed, ready for launch.
+
+### 67. Three bugs hide behind every "data missing" claim
+
+**What happened (May 17 night-finale-2):** Sweden's onboarding manager card rendered the literal string `<UNKNOWN>` in the sim. Investigation went through four layers before all 48 WC countries had real coach data.
+
+- **Layer 1 — Prompt ambiguity (the "obvious" bug):** team-page-generator's user-message told Claude "pick the FIRST entry whose career.end is null." API-Football's `/coachs` returns every coach who's ever managed the team; Sweden had two with `end=null` (E. Hamrén 2023 + J. Tomasson 2024). Claude picked the first in list order (Hamrén). Fixed by replacing the natural-language rule with a deterministic JS pre-filter that selects the single coach whose most-recent career stint matches the team's `api_football_id` AND has `end == null`. Sweden updated to Tomasson on first re-run. **But 11 other countries stayed `<UNKNOWN>`.**
+
+- **Layer 2 — Iteration overwrite (the "hidden" bug):** Netherlands also stayed `<UNKNOWN>` even with the new filter. Throw-debugged the function and saw `coachsData` contained a rate-limit error response, not coach data. raw_fetch_logs has multiple `api_football_coachs` rows for the same team over time. The fetcher loop iterated newest-first BUT overwrote `coachsData` on every match — so the LAST iteration (the OLDEST row in the 20-row window) won. Netherlands' May-16 row was a rate-limit error from API-Football; that overwrote May-17's successful fetch. Fix: `if (coachsData) continue` — newest good row sticks.
+
+- **Layer 3 — JSON truncation (the "could be the bug" bug):** related discovery: the single-coach `JSON.stringify().slice(0, 2000)` was cutting mid-payload for coaches with long careers (Koeman has 12 stints, ~2200 chars). Even with the right coach picked, Claude got broken JSON and could default to `<UNKNOWN>`. Fix: strip `career[]` to just the current stint before serialising — small + complete payload.
+
+- **Layer 4 — Upstream data quality (the "not a code bug" bug):** Even with Layers 1-3 fixed, France/Spain/Scotland/Uruguay still got wrong picks. The reason: API-Football's `/coachs` data for those countries is internally inconsistent. For France (team_id=2), the only active stint listed is Luis de la Fuente — but his `career[0].team.id` is 9 (Spain). For Scotland and Uruguay, no career entries have `end=null` at all. My filter correctly returns "no match" → falls back to `coachsData = jsonStr` → Claude picks from messy data → ends up with the wrong coach. Real fix: a `manager_overrides` table seeded from a trusted source. V2.1, ~30 min.
+
+**Rules:**
+
+1. **Don't trust "data missing" until you've verified at multiple layers.** Each layer here looked like the same symptom from above — "manager is UNKNOWN" — but each had a different root cause requiring a different fix. Layer 1's fix alone didn't help Netherlands; Layer 2's alone didn't help Koeman; Layer 3's didn't fix France.
+2. **Iteration overwrite is a recurring bug pattern.** When a `for` loop iterates a sorted list and assigns to a single variable per match, you get the LAST match — often the OPPOSITE of what you want. Either `break` after the first good match, sort ascending if you want newest-wins, or guard the assignment with `if (alreadySet) continue`.
+3. **`.slice(N)` on a JSON string truncates structure, not just content.** When the payload is a JSON object/array, slicing produces invalid JSON. Prefer trimming logical fields (drop irrelevant nested data) before serialising. If slicing is unavoidable, `JSON.parse()` afterwards to validate.
+4. **Upstream data quality is a launch risk for V2.0.** API-Football's PL coverage is excellent; their national-team coach data is patchy. We need a manual override layer for ~5 countries' managers before launch, and likely similar gaps elsewhere (squads, fixtures). Filed as V2.1.
+
+**Bonus — the V2.0 sim walkthrough findings that triggered all of this:**
+
+The Layer 1-4 chain only got opened because the user ran the V2.0 onboarding in the simulator end-to-end and reported what they saw. Five issues surfaced in one walkthrough (`98f945d` shipped all five):
+
+- Country missing from the feed switcher dropdown (`ContextSwitcherView` only listed the team) → country now first
+- "His Team" tab locked to country-first regardless of feed selection → now follows `activeContext` (label + content both)
+- MeetTeamView CTA "Show me how this works" navigated to the manager screen, not the how-it-works screen → copy now "Meet the boss"
+- iOS rendered the literal `<UNKNOWN>` placeholder when team-page-generator had no manager data → belt-and-suspenders gate hides the card in both MeetManagerView and TeamPageView
+- gd-saturday-quiz cron `0 7 * * 6` fired at 07:00 UTC = 4-5h before the "Saturday lunchtime" promise on the onboarding "How this fits into your week" screen → bumped to `0 11 * * 6` = lunchtime BST
+
+**Files touched tonight:** `ContextSwitcherView.swift`, `GoalDiggerApp.swift`, `MeetTeamView.swift`, `MeetManagerView.swift`, `TeamPageView.swift`, `team-page-generator/index.ts`. Cron updated via RemoteTrigger. team_pages rows regenerated for 21 teams (18 WC + 3 PL).
+
+**Commits:** `98f945d` (sim walkthrough sweep), `456b2a9` (team-page-generator follow-ups). After these, all 48 WC countries + 20 active PL clubs have a real manager name + photo URL; 4 countries (France/Spain/Scotland/Uruguay) reflect upstream data-quality issues — filed as V2.1.

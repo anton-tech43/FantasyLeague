@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-17 (night-finale — security review + 3 auth-gate fixes on diagnostic Edge Functions)
+**Last updated:** 2026-05-17 (night-finale-2 — V2.0 sim walkthrough fixes + 71-team manager backfill)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
@@ -114,6 +114,36 @@ Sixth and final pass for May 17. Ran `/security-review` against the entire branc
 - **One LOW finding (confidence 7) explicitly deferred:** `device_tokens` anon SELECT (migration 030) exposes full APNs tokens to anyone with the publishable key. Documented in the migration header as a launch-time tradeoff with a V1.1 follow-up — not blocking June 11.
 
 - **Cleared by the review (not flagged):** migration 020 Vault accessor (locked search_path + REVOKE PUBLIC), `check_pipeline_heartbeat` Vault token leak path, CHECK 5 STRING_AGG (hardcoded taxonomy, not attacker-controlled), APNs JWT generation (ES256/P-256, no alg confusion), pre-commit-secret-scan.sh and verify-cron-auth.sh, anti-spam.ts stub, iOS APIClient URL construction. No SQL injection, command injection, path traversal, or new hardcoded credentials.
+
+---
+
+## Verified today (May 17 night-finale-2 — V2.0 sim walkthrough fixes + manager backfill)
+
+Seventh and final pass for May 17. User ran the V2.0 onboarding in the simulator (Sweden + Arsenal dual-fandom) and surfaced five UX issues plus an upstream data-quality problem (Sweden's manager rendered as the literal string `<UNKNOWN>` though Sweden has a real, well-known head coach). Working through them uncovered two more latent backend bugs in the team-page-generator. After the sweep, all 48 WC countries + all 20 active PL clubs have a real manager name AND a photo URL.
+
+- **Five sim-walkthrough fixes** (commit `98f945d`):
+    - **Feed switcher dropdown** — `ContextSwitcherView` only listed the user's PL team + Everyone's talking; the country was silently ignored. Now lists country first (V2.0 anchor) → team → everyone. Matches `AppState.activeContext`'s default picker.
+    - **"His Team" tab** — was locked to country-first regardless of feed context. Now both the tab label AND the destination view follow `AppState.activeContext`: Arsenal active → tab says "Arsenal", page shows Arsenal; Sweden active → "Sweden". On the cross-team feed it falls back to "His Team" + country-first picker.
+    - **MeetTeamView CTA copy** — was "Show me how this works" but navigated to MeetManagerView. Now reads "Meet the boss" — matches destination.
+    - **iOS belt-and-suspenders gate** — both MeetManagerView and TeamPageView now skip the manager card entirely when `content.cards.manager.name == "<UNKNOWN>"`. Was rendering the literal placeholder string.
+    - **team-page-generator deterministic coach pre-filter** — root cause of Sweden's `<UNKNOWN>`: API-Football's `/coachs` returns ALL historical coaches with multiple having `career.end == null` (Sweden: Hamrén 2023 + Tomasson 2024; Claude picked Hamrén). Replaced the natural-language "pick the first" rule with a JS pre-filter that selects the single coach whose most-recent career stint matches the team's `api_football_id` AND has `end == null`. Sweden now correctly shows J. Tomasson with his photo.
+
+- **Two follow-up bugs found during the 48-country verification** (commit `456b2a9`):
+    - **rawLogs iteration overwrite** — the team-page-generator loop iterates `raw_fetch_logs` newest-first and overwrites `coachsData` on every `api_football_coachs` row, so the LAST iterated row (the OLDEST in the 20-row window) won. Netherlands' May-16 rate-limit error response replaced May-17's successful fetch → my filter saw an empty response array → fallback → `<UNKNOWN>`. Fix: `if (coachsData) continue` — newest good row sticks. Netherlands now shows R. Koeman.
+    - **JSON truncation mid-object** — `JSON.stringify(coach).slice(0, 2000)` was cutting mid-payload for coaches with long career history (Koeman has 12 stints, ~2200 chars). Claude saw corrupted JSON. Fix: strip `career[]` down to just the current stint before serialising — keeps the payload small and complete.
+
+- **Onboarding copy / cron alignment** — `gd-saturday-quiz` cron `0 7 * * 6` → `0 11 * * 6`. The "How this fits into your week" screen promised "Saturday lunchtime"; was firing 4-5h before UK lunchtime. Now 11:00 UTC = 12:00/13:00 BST = lunchtime ✓. Once-weekly fire, zero quota impact. RemoteTrigger update — cron lives on claude.ai/code/routines, not pg_cron.
+
+- **All-teams backfill:** regenerated 18 problem WC countries + 3 stale PL clubs (Crystal Palace `R. Hodgson` → `O. Glasner`, Forest `A. Postecoglou` → `Vitor Pereira`, Spurs picked `R. De Zerbi` per API-Football's most recent stint). Final state: **48/48 WC countries** and **20/20 active PL clubs** have a real manager name + photo URL. 3 relegated PL clubs (Ipswich, Leicester, Southampton) still lack photos — irrelevant for the 2025-26 season + V2.0 launch.
+
+- **4 remaining V2.1 candidates** (filter is correct; data upstream is the issue):
+    - France: `R. Caudron` — API-Football lists Luis de la Fuente under team.id=9 (Spain) for France's data
+    - Spain: `S. Ndaba` — API-Football lists D. Deschamps under team.id=2 (France) for Spain's data
+    - Scotland: `A. McLeish` — no `end=null` career entry exists in API-Football's data
+    - Uruguay: `Ó. Tabárez` — same
+    - Fix: a `manager_overrides` table seeded from a trusted source. ~30 min, V2.1.
+
+**Net:** sim is functionally clean for the V2.0 dual-fandom journey. The next "fresh onboarding" run will hit "Meet the boss" with a real coach name + photo. The remaining 4 country data-quality cases are bounded and named.
 
 ---
 
