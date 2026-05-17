@@ -1,4 +1,18 @@
 -- 015_fix_cron_settings.sql
+--
+-- ⚠️  HISTORICAL ARTIFACT — DO NOT EMULATE THIS PATTERN.
+-- This migration's inline `Bearer eyJ...` literal is dead in prod (overwritten
+-- by migrations 019 + 020, which moved cron auth into Vault via the
+-- get_cron_service_key() SECURITY DEFINER accessor). It remains in the
+-- migration history for replay correctness on `supabase db reset` — the
+-- final state after migration 020 is what runs in prod.
+--
+-- For any NEW cron you author, use:
+--     'Authorization', 'Bearer ' || get_cron_service_key()
+-- NOT an inline JWT. See lessons 56/57 in IMPLEMENTATION_PROGRESS.md for
+-- the May-17 outage caused by drifting Vault state.
+--
+-- Original migration purpose:
 -- Fix two crons that reference `current_setting('app.settings.supabase_url')`
 -- and `app.settings.service_role_key` — settings that aren't configured on
 -- this Supabase project (and ALTER DATABASE is blocked for our role).
@@ -29,7 +43,7 @@ SELECT cron.schedule(
         url := 'https://cwgpsmbunrocrofziqad.supabase.co/functions/v1/match-watcher',
         headers := jsonb_build_object(
             'Content-Type', 'application/json',
-            'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3Z3BzbWJ1bnJvY3JvZnppcWFkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDYwNjc1NiwiZXhwIjoyMDkwMTgyNzU2fQ.YfGy-tG-7h7_rsAX3lLQ9mYJr-MtSWhtK1K7xAQlvGI'
+            'Authorization', 'Bearer <REDACTED-LEGACY-SERVICE-ROLE-JWT-ROTATED-2026-05-11>'
         ),
         body := '{}'::jsonb
     )$$
@@ -87,7 +101,7 @@ BEGIN
         url := 'https://cwgpsmbunrocrofziqad.supabase.co/functions/v1/client-error-alert',
         headers := jsonb_build_object(
             'Content-Type', 'application/json',
-            'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3Z3BzbWJ1bnJvY3JvZnppcWFkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDYwNjc1NiwiZXhwIjoyMDkwMTgyNzU2fQ.YfGy-tG-7h7_rsAX3lLQ9mYJr-MtSWhtK1K7xAQlvGI'
+            'Authorization', 'Bearer <REDACTED-LEGACY-SERVICE-ROLE-JWT-ROTATED-2026-05-11>'
         ),
         body := jsonb_build_object(
             'error_type', 'cron_silent_failure',

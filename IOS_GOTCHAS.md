@@ -159,3 +159,50 @@ UIScrollView.appearance().backgroundColor = UIColor(deepMauve)
 **Cause:** Multiple plan files exist in `~/.claude/plans/` from different sessions. The "active" file is the one referenced in the most recent system reminder. Other files linger with stale content.
 
 **Fix:** When in doubt, look at `ls -la ~/.claude/plans/` and check mod times. Mark stale files as superseded explicitly.
+
+---
+
+## 14. Supabase has TWO service-role key formats. Edge Function invocation needs JWT shape
+
+**Symptom:** Push pipeline silently dies. pg_cron reports `status=succeeded` for every tick. But `net._http_response` shows 401 "UNAUTHORIZED_INVALID_JWT_FORMAT" on every cron call. Functions never run. Lasts for days because `cron.job_run_details` is the wrong place to watch.
+
+**Cause:** Supabase issues two service-role tokens that both work for PostgREST data writes:
+- **Legacy `service_role` JWT** — `eyJhbGc...` 219 chars, three base64 segments separated by dots.
+- **New `sb_secret_*`** — `sb_secret_GXBb...` 41 chars, opaque prefix-based.
+
+The Supabase Edge Function **gateway** runs a `verify_jwt` check on the Authorization header BEFORE invoking the function code. It requires JWT shape — three-segments-with-dots. The new `sb_secret_*` format fails the gateway check and returns 401 before any function code runs.
+
+Function-INTERNAL PostgREST calls (the function's `SUPABASE_SERVICE_ROLE_KEY` env reading the new format) work fine — PostgREST accepts both.
+
+This bites in three places:
+1. **Vault entries used by pg_cron** to build a `Bearer ...` header. MUST be JWT shape, or every cron tick 401s.
+2. **External `curl` scripts** invoking Edge Functions. Same constraint.
+3. **Anywhere a Bearer is sent to `/functions/v1/*`.**
+
+**Diagnosis:** Always cross-check TWO tables, not just one:
+```sql
+-- Cron-level success (SQL ran):
+SELECT * FROM cron.job_run_details ORDER BY start_time DESC LIMIT 5;
+-- HTTP-level success (function was reached):
+SELECT id, status_code, LEFT(content::text, 100) FROM net._http_response ORDER BY id DESC LIMIT 5;
+```
+If `cron.job_run_details.status='succeeded'` but `net._http_response.status_code != 200`, the cron's auth header is broken.
+
+**Quick check on Vault key shape:**
+```sql
+SELECT LEFT(get_cron_service_key(), 3) AS prefix, LENGTH(get_cron_service_key()) AS len;
+-- prefix=eyJ + len ~219 → JWT format ✓
+-- prefix=sb_ + len ~41 → wrong format, will 401 ✗
+```
+
+**Fix:** put the legacy `service_role` JWT into the Vault entry that crons read. It's still valid for Edge Function invocation even after rotation (rotation only disables it for direct PostgREST writes).
+```sql
+SELECT vault.update_secret(
+  (SELECT id FROM vault.secrets WHERE name='cron_service_key'),
+  '<legacy JWT from backend/.env SUPABASE_SERVICE_ROLE_KEY>',
+  'cron_service_key',
+  'JWT-format bearer for Edge Function gateway. MUST start with eyJ.'
+);
+```
+
+**Sources:** Phase 27.3 (push pipeline dead May 11 → May 17), Lessons 56/57 in IMPLEMENTATION_PROGRESS.md.

@@ -3,6 +3,16 @@
 Tracking implementation of the updated product brief (April 2026).
 Each phase is marked with its status and a summary of changes made.
 
+> 👋 **New here?** Start with **[STATUS.md](./STATUS.md)** for a one-page snapshot of where the project is right now. Then come back here for the deep history.
+>
+> **Quick phase navigation:**
+> - **Phase 1-15** — V1.0 build (Feb-April 2026): design system, models, content pipeline, PostgREST/RLS, push, paywall, App Store prep.
+> - **Phase 16-22** — Pre-launch hardening (April-May 2026): launch-prep, matchday auto-trigger, push voice, ultrareview, App Store submission.
+> - **Phase 23** — V1.1 content surfaces (May 12-13): Season Primer, Insider, Sunday Brief, Saturday Quiz, Player Dossier, Match-day Live.
+> - **Phase 24-25** — V1.2/V1.3 onboarding redesign (May 15-16): value-first restructure, team crests, MeetTeam + MeetManager, SeasonPrimer kill.
+> - **Phase 26 (current)** — V2.0 World Cup support (May 16+): polymorphic teams table, 48 countries, country-aware backend, iOS Country enum.
+> - **Lessons learned** — Numbered rules (#1-52) appended to phases as we hit gotchas. See bottom of doc.
+
 ---
 
 ## Phase 1: Design System Foundation — COMPLETE
@@ -1577,3 +1587,437 @@ Root cause: `APIClient.fetchTeamSeasonState(teamId:)` had an explicit `select=te
 
 **What happened:** Man City vs Crystal Palace (PL, 2026-05-13 19:00 UTC) finished FT around 21:00 UTC, but no matchday content_items landed for either team. Investigation showed `match_status_state` was frozen at one row (Spurs-Leeds from May 11 22:59 UTC) — three days of silence despite `cron.job_run_details` reporting every minute's run as `status="succeeded"`. Smoking gun: pg_cron's success status only reports whether the `SELECT net.http_post(...)` SQL executed, NOT the HTTP response from the function. The cron's hardcoded legacy service_role JWT (from migration 017) was disabled at 2026-05-11T20:58:36 UTC — same minute the table froze. Every subsequent tick POSTed with a dead bearer token, got 401 at the Supabase gateway, and the function was never reached. Migration 020 (Vault-based auth via SECURITY DEFINER `get_cron_service_key()`) was written but only applied to prod days later, so the cron stayed silent for ~72h while looking healthy in `cron.job_run_details`.
 **Rule:** When debugging "cron isn't running" symptoms, `cron.job_run_details` is necessary but not sufficient. Always cross-check `net._http_response` (the actual function reply, with status codes + body) and the downstream effect (rows written, content delivered). Build a SECURITY DEFINER diagnostics RPC (we now have `get_pipeline_diagnostics()` via migration 029) that surfaces all three layers in one call: cron command bodies (so you can see whether the auth header path is Vault-based or has a stale literal JWT), recent run details, and recent HTTP responses. Recovery requires (a) deploying the Vault-based migration, (b) re-firing the watcher with a `?date=YYYY-MM-DD` replay override for any matches that fell through the dead window. Match-watcher now accepts `?date=` for exactly this kind of recovery.
+
+---
+
+## Phase 24: Onboarding V1.2 — value-first restructure (2026-05-15)
+
+The V1.0/V1.1 onboarding was transactional: name, name, team, tier, notifications, done. The user landed on the feed without ever feeling the app's value. Persona-driven smoke test (Emma, 28, dating an Arsenal fan, doesn't follow football) flagged this hard — she'd quit within 30 seconds because she'd been asked four things and given nothing back.
+
+V1.2 reorganises onboarding around three new value-cards inserted *after* the mechanics, and bundles the two system permissions (notifications + calendar) into one "permissions moment" rather than scattering them.
+
+### 24.1 New flow order
+
+```
+1.  Welcome
+2.  Her name
+3.  His name
+4.  Team pick
+5.  Notifications        ← moved up — asked while emotion is highest ("his team!")
+6.  Meet team            ← NEW — star player + result mood + table verdict
+7.  How it works         ← NEW — 3 scenario cards (Sunday morning / Match day / Saturday pub)
+8.  Tier select          ← moved later — framed by the scenarios above
+9.  Calendar opt-in      ← NEW — one-tap fixture sync via existing CalendarSyncService
+10. (SeasonPrimer)       ← shipped in V1.1, KILLED in V1.3 after Anton flagged redundancy
+```
+
+Welcome (step 0) was re-enabled — V1.0/V1.1 had skipped it via a temp `step: .herName` constant.
+
+### 24.2 New view files
+
+- `Views/Onboarding/MeetTeamView.swift` — three-row card: star player (top_players[0] with photo + name + position + one_liner), last result mood (mapped from `post_match.state`: "They won. {hisName} was happy" / "They lost. Don't bring it up tomorrow" / "They drew. {hisName}'s feelings are complicated"), table verdict (mapped from `form.league_position`: "Top of the league chase" / "Pushing for Europe" / "Mid-table, quietly fine" / "In a relegation fight. {hisName} is stressed"). Reads from `team_pages.cards`; caches via existing `TeamPageCache.save()` so the TeamPage tab opens instantly later.
+
+- `Views/Onboarding/HowItWorksView.swift` — three vertically stacked scenario cards. Static copy, personalised via `[his name]` placeholders. No fetch.
+
+- `Views/Onboarding/CalendarOptInView.swift` — fixture sync. Three-tier fallback for fixture source: (1) `team_season_state.next_fixtures` (array, V1.2 backend), (2) `team_season_state.next_fixture` (singular legacy), (3) `team_pages.cards.next_fixture` (singular ISO string — the same source the Settings calendar toggle uses). Picks whichever has data. Permission flow uses the existing `CalendarSyncService` (built in V1.1 for the Settings toggle, never exposed in onboarding until now). When the user grants permission, syncs all fixtures into a "GoalDigger - Arsenal" calendar.
+
+### 24.3 Model + service plumbing
+
+- `Models/ContentItem.swift` — `TopPlayer.photoURL: String?` (Codable key `photo_url`).
+- `Models/TeamSeasonState.swift` — `nextFixtures: [NextFixture]?` plus a `fixturesForSync` accessor that returns the array if present, else wraps the singular `nextFixture` in a one-item array, else empty. Single source of truth callers can use without branching.
+- `Services/APIClient.swift:fetchTeamSeasonState` — added `next_fixtures` to the explicit SELECT (the Pitfall #42 audit rule).
+- `Views/Onboarding/NotificationPromptView.swift` — removed in-line `registerToken` call. In the V1.1 order, this step was last; in V1.2 it's step 5 *before* tier select, so registering here would always POST with the default tier=2. Registration deferred to `OnboardingFlow.completeOnboarding()`.
+- `Services/NotificationService.swift:handleTokenRegistration` — gated on `AppState.shared.hasCompletedOnboarding`. iOS may deliver the APNs token any time between the notification grant (step 5) and onboarding completion (step 9). Without this guard the auto-register fires with default tier=2 and creates a stale row that `completeOnboarding` then has to overwrite. Token is still persisted to UserDefaults during the gap so `completeOnboarding` can pick it up.
+- `App/AppDelegate.swift:didFinishLaunchingWithOptions` — launch-time retry hook. If `apnsToken` exists in UserDefaults but `apnsTokenRegistered` flag is false (meaning the V1.1 path POSTed but the server returned an error), re-call `UIApplication.shared.registerForRemoteNotifications()` so iOS re-delivers the token and the registration pipeline runs again.
+
+### 24.4 Backend support (migrations + Edge Functions)
+
+- **Migration 031** — `team_season_state.next_fixtures JSONB`. Adds the array column for V1.2's calendar opt-in.
+- **`backend/supabase/functions/team-page-generator/index.ts`** — schema gains `top_players[*].photo_url` + `manager_photo_url`. System prompt instructs Claude to pull these from API-Football's squad and coachs data. Squad slice limit bumped from 2000→6000 chars so 20-player rosters fit including their photo URLs (was truncating past player 8-9). Backticks in prompt strings escaped (the `` `photo_url` `` literal in markdown-style instructions broke the template literal — replaced with plain-text references).
+- **`backend/supabase/functions/team-season-state-generator/index.ts`** — `buildNextFixturesArray()` helper parses raw API-Football fixtures response into the `next_fixtures` JSONB shape. Filters to a `COMPETITIVE_LEAGUE_IDS` allowlist (39 PL, 2 UCL, 3 UEL, 848 UECL, 45 FA Cup, 48 EFL Cup, 143 Community Shield) to drop pre-season friendlies that API-Football's `?next=10` happily returns mid-May for the next season. WC league IDs added in V2.0 (see Phase 26).
+- **`backend/supabase/functions/data-fetcher/index.ts`** — `?next=5` → `?next=10` so the season-state generator has enough fixtures to build a meaningful calendar slate.
+
+### 24.5 Persona-driven design notes
+
+The "Meet team" card's mood-line approach was driven by a deliberate writing rule: show ONE star player not three, frame results as feelings not scorelines, give table position a verdict not a number. The persona check was "would Emma, who doesn't know football, find this useful?" — three players would overwhelm; "2nd, 47 points" would mean nothing. "Top of the league chase" is the kind of phrase she could repeat back to her partner.
+
+How-it-works follows the same rule: scenarios instead of feature names. "Sunday morning, before his Sunday League: a 30-second brief" not "Daily Brief Push Notifications". The product feature lives inside a moment she can imagine.
+
+---
+
+## Phase 25: Onboarding V1.3 — team crests + Meet-team fix + SeasonPrimer kill (2026-05-15 PM → 2026-05-16)
+
+Three things landed between V1.2 going to TestFlight and the WC pivot.
+
+### 25.1 Team crests across three surfaces
+
+Pre-V1.3, `TeamSelectionView` referenced `Image(team.badgeImageName)` — a local asset like `"arsenal_badge"`. No such assets ever existed in the bundle, so the picker rendered blank circles. V1.3 wires up the API-Football team-crest CDN (`https://media.api-sports.io/football/teams/{api_football_id}.png`).
+
+- `Models/Team.swift` — added `apiFootballId: Int` mapping (values verified against the live `teams` table) and `crestURL: URL?` computed property.
+- `Design/Components/TeamCrestView.swift` — new reusable component. `AsyncImage` with a soft-blush circle fallback containing a shield SF Symbol. Takes `team: Team` and `size: CGFloat`.
+- `Views/Onboarding/TeamSelectionView.swift` — replaced the broken `Image(team.badgeImageName)` with `TeamCrestView(team: team, size: 32)`.
+- `Views/Onboarding/MeetTeamView.swift` and `MeetManagerView.swift` — added a 44pt crest to each header next to "Meet his lot" / "Meet the boss".
+
+### 25.2 Meet-team three-row guarantee
+
+V1.2's MeetTeamView dropped to two rows for any team without a fresh `post_match` card (i.e., any team that wasn't immediately post-fixture). For Arsenal — currently top of the table with no recent post-match in the DB — the screen rendered Saka + table verdict only, while the header still said "Three things about Arsenal". Lie.
+
+Fix: rename `lastResultLine` to `middleRowLine`, fall back to `form.form_summary` (a personalised one-sentence "they're on a run / wobbling lately" line written by the routine, present whenever the form card exists). Header text now always matches what's on screen.
+
+Also hardened the `expiresAt` parser — was using a single `ISO8601DateFormatter` with `.withInternetDateTime` only, which silently failed on fractional-second timestamps (`"2026-04-13T15:00:00.000Z"`). Parse failure caused the if-let guard to fall through, rendering expired post-match rows. Switched to a dual-formatter pattern matching `APIClient.decoder`'s strategy. Parse failure now treats the row as expired (drops it) — safer than showing a stale "they won!" line.
+
+### 25.3 SeasonPrimer killed
+
+User flagged that the post-onboarding SeasonPrimer ("Arsenal are flying. Top of the league with two games to go.") was restating what MeetTeam already showed ("Top of the league chase"). Pure redundancy.
+
+Fix: `OnboardingFlow.completeOnboarding()` now sets `appState.hasSeenSeasonPrimer = true` so `RootView` skips straight to `MainTabView`. The `SeasonPrimerView` file remains wired for the rare V1.1-upgrade edge case (user with `hasCompletedOnboarding=true` but `hasSeenSeasonPrimer=false` from before this build). For all V1.3-onboarded users, the flow ends at HowItWorks → feed.
+
+### 25.4 Manager photos + bulk regen
+
+`team-page-generator` schema got `manager_photo_url` (from API-Football's `/coachs` endpoint, where each coach has a `photo` field). System prompt instructs Claude to populate it. `MeetManagerView` now renders the photo via AsyncImage with a `person.fill` SF Symbol fallback.
+
+Bulk regen of all 20 PL teams completed in parallel batches of 5 (each Edge Function invocation processes one team in ~15-20s; the previous 60-second cap was hitting around team 13 of 20 when running them all in one call). Resulting state for Arsenal: Saka photo loads, Arteta photo loads, three-row Meet team renders cleanly.
+
+---
+
+## Phase 26: World Cup 2026 prep — schema + data + iOS model (2026-05-16, IN PROGRESS)
+
+Marketing pivots to the World Cup (June 11 – July 19, 2026) in early June. The inbound user wave will be **WC-curious people who don't follow the Premier League at all**. V1.0-1.3 onboarding asks "which PL club does he support?" — a non-starter for that audience.
+
+V2.0 re-anchors the app around the World Cup as the primary onboarding context, with Premier League optional. The infrastructure (routines, content cards, calendar sync, push) generalises from "PL team" to "team-where-team-is-either-a-club-or-a-country." Existing PL users keep working; new WC users get a flow that doesn't assume PL knowledge.
+
+**Hard deadline: June 11, 2026.**
+
+### 26.1 Architecture — polymorphic teams table
+
+The cleanest implementation makes `teams` polymorphic via two new columns. PL clubs and WC countries live in the same table, share the same downstream pipelines (content_items, device_tokens, raw_fetch_logs, match_status_state). One set of code paths, two sets of data.
+
+**Migration 032** (`032_wc_entity_type.sql`):
+```sql
+ALTER TABLE teams
+  ADD COLUMN IF NOT EXISTS entity_type TEXT NOT NULL DEFAULT 'club'
+    CHECK (entity_type IN ('club', 'country')),
+  ADD COLUMN IF NOT EXISTS league_id INTEGER;
+UPDATE teams SET league_id = 39 WHERE entity_type = 'club';
+INSERT INTO teams (id, display_name, short_name, api_football_id, entity_type, league_id) VALUES
+  ('belgium','Belgium','Belgium',1,'country',1),
+  ('france','France','France',2,'country',1),
+  -- ... 46 more rows
+ON CONFLICT (id) DO NOTHING;
+```
+
+Post-apply: 23 clubs (entity_type='club', league_id=39) + 48 countries (entity_type='country', league_id=1) coexisting. `content_items.team_id`, `device_tokens.team_id`, etc. all just store strings and don't care whether the entity is a club or a country — so no FK or downstream-table changes were required.
+
+WC 2026 = API-Football `league_id=1`, `season=2026`. Verified via `/leagues?search=world%20cup`. 48 qualified teams pulled from `/teams?league=1&season=2026`. The qualifier list will be finalised after the March 2026 intercontinental play-offs; the migration uses `ON CONFLICT DO NOTHING` so any UPDATE to fix a misqualifier would need to be a separate migration (don't DELETE — content_items may reference the row, and history should survive).
+
+### 26.2 Edge Function parameterisation
+
+The hardcoded `PL_LEAGUE_ID = 39, SEASON = 2025` constants in three functions had to go. Verdict from initial audit: **HARD** — multiple functions tightly coupled to PL-only assumptions.
+
+**`backend/supabase/functions/_shared/types.ts`** — `Team` interface gains optional `entity_type` + `league_id` fields. Existing PL code reads them with `?? 'club'` / `?? 39` defaults so back-compat is preserved.
+
+**`backend/supabase/functions/data-fetcher/index.ts`**:
+- `seasonForLeague(leagueId: number): number` helper maps 39→2025, 1→2026, else current UTC year as fallback.
+- `/standings?league=X&season=Y` builds league + season from `team.league_id` instead of literal `39` / `2025`.
+- `/injuries?team=X&season=Y` same.
+- `computeTeamContext` gated to clubs only. PL-specific concepts (title_race, cl_spot, relegation) don't apply to WC group stage (4 teams per group, different shape). team-season-state-generator handles country group standings instead.
+- Function now accepts optional `{team_id: "..."}` payload to fan out per-team. Without payload it iterates all teams in one call. With payload it processes just that one team. Useful for parallelising the bulk fetch when the Edge Function 60-second CPU cap stops the all-in-one path partway through (it stopped at 28 of 48 countries on first run).
+
+**`backend/supabase/functions/team-page-generator/index.ts`**:
+- System prompt rewritten from "Premier League team" → "football team" with a `{{league_context}}` template variable.
+- `leagueContext` injected per team:
+  - For clubs: "Premier League (2025-26 season). PHASE MAPPING: ..."
+  - For countries: "FIFA World Cup 2026 — a national team competing at the tournament hosted by USA/Canada/Mexico from June 11 to July 19, 2026. ... For league_position_label use 'Xst in Group Y' format (look at the Standings data for the group letter and the team's position within that group)."
+- `league_position_label` schema description updated to cover both shapes.
+- `updateDynamicFields` (the dynamic-only fast path used by data-fetcher) gated to clubs only. WC standings are 12 groups of 4 with a completely different concept of "position"; countries always go through the Claude full path which handles group stage semantics.
+
+**`backend/supabase/functions/team-season-state-generator/index.ts`**:
+- Same `{{league_context}}` pattern. PHASE MAPPING per league: PL uses calendar-based (Aug-Mar mid_season, Apr-May run_in, etc.). WC uses tournament-relative (before kickoff → pre_season, group + knockouts → run_in, eliminated mid-tournament → off_season, post-final → post_season). The existing `phase` CHECK constraint enum (pre_season / mid_season / run_in / off_season / post_season) is preserved — WC just maps onto it semantically rather than expanding the enum.
+- `COMPETITIVE_LEAGUE_IDS` set expanded from PL+UCL+UEL+UECL+FA+EFL+CommunityShield to also include WC `league_id=1` plus regional WC qualifiers (29-37). Without this addition, `buildNextFixturesArray` filtered out every country's WC fixtures and the iOS Calendar opt-in would have hit empty-state for all 48.
+
+### 26.3 Data fan-out (47 of 48 countries fully populated)
+
+Bulk fetch + bulk regen of 48 countries:
+
+- **`data-fetcher`** — first all-in-one run completed 20 of 48 countries before hitting the 60-second cap. Backfilled 28 missing via parallel single-team curls (6 batches of 5, ~3-10s each). All 48 now have complete API-Football data: squad, fixtures_next, fixtures_last, standings, transfers, coachs, injuries.
+
+- **`team-page-generator` full mode** — 48 countries regenerated in 10 batches of 5 parallel calls. ~12-22s per team. Verification SQL shows all 48 with: manager + manager photo, 3 top_players + 3 photos, group_position_label. Most read "1st in Group X" / "2nd in Group X" — three teams (England, Japan, USA) all landed on "1st in Group C" because API-Football's pre-tournament group standings have everyone tied at rank=1, so Claude picks alphabetically. Will self-correct once games start populating positions.
+
+- **`team-season-state-generator`** — same 10-batch-of-5 pattern. All 48 countries in `team_season_state`, phase='pre_season' (correct for May 16, 2026). 45 of 48 have next_fixtures arrays populated (avg 2.8 fixtures per country). The 3 holdouts — Jordan, Paraguay, Qatar — have zero upcoming WC fixtures listed in API-Football's database yet (group stage assignments not finalised). Daily cron will pick them up automatically as API-Football publishes the schedule. The iOS Calendar opt-in already handles "no fixtures known" via its "Got it" empty-state button.
+
+### 26.4 iOS model layer
+
+- **`Models/Country.swift`** (new) — `enum Country: String, CaseIterable, Identifiable, Codable` with 48 cases. Properties parallel to `Team`: `displayName`, `shortName`, `apiFootballId` (matches the value in the Supabase `teams.api_football_id` column), `crestURL` (same CDN as Team), `searchableText` (with common alternate spellings like "United States America" for USA, "Korea Republic" for South Korea, "Holland Dutch" for Netherlands).
+
+- **`Models/FeedContext.swift`** — added `case country(Country)` alongside `.team(Team)` and `.everyoneTalking`. The pre-existing comment `// Future: .nation(Nation) for World Cup mode` is now reality. `storageKey`, `displayName`, `dropdownLabel`, `iconName` all extended with the new case.
+
+- **`Models/AppState.swift`** — `selectedCountry: Country?` with UserDefaults persistence (`selectedCountry` key). Both `selectedTeam` and `selectedCountry` can be set simultaneously for users who follow both. `clearAllData()` includes the new key.
+
+- **Exhaustive switch fixes** — adding `.country` to FeedContext surfaced two compile errors (ContextSwitcherView lines 88+106) and five errors in FeedView (lines 51, 252, 547, 585, 676). Each one was a switch over `appState.activeContext` that needed the new case. Strategy: where the country path should behave identically to team (feed loading, pagination, unread badge), use `case .team, .country:` shorthand; where country needs its own rendering (icon row), add an explicit `.country(let country)` case that renders via `TeamCrestView(team:)` or its country equivalent. `FeedView.loadMore` got a new `loadMoreEntity(teamId:)` helper to dedupe the .team/.country branches. **Build green** after all switches updated.
+
+### 26.5 Local Postgres access (no more "paste SQL into the chat")
+
+Mid-Phase 26 the user (rightly) flagged that I'd been pasting the legacy service_role JWT inline in curl commands, exposing it in chat scrollback. Going-forward fix: source the key from `backend/.env` via `$(grep '^SUPABASE_SERVICE_ROLE_KEY=' backend/.env | cut -d= -f2)` so the value never appears in tool calls or stdout.
+
+For DB read access (instead of pasting SQL output): added `SUPABASE_DB_URL` to `backend/.env`. The user pasted the Session-pooler URI from Supabase Dashboard → Database settings; the password is on local disk only, gitignored. `psql` (installed via `brew install libpq`) reads the URL from env, runs queries directly. The chat no longer needs to round-trip SQL output. Pattern for all future DB queries:
+```bash
+psql "$(grep '^SUPABASE_DB_URL=' backend/.env | cut -d= -f2-)" -c "SELECT ..."
+```
+
+### 26.6 Where Phase 26 stands
+
+**Done:**
+- ✓ Migration 032 (schema + 48 country seeds)
+- ✓ data-fetcher parameterised + 48 countries fetched
+- ✓ team-page-generator country-aware + 48 country pages with manager + 3 players (all with photos)
+- ✓ team-season-state-generator country-aware + 45/48 country season-states with fixtures (3 awaiting API-Football schedule data)
+- ✓ iOS Country enum + FeedContext.country + AppState.selectedCountry
+- ✓ All exhaustive switches updated, **build green**
+- ✓ Local `psql` connection set up for direct DB access
+
+**In progress (Week 2 of 4):**
+- `CountrySelectionView` (mirror of TeamSelectionView with confederation grouping)
+- `OptionalPLTeamView` ("does he follow a PL team too?" with Skip button)
+- `OnboardingFlow.swift` reorder — new step order: Welcome → Her → His → **Country** → (Optional) PL Team → Tier → Notif → Calendar → Meet country → Meet country manager → How it works
+- `MeetTeamView` + `MeetManagerView` entity-agnostic — accept either a club ID or country ID via a single `teamId: String` parameter (the `team_pages` table holds both)
+
+**Coming (Weeks 3-4):**
+- `match-watcher` + `matchday-scheduler` parameterisation (drop hardcoded `PL_LEAGUE_ID = 39`)
+- Cloud routine prompts updated to be league-aware (`gd-news`, `gd-matchday`, `gd-saturday-quiz`, `gd-sunday-brief`, `gd-season-state`) — country variants for WC content
+- Existing-user WC migration prompt (one-time "World Cup is coming, who's he backing?" sheet for users already through PL onboarding)
+- TestFlight beta + App Store submission **by June 4** (7-day Apple review buffer before June 11 tournament kickoff)
+
+---
+
+### 50. Edge Function CPU cap stops bulk multi-team loops partway through
+
+**What happened:** First run of `data-fetcher` with no team_id payload iterated 71 teams (23 clubs + 48 countries) × 7 endpoints = ~500 outbound HTTP calls. Function returned HTTP 200 after ~60s. Investigation showed only 20-ish countries had `raw_fetch_logs` rows. Same pattern repeated with `team-season-state-generator` — first batch run completed 13 of 23 teams before the CPU cap hit and the function returned a 546 `WORKER_RESOURCE_LIMIT`.
+
+**Rule:** Supabase Edge Functions have a 60-second wall-clock + CPU budget that's fine for 20-team PL loops but not for 70+ teams or multi-Claude-call sequences. Two mitigations: (a) make the function accept an optional `team_id` filter so callers can fan out per-team, (b) drive the fan-out from outside via parallel curls (batches of 5 work well — each invocation gets its own budget). For routines that internally call Claude per team, the per-team approach is necessary regardless of team count; sequential Claude calls within one function invocation can easily exceed 60s for 4+ teams.
+
+### 51. Adding an enum case forces exhaustive-switch audits across the whole codebase
+
+**What happened:** Added `case country(Country)` to `FeedContext`. Build failed in two files I expected (ContextSwitcherView) and three more I didn't (FeedView at five separate lines: displayItems, pillIcon, refresh, loadMore, plus a related switch). The compiler caught every one of them, but only because I'd been disciplined about exhaustive switches (no `default:` branches) throughout the FeedContext consumers.
+
+**Rule:** Lean into exhaustive switches when designing enums that may grow. The compile failures are free design audits — every switch the compiler flags is a place a future enum case needs an explicit decision (does country behave like team here? Or differently?). The opposite anti-pattern is sprinkling `default:` branches "to be safe" — those branches silently absorb the new case with whatever the default was, often the wrong behaviour, and the bug only surfaces in runtime testing. The 5-error V2.0 build was a 10-minute fix; the equivalent search-and-fix without compile errors would have been an afternoon.
+
+### 52. Polymorphic entity tables coexist if the FK is `TEXT` not enum
+
+**What happened:** V2.0 needed PL clubs and WC countries to share the same downstream tables (content_items, device_tokens, raw_fetch_logs, match_status_state, team_pages, team_season_state). All of these reference `team_id TEXT REFERENCES teams(id)`. Adding `entity_type` to teams and seeding 48 country rows was a 1-migration change. No FK alterations. No content-table migrations. No iOS model changes outside FeedContext + AppState.
+
+**Rule:** When designing FK references for entity types you might polymorphically extend later, use `TEXT REFERENCES entity(id)` rather than constrained-string columns or compile-time enums. PostgreSQL doesn't care whether the referenced row is a "club" or a "country" as long as the ID matches. iOS doesn't either — `String` IDs flow through API signatures unchanged. The polymorphism lives in one column (`entity_type`) on the parent table, gated by application logic in the Edge Functions that actually need to branch ("if entity_type = 'country' use the WC standings parser"). The downstream pipelines stay unaware.
+
+---
+
+## Phase 26 (continued) — V2.0 World Cup iOS + Backend closeout (2026-05-17)
+
+After the May 16 backend foundation (schema, data, country pages), the remaining V2.0 iOS work landed in a single autonomous push on May 17.
+
+### 26.7 iOS onboarding views built
+
+- **`CountrySelectionView`** — 48 countries grouped by FIFA confederation (UEFA, CONMEBOL, CONCACAF, AFC, CAF, OFC). Search collapses sections to a flat alphabetical list. Crests via `TeamCrestView(country:size:)` (new init overload) against `media.api-sports.io/football/teams/{id}.png`.
+- **`OptionalPLTeamView`** — Premier League team picker with explicit "Skip, World Cup only" secondary button. Reuses the team-picker layout pattern from `TeamSelectionView` but with the dual-button footer.
+- **`WCMigrationSheetView`** — modal sheet for V1.x users on app launch after V2.0 update. Embeds `CountrySelectionView` with a "Maybe later" skip option. Triggered when `hasCompletedOnboarding=true && selectedCountry==nil && !hasSeenWCPrompt`. Once dismissed (pick or skip), `hasSeenWCPrompt=true` is persisted so it never reappears.
+
+### 26.8 Entity-agnostic info cards
+
+`MeetTeamView` and `MeetManagerView` were rewritten to accept an explicit `entityId: String` init parameter instead of reading `appState.selectedTeam` directly. Caller (`OnboardingFlow`) computes `meetEntityId = selectedCountry?.rawValue ?? selectedTeam?.rawValue ?? "arsenal"` and passes it through. The views look up `Team(rawValue:)` first, then `Country(rawValue:)`, then fall back to the generic shield icon — clean, no AppState coupling.
+
+### 26.9 OnboardingFlow V2.0 step order
+
+```
+0.  Welcome
+1.  Her name
+2.  His name
+3.  Country selection      ← primary entity (WC 2026 national team)
+4.  Optional PL team       ← skippable
+5.  Tier selection
+6.  Notification ask
+7.  Calendar opt-in
+8.  Meet team              ← entityId = country (preferred) or team
+9.  Meet the boss
+10. How it works
+```
+
+11 steps total. The progress dots component renders correctly (verified via the welcome screenshot — dot 1 of 11 highlighted).
+
+### 26.10 Match-watcher + matchday-scheduler parameterisation
+
+Dropped `PL_LEAGUE_ID = 39, SEASON = 2025` constants. Both functions now:
+1. Query `SELECT DISTINCT league_id FROM teams WHERE league_id IS NOT NULL` at request time.
+2. Iterate each active league, calling `seasonForLeague(leagueId)` from `_shared/league-helpers.ts`.
+3. Combine fixtures from all leagues into a single processing loop.
+4. Return `active_leagues` in the response payload for diagnostics.
+
+Smoke test on May 17: `match-watcher` returned `active_leagues: [39, 1]`, `fixtures_seen: 6` (all PL — WC fixtures don't exist until June 11). `matchday-scheduler` returned `scheduled: 6`. Zero errors.
+
+Debugging note: first deploy had `f.league?.id` referencing an undefined `f` (loop variable was `fx`). The fix shipped with a top-level try/catch + stack trace returner so the next "Internal Server Error" surfaces the actual exception. **Rule for future Edge Functions: wrap the serve handler in try/catch and return the message + stack. Saves an hour of "what does the function actually do".**
+
+### 26.11 Device token country routing
+
+- Migration 033 (`device_tokens.country_id TEXT REFERENCES teams(id)` + `team_id` made nullable + partial index for non-null country_id).
+- `APIClient.registerToken(_:teamId:countryId:tier:)` — both entity IDs are optional, body only includes the keys that are set (so a country-only re-registration doesn't blank out a previously-set team_id via merge-duplicates upsert).
+- `NotificationService.handleTokenRegistration` reads both from `AppState.shared` and passes whichever are non-nil.
+- `OnboardingFlow.completeOnboarding()` does the canonical first registration with both IDs after the user finishes the flow.
+
+### 26.12 V2.0 closeout — what's done vs what remains
+
+**Done (this repo):**
+- All schema migrations (032, 033)
+- All Edge Function parameterisation
+- All iOS code paths
+- All bulk data population (48 country team pages + season states)
+- Build green, V2.0 welcome screen visually verified
+
+**Handed off to Anton (separate concerns):**
+- Cloud Routine prompt updates (in `goaldigger-routines` repo) — spec'd in `WC_ROUTINES_HANDOFF.md`
+- App Store submission — manual Xcode flow, target June 4
+- Marketing assets / App Store screenshots
+- Final visual walkthrough verification on simulator (accessibility automation blocked from autonomous runs)
+
+### 26.13 Lessons learned in V2.0 push
+
+#### 53. Edge Functions need a top-level try/catch with stack-trace return
+
+**What happened:** First match-watcher V2.0 deploy threw a `ReferenceError: f is not defined` deep in the upsert loop. The default Supabase Edge Function error response was "Internal Server Error" — body. No clue where the error was. Spent 10 minutes adding diagnostic logging when the same minutes could've been a one-line fix.
+
+**Rule:** Every Edge Function's `serve(async (req) => { ... })` should wrap the body in `try { return await handleRequest(req); } catch (e) { return new Response(JSON.stringify({error, message, stack: e.stack})); }`. Production-safe (only fires on actual exceptions, doesn't leak sensitive data unless secrets appear in stack traces — they don't in our codebase). Saves debugging time.
+
+#### 54. Bulk team operations need per-team fan-out on the caller side
+
+**What happened (already noted in lesson #50 but now confirmed across THREE functions):** data-fetcher, team-page-generator, and team-season-state-generator ALL hit 60s CPU cap when iterating 70+ teams in a single invocation. The pattern that works: add a `team_id?: string` payload filter to each function so callers can fan out via parallel curls (batches of 5 work).
+
+**Rule:** Any Edge Function that iterates over a large entity set (teams, content_items, etc.) should accept a per-entity payload from day one. Cheap to add (one query filter), saves you the fan-out refactor when you hit the cap.
+
+#### 55. Polymorphic enums in iOS need explicit init overloads, not protocol witnesses
+
+**What happened:** `TeamCrestView` started as `init(team: Team, size:)`. When `Country` came along, I added `init(country: Country, size:)` and `init(url: URL?, size:)` overloads rather than abstracting via a `CrestSource` protocol. The protocol approach would have unified the entry points but added an extra layer of type machinery for two trivial accessors (`team.crestURL` and `country.crestURL` are both `URL?`).
+
+**Rule:** When you have 2-3 concrete sources for the same view, prefer init overloads over abstraction. Three init methods is shorter than one protocol + two conformances + an init. Reserve the protocol approach for N≥4 sources or for cases where the source set is open (third-party plugins).
+
+---
+
+## Phase 27: Push pipeline dead since May 11, V2.0 cluster B + Migration 034 (2026-05-17)
+
+Two distinct streams shipped in this phase.
+
+### 27.1 Cluster B iOS fixes (final V2.0 closeout)
+
+Five issues raised in the V2.0 skeptical review landed:
+- **H2** — `activeContext` now switches to `.country(country)` immediately when the user picks a country in `WCMigrationSheetView`. Mirror priority in `scenePhase` resume handler (country preferred over team).
+- **H3** — Sheet binding's `set` closure now flips `hasSeenWCPrompt = true` on system-initiated dismiss, so swipe-down + force-quit + relaunch doesn't loop the sheet.
+- **H4** — `UnreadTracker.totalUnread` and `aggregateBadgeText` extended with `countryItems` + `selectedCountry` params. Symmetric to the team-side branches. FeedView caller passes `countryItems: []` for V2.0 (single active-context items list) — V2.1 will split.
+- **L1** — `MainTabView` `navigationDestination(for: String.self)` for `"playerCards"` now uses `teamPageEntityId` (country-first) so WC-only users land on a valid view.
+- **L2** — `OnboardingFlow.meetEntityId` gains `assertionFailure` in DEBUG when neither country nor team is set; production keeps the `"arsenal"` fallback.
+
+### 27.2 Migration 034 — `teams.league_id NOT NULL`
+
+After application-layer guards landed in data-fetcher (V2.0 M2) and match-watcher (V2.0 M1) — both skip-and-log when a row's `league_id` is null — the DB-level constraint was free to add. Pre-check confirmed zero null rows. Schema is now `league_id INTEGER NOT NULL` with no FK (we deliberately don't have a `leagues` table; the IDs match API-Football's external numbering).
+
+### 27.3 Push pipeline was completely dead since May 11
+
+User reported "City played today, no push notification" on May 17. Investigation traced the entire pipeline and surfaced the real failure: **every push cron tick since May 11 was returning HTTP 401 from the Supabase gateway** — but `cron.job_run_details` reported `status="succeeded"` because the SQL `SELECT net.http_post(...)` completed cleanly. Phase 48 documented this exact pattern; this is the second occurrence.
+
+Root cause: the Vault entry `cron_service_key` contained the new `sb_secret_*` format key (41 chars, prefix `sb_secret_`). The Supabase Edge Function gateway requires a JWT-format Bearer token for invocation. The legacy service_role JWT (which is still valid for Edge Function invocation despite being rotated out of PostgREST) IS in our `backend/.env` as `SUPABASE_SERVICE_ROLE_KEY`. Direct curl with that key returned 200 all day; the cron failed because it pulled the wrong format key from Vault.
+
+Fix: `vault.update_secret(uuid, legacy_jwt, name, comment)` to put the legacy JWT back. Within one minute (next match-watcher cron tick at minute mark), HTTP responses flipped from 401 → 200. Manual notification-sender invocation processed the 20-item 24h backlog. `push-probe` to the user's production device returned `success: true, status: 200`.
+
+The May 12 → May 17 backlog (items >24h old) intentionally NOT pushed — the sweep's `published_at > NOW() - INTERVAL '24h'` filter is correct (don't push 5-day-old news).
+
+### 27.4 Discovered gap: FA Cup Final missed match-watcher entirely
+
+The user's expected push was for the Chelsea vs Man City FA Cup Final on May 16. We had it in `raw_fetch_logs` (via `fixtures_next`), but match_status_state has no row for it. Why: match-watcher's V2.0 refactor reads `SELECT DISTINCT league_id FROM teams`. That returns `[39, 1]` (PL + WC). FA Cup is league=45 — not in the active_leagues set. So match-watcher never queries API-Football for FA Cup fixtures, never observes a status transition, never fires gd-matchday.
+
+This is a **pre-V2.0 architectural limitation** (V1.x match-watcher hardcoded `league=39` so FA Cup matches were missed too). V2.0 made it visible by widening to WC but not other competitions. iOS-side news routine still produced great content_items for the match because gd-news scrapes BBC, but matchday-style cards + push-on-FT only fire via match-watcher.
+
+V2.1 candidate: extend match-watcher's active_leagues to include FA Cup (45), EFL Cup (48), UCL (2), UEL (3) for the limited subset of PL teams that play in them. Currently flagged in `team-season-state-generator.COMPETITIVE_LEAGUE_IDS` for the calendar slate but not in match-watcher's live-fire path.
+
+---
+
+### 56. pg_cron "succeeded" twice — when the wrong key shape is in Vault
+
+**What happened:** Same silent-cron-failure class as Phase 48. Cron reports `status=succeeded` because the SQL succeeded. Net._http_response shows 401 UNAUTHORIZED_INVALID_JWT_FORMAT because Vault contained a non-JWT-shape key (the new `sb_secret_*` format). The gateway specifically checks for JWT shape.
+
+**Rule:** Watch the actual `net._http_response` rows, not just `cron.job_run_details`. For any cron that calls an Edge Function, the success criterion is `status_code = 200 AND content does not contain "UNAUTHORIZED"`. Build that into the heartbeat check — `goaldigger-cron-heartbeat-check` cron should verify recent 2xx responses, not just that cron ran.
+
+### 57. Key rotation across two consumer types needs explicit dual-storage
+
+**What happened:** Supabase has two key formats: legacy `service_role` JWT (still works for Edge Function invocation, disabled for PostgREST data writes) and new `sb_secret_*` (works for both). Edge Function INTERNAL code uses `SUPABASE_SERVICE_ROLE_KEY` env (which is the new format). Edge Function INVOCATION (the Bearer the caller sends) needs JWT format because the gateway is strict.
+
+If you rotate one and not the other, you silently break the cron-driven half of the pipeline. **Two separate Vault entries** would be cleaner: `bearer_token_for_edge_functions` and `service_role_for_postgrest_writes`. Today they share `cron_service_key` and the wrong format silently broke pushes for 6 days.
+
+### 58. Match-watcher league coverage is bounded by `teams.league_id`
+
+**What happened:** Match-watcher's V2.0 refactor pulls active leagues from the `teams` table. Clubs in our table have `league_id=39` (PL), countries have `league_id=1` (WC). So FA Cup, UCL, UEL fixtures for PL teams aren't observed — they happen, content_items get written by news routines, but no matchday cards / push-on-FT fires.
+
+**Rule:** Match-watcher's competition coverage is a separate concern from the team-membership table. Either: (a) maintain a `leagues` config table with `is_live_watched` boolean, or (b) hardcode a superset of competitive leagues that any of our teams could appear in. The current "DISTINCT league_id from teams" pattern under-covers cup matches.
+
+---
+
+## Phase 28: JWT auth audit + monitoring hardening (2026-05-17, post-V2.0)
+
+Same-day follow-up to Phase 27.3 (push pipeline dead for 6 days due to wrong-shape Vault key). The May 17 outage was the **second** silent cron failure in 6 days (Phase 48 was the first — legacy JWT rotated and crons had stale inline bearers). Pattern is clear: cron auth is fragile, monitoring doesn't catch it, push pipeline silently dies.
+
+This phase shipped the codebase-wide audit + monitoring fixes so we never lose 6 days to this again.
+
+### 28.1 Inventory of every JWT/auth surface
+
+Recon found:
+- **Three historical migrations with inline JWTs**: `015_fix_cron_settings.sql`, `016_notification_sweep_cron.sql`, `017_match_watcher_every_minute.sql`. Dead in prod (overwritten by migrations 019 + 020 which moved to Vault) but live in the migration history. Annotated with a callout block at the top explaining they're historical and that future crons should use `get_cron_service_key()`.
+- **One live cron still using inline JWT**: `goaldigger-daily-pipeline` (data-fetcher daily). Migration 035 rewrote it to use Vault.
+- **Diagnostic gap**: `get_pipeline_diagnostics()` returned cron job bodies + cron run details + Vault secret existence, but NOT `net._http_response` rows. The 401 was visible there for 6 days; nobody looked because the existing diagnostics didn't surface it.
+- **Heartbeat blind spot**: `check_pipeline_heartbeat()` only checked `pipeline_health.stage='fetch'` rows. data-fetcher was on its own inline-JWT cron and DID write rows, so the heartbeat stayed silent while push-related crons 401'd.
+
+### 28.2 What landed
+
+**Documentation (Stream A):**
+- `IOS_GOTCHAS.md` #14 — new pitfall entry covering "Supabase has two service-role formats. Gateway INVOCATION requires JWT shape." Has the symptom + 5-line psql diagnosis + fix snippet.
+- `RUNBOOK.md` — new SOP "Push pipeline health check (user says no push)" with 6-step traversal (cron gateway → match-watcher → content_items → sender → APNs → iOS). Each step has a fail-action.
+
+**Migrations (Stream B):**
+- `035_data_fetcher_cron_vault.sql` — unschedule + reschedule `goaldigger-daily-pipeline` with Vault auth. Live; verified `command NOT LIKE '%Bearer eyJ%'`.
+- `036_diagnostics_rpc_http_responses.sql` — extends `get_pipeline_diagnostics()` with three new fields: `recent_http_responses` (last 20 rows from `net._http_response`), `http_health_summary_24h` (count by status_code), `key_shape_check` (prefix + length + `is_jwt_shape` bool). One RPC call surfaces the silent-failure pattern. Live; verified all three fields present and `is_jwt_shape=true`.
+- `037_heartbeat_http_health_check.sql` — extends `check_pipeline_heartbeat()` with a CHECK 2 block: if >50% of `net._http_response` rows in the last hour are non-200 (with at least 10 samples), insert into `client_errors` + push alert. Chicken-egg: the alert push uses the same Vault key it's trying to detect — so if the key is broken the push will fail too. The `client_errors` insert is the durable trail (still recorded even when push fails). Live; manual `SELECT check_pipeline_heartbeat()` returned cleanly.
+
+**Tooling (Stream B):**
+- `scripts/verify-cron-auth.sh` — runnable check that confirms Vault entry exists, accessor function exists, key starts with `eyJ` and length > 100, and recent `net._http_response` rows show no non-200s. Designed to run after any Vault update. Exit 0 = healthy.
+
+**Annotations:**
+- Migrations 015, 016, 017 — header comment block calling them out as historical artifacts. No functional change. Just signals to future agents reading the migration history.
+
+### 28.3 What couldn't be solved with monitoring alone
+
+The chicken-and-egg in check 2: when the Vault key breaks, the alert push that should fire on detection ALSO uses the same Vault key. So the push 401s alongside everything else. The user wouldn't get an in-app alert.
+
+Mitigation in this phase: the `INSERT INTO client_errors` happens BEFORE the push attempt. The durable database trail exists even when the push doesn't fire. Anyone manually running `diagnose-matchday` or `get_pipeline_diagnostics()` post-incident will immediately see both the http_health_summary spike AND the client_errors row.
+
+V2.1+ candidate: a second alert path that doesn't depend on the same Vault key (e.g., direct PostgREST-table polled by iOS app, or a webhook to a third-party service like Slack). Out of scope tonight.
+
+### 28.4 What success looks like next time
+
+Future scenario: someone rotates the Vault key to the wrong format again. Within 60 minutes:
+1. `notification-sweep` cron tick 401s.
+2. By minute 30 (heartbeat tick), `check_pipeline_heartbeat()` notices the 401 spike via Check 2, inserts a `client_errors` row, attempts the alert push (probably fails — chicken-egg).
+3. Anyone running `diagnose-matchday` sees `key_shape_check.is_jwt_shape: false` AND `http_health_summary_24h: {401: N}` in one response.
+4. The `verify-cron-auth.sh` script can be run by anyone with `backend/.env` access — passes/fails in <2 seconds.
+5. Lesson: monitoring catches it within minutes, not days.
+
+---
+
+### 59. Two-layer monitoring: pg_cron success ≠ HTTP success
+
+**What happened (twice in 6 days):** pg_cron's `status='succeeded'` means the SQL `SELECT net.http_post(...)` ran without error. It says nothing about whether the HTTP request reached the function or got rejected at the gateway. May 11-14 (Phase 48): hardcoded JWT in cron was rotated out, 401s, silent. May 11-17 (Phase 27.3): Vault held wrong-shape key, 401s, silent for 6 days.
+
+**Rule:** Any monitoring that watches cron health MUST cross-check `net._http_response`. The existence of a cron run details row tells you the SQL ran; the existence of a 200 response tells you the function got called. Both are necessary. Build this into diagnostic RPCs (migration 036) and heartbeat functions (migration 037).
+
+### 60. Alert paths can have the same root cause as the failure they're alerting on
+
+**What happened:** May 17's heartbeat check has its own push-via-Edge-Function alert path. Both paths use `get_cron_service_key()` from Vault. If the Vault key breaks, the heartbeat detects the problem but its alert push also 401s. No notification reaches the user.
+
+**Rule:** When designing alert mechanisms, identify single points of failure that would also disable the alert. Either (a) provide a secondary alert path that doesn't share the failure mode (e.g., direct table polling by client, third-party webhook), or (b) accept that the database-only trail is the fallback and design diagnostics to make it discoverable post-incident. Migration 037 chose (b) — the `client_errors` row is the durable trail. V2.1 candidate: add (a).
+
+### 61. Migration history vs live state
+
+**What happened:** Migrations 015, 016, 017 had inline JWTs. Migration 019 + 020 rewrote them to use Vault. In prod, the final state after all migrations apply is correct. But `supabase db reset` replays in order, so the intermediate states (with inline JWTs) briefly exist. More importantly: the migration files are what future agents READ to understand the system. They saw the inline-JWT pattern in the history, didn't realize it was deprecated, and applied it for new crons.
+
+**Rule:** Annotate any migration whose code pattern is no longer the recommended approach. A header callout naming the superseding migration + linking to the relevant gotcha entry is cheap. Future agents read top-down and won't miss it.

@@ -1,4 +1,11 @@
 -- 016_notification_sweep_cron.sql
+--
+-- ⚠️  HISTORICAL ARTIFACT — DO NOT EMULATE THE INLINE JWT BELOW.
+-- The `Bearer eyJ...` literal in this migration is overwritten by migration
+-- 019 + 020 (Vault-based auth via get_cron_service_key()). For any new cron,
+-- use the Vault accessor pattern. See IOS_GOTCHAS.md #14 + lesson 57 for why.
+--
+-- Original migration purpose:
 -- Schedule the hourly notification-sender sweep that catches unpushed items.
 --
 -- Migration 003 was supposed to create this cron, but it never landed on
@@ -18,7 +25,7 @@ SELECT cron.schedule(
         url := 'https://cwgpsmbunrocrofziqad.supabase.co/functions/v1/notification-sender',
         headers := jsonb_build_object(
             'Content-Type', 'application/json',
-            'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3Z3BzbWJ1bnJvY3JvZnppcWFkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDYwNjc1NiwiZXhwIjoyMDkwMTgyNzU2fQ.YfGy-tG-7h7_rsAX3lLQ9mYJr-MtSWhtK1K7xAQlvGI'
+            'Authorization', 'Bearer <REDACTED-LEGACY-SERVICE-ROLE-JWT-ROTATED-2026-05-11>'
         ),
         body := '{}'::jsonb
     )$$
