@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-17 (late evening — Phase 28 closeout + launch-readiness verification + WC routine prompts)
+**Last updated:** 2026-05-17 (night — anti-spam removal + three-tier quota fit + Phase J pipeline observability)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
@@ -37,6 +37,28 @@ Continuation pass after the 5-phase verification closeout above. Two more stream
 - All three are paste-ready for June 4 submission day. Submission, archive, and screenshot capture are all manual (require user's Mac + Apple ID + Xcode).
 
 ---
+
+## Verified today (May 17 night — silent-failure structural fix)
+
+Third continuation pass. Three streams landed end-to-end. The user reported "5th silent push failure" during a live Everton match; investigation surfaced two distinct bugs (anti-spam self-reference + routine-quota cap) plus a missing architectural layer (observability across all pipeline hops). All three shipped tonight.
+
+- **Stream A — Anti-spam removed** (commit `5c9cbf2`). Root cause of the "every match I miss a push" pattern: `_shared/anti-spam.ts` queried the most-recent `published_at` row for the team to compute "hours since last push," but the routine had already inserted the new content_item with `status='published'` before `notification-sender` ran. The query found the row that had just been inserted, so `hoursSinceLast ≈ 0` and the check blocked every push for teams with no prior recent push. Fix: removed anti-spam entirely. Tier segmentation (`minTierForType` in notification-sender) is sufficient volume control; quiet hours move to iOS Do Not Disturb. The Everton 1-3 push that validated this arrived on the user's iPhone within seconds. Documented as IOS_GOTCHAS #15 + Lesson 62 (`5 silent push failures weren't the same class`).
+
+- **Stream B — Routine quota fit, three-tier cron restructure** (match-watcher commit `2896d44` + cloud-routine updates via RemoteTrigger). Discovered during the Everton match: claude.ai routines have a 25/25 daily run cap, and the busy-Saturday combination (match-watcher HT/75' fires × 4-5 PL matches + scheduled background routines) hits 48/25. Shipped:
+    - **Tier 1**: `gd-insider` (`0 2 * * 1-5`) and `gd-season-state` (`0 1 * * 1-5`) moved to weekday-only (no value firing on match-day weekends; routine voice doesn't change weekend-vs-weekday).
+    - **Tier 2**: `gd-news` and `gd-news-wc` cadence reduced from `30 6,12,18,0` (4×/day) to `30 6,18` (2×/day). News drifts ~6h instead of ~3h between fires, which is acceptable for our content cadence.
+    - **Tier 3**: match-watcher dropped the 75' live-brief trigger entirely. HT remains. Saves 1 fire per match.
+    - Result: 4-match Saturday quota goes from 48/25 → ~19/25, comfortable headroom. Documented as Lesson 63 (`Routine quota economics — schedule for the busy day, not the average day`). Cron config lives only in claude.ai/code/routines (NOT in this repo's migrations) — the three-tier change is documented in IMPLEMENTATION_PROGRESS.md for the source of truth.
+
+- **Stream C — Phase J pipeline observability (P.1–P.5 shipped end-to-end)**. The structural fix that ends the silent-failure pattern. After this, EVERY hop in the push pipeline writes a `pipeline_health` row on every attempt:
+    - **Migration 038** (`038_pipeline_health_expanded.sql`): added `target`, `http_status`, `response_excerpt`, `error_class` columns. Expanded `stage` CHECK to allow `live_brief_fire`, `matchday_fire`, `apns_send`, `routine_post`, `cron_invoke` alongside the existing `fetch`/`generate`/`review`/`publish`. Added `status='partial'` for mixed batch outcomes. Made `team_id` nullable for system-level rows. Composite index `(stage, created_at DESC)` for SLA queries.
+    - **P.2 — match-watcher writes** (commit `a505711`): new `logFire()` helper writes a `pipeline_health` row on every gd-live-brief and gd-matchday fire attempt — success or failure — with `target=<routine>:<team>:<fixture>:<trigger>`, the HTTP status, and a 200-char response excerpt. The earlier `console.error`-to-stderr-only pattern that buried failures invisible to the DB is gone.
+    - **P.3 — notification-sender writes** (commit `ae4cfe7`): every APNs send writes a `pipeline_health` row with full status taxonomy: `success` / `token_expired` (410) / `bad_token` (400) / `auth_failure` (403) / `rate_limited` (429) / `apns_error`. The aggregate publish row per content_item uses `status='partial'` when some tokens succeeded and others failed.
+    - **P.4 — routine post-scripts write** (routines repo commit `7edf609`): all six `post_*.sh` scripts (`post_news`, `post_live_brief`, `post_insider`, `post_quiz`, `post_player_dossier`, `post_season_state`) now write a `pipeline_health` row on every Supabase REST POST — both success and failure paths. Best-effort (`|| true`) so observability failures never break the routine. `post_matchday.sh` doesn't exist (matchday flow is single-step inside the prompt session, covered by CHECK 4 below).
+    - **Migration 039** (`039_pipeline_health_sla_checks.sql`): extended `check_pipeline_heartbeat()` with **CHECK 3** (live_brief SLA — HT fire succeeded but no `live_match_briefs` row within ±10 min) and **CHECK 4** (matchday SLA — `match_status_state.fired_finished_at` set but no `content_items` row of `type='matchday'` within ±15 min). Both throttled to 1/hr per check via `client_errors` dedup window. The 30-min heartbeat cron now automatically surfaces silent-routine-session failures as `client_errors` rows — and the existing client-error-alert push to the dev iPhone tightens the loop.
+    - Verification of P.4 deferred to tomorrow ~06:35 UTC (after the first scheduled `gd-news` fire at 06:30 UTC). Today's quota is 25/25 so a manual trigger would 429.
+
+After this, the only un-instrumented hop in the pipeline is the routine session's internal execution (Anthropic-side, not in our DB). The contract is: if a routine fires and produces nothing, CHECK 3 or CHECK 4 surfaces it within 30 min; if it fires and the post-script POSTs but Supabase rejects, the `routine_post` row captures it; if APNs rejects, `apns_send` captures it. The next "I didn't get a push" investigation starts with a SQL query, not a routine-session-log dig.
 
 ---
 
