@@ -332,6 +332,34 @@ class APIClient {
         return try decodeArrayLoosely(data: data)
     }
 
+    /// Fetch the latest insider item of EACH type (stat, history, oddity,
+    /// anecdote) for a team. Returns up to 4 items in render order: stat,
+    /// history, oddity, anecdote (3 "fun facts" then the anecdote). Missing
+    /// types are simply absent from the array — the caller renders whatever
+    /// it gets. Used by the redesigned "Things he doesn't know" section on
+    /// the team page (TeamPageView).
+    ///
+    /// One REST call: latest 40 rows, picked client-side. 40 is a safe
+    /// ceiling — even if every row happened to be the same type we'd still
+    /// find the latest of each other type within the daily-rotation window.
+    func fetchInsiderSet(teamId: String) async throws -> [InsiderItem] {
+        let url = try buildURL(path: "team_insider_items", queryItems: [
+            URLQueryItem(name: "team_id", value: "eq.\(teamId)"),
+            URLQueryItem(name: "order", value: "published_at.desc"),
+            URLQueryItem(name: "limit", value: "40"),
+            URLQueryItem(name: "select", value: "id,team_id,type,title,body,source_url,published_at"),
+        ])
+        var request = makeRequest(url: url)
+        request.timeoutInterval = 10
+        let (data, response) = try await URLSession.shared.data(for: request)
+        try validateResponse(response)
+        let all: [InsiderItem] = try decodeArrayLoosely(data: data)
+
+        // Pick the most recent of each type in render order.
+        let order: [InsiderItem.ItemType] = [.stat, .history, .oddity, .anecdote]
+        return order.compactMap { t in all.first(where: { $0.type == t }) }
+    }
+
     // MARK: - Live match brief (V1.1 task C5)
 
     /// Fetch the current live match brief for the team — the LiveMatchCard

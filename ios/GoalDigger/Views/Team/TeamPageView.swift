@@ -5,7 +5,10 @@ struct TeamPageView: View {
     @Environment(AppState.self) var appState
     @State private var content: TeamPageContent?
     @State private var playerCards: [PlayerCard] = []
-    @State private var latestInsider: InsiderItem?
+    /// Up to 4 insider items: latest of each type (stat, history, oddity,
+    /// anecdote). Powers the redesigned "Things he doesn't know" section
+    /// at the bottom of the team page. Empty array = section hidden.
+    @State private var insiderSet: [InsiderItem] = []
     @State private var isLoading = true
     @State private var hasError = false
     @State private var presentedPlayer: PlayerCard?
@@ -295,24 +298,30 @@ struct TeamPageView: View {
             comingUpCard(fixture)
         }
 
-        // Card 8 (T2+ only): "Things he doesn't know" — niche stat /
-        // anecdote / history / oddity refreshed daily by the gd-insider
-        // cloud routine. Gating: TierGating.isAvailable(.insiderCard,
-        // tier:) returns true for tier 2 and 3 — T1 users never see it.
-        // Latest item only; the History page (if we add one) would show the
-        // last N.
+        // Card 8 (T2+ only): "Things he doesn't know" — 4 niche items
+        // (latest of each type: stat / history / oddity / anecdote)
+        // refreshed by the gd-insider cloud routine. Headlines only,
+        // no body text — InsiderHeadlineRow keeps it compact. Gating:
+        // TierGating.isAvailable(.insiderCard, tier:) returns true for
+        // tier 2 and 3 — T1 users never see it. Section also hides if
+        // the team has no items yet (brand-new entity the routine hasn't
+        // populated, or a backfill skip).
         if TierGating.isAvailable(.insiderCard, tier: appState.selectedTier),
-           let insider = latestInsider {
+           !insiderSet.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
                 Text("THINGS HE DOESN'T KNOW")
                     .font(.sectionHeader)
                     .tracking(1)
                     .foregroundColor(.mutedText)
-                    // Align with the InsiderCard's inner padding (14pt
-                    // around the rose bar + content) so the tracker label
-                    // sits visually flush with the card's content edge.
+                    // Align with the row's inner padding (14pt around the
+                    // rose bar + content) so the tracker label sits flush
+                    // with each row's content edge.
                     .padding(.leading, 14)
-                InsiderCard(item: insider)
+                VStack(spacing: 8) {
+                    ForEach(insiderSet) { item in
+                        InsiderHeadlineRow(item: item)
+                    }
+                }
             }
             .padding(.top, 8)
         }
@@ -572,13 +581,13 @@ struct TeamPageView: View {
             content = cached.content
             isLoading = false
 
-            // Fetch player cards + latest insider item in parallel with fresh data
+            // Fetch player cards + insider set in parallel with fresh data
             async let freshContent = fetchFromNetwork()
             async let players = fetchPlayerCards()
-            async let insider = fetchLatestInsider()
+            async let insider = fetchInsiderSet()
 
             playerCards = await players
-            latestInsider = await insider
+            insiderSet = await insider
 
             if let fresh = await freshContent {
                 content = fresh
@@ -594,9 +603,9 @@ struct TeamPageView: View {
                 content = fetched
                 TeamPageCache.save(content: fetched, teamId: teamId)
                 async let players = fetchPlayerCards()
-                async let insider = fetchLatestInsider()
+                async let insider = fetchInsiderSet()
                 playerCards = await players
-                latestInsider = await insider
+                insiderSet = await insider
             } else {
                 #if DEBUG
                 if let mock = MockData.teamPage(for: teamId) {
@@ -628,11 +637,11 @@ struct TeamPageView: View {
         (try? await APIClient.shared.fetchPlayerCards(teamId: teamId)) ?? []
     }
 
-    /// Fetches the most recent insider item for the current team. Returns
-    /// nil on error or when the team has no items yet — caller treats both
-    /// identically (no card rendered).
-    private func fetchLatestInsider() async -> InsiderItem? {
-        let items = (try? await APIClient.shared.fetchInsiderItems(teamId: teamId, limit: 1)) ?? []
-        return items.first
+    /// Fetches up to 4 insider items, one of each type (stat, history,
+    /// oddity, anecdote — in that order). Returns an empty array on error
+    /// or when the team has no items yet — caller treats both identically
+    /// (the section just hides).
+    private func fetchInsiderSet() async -> [InsiderItem] {
+        (try? await APIClient.shared.fetchInsiderSet(teamId: teamId)) ?? []
     }
 }
