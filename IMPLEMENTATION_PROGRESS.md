@@ -2144,3 +2144,24 @@ SELECT check_pipeline_heartbeat();
 - **pipeline_health retention sweep.** At ~5 rows/min baseline, this table grows ~2.6M rows/year. Add a `DELETE FROM pipeline_health WHERE created_at < NOW() - INTERVAL '90 days'` cron.
 - **Index on `match_status_state.fired_finished_at`.** CHECK 4 does a full scan every 30 min. Tiny table today; will matter when WC season adds 48 countries × fixture rows.
 - **`error_class` as a typed union in `_shared/types.ts`.** Currently `string | null` — typos slip through. Convert to `"success" | "fire_failed" | "fire_threw" | ...` so the TS compiler catches divergence.
+
+### 65. WC pre-launch hardening sweep (May 17 night-final)
+
+**What we shipped, all in one continuation pass right after Lesson 64:**
+
+The four V2.1 candidates in Lesson 64 were all bounded and shippable in one session. We did. Plus the data-fetcher cadence bump. Five backend phases, two deploys.
+
+- **Mig 042 + match-watcher** (`cce7980`): matchday-fire retry cap (N=5, T=2h). Adds `match_status_state.matchday_fire_capped`, pre-checks pipeline_health for failure history per fixture's targets, marks capped on trip. Backfilled the 3 stuck fixtures tonight. Verified live: zero new matchday_fire rows 90s post-deploy. Live_brief NOT modified — already has implicit single-attempt protection via `briefs_fired` written unconditionally regardless of fire outcome.
+- **Mig 043** (`e20ec68`): pipeline_health 90-day retention sweep cron at 03:00 UTC daily. Day-one no-op; first real DELETE around mid-August.
+- **Mig 044** (`82b2572`): partial indexes on `match_status_state(fired_finished_at)` and `content_items(match_id, type)` for CHECK 4 efficiency at WC scale. Both `WHERE` partials because most rows have NULL on the leading column.
+- **Mig + types.ts** (`37bf565`): `PipelineHealthLog.error_class` narrowed from `string | null` to a 9-value union plus null. notification-sender's `errorClass` local + `APNS_STATUS_TO_ERROR_CLASS` map narrowed too so the call site is type-safe. Both functions redeployed — the bundler's typecheck would have failed if narrowing was wrong, so the union is sound.
+- **Mig 045** (`becedc7`): data-fetcher cron `0 7 * * *` → `0 * * * *` (daily → hourly). Was up to 23-hour latency for squad announcements landing during May 28+ WC squad window. Now 60 min worst case. ~1,900 API-Football calls/day = comfortable under the Pro tier 7,500/day ceiling. Permanent change.
+
+**Three live findings during the planning phase:**
+1. Migration 003 in the repo claims `*/30 8-23 * * *` for data-fetcher but the live state was `0 7 * * *` — a later (un-migrated?) schedule change. Lesson: always verify cron state via `SELECT … FROM cron.job` instead of grepping migrations.
+2. The backfill for matchday_fire_capped caught 3 fixtures, not the 2 I initially expected — Newcastle vs West Ham also FT'd and started its own 429 retry storm in the time between Phase J P.5 and tonight's hardening pass. Observability surfaced it as soon as we queried.
+3. Live_brief's "infinite retry loop" hypothesis (raised in /simplify's exploration) was wrong — the `briefs_fired` upsert at end of tick is unconditional, providing implicit single-attempt protection. Read the code, not just the surrounding comments.
+
+**Net result:** WC backend is launch-ready. All pre-existing matchday-fire retry-loop bugs are stopped (current fixtures capped + future stuck fixtures will cap automatically). pipeline_health stays bounded. Type system catches taxonomy typos. Data freshness covers WC squad announcements. The only remaining items before launch are user-side: enable claude.ai Extra Usage as a safety net, onboard the dev iPhone through the V2.0 flow to E2E-test country routing, and the App Store submission flow.
+
+**Out of scope after this sweep:** FA Cup coverage (V2.2), two-Vault-entry split, secondary alert channel (explicitly deferred — chicken-egg risk accepted), live-brief HT retry within window. None block the June 11 launch.
