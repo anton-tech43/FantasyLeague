@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-17 (late night — Phase J full closeout: live verification, /simplify fixes, CHECK 5, Lesson 64 playbook)
+**Last updated:** 2026-05-17 (night-final — WC pre-launch hardening: retry caps, retention, indexes, typed union, hourly data-fetcher)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
@@ -77,6 +77,24 @@ Fourth continuation pass. Validated the night's Phase J work in production immed
 - **Lesson 64 — morning-after Phase J playbook** (commit `a6c4667`). Four paste-ready SQL queries for tomorrow's verification (06:35 UTC routine_post evidence; 07:00 UTC client_errors; mid-day per-stage coverage; manual heartbeat smoke). Symptom→cause→next-step escalation table. **V2.1 candidates filed:** match-watcher retry-loop fix, pipeline_health 90-day retention sweep, `match_status_state.fired_finished_at` index, `error_class` as typed union in `_shared/types.ts`.
 
 **Net result of tonight's late-night closeout:** Phase J went from "shipped P.1–P.5" to "shipped + verified in production + audited + extended with CHECK 5 + documented for tomorrow" in one continuation pass. Found two latent bugs along the way (the `safety_review` CHECK regression in 038 + the match-watcher retry loop) that the new observability surfaced within minutes of deploy.
+
+---
+
+## Verified today (May 17 night-final — WC pre-launch hardening)
+
+Fifth and final continuation pass for May 17. Shipped the five backend items from Lesson 64's V2.1 list as a "WC pre-launch hardening" sweep. Goal: a system that survives WC matchdays without burning hundreds of API calls during quota events, with bounded table growth and tighter type-checking. Five migrations + one code change + two deploys, all validated.
+
+- **Phase 1 — Match-watcher matchday-fire retry cap (P0)** (mig 042 + match-watcher commit `cce7980`). Adds `match_status_state.matchday_fire_capped BOOLEAN`. Before every matchday fire, match-watcher queries pipeline_health for failure history on this fixture's targets in the last 6h. If any target has ≥5 failures OR a first failure >2h ago, the cap trips: skip the fire, write `matchday_fire_capped = TRUE`, never re-fire. Backfill marked the 3 fixtures stuck tonight (Brentford-Crystal Palace, Leeds-Brighton, Newcastle-West Ham) as already-capped, stopping the 288-row 429 storm on the very next cron tick. Verified live: 0 new matchday_fire rows in 90s post-deploy. **Live_brief NOT modified** — it already has implicit single-attempt protection via `briefs_fired` (updated unconditionally regardless of fire outcome). "HT retry within window" deferred to V2.x.
+
+- **Phase 2 — `pipeline_health` 90-day retention sweep (P1)** (mig 043). New daily cron `pipeline_health_retention_sweep` at 03:00 UTC. At ~5 rows/min baseline, the table grows ~7,200 rows/day — by WC final, ~600k rows. 90-day retention is enough for heartbeat checks, postmortems, and quarterly trend analysis. Day-one no-op; the first real DELETE happens mid-August when today's rows cross the horizon.
+
+- **Phase 3 — CHECK 4 query indexes (P1)** (mig 044). Per /simplify Efficiency #3: CHECK 4 was doing Seq Scan + correlated subquery for `match_status_state.fired_finished_at` and `content_items(match_id, type)`. Partial indexes added on both — partial because most rows have NULL on the leading column (matches not yet finished; content without a match_id). At WC scale the heartbeat cron stays sub-second.
+
+- **Phase 4 — `error_class` typed union (P2)** (commit `37bf565`). Per /simplify Quality #1: `error_class: string | null` in `PipelineHealthLog` let typos slip through. Now a union of nine known values plus null. notification-sender's `errorClass` local + the `APNS_STATUS_TO_ERROR_CLASS` map narrowed from `Record<number, string>` to `Record<number, ApnsClass>` so the call site is fully type-safe. Both functions redeployed — bundler's typecheck would have failed if narrowing was wrong, so the union is sound.
+
+- **Phase 5 — data-fetcher cron daily → hourly (P1)** (mig 045). Was `0 7 * * *` (daily 07:00 UTC). For WC squad announcements landing May 28+, that meant up-to-23-hour latency. Now `0 * * * *` (hourly): worst case 60 min. ~1,900 API-Football calls/day = comfortably under the Pro tier's 7,500/day ceiling. Permanent change — the freshness benefit applies year-round, the WC squad-window was just the immediate motivation.
+
+**Net result:** of the four V2.1 candidates filed in Lesson 64 just an hour ago, three are now shipped (retry cap, retention, indexes, typed union — that's actually all four). The remaining V2.1+ items below are unchanged. System is ready to leave running through the next 25 days while the user focuses on Apple submission.
 
 ---
 
@@ -182,9 +200,10 @@ Value-first restructure. New order: `Welcome → Her name → His name → Team 
 
 ## Out of scope (V2.1+, flagged in IMPLEMENTATION_PROGRESS)
 
-- **FA Cup coverage** in `match-watcher` — `active_leagues` is `SELECT DISTINCT league_id FROM teams` which only returns `[39, 1]`. League 45 (FA Cup) fixtures involving PL clubs aren't picked up by the watcher. Architectural fix needed (probably add a `competitions` table that teams join into, or hard-list extra league_ids in match-watcher config).
-- **Two-Vault-entry split** — currently one `cron_service_key` Vault row serves both Edge Function invocation (needs JWT shape) AND function-internal PostgREST (accepts either format). Splitting into `bearer_token_for_edge_functions` + `postgrest_service_role` would reduce blast radius on key rotation.
-- **Secondary alert channel** — `check_pipeline_heartbeat()`'s alert push uses the same Vault key it's checking. If that key breaks, the alert push also breaks (chicken-egg). The `client_errors` row is the durable trail today; a SECOND independent push path (e.g. via email, Slack webhook, or a hardcoded fallback token) would close the gap.
+- **FA Cup coverage** in `match-watcher` — `active_leagues` is `SELECT DISTINCT league_id FROM teams` which only returns `[39, 1]`. League 45 (FA Cup) fixtures involving PL clubs aren't picked up by the watcher. Architectural fix needed (probably add a `competitions` table that teams join into, or hard-list extra league_ids in match-watcher config). Irrelevant for the June 11 WC launch.
+- **Two-Vault-entry split** — currently one `cron_service_key` Vault row serves both Edge Function invocation (needs JWT shape) AND function-internal PostgREST (accepts either format). Splitting into `bearer_token_for_edge_functions` + `postgrest_service_role` would reduce blast radius on key rotation. Defence-in-depth, not a launch blocker.
+- **Secondary alert channel** — `check_pipeline_heartbeat()`'s alert push uses the same Vault key it's checking. If that key breaks, the alert push also breaks (chicken-egg). The `client_errors` row is the durable trail today; a SECOND independent push path (e.g. via email, Slack webhook, or a hardcoded fallback token) would close the gap. **Explicitly deferred** per the May 17 night-final session — chicken-egg risk accepted; SQL monitoring is the manual fallback.
+- **Live-brief HT retry within window** — currently a single failed HT fire marks `briefs_fired = ["HT"]` and the trigger is never retried. If quota recovers within the HT window (~15 min) we miss a viable retry opportunity. Smarter logic would track per-trigger attempt timestamps. Low priority — HT is the lowest-stakes brief; matchday FT is where it matters and that's already retry-capped via mig 042.
 
 ---
 
