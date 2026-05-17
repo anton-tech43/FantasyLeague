@@ -223,16 +223,68 @@ async function handleRequest(req: Request): Promise<Response> {
 
     const { data: prior } = await supabase
       .from("match_status_state")
-      .select("status, fired_finished_at, briefs_fired")
+      .select("status, fired_finished_at, briefs_fired, matchday_fire_capped")
       .eq("fixture_id", fixtureId)
       .maybeSingle();
 
     // Only fire when we OBSERVE a transition firsthand.
     // First observation never fires (avoids mass-fire on initial deploy).
+    // matchday_fire_capped is the "we gave up" flag from migration 042 —
+    // see retry-cap logic below + IMPLEMENTATION_PROGRESS Lesson 65.
     const justFinished =
       FINISHED_STATUSES.has(status) &&
       prior !== null &&
-      !prior.fired_finished_at;
+      !prior.fired_finished_at &&
+      !prior.matchday_fire_capped;
+
+    // Retry-cap pre-check for matchday_fire. Migration 042 added the
+    // matchday_fire_capped column to stop infinite retry loops when the
+    // routine API persistently fails (429 quota, 503 outage, etc.). The
+    // cap is N=5 failures OR T=2h since first failure, whichever first.
+    // Once tripped we set matchday_fire_capped=TRUE on the upsert and
+    // skip future fires for this fixture forever.
+    //
+    // pipeline_health is the source of truth for attempt history. Query
+    // both home + away perspective targets in one call via LIKE pattern;
+    // if EITHER target has hit the cap we treat the fixture as capped
+    // (in practice the two perspectives move in lockstep when the cause
+    // is a global rate limit, so either-trips-cap is the right rule).
+    let matchdayCapTrippedThisTick = false;
+    if (justFinished) {
+      const sixHoursAgoIso = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+      const twoHoursAgoMs = Date.now() - 2 * 60 * 60 * 1000;
+      const { data: priorFailures } = await supabase
+        .from("pipeline_health")
+        .select("target, created_at")
+        .eq("stage", "matchday_fire")
+        .eq("status", "failure")
+        .like("target", `matchday_fire:%:${fixtureId}`)
+        .gte("created_at", sixHoursAgoIso);
+      const failuresByTarget = new Map<string, number[]>();
+      for (const r of priorFailures ?? []) {
+        const tsList = failuresByTarget.get(r.target) ?? [];
+        tsList.push(new Date(r.created_at).getTime());
+        failuresByTarget.set(r.target, tsList);
+      }
+      for (const timestamps of failuresByTarget.values()) {
+        if (timestamps.length >= 5) {
+          matchdayCapTrippedThisTick = true;
+          break;
+        }
+        if (Math.min(...timestamps) < twoHoursAgoMs) {
+          matchdayCapTrippedThisTick = true;
+          break;
+        }
+      }
+      if (matchdayCapTrippedThisTick) {
+        console.log(
+          `matchday_fire capped for fixture ${fixtureId}: failure history ` +
+          `triggered the cap (5 attempts or 2h since first failure)`,
+        );
+      }
+    }
+
+    const shouldFireMatchday = justFinished && !matchdayCapTrippedThisTick;
 
     // ─── V1.1 C5: live-brief trigger detection ────────────────────────
     // For LIVE fixtures, decide which (if any) trigger label to fire
@@ -274,7 +326,7 @@ async function handleRequest(req: Request): Promise<Response> {
     // re-fire on the successful side is a no-op rather than a duplicate row.
     let homeFireOk = false;
     let awayFireOk = false;
-    if (justFinished) {
+    if (shouldFireMatchday) {
       // Fire the routine for both teams. Each fan sees the match through their lens.
       for (const [teamId, opponent, isHome] of [
         [homeTeamId, awayTeamId, true],
@@ -419,7 +471,7 @@ async function handleRequest(req: Request): Promise<Response> {
     // will retry both perspectives. The routine post-script must upsert
     // content_items on (team_id, match_id) so the successful side's re-fire
     // is a no-op rather than a duplicate.
-    const bothFiresOk = justFinished && homeFireOk && awayFireOk;
+    const bothFiresOk = shouldFireMatchday && homeFireOk && awayFireOk;
     const { error: upsertErr } = await supabase
       .from("match_status_state")
       .upsert(
@@ -434,6 +486,9 @@ async function handleRequest(req: Request): Promise<Response> {
           kickoff_time: kickoffTime,
           last_checked: new Date().toISOString(),
           briefs_fired: updatedBriefsFired,
+          ...(matchdayCapTrippedThisTick
+            ? { matchday_fire_capped: true }
+            : {}),
           ...(bothFiresOk
             ? { fired_finished_at: new Date().toISOString() }
             : {}),
