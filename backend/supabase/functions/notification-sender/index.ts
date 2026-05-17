@@ -195,17 +195,16 @@ serve(async (req) => {
         // for every token attempt so we see push churn (410/400 deactivations)
         // and per-token success patterns in pipeline_health. See Phase J.
         // Best-effort; logging never breaks the send loop.
+        const APNS_STATUS_TO_ERROR_CLASS: Record<number, string> = {
+          410: "token_expired",
+          400: "bad_token",
+          403: "auth_failure",
+          429: "rate_limited",
+        };
         const errorClass = result.success
           ? "success"
-          : result.status === 410
-            ? "token_expired"
-            : result.status === 400
-              ? "bad_token"
-              : result.status === 403
-                ? "auth_failure"
-                : result.status === 429
-                  ? "rate_limited"
-                  : "apns_error";
+          : (result.status !== undefined && APNS_STATUS_TO_ERROR_CLASS[result.status]) ||
+            "apns_error";
         try {
           await logPipelineEvent(supabase, {
             team_id: teamId,
