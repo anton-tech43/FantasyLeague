@@ -98,7 +98,22 @@ export interface PipelineHealthLog {
   target?: string | null;
   http_status?: number | null;
   response_excerpt?: string | null;
-  error_class?: string | null;
+  // Typed taxonomy — per /simplify Quality #1 + Lesson 64. Typos now
+  // fail at compile time instead of slipping through as raw strings.
+  // The SQL CHECK constraint at the table level stays loose because
+  // this taxonomy may grow (new HTTP-status-derived classes); the TS
+  // narrowing is the primary guard.
+  error_class?:
+    | "success"
+    | "fire_failed"        // match-watcher routine API returned non-2xx
+    | "fire_threw"         // network error reaching routine API
+    | "post_rejected"      // Supabase REST rejected the routine post script
+    | "token_expired"      // APNs 410: device token unregistered
+    | "bad_token"          // APNs 400: malformed device token
+    | "auth_failure"       // APNs 403: JWT auth issue
+    | "rate_limited"       // APNs 429 or routine API 429
+    | "apns_error"         // APNs other non-2xx
+    | null;
 }
 
 export interface TriggerPayload {

@@ -195,13 +195,16 @@ serve(async (req) => {
         // for every token attempt so we see push churn (410/400 deactivations)
         // and per-token success patterns in pipeline_health. See Phase J.
         // Best-effort; logging never breaks the send loop.
-        const APNS_STATUS_TO_ERROR_CLASS: Record<number, string> = {
+        // Narrow type so `errorClass` is one of PipelineHealthLog.error_class's
+        // valid values, not raw string. Catches taxonomy typos at compile time.
+        type ApnsClass = "token_expired" | "bad_token" | "auth_failure" | "rate_limited";
+        const APNS_STATUS_TO_ERROR_CLASS: Record<number, ApnsClass> = {
           410: "token_expired",
           400: "bad_token",
           403: "auth_failure",
           429: "rate_limited",
         };
-        const errorClass = result.success
+        const errorClass: "success" | ApnsClass | "apns_error" = result.success
           ? "success"
           : (result.status !== undefined && APNS_STATUS_TO_ERROR_CLASS[result.status]) ||
             "apns_error";
