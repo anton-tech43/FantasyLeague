@@ -188,7 +188,40 @@ serve(async (req) => {
 
       for (const entry of eligibleTokens) {
         const { token, env } = entry;
+        const tokenPrefix = token.slice(0, 12);
         const result = await sendPushNotification(token, payload, env);
+
+        // Per-attempt apns_send observability row. Captures the APNs status
+        // for every token attempt so we see push churn (410/400 deactivations)
+        // and per-token success patterns in pipeline_health. See Phase J.
+        // Best-effort; logging never breaks the send loop.
+        const errorClass = result.success
+          ? "success"
+          : result.status === 410
+            ? "token_expired"
+            : result.status === 400
+              ? "bad_token"
+              : result.status === 403
+                ? "auth_failure"
+                : result.status === 429
+                  ? "rate_limited"
+                  : "apns_error";
+        try {
+          await logPipelineEvent(supabase, {
+            team_id: teamId,
+            stage: "apns_send",
+            status: result.success ? "success" : "failure",
+            target: `apns:${tokenPrefix}:${item.id}`,
+            http_status: result.status ?? null,
+            error_class: errorClass,
+            message: result.success
+              ? null
+              : `APNs ${result.status}${result.reason ? ` ${result.reason}` : ""}`,
+            content_item_id: item.id,
+          });
+        } catch (e) {
+          console.error("apns_send pipeline_health log failed (non-fatal):", e);
+        }
 
         if (result.success) {
           successCount++;
@@ -212,6 +245,9 @@ serve(async (req) => {
             // Auth broken — CRITICAL, stop all sends. Log + alert dev iPhone
             // via the existing client-error-alert path so we find out within
             // minutes (throttled to once per 30 min by the alert function).
+            // Note: the apns_send row above already captured this 403 with
+            // error_class='auth_failure'; this 'publish' row is the
+            // higher-level CRITICAL signal for the heartbeat to find.
             console.error("CRITICAL: APNs auth failure (403). Check .p8 key configuration.");
             await logPipelineEvent(supabase, {
               team_id: teamId,
@@ -269,12 +305,22 @@ serve(async (req) => {
       }
       await supabase.from("content_items").update(update).eq("id", item.id);
 
+      // Aggregate publish row — status reflects the actual outcome across
+      // tokens. 'success' = all sent, 'partial' = some sent some failed,
+      // 'failure' = none sent. The per-token detail is in the apns_send
+      // rows logged above.
+      const aggregateStatus =
+        failCount === 0
+          ? "success"
+          : successCount === 0
+            ? "failure"
+            : "partial";
       await logPipelineEvent(supabase, {
         team_id: teamId,
         stage: "publish",
-        status: "success",
+        status: aggregateStatus,
         duration_ms: Date.now() - startTime,
-        message: `Published. Push: ${successCount} sent, ${failCount} failed of ${eligibleTokens.length} eligible`,
+        message: `Push: ${successCount} sent, ${failCount} failed of ${eligibleTokens.length} eligible`,
         content_item_id: item.id,
       });
     }

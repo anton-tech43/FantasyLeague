@@ -74,12 +74,31 @@ export interface ReviewNote {
 }
 
 export interface PipelineHealthLog {
-  team_id: string;
-  stage: "fetch" | "generate" | "review" | "safety_review" | "publish";
-  status: "success" | "failure" | "skipped";
-  duration_ms: number;
-  message: string | null;
-  content_item_id: string | null;
+  // team_id is now optional for system-level rows (cron_invoke heartbeat,
+  // global SLA checks). Set when the event is per-team.
+  team_id?: string | null;
+  stage:
+    | "fetch"
+    | "generate"
+    | "review"
+    | "safety_review"
+    | "publish"
+    | "live_brief_fire"   // match-watcher firing gd-live-brief via routine API
+    | "matchday_fire"     // match-watcher firing gd-matchday via routine API
+    | "apns_send"         // notification-sender sending a single APNs push
+    | "routine_post"      // routine post_*.sh POSTing to Supabase REST
+    | "cron_invoke";      // pg_cron invoking an Edge Function
+  // 'partial' for aggregated hop results where some children succeeded and
+  // others failed (e.g., notification-sender batching to multiple tokens).
+  status: "success" | "failure" | "skipped" | "partial";
+  duration_ms?: number;
+  message?: string | null;
+  content_item_id?: string | null;
+  // V2.x observability columns added by migration 038. All optional.
+  target?: string | null;
+  http_status?: number | null;
+  response_excerpt?: string | null;
+  error_class?: string | null;
 }
 
 export interface TriggerPayload {
