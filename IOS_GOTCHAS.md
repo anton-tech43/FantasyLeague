@@ -206,3 +206,69 @@ SELECT vault.update_secret(
 ```
 
 **Sources:** Phase 27.3 (push pipeline dead May 11 → May 17), Lessons 56/57 in IMPLEMENTATION_PROGRESS.md.
+
+---
+
+## 15. Anti-spam's "gap check" compared each item against itself
+
+**Symptom:** User reports "didn't get a push for the West Ham sunday brief" / "didn't get a push for Liverpool" / "didn't get a push for X". Multiple incidents, no obvious pattern. `cron.job_run_details` clean. `net._http_response` clean. `pipeline_health` has a row saying "All tiers blocked by anti-spam rules" but no reason field.
+
+**Cause:** The legacy `_shared/anti-spam.ts` `gap_too_short` check did this:
+
+```typescript
+// Find this team's most recent published_at:
+const { data } = await supabase
+  .from("content_items")
+  .select("published_at")
+  .eq("team_id", teamId)
+  .eq("status", "published")
+  .order("published_at", { ascending: false })
+  .limit(1);
+
+if (data?.[0]?.published_at) {
+  const hoursSinceLast = (Date.now() - new Date(data[0].published_at).getTime()) / (1000 * 60 * 60);
+  if (hoursSinceLast < 3) return { canSend: false, reason: "gap_too_short" };
+}
+```
+
+But the **routine post script inserts the new content_item with `status='published'` BEFORE notification-sender's anti-spam check runs**. The "most recent published_at" query returns the row that just got inserted. `hoursSinceLast` is always ~0. The check always blocks.
+
+The bug only fires for teams that didn't have a recent PRIOR push in the last 24h (which is what "I never get pushes" looks like to the user).
+
+The aggregated log line `"All tiers blocked by anti-spam rules"` made it look like a deliberate rate-limit decision. The individual reason (`gap_too_short` per tier) was buried in `console.log` and never persisted to `pipeline_health`.
+
+**Diagnosis:** When a push doesn't arrive, look at `pipeline_health` for the team_id around the publication time. If you see `stage='publish'` + `status='skipped'` + `message='All tiers blocked by anti-spam rules'`, you've hit this class.
+
+**Fix (committed in `5c9cbf2`, deployed 2026-05-17):** Removed anti-spam entirely. Tier segmentation in `notification-sender` (`minTierForType`) is sufficient volume control. Quiet hours moved to iOS Do Not Disturb on the device.
+
+**Rule for future "compare item against most recent" checks:** When a check needs to compare a new row against "most recent X," it MUST do ONE of:
+- Query BEFORE the insert (re-order the code)
+- Exclude the candidate row's id: `.neq("id", currentId)`
+- Query a different table or a more specific filter (e.g., `pushed_at IS NOT NULL` not just `status='published'` — "last PUSHED" excludes the just-inserted "published but not pushed").
+
+Never trust "ORDER BY ts DESC LIMIT 1" to find anything other than the row you just touched, unless the filter explicitly excludes that row.
+
+**Sources:** May 17 audit during live Everton match. Phase N self-reference bug hunt in the same session found zero OTHER instances of this pattern in the codebase.
+
+---
+
+## 16. `live_match_briefs` are browse-only — they DO NOT push
+
+**Symptom:** During a live match, user expects an HT or 75' push notification. Match-watcher fires gd-live-brief on the trigger. `content_items` has no new row for the user's team. Look in `client_errors` — nothing. Look in `pipeline_health` — nothing relevant. Conclude "silent failure." Then re-conclude "the routine session must have errored." Then waste 30 min diagnosing.
+
+**Cause:** Live briefs and matchday briefs are **two separate pipelines with separate destination tables and separate UX surfaces**:
+
+- `gd-matchday` routine → INSERT INTO `content_items` (type='matchday') → `notification-sender` reads → APNs push to user's device. **Pushes.**
+- `gd-live-brief` routine → INSERT INTO `live_match_briefs` (NOT content_items) → iOS `FeedView` polls `live-brief-current` Edge Function every 60s → renders as `LiveMatchCard` at the top of the feed. **No push by design.**
+
+The rationale: live HT/75' briefs are reactive content for users who are already watching the match (they opened the app). Pushing on top of that would over-notify users who don't need the prompt.
+
+**Rule:** If you ever wonder "why didn't the HT push arrive?" the answer is: it wasn't supposed to. The only in-match push is at FT, via `gd-matchday` → `content_items` → notification-sender.
+
+**Diagnosis:** When investigating "missing push during a live match":
+1. First check `live_match_briefs` for the match — if a row exists with the right `trigger_label`, the live brief pipeline worked correctly. The user sees it as a LiveMatchCard.
+2. The only push to expect during a match is FT — and that's a SEPARATE pipeline (gd-matchday).
+
+**Future tickets:** If we want goal-time pushes (currently flagged as v1.1.1 in `LIVE_BRIEF_PROMPT.md`), they need a new pipeline: either a new content_item type or a separate goal-trigger Edge Function that writes to content_items. The `live_match_briefs` table won't reach the push path.
+
+**Sources:** May 17 confusion during Everton-Sunderland match, captured in real time.

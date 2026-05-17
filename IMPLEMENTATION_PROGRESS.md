@@ -2021,3 +2021,19 @@ Future scenario: someone rotates the Vault key to the wrong format again. Within
 **What happened:** Migrations 015, 016, 017 had inline JWTs. Migration 019 + 020 rewrote them to use Vault. In prod, the final state after all migrations apply is correct. But `supabase db reset` replays in order, so the intermediate states (with inline JWTs) briefly exist. More importantly: the migration files are what future agents READ to understand the system. They saw the inline-JWT pattern in the history, didn't realize it was deprecated, and applied it for new crons.
 
 **Rule:** Annotate any migration whose code pattern is no longer the recommended approach. A header callout naming the superseding migration + linking to the relevant gotcha entry is cheap. Future agents read top-down and won't miss it.
+
+### 62. Five "silent push failures" weren't the same class
+
+**What happened (May 17 2026 audit):** User reported "5 instances of silent push failures over the last few weeks." Each prior fix targeted a different specific bug:
+
+1. **Phase 48** — Legacy JWT disabled, inline-JWT crons started 401-ing
+2. **Phase 27.3** — Vault `cron_service_key` held wrong-shape (sb_secret_*) key, gateway 401-ed every tick
+3. **Phase 28 hardening** — preemptive: 4 migrations + verify-cron-auth.sh + heartbeat CHECK 2 to catch future shape regressions
+4. **today's HT brief confusion** — turned out the live brief landed correctly in `live_match_briefs`; the missing push was by design (live briefs are browse-only — see IOS_GOTCHAS #16)
+5. **the ACTUAL missing pushes today** — anti-spam gap-check compared each item against itself (see IOS_GOTCHAS #15)
+
+I (and the prior agents) kept pattern-matching: "another silent push failure ≈ another instance of the silent-cron-failure class." Built increasingly elaborate observability for the cron→Edge Function hop (Phase 28). But the ACTUAL cause today was downstream of all of that — `notification-sender`'s anti-spam check, which has nothing to do with cron auth.
+
+**Rule:** When investigating "no push arrived," don't assume the failure mode is the same as the last incident. Always trace the full path: pg_cron → Edge Function → routine API → routine session → content_items insert → notification-sender → APNs. Each hop has its own failure modes. The symptom (no push) is identical across all of them; the cause is not.
+
+**Specific anti-pattern caught here:** anti-spam was logging `"Anti-spam blocked for tier N: <reason>"` to `console.log` (Edge Function stderr — not in the DB) AND writing `"All tiers blocked by anti-spam rules"` to `pipeline_health` WITHOUT preserving the reason. The aggregated log surface erased the specific failure mode. **Rule for future logging:** always preserve the specific reason, not just the high-level outcome. If the high-level outcome is "blocked," the reason field is doing 80% of the work.
