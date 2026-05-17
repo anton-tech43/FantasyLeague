@@ -2165,3 +2165,28 @@ The four V2.1 candidates in Lesson 64 were all bounded and shippable in one sess
 **Net result:** WC backend is launch-ready. All pre-existing matchday-fire retry-loop bugs are stopped (current fixtures capped + future stuck fixtures will cap automatically). pipeline_health stays bounded. Type system catches taxonomy typos. Data freshness covers WC squad announcements. The only remaining items before launch are user-side: enable claude.ai Extra Usage as a safety net, onboard the dev iPhone through the V2.0 flow to E2E-test country routing, and the App Store submission flow.
 
 **Out of scope after this sweep:** FA Cup coverage (V2.2), two-Vault-entry split, secondary alert channel (explicitly deferred — chicken-egg risk accepted), live-brief HT retry within window. None block the June 11 launch.
+
+### 66. `/security-review` caught three unauthenticated diagnostic Edge Functions
+
+**What happened (May 17 night-finale):** Ran the bundled `/security-review` skill against the full WC branch diff (130+ files, ~1MB of diff content). One MEDIUM-confidence cluster: `register-dev-device`, `push-probe`, `diagnose-matchday` — three diagnostic Edge Functions that were deployed with `--no-verify-jwt` per Lesson 37 but never added their own auth check, leaving them callable by anyone with the Supabase project URL.
+
+The risk wasn't credential theft — each function's privilege was bounded — but each had a clear PII / abuse vector:
+- `register-dev-device` → harvest the internal client-error push stream (team_id, app_version, OS, error messages)
+- `push-probe` → on-demand push spam to any team's most-recent device
+- `diagnose-matchday` → structural exfiltration: subscriber counts, APNs token prefixes, recent client_errors, HTTP response previews
+
+**Fix:** identical pattern across all three, lifted from Lesson 37's own recommendation: validate `Authorization: Bearer == SUPABASE_SERVICE_ROLE_KEY` at the top of the handler before any DB read/write or external call.
+
+**Rules:**
+
+1. **`--no-verify-jwt` MUST be paired with an in-function auth check.** Lesson 37 said this; we did it for production functions (notification-sender, etc.) but missed it for the diagnostics, because diagnostics felt "internal" — until they didn't. Going forward, treat every deploy of a `--no-verify-jwt` function as triggering an auth-check audit.
+
+2. **"Diagnostic-only" is not a security boundary.** The function is on the public Internet the moment you deploy. Auth must be the first line of the handler.
+
+3. **Run `/security-review` before every meaningful merge to main.** Tonight's review took ~3 minutes of agent time and caught a class of issues that had been live for weeks. Cheap insurance.
+
+4. **When local `.env` digests drift from runtime secrets, document it.** Tonight's `SUPABASE_SERVICE_ROLE_KEY` mismatch (local `c37311…` vs runtime `6c086b…`) meant I couldn't curl-test the legitimate-bearer pass case from this machine. The auth-gate's correctness was established by the two REJECTION cases; the pass case follows from the code. Future-me: if curl-tests can only rejection-test, the gate is still verified — just note it.
+
+**LOW-confidence-7 finding intentionally deferred:** `device_tokens` anon SELECT (migration 030) exposes full 64-char APNs tokens to anyone with the publishable key. Already documented in migration 030's own header as a V1.1 follow-up. Not a launch blocker; will tighten via RLS policy post-WC.
+
+**The night-finale commit:** `6448a22`. Branch state: pushed, ready for launch.

@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-17 (night-final — WC pre-launch hardening: retry caps, retention, indexes, typed union, hourly data-fetcher)
+**Last updated:** 2026-05-17 (night-finale — security review + 3 auth-gate fixes on diagnostic Edge Functions)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
@@ -95,6 +95,25 @@ Fifth and final continuation pass for May 17. Shipped the five backend items fro
 - **Phase 5 — data-fetcher cron daily → hourly (P1)** (mig 045). Was `0 7 * * *` (daily 07:00 UTC). For WC squad announcements landing May 28+, that meant up-to-23-hour latency. Now `0 * * * *` (hourly): worst case 60 min. ~1,900 API-Football calls/day = comfortably under the Pro tier's 7,500/day ceiling. Permanent change — the freshness benefit applies year-round, the WC squad-window was just the immediate motivation.
 
 **Net result:** of the four V2.1 candidates filed in Lesson 64 just an hour ago, three are now shipped (retry cap, retention, indexes, typed union — that's actually all four). The remaining V2.1+ items below are unchanged. System is ready to leave running through the next 25 days while the user focuses on Apple submission.
+
+---
+
+## Verified today (May 17 night-finale — security review + auth gates)
+
+Sixth and final pass for May 17. Ran `/security-review` against the entire branch (130+ files diff). One MEDIUM-confidence cluster surfaced: three diagnostic Edge Functions deployed with `--no-verify-jwt` (per Lesson 37) that never added their own in-function auth check, leaving them callable by anyone with the public Edge Function URL.
+
+- **Three MEDIUM findings, all fixed in commit `6448a22`:**
+    - **`register-dev-device`** — writes to `dev_alert_devices` (the internal diagnostic-push table, distinct from user-facing `device_tokens` which iOS writes directly via REST). Before fix: anyone could register a token to harvest internal client-error pushes containing `team_id`, `app_version`, OS info, and error messages — PII from real users.
+    - **`push-probe`** — synthetic-push tool. Before fix: anyone could POST `{"team_id":"<any>"}` and trigger an APNs push to the most-recent active device for that team. Bounded payload (fixed text) but on-demand push spam.
+    - **`diagnose-matchday`** — structural diagnostic. Before fix: anyone got subscriber counts per team, 12-char APNs token prefixes, last 24h of `client_errors`, and `net._http_response` content previews via the SECURITY DEFINER `get_pipeline_diagnostics` RPC.
+
+    Fix pattern (same on all three): validate `Authorization: Bearer == SUPABASE_SERVICE_ROLE_KEY` at the top of `serve()`, return 401 otherwise. Lesson 37 (key rotation → `--no-verify-jwt`) had already established the pattern; the new diagnostics just never adopted it.
+
+- **Verification:** all three deployed. `curl POST <fn>` returns 401 for anon callers; `curl POST <fn> -H "Authorization: Bearer wrongkey"` returns 401 for arbitrary bearers. The third test (valid bearer → 200) couldn't be exercised from this machine because `backend/.env`'s `SUPABASE_SERVICE_ROLE_KEY` digest (`c37311ea…`) no longer matches the runtime's (`6c086bf1…`) — stale from a prior rotation. The gate's correctness is established by the two rejection cases; the legitimate-pass case follows from the code (`auth === Bearer ${runtime serviceKey}`).
+
+- **One LOW finding (confidence 7) explicitly deferred:** `device_tokens` anon SELECT (migration 030) exposes full APNs tokens to anyone with the publishable key. Documented in the migration header as a launch-time tradeoff with a V1.1 follow-up — not blocking June 11.
+
+- **Cleared by the review (not flagged):** migration 020 Vault accessor (locked search_path + REVOKE PUBLIC), `check_pipeline_heartbeat` Vault token leak path, CHECK 5 STRING_AGG (hardcoded taxonomy, not attacker-controlled), APNs JWT generation (ES256/P-256, no alg confusion), pre-commit-secret-scan.sh and verify-cron-auth.sh, anti-spam.ts stub, iOS APIClient URL construction. No SQL injection, command injection, path traversal, or new hardcoded credentials.
 
 ---
 
