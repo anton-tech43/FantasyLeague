@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-17 (evening — Phase 27 closeout: push pipeline fix + V2.0 cluster B)
+**Last updated:** 2026-05-17 (late evening — Phase 28 closeout + launch-readiness verification + WC routine prompts)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
@@ -8,7 +8,21 @@ A one-page snapshot of where the project is. For the deep history, see [IMPLEMEN
 
 ## TL;DR
 
-GoalDigger is live on TestFlight (V1.3 build). **World Cup 2026 support (V2.0) is feature-complete** — backend + iOS shipped, build green, migration 034 applied. **Push pipeline was completely dead from May 11 → May 17** (Vault had wrong-shape key, gateway 401'd every cron tick); **fixed today, end-to-end verified**. Remaining work for June 11 launch: Cloud Routine WC variants (separate repo, handed off), TestFlight beta, App Store submission by June 4.
+GoalDigger is live on TestFlight (V1.3 build). **World Cup 2026 support (V2.0) is feature-complete and verified** — backend + iOS shipped, build green, cron auth healthy after Phase 28 hardening, WC routine prompts now country-aware. **Push pipeline was completely dead from May 11 → May 17** (Vault had wrong-shape key, gateway 401'd every cron tick); **fixed and end-to-end verified**. Remaining work for June 11 launch: gd-news-wc routine creation (separate cron slot for 48 countries to avoid context blowout), TestFlight beta with V2.0 build, App Store submission by June 4.
+
+---
+
+## Verified today (May 17 evening — launch-readiness closeout)
+
+Five-phase verification pass run autonomously, all gates green except as noted:
+
+- **Phase A — iOS build:** `xcodebuild -scheme GoalDigger -destination 'iPhone 17 Pro,OS=26.4'` returned `** BUILD SUCCEEDED **`. Zero errors, one unrelated `appintentsmetadataprocessor` warning. The 30+ Swift-file V2.0 refactor (FeedContext.country, UnreadTracker signatures, new onboarding flow, WCMigrationSheetView) compiles clean.
+- **Phase B — Cron health:** `scripts/verify-cron-auth.sh` ✅ all 4 checks passed (Vault entry, accessor, JWT shape with `eyJ` prefix len=219, recent HTTP clean). 6h `net._http_response` window shows 340 × 200s + 27 NULL-in-flight rows, zero non-200s. All 3 HTTP-making crons (`match-watcher-1min`, `notification-sweep`, `goaldigger-daily-pipeline`) use the Vault accessor pattern, zero inline JWTs.
+- **Phase C — WC routine prompts (`anton-tech43/goaldigger-routines`):** All 8 prompts gained a `## COMPETITION CONTEXT` block (entity_type lookup snippet + club-vs-country voice rules) plus a `## WC-MODE NOTES` block at the bottom (per-routine handoff bullets verbatim). PROMPT.md also got an explicit workflow sub-step `a-bis` pointing at the lookup. Two commits: `b724f5d` (the 8-prompt structural pass) and `fe6e3c2` (the PROMPT.md sub-step reinforcement). post_*.sh scripts untouched — the entity_type resolution lives in the prompt, not the post wrapper (Claude drives the loop). **Deferred:** `gd-news-wc` routine creation — needed because PROMPT.md hard-codes 20 PL clubs alphabetically per session; 48 WC countries need a separate cron slot to avoid context blowout. Documented in WC-MODE NOTES section of PROMPT.md.
+- **Phase D — Push pipeline smoke test:** `push-probe` for `team_id=arsenal` returned APNs 400 BadDeviceToken — a token-side issue (dev token from May 15 is stale), not a pipeline issue. The fact that we got 400 (not 401/403) means APNs auth is healthy and the Vault JWT is accepted. **Untested at device level:** V2.0 country routing in `notification-sender` (joins on `team_id OR country_id`) — zero `country_id` tokens exist in `device_tokens` yet because no dev device has been onboarded through the new V2.0 flow. Will be exercised by either (a) onboarding a dev device + picking a WC country, or (b) the first real WC content_item once `gd-news-wc` is live.
+- **Phase E — STATUS.md update + commit/push:** this entry.
+
+---
 
 ---
 
@@ -94,11 +108,29 @@ Value-first restructure. New order: `Welcome → Her name → His name → Team 
 
 | Week | Focus | Done by |
 |---|---|---|
-| **Week 2 (May 17-23)** | ✅ DONE ahead of schedule. iOS V2.0 onboarding + backend parameterisation complete. | May 17 |
-| **Week 3 (May 24-30)** | Cloud routine prompt updates (gd-news, gd-matchday, gd-saturday-quiz, gd-sunday-brief, gd-insider, gd-player-dossier, gd-live-brief) for WC variants. See [WC_ROUTINES_HANDOFF.md](./WC_ROUTINES_HANDOFF.md). | May 30 |
-| **Week 4 (May 31 – Jun 6)** | TestFlight beta, smoke testing, marketing assets, App Store submission by **June 4** (7-day Apple review buffer). | Jun 6 |
+| **Week 2 (May 17-23)** | ✅ DONE. iOS V2.0 onboarding + backend parameterisation + Phase 28 JWT hardening + WC routine prompts (8 prompts structural pass + per-routine WC NOTES) complete. | May 17 |
+| **Week 3 (May 24-30)** | Set up **`gd-news-wc`** routine in claude.ai/code/routines pointing at PROMPT.md with a country-loop session (48 countries, separate cron slot ~06:30 UTC). Optional: deeper voice tuning per routine after first live runs surface issues. | May 30 |
+| **Week 4 (May 31 – Jun 6)** | TestFlight beta with V2.0 build, smoke testing (onboard dev device with country selection, confirm country-routing push delivery), marketing assets, App Store submission by **June 4** (7-day Apple review buffer). | Jun 6 |
 | **June 7-10** | Buffer for review fixes / final polish. | Jun 10 |
 | **June 11** | World Cup kicks off. App live. | Jun 11 |
+
+---
+
+## Pre-launch manual checklist (needs the user, can't be automated)
+
+- [ ] Onboard a dev iPhone through the V2.0 flow, pick a WC country, confirm `device_tokens.country_id` populates (psql query). Required to E2E-test V2.0 push routing.
+- [ ] Create `gd-news-wc` cloud routine at claude.ai/code/routines: cron `30 6,12,18,0 * * *` (or similar offset from gd-news), repo `anton-tech43/goaldigger-routines`, prompt `Read PROMPT.md and follow it for the 48 WC countries`. Update the prompt or pass a per-trigger arg to scope the loop to countries only.
+- [ ] TestFlight: archive V2.0 build in Xcode, upload via Transporter or directly, distribute to internal testers.
+- [ ] App Store Connect: V2.0 listing copy update (pitch the WC angle), 6 fresh screenshots showing the WC onboarding flow + country-context empty state ("We're warming up his [country] coverage").
+- [ ] Submit V2.0 to App Store review by **June 4** to leave a 7-day Apple buffer before June 11 kickoff.
+
+---
+
+## Out of scope (V2.1+, flagged in IMPLEMENTATION_PROGRESS)
+
+- **FA Cup coverage** in `match-watcher` — `active_leagues` is `SELECT DISTINCT league_id FROM teams` which only returns `[39, 1]`. League 45 (FA Cup) fixtures involving PL clubs aren't picked up by the watcher. Architectural fix needed (probably add a `competitions` table that teams join into, or hard-list extra league_ids in match-watcher config).
+- **Two-Vault-entry split** — currently one `cron_service_key` Vault row serves both Edge Function invocation (needs JWT shape) AND function-internal PostgREST (accepts either format). Splitting into `bearer_token_for_edge_functions` + `postgrest_service_role` would reduce blast radius on key rotation.
+- **Secondary alert channel** — `check_pipeline_heartbeat()`'s alert push uses the same Vault key it's checking. If that key breaks, the alert push also breaks (chicken-egg). The `client_errors` row is the durable trail today; a SECOND independent push path (e.g. via email, Slack webhook, or a hardcoded fallback token) would close the gap.
 
 ---
 
