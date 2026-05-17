@@ -23,7 +23,22 @@ const API_FOOTBALL_BASE = "https://v3.football.api-sports.io";
 const PL_LEAGUE_ID = 39;
 const SEASON = 2025;
 
-serve(async (_req) => {
+serve(async (req) => {
+  // Diagnostic endpoint — require service-role bearer. Deployed with
+  // --no-verify-jwt (Lesson 37) so the gateway doesn't gate it; without
+  // this check, anyone gets the full structural snapshot including
+  // subscriber counts per team, 12-char APNs token prefixes, last 24h
+  // of client_errors, net._http_response previews via the SECURITY
+  // DEFINER get_pipeline_diagnostics RPC.
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const auth = req.headers.get("authorization") ?? "";
+  if (!serviceKey || auth !== `Bearer ${serviceKey}`) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const supabase = getSupabaseClient();
   const out: Record<string, unknown> = {};
 

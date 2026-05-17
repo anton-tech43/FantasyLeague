@@ -13,6 +13,21 @@ import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { sendPushNotification, buildAPNsPayload } from "../_shared/apns-client.ts";
 
 serve(async (req) => {
+  // Diagnostic endpoint — require service-role bearer. Deployed with
+  // --no-verify-jwt (Lesson 37) so the gateway doesn't gate it; without
+  // this check, anyone can POST {"team_id":"<any>"} and trigger a
+  // synthetic push to the most recent device for that team. Payload is
+  // fixed text, so impersonation impact is bounded, but on-demand push
+  // spam is unauthenticated. Lock to service-role.
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const auth = req.headers.get("authorization") ?? "";
+  if (!serviceKey || auth !== `Bearer ${serviceKey}`) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const supabase = getSupabaseClient();
   let body: { token_prefix?: string; team_id?: string } = {};
   try {

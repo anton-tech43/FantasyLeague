@@ -19,6 +19,21 @@ interface RegisterRequest {
 }
 
 serve(async (req) => {
+  // Diagnostic endpoint — require service-role bearer. The function was
+  // originally deployed with --no-verify-jwt (Lesson 37) so the gateway
+  // doesn't gate it; without this check, anyone can POST an arbitrary
+  // APNs token to dev_alert_devices and start receiving the internal
+  // diagnostic pushes (which include team_id + app_version + OS info
+  // + error messages — PII from real users).
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const auth = req.headers.get("authorization") ?? "";
+  if (!serviceKey || auth !== `Bearer ${serviceKey}`) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
