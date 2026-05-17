@@ -2076,3 +2076,71 @@ The scheduled cron routines were sized for an "average day" but PL Saturdays hav
 2. **Weekend-content vs. weekday-content.** If a routine produces background data (insider snippets, state primers), it doesn't need to compete with match-day fires. Move it to weekdays.
 3. **Per-perspective fires double everything.** If your routine fires once per (home, away) pair, you're using 2× the slots per match. Consider whether the "away perspective" is actually different content or if one shared output works.
 4. **Phase J observability paid off within 5 minutes of deploy.** Before this work, the 429s would have been invisible. Always instrument every pipeline hop with a durable DB row — `console.error` is a black hole.
+
+### 64. The morning-after Phase J playbook (and CHECK 5 was overdue)
+
+**Context:** Phase J P.1–P.5 plus P.4 (routines repo) shipped May 17 evening. Live verification against prod that same night caught three things:
+
+- ✅ P.2 (match-watcher) emits `pipeline_health` rows on every fire — 288 failure rows in 71 min during tonight's 429 storm proved the instrumentation works.
+- ✅ P.3 (notification-sender per-attempt `apns_send`) was deployed but waiting for a fresh push to validate (all today's matchday content_items were created before the deploy, so nothing pushed afterward).
+- 🔴 **Migration 038 silently dropped `safety_review` from the stage CHECK.** content-reviewer/index.ts:257 has been writing rows that fail the CHECK since 038 went out. The surrounding try/catch swallowed the error so no one noticed. Fixed by migration 040 (drop+re-add CHECK with safety_review preserved). Cost: ~6 hours of degraded observability for the safety-review hop.
+- 🔴 **match-watcher retries matchday_fire every minute indefinitely** when the fire returns non-2xx. `fired_finished_at` only gets set on success, so on a 429 it stays NULL and the next tick fires again. Tonight: 4 stuck fixtures × 4 fires/min × 30+ min = 288 wasted API calls. CHECK 4 misses this case (it only fires when `fired_finished_at` IS set), which is why CHECK 5 was added in migration 041.
+- 🟡 P.4 (routine post-scripts in goaldigger-routines) validation deferred to tomorrow ~06:35 UTC after the first scheduled `gd-news` fire. No quota-allowed fire today.
+
+**Lesson:** "Shipped" ≠ "verified in production." Always allocate a verification window the SAME day as deploy, not the next morning. Tonight's verification caught the safety_review bug within 30 minutes of `/simplify` running on the diff.
+
+**Tomorrow's verification SQL (paste-ready):**
+
+```sql
+-- 06:35 UTC — first P.4 evidence after gd-news at 06:30
+SELECT team_id, status, http_status, target, error_class,
+       to_char(created_at AT TIME ZONE 'Europe/Stockholm','HH24:MI') AS local_t
+FROM pipeline_health
+WHERE stage = 'routine_post'
+  AND created_at > NOW() - INTERVAL '15 minutes'
+ORDER BY created_at DESC;
+-- Expected: ~20 success rows (one per PL team).
+
+-- 07:00 UTC — what fired overnight?
+SELECT error_type, message,
+       to_char(created_at AT TIME ZONE 'Europe/Stockholm','HH24:MI') AS local_t
+FROM client_errors
+WHERE created_at > NOW() - INTERVAL '12 hours'
+ORDER BY created_at DESC;
+-- Expected: tonight's persistent_fire_failure row should still be there
+-- (one row, throttled). Any matchday_silent_failure rows aged out the
+-- moment fired_finished_at fell outside the 1h window.
+
+-- After lunch — every-stage coverage check
+SELECT stage, status, COUNT(*) AS rows,
+       MIN(to_char(created_at AT TIME ZONE 'Europe/Stockholm','MM-DD HH24:MI')) AS first,
+       MAX(to_char(created_at AT TIME ZONE 'Europe/Stockholm','MM-DD HH24:MI')) AS last
+FROM pipeline_health
+WHERE created_at > NOW() - INTERVAL '24 hours'
+GROUP BY stage, status
+ORDER BY stage, status;
+-- Expected (in some order): rows for fetch, generate, review, safety_review,
+-- live_brief_fire, matchday_fire, routine_post, apns_send, publish. Every
+-- stage that ran in the last day should be visible.
+
+-- Manual heartbeat smoke test
+SELECT check_pipeline_heartbeat();
+-- Should return void. Then re-query client_errors for new rows.
+```
+
+**Escalation rules:**
+
+| Symptom | Likely cause | Next step |
+|---|---|---|
+| `routine_post` rows zero at 06:35 UTC | Routine cron disabled, or 06:30 fire didn't complete | Check claude.ai/code/routines for last run status |
+| `routine_post` rows < ~20 | Some routine sessions crashed without reaching post script | Open the routine session log in claude.ai UI |
+| `apns_send` rows show 410 spike | Stale tokens in `device_tokens` | Run sweep manually; check `is_active=false` count |
+| `persistent_fire_failure` still firing | match-watcher retry loop is still hot | Investigate: quota reset? Enable Extra Usage. |
+| `matchday_silent_failure` only | Fire succeeded, routine session crashed | Open routine session log |
+| `safety_review` stage rows zero in last 24h | content-reviewer never ran, OR the 038 fix didn't apply | Verify CHECK constraint via `pg_get_constraintdef` |
+
+**V2.1 candidates filed from tonight:**
+- **Match-watcher retry-loop fix.** Track attempt count + give up after N attempts or T minutes since FT. Today's behavior wastes API calls and pollutes pipeline_health.
+- **pipeline_health retention sweep.** At ~5 rows/min baseline, this table grows ~2.6M rows/year. Add a `DELETE FROM pipeline_health WHERE created_at < NOW() - INTERVAL '90 days'` cron.
+- **Index on `match_status_state.fired_finished_at`.** CHECK 4 does a full scan every 30 min. Tiny table today; will matter when WC season adds 48 countries × fixture rows.
+- **`error_class` as a typed union in `_shared/types.ts`.** Currently `string | null` — typos slip through. Convert to `"success" | "fire_failed" | "fire_threw" | ...` so the TS compiler catches divergence.
