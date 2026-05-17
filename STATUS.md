@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-17 (night — anti-spam removal + three-tier quota fit + Phase J pipeline observability)
+**Last updated:** 2026-05-17 (late night — Phase J full closeout: live verification, /simplify fixes, CHECK 5, Lesson 64 playbook)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
@@ -59,6 +59,24 @@ Third continuation pass. Three streams landed end-to-end. The user reported "5th
     - Verification of P.4 deferred to tomorrow ~06:35 UTC (after the first scheduled `gd-news` fire at 06:30 UTC). Today's quota is 25/25 so a manual trigger would 429.
 
 After this, the only un-instrumented hop in the pipeline is the routine session's internal execution (Anthropic-side, not in our DB). The contract is: if a routine fires and produces nothing, CHECK 3 or CHECK 4 surfaces it within 30 min; if it fires and the post-script POSTs but Supabase rejects, the `routine_post` row captures it; if APNs rejects, `apns_send` captures it. The next "I didn't get a push" investigation starts with a SQL query, not a routine-session-log dig.
+
+---
+
+## Verified today (May 17 late night — Phase J closeout: live verify + simplify + CHECK 5)
+
+Fourth continuation pass. Validated the night's Phase J work in production immediately rather than waiting for tomorrow, then ran a 3-reviewer audit (`/simplify`) and shipped two follow-up migrations.
+
+- **Live verification against prod** (read-only psql against `pipeline_health` + `client_errors` + `match_status_state`). Confirmed P.2 (match-watcher fires) emits rows correctly — 288 `matchday_fire` failure rows in 71 min during a 429 storm on 4 stuck PL fixtures (Brentford-Crystal Palace + Leeds-Brighton, 2 perspectives each). Confirmed P.3 (notification-sender) is deployed at v32 (19:04 UTC) but waiting for the next fresh push to validate. Confirmed migration 039 applied (CHECK 3+4 in `check_pipeline_heartbeat` body). Confirmed `match-watcher` retries `matchday_fire` every minute indefinitely when fire returns non-2xx — `fired_finished_at` only gets set on success, so on 429 it stays NULL and the next tick re-fires. **Filed as V2.1 ticket** (Lesson 64); resets when quota does at 22:00 UTC = 00:00 Stockholm.
+
+- **`/simplify` audit shipped two fixes** (commit `5fe7f61`):
+    - **Migration 040** (`040_pipeline_health_safety_review_stage.sql`): migration 038 dropped `safety_review` from the stage CHECK inadvertently when expanding the set. `content-reviewer/index.ts:257` writes `stage='safety_review'` on every safety hop — has been silently CHECK-failing since 038 deployed, surrounded by try/catch so no one noticed. Fixed by drop+re-add of the constraint with `safety_review` restored. Verified live.
+    - **notification-sender errorClass refactor**: 5-level nested ternary (`success → 410 → 400 → 403 → 429 → default`) replaced with a `APNS_STATUS_TO_ERROR_CLASS: Record<number, string>` lookup. Same behaviour, easier to extend. Deployed.
+
+- **Migration 041 — CHECK 5: persistent fire failures** (commit `293c70e`). CHECK 3+4 watch the OUTPUT (did the artifact land?). CHECK 5 watches the FIRE (is match-watcher reaching the routine API?). Query: any fire `target` in the last 30 min with ≥1 failure AND zero successes → alert. Surfaces `http_status` + `error_class` in the alert message so the diagnostic is in the push itself. Throttled 1/hr like CHECK 1-4. **Validated live on first manual run** — caught the 4 stuck PL fixtures from tonight (`4 match-watcher fire target(s) failing repeatedly in last 30 min (http codes: 429, error classes: fire_failed)`), pushed a `persistent_fire_failure` alert via the existing `client-error-alert` Edge Function. Closes the gap between CHECK 4 (only fires when `fired_finished_at` is set) and the fire-side failure class (where `fired_finished_at` never gets set).
+
+- **Lesson 64 — morning-after Phase J playbook** (commit `a6c4667`). Four paste-ready SQL queries for tomorrow's verification (06:35 UTC routine_post evidence; 07:00 UTC client_errors; mid-day per-stage coverage; manual heartbeat smoke). Symptom→cause→next-step escalation table. **V2.1 candidates filed:** match-watcher retry-loop fix, pipeline_health 90-day retention sweep, `match_status_state.fired_finished_at` index, `error_class` as typed union in `_shared/types.ts`.
+
+**Net result of tonight's late-night closeout:** Phase J went from "shipped P.1–P.5" to "shipped + verified in production + audited + extended with CHECK 5 + documented for tomorrow" in one continuation pass. Found two latent bugs along the way (the `safety_review` CHECK regression in 038 + the match-watcher retry loop) that the new observability surfaced within minutes of deploy.
 
 ---
 
