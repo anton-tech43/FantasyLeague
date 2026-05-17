@@ -36,17 +36,20 @@
         {
           "name": "Bukayo Saka",
           "position": "Winger",
-          "one_liner": "Arsenal's golden boy. He's 24 and already their most important player. If [his name] could only keep one player, it'd be him."
+          "one_liner": "Arsenal's golden boy. He's 24 and already their most important player. If [his name] could only keep one player, it'd be him.",
+          "photo_url": "https://media.api-sports.io/football/players/1460.png"
         },
         {
           "name": "William Saliba",
           "position": "Centre-back",
-          "one_liner": "The reason Arsenal don't concede many goals. He's French, he's calm under pressure, and he's basically a brick wall in human form."
+          "one_liner": "The reason Arsenal don't concede many goals. He's French, he's calm under pressure, and he's basically a brick wall in human form.",
+          "photo_url": "https://media.api-sports.io/football/players/2255.png"
         },
         {
           "name": "Declan Rice",
           "position": "Midfielder",
-          "one_liner": "Cost £105 million. Does all the boring stuff in midfield that wins games. Think of him as the reliable colleague who keeps the whole office running."
+          "one_liner": "Cost £105 million. Does all the boring stuff in midfield that wins games. Think of him as the reliable colleague who keeps the whole office running.",
+          "photo_url": "https://media.api-sports.io/football/players/152985.png"
         }
       ],
       "talking_point": "Which player does he talk about the most? Saka?"

@@ -92,6 +92,12 @@ struct ContextSwitcherView: View {
                 .font(.jakarta(10, weight: .bold))
                 .foregroundColor(isSelected ? .hotRose : .warmWhite.opacity(0.6))
                 .frame(width: 16, height: 16)
+        case .country(let country):
+            // National team — same initials pattern. Future: render flag crest.
+            Text(String(country.shortName.prefix(2)).uppercased())
+                .font(.jakarta(10, weight: .bold))
+                .foregroundColor(isSelected ? .hotRose : .warmWhite.opacity(0.6))
+                .frame(width: 16, height: 16)
         case .everyoneTalking:
             Image(systemName: "soccerball")
                 .font(.system(size: 14))
@@ -104,7 +110,7 @@ struct ContextSwitcherView: View {
     private func unreadBadge(for context: FeedContext) -> some View {
         let items: [ContentItem] = {
             switch context {
-            case .team: return teamItems
+            case .team, .country: return teamItems
             case .everyoneTalking: return everyoneItems
             }
         }()

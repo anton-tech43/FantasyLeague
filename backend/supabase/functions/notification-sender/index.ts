@@ -81,13 +81,22 @@ serve(async (req) => {
       const category = getCategoryFromType(item.type, item.emotional_context);
       const isResult = category === "RESULT";
 
-      // Get all active device tokens for this team with their tiers + APNs env.
-      // The env tells us whether to push to sandbox (DEBUG iOS builds) or production
-      // (App Store / TestFlight builds) — Apple's two endpoints aren't interchangeable.
+      // Get all active device tokens for this team OR country with their
+      // tiers + APNs env. The env tells us whether to push to sandbox
+      // (DEBUG iOS builds) or production (App Store / TestFlight) — Apple's
+      // two endpoints aren't interchangeable.
+      //
+      // V2.0: content_items.team_id is a polymorphic slug — either a PL club
+      // (e.g. "arsenal") or a WC country ("england"). Match either column
+      // so:
+      //   - PL content reaches PL subscribers via team_id=team_id
+      //   - WC content reaches WC subscribers via country_id=team_id
+      //   - A user who follows both their club and country (`device_tokens`
+      //     row has BOTH columns set) gets both kinds of pushes
       const { data: tokens } = await supabase
         .from("device_tokens")
         .select("apns_token, tier, apns_environment")
-        .eq("team_id", teamId)
+        .or(`team_id.eq.${teamId},country_id.eq.${teamId}`)
         .eq("is_active", true);
 
       if (!tokens || tokens.length === 0) {

@@ -2,15 +2,59 @@ import SwiftUI
 
 struct OnboardingFlow: View {
     @Environment(AppState.self) var appState
-    @State private var step: OnboardingStep = .herName // TEMP: skip welcome for testing
+    @State private var step: OnboardingStep = .welcome
 
+    /// Onboarding step order (V2.0 — World Cup first restructure).
+    ///
+    /// Marketing in May/June 2026 pivots to the World Cup. A meaningful
+    /// share of new users will be WC-curious people who don't follow the
+    /// Premier League at all. The flow lands on country selection as the
+    /// primary anchor and offers PL as optional after.
+    ///
+    /// 0.  Welcome
+    /// 1.  Her name
+    /// 2.  His name
+    /// 3.  Country selection   — primary entity (WC 2026 national team)
+    /// 4.  Optional PL team    — skippable
+    /// 5.  Tier selection      — dedication level
+    /// 6.  Notification ask    — system permission #1
+    /// 7.  Calendar opt-in     — system permission #2
+    /// 8.  Meet team           — entityId from country (or club if no country)
+    /// 9.  Meet the boss       — manager card
+    /// 10. How it works        — closing pitch (scenarios)
+    /// 11. (completion)        — MainTabView
     enum OnboardingStep: Int, CaseIterable {
         case welcome = 0
-        case herName = 1
-        case hisName = 2
-        case teamSelection = 3
-        case tierSelection = 4
-        case notificationPrompt = 5
+        case herName
+        case hisName
+        case countrySelection
+        case plTeamOptional
+        case tierSelection
+        case notificationPrompt
+        case calendar
+        case meetTeam
+        case meetManager
+        case howItWorks
+    }
+
+    /// Whichever entity the user actually has — country first, then team.
+    /// Used by MeetTeamView + MeetManagerView to know which team_page to
+    /// load. The fallback "arsenal" only fires if the user reached MeetTeam
+    /// with neither set, which the flow prevents (country is mandatory at
+    /// step 3); it's a defensive default to avoid crashes.
+    private var meetEntityId: String {
+        if let id = appState.selectedCountry?.rawValue ?? appState.selectedTeam?.rawValue {
+            return id
+        }
+        #if DEBUG
+        // Reaching this branch means OnboardingFlow advanced past
+        // CountrySelectionView without a country picked AND past
+        // OptionalPLTeamView without a team — flow ordering is broken.
+        // Crash loud in DEBUG; production sessions get the arsenal fallback
+        // to avoid a crash they can't recover from.
+        assertionFailure("MeetTeam reached without country or team selected — flow ordering broken")
+        #endif
+        return "arsenal"
     }
 
     var body: some View {
@@ -56,23 +100,85 @@ struct OnboardingFlow: View {
                 case .herName:
                     HerNameView { step = .hisName }
                 case .hisName:
-                    HisNameView { step = .teamSelection }
-                case .teamSelection:
-                    TeamSelectionView { step = .tierSelection }
+                    HisNameView { step = .countrySelection }
+                case .countrySelection:
+                    CountrySelectionView { step = .plTeamOptional }
+                case .plTeamOptional:
+                    OptionalPLTeamView { step = .tierSelection }
                 case .tierSelection:
                     TierSelectionView { step = .notificationPrompt }
                 case .notificationPrompt:
-                    NotificationPromptView {
-                        // Mark all contexts as viewed so first feed open has zero false unread
-                        if let team = appState.selectedTeam {
-                            UnreadTracker.shared.markViewed(.team(team))
-                        }
-                        UnreadTracker.shared.markViewed(.everyoneTalking)
-                        appState.hasCompletedOnboarding = true
-                    }
+                    NotificationPromptView { step = .calendar }
+                case .calendar:
+                    CalendarOptInView { step = .meetTeam }
+                case .meetTeam:
+                    MeetTeamView(entityId: meetEntityId) { step = .meetManager }
+                case .meetManager:
+                    MeetManagerView(entityId: meetEntityId) { step = .howItWorks }
+                case .howItWorks:
+                    HowItWorksView { completeOnboarding() }
                 }
             }
         }
         .animation(.easeInOut(duration: 0.3), value: step)
+    }
+
+    /// Final completion: marks contexts as viewed, registers the APNs token
+    /// with the (now-final) team + country + tier, and flips the onboarding
+    /// flag.
+    ///
+    /// Token registration is deferred until here (rather than the
+    /// NotificationPromptView step) because we want a single canonical POST
+    /// after all the user's choices are locked in.
+    private func completeOnboarding() {
+        // Mark all contexts the user might land on as viewed so unread badges
+        // don't pop with false positives on first feed render.
+        if let country = appState.selectedCountry {
+            UnreadTracker.shared.markViewed(.country(country))
+        }
+        if let team = appState.selectedTeam {
+            UnreadTracker.shared.markViewed(.team(team))
+        }
+        UnreadTracker.shared.markViewed(.everyoneTalking)
+
+        // V1.3: MeetTeam + MeetManager cards now cover what SeasonPrimer used
+        // to show (table verdict, form summary, manager) — primer ends up
+        // saying things the user already read. Mark it seen so RootView skips
+        // straight to MainTabView.
+        appState.hasSeenSeasonPrimer = true
+
+        // V2.0: register the token with whichever combination of entity IDs
+        // the user has. Both can be present (PL + WC), country-only (WC-only
+        // audience), or team-only (shouldn't happen in V2.0 flow but kept
+        // as defensive fallback).
+        if let token = UserDefaults.standard.string(forKey: "apnsToken") {
+            let teamId = appState.selectedTeam?.rawValue
+            let countryId = appState.selectedCountry?.rawValue
+            let tier = appState.selectedTier
+            if teamId != nil || countryId != nil {
+                Task {
+                    do {
+                        try await APIClient.shared.registerToken(
+                            token,
+                            teamId: teamId,
+                            countryId: countryId,
+                            tier: tier
+                        )
+                        await MainActor.run {
+                            UserDefaults.standard.set(true, forKey: "apnsTokenRegistered")
+                        }
+                    } catch {
+                        // Leave apnsTokenRegistered unset;
+                        // NotificationService.handleTokenRegistration will
+                        // retry on next launch via the AppDelegate hook.
+                        #if DEBUG
+                        print("⚠️ completeOnboarding registerToken failed: \(error)")
+                        #endif
+                    }
+                }
+            }
+        }
+
+        appState.hasCompletedOnboarding = true
     }
 }

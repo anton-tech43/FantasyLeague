@@ -64,13 +64,11 @@ struct NotificationPromptView: View {
     private func finish() {
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         appState.notificationPermissionRequested = true
-        // Register token with server if we have one
-        if let token = UserDefaults.standard.string(forKey: "apnsToken"),
-           let team = appState.selectedTeam {
-            Task {
-                try? await APIClient.shared.registerToken(token, teamId: team.rawValue, tier: appState.selectedTier)
-            }
-        }
+        // Token registration happens at the END of onboarding (in OnboardingFlow's
+        // completion handler) so we register with the actual tier the user picks.
+        // V1.1 registered here with `appState.selectedTier`, which was still the
+        // default (2) because tier selection came AFTER this step in the old order.
+        // The new flow puts notifications BEFORE tier — keep registration deferred.
         onComplete()
     }
 }

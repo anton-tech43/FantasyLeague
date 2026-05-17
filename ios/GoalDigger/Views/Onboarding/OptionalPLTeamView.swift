@@ -1,6 +1,16 @@
 import SwiftUI
 
-struct TeamSelectionView: View {
+/// V2.0 World Cup onboarding — step 5. Asks if he ALSO follows a Premier
+/// League team after the WC country is set. Skippable.
+///
+/// Many WC users won't follow PL at all (especially non-UK audiences arriving
+/// via WC marketing) and shouldn't be forced through a team picker for a
+/// league they don't watch. Equally, existing PL fans should be able to
+/// keep their PL signal alongside their national team.
+///
+/// Skip path → appState.selectedTeam = nil. Add path → sets selectedTeam.
+/// Either way the flow advances to tier selection.
+struct OptionalPLTeamView: View {
     @Environment(AppState.self) var appState
     @State private var selected: Team?
     @State private var searchText = ""
@@ -16,6 +26,10 @@ struct TeamSelectionView: View {
             .sorted { $0.displayName < $1.displayName }
     }
 
+    private var countryShortName: String {
+        appState.selectedCountry?.shortName ?? "World Cup"
+    }
+
     var body: some View {
         VStack(spacing: 16) {
             Image(systemName: "shield")
@@ -23,15 +37,16 @@ struct TeamSelectionView: View {
                 .foregroundColor(.hotRose.opacity(0.6))
                 .padding(.top, 8)
 
-            Text("Who does \(appState.hisName.isEmpty ? "he" : appState.hisName) support?")
+            Text("Does \(appState.hisName.isEmpty ? "he" : appState.hisName) follow a Premier League team too?")
                 .font(.onboardingTitle)
                 .foregroundColor(.textOnDark)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Layout.screenPadding)
 
-            Text("His team. Your new obsession.")
+            Text("Skip if not. We'll focus on his \(countryShortName) squad.")
                 .font(.onboardingBody)
                 .foregroundColor(.textOnDark.opacity(0.8))
+                .multilineTextAlignment(.center)
                 .padding(.horizontal, Layout.screenPadding)
 
             // Search bar
@@ -53,7 +68,6 @@ struct TeamSelectionView: View {
             )
             .padding(.horizontal, Layout.screenPadding)
 
-            // Team list
             ScrollView {
                 LazyVStack(spacing: Layout.cardSpacing) {
                     ForEach(filteredTeams) { team in
@@ -97,15 +111,24 @@ struct TeamSelectionView: View {
                 .padding(.bottom, 8)
             }
 
-            if let team = selected {
-                Button("Continue") {
-                    appState.selectedTeam = team
+            VStack(spacing: 12) {
+                Button(selected == nil ? "Pick a team" : "Add team") {
+                    if let team = selected {
+                        appState.selectedTeam = team
+                        onContinue()
+                    }
+                }
+                .buttonStyle(PrimaryButtonStyle(isEnabled: selected != nil))
+                .disabled(selected == nil)
+
+                Button("Skip, World Cup only") {
+                    appState.selectedTeam = nil
                     onContinue()
                 }
-                .buttonStyle(PrimaryButtonStyle())
-                .padding(.horizontal, Layout.screenPadding)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .font(.onboardingBody)
+                .foregroundColor(.textOnDark.opacity(0.6))
             }
+            .padding(.horizontal, Layout.screenPadding)
 
             Spacer().frame(height: 16)
         }

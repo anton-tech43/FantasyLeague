@@ -198,10 +198,18 @@ class APIClient {
 
     // MARK: - Device Token
 
-    func registerToken(_ token: String, teamId: String, tier: Int = 2) async throws {
+    /// Register or update a device token. V2.0 supports two optional entity
+    /// IDs: `teamId` (PL club) and `countryId` (WC national team). At least
+    /// one must be non-nil — caller responsibility. The POST body only
+    /// includes the keys that are set, so the merge-duplicates upsert only
+    /// updates columns we explicitly send (a country-only re-registration
+    /// for a user who previously had a team doesn't blank out their team).
+    func registerToken(_ token: String,
+                       teamId: String?,
+                       countryId: String? = nil,
+                       tier: Int = 2) async throws {
         let url = try requireBaseURL().appendingPathComponent("device_tokens")
-        let body: [String: Any] = [
-            "team_id": teamId,
+        var body: [String: Any] = [
             "apns_token": token,
             "tier": tier,
             // Tells the server which APNs endpoint to use for this token.
@@ -210,6 +218,8 @@ class APIClient {
             // (which rejects them with 400, deactivating the token → no pushes).
             "apns_environment": APIClient.apnsEnvironment,
         ]
+        if let teamId { body["team_id"] = teamId }
+        if let countryId { body["country_id"] = countryId }
         let bodyData = try JSONSerialization.data(withJSONObject: body)
         let request = makeRequest(
             url: url,
@@ -283,7 +293,7 @@ class APIClient {
     func fetchTeamSeasonState(teamId: String) async throws -> TeamSeasonState? {
         let url = try buildURL(path: "team_season_state", queryItems: [
             URLQueryItem(name: "team_id", value: "eq.\(teamId)"),
-            URLQueryItem(name: "select", value: "team_id,phase,state_line,feeling_line,next_fixture")
+            URLQueryItem(name: "select", value: "team_id,phase,state_line,feeling_line,next_fixture,next_fixtures")
         ])
         var request = makeRequest(url: url)
         // Short timeout: the primer is on the user's first-launch critical path.

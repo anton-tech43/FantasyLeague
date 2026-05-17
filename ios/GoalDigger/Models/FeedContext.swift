@@ -1,15 +1,19 @@
 import Foundation
 
-/// Represents which feed context is active — either a specific team or the cross-team "Everyone's Talking About" feed.
+/// Represents which feed context is active — either a specific team
+/// (PL club), a country (WC national team), or the cross-team
+/// "Everyone's Talking About" feed.
 enum FeedContext: Equatable, Hashable {
     case team(Team)
+    case country(Country)
     case everyoneTalking
-    // Future: .nation(Nation) for World Cup mode
 
     var displayName: String {
         switch self {
         case .team(let team):
             return team.shortName
+        case .country(let country):
+            return country.shortName
         case .everyoneTalking:
             return "Football"
         }
@@ -20,6 +24,8 @@ enum FeedContext: Equatable, Hashable {
         switch self {
         case .team(let team):
             return "context_team_\(team.rawValue)"
+        case .country(let country):
+            return "context_country_\(country.rawValue)"
         case .everyoneTalking:
             return "context_everyone"
         }
@@ -28,8 +34,8 @@ enum FeedContext: Equatable, Hashable {
     /// SF Symbol name for the context pill icon
     var iconName: String {
         switch self {
-        case .team:
-            return "" // Uses team badge image instead
+        case .team, .country:
+            return "" // Uses crest image instead
         case .everyoneTalking:
             return "soccerball"
         }
@@ -40,6 +46,8 @@ enum FeedContext: Equatable, Hashable {
         switch self {
         case .team(let team):
             return team.shortName
+        case .country(let country):
+            return country.shortName
         case .everyoneTalking:
             return "Everyone's talking about"
         }

@@ -15,8 +15,14 @@ struct GoalDiggerApp: App {
                 .preferredColorScheme(.dark)
                 .onChange(of: scenePhase) { oldPhase, newPhase in
                     if oldPhase == .background && newPhase == .active {
-                        // Reset to team context and notify FeedView to reset scroll positions
-                        if let team = appState.selectedTeam {
+                        // Reset to the user's anchor entity on resume. V2.0:
+                        // country takes precedence over team (matches AppState.init
+                        // priority — WC is the primary anchor when both are set).
+                        // Without this, a V2.0 country-only user returning from
+                        // background lands on .team(nil) which renders nothing.
+                        if let country = appState.selectedCountry {
+                            appState.activeContext = .country(country)
+                        } else if let team = appState.selectedTeam {
                             appState.activeContext = .team(team)
                         }
                         appState.isContextSwitcherOpen = false
@@ -46,6 +52,15 @@ struct RootView: View {
     @Environment(AppState.self) var appState
     @Environment(\.modelContext) private var modelContext
 
+    /// V2.0 migration prompt — fires once for V1.x users who finished
+    /// onboarding before V2.0 and haven't picked a country yet. Skipped
+    /// for new V2.0 users (they pick country during onboarding).
+    private var shouldShowWCPrompt: Bool {
+        appState.hasCompletedOnboarding
+          && appState.selectedCountry == nil
+          && !appState.hasSeenWCPrompt
+    }
+
     // Paid app on App Store (£4.99) — no in-app paywall. Purchase is enforced at the
     // storefront before download. PurchaseManager + PaywallView are kept in the
     // codebase but unreferenced; can be re-wired if we add an IAP later
@@ -72,6 +87,22 @@ struct RootView: View {
                 )
             } else {
                 MainTabView()
+                    .sheet(isPresented: Binding(
+                        get: { shouldShowWCPrompt },
+                        set: { newValue in
+                            // Belt-and-braces: if SwiftUI ever flips the
+                            // binding to false via a system-initiated
+                            // dismiss (swipe-down, hardware back) we MUST
+                            // flip hasSeenWCPrompt too, otherwise the
+                            // sheet bounces right back on the next render.
+                            // The view itself sets the flag in both Skip
+                            // and Continue branches before calling dismiss(),
+                            // but this handles the path where neither runs.
+                            if !newValue { appState.hasSeenWCPrompt = true }
+                        }
+                    )) {
+                        WCMigrationSheetView()
+                    }
             }
         }
         .task(id: "cache-schema-purge") {
@@ -88,6 +119,13 @@ struct MainTabView: View {
     @Environment(AppState.self) var appState
     @State private var selectedTab = 0
     @State private var feedPath = NavigationPath()
+
+    /// V2.0: The "His Team" tab renders whichever entity the user has —
+    /// country preferred (WC primary), team as fallback. The teamId string
+    /// keys into the same `team_pages` table either way.
+    private var teamPageEntityId: String? {
+        appState.selectedCountry?.rawValue ?? appState.selectedTeam?.rawValue
+    }
 
     init() {
         let deepMauve = UIColor(red: 45/255, green: 27/255, blue: 46/255, alpha: 1)
@@ -142,7 +180,11 @@ struct MainTabView: View {
                     }
                     .navigationDestination(for: String.self) { destination in
                         if destination == "playerCards",
-                           let teamId = appState.selectedTeam?.rawValue {
+                           let teamId = teamPageEntityId {
+                            // V2.0: WC-only users can navigate here too — use
+                            // teamPageEntityId (country-first fallback) so the
+                            // PlayerCardsListView gets a valid entityId. The
+                            // view itself handles "no rows" empty state.
                             PlayerCardsListView(teamId: teamId)
                         }
                     }
@@ -152,9 +194,11 @@ struct MainTabView: View {
             }
             .tag(0)
 
-            // Tab 2: His Team
+            // Tab 2: His Team — V2.0: prefer country (WC primary) over team
+            // (PL). If neither is set, render an empty NavigationStack
+            // (shouldn't happen in normal flow but defensive).
             NavigationStack {
-                if let teamId = appState.selectedTeam?.rawValue {
+                if let teamId = teamPageEntityId {
                     TeamPageView(teamId: teamId)
                 }
             }

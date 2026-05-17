@@ -7,6 +7,7 @@ import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 import { triggerFunction } from "../_shared/trigger.ts";
 import { sanitizeText, wrapExternalData } from "../_shared/input-sanitizer.ts";
+import { seasonForLeague } from "../_shared/league-helpers.ts";
 
 // RSS feed sources
 const RSS_FEEDS = [
@@ -143,11 +144,29 @@ async function fetchAPIFootball(
     "x-rapidapi-host": "v3.football.api-sports.io",
   };
 
+  // V2.0: parameterise league_id + season per team.
+  // PL teams (league_id=39) use season=2025 (the 2025-26 season).
+  // WC countries (league_id=1) use season=2026 (the 2026 tournament).
+  // Any new league added in future just slots into seasonForLeague().
+  //
+  // Skip teams with no league_id — pre-V2.0 there was a `?? 39` fallback
+  // that silently fetched PL data for any country that lost its league_id.
+  // Better to fail loud + log so any future regression is observable.
+  if (!team.league_id) {
+    console.warn(`data-fetcher: skipping ${team.id} — no league_id`);
+    return results;
+  }
+  const leagueId = team.league_id;
+  const season = seasonForLeague(leagueId);
+
   const endpoints = [
-    { name: "fixtures_next", path: `/fixtures?team=${team.api_football_id}&next=5` },
+    // next=10 — gives team-season-state-generator enough fixtures to populate
+    // the `next_fixtures` array consumed by the onboarding CalendarOptInView
+    // (one-tap calendar sync). Pre-V1.2 this was next=5.
+    { name: "fixtures_next", path: `/fixtures?team=${team.api_football_id}&next=10` },
     { name: "fixtures_last", path: `/fixtures?team=${team.api_football_id}&last=3` },
-    { name: "injuries", path: `/injuries?team=${team.api_football_id}&season=2025` },
-    { name: "standings", path: `/standings?league=39&season=2025` },
+    { name: "injuries", path: `/injuries?team=${team.api_football_id}&season=${season}` },
+    { name: "standings", path: `/standings?league=${leagueId}&season=${season}` },
     { name: "transfers", path: `/transfers?team=${team.api_football_id}` },
     { name: "squad", path: `/players/squads?team=${team.api_football_id}` },
     // Coaches: API-Football's authoritative manager source. Added 2026-05-11
@@ -192,6 +211,13 @@ async function computeTeamContext(
   team: Team,
   standingsData: unknown
 ): Promise<void> {
+  // Concepts below — title_race, cl_spot, relegation — are PL-league-table
+  // semantics. WC group stage standings have 4 teams per group and a
+  // completely different shape (group_position, advancing_to_knockouts,
+  // eliminated). Skip for countries; team-season-state-generator handles
+  // their context separately.
+  if (team.entity_type === "country") return;
+
   const flags: string[] = [];
 
   try {
@@ -250,10 +276,23 @@ serve(async (req) => {
   const supabase = getSupabaseClient();
 
   try {
-    // Get all teams
-    const { data: teams, error: teamError } = await supabase
-      .from("teams")
-      .select("*");
+    // Optional per-team filter. Lets us fan out per-team in parallel from the
+    // outside (curl × N concurrent invocations) when the 60-second Edge
+    // Function CPU cap stops the full-batch run from completing all 70+ teams.
+    // Empty body / missing field falls through to the "all teams" path.
+    let payload: { team_id?: string } = {};
+    try {
+      payload = await req.json();
+    } catch {
+      /* no body or invalid JSON — proceed in all-teams mode */
+    }
+
+    // Get teams
+    let query = supabase.from("teams").select("*");
+    if (payload.team_id) {
+      query = query.eq("id", payload.team_id);
+    }
+    const { data: teams, error: teamError } = await query;
 
     if (teamError || !teams) {
       throw new Error(`Failed to fetch teams: ${teamError?.message}`);

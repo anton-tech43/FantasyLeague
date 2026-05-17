@@ -21,6 +21,19 @@ class AppState {
             }
         }
     }
+    /// V2.0 World Cup support — the country he supports at WC 2026. New
+    /// users land on this picker first (WC is the primary onboarding
+    /// context); selectedTeam (PL club) is then offered as optional.
+    /// Both can be set simultaneously for fans who follow both.
+    var selectedCountry: Country? {
+        didSet {
+            if let country = selectedCountry {
+                UserDefaults.standard.set(country.rawValue, forKey: "selectedCountry")
+            } else {
+                UserDefaults.standard.removeObject(forKey: "selectedCountry")
+            }
+        }
+    }
     var selectedTier: Int {
         didSet { UserDefaults.standard.set(selectedTier, forKey: "selectedTier") }
     }
@@ -39,6 +52,15 @@ class AppState {
     /// Reset to false in `clearAllData()` so re-onboarding shows it again.
     var hasSeenSeasonPrimer: Bool {
         didSet { UserDefaults.standard.set(hasSeenSeasonPrimer, forKey: "hasSeenSeasonPrimer") }
+    }
+    /// V2.0: whether the existing-user "World Cup is coming, who's he
+    /// backing?" sheet has been dismissed (either by picking a country or
+    /// tapping Skip). Shown ONCE on next app launch for V1.x users who
+    /// have hasCompletedOnboarding=true but no selectedCountry. New V2.0
+    /// users skip this entirely because they pick a country during
+    /// onboarding.
+    var hasSeenWCPrompt: Bool {
+        didSet { UserDefaults.standard.set(hasSeenWCPrompt, forKey: "hasSeenWCPrompt") }
     }
 
     // Navigation
@@ -69,11 +91,14 @@ class AppState {
         self.hisName = UserDefaults.standard.string(forKey: "hisName") ?? ""
         let teamRaw = UserDefaults.standard.string(forKey: "selectedTeam")
         self.selectedTeam = teamRaw.flatMap { Team(rawValue: $0) }
+        let countryRaw = UserDefaults.standard.string(forKey: "selectedCountry")
+        self.selectedCountry = countryRaw.flatMap { Country(rawValue: $0) }
         self.selectedTier = UserDefaults.standard.integer(forKey: "selectedTier").clamped(to: 1...3, default: 2)
         self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
         self.notificationPermissionRequested = UserDefaults.standard.bool(forKey: "notificationPermissionRequested")
         self.calendarSyncEnabled = UserDefaults.standard.bool(forKey: "calendarSyncEnabled")
         self.hasSeenSeasonPrimer = UserDefaults.standard.bool(forKey: "hasSeenSeasonPrimer")
+        self.hasSeenWCPrompt = UserDefaults.standard.bool(forKey: "hasSeenWCPrompt")
 
         // Feed style — persisted, defaults to immersive (one full-screen card
         // per scroll position). The "lands on article" complaint earlier was
@@ -82,8 +107,13 @@ class AppState {
         let styleRaw = UserDefaults.standard.string(forKey: "feedStyle") ?? "immersive"
         self.feedStyle = FeedStyle(rawValue: styleRaw) ?? .immersive
 
-        // Active context — always starts on team, session-only
-        if let team = self.selectedTeam {
+        // Active context — country takes precedence over team in V2.0 (WC
+        // is the primary anchor; if the user has both, default to the WC
+        // feed). Falls back to team for V1.x users with no country selected,
+        // and to .everyoneTalking when neither is set.
+        if let country = self.selectedCountry {
+            self.activeContext = .country(country)
+        } else if let team = self.selectedTeam {
             self.activeContext = .team(team)
         }
     }
@@ -135,20 +165,23 @@ class AppState {
         herName = ""
         hisName = ""
         selectedTeam = nil
+        selectedCountry = nil
         selectedTier = 2
         hasCompletedOnboarding = false
         notificationPermissionRequested = false
         calendarSyncEnabled = false
         hasSeenSeasonPrimer = false
+        hasSeenWCPrompt = false
         deepLinkContentId = nil
         pendingTabAfterPrimer = nil
         activeContext = .everyoneTalking
         isContextSwitcherOpen = false
         feedStyle = .immersive
-        let keys = ["herName", "hisName", "selectedTeam", "selectedTier",
+        let keys = ["herName", "hisName", "selectedTeam", "selectedCountry", "selectedTier",
                      "hasCompletedOnboarding", "notificationPermissionRequested", "apnsToken",
+                     "apnsTokenRegistered",
                      "hasAutoExpandedFirstItem", "feedStyle", "hasSeenImmersiveBanner",
-                     "calendarSyncEnabled", "hasSeenSeasonPrimer"]
+                     "calendarSyncEnabled", "hasSeenSeasonPrimer", "hasSeenWCPrompt"]
         keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
         UnreadTracker.shared.clearAll()
     }

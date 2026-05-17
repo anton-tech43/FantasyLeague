@@ -7,6 +7,18 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
 
+        // V2.0: image cache for AsyncImage. The CountrySelectionView (48
+        // flags) and Meet team/manager views (player + manager headshots)
+        // all hit api-sports.io CDN — without a shared cache each appearance
+        // triggers a fresh network fetch, thrashing on scroll. 20 MB memory
+        // + 100 MB disk covers all crests/flags/headshots with room to spare
+        // (each PNG is ~5-50 KB).
+        URLCache.shared = URLCache(
+            memoryCapacity: 20 * 1024 * 1024,
+            diskCapacity: 100 * 1024 * 1024,
+            diskPath: "image_cache"
+        )
+
         // Global rose cursor tint on all text fields and text views
         let roseTint = UIColor(red: 232/255, green: 57/255, blue: 125/255, alpha: 1)
         UITextField.appearance().tintColor = roseTint
@@ -28,6 +40,24 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
             }
         }
         #endif
+
+        // Retry token registration if a previous attempt failed silently.
+        // Scenario: user completed onboarding while offline / Supabase was
+        // having a moment → registerToken POST threw → apnsTokenRegistered
+        // never set. Without this, the token-equality guard in
+        // NotificationService.handleTokenRegistration would prevent ANY
+        // future POST. Re-asking iOS to deliver the token redrives the
+        // whole pipeline (delivery → handleTokenRegistration → retry POST).
+        let hasStoredToken = UserDefaults.standard.string(forKey: "apnsToken") != nil
+        let alreadyRegistered = UserDefaults.standard.bool(forKey: "apnsTokenRegistered")
+        if hasStoredToken && !alreadyRegistered {
+            Task { @MainActor in
+                let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+                if status == .authorized || status == .provisional {
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
+            }
+        }
 
         return true
     }

@@ -3,6 +3,9 @@ Configuration.xcconfig
 *.p8
 .env
 
+# Supabase CLI cache (contains DB pooler URL with embedded password)
+**/.temp/
+
 # Xcode
 *.xcuserdata
 *.xcworkspace

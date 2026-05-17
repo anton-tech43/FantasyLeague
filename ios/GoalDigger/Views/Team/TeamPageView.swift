@@ -19,9 +19,19 @@ struct TeamPageView: View {
         appState.hisName.isEmpty ? "His" : appState.hisName + "'s"
     }
 
+    /// Resolve the entity for this team page — could be a PL Team or a WC
+    /// Country, both keyed by the teamId string. V2.0: countries live in
+    /// the same `teams` table as clubs.
+    private var entityDisplayName: String {
+        if let team = Team(rawValue: teamId) { return team.displayName }
+        if let country = Country(rawValue: teamId) { return country.displayName }
+        return ""
+    }
+
     private var teamInitials: String {
-        guard let team = appState.selectedTeam else { return "" }
-        let words = team.displayName.split(separator: " ")
+        let name = entityDisplayName
+        guard !name.isEmpty else { return "" }
+        let words = name.split(separator: " ")
         let letters = words.prefix(2).compactMap { $0.first.map { String($0).uppercased() } }
         return letters.joined()
     }
@@ -91,7 +101,7 @@ struct TeamPageView: View {
                         .foregroundColor(.warmWhite)
                 )
 
-            Text(appState.selectedTeam?.displayName ?? "")
+            Text(entityDisplayName)
                 .font(.jakarta(20, weight: .bold))
                 .foregroundColor(.warmWhite)
 

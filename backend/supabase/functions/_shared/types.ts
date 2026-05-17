@@ -102,6 +102,13 @@ export interface Team {
   display_name: string;
   api_football_id: number;
   short_name: string;
+  /// 'club' for Premier League sides, 'country' for World Cup national
+  /// teams. Added in migration 032. Defaults to 'club' for back-compat.
+  entity_type?: "club" | "country";
+  /// API-Football league_id: 39 = Premier League, 1 = FIFA World Cup.
+  /// Added in migration 032 to drive per-league data fetches without
+  /// hardcoded constants in Edge Functions.
+  league_id?: number;
 }
 
 export interface DeviceToken {

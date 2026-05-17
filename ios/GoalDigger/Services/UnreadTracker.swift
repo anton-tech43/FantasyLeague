@@ -37,18 +37,29 @@ class UnreadTracker {
     }
 
     /// Total unread across all non-active contexts. Used for the pill aggregate badge.
+    ///
+    /// V2.0: country contexts now contribute symmetrically. A user with both
+    /// a PL team and a WC country gets their cross-context badge to count
+    /// both inactive contexts. Pass `countryItems: []` if the caller doesn't
+    /// have a separate countryItems array loaded (e.g. FeedView in V2.0,
+    /// which only loads one set of items for the active context) — the
+    /// country contribution then resolves to zero and the badge under-
+    /// reports for the inactive context. Splitting the lists is V2.1.
     func totalUnread(
         activeContext: FeedContext,
         teamItems: [ContentItem],
+        countryItems: [ContentItem],
         everyoneItems: [ContentItem],
-        selectedTeam: Team?
+        selectedTeam: Team?,
+        selectedCountry: Country?
     ) -> Int {
         var total = 0
-        // Count unread for team context if not active
         if let team = selectedTeam, activeContext != .team(team) {
             total += unreadCount(for: .team(team), items: teamItems)
         }
-        // Count unread for everyone context if not active
+        if let country = selectedCountry, activeContext != .country(country) {
+            total += unreadCount(for: .country(country), items: countryItems)
+        }
         if activeContext != .everyoneTalking {
             total += unreadCount(for: .everyoneTalking, items: everyoneItems)
         }
@@ -59,14 +70,18 @@ class UnreadTracker {
     func aggregateBadgeText(
         activeContext: FeedContext,
         teamItems: [ContentItem],
+        countryItems: [ContentItem],
         everyoneItems: [ContentItem],
-        selectedTeam: Team?
+        selectedTeam: Team?,
+        selectedCountry: Country?
     ) -> String? {
         let total = totalUnread(
             activeContext: activeContext,
             teamItems: teamItems,
+            countryItems: countryItems,
             everyoneItems: everyoneItems,
-            selectedTeam: selectedTeam
+            selectedTeam: selectedTeam,
+            selectedCountry: selectedCountry
         )
         guard total > 0 else { return nil }
         return total > 9 ? "9+" : "\(total)"

@@ -21,11 +21,12 @@ import type { Team } from "../_shared/types.ts";
 // SYSTEM PROMPT
 // ============================================================
 
-const SEASON_PRIMER_SYSTEM_PROMPT = `You write for GoalDigger, a Premier League companion app for women 22 to 35.
+const SEASON_PRIMER_SYSTEM_PROMPT = `You write for GoalDigger, a football companion app for women 22 to 35.
 Voice: conversational, slightly cheeky, never patronising. Like a smart friend
 texting an update, not a sports journalist filing a report.
 
 THE TEAM: {{team_display_name}}
+COMPETITION CONTEXT: {{league_context}}
 
 YOUR JOB:
 Generate a "where they are in the season" snapshot she'll see ONE time, right
@@ -50,9 +51,9 @@ WRITING RULES:
    Mix tone: one observational, one slightly cocky, one warm.
 
 5. PHASE: Pick the phase that best matches today's date and the team's
-   schedule. pre_season is June 15 to Aug 8. mid_season is Aug 9 to Mar 31.
-   run_in is Apr 1 to May 31. off_season is mid-June. post_season is the
-   first week or two after the season ends.
+   schedule. The schema only allows: pre_season, mid_season, run_in,
+   off_season, post_season. Use the mapping in the COMPETITION CONTEXT
+   above to decide which phase fits.
 
 6. NEXT FIXTURE: Include only if there's a concrete upcoming fixture in the
    data. opponent is the opposing team's display name. kickoff_time is ISO
@@ -186,6 +187,84 @@ serve(async (req) => {
 });
 
 // ============================================================
+// Helpers
+// ============================================================
+
+/**
+ * Parse the API-Football `/fixtures?team=X&next=10` response into the
+ * `next_fixtures` JSONB shape consumed by the iOS CalendarOptInView.
+ *
+ * Filters to competitive matches her partner actually cares about:
+ *   - 39  Premier League
+ *   - 2   UEFA Champions League
+ *   - 3   UEFA Europa League
+ *   - 848 UEFA Conference League
+ *   - 45  FA Cup
+ *   - 48  EFL Cup (Carabao Cup)
+ *   - 143 Community Shield
+ * Drops pre-season friendlies (`/fixtures?next=N` happily returns August
+ * exhibition matches mid-May which would otherwise pollute her calendar).
+ *
+ * Shape: `{ response: [{ fixture: { id, date }, league: { id }, teams: { home: {id,name}, away: {id,name} } }] }`
+ * Output: `[{ opponent, kickoff_time, venue }]` where venue is "Home"/"Away"
+ * relative to our team. Drops entries with missing fields.
+ */
+// Competitions worth surfacing in the user's calendar. Filters out pre-season
+// friendlies (e.g., Real Betis warmup, mid-summer exhibitions) which would
+// otherwise pollute the calendar with non-real matches.
+//
+// 35 + 36 are intentionally excluded (women's WC qualifiers / U21).
+const COMPETITIVE_LEAGUE_IDS = new Set<number>([
+  39,  // Premier League
+  2,   // UEFA Champions League
+  3,   // UEFA Europa League
+  848, // UEFA Conference League
+  45,  // FA Cup
+  48,  // EFL Cup (Carabao Cup)
+  143, // Community Shield
+  1,   // FIFA World Cup 2026
+  29,  // WC Qualification — Africa
+  30,  // WC Qualification — Asia
+  31,  // WC Qualification — CONCACAF
+  32,  // WC Qualification — Europe
+  33,  // WC Qualification — Oceania
+  34,  // WC Qualification — South America
+  37,  // WC Qualification — Intercontinental Play-offs
+]);
+
+function buildNextFixturesArray(
+  raw: unknown,
+  ourApiFootballId: number,
+): Array<{ opponent: string; kickoff_time: string; venue: "Home" | "Away" }> {
+  // deno-lint-ignore no-explicit-any
+  const fixtures = (raw as any)?.response;
+  if (!Array.isArray(fixtures)) return [];
+
+  const out: Array<{ opponent: string; kickoff_time: string; venue: "Home" | "Away" }> = [];
+  for (const f of fixtures) {
+    const kickoff = f?.fixture?.date;
+    const leagueId = f?.league?.id;
+    const homeId = f?.teams?.home?.id;
+    const awayId = f?.teams?.away?.id;
+    const homeName = f?.teams?.home?.name;
+    const awayName = f?.teams?.away?.name;
+    if (!kickoff || !homeId || !awayId || !homeName || !awayName) continue;
+    if (typeof leagueId !== "number" || !COMPETITIVE_LEAGUE_IDS.has(leagueId)) continue;
+
+    const isHome = homeId === ourApiFootballId;
+    const isAway = awayId === ourApiFootballId;
+    if (!isHome && !isAway) continue; // sanity guard against mismatched team filter
+
+    out.push({
+      opponent: isHome ? awayName : homeName,
+      kickoff_time: kickoff,
+      venue: isHome ? "Home" : "Away",
+    });
+  }
+  return out;
+}
+
+// ============================================================
 // Per-team generation
 // ============================================================
 
@@ -205,6 +284,12 @@ async function generateForTeam(
   let standingsData = "";
   let recentResults = "";
   let nextFixtureData = "";
+  // Keep the raw API-Football payload around so we can deterministically
+  // build the `next_fixtures` array (added in migration 031). The LLM
+  // produces only the singular `next_fixture` — parsing the full slate from
+  // structured data is cheaper + more reliable than expanding the tool
+  // schema to ask for 10 entries.
+  let rawNextFixtures: unknown = null;
 
   // The query above orders fetched_at DESCENDING (newest first). We want the
   // FRESHEST row per category, so we take the first match and skip subsequent
@@ -225,16 +310,27 @@ async function generateForTeam(
       recentResults = jsonStr;
     } else if (!nextFixtureData && (log.source.includes("fixtures_next") || log.source.includes("fixtures_upcoming"))) {
       nextFixtureData = jsonStr;
+      rawNextFixtures = log.data;
     }
     // Early exit once all three categories are filled — common case after a
     // recent data-fetcher run, saves a few iterations.
     if (standingsData && recentResults && nextFixtureData) break;
   }
 
-  const systemPrompt = SEASON_PRIMER_SYSTEM_PROMPT.replace(
-    /\{\{team_display_name\}\}/g,
-    team.display_name
-  );
+  // V2.0: league-aware context. PL clubs follow the calendar-based phase
+  // mapping (Aug-Mar = mid_season, Apr-May = run_in, etc.). WC countries get
+  // a tournament-aware mapping that collapses onto the same enum:
+  //   pre-tournament window (before kickoff)  → pre_season
+  //   group stage + knockouts (live tournament) → run_in (high stakes)
+  //   eliminated mid-tournament                → off_season
+  //   post-final (after Jul 19)                → post_season
+  const leagueContext = team.entity_type === "country"
+    ? `FIFA World Cup 2026 — a national team competing at the tournament hosted by USA/Canada/Mexico from June 11 to July 19, 2026. PHASE MAPPING for the routine: today is before June 11 → pre_season. Between June 11 and elimination (or July 19 final) → run_in (every game is sudden-death stakes). If they've been knocked out mid-tournament → off_season. After July 19 → post_season. Standings show GROUP-stage tables (4 teams per group); 'where they are' means group position + whether they're advancing.`
+    : `Premier League (2025-26 season). PHASE MAPPING: pre_season is Jun 15 to Aug 8. mid_season is Aug 9 to Mar 31. run_in is Apr 1 to May 31. off_season is mid-June. post_season is the first week or two after the season ends.`;
+
+  const systemPrompt = SEASON_PRIMER_SYSTEM_PROMPT
+    .replace(/\{\{team_display_name\}\}/g, team.display_name)
+    .replace(/\{\{league_context\}\}/g, leagueContext);
 
   const today = new Date().toISOString().slice(0, 10);
   const userMessage = `Generate the season primer for ${team.display_name}.
@@ -263,6 +359,11 @@ available", omit the next_fixture field entirely.`;
 
   const input = toolUse.input as Record<string, unknown>;
 
+  // Deterministically derive the multi-fixture array from the same raw
+  // API-Football payload the LLM saw. Keeps prompt cost down and avoids the
+  // LLM dropping/reordering entries when asked for 10-item arrays.
+  const nextFixtures = buildNextFixturesArray(rawNextFixtures, team.api_football_id);
+
   // Upsert
   const upsertRow = {
     team_id: team.id,
@@ -270,7 +371,8 @@ available", omit the next_fixture field entirely.`;
     summary: input.summary,
     key_fact: input.key_fact,
     welcome_lines: input.welcome_lines,
-    next_fixture: input.next_fixture ?? null,
+    next_fixture: input.next_fixture ?? (nextFixtures[0] ?? null),
+    next_fixtures: nextFixtures.length > 0 ? nextFixtures : null,
     generated_at: new Date().toISOString(),
   };
 

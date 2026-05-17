@@ -85,6 +85,41 @@ enum Team: String, CaseIterable, Identifiable, Codable {
         rawValue + "_badge"
     }
 
+    /// API-Football team ID, used to fetch the team crest from the
+    /// `media.api-sports.io/football/teams/{id}.png` CDN. Values match the
+    /// `teams.api_football_id` column in Supabase (single source of truth);
+    /// if these ever drift, regen the mapping from
+    /// `SELECT id, api_football_id FROM teams;`.
+    var apiFootballId: Int {
+        switch self {
+        case .arsenal:      return 42
+        case .astonVilla:   return 66
+        case .bournemouth:  return 35
+        case .brentford:    return 55
+        case .brighton:     return 51
+        case .burnley:      return 44
+        case .chelsea:      return 49
+        case .crystalPalace:return 52
+        case .everton:      return 45
+        case .fulham:       return 36
+        case .leeds:        return 63
+        case .liverpool:    return 40
+        case .manCity:      return 50
+        case .manUtd:       return 33
+        case .newcastle:    return 34
+        case .nottmForest:  return 65
+        case .spurs:        return 47
+        case .sunderland:   return 746
+        case .westHam:      return 48
+        case .wolves:       return 39
+        }
+    }
+
+    /// CDN URL for the team's crest (PNG, transparent background, ~150x150).
+    var crestURL: URL? {
+        URL(string: "https://media.api-sports.io/football/teams/\(apiFootballId).png")
+    }
+
     var searchableText: String {
         let nicknames: String
         switch self {

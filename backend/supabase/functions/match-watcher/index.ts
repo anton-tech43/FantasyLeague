@@ -1,7 +1,11 @@
 // match-watcher/index.ts
-// Goal Digger — Polls API-Football every 1 min for PL fixture status,
-// detects transitions to "finished", and fires the gd-matchday Claude
-// Code Routine for both teams in the match.
+// Goal Digger — Polls API-Football every 1 min for fixture status across
+// ALL active leagues (PL + WC), detects transitions to "finished", and
+// fires the gd-matchday Claude Code Routine for both teams in the match.
+//
+// V2.0: parameterised across leagues. Reads `SELECT DISTINCT league_id FROM
+// teams` at request time, so new leagues (Euros, FA Cup, etc.) added to
+// the teams table get watched automatically without code changes.
 //
 // State lives in match_status_state (migration 007). On first observation
 // of a fixture (no prior row), we record the state but do NOT fire the
@@ -9,24 +13,16 @@
 // mass-firing on initial deploy when several matches are already FT.
 //
 // Schedule: every 1 min via pg_cron (see migration 017).
-//
-// SEASON constant: bump each August when a new PL season starts. The
-// season number is the year it BEGAN (Aug 2025 → May 2026 = SEASON=2025).
-// API-Football's /fixtures?league=39 endpoint requires `season` — without
-// it the response is empty (or an error object that gets silently
-// swallowed), which is exactly the bug that ran for weeks and left
-// match_status_state empty. Loud error guard below catches a recurrence.
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
+import { seasonForLeague, FALLBACK_ACTIVE_LEAGUES } from "../_shared/league-helpers.ts";
 
 const FINISHED_STATUSES = new Set(["FT", "AET", "PEN"]);
 // Live = match is in play (or in HT pause). Both halves + extra time
 // brackets. We DON'T include "TBD"/"PST" (postponed) or "INT" (interrupted)
 // — those aren't moments worth commenting on.
 const LIVE_STATUSES = new Set(["1H", "HT", "2H", "ET", "P", "BT"]);
-const PL_LEAGUE_ID = 39;
-const SEASON = 2025; // BUMP THIS EACH AUGUST: Aug 2026 → May 2027 = SEASON=2026
 const API_FOOTBALL_BASE = "https://v3.football.api-sports.io";
 
 interface ApiFixture {
@@ -35,11 +31,29 @@ interface ApiFixture {
     status: { short: string; elapsed: number | null };
     date: string;
   };
+  league: { id: number; name: string; season: number };
   teams: { home: { id: number; name: string }; away: { id: number; name: string } };
   goals: { home: number | null; away: number | null };
 }
 
 serve(async (req) => {
+  try {
+    return await handleRequest(req);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    const stack = e instanceof Error ? e.stack : undefined;
+    // Stack stays server-side. HTTP response only carries the message so
+    // any future stack frames that mention env-derived URLs or sandbox
+    // paths don't leak via the response body.
+    console.error("match-watcher unhandled:", msg, stack);
+    return new Response(
+      JSON.stringify({ error: "unhandled", message: msg }),
+      { status: 500, headers: { "Content-Type": "application/json" } },
+    );
+  }
+});
+
+async function handleRequest(req: Request): Promise<Response> {
   const supabase = getSupabaseClient();
 
   // Optional ?date=YYYY-MM-DD override for replay diagnostics. When set,
@@ -69,8 +83,6 @@ serve(async (req) => {
     );
   }
 
-  // Fetch today's PL fixtures from API-Football.
-  //
   // `today` is computed in Europe/London so that late-kickoff games (e.g.
   // a 20:00 GMT winter Saturday finishing 22:00 GMT) stay attached to
   // their kickoff day rather than rolling to UTC tomorrow at 00:00 UTC.
@@ -79,49 +91,57 @@ serve(async (req) => {
   const today = dateOverride ?? new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/London",
   }).format(new Date()); // en-CA gives YYYY-MM-DD shape
-  const apiResp = await fetch(
-    `${API_FOOTBALL_BASE}/fixtures?league=${PL_LEAGUE_ID}&season=${SEASON}&date=${today}`,
-    { headers: { "x-apisports-key": apiFootballKey } },
-  );
-  const fixturesJson = await apiResp.json();
 
-  // Loud error guard. API-Football returns { errors: { ... } } when the
-  // query is malformed (e.g. missing `season`) or when the key is rate-
-  // limited / invalid. Without this guard, the original code silently
-  // proceeded with an empty fixture list — which was the actual bug that
-  // ran for weeks. Now: bail with 500 + log so the next silent failure is
-  // a loud one.
-  if (
-    !Array.isArray(fixturesJson.response) ||
-    (fixturesJson.errors &&
-      Object.keys(fixturesJson.errors).length > 0)
-  ) {
-    const errMsg = `API-Football returned unexpected shape: errors=${JSON.stringify(fixturesJson.errors ?? {})}, response_type=${typeof fixturesJson.response}`;
-    console.error("match-watcher:", errMsg);
-    return new Response(
-      JSON.stringify({
-        error: errMsg,
-        date: today,
-        season: SEASON,
-      }),
-      { status: 500, headers: { "Content-Type": "application/json" } },
-    );
-  }
-  const fixtures: ApiFixture[] = fixturesJson.response;
-
-  // Map api_football_id → our team_id slug
+  // V2.0: single combined query for both league iteration AND the
+  // api_football_id → team_id map. Previously this was two separate
+  // SELECTs; combining them is cheaper (one round-trip per tick instead
+  // of two) and atomic (no risk of a team being inserted between queries).
   const { data: teams, error: teamsErr } = await supabase
     .from("teams")
-    .select("id, api_football_id");
+    .select("id, api_football_id, league_id")
+    .not("league_id", "is", null);
   if (teamsErr) {
     return new Response(
       JSON.stringify({ error: `teams query failed: ${teamsErr.message}` }),
       { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }
+  const activeLeagues: number[] = teams && teams.length > 0
+    ? [...new Set(teams.map((t) => t.league_id as number))]
+    : FALLBACK_ACTIVE_LEAGUES;
   const teamIdMap = new Map<number, string>(
     (teams ?? []).map((t) => [t.api_football_id as number, t.id as string]),
   );
+
+  // Fetch fixtures for each active league, combine into one array. Per-
+  // league errors are logged but don't abort the whole run — a WC API
+  // hiccup shouldn't stop PL match-watcher work.
+  const fixtures: ApiFixture[] = [];
+  const leagueErrors: Array<{ league_id: number; message: string }> = [];
+  for (const leagueId of activeLeagues) {
+    const season = seasonForLeague(leagueId);
+    try {
+      const resp = await fetch(
+        `${API_FOOTBALL_BASE}/fixtures?league=${leagueId}&season=${season}&date=${today}`,
+        { headers: { "x-apisports-key": apiFootballKey } },
+      );
+      const json = await resp.json();
+      if (
+        !Array.isArray(json.response) ||
+        (json.errors && Object.keys(json.errors).length > 0)
+      ) {
+        const errMsg = `API-Football league=${leagueId} season=${season}: errors=${JSON.stringify(json.errors ?? {})}, response_type=${typeof json.response}`;
+        console.warn("match-watcher:", errMsg);
+        leagueErrors.push({ league_id: leagueId, message: errMsg });
+        continue;
+      }
+      fixtures.push(...(json.response as ApiFixture[]));
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.warn(`match-watcher league=${leagueId} fetch failed:`, msg);
+      leagueErrors.push({ league_id: leagueId, message: msg });
+    }
+  }
 
   let firesDispatched = 0;
   let firstSeen = 0;
@@ -139,10 +159,18 @@ serve(async (req) => {
     const homeGoals = fx.goals.home;
     const awayGoals = fx.goals.away;
     const kickoffTime = fx.fixture.date;
+    const fixtureLeagueId = fx.league?.id;
 
     // Defensive: skip fixtures where either team isn't one of our 20.
     // Should never happen for league=39 but cheap to check.
     if (!homeTeamId || !awayTeamId) continue;
+    // V2.0: skip fixtures with no league context — match_status_state.league_id
+    // is NOT NULL with no FK, so writing `?? 0` would create ghost rows that
+    // pollute diagnostics. A fixture with no league.id is unactionable anyway.
+    if (!fixtureLeagueId) {
+      console.warn(`match-watcher: skipping fixture ${fixtureId} — no league.id`);
+      continue;
+    }
 
     const { data: prior } = await supabase
       .from("match_status_state")
@@ -315,7 +343,7 @@ serve(async (req) => {
       .upsert(
         {
           fixture_id: fixtureId,
-          league_id: PL_LEAGUE_ID,
+          league_id: fixtureLeagueId,
           home_team_id: homeTeamId,
           away_team_id: awayTeamId,
           status,
@@ -349,8 +377,9 @@ serve(async (req) => {
       live_brief_configured: liveBriefConfigured,
       upsert_errors: upsertErrors,
       date: today,
-      season: SEASON,
+      active_leagues: activeLeagues,
+      league_errors: leagueErrors,
     }),
     { headers: { "Content-Type": "application/json" } },
   );
-});
+}

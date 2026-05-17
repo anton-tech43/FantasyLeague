@@ -306,12 +306,18 @@ struct ManagerCard: Codable {
     let name: String
     let summary: String
     let talkingPoint: String?
+    /// Optional API-Football coach headshot URL. Populated by the
+    /// team-page-generator routine from the `/coachs` endpoint data. Nil
+    /// during the rollout window for teams not yet regenerated; MeetManagerView
+    /// falls back to a generic person icon.
+    let photoURL: String?
 
     enum CodingKeys: String, CodingKey {
         case updatedAt = "updated_at"
         case name
         case summary
         case talkingPoint = "talking_point"
+        case photoURL = "photo_url"
     }
 }
 
@@ -332,11 +338,16 @@ struct TopPlayer: Codable, Identifiable {
     let name: String
     let position: String
     let oneLiner: String?
+    /// Optional headshot URL. Populated by the team-page-generator routine
+    /// from API-Football's player metadata. Nil during rollout window until
+    /// every team_page row has been regenerated; views fall back to initials.
+    let photoURL: String?
 
     enum CodingKeys: String, CodingKey {
         case name
         case position
         case oneLiner = "one_liner"
+        case photoURL = "photo_url"
     }
 }
 

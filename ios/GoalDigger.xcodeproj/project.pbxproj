@@ -19,6 +19,7 @@
 		AA000001 /* GoalDiggerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001 /* GoalDiggerApp.swift */; };
 		AA000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002 /* AppDelegate.swift */; };
 		AA000003 /* Team.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003 /* Team.swift */; };
+		AA000305 /* Country.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000305 /* Country.swift */; };
 		AA000004 /* ContentItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000004 /* ContentItem.swift */; };
 		AA000005 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000005 /* AppState.swift */; };
 		AA000006 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000006 /* Theme.swift */; };
@@ -41,6 +42,14 @@
 		AA000031 /* HisNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000031 /* HisNameView.swift */; };
 		AA000032 /* OnboardingFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000032 /* OnboardingFlow.swift */; };
 		AA000033 /* TierSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000033 /* TierSelectionView.swift */; };
+		AA000300 /* MeetTeamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000300 /* MeetTeamView.swift */; };
+		AA000301 /* HowItWorksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000301 /* HowItWorksView.swift */; };
+		AA000302 /* CalendarOptInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000302 /* CalendarOptInView.swift */; };
+		AA000303 /* MeetManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000303 /* MeetManagerView.swift */; };
+		AA000304 /* TeamCrestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000304 /* TeamCrestView.swift */; };
+		AA000306 /* CountrySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000306 /* CountrySelectionView.swift */; };
+		AA000307 /* OptionalPLTeamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000307 /* OptionalPLTeamView.swift */; };
+		AA000308 /* WCMigrationSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000308 /* WCMigrationSheetView.swift */; };
 		AA000035 /* OnesToWatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000035 /* OnesToWatchView.swift */; };
 		AA000036 /* PlayerCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000036 /* PlayerCardView.swift */; };
 		AA000037 /* TeamPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000037 /* TeamPageView.swift */; };
@@ -98,6 +107,7 @@
 		AB000001 /* GoalDiggerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalDiggerApp.swift; sourceTree = "<group>"; };
 		AB000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		AB000003 /* Team.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Team.swift; sourceTree = "<group>"; };
+		AB000305 /* Country.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Country.swift; sourceTree = "<group>"; };
 		AB000004 /* ContentItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentItem.swift; sourceTree = "<group>"; };
 		AB000005 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		AB000006 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
@@ -125,6 +135,14 @@
 		AB000031 /* HisNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HisNameView.swift; sourceTree = "<group>"; };
 		AB000032 /* OnboardingFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlow.swift; sourceTree = "<group>"; };
 		AB000033 /* TierSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TierSelectionView.swift; sourceTree = "<group>"; };
+		AB000300 /* MeetTeamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetTeamView.swift; sourceTree = "<group>"; };
+		AB000301 /* HowItWorksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HowItWorksView.swift; sourceTree = "<group>"; };
+		AB000302 /* CalendarOptInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarOptInView.swift; sourceTree = "<group>"; };
+		AB000303 /* MeetManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetManagerView.swift; sourceTree = "<group>"; };
+		AB000304 /* TeamCrestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamCrestView.swift; sourceTree = "<group>"; };
+		AB000306 /* CountrySelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountrySelectionView.swift; sourceTree = "<group>"; };
+		AB000307 /* OptionalPLTeamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionalPLTeamView.swift; sourceTree = "<group>"; };
+		AB000308 /* WCMigrationSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WCMigrationSheetView.swift; sourceTree = "<group>"; };
 		AB000035 /* OnesToWatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnesToWatchView.swift; sourceTree = "<group>"; };
 		AB000036 /* PlayerCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerCardView.swift; sourceTree = "<group>"; };
 		AB000037 /* TeamPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageView.swift; sourceTree = "<group>"; };
@@ -226,6 +244,7 @@
 				AB000007 /* ContentCard.swift */,
 				AB000008 /* TeamPickerCard.swift */,
 				AB000009 /* BadgeView.swift */,
+				AB000304 /* TeamCrestView.swift */,
 				AB000010 /* EmptyStateView.swift */,
 				AB000040 /* ProgressDotsView.swift */,
 				AB000041 /* YourMoveCard.swift */,
@@ -268,8 +287,15 @@
 				AB000030 /* HerNameView.swift */,
 				AB000031 /* HisNameView.swift */,
 				AB000012 /* TeamSelectionView.swift */,
-				AB000033 /* TierSelectionView.swift */,
+				AB000306 /* CountrySelectionView.swift */,
+				AB000307 /* OptionalPLTeamView.swift */,
+				AB000308 /* WCMigrationSheetView.swift */,
 				AB000013 /* NotificationPromptView.swift */,
+				AB000300 /* MeetTeamView.swift */,
+				AB000303 /* MeetManagerView.swift */,
+				AB000301 /* HowItWorksView.swift */,
+				AB000033 /* TierSelectionView.swift */,
+				AB000302 /* CalendarOptInView.swift */,
 				2B5B3A50DCC8E9B41626BB81 /* SeasonPrimerView.swift */,
 			);
 			path = Onboarding;
@@ -296,6 +322,7 @@
 			isa = PBXGroup;
 			children = (
 				AB000003 /* Team.swift */,
+				AB000305 /* Country.swift */,
 				AB000004 /* ContentItem.swift */,
 				AB000005 /* AppState.swift */,
 				AB000022 /* MockData.swift */,
@@ -494,6 +521,7 @@
 				AA000001 /* GoalDiggerApp.swift in Sources */,
 				AA000002 /* AppDelegate.swift in Sources */,
 				AA000003 /* Team.swift in Sources */,
+				AA000305 /* Country.swift in Sources */,
 				AA000004 /* ContentItem.swift in Sources */,
 				AA000005 /* AppState.swift in Sources */,
 				AA000006 /* Theme.swift in Sources */,
@@ -515,6 +543,14 @@
 				AA000031 /* HisNameView.swift in Sources */,
 				AA000032 /* OnboardingFlow.swift in Sources */,
 				AA000033 /* TierSelectionView.swift in Sources */,
+				AA000300 /* MeetTeamView.swift in Sources */,
+				AA000301 /* HowItWorksView.swift in Sources */,
+				AA000302 /* CalendarOptInView.swift in Sources */,
+				AA000303 /* MeetManagerView.swift in Sources */,
+				AA000304 /* TeamCrestView.swift in Sources */,
+				AA000306 /* CountrySelectionView.swift in Sources */,
+				AA000307 /* OptionalPLTeamView.swift in Sources */,
+				AA000308 /* WCMigrationSheetView.swift in Sources */,
 				AA000035 /* OnesToWatchView.swift in Sources */,
 				AA000040 /* ProgressDotsView.swift in Sources */,
 				AA000036 /* PlayerCardView.swift in Sources */,

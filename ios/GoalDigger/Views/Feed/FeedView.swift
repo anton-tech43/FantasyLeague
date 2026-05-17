@@ -49,7 +49,7 @@ struct FeedView: View {
     /// Items for the active context
     private var displayItems: [ContentItem] {
         switch appState.activeContext {
-        case .team: return teamItems
+        case .team, .country: return teamItems
         case .everyoneTalking: return everyoneItems
         }
     }
@@ -251,10 +251,18 @@ struct FeedView: View {
     private var pillIcon: some View {
         switch appState.activeContext {
         case .team(let team):
-            Image(team.badgeImageName)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 16, height: 16)
+            TeamCrestView(team: team, size: 16)
+        case .country(let country):
+            AsyncImage(url: country.crestURL) { phase in
+                if case .success(let image) = phase {
+                    image.resizable().scaledToFit()
+                } else {
+                    Image(systemName: "flag.fill")
+                        .font(.system(size: 12))
+                        .foregroundColor(.hotRose)
+                }
+            }
+            .frame(width: 16, height: 16)
         case .everyoneTalking:
             Image(systemName: "soccerball")
                 .font(.system(size: 14))
@@ -264,11 +272,17 @@ struct FeedView: View {
 
     @ViewBuilder
     private var aggregateUnreadBadge: some View {
+        // V2.0: pass empty countryItems — FeedView in this build only loads
+        // ONE set of items at a time (for activeContext). The aggregate badge
+        // under-reports unread for the inactive country/team when a user has
+        // both selected. Acceptable trade-off; V2.1 will split the lists.
         let badgeText = UnreadTracker.shared.aggregateBadgeText(
             activeContext: appState.activeContext,
             teamItems: teamItems,
+            countryItems: [],
             everyoneItems: everyoneItems,
-            selectedTeam: appState.selectedTeam
+            selectedTeam: appState.selectedTeam,
+            selectedCountry: appState.selectedCountry
         )
         if let text = badgeText {
             Text(text)
@@ -488,12 +502,29 @@ struct FeedView: View {
 
     @ViewBuilder
     private var emptyView: some View {
-        // T2+ users with an insider item available get a useful card to
-        // read instead of the generic "nothing today" empty state. T1 users
-        // and teams without an insider row fall back to the original empty
-        // state. Fetched in loadTeamFeed once teamItems is confirmed empty.
-        if TierGating.isAvailable(.insiderCard, tier: appState.selectedTier),
-           let insider = emptyStateInsider {
+        // V2.0: WC country context gets a specific empty state explaining
+        // that routines haven't started producing WC content yet. This is
+        // honest about pre-tournament state (May-June 2026 window between
+        // V2.0 launch and June 11 kickoff when WC routines start firing).
+        if case .country(let country) = appState.activeContext {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("WORLD CUP STARTS JUNE 11")
+                        .font(.sectionHeader)
+                        .tracking(1)
+                        .foregroundColor(.mutedText)
+                    Text("We're warming up his \(country.shortName) coverage.\nCheck back tomorrow morning.")
+                        .font(.onboardingBody)
+                        .foregroundColor(.textOnDark.opacity(0.8))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.horizontal, Layout.screenPadding)
+                .padding(.top, 32)
+            }
+        } else if TierGating.isAvailable(.insiderCard, tier: appState.selectedTier),
+                  let insider = emptyStateInsider {
+            // T2+ PL users with an insider item available get a useful card
+            // to read instead of the generic "nothing today" empty state.
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("NO NEWS RIGHT NOW. WORTH KNOWING:")
@@ -510,6 +541,8 @@ struct FeedView: View {
                 .padding(.top, 24)
             }
         } else {
+            // T1 users and teams without an insider row fall back to the
+            // original empty state.
             EmptyStateView(teamName: appState.selectedTeam?.shortName ?? "your team")
         }
     }
@@ -545,7 +578,7 @@ struct FeedView: View {
         // Load data for new context if empty
         Task {
             switch context {
-            case .team:
+            case .team, .country:
                 if teamItems.isEmpty { await loadTeamFeed() }
             case .everyoneTalking:
                 if everyoneItems.isEmpty { await loadEveryoneFeed() }
@@ -583,13 +616,29 @@ struct FeedView: View {
 
     private func refresh() async {
         switch appState.activeContext {
-        case .team: await loadTeamFeed()
+        case .team, .country: await loadTeamFeed()
         case .everyoneTalking: await loadEveryoneFeed()
         }
     }
 
     private func loadTeamFeed() async {
-        guard let teamId = appState.selectedTeam?.rawValue else { return }
+        // V2.0: pick the right entity based on activeContext. Country takes
+        // precedence when the user is in WC mode; otherwise fall back to the
+        // team selection. Returns early if neither is set.
+        let entityId: String
+        switch appState.activeContext {
+        case .country(let c): entityId = c.rawValue
+        case .team(let t):    entityId = t.rawValue
+        case .everyoneTalking:
+            if let team = appState.selectedTeam {
+                entityId = team.rawValue
+            } else if let country = appState.selectedCountry {
+                entityId = country.rawValue
+            } else {
+                return
+            }
+        }
+        let teamId = entityId
         do {
             let fetched = try await APIClient.shared.fetchFeed(teamId: teamId, limit: pageSize, offset: 0)
             // Sunday Brief (V1.1 C2) is T2+. Filter client-side so a T1
@@ -674,19 +723,13 @@ struct FeedView: View {
         defer { isLoadingMore = false }
 
         switch appState.activeContext {
-        case .team:
-            guard teamCanLoadMore, let teamId = appState.selectedTeam?.rawValue else { return }
-            do {
-                let fetched = try await APIClient.shared.fetchFeed(teamId: teamId, limit: pageSize, offset: teamOffset)
-                teamItems.append(contentsOf: Self.applyTierFilter(fetched, tier: appState.selectedTier))
-                teamOffset += fetched.count
-                teamCanLoadMore = fetched.count == pageSize
-                CacheService.shared.upsertItems(fetched, in: modelContext)
-            } catch {
-                #if DEBUG
-                print("⚠️ loadMore failed: \(error.localizedDescription)")
-                #endif
-            }
+        case .team(let team):
+            guard teamCanLoadMore else { return }
+            await loadMoreEntity(teamId: team.rawValue)
+
+        case .country(let country):
+            guard teamCanLoadMore else { return }
+            await loadMoreEntity(teamId: country.rawValue)
 
         case .everyoneTalking:
             guard everyoneCanLoadMore else { return }
@@ -701,6 +744,21 @@ struct FeedView: View {
                 print("⚠️ loadMore failed: \(error.localizedDescription)")
                 #endif
             }
+        }
+    }
+
+    /// Shared paginated fetch for either a PL team or a WC country.
+    private func loadMoreEntity(teamId: String) async {
+        do {
+            let fetched = try await APIClient.shared.fetchFeed(teamId: teamId, limit: pageSize, offset: teamOffset)
+            teamItems.append(contentsOf: Self.applyTierFilter(fetched, tier: appState.selectedTier))
+            teamOffset += fetched.count
+            teamCanLoadMore = fetched.count == pageSize
+            CacheService.shared.upsertItems(fetched, in: modelContext)
+        } catch {
+            #if DEBUG
+            print("⚠️ loadMore failed: \(error.localizedDescription)")
+            #endif
         }
     }
 

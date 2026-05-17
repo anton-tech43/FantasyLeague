@@ -14,9 +14,10 @@ import type { Team } from "../_shared/types.ts";
 // ============================================================
 
 const TEAM_PAGE_SYSTEM_PROMPT = `You are the voice of Goal Digger — an app that helps girlfriends stay in the loop
-about their partner's favourite Premier League team.
+about their partner's favourite football team.
 
 THE TEAM: {{team_display_name}}
+COMPETITION CONTEXT: {{league_context}}
 
 YOUR JOB:
 Generate the "His Team" reference page. This is NOT a news feed — it's a permanent
@@ -67,6 +68,10 @@ const TEAM_PAGE_TOOL = {
       // Card: manager
       manager_name: { type: "string", description: "Current manager's full name" },
       manager_summary: { type: "string", description: "1-2 sentences about the manager in GoalDigger voice" },
+      manager_photo_url: {
+        type: "string",
+        description: "Optional API-Football headshot URL (the head coach's photo field from the Coaches data). Omit if not available — iOS falls back to a generic person icon.",
+      },
 
       // Card: ones_to_know
       top_players: {
@@ -77,6 +82,10 @@ const TEAM_PAGE_TOOL = {
             name: { type: "string" },
             position: { type: "string", description: "Plain English position (e.g. 'winger', 'striker')" },
             one_liner: { type: "string", description: "One sentence about why she should know this player" },
+            photo_url: {
+              type: "string",
+              description: "Optional API-Football headshot URL (`player.photo` from the Squad data). Omit if not available — the iOS client falls back to initials.",
+            },
           },
           required: ["name", "position", "one_liner"],
         },
@@ -87,7 +96,7 @@ const TEAM_PAGE_TOOL = {
 
       // Card: form
       league_position: { type: "integer", minimum: 1, maximum: 20 },
-      league_position_label: { type: "string", description: "e.g. '2nd in the Premier League'" },
+      league_position_label: { type: "string", description: "Plain-English ranking. For Premier League clubs: '2nd in the Premier League'. For World Cup countries during group stage: '1st in Group D'. Match the competition context provided." },
       recent_form: { type: "string", description: "Last 5 results as W/D/L string, e.g. 'WWDLW'" },
       form_summary: { type: "string", description: "One sentence connecting form to [his name]'s mood" },
 
@@ -236,7 +245,12 @@ async function generateFullPage(
   let coachsData = "";
 
   for (const log of rawLogs) {
-    const jsonStr = JSON.stringify(log.data).slice(0, 2000);
+    // Squad data includes 20+ players × ~200 chars each (incl. photo URLs).
+    // 2000 chars truncates roughly half the squad and risks dropping photo
+    // URLs for the players the LLM ends up picking for top_players. Bump
+    // squad to 6000 so the full roster + headshot URLs all reach the prompt.
+    const slicelimit = log.source === "api_football_squad" ? 6000 : 2000;
+    const jsonStr = JSON.stringify(log.data).slice(0, slicelimit);
     if (log.source === "api_football_standings") standingsData = jsonStr;
     else if (log.source === "api_football_squad") squadData = jsonStr;
     else if (log.source.includes("fixtures")) fixturesData += `\n${log.source}: ${jsonStr}`;
@@ -244,10 +258,17 @@ async function generateFullPage(
     else if (log.source === "api_football_coachs") coachsData = jsonStr;
   }
 
-  const systemPrompt = TEAM_PAGE_SYSTEM_PROMPT.replace(
-    /\{\{team_display_name\}\}/g,
-    team.display_name
-  );
+  // V2.0: league_context tells Claude whether this is a PL club or WC country.
+  // The voice + structure stay identical (team page = team page); only the
+  // labels shift (Premier League table vs WC group stage, club season vs
+  // tournament). Single source of truth — the team's entity_type column.
+  const leagueContext = team.entity_type === "country"
+    ? "FIFA World Cup 2026 — a national team competing at the tournament in USA, Canada and Mexico from June 11. Group stage runs June 11-27, knockouts June 30 onwards. Players here represent their country, NOT their club. For league_position_label use 'Xst in Group Y' format (look at the Standings data for the group letter and the team's position within that group)."
+    : "Premier League (2025-26 season). League table runs August to May. For league_position_label use 'Xst in the Premier League' format.";
+
+  const systemPrompt = TEAM_PAGE_SYSTEM_PROMPT
+    .replace(/\{\{team_display_name\}\}/g, team.display_name)
+    .replace(/\{\{league_context\}\}/g, leagueContext);
 
   const userMessage = `Generate the team page for ${team.display_name}.
 
@@ -264,13 +285,23 @@ ${wrapExternalData(`Coaches (head coach is the FIRST entry whose career.end is n
 Context flags: ${contextFlags.join(", ") || "none"}
 
 Generate the team page content. For top_players, pick the 3 most relevant right now.
+Each player object should include photo_url set to the player.photo URL
+from the Squad data above when available, this is the API-Football headshot
+CDN URL (example: https://media.api-sports.io/football/players/1460.png). If
+no photo URL is present for a player in the Squad data, omit photo_url for
+that player (the iOS client falls back to initials).
 Use [his name] placeholder where personal.
 If no upcoming fixture data is available, omit the next_fixture fields.
 
 For manager_name: use ONLY the head coach's name as it appears in the Coaches data
 above. If Coaches data is "not available", set manager_name to "<UNKNOWN>" and
 manager_summary to "Manager information will appear when the team's coach data
-is available." — do NOT guess or use a name from prior knowledge.`;
+is available." — do NOT guess or use a name from prior knowledge.
+
+For manager_photo_url: set it to the head coach's photo URL from the Coaches
+data above (the same coach you used for manager_name). The field is named
+"photo" on each coach entry and looks like https://media.api-sports.io/football/coachs/XXXX.png.
+If no photo is present, omit manager_photo_url entirely.`;
 
   const response = await callClaude({
     system: systemPrompt,
@@ -307,6 +338,7 @@ is available." — do NOT guess or use a name from prior knowledge.`;
         updated_at: now,
         name: input.manager_name,
         summary: input.manager_summary,
+        ...(input.manager_photo_url ? { photo_url: input.manager_photo_url } : {}),
       },
       ones_to_know: {
         updated_at: now,
@@ -366,6 +398,36 @@ async function updateDynamicFields(
   supabase: ReturnType<typeof getSupabaseClient>,
   team: Team
 ) {
+  // V2.0: dynamic-only path is PL-shaped (single league table, fixed "Xth in
+  // the Premier League" labels). WC standings are 12 groups of 4 with a
+  // different concept of "position". Bypass dynamic for countries — they
+  // always go through the Claude full path which handles group stage
+  // semantics via league_context in the system prompt.
+  //
+  // Cost guard: data-fetcher triggers this function every 30 min during
+  // active hours. Without a TTL, every trigger fires a Claude call per
+  // country = up to ~1,440 calls/day × 48 countries during the WC window.
+  // Limit to a 12h freshness check — the scheduled 06:00 UTC cron still
+  // refreshes daily, so countries get one regen per day plus on-demand
+  // when standings move materially.
+  if (team.entity_type === "country") {
+    const { data: existing } = await supabase
+      .from("team_pages")
+      .select("updated_at")
+      .eq("team_id", team.id)
+      .maybeSingle();
+    const updatedAt = existing?.updated_at as string | undefined;
+    if (updatedAt) {
+      const ageMs = Date.now() - new Date(updatedAt).getTime();
+      if (ageMs < 12 * 60 * 60_000) {
+        // Fresh enough — skip the Claude call.
+        return;
+      }
+    }
+    await generateFullPage(supabase, team, Date.now());
+    return;
+  }
+
   // Fetch latest standings
   const { data: standingsLog } = await supabase
     .from("raw_fetch_logs")
@@ -429,7 +491,7 @@ async function updateDynamicFields(
 
   // Parse next fixture
   if (fixturesLog?.data) {
-    const nextFixture = extractNextFixture(fixturesLog.data, team.id);
+    const nextFixture = extractNextFixture(fixturesLog.data, team.api_football_id);
     if (nextFixture) {
       cards.next_fixture = {
         updated_at: now,
@@ -499,7 +561,7 @@ function extractRecentForm(
 
 function extractNextFixture(
   data: unknown,
-  _teamId: string
+  teamApiFootballId: number
 ): { opponent: string; date: string; venue: string } | null {
   try {
     const response = (data as Record<string, unknown>).response as unknown[];
@@ -512,9 +574,14 @@ function extractNextFixture(
 
     if (!home || !away || !fixtureInfo) return null;
 
-    // Determine opponent and venue
-    const isHome = home.id !== undefined; // Simplified — the data-fetcher filters by team
-    const opponent = isHome ? away.name as string : home.name as string;
+    // Determine venue + opponent. Pre-V2.0 this checked `home.id !== undefined`
+    // which is always true (the !home guard above already rejected missing
+    // home objects), so EVERY fixture was labelled "home" and the away team
+    // name was always returned as opponent — wrong for actual-away fixtures.
+    // Fixed in V2.0 by comparing against the team's api_football_id.
+    const homeId = home.id as number | undefined;
+    const isHome = homeId === teamApiFootballId;
+    const opponent = isHome ? (away.name as string) : (home.name as string);
     const venue = isHome ? "home" : "away";
 
     return {
