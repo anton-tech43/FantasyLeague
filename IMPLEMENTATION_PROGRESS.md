@@ -2260,3 +2260,35 @@ The fix took three iterations, each surfacing a deeper version of the same archi
 - Permissions: `.claude/settings.json` (new), `.gitignore`. Commit `3487843`.
 
 **Out of scope (intentional):** retention sweep on `team_insider_items` (table grows ~5 rows/day with the daily routine, can wait), restoring per-type body text behind a tap-to-modal flow (data still in DB, can surface later without backend changes), and the `manager_overrides` table for the 4 broken-coach countries from Lesson 67 (still V2.1).
+
+### 69. When to use Claude vs deterministic merge for team-page data
+
+**What happened (May 18 evening):** the redesigned "His Team" tab needs two new data surfaces — a Calendar tab with per-fixture importance ratings, and a Table tab with full league/group standings. Both ride on the same `team_pages.content.cards` JSONB blob the existing `team-page-generator` Edge Function already writes. The natural-but-wrong move was to ask Claude to also generate the standings rows in the tool call. The actually-right split:
+
+- **Standings → mechanical merge, no LLM.** The standings table is purely factual data already living in `raw_fetch_logs.api_football_standings`. There's no judgment to apply — rank, played, won, drawn, lost, goal diff, points are what the API says they are. Asking Claude to retype 20 PL teams' worth of stats in a tool call would (a) burn tokens on a copy-paste task, (b) risk transcription errors, (c) inflate prompt size for no quality gain. Solution: a `buildStandingsCard(rawLogs, team, now)` helper runs after the tool call, picks the right group (PL=single array, WC=4-team group containing this team's `api_football_id`), and writes the rows directly.
+
+- **Importance labels → Claude judgment, in-tool.** Rating a fixture's importance ("Top-4 race", "Group A decider", "Relegation 6-pointer") requires knowing the standings context AND the rivalry weight AND the season phase. That's the same context Claude already has for the rest of the team-page tool call. Adding `upcoming_fixtures` as an optional array field on the tool schema costs ~150 tokens of output and is the right home for the judgment.
+
+**Three plumbing bugs surfaced during smoke testing — same iteration-overwrite pattern as Lesson 67:**
+
+1. **raw_fetch_logs window was too small.** The function queried 20 rows newest-first. With 14 source-rows per hourly fetch, 20 rows covers ~1.4 hours. When API-Football briefly returns empty responses (a regular occurrence — happened at 17:00 UTC during Arsenal's smoke test), the only-good-data row is OUTSIDE the window and the standings card came back null. Fix: bump LIMIT to 100, covering ~7 hours of fetches per team.
+
+2. **Fetch loop assigned unconditionally — empty rows overwrote good ones.** The existing for-loop did `if (log.source === "api_football_standings") standingsData = jsonStr` — no guard. Since rawLogs is newest-first, the LATEST empty response would set `standingsData = ""`, and a previous good row earlier in the iteration would have already been written first (but then overwritten). The behavior was lossy in the opposite direction from Lesson 67's coachs bug. Same fix shape: "newest GOOD wins" — skip the assignment if (a) we've already filled it or (b) the response is empty.
+
+3. **JSON slice truncated mid-fixture.** Fixtures sliced at 2000 chars cuts roughly between fixture 2 and fixture 3 in a 4-fixture response. Claude received invalid JSON and emitted an empty `upcoming_fixtures` array. Same pattern as the manager-coach truncation in Lesson 67 (Koeman's long career history). Per-source slice limits: squad 6000, fixtures 6000, standings 8000, default 2000.
+
+**Rules:**
+
+1. **Use Claude where the value is JUDGMENT, not copying.** "Should this be 4 dots or 5?" needs context. "What's Arsenal's goal difference?" doesn't. Mixing the two in a single tool call cuts efficiency for both.
+2. **`.find()` / `.first` on a newest-first array is a footgun when the newest row can be empty.** Always walk past empties when the data is "the latest GOOD one."
+3. **JSON slicing on object/array payloads produces invalid JSON.** When you must slice, either parse-validate-reserialise after the slice OR strip irrelevant nested fields before stringifying. Don't trust the LLM to recover from invalid JSON in its input.
+4. **A new field is a new chance to discover the OLD plumbing was already broken.** The `upcoming_fixtures` failure forced us to fix two pre-existing latent bugs in the fetch loop that had been silently degrading the OTHER fields' quality for weeks. Add observability to fields you're already using before adding new ones.
+
+**Files touched:**
+- Backend: `team-page-generator/index.ts` (commit `f8024e1` — tool schema + prompt + buildStandingsCard helper + fetch-loop guards).
+- iOS Models: `ContentItem.swift` (new `StandingsEntry`, `StandingsCard`, `UpcomingFixture`, plus `TeamPageCards` extension).
+- iOS Components: new `Design/Components/CollapsibleSection.swift`, registered in `pbxproj` with the next free `AB000310` ID.
+- iOS Views: `TeamPageView.swift` (segmented `TeamTab` enum + `tabSelector` + `tabContent` dispatcher + `calendarTab` + `tableTab` + standings row highlight), `SettingsView.swift` (deleted feedFormatSection, reorganized into Notifications + Calendar visible / Setup + About collapsed at bottom).
+- Commits: `f8024e1` (backend), `8f1b540` (iOS).
+
+**Out of scope:** past results on the Calendar tab (upcoming-only per user direction), single-fixture-add tap action on the Calendar (existing CalendarSyncService still syncs the batch from Settings), `ClassicFeedView.swift` source deletion (dead code post-toggle-removal — defer to a cleanup task), importance-rating prompt tuning beyond first-pass (revisit if ratings cluster too uniformly after backfill).
