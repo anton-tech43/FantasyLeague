@@ -771,8 +771,8 @@ struct FeedView: View {
     static func applyTierFilter(_ items: [ContentItem], tier: Int) -> [ContentItem] {
         items.filter { item in
             switch item.type {
-            case .news, .matchday:
-                return true   // all tiers see the basics
+            case .news, .matchday, .startingXi:
+                return true   // all tiers see the basics + pre-match lineup
             case .sundayBrief:
                 return tier >= 2
             }
