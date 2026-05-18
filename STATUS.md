@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-18 evening (His Team segmented tabs + Settings collapse + standings/calendar backfill)
+**Last updated:** 2026-05-18 night (game-day push + starting-XI trigger + news-item team logos)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
@@ -179,6 +179,22 @@ Two more page redesigns shipped end-to-end after the morning's insider section w
     - Smoke-tested visually for arsenal (20-row PL table, 4 fixtures with 2-5 dot ratings) and sweden (4-row Group F table, 7 fixtures including a "Pre-World Cup tune-up" tag).
 
 **Out of scope:** past results on the Calendar tab (upcoming-only per user direction), tap-to-add-single-fixture (existing CalendarSyncService still syncs the batch from Settings), `ClassicFeedView.swift` source deletion (deferred — separate cleanup task), importance-rating prompt tuning beyond first pass (will iterate if rated games look bland after backfill review).
+
+---
+
+## Verified today (May 18 night — simplify pass + game-day push + starting-XI + news-item team logos)
+
+Three more features and a code-review pass shipped end-to-end after the evening's segmented-tabs work:
+
+- **Simplify pass on the evening's diff (commit `df24830`):** ran `/simplify` against `9b4affc..HEAD`. Four real findings, four fixes — DateFormatter() allocated per calendar row hot path → hoisted to `static let`; `isUserTeam()` substring match was falsely highlighting "Manchester United" when the user followed "Manchester City" (both contain "Manchester") → switched to API-Football id match; `StandingsEntry.id = rank` was brittle for multi-group renders → `teamIdApiFootball ?? rank`; backend rawLogs loop walked 100 rows even after all sources filled → added early-break + moved eligibility checks before JSON.stringify. Deferred (filed for follow-up): SegmentedPill / BorderedEmptyState / SectionHeaderLabel extractions (defer until 2nd caller emerges) and shared iOS DateFormatters cleanup.
+
+- **Game day push (commit `e5035e4` backend, `c7a5b96` iOS):** new daily `morning-push` Edge Function fires at `0 8 * * *` UTC (migration 048). Queries `match_status_state` for fixtures kicking off in the next 18h, matches subscribed `device_tokens` via `.or(team_id, country_id)`, sends a templated APNs push per (user, fixture). Title "Game day at <team>", body "<Home> vs <Away> at HH:mm Europe/London. He'll be glued to it." No content_item generated — pure push, no LLM call. Migration 047 added `morning_push` to the pipeline_health stage CHECK. Smoke-tested clean (zero fixtures right now because today's matches all ended; tomorrow morning's cron picks up the real slate).
+
+- **Starting-XI trigger (same commits + `d529bb6` routines):** match-watcher gains a third trigger label "STARTING_XI" that fires once per fixture when `kickoff_time - NOW() <= 65 min` and the fixture is still pre-match (status NS / TBD). The fire loop now branches per trigger — HT → live-brief routine, STARTING_XI → new `gd-starting-xi` cloud routine. The routine fetches API-Football's `/fixtures/lineups`, picks 3-4 notable starters (cross-referenced with `team_pages.cards.ones_to_know`), and writes a `content_items` row with the new `type='starting_xi'` (migration 046). Pushed via the existing notification-sender path. Migration 047 also added `starting_xi_fire` to the pipeline_health stage CHECK. New iOS `BadgeView` case ("STARTING XI"); FeedView tier filter accepts the new type at T1+. **Manual step remaining**: user generates an API token in claude.ai/code/routines for `trig_01J8yMGTBu6KRvpWHzXeburj`, then sets `STARTING_XI_ROUTINE_URL` + `STARTING_XI_ROUTINE_TOKEN` as Supabase Edge Function secrets before match-watcher's next pre-kickoff window.
+
+- **News-item team logos (commit `16c13df` + `ca0a839` routines):** when a user taps a news item and lands on `ContentDetailView`, render 1-2 team crests above the headline based on the new `affected_team_ids` column (migration 049). 1 team → 1 crest; 2 teams → 2 crests side-by-side; 3+ teams or nil → no crests (matchday-wide stories hide gracefully). `content-generator` extended with the new tool field (Claude judges which teams the headline/body reference); routines repo `PROMPT.md` got an AFFECTED TEAMS section so the V1.1+ canonical content path emits the field too. New `AffectedTeamsHeader.swift` component in `Design/Components/` resolves each string id to `TeamCrestView(team:)` or `TeamCrestView(country:)` via existing enums; unresolvable ids filtered before render. Existing rows pre-049 render gracefully without crests.
+
+**Out of scope:** per-user timezone scheduling for the morning push (V2.1 — needs `device_tokens.timezone` + per-zone queue); goalscorer push notifications during a live match (separate product decision; over-notification risk); crest-tap-to-navigate from news detail to team page (possible follow-up); bulk backfill of `affected_team_ids` for historical rows (~50¢ in Claude calls and not a launch blocker — new items get the field naturally).
 
 ---
 

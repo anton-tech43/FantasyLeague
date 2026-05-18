@@ -2292,3 +2292,40 @@ The fix took three iterations, each surfacing a deeper version of the same archi
 - Commits: `f8024e1` (backend), `8f1b540` (iOS).
 
 **Out of scope:** past results on the Calendar tab (upcoming-only per user direction), single-fixture-add tap action on the Calendar (existing CalendarSyncService still syncs the batch from Settings), `ClassicFeedView.swift` source deletion (dead code post-toggle-removal — defer to a cleanup task), importance-rating prompt tuning beyond first-pass (revisit if ratings cluster too uniformly after backfill).
+
+### 70. Reuse the trigger framework you already built — don't bolt on a parallel scheduler
+
+**What happened (May 18 night):** added two new push surfaces. The first — a morning game-day push — was new infrastructure (no existing daily-fixture cron pattern). The second — a starting-XI push fired ~60 min before kickoff — had two plausible homes:
+
+1. **Extend `matchday-scheduler`**: it already runs daily at 07:00 UTC, fetches today's fixtures, and pre-schedules one-off pg_cron jobs at kickoff − 90 min. Add a second pg_cron schedule at kickoff − 65 min for the starting-XI routine.
+2. **Add a new trigger label to `match-watcher`**: it already polls every minute, tracks per-fixture state, and has a `briefs_fired` JSONB idempotency guard. Add `STARTING_XI` to the trigger detection logic, branch the fire URL per label.
+
+I went with (2). Why:
+
+- **One source of truth for "fire this routine once per fixture."** match-watcher already had the framework for HT triggers — the idempotency guard, the failure-mode logging, the per-perspective fire loop. Adding STARTING_XI to that pipeline was ~30 lines of new code (trigger detection + URL branch). Going through matchday-scheduler would have meant duplicating the pg_cron scheduling RPC + the same idempotency guard in a different shape + a separate logging path.
+- **Time precision is fine at the polling level.** match-watcher runs every minute via pg_cron; the kickoff − 65 min window catches any fixture transitioning into it within 60 s. That's tighter than necessary (lineups don't change second-to-second). A pg_cron one-off scheduled at the exact kickoff − 65 min target would be marginally more precise but pays the cost of a new code path.
+- **Single mental model for the fire loop.** The `for (const trigger of newTriggers)` block now handles HT (in-match) and STARTING_XI (pre-match) with a single URL switch. A future "goalscorer" trigger or "kickoff" trigger drops into the same block.
+
+**Rules:**
+
+1. **Before building a new scheduler, look at the one that's already running every minute.** Polling at minute granularity covers most "fire X min before Y" requirements without new infrastructure. The cost of an extra trigger-detection branch is a few cycles per fixture; the cost of a new scheduler is a new failure surface forever.
+2. **Idempotency guards travel with the trigger pattern.** `briefs_fired: jsonb[]` exists because in-match polling needs to know "did we already fire HT?". The same array trivially extends to "did we already fire STARTING_XI?". Reusing it gets the dedup for free.
+3. **The new trigger label gets a routine URL switch, not a function rewrite.** Branch on `trigger === "STARTING_XI"` to pick the env-var pair (URL + token); everything else — payload shape, idempotency, logging — stays uniform.
+4. **The morning push had no equivalent prior pattern** (no daily fixture-announcement cron existed), so it got a new Edge Function + cron. Don't reuse for the sake of reusing — but check for an existing pattern before assuming "new feature = new infrastructure."
+
+**Two surfaces in this same arc:**
+
+- **Morning push** (commit `e5035e4`): new `morning-push` Edge Function, new daily 08:00 UTC cron (migration 048), new pipeline_health stage `morning_push` (migration 047). Pure templated push, no LLM. Pure new build because no comparable pattern existed.
+- **Starting-XI** (same commit set): all inside the existing `match-watcher` trigger framework — new trigger label, new fire-URL branch, new content_items type (migration 046), new cloud routine `gd-starting-xi` (routines repo commit `d529bb6`). No new schedulers, no new cron jobs.
+
+**News-item team logos (commit `16c13df`)** — a different category. New optional column `affected_team_ids text[]` on content_items (migration 049), populated by both content-generator and the routine path (PROMPT.md AFFECTED TEAMS section). iOS reads it via a new `AffectedTeamsHeader` component that resolves each id to `TeamCrestView(team:)` or `TeamCrestView(country:)` via the existing PL/WC enums. 1-2 entries → 1-2 crests; 3+ or nil → no crests. Items pre-migration render gracefully without crests.
+
+**Files touched:**
+- Backend: `morning-push/index.ts` (new), `match-watcher/index.ts` (STARTING_XI detection + fire-URL branch), `content-generator/index.ts` (affected_team_ids tool + merge), migrations 046/047/048/049.
+- Routines repo (`anton-tech43/goaldigger-routines`): `STARTING_XI_PROMPT.md` (new), `post_starting_xi.sh` (new), `PROMPT.md` (AFFECTED TEAMS section), `schema.json`.
+- iOS: `ContentItem.swift` (startingXi case + affectedTeamIds field), `BadgeView.swift` (STARTING XI chip), `FeedView.swift` (tier filter), `AffectedTeamsHeader.swift` (new), `ContentDetailView.swift` (render the header), `pbxproj` (registered AB000311).
+- Commits: `df24830` (simplify), `e5035e4` (push backend), `c7a5b96` (iOS starting_xi case), `d529bb6` (routines), `16c13df` (news logos backend + iOS), `ca0a839` (routines AFFECTED TEAMS).
+
+**Manual step pending:** user generates the routine API token in claude.ai/code/routines UI for `trig_01J8yMGTBu6KRvpWHzXeburj` (gd-starting-xi), then sets `STARTING_XI_ROUTINE_URL` + `STARTING_XI_ROUTINE_TOKEN` as Supabase Edge Function secrets. Without that, match-watcher's STARTING_XI trigger fires but the routine POST 401s.
+
+**Out of scope:** per-user timezone scheduling for the morning push (V2.1); goalscorer push notifications during live match (over-notification risk); crest-tap-to-navigate from detail to team page; bulk backfill of `affected_team_ids` for historical rows.
