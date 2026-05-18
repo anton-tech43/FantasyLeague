@@ -589,10 +589,15 @@ struct FeedView: View {
     // MARK: - Data Loading
 
     private func loadInitial() async {
-        // Set initial context from selected team
-        if let team = appState.selectedTeam {
-            appState.activeContext = .team(team)
-        }
+        // NOTE: do NOT set appState.activeContext here. AppState.init()
+        // establishes the initial context once at app launch; after that
+        // the user owns it via ContextSwitcherView. FeedView is a reader,
+        // not a writer. Previously this method unconditionally ran
+        // `activeContext = .team(selectedTeam)` on every .task fire — which
+        // meant a tab switch (His Team → Feed) silently overwrote the
+        // user's switcher choice. If they picked Sweden, came back to the
+        // feed, they'd see Arsenal again. Confirmed via plan investigation
+        // 2026-05-18; see STATUS.md note.
 
         // Show cached data immediately
         let cached = CacheService.shared.fetchCachedFeed(
