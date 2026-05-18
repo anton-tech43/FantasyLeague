@@ -140,9 +140,14 @@ serve(async (_req) => {
         const opponent = subject === home ? away : home;
 
         const title = `Game day at ${subject.short_name ?? subject.display_name}`;
+        // Body name-drops both teams + kickoff time, then teases the
+        // lineup as a conversation starter — lineups drop ~60min before
+        // kickoff per API-Football's publication cadence. Designed to
+        // give her something concrete to ask him about without us
+        // having to actually fetch + push the lineup itself.
         const body =
           `${home.display_name} vs ${away.display_name} at ${kickoffStr}. ` +
-          `He'll be glued to it.`;
+          `Lineups drop an hour before — good thing to ask him about.`;
 
         // Reuse the existing buildAPNsPayload helper. Pass the templated
         // strings as pushTitle + pushText so they win over the fallbacks.
