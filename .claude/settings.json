@@ -14,22 +14,46 @@
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
+      "Bash(rg:*)",
       "Bash(jq:*)",
       "Bash(head:*)",
       "Bash(tail:*)",
       "Bash(wc:*)",
       "Bash(sort:*)",
       "Bash(uniq:*)",
+      "Bash(cut:*)",
+      "Bash(tr:*)",
+      "Bash(awk:*)",
+      "Bash(sed:*)",
+      "Bash(xargs:*)",
+      "Bash(diff:*)",
+      "Bash(test:*)",
       "Bash(date:*)",
       "Bash(echo:*)",
+      "Bash(printf:*)",
       "Bash(which:*)",
+      "Bash(env:*)",
+
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(touch:*)",
+      "Bash(chmod:*)",
+      "Bash(open:*)",
 
       "Bash(xcodebuild:*)",
       "Bash(xcrun simctl:*)",
 
       "Bash(supabase:*)",
       "Bash(/opt/homebrew/Cellar/libpq/*)",
-      "Bash(/opt/homebrew/opt/libpq/bin/psql:*)"
+      "Bash(/opt/homebrew/opt/libpq/bin/psql:*)",
+
+      "Bash(deno:*)",
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(python3:*)",
+      "Bash(python:*)"
     ]
   }
 }
