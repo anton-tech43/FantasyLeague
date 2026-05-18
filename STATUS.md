@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-17 (night-finale-2 — V2.0 sim walkthrough fixes + 71-team manager backfill)
+**Last updated:** 2026-05-18 (Insider section redesign — 3 fun facts + 1 anecdote, all 68 active teams seeded)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
@@ -144,6 +144,22 @@ Seventh and final pass for May 17. User ran the V2.0 onboarding in the simulator
     - Fix: a `manager_overrides` table seeded from a trusted source. ~30 min, V2.1.
 
 **Net:** sim is functionally clean for the V2.0 dual-fandom journey. The next "fresh onboarding" run will hit "Meet the boss" with a real coach name + photo. The remaining 4 country data-quality cases are bounded and named.
+
+---
+
+## Verified today (May 18 — Insider section redesign + 68-team backfill)
+
+User reported during the sim that Sweden's team page had no "history" surface and no "Things he doesn't know" section at the bottom. Root cause: the `gd-insider` cloud routine was hardcoded to iterate the 20 Premier League clubs alphabetically, so the 48 WC countries never received any insider items (`team_insider_items` had zero rows for any country). The "history" the user was looking for IS the insider system — `history` is one of four item types (`stat | anecdote | history | oddity`).
+
+Section also redesigned: from one card (title + 2-line body, expandable) to a stacked list of four headline-only rows — one of each type. Headlines only, no body, no expand. Tier-gating + visual continuity with InsiderCard preserved.
+
+- **Routines repo (`anton-tech43/goaldigger-routines`):** `INSIDER_PROMPT.md` rewritten across 3 commits — `bbdcb3e` (replace hardcoded PL list with live `teams` table query; add `text=backfill=all_types` mode), `91f0c5b` (also call `fetch_news_wc.sh` so WC countries have RSS data + relax failure mode so `history`/`oddity` can compose from training-data even when fetch is thin), `134dc6d` (broaden the anecdote rule for countries — training-data-anchored federation news allowed when RSS is empty). Three backfill fires via `RemoteTrigger`; final state: **48/48 WC countries with all 4 types, 20/20 active PL clubs with all 4 types, 3 relegated clubs at 2/4**. 797 total rows in `team_insider_items`.
+
+- **iOS (commit `bb21630`):** new `fetchInsiderSet(teamId:)` in `APIClient.swift` picks the latest of each type (one REST call, client-side group). New `InsiderHeadlineRow.swift` component (compact, tracker label + headline, no body). `TeamPageView.swift` rewires from single-item to 4-row list; pbxproj registers the new file. xcodebuild green on iPhone 17 Pro sim. Old `InsiderCard.swift` retained for FeedView empty state (still wants title + body).
+
+- **Project-shared permissions (commit `3487843`):** new `.claude/settings.json` with 24 broad allow patterns for the commands that recur across sessions — `curl`, read-only git, utility commands (grep/find/ls/jq/head/tail/wc/sort/uniq/date/echo/which), `xcodebuild`, `xcrun simctl`, `supabase` CLI, libpq's `psql`. Replaces fragile exact-string entries in `.local.json`. `.gitignore` also updated to exclude `.claude/scheduled_tasks.lock` and `.claude/plans/`.
+
+**Out of scope:** 3 relegated PL clubs (ipswich, leicester, southampton) at 2/4 types — no recent standings/RSS data; not a launch concern since they're not selectable in the V2.0 onboarding flow. Daily `gd-insider` cron (`0 2 * * 1-5`) keeps the section topped up going forward, refreshing one type per team per weekday in normal mode.
 
 ---
 
