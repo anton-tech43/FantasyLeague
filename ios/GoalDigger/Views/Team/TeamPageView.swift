@@ -135,10 +135,12 @@ struct TeamPageView: View {
 
     // MARK: - Tab selector + dispatcher
 
-    /// 3-way pill control matching the brand language: hot rose for the
-    /// selected pill on a soft-blush gutter. Replaces the single-scroll
-    /// design with explicit Info / Calendar / Table tabs so the team
-    /// page is a true reference surface, not just a feed.
+    /// 3-way control: only the SELECTED tab renders as a hot-rose pill —
+    /// the other two sit as bare, recessed text on the team-page
+    /// background. The previous design had a soft-blush gutter + white
+    /// pills for the unselected tabs; on the deep-mauve team page that
+    /// read as competing chrome. Lighter visual = the page header
+    /// breathes, and your eye lands on the active tab immediately.
     private var tabSelector: some View {
         HStack(spacing: 0) {
             ForEach(TeamTab.allCases) { tab in
@@ -152,15 +154,12 @@ struct TeamPageView: View {
                         .font(.jakarta(15, weight: .medium))
                         .frame(maxWidth: .infinity)
                         .frame(height: 40)
-                        .background(activeTab == tab ? Color.hotRose : Color.softBlush)
-                        .foregroundColor(activeTab == tab ? .warmWhite : .charcoal)
+                        .background(activeTab == tab ? Color.hotRose : Color.clear)
+                        .foregroundColor(activeTab == tab ? .warmWhite : .warmWhite.opacity(0.6))
                         .cornerRadius(12)
                 }
             }
         }
-        .padding(4)
-        .background(Color.softBlush.opacity(0.5))
-        .cornerRadius(16)
     }
 
     @ViewBuilder
