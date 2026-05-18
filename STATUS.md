@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-18 night (game-day push + starting-XI trigger + news-item team logos)
+**Last updated:** 2026-05-18 late night (FT-push regression fix + Sweden ghosting fix + starting-XI cleanup)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
@@ -195,6 +195,24 @@ Three more features and a code-review pass shipped end-to-end after the evening'
 - **News-item team logos (commit `16c13df` + `ca0a839` routines):** when a user taps a news item and lands on `ContentDetailView`, render 1-2 team crests above the headline based on the new `affected_team_ids` column (migration 049). 1 team → 1 crest; 2 teams → 2 crests side-by-side; 3+ teams or nil → no crests (matchday-wide stories hide gracefully). `content-generator` extended with the new tool field (Claude judges which teams the headline/body reference); routines repo `PROMPT.md` got an AFFECTED TEAMS section so the V1.1+ canonical content path emits the field too. New `AffectedTeamsHeader.swift` component in `Design/Components/` resolves each string id to `TeamCrestView(team:)` or `TeamCrestView(country:)` via existing enums; unresolvable ids filtered before render. Existing rows pre-049 render gracefully without crests.
 
 **Out of scope:** per-user timezone scheduling for the morning push (V2.1 — needs `device_tokens.timezone` + per-zone queue); goalscorer push notifications during a live match (separate product decision; over-notification risk); crest-tap-to-navigate from news detail to team page (possible follow-up); bulk backfill of `affected_team_ids` for historical rows (~50¢ in Claude calls and not a launch blocker — new items get the field naturally).
+
+---
+
+## Verified today (May 18 late night — FT-push regression fix + Sweden ghosting + starting-XI cleanup)
+
+Three fixes plus a permissions broadening, in response to user-reported regressions after tonight's earlier shipping arc:
+
+- **"The push that didn't come" — Arsenal FT regression (migration 050):** Arsenal-Burnley finished ~21:00 UTC. No FT push fired. Investigation: migration 045 (shipped earlier today) bumped `data-fetcher` from daily to hourly (`0 * * * *`), pushing daily API-Football consumption to ~10k/day on a 7.5k Pro-tier ceiling. By ~18:00 UTC the quota was exhausted; `match-watcher`'s per-minute fixture polling started returning `"You have reached the request limit for the day"` and stopped seeing Arsenal's state transitions. **Fix:** new migration 050 walks data-fetcher back to `0 6-22/2 * * *` — every 2 hours during waking hours (06:00–22:00 UTC), quiet overnight. Budget: ~3,870 (data-fetcher) + ~2,880 (match-watcher) = ~6,750/day, under the ceiling with ~750 headroom for ad-hoc work. Tomorrow's quota resets at 00:00 UTC and the FT-push path resumes working.
+
+- **"Sweden ghosting" — feed reverts to Arsenal bug (FeedView.swift):** if the user picked Sweden in the switcher and visited the "His Team" tab, returning to the Feed tab reverted to Arsenal. Root cause: `FeedView.loadInitial()` unconditionally set `appState.activeContext = .team(selectedTeam)` on every `.task` fire — tab re-mounts triggered the .task again, silently overwriting the user's switcher choice. **Fix:** delete the 4-line reset block. `AppState.init()` establishes the initial context once at app launch; the switcher (`ContextSwitcherView.switchContext`) owns it after that. FeedView reads, not writes.
+
+- **"Demolish the starting XI overbuild" — cleanup:** earlier tonight I shipped a pre-kickoff starting-XI routine + match-watcher trigger + content_items type. User opted for a simpler design (morning push references lineups as a teaser, no fetch). Removed: match-watcher's STARTING_XI trigger detection + fire-loop branch + env-var reads; `gd-starting-xi` cloud routine disabled via RemoteTrigger (`trig_01J8yMGTBu6KRvpWHzXeburj`); routines repo files `STARTING_XI_PROMPT.md` + `post_starting_xi.sh` deleted (routines commit `e163606`). Migrations 046 (`starting_xi` content type) and 047 (`starting_xi_fire` stage) left in place — unused enums but harmless; rolling back would risk data loss on any row that snuck in, and they're ready if a future feature wants pre-match push content.
+
+- **"Lineups teaser" — morning-push body refresh:** body copy changed from `"He'll be glued to it."` → `"Lineups drop an hour before — good thing to ask him about."`. Title (`"Game day at <team>"`) and 08:00 UTC schedule (= 09:00 BST in summer) unchanged. V2.1 follow-up: bump cron to `0 9 * * *` after the October 2026 BST→GMT DST transition to keep "9 UK time" in winter.
+
+- **"Quiet life" — broadened auto-approve patterns (`.claude/settings.json`):** 24 → 46 patterns. Added `chmod`, `mkdir`, `cp`, `mv`, `touch`, `diff`, `deno`, `npm`, `npx`, `node`, `python3`, `python`, `printf`, `awk`, `sed`, `xargs`, `cut`, `tr`, `open`, `env`, `rg`, `test`. Still blocks: `rm`, `git reset --hard`, force-push, `supabase db reset`, bare `Bash(*)`.
+
+**Out of scope:** Per-timezone morning-push (V2.1); restructuring data-fetcher to call fewer per-fire endpoints (more meaningful optimization but not blocking launch); polling cadence reduction on match-watcher (could cut ~2k API calls/day if we only poll during match hours — V2.1 candidate).
 
 ---
 

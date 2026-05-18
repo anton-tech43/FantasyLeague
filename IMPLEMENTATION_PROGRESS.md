@@ -2329,3 +2329,57 @@ I went with (2). Why:
 **Manual step pending:** user generates the routine API token in claude.ai/code/routines UI for `trig_01J8yMGTBu6KRvpWHzXeburj` (gd-starting-xi), then sets `STARTING_XI_ROUTINE_URL` + `STARTING_XI_ROUTINE_TOKEN` as Supabase Edge Function secrets. Without that, match-watcher's STARTING_XI trigger fires but the routine POST 401s.
 
 **Out of scope:** per-user timezone scheduling for the morning push (V2.1); goalscorer push notifications during live match (over-notification risk); crest-tap-to-navigate from detail to team page; bulk backfill of `affected_team_ids` for historical rows.
+
+### 71. The quota blast radius — a metered upstream and the FT push that didn't come
+
+**What happened (May 18 late night):** Arsenal-Burnley finished ~21:00 UTC. User's team is Arsenal. No FT push arrived. Investigation found: `match-watcher` (per-minute cron, polls API-Football for fixture state transitions) was receiving `"You have reached the request limit for the day, Go to https://dashboard.api-football.com to upgrade your plan."` from ~18:00 UTC onwards. With no fixture data coming back, match-watcher never saw Arsenal transition from `NS` → `FT`, so `matchday_fire` never fired, so notification-sender never pushed.
+
+**The migration that did it.** Migration 045 (shipped ~17:00 UTC the same day) walked `data-fetcher` from daily at 07:00 UTC to hourly (`0 * * * *`). That sounded innocuous in isolation, but the math we never did:
+
+```
+data-fetcher per fire: ~430 API-Football calls
+                       (71 teams × ~6 endpoints + 2 league standings)
+data-fetcher hourly  : 430 × 24 = 10,320 calls/day
+match-watcher        : 2 leagues × 1440 ticks/day = 2,880 calls/day
+                       ──────
+Total                : ~13,200 calls/day
+API-Football Pro tier:  7,500 calls/day
+                       ──────
+Over budget by       :  5,700 calls/day, every day.
+```
+
+By ~18:00 UTC the daily budget was gone. From that point until midnight UTC, match-watcher was effectively dead — fixtures couldn't be fetched, transitions couldn't be detected, pushes couldn't be triggered. A whole match day silently broke.
+
+**The misleading user-side suspicion.** User initially thought the issue might be in the FT-push pipeline itself ("we changed crons for HT/75' — did that break FT?"). Worth chasing for ~30 seconds, but no — the HT/75' change (Tier 3 sweep, May 17) only dropped match-watcher's 75' routine fire, not anything in the matchday_fire / API-call path. The actual culprit was a completely different cron (`data-fetcher`) on a completely different code path that happened to share the same metered upstream.
+
+**The fix (migration 050).** Walked `data-fetcher` back to `0 6-22/2 * * *` — every 2 hours during waking hours (06:00–22:00 UTC), quiet overnight. New steady-state math:
+
+```
+data-fetcher 9× waking: 430 × 9 = 3,870 calls/day
+match-watcher         :          2,880 calls/day
+                                ──────
+Total                 :          6,750 calls/day  (under 7,500 ceiling)
+Headroom              :            750 calls/day  (one-off regenerations,
+                                                   manual smoke tests, etc.)
+```
+
+Tomorrow at 00:00 UTC the API-Football quota resets and match-watcher resumes seeing fixtures.
+
+**Rules:**
+
+1. **Before changing a cron cadence on any path that consumes a metered upstream, do the math.** `(calls per fire) × (fires per day)` vs `daily quota`. The math takes 30 seconds; the regression takes 4 hours to debug AND breaks user pushes silently. There's no "I'll check later" — the moment a hourly cron hits an over-quota threshold, every downstream consumer of that upstream is impaired and there's no error in your own pipeline pointing at the cron change.
+
+2. **A metered upstream is a shared resource.** `data-fetcher` and `match-watcher` are two completely independent code paths in different cron jobs producing different outputs. They look unrelated until you remember they both call API-Football. Quota is a coupling that doesn't show up in dependency graphs or import statements.
+
+3. **"Waking-hours only" is almost always the right pattern for content fetchers.** Overnight (22:00–06:00 UTC) news is sparse, users are asleep, and the cron fires were doubling spend for zero user value. The user explicitly asked for quiet hours — they were right.
+
+4. **When a regression looks like "the feature path broke," check the upstream-spend path before the feature path.** The fix wasn't in `match-watcher` or `notification-sender` or any push-side code. It was in `data-fetcher` — the OTHER service that happened to share the API-Football quota.
+
+5. **Pipeline-health observability caught this in minutes once we looked.** Querying `net._http_response` for recent match-watcher invocations showed every response saying "request limit reached." Without that table we'd have been chasing ghost states in `match_status_state` and never found the rate-limit cause. Phase J pays for itself.
+
+**Files touched (and not touched):**
+- Backend: `migrations/050_data_fetcher_every_2h_waking.sql` (new), reverts migration 045. Also: `match-watcher/index.ts` (delete STARTING_XI trigger block + fire-loop branch, revert `logFire` stage union — tonight's overbuild that wasn't asked for); `morning-push/index.ts` (body copy refresh referencing lineups); routines repo (`STARTING_XI_PROMPT.md` + `post_starting_xi.sh` deleted in commit `e163606`; cloud routine `trig_01J8yMGTBu6KRvpWHzXeburj` disabled via RemoteTrigger).
+- iOS: `FeedView.swift` (delete the `loadInitial` unconditional reset that caused Sweden→His Team→Feed to revert to Arsenal).
+- Permissions: `.claude/settings.json` expanded 24 → 46 patterns.
+
+**Manual side-effects user took ownership of:** Earlier in the day they set Supabase Edge Function secrets `STARTING_XI_ROUTINE_URL` + `STARTING_XI_ROUTINE_TOKEN`. After tonight's cleanup these are dormant — harmless, optional cleanup via `supabase secrets unset` if they want a tidy dashboard.
