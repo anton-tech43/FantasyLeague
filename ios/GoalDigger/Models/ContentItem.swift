@@ -269,6 +269,10 @@ struct TeamPageCards: Codable {
     let postMatch: TeamPostMatchCard?
     let freshnessText: String?
 
+    // Calendar tab + Table tab on TeamPageView (Info / Calendar / Table)
+    let upcomingFixtures: [UpcomingFixture]?
+    let standings: StandingsCard?
+
     enum CodingKeys: String, CodingKey {
         case basics
         case manager
@@ -282,6 +286,8 @@ struct TeamPageCards: Codable {
         case rivalryIntensity = "rivalry_intensity"
         case postMatch = "post_match"
         case freshnessText = "freshness_text"
+        case upcomingFixtures = "upcoming_fixtures"
+        case standings
     }
 }
 
@@ -408,6 +414,69 @@ struct NextFixtureCard: Codable {
         case venue
         case preview
         case talkingPoint = "talking_point"
+    }
+}
+
+// MARK: - Team Page — Calendar tab (upcoming fixtures with importance)
+
+/// One upcoming fixture with a server-generated importance rating.
+/// Powers the Calendar tab on TeamPageView. The importance dots + label
+/// come from team-page-generator's Claude pass using standings + form
+/// context — derbies and direct top-4 / relegation collisions go 4-5,
+/// mid-table league games go 2-3, friendlies / dead-rubbers go 1.
+struct UpcomingFixture: Codable, Identifiable, Equatable {
+    var id: String { "\(date)-\(opponent)" }
+    let date: String                  // ISO 8601 kickoff datetime
+    let opponent: String
+    let venue: String                 // "home" | "away"
+    let importanceDots: Int           // 1-5
+    let importanceLabel: String       // ≤30 chars, statement form
+
+    enum CodingKeys: String, CodingKey {
+        case date, opponent, venue
+        case importanceDots = "importance_dots"
+        case importanceLabel = "importance_label"
+    }
+}
+
+// MARK: - Team Page — Table tab (standings)
+
+/// One row of standings. Used by both PL (20-row league table) and WC
+/// (4-row group table). Populated by team-page-generator's mechanical
+/// post-Claude merge from api_football_standings raw_fetch_log — no LLM
+/// judgment, purely deterministic table data.
+struct StandingsEntry: Codable, Identifiable, Equatable {
+    var id: Int { rank }
+    let rank: Int
+    let teamName: String
+    let teamIdApiFootball: Int?
+    let played: Int
+    let won: Int
+    let drawn: Int
+    let lost: Int
+    let gf: Int
+    let ga: Int
+    let gd: Int
+    let points: Int
+
+    enum CodingKeys: String, CodingKey {
+        case rank, played, won, drawn, lost, gf, ga, gd, points
+        case teamName = "team_name"
+        case teamIdApiFootball = "team_id_api_football"
+    }
+}
+
+/// Standings table card. `competitionLabel` is "Premier League" for PL
+/// clubs and "Group A" / "Group B" / etc. for WC countries.
+struct StandingsCard: Codable, Equatable {
+    let updatedAt: String?
+    let competitionLabel: String
+    let entries: [StandingsEntry]
+
+    enum CodingKeys: String, CodingKey {
+        case updatedAt = "updated_at"
+        case competitionLabel = "competition_label"
+        case entries
     }
 }
 

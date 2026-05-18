@@ -26,249 +26,44 @@ struct SettingsView: View {
 
             ScrollView {
                 VStack(spacing: Layout.sectionSpacing) {
-                    // FEED FORMAT
-                    feedFormatSection
-
-                    // YOUR SETUP
-                    settingsSection(header: "YOUR SETUP") {
-                        // Your Name
-                        settingsRow {
-                            Button {
-                                herNameDraft = appState.herName
-                                editingHerName = true
-                            } label: {
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Your Name")
-                                            .font(.feedTimestamp)
-                                            .foregroundColor(.textSecondaryOnCard)
-                                        Text(appState.herName.isEmpty ? "Not set" : appState.herName)
-                                            .font(.feedHeadline)
-                                            .foregroundColor(.textPrimaryOnCard)
-                                    }
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .foregroundColor(.textSecondaryOnCard)
-                                        .font(.system(size: 12))
-                                }
-                            }
-                        }
-
-                        // His Name
-                        settingsRow {
-                            Button {
-                                hisNameDraft = appState.hisName
-                                editingHisName = true
-                            } label: {
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("His Name")
-                                            .font(.feedTimestamp)
-                                            .foregroundColor(.textSecondaryOnCard)
-                                        Text(appState.hisName.isEmpty ? "Not set" : appState.hisName)
-                                            .font(.feedHeadline)
-                                            .foregroundColor(.textPrimaryOnCard)
-                                    }
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .foregroundColor(.textSecondaryOnCard)
-                                        .font(.system(size: 12))
-                                }
-                            }
-                        }
-
-                        // His Team
-                        settingsRow {
-                            Button { showTeamPicker = true } label: {
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("\(appState.hisName.isEmpty ? "His" : appState.hisName + "'s") Team")
-                                            .font(.feedTimestamp)
-                                            .foregroundColor(.textSecondaryOnCard)
-                                        Text(appState.selectedTeam?.displayName ?? "None")
-                                            .font(.feedHeadline)
-                                            .foregroundColor(.textPrimaryOnCard)
-                                    }
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .foregroundColor(.textSecondaryOnCard)
-                                        .font(.system(size: 12))
-                                }
-                            }
-                        }
-
-                        // Your Mode
-                        settingsRow {
-                            Button { showTierPicker = true } label: {
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Your Mode")
-                                            .font(.feedTimestamp)
-                                            .foregroundColor(.textSecondaryOnCard)
-                                        Text(tierLabel(appState.selectedTier))
-                                            .font(.feedHeadline)
-                                            .foregroundColor(.textPrimaryOnCard)
-                                    }
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .foregroundColor(.textSecondaryOnCard)
-                                        .font(.system(size: 12))
-                                }
-                            }
-                        }
-                    }
-
-                    // NOTIFICATIONS
+                    // 1. NOTIFICATIONS — always visible
                     settingsSection(header: "NOTIFICATIONS") {
-                        settingsRow {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Notifications")
-                                        .font(.feedTimestamp)
-                                        .foregroundColor(.textSecondaryOnCard)
-
-                                    if notificationStatus == .authorized {
-                                        HStack(spacing: 4) {
-                                            Text("Enabled")
-                                                .font(.feedHeadline)
-                                                .foregroundColor(.textPrimaryOnCard)
-                                            Image(systemName: "checkmark.circle.fill")
-                                                .foregroundColor(.hotRose)
-                                                .font(.system(size: 14))
-                                        }
-                                    } else {
-                                        Button {
-                                            if let url = URL(string: UIApplication.openSettingsURLString) {
-                                                UIApplication.shared.open(url)
-                                            }
-                                        } label: {
-                                            HStack(spacing: 4) {
-                                                Text("Disabled")
-                                                    .font(.feedHeadline)
-                                                    .foregroundColor(.textPrimaryOnCard)
-                                                Text("Open Settings")
-                                                    .font(.feedTimestamp)
-                                                    .foregroundColor(.hotRose)
-                                            }
-                                        }
-                                    }
-                                }
-                                Spacer()
-                            }
-                        }
+                        notificationsRow
                     }
 
-                    // CALENDAR
+                    // 2. CALENDAR — always visible
                     settingsSection(header: "CALENDAR") {
-                        settingsRow {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Add his fixtures to your calendar")
-                                        .font(.feedTimestamp)
-                                        .foregroundColor(.textSecondaryOnCard)
-                                    Text(appState.calendarSyncEnabled ? "On" : "Off")
-                                        .font(.feedHeadline)
-                                        .foregroundColor(.textPrimaryOnCard)
-                                }
-                                Spacer()
-                                if isSyncingCalendar {
-                                    ProgressView().tint(.hotRose)
-                                } else {
-                                    Toggle("", isOn: Binding(
-                                        get: { appState.calendarSyncEnabled },
-                                        set: { newValue in
-                                            if newValue {
-                                                Task { await enableCalendarSync() }
-                                            } else {
-                                                showCalendarRemoveConfirm = true
-                                            }
-                                        }
-                                    ))
-                                    .labelsHidden()
-                                    .tint(.hotRose)
-                                }
-                            }
+                        calendarSyncRow
+                    }
+
+                    // 3. CHANGE YOUR SETUP — collapsed by default. Pushed
+                    //    below the always-on rows so the top of the page
+                    //    is "what's happening right now" (push state +
+                    //    calendar sync); identity + mode editing is one
+                    //    extra tap away.
+                    CollapsibleSection(title: "Change your setup") {
+                        VStack(spacing: Layout.cardSpacing) {
+                            yourNameRow
+                            hisNameRow
+                            hisTeamRow
+                            yourModeRow
                         }
                     }
 
-                    // ABOUT
-                    settingsSection(header: "ABOUT") {
-                        settingsRow {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("GoalDigger")
-                                    .font(.feedHeadline)
-                                    .foregroundColor(.textPrimaryOnCard)
-                                Text("For the girlfriend who's done nodding along. Made for her, not him.")
-                                    .font(.feedTimestamp)
-                                    .foregroundColor(.textSecondaryOnCard)
-                            }
+                    // 4. ABOUT — collapsed by default. Absorbs the footer
+                    //    links (Contact / Privacy / Delete My Data /
+                    //    Version) so the entire app metadata lives in
+                    //    one expand-on-tap section instead of trailing
+                    //    rows that pad the page.
+                    CollapsibleSection(title: "About") {
+                        VStack(spacing: Layout.cardSpacing) {
+                            aboutBlurbCard
+                            contactRow
+                            privacyRow
+                            deleteRow
+                            versionLabel
                         }
                     }
-
-                    // FOOTER LINKS
-                    VStack(spacing: Layout.cardSpacing) {
-                        settingsRow {
-                            Button {
-                                if let url = URL(string: "mailto:hello@goaldigger.app") {
-                                    UIApplication.shared.open(url)
-                                }
-                            } label: {
-                                HStack {
-                                    Text("Contact Us")
-                                        .font(.settingsItem)
-                                        .foregroundColor(.textPrimaryOnCard)
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .foregroundColor(.textSecondaryOnCard)
-                                        .font(.system(size: 12))
-                                }
-                            }
-                        }
-
-                        settingsRow {
-                            Button {
-                                if let url = URL(string: "https://getgoaldigger.com/privacy") {
-                                    UIApplication.shared.open(url)
-                                }
-                            } label: {
-                                HStack {
-                                    Text("Privacy Policy")
-                                        .font(.settingsItem)
-                                        .foregroundColor(.textPrimaryOnCard)
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .foregroundColor(.textSecondaryOnCard)
-                                        .font(.system(size: 12))
-                                }
-                            }
-                        }
-
-                        // Restore Purchases removed: paid app on App Store, no IAP. The
-                        // App Store handles redownload/restore automatically when a user
-                        // reinstalls; an in-app button would just confuse them.
-
-                        settingsRow {
-                            Button { showDeleteConfirmation = true } label: {
-                                HStack {
-                                    Text("Delete My Data")
-                                        .font(.settingsItem)
-                                        .foregroundColor(.hotRose)
-                                    Spacer()
-                                    if isDeleting {
-                                        ProgressView()
-                                            .tint(.hotRose)
-                                    }
-                                }
-                            }
-                            .disabled(isDeleting)
-                        }
-                    }
-
-                    // Version
-                    Text("Version 1.0.0")
-                        .font(.jakarta(11, weight: .regular))
-                        .foregroundColor(.textTertiary.opacity(0.6))
-                        .padding(.top, 8)
                 }
                 .padding(.horizontal, Layout.screenPadding)
                 .padding(.top, 16)
@@ -343,56 +138,250 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - Feed Format Section
+    // MARK: - Row components
+    //
+    // The Immersive/Classic toggle that used to live here was removed in
+    // May 2026. Everyone runs the Immersive layout now (AppState.feedStyle
+    // defaults to .immersive). FeedView still reads the flag but no UI
+    // exposes it.
 
-    @ViewBuilder
-    private var feedFormatSection: some View {
-        VStack(alignment: .leading, spacing: Layout.cardSpacing) {
-            Text("FEED FORMAT")
-                .font(.jakarta(11, weight: .semiBold))
-                .tracking(1)
-                .foregroundColor(.hotRose.opacity(0.7))
-                .padding(.leading, 4)
-
-            HStack(spacing: 0) {
-                // Immersive option
-                Button {
-                    appState.feedStyle = .immersive
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "rectangle.stack")
-                            .font(.system(size: 14))
-                        Text("Immersive")
-                            .font(.jakarta(17, weight: .medium))
+    @ViewBuilder private var yourNameRow: some View {
+        settingsRow {
+            Button {
+                herNameDraft = appState.herName
+                editingHerName = true
+            } label: {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Your Name")
+                            .font(.feedTimestamp)
+                            .foregroundColor(.textSecondaryOnCard)
+                        Text(appState.herName.isEmpty ? "Not set" : appState.herName)
+                            .font(.feedHeadline)
+                            .foregroundColor(.textPrimaryOnCard)
                     }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(appState.feedStyle == .immersive ? Color.hotRose : Color.softBlush)
-                    .foregroundColor(appState.feedStyle == .immersive ? .warmWhite : .charcoal)
-                    .cornerRadius(12)
-                }
-
-                // Classic option
-                Button {
-                    appState.feedStyle = .classic
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "list.bullet")
-                            .font(.system(size: 14))
-                        Text("Classic")
-                            .font(.jakarta(17, weight: .medium))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(appState.feedStyle == .classic ? Color.hotRose : Color.softBlush)
-                    .foregroundColor(appState.feedStyle == .classic ? .warmWhite : .charcoal)
-                    .cornerRadius(12)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.textSecondaryOnCard)
+                        .font(.system(size: 12))
                 }
             }
-            .padding(4)
-            .background(Color.softBlush.opacity(0.5))
-            .cornerRadius(16)
         }
+    }
+
+    @ViewBuilder private var hisNameRow: some View {
+        settingsRow {
+            Button {
+                hisNameDraft = appState.hisName
+                editingHisName = true
+            } label: {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("His Name")
+                            .font(.feedTimestamp)
+                            .foregroundColor(.textSecondaryOnCard)
+                        Text(appState.hisName.isEmpty ? "Not set" : appState.hisName)
+                            .font(.feedHeadline)
+                            .foregroundColor(.textPrimaryOnCard)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.textSecondaryOnCard)
+                        .font(.system(size: 12))
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var hisTeamRow: some View {
+        settingsRow {
+            Button { showTeamPicker = true } label: {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("\(appState.hisName.isEmpty ? "His" : appState.hisName + "'s") Team")
+                            .font(.feedTimestamp)
+                            .foregroundColor(.textSecondaryOnCard)
+                        Text(appState.selectedTeam?.displayName ?? "None")
+                            .font(.feedHeadline)
+                            .foregroundColor(.textPrimaryOnCard)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.textSecondaryOnCard)
+                        .font(.system(size: 12))
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var yourModeRow: some View {
+        settingsRow {
+            Button { showTierPicker = true } label: {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Your Mode")
+                            .font(.feedTimestamp)
+                            .foregroundColor(.textSecondaryOnCard)
+                        Text(tierLabel(appState.selectedTier))
+                            .font(.feedHeadline)
+                            .foregroundColor(.textPrimaryOnCard)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.textSecondaryOnCard)
+                        .font(.system(size: 12))
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var notificationsRow: some View {
+        settingsRow {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Notifications")
+                        .font(.feedTimestamp)
+                        .foregroundColor(.textSecondaryOnCard)
+
+                    if notificationStatus == .authorized {
+                        HStack(spacing: 4) {
+                            Text("Enabled")
+                                .font(.feedHeadline)
+                                .foregroundColor(.textPrimaryOnCard)
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.hotRose)
+                                .font(.system(size: 14))
+                        }
+                    } else {
+                        Button {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text("Disabled")
+                                    .font(.feedHeadline)
+                                    .foregroundColor(.textPrimaryOnCard)
+                                Text("Open Settings")
+                                    .font(.feedTimestamp)
+                                    .foregroundColor(.hotRose)
+                            }
+                        }
+                    }
+                }
+                Spacer()
+            }
+        }
+    }
+
+    @ViewBuilder private var calendarSyncRow: some View {
+        settingsRow {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Add his fixtures to your calendar")
+                        .font(.feedTimestamp)
+                        .foregroundColor(.textSecondaryOnCard)
+                    Text(appState.calendarSyncEnabled ? "On" : "Off")
+                        .font(.feedHeadline)
+                        .foregroundColor(.textPrimaryOnCard)
+                }
+                Spacer()
+                if isSyncingCalendar {
+                    ProgressView().tint(.hotRose)
+                } else {
+                    Toggle("", isOn: Binding(
+                        get: { appState.calendarSyncEnabled },
+                        set: { newValue in
+                            if newValue {
+                                Task { await enableCalendarSync() }
+                            } else {
+                                showCalendarRemoveConfirm = true
+                            }
+                        }
+                    ))
+                    .labelsHidden()
+                    .tint(.hotRose)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var aboutBlurbCard: some View {
+        settingsRow {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("GoalDigger")
+                    .font(.feedHeadline)
+                    .foregroundColor(.textPrimaryOnCard)
+                Text("For the girlfriend who's done nodding along. Made for her, not him.")
+                    .font(.feedTimestamp)
+                    .foregroundColor(.textSecondaryOnCard)
+            }
+        }
+    }
+
+    @ViewBuilder private var contactRow: some View {
+        settingsRow {
+            Button {
+                if let url = URL(string: "mailto:hello@goaldigger.app") {
+                    UIApplication.shared.open(url)
+                }
+            } label: {
+                HStack {
+                    Text("Contact Us")
+                        .font(.settingsItem)
+                        .foregroundColor(.textPrimaryOnCard)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.textSecondaryOnCard)
+                        .font(.system(size: 12))
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var privacyRow: some View {
+        settingsRow {
+            Button {
+                if let url = URL(string: "https://getgoaldigger.com/privacy") {
+                    UIApplication.shared.open(url)
+                }
+            } label: {
+                HStack {
+                    Text("Privacy Policy")
+                        .font(.settingsItem)
+                        .foregroundColor(.textPrimaryOnCard)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.textSecondaryOnCard)
+                        .font(.system(size: 12))
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var deleteRow: some View {
+        settingsRow {
+            Button { showDeleteConfirmation = true } label: {
+                HStack {
+                    Text("Delete My Data")
+                        .font(.settingsItem)
+                        .foregroundColor(.hotRose)
+                    Spacer()
+                    if isDeleting {
+                        ProgressView()
+                            .tint(.hotRose)
+                    }
+                }
+            }
+            .disabled(isDeleting)
+        }
+    }
+
+    @ViewBuilder private var versionLabel: some View {
+        Text("Version 1.0.0")
+            .font(.jakarta(11, weight: .regular))
+            .foregroundColor(.textTertiary.opacity(0.6))
+            .padding(.top, 8)
     }
 
     // MARK: - Helpers
