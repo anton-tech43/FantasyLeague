@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-18 late night (FT-push regression fix + Sweden ghosting fix + starting-XI cleanup)
+**Last updated:** 2026-05-19 morning (slicker segmented control + universal manager-card unlock — 66 of 70 team pages now show the correct coach, 3 cleanly hide, 1 awaits manager_overrides)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
@@ -9,6 +9,23 @@ A one-page snapshot of where the project is. For the deep history, see [IMPLEMEN
 ## TL;DR
 
 GoalDigger is live on TestFlight (V1.3 build). **World Cup 2026 support (V2.0) is feature-complete and verified** — backend + iOS shipped, build green, cron auth healthy after Phase 28 hardening, WC routine prompts now country-aware. **Push pipeline was completely dead from May 11 → May 17** (Vault had wrong-shape key, gateway 401'd every cron tick); **fixed and end-to-end verified**. Remaining work for June 11 launch: gd-news-wc routine creation (separate cron slot for 48 countries to avoid context blowout), TestFlight beta with V2.0 build, App Store submission by June 4.
+
+---
+
+## Verified today (May 19 morning — slicker segmented control + manager-card unlock)
+
+Two items from yesterday's punch list, both shipped in one pass. The manager-card work turned out to be a two-layer iteration-overwrite class (Lesson 72) that had been silently blocking the coach name for **every team except Sweden** — 69 of 70 team pages were showing `<UNKNOWN>` and the iOS "Meet the boss" card was gracefully hiding for all of them. Surfaced because the user noticed Sweden specifically; investigation uncovered the breadth.
+
+- **iOS tab selector — lighter chrome** (`ios/GoalDigger/Views/Team/TeamPageView.swift` `tabSelector`, 9-line delta). Before: 3 white pills on a soft-blush gutter, sitting on the deep-mauve team-page background — three competing layers. After: only the selected tab renders as a hot-rose pill; the other two are bare 60%-opacity warmWhite text directly on the page background, and the gutter wrapper is gone entirely. Selected-tab visual (hot rose + cornerRadius(12) + frame(height: 40)) is unchanged so the affordance still reads. Build green on iPhone 17 Pro simulator.
+
+- **team-page-generator manager-card unlock — three fixes** (`backend/supabase/functions/team-page-generator/index.ts`, ~60-line delta with comments). Each fix addressed a distinct failure mode that was contributing to the universal `<UNKNOWN>` state:
+    - **Fix 1 — empty-response iteration overwrite** (the original Sweden symptom). The `api_football_coachs` else-branch was writing the rate-limit error JSON (`response: []`) to `coachsData` when the newest log was empty. The Lesson 67 `if (coachsData) continue;` guard then locked that empty response in, blocking every subsequent older log — including the 15:00 UTC fetch with valid coach data. Changed to `continue` so the loop walks past empty/error snapshots to find a populated one. Same class as Lesson 67 but opposite direction (newest-empty-blocks-older-good).
+    - **Fix 2 — coachs top-up query** (Canada surfaced this one). The 100-row main fetch window gets crowded out by news sources (6 hourly publishers per team), so when `api_football_coachs` has been returning rate-limit-empty for ≥5 consecutive fetches, the older good payload sits outside the window. Fix 1's `continue` couldn't help because there was nothing older to walk to. Added a targeted secondary query that pulls the latest 20 `api_football_coachs` rows directly and appends to `rawLogs`. Cheap (one extra indexed query), guaranteed to cover ~20h of history regardless of news cadence.
+    - **Fix 3 — no-current-coach should emit UNKNOWN, not guess** (surfaced by France/Scotland/Uruguay still rendering wrong names after fixes 1-2). When the pre-filter finds zero coaches with `end=null` at this team, the old fallback wrote the raw payload and let Claude pick from a list of historical-only stints — which gave us R. Caudron (1930) for France, A. McLeish (last stint ended 2019) for Scotland, Ó. Tabárez (last stint ended 2021) for Uruguay. Changed to `continue` (walk older snapshots; if every log is in the same state, `coachsData` stays empty → Claude's "not available" branch fires → `manager_name = <UNKNOWN>` → iOS card hides).
+
+- **Live backfill: 70 team_pages rows re-fired post-deploy.** Before: 69 `<UNKNOWN>` (every team except Sweden was stuck on the iteration-overwrite). After: 0 `<UNKNOWN>` rendering wrong, 3 cleanly hidden (`france`, `scotland`, `uruguay` — upstream API-Football data has zero open stints for these national teams), 1 still wrong (`spain` → "D. Deschamps" — API-Football has Deschamps incorrectly tagged to Spain's team_id=9, which Fix 3 can't repair). Spain remains a `manager_overrides` candidate per the original Lesson 67 plan; the table itself stays unbuilt as a deferred V2.1 task.
+
+- **Net iOS impact:** of 70 team pages, 66 now correctly display the coach name and photo; 3 cleanly hide the card (France/Scotland/Uruguay); 1 still shows a wrong name (Spain). Pre-fix every team except Sweden hid the card — a regression we hadn't noticed because the iOS gate's silent fallback was working as designed. Lesson 72 documents the two-layer iteration-overwrite class for future reference.
 
 ---
 

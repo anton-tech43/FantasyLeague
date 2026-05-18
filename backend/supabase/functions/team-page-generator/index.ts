@@ -351,6 +351,34 @@ async function generateFullPage(
     rawLogs = data ?? [];
   }
 
+  // SECONDARY: targeted top-up for api_football_coachs.
+  //
+  // The 100-row main window crowds out older coachs snapshots when a
+  // team is news-heavy (bbc_sport + telegraph + guardian + daily_mail +
+  // independent + mirror = 6 hourly logs per hour) AND coachs has been
+  // returning rate-limit-empty for ≥5 consecutive fetches. Canada hit
+  // this on May 19 — the 5 most-recent coachs rows were all empty
+  // (Lesson 71 quota burn) and the May 17 22:00 row with valid Marsch
+  // data sat at position ~120. The newest-empty-blocks-older-good fix
+  // (the `continue;` in the coachs branch's else) couldn't help because
+  // the older good row was outside the window entirely.
+  //
+  // Cheap fix: pull the latest 20 coachs rows directly, append. The
+  // newest-good-wins guard in the loop deduplicates correctly — newer
+  // rows always come first in iteration order. 20 covers ~20h of
+  // hourly coachs fetches, comfortably past the daily API-Football
+  // quota cycle (rate-limit windows reset at 00:00 UTC).
+  const { data: extraCoachs } = await supabase
+    .from("raw_fetch_logs")
+    .select("source, data")
+    .eq("team_id", team.id)
+    .eq("source", "api_football_coachs")
+    .order("fetched_at", { ascending: false })
+    .limit(20);
+  if (extraCoachs && extraCoachs.length > 0) {
+    rawLogs = [...rawLogs, ...extraCoachs];
+  }
+
   // Get team context flags
   const { data: context } = await supabase
     .from("team_context")
@@ -476,13 +504,35 @@ async function generateFullPage(
           }
           coachsData = JSON.stringify([coachCompact]);
         } else {
-          // Genuinely no current coach with end=null — fall back to the
-          // raw payload so Claude can decide between a recent ex-coach
-          // and "<UNKNOWN>". Use the same slice budget as other sources.
-          coachsData = JSON.stringify(log.data).slice(0, sliceLimitFor(log.source));
+          // No coach in this snapshot has an open stint (end=null) at
+          // this team. Don't hand Claude the raw payload — letting it
+          // pick from a list of historical-only stints gave us R.
+          // Caudron (1930) for France and A. McLeish (last stint
+          // ended 2019) for Scotland, both visibly wrong. `continue`
+          // instead so the loop walks to an OLDER snapshot that may
+          // include a properly open stint. If every log in the window
+          // is in the same state, coachsData stays empty → Claude's
+          // "not available" branch fires → manager_name = <UNKNOWN>,
+          // which the iOS card hides (Lesson 67's iOS gate).
+          continue;
         }
       } else {
-        coachsData = JSON.stringify(log.data).slice(0, sliceLimitFor(log.source));
+        // Response array is empty (rate-limit error response, transient
+        // upstream hiccup, or genuinely no coaches). Skip — let the loop
+        // walk to an OLDER non-empty snapshot. Without this `continue`,
+        // the empty payload writes to coachsData and the
+        // `if (coachsData) continue;` guard above then locks in that
+        // empty/error response, blocking every subsequent good log.
+        //
+        // Discovered May 19 (UTC) — Sweden's manager card kept rendering
+        // "<UNKNOWN>" despite a 15:00 UTC fetch with valid coach data
+        // inside the 100-row window. Rate-limited responses from 17:00
+        // to 22:00 UTC (Lesson 71 quota burn) had locked coachsData to
+        // the error response on every team-page-generator run. Same
+        // iteration-overwrite class as the Lesson 67 coach pre-filter
+        // bug, opposite direction (newest-empty-blocks-older-good vs.
+        // older-empty-clobbered-newer-good).
+        continue;
       }
     }
   }

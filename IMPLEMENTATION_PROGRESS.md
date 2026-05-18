@@ -2383,3 +2383,62 @@ Tomorrow at 00:00 UTC the API-Football quota resets and match-watcher resumes se
 - Permissions: `.claude/settings.json` expanded 24 → 46 patterns.
 
 **Manual side-effects user took ownership of:** Earlier in the day they set Supabase Edge Function secrets `STARTING_XI_ROUTINE_URL` + `STARTING_XI_ROUTINE_TOKEN`. After tonight's cleanup these are dormant — harmless, optional cleanup via `supabase secrets unset` if they want a tidy dashboard.
+
+### 72. The two-layer iteration-overwrite — when the silent-fallback hides how broad the breakage is
+
+**What happened (May 19 morning):** User flagged "Sweden still shows no coach" as one of two tomorrow-punch-list items. Investigation started narrow (just Sweden) and uncovered a class of bug that had been silently breaking the manager card for **every team except Sweden** — 69 of 70 `team_pages` rows had `cards.manager.name = '<UNKNOWN>'`. We hadn't noticed because the iOS "Meet the boss" card has a graceful-hide gate for `<UNKNOWN>` (Lesson 67's iOS fallback), so a universal data failure rendered as "the card just doesn't show up" — visually indistinguishable from "this team genuinely doesn't have a current coach in API-Football."
+
+Three distinct failure modes were stacked in the same `team-page-generator` coachs branch. Each one had to be fixed in sequence; finding the next required fixing the previous.
+
+**Failure mode 1 — empty-response iteration overwrite.** Lesson 67 had added `if (coachsData) continue;` as a guard against older rows clobbering newer good rows (oldest-empty-clobbers-newer-good). But the else-branch on empty `response: []` was still writing the rate-limit error JSON into `coachsData`:
+
+```ts
+} else {
+  coachsData = JSON.stringify(log.data).slice(0, sliceLimitFor(log.source));
+}
+```
+
+Sequence:
+1. Newest log: `response: []` (rate-limit error from today's quota burn). Branch executes, sets coachsData = error JSON.
+2. Older log: has good coach data. `if (coachsData) continue;` skips it.
+3. Claude receives `Coaches: <rate-limit error>`, can't parse a coach, emits `<UNKNOWN>`.
+
+Same iteration-overwrite class as Lesson 67, opposite direction (**newest-empty-blocks-older-good** vs. older-empty-clobbers-newer-good). Fix: replace the writeback with `continue` so the loop walks past empties.
+
+**Failure mode 2 — the main fetch window doesn't cover enough history.** Fix 1 alone resolved Sweden but not Canada. Canada's most-recent good `api_football_coachs` row was from May 17 22:00 UTC; today's 5 most recent coachs logs all had `response: []`. Even with fix 1's `continue`, the loop never reached the good May 17 row because the 100-row main fetch window — sorted newest-first across ALL sources — was dominated by news (6 hourly publishers per team × ~24h ≈ 144 rows) which pushed the good coach row past row 100.
+
+Cheap fix: add a targeted secondary query specifically for `api_football_coachs`, latest 20 rows, appended to `rawLogs`. The newest-good-wins guard from Lesson 67 deduplicates correctly — iteration is still newest-first within the appended source. 20 rows covers ~20h of hourly coach fetches, comfortably past the daily API-Football quota cycle (rate-limit windows reset at 00:00 UTC).
+
+This pattern — "main window for general data, targeted top-up for low-cadence sources at risk of being crowded out" — is worth keeping in mind for future endpoints that fetch less often than the news sources.
+
+**Failure mode 3 — the "no current coach" raw-payload fallback lets Claude guess.** Fixes 1+2 brought 66/70 teams to correct coach data. The remaining 4 (France/Scotland/Uruguay/Spain) rendered visibly-wrong names — R. Caudron (1930) for France, A. McLeish (last stint 2019) for Scotland, Ó. Tabárez (last stint 2021) for Uruguay. Investigation: the pre-filter found zero coaches with `end=null` at the team's `api_football_id`, but the else-branch wrote the raw payload as a fallback so "Claude could decide between a recent ex-coach and `<UNKNOWN>`." Claude picked the most recent-looking name from a list of historical-only stints. Wrong, every time.
+
+Fix: change the no-current-match fallback from "write raw payload" to `continue`. If every snapshot in the window has zero open stints, `coachsData` stays empty → Claude's "Coaches data not available → manager_name = `<UNKNOWN>`" branch fires → iOS card hides. That's the correct behavior. We should NEVER be making the user read a wrong coach name when our pre-filter explicitly determined the data is bad.
+
+Resolved France/Scotland/Uruguay cleanly to `<UNKNOWN>` (iOS card hides — correct outcome). Spain remained wrong ("D. Deschamps") because API-Football has Deschamps incorrectly tagged to Spain's `team_id=9` with `end=null` start 2025-06-01 — upstream data corruption that no client-side filter can repair. Spain is the one true `manager_overrides` table candidate (V2.1).
+
+**Why we didn't notice it sooner.** Lesson 67's iOS gate hides the card for `<UNKNOWN>`. When the gate works, "card hidden" is visually identical for "genuinely no coach data" and "broken data fetch." The Sweden bug was narrow enough to surface as user-visible (Sweden's a higher-profile team than, say, Bournemouth's WC presence, so the user noticed). But the underlying breakage was universal. **Lesson:** when you ship a graceful-hide fallback for one failure case, you simultaneously become unable to detect a regression where every team hits that case. Add a separate observability path that surfaces the FREQUENCY of the fallback firing, not just whether each individual render handled it correctly.
+
+**Rules:**
+
+1. **Every `continue` for one failure case may need a sibling `continue` for adjacent failure cases.** Lesson 67's `if (coachsData) continue;` guard against older-rows-clobbering had a missing partner — `continue` on empty newest rows so the guard isn't tripped with a worthless value. When you write a "skip if already populated" guard, audit every place that populates and make sure none of them populate with garbage.
+
+2. **A graceful UI fallback makes broad regressions invisible.** The iOS gate for `<UNKNOWN>` was correct as a defensive layer. But it meant we couldn't tell "no team has manager data" from "France/Scotland/Uruguay/Spain don't have manager data" without explicitly checking the row count. Add a fallback-rate metric whenever you add a graceful-hide fallback — e.g., a `pipeline_health` row tagged `fallback_fired=true` and a dashboard query that alerts when fallback rate exceeds X% of teams.
+
+3. **Window-size assumptions break silently when adjacent ingestion grows.** The 100-row main window was sized assuming "14 sources × 7h = covers a day's worth of any source." But news sources tripled in count after the V2.0 multi-publisher expansion, while coachs stayed at 1 fetch per data-fetcher fire. The window math went stale. Either compute the window from the ingestion rate, or split fetches per-source so they can't crowd each other out. We chose the latter for coachs via the targeted top-up.
+
+4. **Don't let an LLM guess at output when your deterministic pre-filter has already determined the answer is bad.** The "raw payload fallback to let Claude decide" pattern was a well-intentioned escape hatch — but it converted "I can't find a current coach" into "make something up that sounds current." If the pre-filter says "no current open stint at this team," that's the answer. Emit it directly. Don't push the decision to the LLM.
+
+5. **Investigation should widen the scan, not just narrow it.** User flagged Sweden. Sweden could have been a one-team data issue. The right move after fixing Sweden is "how many other teams are in this state?" — not "great, Sweden's done." The widening query (`SELECT count(*) WHERE manager.name = '<UNKNOWN>'` returning 69) was the moment the lesson landed.
+
+**Files touched:**
+- Backend: `team-page-generator/index.ts` — three deltas (coachs top-up query, two else-branch `continue`s) totalling ~60 lines including comments. No new migrations needed (purely runtime logic).
+- iOS: `TeamPageView.swift` `tabSelector` (slicker segmented control, separate punch-list item shipped alongside).
+- STATUS.md: new May 19 morning section.
+
+**Live backfill result:** 70 team_pages rows re-fired via parallel `curl` loop after deploy. Before: 69 `<UNKNOWN>` (Sweden was somehow the only team with the good log positioned within the main window AND not in the no-open-stint state). After: 66 correct, 3 cleanly hidden (France/Scotland/Uruguay — upstream data has zero open stints for these national teams), 1 still wrong (Spain → "D. Deschamps" — needs `manager_overrides`).
+
+**Out of scope:**
+- `manager_overrides` table for Spain (still V2.1 — single team, not blocking June 11 launch).
+- Fallback-rate observability metric per rule 2 above (the right structural fix; deferred until a second broad-fallback bug surfaces).
+- Splitting the main fetch query per-source (deferred — the targeted top-up for coachs covers the specific risk; we'll revisit if another low-cadence source gets crowded out).
