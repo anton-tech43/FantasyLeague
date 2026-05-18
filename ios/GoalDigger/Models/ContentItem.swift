@@ -30,6 +30,12 @@ struct ContentItem: Identifiable, Codable {
     let analogyApproved: Bool
     let analogyAutoPublished: Bool
 
+    /// Teams referenced in the headline or body. Drives the team-crest
+    /// header on ContentDetailView — 1 crest for 1 entry, 2 crests for
+    /// 2 entries, no crests for 3+ entries OR nil (legacy rows). Optional
+    /// so older items decoded from cache don't break. V2.0.
+    let affectedTeamIds: [String]?
+
     enum ContentType: String, Codable {
         case news
         case matchday
@@ -71,6 +77,9 @@ struct ContentItem: Identifiable, Codable {
         case analogyReviewed = "analogy_reviewed"
         case analogyApproved = "analogy_approved"
         case analogyAutoPublished = "analogy_auto_published"
+
+        // V2.0 team-crest header
+        case affectedTeamIds = "affected_team_ids"
     }
 
     // Custom decoder for backward compatibility with cached items missing new fields
@@ -99,6 +108,7 @@ struct ContentItem: Identifiable, Codable {
         analogyReviewed = (try? container.decodeIfPresent(Bool.self, forKey: .analogyReviewed)) ?? false
         analogyApproved = (try? container.decodeIfPresent(Bool.self, forKey: .analogyApproved)) ?? false
         analogyAutoPublished = (try? container.decodeIfPresent(Bool.self, forKey: .analogyAutoPublished)) ?? false
+        affectedTeamIds = try? container.decodeIfPresent([String].self, forKey: .affectedTeamIds)
     }
 
     /// The context/analogy line to display on the immersive card.

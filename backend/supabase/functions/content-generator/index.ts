@@ -244,6 +244,13 @@ const NEWS_TOOL = {
         type: "boolean",
         description: "If everyone_talking true: is this THE single most important football story today? Only one per day across all clubs. Most everyone_talking stories are NOT worth_knowing.",
       },
+      // V2.0 — drives the team-crest header on iOS ContentDetailView.
+      affected_team_ids: {
+        type: "array",
+        items: { type: "string" },
+        maxItems: 5,
+        description: "List every team_id (e.g. 'arsenal', 'spurs', 'sweden') explicitly referenced in the headline or body. Use the canonical short ids from the teams table — lowercase, underscores, no spaces. For derbies / two-team stories include both. For a single-team story include just one. iOS renders 1-2 crests above the headline; 3+ entries means no crest header (we hide for very-cross-cutting stories). Examples: ['arsenal'] for a Saka quote story; ['arsenal', 'spurs'] for a derby preview; ['arsenal', 'spurs', 'liverpool', 'man_city'] for a title-race wrap (=> no crests). Omit the field for stories that don't clearly reference a specific club.",
+      },
     },
     required: ["is_newsworthy", "newsworthiness_score"],
   },
@@ -659,6 +666,15 @@ Generate the match day briefing.`;
         },
       };
 
+      // Matchday items are always about two teams (the user's team + the
+      // opponent). The opponent_name is in the prompt but we don't have
+      // its team_id here without a lookup; for now seed with just the
+      // user's team_id. A future enhancement would resolve opponent_id
+      // via the teams table — leaving the field length=1 means iOS shows
+      // a single crest, which is acceptable for a matchday card that's
+      // already from one team's perspective.
+      const matchdayAffected = [team_id];
+
       const { data: inserted, error: insertErr } = await supabase
         .from("content_items")
         .insert({
@@ -672,6 +688,7 @@ Generate the match day briefing.`;
           emotional_context: input.emotional_context ?? "exciting",
           status: "draft",
           source_urls: [],
+          affected_team_ids: matchdayAffected,
           pipeline_source: "edge_function",
         })
         .select("id")
@@ -769,6 +786,14 @@ Generate the match day briefing.`;
         }
       }
 
+      // V2.0: ensure the originating team_id is always in affected_team_ids.
+      // Claude is asked to list teams referenced in the headline/body, but
+      // shouldn't have to remember that the originating team counts too —
+      // belt-and-suspenders that the iOS crest header always renders ≥1
+      // crest when the item is single-team.
+      const claudeAffected = (input.affected_team_ids as string[] | undefined) ?? [];
+      const affectedTeamIds = [...new Set([team_id, ...claudeAffected])];
+
       const { data: inserted, error: insertErr } = await supabase
         .from("content_items")
         .insert({
@@ -790,6 +815,8 @@ Generate the match day briefing.`;
           everyone_talking_body: isEveryoneTalking ? (input.neutral_body as string) || null : null,
           everyone_talking_talking_points: isEveryoneTalking ? (input.neutral_talking_points as string[]) || null : null,
           worth_knowing: isWorthKnowing,
+          // V2.0 — drives the iOS team-crest header on ContentDetailView.
+          affected_team_ids: affectedTeamIds,
           pipeline_source: "edge_function",
         })
         .select("id")

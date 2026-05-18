@@ -163,6 +163,14 @@ struct ContentDetailView: View {
 
     @ViewBuilder
     private func headlineSection(_ item: ContentItem) -> some View {
+        // V2.0: team-crest header — renders 1 or 2 crests when the
+        // content-generator (or routine) tagged the item with
+        // affected_team_ids. >2 crests would crowd the detail view, so
+        // those items render no header (matches the "everyone's talking"
+        // cross-team UX). Legacy items with nil affectedTeamIds also
+        // render no header — gracefully invisible.
+        AffectedTeamsHeader(teamIds: item.affectedTeamIds)
+
         // The headline carries inline name explanations now (handled in the
         // generator prompt), so we don't need a separate factual sub-headline
         // here. The user already saw the analogy on the immersive card.
