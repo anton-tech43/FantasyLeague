@@ -214,6 +214,8 @@ Three fixes plus a permissions broadening, in response to user-reported regressi
 
 **Out of scope:** Per-timezone morning-push (V2.1); restructuring data-fetcher to call fewer per-fire endpoints (more meaningful optimization but not blocking launch); polling cadence reduction on match-watcher (could cut ~2k API calls/day if we only poll during match hours — V2.1 candidate).
 
+**End-of-day review pass (post midnight UTC).** Ran a 3-agent /simplify-style review of the night's diff (since commit `df24830`). **Zero bug-severity findings.** Two cosmetic smells found and fixed in `morning-push/index.ts`: (1) `formatKickoff` now builds the "BST" / "GMT" suffix deterministically from the UK offset rather than relying on Deno's `Intl.DateTimeFormat` `timeZoneName: "short"` rendering, which some V8/ICU builds emit as "GMT+1" instead of "BST"; (2) added a `console.log` when the zero-fixtures branch fires so silence on a known-match-day is distinguishable from genuinely-no-fixtures days. Cross-system audit also confirmed the dormant `starting_xi` enums in migrations 046/047 are well-contained (no producer, no consumer breaks); the user-mentioned `STARTING_XI_ROUTINE_*` secrets are not actually set in Supabase (per `supabase secrets list`) so no cleanup needed. Match-watcher revert is verified clean (`grep STARTING_XI` returns only the post-mortem comment block). All Lessons 67-71 verified consistent with STATUS.md.
+
 ---
 
 ## What's done

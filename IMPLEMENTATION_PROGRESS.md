@@ -2326,7 +2326,7 @@ I went with (2). Why:
 - iOS: `ContentItem.swift` (startingXi case + affectedTeamIds field), `BadgeView.swift` (STARTING XI chip), `FeedView.swift` (tier filter), `AffectedTeamsHeader.swift` (new), `ContentDetailView.swift` (render the header), `pbxproj` (registered AB000311).
 - Commits: `df24830` (simplify), `e5035e4` (push backend), `c7a5b96` (iOS starting_xi case), `d529bb6` (routines), `16c13df` (news logos backend + iOS), `ca0a839` (routines AFFECTED TEAMS).
 
-**Manual step pending:** user generates the routine API token in claude.ai/code/routines UI for `trig_01J8yMGTBu6KRvpWHzXeburj` (gd-starting-xi), then sets `STARTING_XI_ROUTINE_URL` + `STARTING_XI_ROUTINE_TOKEN` as Supabase Edge Function secrets. Without that, match-watcher's STARTING_XI trigger fires but the routine POST 401s.
+**Manual step (superseded by Lesson 71):** initially this lesson said the user needed to generate the routine API token in claude.ai/code/routines UI for `trig_01J8yMGTBu6KRvpWHzXeburj` (gd-starting-xi) and set `STARTING_XI_ROUTINE_URL` + `STARTING_XI_ROUTINE_TOKEN` as Edge Function secrets. The user opted instead for a simpler design (morning push references lineups as a teaser, no fetch) — see Lesson 71. The routine is now disabled via RemoteTrigger, the prompt + post script were deleted from the routines repo, and the match-watcher trigger detection was removed. The two secrets were never set (confirmed by `supabase secrets list` post-cleanup) — nothing to clean up.
 
 **Out of scope:** per-user timezone scheduling for the morning push (V2.1); goalscorer push notifications during live match (over-notification risk); crest-tap-to-navigate from detail to team page; bulk backfill of `affected_team_ids` for historical rows.
 

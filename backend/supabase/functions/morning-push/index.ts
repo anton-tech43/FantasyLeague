@@ -42,21 +42,34 @@ interface Team {
   short_name: string | null;
 }
 
-/// Format kickoff time as "19:00 BST" / "20:30 CEST". We display in
+/// Format kickoff time as "19:00 BST" / "20:00 GMT". We display in
 /// London time since most users are UK/EU and the app's voice has a
 /// UK lean. iOS shows kickoff in the user's locale on the team page;
 /// the push body is short enough that one consistent timezone here
 /// reads cleaner than a per-user lookup we don't have data for.
+///
+/// We BUILD the BST/GMT suffix ourselves from the UK offset rather than
+/// letting `Intl.DateTimeFormat` emit `timeZoneName: "short"`. V8/ICU
+/// builds vary in how they render the suffix for `en-GB`/`Europe/London`
+/// — some emit "BST" (preferred), some emit "GMT+1". Deterministic
+/// suffix avoids the rendering jitter.
 function formatKickoff(iso: string): string {
   const date = new Date(iso);
-  const fmt = new Intl.DateTimeFormat("en-GB", {
+  const time = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Europe/London",
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-    timeZoneName: "short",
-  });
-  return fmt.format(date);
+  }).format(date);
+  // Compute the UK offset at this moment from London-local vs UTC hour.
+  // London is +1 during BST (late Mar → late Oct), +0 the rest of the
+  // year. Doing it this way (vs. a hardcoded date range) covers the
+  // year-on-year DST transition without code edits.
+  const ukHour = parseInt(time.split(":")[0], 10);
+  const utcHour = date.getUTCHours();
+  const offset = (ukHour - utcHour + 24) % 24;
+  const suffix = offset === 1 ? "BST" : "GMT";
+  return `${time} ${suffix}`;
 }
 
 serve(async (_req) => {
@@ -83,6 +96,12 @@ serve(async (_req) => {
     }
 
     if (!fixtures || fixtures.length === 0) {
+      // Log so silence-on-a-match-day is distinguishable from
+      // "genuinely no fixtures today" when reading the cron logs.
+      // Match-watcher polls every minute so any same-day fixture
+      // should be in match_status_state by 08:00 UTC; if this fires
+      // empty on a day we know matches exist, that's a separate bug.
+      console.log("morning-push: no fixtures in next 18h, nothing to push");
       return new Response(JSON.stringify({ success: true, fixtures: 0, pushes: 0 }), {
         headers: { "Content-Type": "application/json" },
       });
