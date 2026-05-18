@@ -64,10 +64,10 @@ serve(async (req) => {
 async function logFire(
   supabase: ReturnType<typeof getSupabaseClient>,
   args: {
-    stage: "matchday_fire" | "live_brief_fire" | "starting_xi_fire";
+    stage: "matchday_fire" | "live_brief_fire";
     teamId: string;
     fixtureId: number;
-    trigger?: string; // "HT" for live_brief; "STARTING_XI" for starting-xi; absent for matchday
+    trigger?: string; // "HT" for live_brief; absent for matchday
     httpStatus: number | null;
     success: boolean;
     threw: boolean;
@@ -122,18 +122,13 @@ async function handleRequest(req: Request): Promise<Response> {
   const liveBriefUrl = Deno.env.get("LIVE_BRIEF_ROUTINE_URL");
   const liveBriefToken = Deno.env.get("LIVE_BRIEF_ROUTINE_TOKEN");
   const liveBriefConfigured = !!liveBriefUrl && !!liveBriefToken;
-  // V2.0: starting-XI routine for the kickoff − 60min trigger. Same
-  // resilience pattern as live-brief — optional during rollout.
-  const startingXiUrl = Deno.env.get("STARTING_XI_ROUTINE_URL");
-  const startingXiToken = Deno.env.get("STARTING_XI_ROUTINE_TOKEN");
-  const startingXiConfigured = !!startingXiUrl && !!startingXiToken;
-  /// Trigger window. Fire once when kickoff is between now and now + 65min
-  /// AND the fixture is still pre-kickoff (status NS / TBD). 65min upper
-  /// bound gives 5 min of slack — API-Football publishes lineups
-  /// ~60-75min before kickoff, so 65 catches the first cron tick after
-  /// publication. Lower bound is "in the future" so we don't fire on
-  /// fixtures that already kicked off.
-  const STARTING_XI_WINDOW_MS = 65 * 60 * 1000;
+  // Note: a starting-XI pre-kickoff trigger lived here briefly on May 18
+  // night. The user opted for a simpler design (morning push references
+  // lineups as a teaser, no fetch). Trigger removed; routine disabled
+  // via RemoteTrigger. Migrations 046/047 left in place — unused enums
+  // but harmless. If we revisit, the pattern was: env-driven URL/token,
+  // trigger label STARTING_XI, fire window kickoff−65min, branch the
+  // fire loop on `trigger === "STARTING_XI"` to pick the right URL.
 
   if (!apiFootballKey || !routineUrl || !routineToken) {
     return new Response(
@@ -330,25 +325,7 @@ async function handleRequest(req: Request): Promise<Response> {
       // See IMPLEMENTATION_PROGRESS Lesson 63 (routine quota economics).
     }
 
-    // V2.0: STARTING_XI trigger — fire ONCE when the fixture is in the
-    // window (kickoff_time - 65min, kickoff_time). API-Football publishes
-    // lineups ~60-75min before kickoff, so 65min gives one cron tick of
-    // slack. Idempotent via briefsFired — same array also tracks HT so
-    // STARTING_XI gets added alongside it once fired.
-    const startingXiFired = briefsFired.includes("STARTING_XI");
-    const kickoffMs = new Date(kickoffTime).getTime();
-    const nowMs = Date.now();
-    const inStartingXiWindow =
-      kickoffMs > nowMs && kickoffMs - nowMs <= STARTING_XI_WINDOW_MS;
-    const isPreMatch = !FINISHED_STATUSES.has(status) && !LIVE_STATUSES.has(status);
-    if (
-      startingXiConfigured &&
-      isPreMatch &&
-      inStartingXiWindow &&
-      !startingXiFired
-    ) {
-      newTriggers.push("STARTING_XI");
-    }
+    // (STARTING_XI trigger removed — see env-vars comment above.)
 
     // Track per-perspective fire success. We only mark fired_finished_at
     // when BOTH home and away routine POSTs succeed — otherwise the failed
@@ -415,39 +392,24 @@ async function handleRequest(req: Request): Promise<Response> {
       }
     }
 
-    // Fire routine for any new trigger windows. One fire per (team, trigger)
-    // pair — both home and away teams get content from their own
-    // perspective. Trigger label routes to the right routine:
-    //   - "HT" / in-match labels → gd-live-brief
-    //   - "STARTING_XI" (V2.0) → gd-starting-xi
+    // V1.1 C5: fire gd-live-brief for any new in-match trigger windows.
+    // One fire per (team, trigger) pair — both home and away teams get
+    // briefs, each tailored to their own perspective. Only HT today
+    // (75' was dropped 2026-05-17, see briefsFired comment above).
     for (const trigger of newTriggers) {
-      const isStartingXi = trigger === "STARTING_XI";
-      const fireUrl = isStartingXi ? startingXiUrl : liveBriefUrl;
-      const fireToken = isStartingXi ? startingXiToken : liveBriefToken;
-      const stageLabel = isStartingXi ? "starting_xi_fire" : "live_brief_fire";
-      // Defensive: if a trigger was added but its routine env vars are
-      // missing (shouldn't happen given the *Configured guards above),
-      // skip rather than crash on the non-null assert below.
-      if (!fireUrl || !fireToken) continue;
-
+      if (!liveBriefUrl || !liveBriefToken) continue;
       for (const [teamId, _opponentTeamId, _isHome] of [
         [homeTeamId, awayTeamId, true],
         [awayTeamId, homeTeamId, false],
       ] as const) {
         const homeName = fx.teams.home.name;
         const awayName = fx.teams.away.name;
-        // HT/2H gets the live elapsed minute; STARTING_XI sends 0 since
-        // the match hasn't started — the routine ignores minute for that
-        // trigger label anyway, but a numeric default keeps the payload
-        // shape uniform.
-        const briefMinute = isStartingXi ? 0 : (elapsed ?? (trigger === "HT" ? 46 : 75));
+        const briefMinute = elapsed ?? (trigger === "HT" ? 46 : 75);
         // Compose the payload the routine expects. Semicolon-separated
         // key=value pairs match the existing gd-matchday convention.
         // home_goals and away_goals always refer to the literal home/away
         // teams (NOT user/opponent). The routine derives user-vs-opponent
         // by matching `user_team_id` against `home_team_id`/`away_team_id`.
-        // An earlier version used a user/opponent indirection that inverted
-        // the away team's brief score — fixed.
         const text = [
           `home_team_id=${homeTeamId}`,
           `away_team_id=${awayTeamId}`,
@@ -459,50 +421,49 @@ async function handleRequest(req: Request): Promise<Response> {
           `minute=${briefMinute}`,
           `trigger=${trigger}`,
           `fixture_id=${fixtureId}`,
-          `kickoff_time=${kickoffTime}`,
         ].join("; ");
 
-        let fireHttpStatus: number | null = null;
-        let fireBodyExcerpt: string | null = null;
-        let fireSuccess = false;
-        let fireThrew = false;
+        let liveHttpStatus: number | null = null;
+        let liveBodyExcerpt: string | null = null;
+        let liveSuccess = false;
+        let liveThrew = false;
         try {
-          const fireResp = await fetch(fireUrl, {
+          const fireResp = await fetch(liveBriefUrl, {
             method: "POST",
             headers: {
-              "Authorization": `Bearer ${fireToken}`,
+              "Authorization": `Bearer ${liveBriefToken}`,
               "anthropic-beta": "experimental-cc-routine-2026-04-01",
               "anthropic-version": "2023-06-01",
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ text }),
           });
-          fireHttpStatus = fireResp.status;
+          liveHttpStatus = fireResp.status;
           if (fireResp.ok) {
-            if (!isStartingXi) liveBriefFires++;
-            fireSuccess = true;
-            console.log(`${stageLabel} fired for ${teamId}/${fixtureId} [${trigger}]`);
+            liveBriefFires++;
+            liveSuccess = true;
+            console.log(`live-brief fired for ${teamId}/${fixtureId} [${trigger}]`);
           } else {
             const body = await fireResp.text().catch(() => "");
-            fireBodyExcerpt = body.slice(0, 200);
+            liveBodyExcerpt = body.slice(0, 200);
             console.error(
-              `${stageLabel} fire failed for ${teamId}/${fixtureId} [${trigger}]: ${fireResp.status} ${fireBodyExcerpt}`,
+              `live-brief fire failed for ${teamId}/${fixtureId} [${trigger}]: ${fireResp.status} ${liveBodyExcerpt}`,
             );
           }
         } catch (e) {
-          fireThrew = true;
-          fireBodyExcerpt = e instanceof Error ? e.message.slice(0, 200) : null;
-          console.error(`${stageLabel} fire threw for ${teamId}/${fixtureId} [${trigger}]:`, e);
+          liveThrew = true;
+          liveBodyExcerpt = e instanceof Error ? e.message.slice(0, 200) : null;
+          console.error(`live-brief fire threw for ${teamId}/${fixtureId} [${trigger}]:`, e);
         }
         await logFire(supabase, {
-          stage: stageLabel,
+          stage: "live_brief_fire",
           teamId,
           fixtureId,
           trigger,
-          httpStatus: fireHttpStatus,
-          success: fireSuccess,
-          threw: fireThrew,
-          bodyExcerpt: fireBodyExcerpt,
+          httpStatus: liveHttpStatus,
+          success: liveSuccess,
+          threw: liveThrew,
+          bodyExcerpt: liveBodyExcerpt,
         });
       }
     }
