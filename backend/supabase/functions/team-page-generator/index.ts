@@ -380,29 +380,39 @@ async function generateFullPage(
   // fixtures_next are separate logs that both match .includes("fixtures")).
   const fixturesSourcesSeen = new Set<string>();
 
+  // Slice budget per source. Each row is ONE JSON.stringify of the
+  // upstream response; truncating mid-object produces unparseable JSON
+  // and Claude returns degraded fields (e.g. empty upcoming_fixtures
+  // when fixture #3 of 4 gets cut). Sized to fit the worst realistic
+  // payload per source:
+  //   - squad: 20+ players × ~200 chars each (incl. photo URLs).
+  //   - fixtures (last/next): each fixture is ~700 chars, up to 5 deep.
+  //   - standings: full 20-team league response is ~6 KB.
+  //   - default: small endpoints (injuries, coachs after pre-filter).
+  const sliceLimitFor = (source: string): number =>
+    source === "api_football_squad" ? 6000 :
+    source.includes("fixtures") ? 6000 :
+    source === "api_football_standings" ? 8000 :
+    2000;
+
   for (const log of rawLogs) {
-    // Slice budget per source. Each row is ONE JSON.stringify of the
-    // upstream response; truncating mid-object produces unparseable JSON
-    // and Claude returns degraded fields (e.g. empty upcoming_fixtures
-    // when fixture #3 of 4 gets cut). Sized to fit the worst realistic
-    // payload per source:
-    //   - squad: 20+ players × ~200 chars each (incl. photo URLs).
-    //   - fixtures (last/next): each fixture is ~700 chars, up to 5 deep.
-    //   - standings: full 20-team league response is ~6 KB.
-    //   - default: small endpoints (injuries, coachs after pre-filter).
-    const slicelimit =
-      log.source === "api_football_squad" ? 6000 :
-      log.source.includes("fixtures") ? 6000 :
-      log.source === "api_football_standings" ? 8000 :
-      2000;
-    const jsonStr = JSON.stringify(log.data).slice(0, slicelimit);
+    // Early-break: rawLogs is up to 100 rows but we only need one good
+    // payload per tracked source. Once every slot is filled, the rest of
+    // the loop is wasted JSON.stringify work on logs we'll discard.
+    if (
+      standingsData && squadData && injuriesData && coachsData &&
+      fixturesSourcesSeen.size >= 2
+    ) break;
+
+    // Cheap eligibility check first — skip BEFORE stringifying a 6-8 KB
+    // payload that's about to be discarded anyway.
     if (log.source === "api_football_standings") {
       if (standingsData || isResponseEmpty(log.data)) continue;
-      standingsData = jsonStr;
+      standingsData = JSON.stringify(log.data).slice(0, sliceLimitFor(log.source));
     }
     else if (log.source === "api_football_squad") {
       if (squadData || isResponseEmpty(log.data)) continue;
-      squadData = jsonStr;
+      squadData = JSON.stringify(log.data).slice(0, sliceLimitFor(log.source));
     }
     else if (log.source.includes("fixtures")) {
       // Fixtures concatenates across last + next sources, but only
@@ -412,11 +422,11 @@ async function generateFullPage(
       if (isResponseEmpty(log.data)) continue;
       if (fixturesSourcesSeen.has(log.source)) continue;
       fixturesSourcesSeen.add(log.source);
-      fixturesData += `\n${log.source}: ${jsonStr}`;
+      fixturesData += `\n${log.source}: ${JSON.stringify(log.data).slice(0, sliceLimitFor(log.source))}`;
     }
     else if (log.source === "api_football_injuries") {
       if (injuriesData || isResponseEmpty(log.data)) continue;
-      injuriesData = jsonStr;
+      injuriesData = JSON.stringify(log.data).slice(0, sliceLimitFor(log.source));
     }
     else if (log.source === "api_football_coachs") {
       // V2.0 hardening: API-Football's /coachs returns every coach who's
@@ -466,10 +476,13 @@ async function generateFullPage(
           }
           coachsData = JSON.stringify([coachCompact]);
         } else {
-          coachsData = jsonStr;  // genuinely no current coach with end=null
+          // Genuinely no current coach with end=null — fall back to the
+          // raw payload so Claude can decide between a recent ex-coach
+          // and "<UNKNOWN>". Use the same slice budget as other sources.
+          coachsData = JSON.stringify(log.data).slice(0, sliceLimitFor(log.source));
         }
       } else {
-        coachsData = jsonStr;
+        coachsData = JSON.stringify(log.data).slice(0, sliceLimitFor(log.source));
       }
     }
   }

@@ -446,7 +446,11 @@ struct UpcomingFixture: Codable, Identifiable, Equatable {
 /// post-Claude merge from api_football_standings raw_fetch_log — no LLM
 /// judgment, purely deterministic table data.
 struct StandingsEntry: Codable, Identifiable, Equatable {
-    var id: Int { rank }
+    /// Stable id for SwiftUI. Prefer the API-Football team id (unique
+    /// across the league/group); fall back to rank for legacy rows that
+    /// lack the id. Don't use plain `rank` alone — would collide if we
+    /// ever render multiple groups in a single ForEach.
+    var id: Int { teamIdApiFootball ?? rank }
     let rank: Int
     let teamName: String
     let teamIdApiFootball: Int?

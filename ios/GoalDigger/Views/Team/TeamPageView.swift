@@ -529,20 +529,25 @@ struct TeamPageView: View {
         )
     }
 
-    private static func dayOfWeek(_ d: Date) -> String {
-        let f = DateFormatter(); f.dateFormat = "EEE"
-        return f.string(from: d).uppercased()
-    }
-    private static func dayMonth(_ d: Date) -> String {
-        let f = DateFormatter(); f.dateFormat = "d MMM"
-        return f.string(from: d)
-    }
-    private static func kickoffTime(_ d: Date) -> String {
+    // Cached formatters — DateFormatter() init is expensive (locale/calendar
+    // setup) and each calendar row needs all three. Allocating fresh per
+    // call would be ~24 inits per render with 8 fixtures.
+    private static let dayOfWeekFmt: DateFormatter = {
+        let f = DateFormatter(); f.dateFormat = "EEE"; return f
+    }()
+    private static let dayMonthFmt: DateFormatter = {
+        let f = DateFormatter(); f.dateFormat = "d MMM"; return f
+    }()
+    private static let kickoffTimeFmt: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "h:mma"
         f.amSymbol = "am"; f.pmSymbol = "pm"
-        return f.string(from: d)
-    }
+        return f
+    }()
+
+    private static func dayOfWeek(_ d: Date) -> String { dayOfWeekFmt.string(from: d).uppercased() }
+    private static func dayMonth(_ d: Date) -> String { dayMonthFmt.string(from: d) }
+    private static func kickoffTime(_ d: Date) -> String { kickoffTimeFmt.string(from: d) }
 
     // MARK: - Table tab
 
@@ -563,10 +568,15 @@ struct TeamPageView: View {
 
     @ViewBuilder
     private func standingsTable(_ entries: [StandingsEntry]) -> some View {
+        // Resolve the user's row index once per render rather than calling
+        // isUserTeam() inside the ForEach (which would do a string lookup
+        // for every entry; for a 20-row PL table that's 20 ops per body
+        // recomputation).
+        let userIdx = entries.firstIndex { isUserTeam($0) }
         VStack(spacing: 0) {
             standingsHeader
-            ForEach(entries) { entry in
-                standingsRow(entry, isUser: isUserTeam(entry))
+            ForEach(Array(entries.enumerated()), id: \.element.id) { idx, entry in
+                standingsRow(entry, isUser: idx == userIdx)
                 if entry.id != entries.last?.id {
                     Divider().background(Color.warmWhite.opacity(0.08))
                 }
@@ -618,15 +628,23 @@ struct TeamPageView: View {
         .background(isUser ? Color.hotRose.opacity(0.12) : Color.clear)
     }
 
-    /// Match the standings row to the user's team. API-Football's team
-    /// names ("Arsenal", "Sweden", "Manchester City") usually align with
-    /// our `entityDisplayName`; do a case-insensitive contains so minor
-    /// punctuation differences ("Man City" vs "Manchester City") still
-    /// match when one is a substring of the other.
+    /// User's API-Football id, used to match the standings row precisely
+    /// (the previous bidirectional-contains match was wrong for cases like
+    /// "Manchester United" vs "Manchester City" — both contain "Manchester").
+    /// Falls back to a name-equality check if the entry has no API id.
+    private var userApiFootballId: Int? {
+        if let team = Team(rawValue: teamId) { return team.apiFootballId }
+        if let country = Country(rawValue: teamId) { return country.apiFootballId }
+        return nil
+    }
+
     private func isUserTeam(_ e: StandingsEntry) -> Bool {
-        let entry = e.teamName.lowercased()
-        let mine = entityDisplayName.lowercased()
-        return entry == mine || entry.contains(mine) || mine.contains(entry)
+        if let mine = userApiFootballId, let theirs = e.teamIdApiFootball {
+            return mine == theirs
+        }
+        // No id on this entry — last-ditch exact-name fallback. Avoid
+        // substring matching to prevent false positives on "Manchester *".
+        return e.teamName.lowercased() == entityDisplayName.lowercased()
     }
 
     private func formatGd(_ gd: Int) -> String {
