@@ -108,6 +108,36 @@ const TEAM_PAGE_TOOL = {
       next_fixture_date: { type: "string", description: "ISO 8601 date" },
       next_fixture_venue: { type: "string", enum: ["home", "away"] },
       next_fixture_preview: { type: "string", description: "Factual one-liner, NOT a talking point" },
+
+      // Card: upcoming_fixtures (optional — Calendar tab on iOS team page)
+      // Each fixture gets a server-judged importance rating (1-5 dots) +
+      // a short label so the iOS calendar can show "Top-4 race" /
+      // "Group A decider" etc. next to each game. Order should follow
+      // the Fixtures data (chronological).
+      upcoming_fixtures: {
+        type: "array",
+        description: "Up to 8 upcoming fixtures with importance ratings. Use the Standings, recent Form, and rivalry context above to rate how meaningful each game is.",
+        items: {
+          type: "object",
+          properties: {
+            date: { type: "string", description: "ISO 8601 kickoff datetime, copied from the Fixtures data" },
+            opponent: { type: "string", description: "Opponent name in plain English, e.g. 'Tottenham'" },
+            venue: { type: "string", enum: ["home", "away"] },
+            importance_dots: {
+              type: "integer",
+              minimum: 1,
+              maximum: 5,
+              description: "1 = routine, 2 = mild interest, 3 = meaningful, 4 = big, 5 = defining. Derbies, relegation 6-pointers, top-4 deciders, and WC group/knockout finales go 4-5. Mid-table cup games go 1-2.",
+            },
+            importance_label: {
+              type: "string",
+              description: "≤30 chars hook explaining the dots: 'Top-4 race', 'North London Derby', 'Relegation 6-pointer', 'Group A decider', 'Tune-up before the WC'. Statement, not a question. No fan voice.",
+            },
+          },
+          required: ["date", "opponent", "venue", "importance_dots", "importance_label"],
+        },
+        maxItems: 8,
+      },
     },
     required: [
       "manager_name", "manager_summary",
@@ -131,6 +161,94 @@ interface TeamPageRequest {
 interface RawFetchLog {
   source: string;
   data: unknown;
+}
+
+// ============================================================
+// HELPERS — Standings card (mechanical merge, no LLM)
+// ============================================================
+
+/// Build the standings card by mechanically extracting from the
+/// api_football_standings raw log. No Claude judgment — purely
+/// deterministic table data. For PL: 20 rows of the league table. For
+/// WC countries: the 4 rows of the group containing this team.
+///
+/// Returns null when standings data is unavailable or can't be parsed —
+/// caller should fall back to the existing card to avoid wiping good
+/// data with a transient empty payload.
+function buildStandingsCard(
+  rawLogs: RawFetchLog[],
+  team: Team,
+  now: string,
+): Record<string, unknown> | null {
+  // API-Football's /standings occasionally returns empty arrays for a few
+  // minutes during their nightly cache refresh. rawLogs is ordered
+  // newest-first; walk forward to find the first standings log with a
+  // populated response. Pattern mirrors the api_football_coachs fix
+  // documented in Lesson 67 — "newest GOOD row wins."
+  let league: Record<string, unknown> | undefined;
+  for (const log of rawLogs) {
+    if (log.source !== "api_football_standings") continue;
+    const response = (log.data as { response?: Array<Record<string, unknown>> }).response;
+    if (!Array.isArray(response) || response.length === 0) continue;
+    league = (response[0] as Record<string, unknown>).league as Record<string, unknown>;
+    if (league) break;
+  }
+  if (!league) return null;
+  // For PL the structure is `league.standings[0]` (one league-wide array).
+  // For WC the structure is `league.standings[0..11]` (one array per group).
+  const allGroups = league?.standings as unknown[][] | undefined;
+  if (!Array.isArray(allGroups) || allGroups.length === 0) return null;
+
+  type StandingsRow = Record<string, unknown>;
+  let entries: StandingsRow[] = [];
+  let competitionLabel = "Premier League";
+
+  if (team.entity_type === "country") {
+    // Find the group containing this team's api_football_id.
+    for (const group of allGroups) {
+      if (!Array.isArray(group)) continue;
+      const hasTeam = (group as StandingsRow[]).some((row) => {
+        const t = row.team as Record<string, unknown> | undefined;
+        return (t?.id as number) === team.api_football_id;
+      });
+      if (hasTeam) {
+        entries = group as StandingsRow[];
+        // API-Football puts the group label on each row, e.g. "Group A".
+        competitionLabel = ((group[0] as StandingsRow | undefined)?.group as string) ?? "Group";
+        break;
+      }
+    }
+  } else {
+    entries = (allGroups[0] ?? []) as StandingsRow[];
+    competitionLabel = "Premier League";
+  }
+
+  if (entries.length === 0) return null;
+
+  const mapped = entries.map((row) => {
+    const t = row.team as Record<string, unknown> | undefined;
+    const all = row.all as Record<string, unknown> | undefined;
+    const goals = all?.goals as Record<string, unknown> | undefined;
+    return {
+      rank: row.rank as number,
+      team_name: t?.name as string,
+      team_id_api_football: t?.id as number,
+      played: (all?.played as number) ?? 0,
+      won: (all?.win as number) ?? 0,
+      drawn: (all?.draw as number) ?? 0,
+      lost: (all?.lose as number) ?? 0,
+      gf: (goals?.for as number) ?? 0,
+      ga: (goals?.against as number) ?? 0,
+      gd: (row.goalsDiff as number) ?? 0,
+      points: (row.points as number) ?? 0,
+    };
+  });
+
+  return {
+    updated_at: now,
+    competition_label: competitionLabel,
+    entries: mapped,
+  };
 }
 
 // ============================================================
@@ -216,7 +334,12 @@ async function generateFullPage(
     .rpc("get_latest_fetch_logs_per_source", { p_team_id: team.id })
     .returns<RawFetchLog[]>();
 
-  // If no RPC exists, fall back to a manual query
+  // If no RPC exists, fall back to a manual query. Limit of 100 covers
+  // ~7 hours of hourly fetches across all ~14 sources per team — wide
+  // enough that a transient empty-response window (API-Football briefly
+  // returns []) doesn't crowd out the most recent GOOD row. The
+  // newest-good-wins guards in the loop below pick correctly even when
+  // the window contains both empty and populated snapshots.
   let rawLogs = logs;
   if (!rawLogs) {
     const { data } = await supabase
@@ -224,7 +347,7 @@ async function generateFullPage(
       .select("source, data")
       .eq("team_id", team.id)
       .order("fetched_at", { ascending: false })
-      .limit(20);
+      .limit(100);
     rawLogs = data ?? [];
   }
 
@@ -244,17 +367,57 @@ async function generateFullPage(
   let injuriesData = "";
   let coachsData = "";
 
+  // Track which sources we've already filled with a NON-EMPTY response.
+  // rawLogs is newest-first; once we've grabbed a good payload, skip
+  // older fetches even if the newest was an empty/error response. Same
+  // "newest GOOD row wins" pattern as the api_football_coachs handler
+  // (Lesson 67).
+  const isResponseEmpty = (data: unknown): boolean => {
+    const r = (data as { response?: unknown[] }).response;
+    return !Array.isArray(r) || r.length === 0;
+  };
+  // Track which fixture sub-sources have been filled (fixtures_last vs
+  // fixtures_next are separate logs that both match .includes("fixtures")).
+  const fixturesSourcesSeen = new Set<string>();
+
   for (const log of rawLogs) {
-    // Squad data includes 20+ players × ~200 chars each (incl. photo URLs).
-    // 2000 chars truncates roughly half the squad and risks dropping photo
-    // URLs for the players the LLM ends up picking for top_players. Bump
-    // squad to 6000 so the full roster + headshot URLs all reach the prompt.
-    const slicelimit = log.source === "api_football_squad" ? 6000 : 2000;
+    // Slice budget per source. Each row is ONE JSON.stringify of the
+    // upstream response; truncating mid-object produces unparseable JSON
+    // and Claude returns degraded fields (e.g. empty upcoming_fixtures
+    // when fixture #3 of 4 gets cut). Sized to fit the worst realistic
+    // payload per source:
+    //   - squad: 20+ players × ~200 chars each (incl. photo URLs).
+    //   - fixtures (last/next): each fixture is ~700 chars, up to 5 deep.
+    //   - standings: full 20-team league response is ~6 KB.
+    //   - default: small endpoints (injuries, coachs after pre-filter).
+    const slicelimit =
+      log.source === "api_football_squad" ? 6000 :
+      log.source.includes("fixtures") ? 6000 :
+      log.source === "api_football_standings" ? 8000 :
+      2000;
     const jsonStr = JSON.stringify(log.data).slice(0, slicelimit);
-    if (log.source === "api_football_standings") standingsData = jsonStr;
-    else if (log.source === "api_football_squad") squadData = jsonStr;
-    else if (log.source.includes("fixtures")) fixturesData += `\n${log.source}: ${jsonStr}`;
-    else if (log.source === "api_football_injuries") injuriesData = jsonStr;
+    if (log.source === "api_football_standings") {
+      if (standingsData || isResponseEmpty(log.data)) continue;
+      standingsData = jsonStr;
+    }
+    else if (log.source === "api_football_squad") {
+      if (squadData || isResponseEmpty(log.data)) continue;
+      squadData = jsonStr;
+    }
+    else if (log.source.includes("fixtures")) {
+      // Fixtures concatenates across last + next sources, but only
+      // append the NEWEST non-empty row per source. Without dedupe,
+      // multiple snapshots over time stack up and Claude sees the same
+      // fixtures repeated with stale timestamps.
+      if (isResponseEmpty(log.data)) continue;
+      if (fixturesSourcesSeen.has(log.source)) continue;
+      fixturesSourcesSeen.add(log.source);
+      fixturesData += `\n${log.source}: ${jsonStr}`;
+    }
+    else if (log.source === "api_football_injuries") {
+      if (injuriesData || isResponseEmpty(log.data)) continue;
+      injuriesData = jsonStr;
+    }
     else if (log.source === "api_football_coachs") {
       // V2.0 hardening: API-Football's /coachs returns every coach who's
       // EVER coached this team (Sweden returns 4: Hamrén, Andersson,
@@ -354,7 +517,28 @@ is available." — do NOT guess or use a name from prior knowledge.
 For manager_photo_url: set it to the head coach's photo URL from the Coaches
 data above (the same coach you used for manager_name). The field is named
 "photo" on each coach entry and looks like https://media.api-sports.io/football/coachs/XXXX.png.
-If no photo is present, omit manager_photo_url entirely.`;
+If no photo is present, omit manager_photo_url entirely.
+
+REQUIRED — Calendar tab data: produce upcoming_fixtures by walking the
+Fixtures data above (the api_football_fixtures_next section). Take up to
+8 fixtures, chronological earliest first. ALWAYS include this field —
+emit an empty array [] only if literally no upcoming fixtures exist in
+the data. For each fixture:
+- date: the kickoff datetime as-is from the API response (e.g. fixture.date).
+- opponent: the team name OTHER than ${team.display_name}.
+- venue: "home" if ${team.display_name} is the home team for this fixture, else "away".
+- importance_dots: 1-5 using these rules:
+  * Derbies (rivalry context above) and direct top-4 / relegation collisions: 4-5.
+  * Cup ties and mid-table league games: 2-3.
+  * Friendlies and dead-rubber games: 1.
+  * For WC countries: group-stage matchday 3 and knockouts default to 4-5;
+    matchday 1-2 default to 3-4.
+- importance_label: ≤30 chars hook. Statement, no questions. Examples:
+  "Top-4 race", "Group A decider", "Relegation 6-pointer", "North London
+  Derby", "Tune-up before the WC", "Mid-table consolation".
+
+This populates the iOS "Calendar" tab on the team page. Without it the
+tab shows empty state, so do NOT skip this field when fixtures exist.`;
 
   const response = await callClaude({
     system: systemPrompt,
@@ -419,6 +603,17 @@ If no photo is present, omit manager_photo_url entirely.`;
             },
           }
         : { next_fixture: existingCards.next_fixture ?? null }),
+
+      // Calendar tab data — Claude-generated importance ratings per
+      // upcoming fixture. Fall back to existing if Claude omitted the
+      // field (e.g. pre-season or no fixtures available).
+      upcoming_fixtures: input.upcoming_fixtures ?? existingCards.upcoming_fixtures ?? null,
+
+      // Table tab data — mechanical merge from raw_fetch_logs, no LLM.
+      // PL clubs get the full 20-row league table; WC countries get
+      // their 4-row group. Falls back to existing if the standings raw
+      // log is unavailable for this run (e.g. fetch transient error).
+      standings: buildStandingsCard(rawLogs, team, now) ?? existingCards.standings ?? null,
     },
   };
 
