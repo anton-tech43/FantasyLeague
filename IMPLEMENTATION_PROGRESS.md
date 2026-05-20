@@ -2482,31 +2482,61 @@ SELECT count(*) FROM team_pages
 
 Worth keeping in mind for any future `team_pages.content` audit query — JSONB lookups that return literal-null are common because that's how preservation-style "missing card" patterns get persisted.
 
-**Anthropic credit burn caught us mid-execution.** After the 50-team backfill of basics for the WC countries + 3 promoted PL clubs (Sonnet 4.5 at ~$4-5 of credits burned during the burst), Anthropic returned 429 / "credit balance too low" for every subsequent full-mode call. The Claude client retries with 30s + 2min + 10min backoffs; Supabase Edge Functions kill workers after 150s of idle, so the retry loop trips the timeout before the third retry sleep even starts. Symptom on the user side: every full-mode call returns `IDLE_TIMEOUT` or `WORKER_RESOURCE_LIMIT`. **Mitigation:** top up at https://console.anthropic.com/settings/billing then re-fire the failing teams.
+**Anthropic credit burn caught us mid-execution.** After the 50-team backfill of basics for the WC countries + 3 promoted PL clubs (Sonnet 4.5 at ~$4-5 of credits burned during the burst), Anthropic returned 429 / "credit balance too low" for every subsequent full-mode call. The Claude client retries with 30s + 2min + 10min backoffs; Supabase Edge Functions kill workers after 150s of idle, so the retry loop trips the timeout before the third retry sleep even starts. Symptom on the user side: every full-mode call returns `IDLE_TIMEOUT` or `WORKER_RESOURCE_LIMIT`.
 
-This blocked the last verification step — re-firing Canada with the new `extraSquads` top-up to populate its missing player photos. Canada renders gracefully (three initials-only `AD / JD / CL` avatars) without the photos, so the iOS surface isn't broken; it's just not yet complete. The fix is documented and ready to re-deploy once credits are back.
+**This shouldn't have happened.** `team-page-generator` is the only Edge Function still calling Anthropic directly that fires non-trivially. Every other LLM-generated content surface in the system (news/insider/quiz/matchday/live-brief/season-state) is built on the cloud-routine pattern from Lesson 17 onwards — Claude inside the routine session runs the prompt, a `post_*.sh` script writes to Supabase. Cloud routines use the user's claude.ai subscription quota, not the API account's pay-per-token credit balance. The team-page-generator was built before that pattern dominated, never migrated. A 50-team backfill via routines (or a SINGLE one-off `gd-team-pages-backfill` routine that loops in-session) would have cost zero API credits.
+
+**Canada's missing photos — finished via direct SQL UPDATE, no Claude call.** The squad top-up was the wrong tool. The right tool: read the API-Football squad payload that's already sitting in `raw_fetch_logs.api_football_squad`, extract the `player.photo` URLs for the two team_pages players that match by last-name suffix (`J. David` → 8489.png, `C. Larin` → 2001.png), and `jsonb_set` them into `team_pages.content.cards.ones_to_know.players`. Alphonso Davies is genuinely missing from API-Football's current Canada roster (his ACL injury kept him out of recent fixtures, so API-Football trimmed him from the squad endpoint); his row stays photo-less and iOS renders an `AD` initial avatar — graceful by design. Zero credits burned, the patch took ~30 seconds.
+
+```sql
+UPDATE team_pages tp
+SET content = jsonb_set(
+  content,
+  '{cards,ones_to_know,players}',
+  (
+    SELECT jsonb_agg(
+      CASE
+        WHEN p->>'name' = 'Jonathan David' THEN p || '{"photo_url":"https://media.api-sports.io/football/players/8489.png"}'::jsonb
+        WHEN p->>'name' = 'Cyle Larin'     THEN p || '{"photo_url":"https://media.api-sports.io/football/players/2001.png"}'::jsonb
+        ELSE p
+      END
+      ORDER BY ord
+    )
+    FROM jsonb_array_elements(content->'cards'->'ones_to_know'->'players') WITH ORDINALITY AS x(p, ord)
+  )
+)
+WHERE tp.team_id = 'canada';
+```
 
 **Rules:**
 
-1. **A graceful-hide UI fallback hides BOTH legitimate misses AND broken data fetches.** This is the second time in 48 hours the pattern bit us — first the manager card (Lesson 72), now the basics card. Pattern: add a fallback-rate metric whenever you add a graceful-hide fallback. Lesson 72 rule 2 still stands; we still haven't built the metric.
+1. **A graceful-hide UI fallback hides BOTH legitimate misses AND broken data fetches.** Second time in 48 hours the pattern bit us — first the manager card (Lesson 72), now the basics card. Pattern: add a fallback-rate metric whenever you add a graceful-hide fallback. Lesson 72 rule 2 still stands; we still haven't built the metric.
 
 2. **JSONB `null` is not SQL NULL.** Always check both when auditing JSONB columns. `WHERE x IS NULL OR jsonb_typeof(x) = 'null'`.
 
-3. **Estimate burst cost in tokens × price BEFORE you fire it.** A 50-team Sonnet-4.5 backfill at ~5K input + ~5K output per team is ~500K tokens × ($3 + $15)/M = ~$9. Easy to under-budget when each individual call feels cheap. The user needs to top up; we should have either warned upfront or thrown a smaller batch first.
+3. **Before mass-firing any Anthropic-API-key-backed Edge Function, ask: can this run through routines or direct SQL instead?** The routines pipeline (claude.ai cloud sessions) bills against your claude.ai subscription quota, not the per-token API account. The basics backfill cost ~$4-5 in API credits and bottomed the balance; the same work via a one-off `gd-team-pages-backfill` routine would have been zero credits. The default for any cross-team backfill from here on is: SQL-only if the data is already in `raw_fetch_logs`, routine if it needs LLM judgement, Edge Function only if it's user-triggered single-team on-demand.
 
-4. **The Claude client's retry schedule (30s + 2min + 10min) trips Supabase's 150s idle timeout on the second retry sleep.** If Claude is unhealthy, the function dies with a misleading IDLE_TIMEOUT before the actual Claude error surfaces. Worth surfacing the underlying error (e.g. log the response body on the first attempt failure) so the user knows it's a credit issue, not a function-code bug.
+4. **The Claude client's retry schedule (30s + 2min + 10min) trips Supabase's 150s idle timeout on the second retry sleep.** If Claude is unhealthy (credit balance, 429, downstream error), the function dies with a misleading `IDLE_TIMEOUT` before the actual Claude error surfaces. The user spent 20 minutes thinking the code was broken when the actual cause was billing. Surface the underlying error: log the response body on the first attempt failure so the user knows whether it's code or credits.
 
 5. **API-Football's `/teams` endpoint is a deterministic source for venue names that survives venue renames.** Friends Arena → Strawberry Arena 2024 happened automatically once we read `venue.name` from the Teams payload instead of relying on Claude's general knowledge. Use the deterministic upstream when it's there.
+
+6. **Direct SQL is the cheapest "backfill" when the upstream data is already in `raw_fetch_logs`.** Canada's missing photos didn't need a regeneration — the squad data was sitting in the DB, the matching was a 3-line CASE expression by last-name suffix, the `jsonb_set` was one statement. Cost: zero credits, ~30 seconds. Whenever you're about to bulk-fire an LLM-backed function, first ask "is the answer already in the DB?" — if yes, SQL it.
 
 **Files touched:**
 - Backend: `team-page-generator/index.ts` — basics tool schema slot + `api_football_teams` iteration branch + `existingBasicsBlock` prompt injection + hoisted `existing` query + build-step graft. Commit `11f56c1`.
 - iOS: `Views/Team/TeamPageView.swift` (playerRow + playerAvatar + playerInitials + basics-block conditional rendering) + `Models/ContentItem.swift` (BasicsCard.stadium → String?). Commit `8437ede`.
 - STATUS.md + this lesson (commit pending).
 
-**Live state after deploy:** 71/71 team_pages rows have a curated basics card (51 generated this session; 20 PL hand-seeded preserved verbatim). 70/71 rows have player photos on all 3 top players. Canada is the lone holdout for photos pending Anthropic credit top-up + Canada-only re-fire.
+**Live state after backfill:** 71/71 team_pages rows have a curated basics card (51 Claude-generated this session via the Edge Function — the expensive mistake; 20 PL hand-seeded preserved verbatim). 70/71 rows have player photos on all 3 top players; Canada has 2 of 3 (Davies legitimately absent from API-Football's current roster). Final photo backfill done via direct SQL UPDATE, zero Claude credits burned.
+
+**V2.1 ticket — `team-page-generator` migration to routine pattern.** The Edge Function should be split into two pieces:
+1. `gd-team-pages` — a daily cloud routine on claude.ai that iterates teams needing a regen (basics still null, manager `<UNKNOWN>`, stale data) and runs the same prompt in-session against the user's claude.ai quota.
+2. `accept-team-page-payload` — a thin Edge Function that does only the JSONB stitching + preservation logic, called by `post_team_page.sh` after the routine produces its tool-call output. Zero LLM call on the Edge Function side.
+
+This is identical to the post_news.sh / post_insider.sh / etc. architecture already in production for every other LLM-generated surface. Migrating closes the per-team-page API-credit drip ($2-6/day at steady state) and means no future cross-team backfill ever burns API credits again.
 
 **Out of scope:**
 - `manager_overrides` table for Spain (still V2.1, Lesson 72 carryover).
-- Canada photo backfill (blocked on credit top-up — the squad top-up code mirrors Lesson 72's coachs top-up exactly).
 - Fallback-rate observability metric (rule 1 — still deferred).
 - Surfacing the underlying Claude error code through the Edge Function (rule 4 — would have made the credit-balance issue self-diagnose in <30s; deferred as a sweep-up task across all Claude-calling functions).
+- Migration of the other Anthropic-API-key Edge Functions (`backfill-analogies`, `content-generator`, `content-reviewer`, `team-season-state-generator`) — most are dormant/gated-off post Lesson 17 routine migration. Audit and clean up separately.
