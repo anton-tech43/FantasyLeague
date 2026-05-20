@@ -196,7 +196,12 @@ struct TeamPageView: View {
                 isExpanded: expandedCard == .basics,
                 onTap: { toggleCard(.basics) },
                 zone1Collapsed: {
-                    Text(basics.stadium)
+                    // Stadium when we have one; nickname as a backup
+                    // subtitle for WC countries without a clear single
+                    // home venue. Either way the collapsed card has a
+                    // visible second line — empty subtitle reads as a
+                    // broken state.
+                    Text(basics.stadium ?? basics.nickname)
                         .font(.jakarta(13, weight: .regular))
                         .foregroundColor(.warmWhite.opacity(0.7))
                         .lineLimit(1)
@@ -204,7 +209,9 @@ struct TeamPageView: View {
                 zone1Expanded: {
                     VStack(alignment: .leading, spacing: 6) {
                         infoLine(label: "Known as", value: basics.nickname)
-                        infoLine(label: "Home ground", value: basics.stadium)
+                        if let stadium = basics.stadium {
+                            infoLine(label: "Home ground", value: stadium)
+                        }
                         Text(appState.personalise(basics.funFact))
                             .font(.jakarta(13, weight: .regular))
                             .foregroundColor(.warmWhite.opacity(0.7))
@@ -723,28 +730,71 @@ struct TeamPageView: View {
 
     @ViewBuilder
     private func playerRow(player: TopPlayer, tappable: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack {
-                Text(player.name)
-                    .font(.jakarta(14, weight: .bold))
-                    .foregroundColor(.warmWhite)
-                Text(player.position)
-                    .font(.jakarta(12, weight: .regular))
-                    .foregroundColor(.warmWhite.opacity(0.5))
-                Spacer()
-                if tappable {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 10))
+        HStack(alignment: .top, spacing: 12) {
+            playerAvatar(player: player, size: 36)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack {
+                    Text(player.name)
+                        .font(.jakarta(14, weight: .bold))
+                        .foregroundColor(.warmWhite)
+                    Text(player.position)
+                        .font(.jakarta(12, weight: .regular))
                         .foregroundColor(.warmWhite.opacity(0.5))
+                    Spacer()
+                    if tappable {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 10))
+                            .foregroundColor(.warmWhite.opacity(0.5))
+                    }
                 }
-            }
-            if let oneLiner = player.oneLiner {
-                Text(appState.personalise(oneLiner))
-                    .font(.jakarta(12, weight: .regular))
-                    .foregroundColor(.warmWhite.opacity(0.7))
+                if let oneLiner = player.oneLiner {
+                    Text(appState.personalise(oneLiner))
+                        .font(.jakarta(12, weight: .regular))
+                        .foregroundColor(.warmWhite.opacity(0.7))
+                }
             }
         }
         .padding(.vertical, 2)
+    }
+
+    /// Circular player headshot mirroring the onboarding flow's
+    /// `MeetTeamView.playerAvatar`, shrunk to row-height (default 36pt).
+    /// Image source is the API-Football CDN URL stored on
+    /// `TopPlayer.photoURL`; falls back to hot-rose-tinted initials when
+    /// the URL is missing or the AsyncImage load fails. `URLCache.shared`
+    /// (configured in AppDelegate.swift) gives us a free disk cache so
+    /// re-renders are instant after first view.
+    @ViewBuilder
+    private func playerAvatar(player: TopPlayer, size: CGFloat) -> some View {
+        ZStack {
+            Circle().fill(Color.hotRose.opacity(0.15))
+            if let urlString = player.photoURL, let url = URL(string: urlString) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image.resizable().scaledToFill()
+                    default:
+                        playerInitials(player.name, size: size)
+                    }
+                }
+            } else {
+                playerInitials(player.name, size: size)
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(Circle())
+    }
+
+    private func playerInitials(_ name: String, size: CGFloat) -> some View {
+        let initials = name
+            .split(separator: " ")
+            .prefix(2)
+            .compactMap { $0.first.map(String.init) }
+            .joined()
+            .uppercased()
+        return Text(initials)
+            .font(.jakarta(size * 0.4, weight: .bold))
+            .foregroundColor(.hotRose)
     }
 
     private func formattedFixtureDate(_ isoDate: String) -> String {

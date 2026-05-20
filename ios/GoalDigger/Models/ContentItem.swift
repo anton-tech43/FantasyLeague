@@ -310,7 +310,12 @@ struct TeamPageCards: Codable {
 struct BasicsCard: Codable {
     let updatedAt: String?
     let nickname: String
-    let stadium: String
+    /// Optional. PL clubs always have one (hand-seeded). WC countries
+    /// usually have a clear national home venue (Sweden → Friends Arena,
+    /// England → Wembley) but some smaller WC nations rotate venues
+    /// across qualifying; for those, the field is omitted and the
+    /// expanded card hides the "Home ground" row.
+    let stadium: String?
     let funFact: String
     let talkingPoint: String?
 
