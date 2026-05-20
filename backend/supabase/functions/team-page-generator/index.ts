@@ -1,6 +1,14 @@
 // team-page-generator/index.ts
 // Goal Digger — Generates and updates team page content for the "His Team" tab
 // Two modes: "full" (Claude regeneration) and "dynamic_only" (structured data only)
+//
+// ⚠️ COST WARNING ⚠️
+// "full" mode calls Anthropic at ~$0.045/team (Sonnet 4.5). The 2026-05-20
+// 50-team basics backfill via this endpoint burned ~$4-5 and bottomed the
+// API balance. Cross-team backfills MUST go through SQL (if the data is
+// already in raw_fetch_logs) or a one-off claude.ai routine — NOT a loop
+// over this endpoint. See /BACKFILL_RULES.md before scripting anything
+// that fires this in bulk. "dynamic_only" mode is safe — no Claude call.
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";

@@ -12,6 +12,10 @@ The companion app that helps girlfriends understand their partner's football tea
 
 If you're picking up a specific area of the codebase, jump straight to the relevant phase in `IMPLEMENTATION_PROGRESS.md`. Each phase has a "Where we are at end of day" summary at the bottom.
 
+## 🚨 Before any data backfill or cross-team script: [BACKFILL_RULES.md](./BACKFILL_RULES.md)
+
+Short decision tree (SQL → routine → API-billed Edge Function). Read it before firing anything that touches more than one team. The May 20, 2026 incident that prompted it is logged as Lesson 73 in `IMPLEMENTATION_PROGRESS.md`.
+
 ---
 
 ## Repo layout
