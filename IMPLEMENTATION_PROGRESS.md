@@ -2442,3 +2442,71 @@ Resolved France/Scotland/Uruguay cleanly to `<UNKNOWN>` (iOS card hides — corr
 - `manager_overrides` table for Spain (still V2.1 — single team, not blocking June 11 launch).
 - Fallback-rate observability metric per rule 2 above (the right structural fix; deferred until a second broad-fallback bug surfaces).
 - Splitting the main fetch query per-source (deferred — the targeted top-up for coachs covers the specific risk; we'll revisit if another low-cadence source gets crowded out).
+
+### 73. "The basics" card unlock + the JSONB-null trap + circular player photos in the row context
+
+**What happened (May 20 early morning):** User flagged two team-page polish items on the Sweden team page — (1) no "The basics" card, and (2) no player photos in the "ones to know" expand. Investigation: same graceful-hide-masks-universal-breakage pattern that Lesson 72 surfaced for the manager card.
+
+- For **basics**: migration 004 hand-seeded the card for V1.x's 20 PL clubs (curated voice — Arsenal's 49-game Invincibles, Liverpool's "You'll Never Walk Alone" etc.). The 48 WC countries from migration 032 plus the 3 promoted 2025-26 PL teams from migration 018 (Burnley/Sunderland/Leeds) never got seeded, and the team-page-generator preserved-rather-than-generated (`basics: existingCards.basics ?? null`). iOS gracefully hid the card for null basics. 51 of 71 teams silently lacked the card; we only noticed because Sweden (a higher-profile WC nation) was a user-flagged target.
+
+- For **player photos**: the `photo_url` field had been flowing end-to-end since V2.0 — backend tool schema → iOS `TopPlayer.photoURL` field — and 70 of 71 team_pages rows in production carried headshot URLs (Sweden's Gyökeres/Isak/Lindelöf all set). But the iOS `playerRow()` was rendering text only. The chevron expanded the card; no avatar surface ever consumed the photoURL field.
+
+**Two-prong fix.**
+
+*Backend (basics generation):*
+
+1. Added optional `basics` field to the Claude tool schema with nickname/stadium/fun_fact/talking_point properties. Stadium intentionally outside the `required` array — some smaller WC nations rotate venues across qualifying, and we'd rather omit than guess.
+2. Added a new iteration-loop branch for `api_football_teams` (was previously fetched by data-fetcher but never read by team-page-generator). The payload provides deterministic venue.name + venue.city + country.name. This catches venue renames automatically — Sweden's Friends Arena was renamed to Strawberry Arena in late 2024, and our basics output now uses the current name without any hardcoded mapping.
+3. Hoisted the existing-team_pages fetch above the prompt build so the prompt could include an `existingBasicsBlock` that flips between PRESERVE-verbatim (curated PL cards stay frozen) and GENERATE-fresh (WC + new PL get Claude-generated).
+4. Build step changed from `basics: existingCards.basics ?? null` to `basics: existingCards.basics ?? (input.basics ? { updated_at: now, ...(input.basics as Record<string, unknown>) } : null)`. PL hand-seeded copy wins; otherwise Claude's output gets grafted in. Once stored, the preservation arm wins on subsequent runs.
+
+*iOS (player photos + optional stadium):*
+
+5. New private `playerAvatar(player:size:)` + `playerInitials(name:size:)` helpers inside `TeamPageView`. Mirrors `MeetTeamView.playerAvatar` from the onboarding flow — same AsyncImage + initials fallback + hot-rose tint — at 36pt instead of 72pt. `URLCache.shared` already configured in AppDelegate handles disk caching on re-render.
+6. `playerRow(player:tappable:)` switched from a leading `VStack(name + position)` to a leading `playerAvatar` next to that VStack.
+7. `BasicsCard.stadium` flipped from `String` to `String?`. Basics block in `cardsSection` now falls back to nickname for the collapsed subtitle when stadium is nil, and wraps the "Home ground" infoLine in `if let stadium = basics.stadium`. PL clubs with stadiums render unchanged.
+
+**The JSONB-null trap surfaced during verification.** First verification query was:
+
+```sql
+SELECT count(*) FROM team_pages WHERE content->'cards'->'basics' IS NULL;
+```
+
+It returned 0. But 51 rows had `cards.basics` set to a JSONB literal `null` value — not SQL NULL. The two are different in PostgreSQL: `SELECT 'null'::jsonb IS NULL` returns `false`. Correct query is:
+
+```sql
+SELECT count(*) FROM team_pages
+ WHERE content->'cards'->'basics' IS NULL
+    OR jsonb_typeof(content->'cards'->'basics') = 'null';
+```
+
+Worth keeping in mind for any future `team_pages.content` audit query — JSONB lookups that return literal-null are common because that's how preservation-style "missing card" patterns get persisted.
+
+**Anthropic credit burn caught us mid-execution.** After the 50-team backfill of basics for the WC countries + 3 promoted PL clubs (Sonnet 4.5 at ~$4-5 of credits burned during the burst), Anthropic returned 429 / "credit balance too low" for every subsequent full-mode call. The Claude client retries with 30s + 2min + 10min backoffs; Supabase Edge Functions kill workers after 150s of idle, so the retry loop trips the timeout before the third retry sleep even starts. Symptom on the user side: every full-mode call returns `IDLE_TIMEOUT` or `WORKER_RESOURCE_LIMIT`. **Mitigation:** top up at https://console.anthropic.com/settings/billing then re-fire the failing teams.
+
+This blocked the last verification step — re-firing Canada with the new `extraSquads` top-up to populate its missing player photos. Canada renders gracefully (three initials-only `AD / JD / CL` avatars) without the photos, so the iOS surface isn't broken; it's just not yet complete. The fix is documented and ready to re-deploy once credits are back.
+
+**Rules:**
+
+1. **A graceful-hide UI fallback hides BOTH legitimate misses AND broken data fetches.** This is the second time in 48 hours the pattern bit us — first the manager card (Lesson 72), now the basics card. Pattern: add a fallback-rate metric whenever you add a graceful-hide fallback. Lesson 72 rule 2 still stands; we still haven't built the metric.
+
+2. **JSONB `null` is not SQL NULL.** Always check both when auditing JSONB columns. `WHERE x IS NULL OR jsonb_typeof(x) = 'null'`.
+
+3. **Estimate burst cost in tokens × price BEFORE you fire it.** A 50-team Sonnet-4.5 backfill at ~5K input + ~5K output per team is ~500K tokens × ($3 + $15)/M = ~$9. Easy to under-budget when each individual call feels cheap. The user needs to top up; we should have either warned upfront or thrown a smaller batch first.
+
+4. **The Claude client's retry schedule (30s + 2min + 10min) trips Supabase's 150s idle timeout on the second retry sleep.** If Claude is unhealthy, the function dies with a misleading IDLE_TIMEOUT before the actual Claude error surfaces. Worth surfacing the underlying error (e.g. log the response body on the first attempt failure) so the user knows it's a credit issue, not a function-code bug.
+
+5. **API-Football's `/teams` endpoint is a deterministic source for venue names that survives venue renames.** Friends Arena → Strawberry Arena 2024 happened automatically once we read `venue.name` from the Teams payload instead of relying on Claude's general knowledge. Use the deterministic upstream when it's there.
+
+**Files touched:**
+- Backend: `team-page-generator/index.ts` — basics tool schema slot + `api_football_teams` iteration branch + `existingBasicsBlock` prompt injection + hoisted `existing` query + build-step graft. Commit `11f56c1`.
+- iOS: `Views/Team/TeamPageView.swift` (playerRow + playerAvatar + playerInitials + basics-block conditional rendering) + `Models/ContentItem.swift` (BasicsCard.stadium → String?). Commit `8437ede`.
+- STATUS.md + this lesson (commit pending).
+
+**Live state after deploy:** 71/71 team_pages rows have a curated basics card (51 generated this session; 20 PL hand-seeded preserved verbatim). 70/71 rows have player photos on all 3 top players. Canada is the lone holdout for photos pending Anthropic credit top-up + Canada-only re-fire.
+
+**Out of scope:**
+- `manager_overrides` table for Spain (still V2.1, Lesson 72 carryover).
+- Canada photo backfill (blocked on credit top-up — the squad top-up code mirrors Lesson 72's coachs top-up exactly).
+- Fallback-rate observability metric (rule 1 — still deferred).
+- Surfacing the underlying Claude error code through the Edge Function (rule 4 — would have made the credit-balance issue self-diagnose in <30s; deferred as a sweep-up task across all Claude-calling functions).

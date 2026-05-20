@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-19 morning (slicker segmented control + universal manager-card unlock — 66 of 70 team pages now show the correct coach, 3 cleanly hide, 1 awaits manager_overrides)
+**Last updated:** 2026-05-20 early morning (circular player photos on team page + universal "The basics" card unlock — all 71 team pages now render the basics card, 70 with curated player headshots in the "ones to know" expand; Canada's player photos await an Anthropic credit top-up to redo the regen)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
@@ -9,6 +9,20 @@ A one-page snapshot of where the project is. For the deep history, see [IMPLEMEN
 ## TL;DR
 
 GoalDigger is live on TestFlight (V1.3 build). **World Cup 2026 support (V2.0) is feature-complete and verified** — backend + iOS shipped, build green, cron auth healthy after Phase 28 hardening, WC routine prompts now country-aware. **Push pipeline was completely dead from May 11 → May 17** (Vault had wrong-shape key, gateway 401'd every cron tick); **fixed and end-to-end verified**. Remaining work for June 11 launch: gd-news-wc routine creation (separate cron slot for 48 countries to avoid context blowout), TestFlight beta with V2.0 build, App Store submission by June 4.
+
+---
+
+## Verified today (May 20 early morning — "The basics" card + circular player photos)
+
+Two team-page polish items, both stemming from the same lens that surfaced yesterday's manager-card breakage: the iOS app gracefully hides cards when their backend data is missing, which means a universal data gap looks identical to a per-team gap. Sweden + tonight's sim review surfaced both.
+
+- **Player photos on "The ones to know"** (iOS render delta, commit `8437ede`). The `photo_url` field has been flowing end-to-end from `team-page-generator` to `TopPlayer.photoURL` for weeks — 70 of 71 team_pages rows already carried headshot URLs (only Canada is missing photos due to a squad-data crowding pattern, see "Carryover" below). But `TeamPageView.playerRow()` was rendering text only. Added a 36pt circular `playerAvatar(player:size:)` helper reusing onboarding's `MeetTeamView.playerAvatar` pattern (AsyncImage + hot-rose initials fallback + `.clipShape(Circle())`). URLCache.shared already handles disk caching. iOS build green on iPhone 17 Pro sim. Initials handle every missing photo case (including Canada's three players) so the visual fallback is graceful.
+
+- **"The basics" card now generated for any team where it's null** (backend + iOS optional-stadium support, commit `11f56c1`). Migration 004 hand-seeded basics for the 20 V1.x PL clubs; the 48 WC countries from migration 032 plus the 3 promoted 2025-26 PL teams from migration 018 never got seeded. The team-page-generator explicitly preserved instead of generating (`basics: existingCards.basics ?? null`). iOS hid the card silently for null basics, so the 51-team gap was invisible — exact same class as yesterday's `<UNKNOWN>` manager. Added: (1) new optional `basics` field on the Claude tool schema, (2) `Teams data` slot pulling api_football_teams payload into the prompt so Claude has deterministic venue.name + country.name (catches venue renames like Friends Arena → Strawberry Arena 2024), (3) `existingBasicsBlock` injection that tells Claude to PRESERVE-verbatim vs GENERATE-fresh, (4) build-step graft that uses Claude output ONLY when existing card is null (PL hand-seeded copy stays frozen — Arsenal's `updated_at: 2026-04-07` verified untouched after re-fire). iOS: `BasicsCard.stadium` optional, basics block falls back to nickname for collapsed subtitle and hides the "Home ground" row when stadium is nil. Backfill ran on all 51 null-basics rows; quality is strong on spot-check (Argentina → "La Albiceleste" / Estadio Monumental; Brazil → "A Seleção" / Maracanã; England → "Three Lions" / Wembley; Germany → "Die Mannschaft" / Allianz Arena; Iran → "Team Melli" / Azadi Stadium; Sweden → "Blågult" / Strawberry Arena, Solna).
+
+- **Carryover (blocked on credit top-up).** Canada is the lone team with no player photos — same iteration-overwrite class as yesterday's Lesson 72 coachs bug, this time on `api_football_squad`. The fix is structurally identical (10-row targeted secondary query for squad logs slotted next to the existing `extraCoachs` top-up). It was prepared and deployed during this session, but a follow-up Canada re-fire couldn't be verified because the Anthropic API credit balance bottomed out partway through the basics backfill (50-team Sonnet-4.5 burst burned through ~$4-5 of credits). Function calls now return IDLE_TIMEOUT as the Claude client retries through 30s + 2min + 10min delays inside Supabase's 150s ceiling. **Once credits are topped up at https://console.anthropic.com/settings/billing, the squad top-up can be re-added (the code from this session is preserved in the IMPLEMENTATION_PROGRESS Lesson 73 narrative) + Canada re-fired**. Until then, Canada renders three initials-only avatars (`AD / JD / CL`) in the "ones to know" expand — graceful, not broken.
+
+- **JSONB-null trap (audit-query hardening, no code change).** During the backfill verification, `SELECT … WHERE content->'cards'->'basics' IS NULL` returned 0 rows — but 51 rows had basics set to the JSONB literal `null` value, not SQL NULL. The audit query needs `WHERE x IS NULL OR jsonb_typeof(x) = 'null'`. Worth keeping in mind for any future `team_pages.content` audit.
 
 ---
 
