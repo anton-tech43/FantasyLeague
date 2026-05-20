@@ -109,6 +109,24 @@ const TEAM_PAGE_TOOL = {
       next_fixture_venue: { type: "string", enum: ["home", "away"] },
       next_fixture_preview: { type: "string", description: "Factual one-liner, NOT a talking point" },
 
+      // Card: basics — OPTIONAL. Generate ONLY when the prompt indicates
+      // no existing basics card is present. PL clubs all have hand-seeded
+      // basics from migration 004 (curated voice, e.g. Arsenal's 49-game
+      // Invincibles fun fact); the build step below preserves those
+      // verbatim. WC countries have no seeding so this is where they
+      // get their card. See Lesson 73.
+      basics: {
+        type: "object",
+        description: "OMIT entirely when the prompt provides 'Existing basics card (PRESERVE verbatim)'. Otherwise produce a fresh card describing the team's identity.",
+        properties: {
+          nickname: { type: "string", description: "The team's primary nickname (e.g. 'The Gunners', 'Blågult', 'La Albiceleste', 'Three Lions')." },
+          stadium: { type: "string", description: "For PL clubs: home stadium + city ('Emirates Stadium, London'). For WC countries: the national team's primary home venue ('Friends Arena, Solna' for Sweden, 'Wembley Stadium, London' for England, 'Maracanã, Rio de Janeiro' for Brazil). Use venue.name from the Teams data above when present; fall back to general knowledge. OMIT if no single venue is clearly the home stadium (some smaller WC nations rotate)." },
+          fun_fact: { type: "string", description: "One short paragraph in GoalDigger voice (~2-3 sentences). Specific, surprising, conversation-worthy. Past achievement, legendary moment, or distinctive quirk. For WC countries: famous tournament moment or culture (Sweden's 1958 final on home soil, Iceland's Viking thunder-clap, Korea Japan 2002 semifinalists, etc.). End with a sentence hinting how she should react if her partner brings it up." },
+          talking_point: { type: "string", description: "≤120 chars. One sentence she can say to him to flex the basic. 'Say this:' framing." },
+        },
+        required: ["nickname", "fun_fact", "talking_point"],
+      },
+
       // Card: upcoming_fixtures (optional — Calendar tab on iOS team page)
       // Each fixture gets a server-judged importance rating (1-5 dots) +
       // a short label so the iOS calendar can show "Top-4 race" /
@@ -394,6 +412,11 @@ async function generateFullPage(
   let fixturesData = "";
   let injuriesData = "";
   let coachsData = "";
+  // Team metadata (venue, country, founded) — used as a deterministic
+  // source for the "stadium" field on the basics card. Without this,
+  // Claude generates stadium from general knowledge which can be wrong
+  // for less-prominent national teams (Bosnia, Iraq, etc).
+  let teamsData = "";
 
   // Track which sources we've already filled with a NON-EMPTY response.
   // rawLogs is newest-first; once we've grabbed a good payload, skip
@@ -429,6 +452,7 @@ async function generateFullPage(
     // the loop is wasted JSON.stringify work on logs we'll discard.
     if (
       standingsData && squadData && injuriesData && coachsData &&
+      teamsData &&
       fixturesSourcesSeen.size >= 2
     ) break;
 
@@ -455,6 +479,13 @@ async function generateFullPage(
     else if (log.source === "api_football_injuries") {
       if (injuriesData || isResponseEmpty(log.data)) continue;
       injuriesData = JSON.stringify(log.data).slice(0, sliceLimitFor(log.source));
+    }
+    else if (log.source === "api_football_teams") {
+      // Used for the basics card's stadium field (and could feed other
+      // facts later: founded year, country name, primary kit colour, etc).
+      // Same newest-good-wins pattern as the other deterministic slots.
+      if (teamsData || isResponseEmpty(log.data)) continue;
+      teamsData = JSON.stringify(log.data).slice(0, sliceLimitFor(log.source));
     }
     else if (log.source === "api_football_coachs") {
       // V2.0 hardening: API-Football's /coachs returns every coach who's
@@ -549,6 +580,22 @@ async function generateFullPage(
     .replace(/\{\{team_display_name\}\}/g, team.display_name)
     .replace(/\{\{league_context\}\}/g, leagueContext);
 
+  // Pull existing team_pages cards up here (rather than waiting until the
+  // build step) so the prompt can tell Claude whether basics needs
+  // generating. PL clubs have hand-seeded basics from migration 004 —
+  // preserved verbatim. WC countries have no seed — Claude generates fresh
+  // from the Teams data + general knowledge.
+  const { data: existing } = await supabase
+    .from("team_pages")
+    .select("content")
+    .eq("team_id", team.id)
+    .single();
+  const existingCards = (existing?.content as Record<string, unknown>)?.cards as Record<string, unknown> ?? {};
+
+  const existingBasicsBlock = existingCards.basics
+    ? `Existing basics card — PRESERVE this verbatim. DO NOT include a 'basics' field in your tool call output: ${JSON.stringify(existingCards.basics)}`
+    : `No existing basics card for ${team.display_name}. Generate one using the Teams data above (for stadium → team.venue.name when present) plus your general knowledge of the team's identity. Include the 'basics' field in your tool call output.`;
+
   const userMessage = `Generate the team page for ${team.display_name}.
 
 ${wrapExternalData(`Standings: ${standingsData || "not available"}`, "api_football")}
@@ -560,6 +607,10 @@ ${wrapExternalData(`Fixtures: ${fixturesData || "not available"}`, "api_football
 ${wrapExternalData(`Injuries: ${injuriesData || "not available"}`, "api_football")}
 
 ${wrapExternalData(`Coaches (pre-filtered to the single current head coach when one exists — use that name verbatim for manager_name): ${coachsData || "not available"}`, "api_football")}
+
+${wrapExternalData(`Teams (deterministic team metadata — venue.name is the home stadium, venue.city is the city, country.name is the country): ${teamsData || "not available"}`, "api_football")}
+
+${existingBasicsBlock}
 
 Context flags: ${contextFlags.join(", ") || "none"}
 
@@ -616,21 +667,24 @@ tab shows empty state, so do NOT skip this field when fixtures exist.`;
   const input = toolUse.input as Record<string, unknown>;
   const now = new Date().toISOString();
 
-  // Get existing team page to preserve static cards (basics, rivalry)
-  const { data: existing } = await supabase
-    .from("team_pages")
-    .select("content")
-    .eq("team_id", team.id)
-    .single();
-
-  const existingCards = (existing?.content as Record<string, unknown>)?.cards as Record<string, unknown> ?? {};
+  // existing / existingCards are hoisted above the prompt build so the
+  // basics-preservation block can read them. Reused here for the rivalry
+  // + next_fixture + upcoming_fixtures + standings preservation paths.
 
   // Build the versioned JSONB
   const content: Record<string, unknown> = {
     schema_version: 1,
     cards: {
-      // Preserve existing static cards
-      basics: existingCards.basics ?? null,
+      // PL clubs have hand-seeded basics from migration 004 (curated voice
+      // — Arsenal's 49-game Invincibles fun fact, etc.) that we preserve
+      // verbatim. For teams without a seed (the 48 WC countries on first
+      // run), Claude emitted a `basics` object in this run via the new
+      // optional tool field — graft it in. Once stored, the preservation
+      // arm wins on subsequent runs.
+      basics: existingCards.basics
+        ?? (input.basics
+              ? { updated_at: now, ...(input.basics as Record<string, unknown>) }
+              : null),
       rivalry: existingCards.rivalry ?? null,
 
       // Update dynamic cards
