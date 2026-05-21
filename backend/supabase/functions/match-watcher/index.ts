@@ -88,26 +88,28 @@ async function logFire(
     const target = args.trigger
       ? `${args.stage}:${args.teamId}:${args.fixtureId}:${args.trigger}`
       : `${args.stage}:${args.teamId}:${args.fixtureId}`;
-    const resolvedStatus = args.status ?? (args.success ? "success" : "failure");
+    const status = args.status ?? (args.success ? "success" : "failure");
+
+    // Single dispatch off status. The failure branch still has to peek
+    // at args.threw to distinguish network errors from non-2xx HTTP.
+    const meta: { error_class: string; message: string | null } =
+      status === "success"
+        ? { error_class: "success", message: null }
+        : status === "skipped"
+          ? { error_class: "success", message: "Deduplicated against existing consequence row" }
+          : args.threw
+            ? { error_class: "fire_threw", message: "Network error reaching routine API" }
+            : { error_class: "fire_failed", message: `Routine API returned non-2xx: ${args.httpStatus}` };
+
     await supabase.from("pipeline_health").insert({
       team_id: args.teamId,
       stage: args.stage,
-      status: resolvedStatus,
+      status,
       target,
       http_status: args.httpStatus,
       response_excerpt: args.bodyExcerpt,
-      error_class: resolvedStatus === "success" || resolvedStatus === "skipped"
-        ? "success"
-        : args.threw
-          ? "fire_threw"
-          : "fire_failed",
-      message: resolvedStatus === "success"
-        ? null
-        : resolvedStatus === "skipped"
-          ? "Deduplicated against existing consequence row"
-          : args.threw
-            ? "Network error reaching routine API"
-            : `Routine API returned non-2xx: ${args.httpStatus}`,
+      error_class: meta.error_class,
+      message: meta.message,
     });
   } catch (e) {
     // Logging is best-effort. Don't break the fire loop.
@@ -404,25 +406,10 @@ async function handleRequest(req: Request): Promise<Response> {
         });
       }
 
-      // ─── Cross-team consequence layer (Lesson 74) ────────────────────
-      //
-      // After both matchday fires succeed, run the deterministic
-      // detector against this fixture's result + the latest standings
-      // snapshot. For each non-playing team whose race state mathema-
-      // tically changed (title-won, relegated, UCL-clinched, WC
-      // knockout-qualified, etc), INSERT a templated content_items
-      // row. notification-sender's existing per-team sweep picks it up
-      // and pushes to that team's subscribers within ~60s.
-      //
-      // Pure math + templates. Zero Anthropic API credits. Zero
-      // claude.ai routine quota. The partial unique index on
-      // (team_id, consequence_type) makes duplicate INSERTs no-ops,
-      // so the detector can re-detect the same consequence after
-      // every subsequent match without spamming.
-      //
-      // Gated on bothFiresOk only — if a matchday fire failed we let
-      // the next tick retry the whole sequence (consequences re-run
-      // is idempotent via the unique index).
+      // Cross-team consequence layer (Lesson 74). Pure math, zero
+      // routine quota, idempotent via the (team_id, consequence_type)
+      // unique index. Gated on bothFiresOk so a failed matchday_fire
+      // retries the whole sequence on the next tick.
       if (homeFireOk && awayFireOk) {
         try {
           const consequences = await detectConsequences(supabase, {
@@ -438,13 +425,23 @@ async function handleRequest(req: Request): Promise<Response> {
             awayDisplayName: fx.teams.away.name,
           });
 
-          for (const c of consequences) {
-            // Resolve the affected team's row for display_name etc.
-            const { data: team } = await supabase
+          // Batch-resolve affected teams in ONE query rather than per-
+          // consequence (the alternative was 1-6 sequential roundtrips
+          // per FT).
+          const teamRowsById = new Map<string, {
+            id: string; display_name: string; short_name: string | null;
+            api_football_id: number; entity_type?: string; league_id?: number;
+          }>();
+          if (consequences.length > 0) {
+            const { data: teamRows } = await supabase
               .from("teams")
               .select("id, display_name, short_name, api_football_id, entity_type, league_id")
-              .eq("id", c.team_id)
-              .maybeSingle();
+              .in("id", consequences.map((c) => c.team_id));
+            for (const t of teamRows ?? []) teamRowsById.set(t.id, t);
+          }
+
+          for (const c of consequences) {
+            const team = teamRowsById.get(c.team_id);
             if (!team) {
               console.warn(`consequence for unknown team_id=${c.team_id}, skipping`);
               continue;
@@ -466,9 +463,14 @@ async function handleRequest(req: Request): Promise<Response> {
               published_at: new Date().toISOString(),
             });
 
-            // Postgres unique-violation code 23505 = the consequence
-            // already fired on a previous match. Idempotent no-op.
+            // Postgres unique-violation code 23505 = idempotent no-op
+            // (consequence already fired on an earlier match).
             const isDedup = error?.code === "23505";
+            const consequenceStatus: "success" | "failure" | "skipped" = isDedup
+              ? "skipped"
+              : error
+                ? "failure"
+                : "success";
 
             await logFire(supabase, {
               stage: "consequence_fire",
@@ -479,7 +481,7 @@ async function handleRequest(req: Request): Promise<Response> {
               success: !error,
               threw: false,
               bodyExcerpt: error?.message?.slice(0, 200) ?? null,
-              status: isDedup ? "skipped" : (error ? "failure" : "success"),
+              status: consequenceStatus,
             });
 
             if (!error) {

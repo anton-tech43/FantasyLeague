@@ -30,20 +30,15 @@ export function renderConsequence(
   c: Consequence,
   team: Team,
 ): ConsequenceContent {
+  // Non-Partial Record below — TS guarantees every ConsequenceType has
+  // a template, so this lookup is total.
   const tmpl = TEMPLATES[c.consequence_type];
-  if (!tmpl) {
-    // Defensive fallback — every type listed in detect-consequences.ts
-    // should have a template here. If not, log loudly via the caller.
-    throw new Error(`No template registered for consequence_type=${c.consequence_type}`);
-  }
 
   const ctx: TemplateContext = {
     teamName: team.display_name,
     trigger: c.trigger_summary,
   };
 
-  // Randomise body variant (1 of 2). Push title + headline stay fixed
-  // — those are the muscle-memory recognisable bits.
   const variantIdx = pickVariant(tmpl.body.length);
 
   return {
@@ -80,7 +75,7 @@ function pickVariant(n: number): number {
   return Math.floor(Math.random() * n);
 }
 
-const TEMPLATES: Partial<Record<ConsequenceType, ConsequenceTemplate>> = {
+const TEMPLATES: Record<ConsequenceType, ConsequenceTemplate> = {
   TITLE_WON: {
     push_title: ({ teamName }) => `🏆 ${teamName} are champions`,
     push_text: ({ trigger }) => `${trigger}. He gets to enjoy this one.`,

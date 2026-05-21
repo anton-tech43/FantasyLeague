@@ -61,17 +61,10 @@ struct TeamPageView: View {
         } else if let country = Country(rawValue: teamId) {
             TeamCrestView(country: country, size: 64)
         } else {
-            // Last-resort fallback — same shape as TeamCrestView's internal
-            // fallback. Only reachable if a teamId arrives that matches
-            // neither the PL Team enum nor the WC Country enum, which would
-            // be a data integrity issue elsewhere.
-            ZStack {
-                Circle().fill(Color.mutedText.opacity(0.1))
-                Image(systemName: "shield.fill")
-                    .font(.system(size: 32))
-                    .foregroundColor(.mutedText.opacity(0.5))
-            }
-            .frame(width: 64, height: 64)
+            // teamId matched neither enum (data integrity issue elsewhere).
+            // TeamCrestView's url:nil initialiser yields the same shield
+            // fallback it shows for any failed image load.
+            TeamCrestView(url: nil, size: 64)
         }
     }
 

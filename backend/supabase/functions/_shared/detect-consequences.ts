@@ -53,6 +53,13 @@ import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 export const PL_LEAGUE_ID = 39;
 export const WC_LEAGUE_ID = 1;
 
+// Standings snapshots fetched within this window are assumed to already
+// include the just-finished result. Older snapshots get applyResult run
+// on a local copy. 5 min is the tightest race between match-watcher's
+// FT detection and data-fetcher's 2h cron — anything fresher than that
+// was almost certainly written AFTER FT.
+const STANDINGS_FRESHNESS_MS = 5 * 60_000;
+
 export type ConsequenceType =
   | "TITLE_WON"
   | "RELEGATED"
@@ -117,16 +124,11 @@ export async function detectConsequences(
 
   if (!log?.data) return [];
 
-  // Has the data-fetcher cron already pulled standings AFTER this fixture
-  // finished? If yes, the standings already reflect this match's points
-  // — applyResult would double-count and could trip false-positive
-  // consequences for boundary teams (e.g. the 5th-placed team for
-  // UCL_CLINCHED). The detector runs at FT detection time; standings
-  // fetched within the last 5 minutes of "now" are treated as fresh-and-
-  // post-result. Larger margin would over-skip; smaller would over-apply.
-  const fetchedAt = new Date(log.fetched_at as string).getTime();
-  const ageMs = Date.now() - fetchedAt;
-  const standingsAlreadyIncludesResult = ageMs >= 0 && ageMs < 5 * 60_000;
+  // Standings fetched within STANDINGS_FRESHNESS_MS of now likely already
+  // include this match's result — applyResult would double-count and trip
+  // false-positive consequences for boundary teams.
+  const ageMs = Date.now() - new Date(log.fetched_at as string).getTime();
+  const standingsAlreadyIncludesResult = ageMs >= 0 && ageMs < STANDINGS_FRESHNESS_MS;
 
   // 2. Resolve the standings array for THIS match's competition slice:
   //    PL → standings[0]   (single 20-team league array)
@@ -166,24 +168,24 @@ export async function detectConsequences(
     ? cloneGroup(group)
     : applyResult(group, args);
 
-  // 5. Determine total games per team for max_possible math.
   const totalGames = args.leagueId === PL_LEAGUE_ID ? 38 : 3;
-
-  // 6. Build a slug map so we can convert API-Football team.id → our slug.
   const apiIdToSlug = await buildApiIdToSlugMap(supabase, localGroup);
 
-  // 7. Compute consequences for non-playing teams.
+  // Hoist the rank-sorted view once. Every consequence check inside
+  // consequencesForTeam reads it; without this, ~20 PL non-playing
+  // teams × 3 sort calls = ~60 redundant array copies per FT.
+  const byRank = [...localGroup].sort((a, b) => a.rank - b.rank);
+
   const consequences: Consequence[] = [];
   for (const team of localGroup) {
-    // Skip the two playing teams — their result is already covered by
-    // gd-matchday. Cross-team consequences are about ANYONE ELSE whose
-    // race state shifted because of this result.
+    // Playing teams are covered by gd-matchday; consequences are about
+    // OTHER teams whose race state shifted.
     if (team.team?.id === args.homeApiId || team.team?.id === args.awayApiId) continue;
 
     const slug = apiIdToSlug.get(team.team.id);
-    if (!slug) continue; // team not in our DB — skip silently
+    if (!slug) continue;
 
-    const detected = consequencesForTeam(team, localGroup, totalGames, args.leagueId);
+    const detected = consequencesForTeam(team, localGroup, byRank, totalGames, args.leagueId);
     for (const type of detected) {
       consequences.push({ team_id: slug, consequence_type: type, trigger_summary });
     }
@@ -236,14 +238,8 @@ function applyResult(
   const away = copy.find((t) => t.team.id === args.awayApiId);
   if (!home || !away) return copy;
 
-  // Only apply if standings haven't already counted this result. We can
-  // tell by comparing played counts: if both teams' played is < the league
-  // maximum already-played-by-anyone, this result hasn't been ingested.
-  // Conservative: always apply, trusting that the partial unique index
-  // catches duplicate consequence INSERTs anyway. The cost of double-
-  // counting a single match in the local copy is at most one extra fire-
-  // and-no-op.
-
+  // Caller has already gated on STANDINGS_FRESHNESS_MS (only stale
+  // snapshots reach here). Apply unconditionally.
   if (args.homeGoals > args.awayGoals) {
     home.points += 3;
     home.all.win += 1;
@@ -261,9 +257,7 @@ function applyResult(
   home.all.played += 1;
   away.all.played += 1;
 
-  // Re-sort by points DESC (re-rank). Tiebreakers (goal diff, GS) are
-  // V1.1 work — for now, same-points teams keep their original relative
-  // order via stable sort.
+  // Re-rank by points DESC. Tiebreakers (GD, GS, H2H) are V1.1.
   copy.sort((a, b) => b.points - a.points);
   copy.forEach((t, i) => (t.rank = i + 1));
   return copy;
@@ -272,6 +266,7 @@ function applyResult(
 function consequencesForTeam(
   team: StandingsEntry,
   group: StandingsEntry[],
+  byRank: StandingsEntry[], // hoisted, rank-sorted view of group
   totalGames: number,
   leagueId: number,
 ): ConsequenceType[] {
@@ -280,84 +275,51 @@ function consequencesForTeam(
   const myMin = team.points;
   const myMax = team.points + 3 * gamesLeft;
 
-  // For each math check below we ignore THIS team in the comparison.
-  const others = group.filter((t) => t.team.id !== team.team.id);
-  const maxOf = (sub: StandingsEntry[]) =>
-    Math.max(...sub.map((t) => t.points + 3 * (totalGames - t.all.played)));
-  const minOf = (sub: StandingsEntry[]) =>
-    Math.min(...sub.map((t) => t.points));
+  // Helper: a team strictly weaker than me on max possible (i.e. my floor
+  // exceeds their ceiling), checking the rank-N boundary team.
+  const myFloorBeatsRankCeiling = (rankIdx: number): boolean => {
+    const boundary = byRank[rankIdx];
+    if (!boundary || boundary.team.id === team.team.id) return false;
+    const boundaryMax = boundary.points + 3 * (totalGames - boundary.all.played);
+    return myMin > boundaryMax;
+  };
+
+  // Helper: my ceiling can't catch the rank-N team's floor (I'm out).
+  const myCeilingBelowRankFloor = (rankIdx: number): boolean => {
+    const boundary = byRank[rankIdx];
+    if (!boundary || boundary.team.id === team.team.id) return false;
+    return myMax < boundary.points;
+  };
 
   if (leagueId === PL_LEAGUE_ID) {
     // TITLE_WON: my floor exceeds every other team's ceiling.
-    if (myMin > maxOf(others)) out.push("TITLE_WON");
+    const others = group.filter((t) => t.team.id !== team.team.id);
+    const othersMax = Math.max(
+      ...others.map((t) => t.points + 3 * (totalGames - t.all.played)),
+    );
+    if (myMin > othersMax) out.push("TITLE_WON");
 
     // UCL_CLINCHED: my floor exceeds the 5th-placed team's ceiling.
-    // (Top-4 = UCL spots in the PL.) Sort others by ceiling DESC and
-    // take the 4th to compare with — i.e. the floor of "team currently
-    // outside top-4 with the highest potential to catch you".
-    if (group.length >= 5) {
-      // Sort copy by current rank ascending — the team currently ranked 5th
-      // is the boundary we have to overshoot.
-      const sortedByRank = [...group].sort((a, b) => a.rank - b.rank);
-      const fifth = sortedByRank[4];
-      if (fifth && fifth.team.id !== team.team.id) {
-        const fifthMax = fifth.points + 3 * (totalGames - fifth.all.played);
-        if (myMin > fifthMax) out.push("UCL_CLINCHED");
-      }
-    }
+    if (group.length >= 5 && myFloorBeatsRankCeiling(4)) out.push("UCL_CLINCHED");
 
-    // EUROPE_CLINCHED: top-8 floor (assumes Conference League slot at 8th).
-    if (group.length >= 9) {
-      const sortedByRank = [...group].sort((a, b) => a.rank - b.rank);
-      const ninth = sortedByRank[8];
-      if (ninth && ninth.team.id !== team.team.id) {
-        const ninthMax = ninth.points + 3 * (totalGames - ninth.all.played);
-        if (myMin > ninthMax) out.push("EUROPE_CLINCHED");
-      }
-    }
+    // EUROPE_CLINCHED: my floor exceeds the 9th-placed team's ceiling
+    // (Conference League slot is the 8th-place reward; 9th is the
+    // boundary we have to overshoot).
+    if (group.length >= 9 && myFloorBeatsRankCeiling(8)) out.push("EUROPE_CLINCHED");
 
-    // RELEGATED: my ceiling is below the 17th-placed team's floor.
-    // (18th, 19th, 20th go down — so the boundary is the 17th-placed
-    // team's floor.) For a 20-team league, 17th is index 16 sorted by rank.
-    if (group.length >= 18) {
-      const sortedByRank = [...group].sort((a, b) => a.rank - b.rank);
-      const seventeenth = sortedByRank[16];
-      if (seventeenth && seventeenth.team.id !== team.team.id) {
-        const seventeenthMin = seventeenth.points;
-        if (myMax < seventeenthMin) out.push("RELEGATED");
-      }
-    }
+    // RELEGATED: my ceiling below the 17th-placed team's floor.
+    if (group.length >= 18 && myCeilingBelowRankFloor(16)) out.push("RELEGATED");
   } else if (leagueId === WC_LEAGUE_ID) {
-    // Group stage — 4 teams per group, 3 games each.
-    // WC_KNOCKOUT_QUALIFIED: my floor exceeds the 3rd-ranked team's ceiling
-    // within this group (top-2 advance directly; best-3rd is V1.1).
-    if (group.length >= 3) {
-      const sortedByRank = [...group].sort((a, b) => a.rank - b.rank);
-      const third = sortedByRank[2];
-      if (third && third.team.id !== team.team.id) {
-        const thirdMax = third.points + 3 * (totalGames - third.all.played);
-        if (myMin > thirdMax) out.push("WC_KNOCKOUT_QUALIFIED");
-      }
-    }
+    // WC_KNOCKOUT_QUALIFIED: my floor exceeds the 3rd-ranked team's
+    // ceiling within this group (top-2 advance directly; best-3rd is V1.1).
+    if (group.length >= 3 && myFloorBeatsRankCeiling(2)) out.push("WC_KNOCKOUT_QUALIFIED");
+
     // WC_GROUP_WON: my floor exceeds the 2nd-ranked team's ceiling.
-    if (group.length >= 2) {
-      const sortedByRank = [...group].sort((a, b) => a.rank - b.rank);
-      const second = sortedByRank[1];
-      if (second && second.team.id !== team.team.id) {
-        const secondMax = second.points + 3 * (totalGames - second.all.played);
-        if (myMin > secondMax) out.push("WC_GROUP_WON");
-      }
-    }
-    // WC_KNOCKOUT_ELIMINATED: my ceiling below the 2nd-ranked team's floor.
-    // Conservative — ignores best-3rd cohort. V1.1 will tighten.
-    if (group.length >= 2) {
-      const sortedByRank = [...group].sort((a, b) => a.rank - b.rank);
-      const second = sortedByRank[1];
-      if (second && second.team.id !== team.team.id) {
-        const secondMin = second.points;
-        if (myMax < secondMin) out.push("WC_KNOCKOUT_ELIMINATED");
-      }
-    }
+    if (group.length >= 2 && myFloorBeatsRankCeiling(1)) out.push("WC_GROUP_WON");
+
+    // WC_KNOCKOUT_ELIMINATED: my ceiling below the 2nd-ranked team's
+    // floor. Conservative — ignores best-3rd cohort. V1.1 will tighten.
+    if (group.length >= 2 && myCeilingBelowRankFloor(1)) out.push("WC_KNOCKOUT_ELIMINATED");
   }
 
   return out;
