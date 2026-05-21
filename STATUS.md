@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-20 (circular player photos on team page + universal "The basics" card unlock — all 71 team pages now render the basics card, 70 with the full 3-of-3 player headshots; Canada's 2-of-3 came via a direct SQL UPDATE instead of a Claude regen, Davies-the-injured stays as initials)
+**Last updated:** 2026-05-21 late (cross-team consequence layer + news cadence shift — match-watcher now INSERTs templated title-won/relegated/UCL-clinched/WC-knockout content for non-playing teams within seconds of FT, zero new routines, zero API credits; gd-news + gd-news-wc evening fires shifted from 18:30 → 22:30 UTC to cover the same night's results)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
@@ -9,6 +9,22 @@ A one-page snapshot of where the project is. For the deep history, see [IMPLEMEN
 ## TL;DR
 
 GoalDigger is live on TestFlight (V1.3 build). **World Cup 2026 support (V2.0) is feature-complete and verified** — backend + iOS shipped, build green, cron auth healthy after Phase 28 hardening, WC routine prompts now country-aware. **Push pipeline was completely dead from May 11 → May 17** (Vault had wrong-shape key, gateway 401'd every cron tick); **fixed and end-to-end verified**. Remaining work for June 11 launch: gd-news-wc routine creation (separate cron slot for 48 countries to avoid context blowout), TestFlight beta with V2.0 build, App Store submission by June 4.
+
+---
+
+## Verified today (May 21 late — cross-team consequence layer + news cadence shift)
+
+Two related pieces closed the architectural gap surfaced by the May 19 incident (Bournemouth held Man City 1-1 → Arsenal mathematically champions → Arsenal subscribers got zero push because notification-sender only routes by content_items.team_id).
+
+- **Consequence layer shipped** (commit `d8ef854`). New `_shared/detect-consequences.ts` (pure-math detector, no LLM) + `_shared/consequence-templates.ts` (template library, pure strings) + a post-matchday hook in `match-watcher/index.ts` that INSERTs a templated `content_items` row for each non-playing team whose race state changed. notification-sender's existing per-team sweep pushes within ~60s. Migration 051 added the `consequence_type` column, a partial unique index for idempotency, and extended the `pipeline_health` stage CHECK with `consequence_fire`. Eight consequence types covered: TITLE_WON / RELEGATED / UCL_CLINCHED / EUROPE_CLINCHED (PL) + WC_GROUP_WON / WC_KNOCKOUT_QUALIFIED / WC_KNOCKOUT_ELIMINATED (WC). Voice matches the gf-to-bf older-sister tone of the routines. **Zero new routines, zero Anthropic API credits.** A 5-min age guard on the standings snapshot prevents double-counting when data-fetcher has already ingested the just-finished result.
+
+- **Live math probe confirmed correctness.** Direct SQL against the latest PL standings shows Arsenal min (82) > Man City max (81) → TITLE_WON ✓. The detector reproduces this math.
+
+- **News cadence shift live.** `gd-news` moved from `30 6,18 * * *` UTC → `30 6,22 * * *` UTC; `gd-news-wc` from `35 6,18 * * *` → `35 6,22 * * *` (5-min offset preserved). The evening 22:30 UTC fire lands after the latest realistic PL FT (~21:30 UTC) and rides the freshly-refreshed 22:00 UTC `data-fetcher` snapshot. Routine count unchanged (4 fires/day total). Next fire tonight ~22:30 UTC will be the live test.
+
+- **What's still pending (operational, not in scope of this commit).** API-Football account dropped to free tier at some point yesterday — `data-fetcher` is currently returning `"Free plans do not have access to this season"` errors for both leagues. `match-watcher` runs cleanly but sees zero fixtures. Standings + fixtures_last are frozen at Wed 20 May 20:00 UTC. The consequence detector is wired and correct; it just needs upstream data to flow. **Top up / restore API-Football plan at https://dashboard.api-football.com** to resume the live pipeline.
+
+- **By design, no backfill of last night's Arsenal moment.** User-explicit call — this is a learning moment. The consequence layer is wired forward; the May 19 title-clinch stays uncovered as a documented teaching case in Lesson 74.
 
 ---
 

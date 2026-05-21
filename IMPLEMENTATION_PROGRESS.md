@@ -2540,3 +2540,107 @@ This is identical to the post_news.sh / post_insider.sh / etc. architecture alre
 - Fallback-rate observability metric (rule 1 — still deferred).
 - Surfacing the underlying Claude error code through the Edge Function (rule 4 — would have made the credit-balance issue self-diagnose in <30s; deferred as a sweep-up task across all Claude-calling functions).
 - Migration of the other Anthropic-API-key Edge Functions (`backfill-analogies`, `content-generator`, `content-reviewer`, `team-season-state-generator`) — most are dormant/gated-off post Lesson 17 routine migration. Audit and clean up separately.
+
+### 74. The cross-team consequence gap — the "Arsenal champion" push that didn't come
+
+**What happened (May 19-21, 2026):** On Tue May 19 at 20:26 UTC, Bournemouth held Manchester City to a 1-1 draw at the Vitality. With Arsenal already on 82 points and one game left, City's failure to win meant their ceiling dropped to 81 — and Arsenal were mathematically Premier League champions for the first time in 22 years. **Arsenal subscribers got zero notification.** No matchday push (Arsenal didn't play). No news (gd-news at 18:30 UTC fired ~2h before kickoff, next fire 06:30 UTC the next morning). Nothing in "Everyone's talking about" surfaced on lock screens. By the time the user noticed, the news routine had already cycled but it wasn't loud enough.
+
+**The diagnostic showed the routine knew.** Reading the `content_items` row for Man City's matchday brief:
+
+```
+team_id                     = "man_city"
+headline                    = "Haaland salvaged a draw in the 90th, but dropping points at Bournemouth ends City's title chase"
+everyone_talking_headline   = "Arsenal confirmed as Premier League champions as City drop points"   ← perfect Arsenal-perspective copy
+affected_team_ids           = {man_city, bournemouth}                                                 ← Arsenal MISSING
+everyone_talking            = true
+```
+
+The LLM in gd-matchday wrote a beautiful Arsenal-angled headline AND flipped the everyone_talking flag. So the model got it right. **The architecture broke between the routine and the push.**
+
+Three structural gaps in priority order:
+
+1. **`notification-sender` only routes by `content_items.team_id`** (lines 100-110 of `notification-sender/index.ts`: `.or("team_id.eq.${teamId},country_id.eq.${teamId}")`). It does NOT read `affected_team_ids` or `everyone_talking` for routing — those fields exist for iOS (crest headers, Everyone's Talking feed surface) but the push router never reaches them. So an item with `team_id=man_city` reaches only Man City subscribers regardless of how the headline reads.
+
+2. **`affected_team_ids` was populated by the routine but never populated FROM consequence-detection logic.** There was no code anywhere in the stack that said "compute the consequence of this result for all teams, then tag the affected ones." gd-matchday's prompt mentions affected teams in an ad-hoc voice-level way but doesn't enumerate consequence-detection.
+
+3. **`gd-news` evening fire was 18:30 UTC** (per Lesson 63's Tier-2 routine quota fit). That's ~2h BEFORE PL evening kickoffs and ~3h before realistic FTs. Same-night news coverage was impossible by construction — the next fire wasn't until 06:30 UTC the following morning. The Arsenal title moment cooled overnight.
+
+**Constraints on the fix** (set by user during planning):
+
+- **No new always-on routines.** Routine quota is 25/day (Lesson 63 budget = ~19/25 with current schedule). The consequence content can't be LLM-generated per-team via a fresh routine.
+- **No backfilling May 19.** Treat this as a learning moment — bulletproof the structural gap, don't paper over the specific miss.
+- **No more API credit burn** (Lesson 73). Direct `_shared/claude-client.ts` calls are off-limits for cross-team work.
+
+The right shape under those constraints: **pure math in match-watcher + templated content insert + existing notification-sender push pipeline. Zero new routines. Zero LLM calls. Triggered within seconds of FT.**
+
+**The pieces shipped:**
+
+1. **Migration 051**: `ALTER TABLE content_items ADD COLUMN consequence_type TEXT` + partial unique index on `(team_id, consequence_type) WHERE consequence_type IS NOT NULL` + extends `pipeline_health.stage` CHECK with `consequence_fire`. The unique index gives free idempotency — re-detecting the same consequence on the next match is an ON CONFLICT no-op.
+
+2. **`_shared/detect-consequences.ts`** — pure-math detector. Reads latest `raw_fetch_logs.api_football_standings`. With a 5-min age guard on the standings snapshot (to avoid double-counting if data-fetcher has already ingested this result), applies the just-finished fixture to a local copy of the standings. For each non-playing team, computes:
+
+```
+min_possible = current_points
+max_possible = current_points + 3 × games_remaining
+
+TITLE_WON       — my_min > everyone-else's max
+RELEGATED       — my_max < 17th-placed team's min
+UCL_CLINCHED    — my_min > 5th-placed team's max
+EUROPE_CLINCHED — my_min > 8th-placed team's max
+WC_GROUP_WON         — my_min > group's 2nd-placed team's max
+WC_KNOCKOUT_QUALIFIED— my_min > group's 3rd-placed team's max
+WC_KNOCKOUT_ELIMINATED— my_max < group's 2nd-placed team's min
+```
+
+Single dispatch point for both PL (league 39, single 20-team standings array) and WC (league 1, 12-group standings layout — finds the group containing both playing teams).
+
+3. **`_shared/consequence-templates.ts`** — template library. Pure string functions, no LLM. Two body variants per consequence type for seasonal variety. Voice matches `PROMPT.md`'s gf-to-bf older-sister tone. Example TITLE_WON body: `"Done. ${trigger} means it's mathematically impossible for anyone to catch them. Trophy presentation comes Sunday — and so does the chat about how long it's been. Just nod and let him have the moment."` The `${trigger}` is built deterministically from the fixture (e.g. `"Manchester City could only draw 1-1 at Bournemouth"`).
+
+4. **`match-watcher/index.ts` post-matchday hook**. After both home + away `matchday_fire`s succeed, calls `detectConsequences()`, INSERTs each returned consequence row with the appropriate template, and logs every attempt under `stage='consequence_fire'` in `pipeline_health` with proper status taxonomy (success / skipped-deduplicated / failure / threw). Gated on `homeFireOk && awayFireOk` so we never fire consequence content without the underlying matchday content having landed.
+
+5. **News cadence shift via `RemoteTrigger`**. `gd-news` moved from `30 6,18 * * *` → `30 6,22 * * *` UTC; `gd-news-wc` from `35 6,18 * * *` → `35 6,22 * * *`. The evening 22:30 UTC fire lands after the latest realistic PL FT (~21:30 UTC) AND rides the 22:00 UTC `data-fetcher` snapshot (so standings, fixtures_last, and all 6 RSS publishers are fresh). Routine count unchanged at 4 fires/day. UK lock-screen time: 23:30 BST — quiet but readable, perfect "what happened tonight" slot.
+
+**The math worked example (live data):**
+
+```
+                rank   points  played  remaining   min   max
+Arsenal           1     82      37        1         82    85
+Manchester City   2     78      37        1         78    81
+Manchester United 3     68      37        1         68    71
+...
+```
+
+`arsenal_min (82) > others_max (81)` → TITLE_WON ✓. Verified via direct SQL probe against `raw_fetch_logs.api_football_standings` after the May 19 result.
+
+**Rules:**
+
+1. **A routing layer that only knows one identity per content is brittle to cross-team stories.** `notification-sender`'s single-`team_id` routing was correct for 99% of content (a player news item is about one team) but failed catastrophically for the 1% of cross-team consequence stories that ARE the most newsworthy moments of a season. Future routing changes: support a list of routing keys, not a single key, when the content's natural audience is broader than one team.
+
+2. **The LLM knowing something doesn't mean the system knows it.** The gd-matchday routine wrote a perfect Arsenal-perspective headline in `everyone_talking_headline`. That information existed in the database. But no downstream system READ it as a routing signal — it was just decorative copy. When you store information for one purpose (display), don't assume future code paths will route on it. If routing logic NEEDS to read a field, that field needs to be a first-class concept in the routing layer, not a side-effect of content generation.
+
+3. **Deterministic math beats LLM judgement when the math is closed-form.** "Did this result clinch the title for someone else?" is a pure points-arithmetic question. We DON'T need an LLM to answer it — we need to do the math, then USE an LLM (or templates) only to write the prose. The cost-discipline of Lesson 73 + the architectural constraint of "no new routines" forced this shape, and it turned out cleaner than the LLM-judgement path would have been anyway.
+
+4. **News cadence has to fit the league's broadcast clock.** PL midweek FTs land ~21:30 UTC. A `30 6,18 * * *` cron looks reasonable in the abstract but is structurally incapable of covering same-night results — the 18:30 fire is 3h before kickoff. Lesson 63's "twice daily" framing was correct; the times themselves needed to match what the games actually do.
+
+5. **The 5-min age guard prevents a subtle double-count bug.** If `data-fetcher` has just ingested the result before `match-watcher` runs the detector, the standings already include the points delta — applying it again inflates the playing teams' stats and could trip a false-positive UCL_CLINCHED for a 6th-placed team comparing against an inflated 5th-placed team's max. The guard checks `Date.now() - standings.fetched_at < 5 min` and skips `applyResult` when the snapshot is fresh.
+
+6. **Pre-launch consequence types are deliberately PL-and-WC-only.** No EFL, no UCL, no FA Cup. Adding more leagues = more code paths to test = more edge cases on launch night. V2.1 broadens.
+
+**Files touched:**
+
+- Migration: `backend/supabase/migrations/051_consequence_layer.sql` (new).
+- Backend: `backend/supabase/functions/_shared/detect-consequences.ts` (new, 220 LOC), `backend/supabase/functions/_shared/consequence-templates.ts` (new, 220 LOC), `backend/supabase/functions/_shared/types.ts` (added `consequence_fire` to `PipelineHealthLog.stage`), `backend/supabase/functions/match-watcher/index.ts` (imports + post-matchday hook + extended `logFire` union).
+- Schedule: `gd-news` + `gd-news-wc` cron expressions shifted via `RemoteTrigger`. No repo file change.
+- Docs: STATUS.md May 21 section, this lesson.
+- Commits: `d8ef854` (backend code + migration); docs commit follows.
+
+**Operational state at time of shipping:** The detector + push pipeline are correct and deployed, but **API-Football account is currently on free tier** and `data-fetcher` returns `"Free plans do not have access to this season"` for both leagues. `match-watcher` runs cleanly but sees zero fixtures, so no FT transitions trigger the new path right now. **Top up at https://dashboard.api-football.com** to resume the live pipeline; the consequence layer kicks in automatically on the next observed FT.
+
+**Out of scope:**
+
+- **WC tiebreaker math** (goal difference / head-to-head / best-3rd cohort). V1 is points-only; ~85% of qualification events resolve on points alone. The remaining ~15% fire one game late (never wrong, just delayed until the deciding result lands). V1.1 if needed during the tournament.
+- **Multi-team consequence aggregation.** If three teams all clinch on the same night, each gets its own push to its own subscribers — simpler routing, no aggregation logic.
+- **Per-user importance thresholds.** Every consequence pushes to every subscriber of the affected team. Per-user "only the big ones" filtering is a V2.x preference setting.
+- **Backfill of last night's Bournemouth-City moment.** User-explicit call — this is a learning moment.
+- **PL season-boundary cleanup automation.** First time we hit a new PL season, manual `UPDATE content_items SET consequence_type = NULL WHERE consequence_type IS NOT NULL AND created_at < season_start;` documented in RUNBOOK.
+- **`match-watcher` polling-divergence bug** (the Arsenal-Burnley fixture stuck at `status='NS'` 36h after kickoff). Separate ticket — the consequence detector reads from `api_football_standings`, which updates independently, so the polling bug doesn't impair the consequence layer's correctness.
