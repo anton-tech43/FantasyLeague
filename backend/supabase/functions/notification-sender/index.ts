@@ -52,6 +52,9 @@ serve(async (req) => {
     //   own push trigger.
     let query = supabase.from("content_items").select("*");
     if (specificItemId) {
+      // Explicit per-item invocation. Don't filter by push_eligible — a
+      // manual recovery / testing call may want to push an item that
+      // shipped as feed-only. The operator decides.
       query = query.eq("id", specificItemId);
     } else {
       // Sweep: union of (a) and (b) above. Limit to 50 per run so a long
@@ -68,6 +71,14 @@ serve(async (req) => {
           "and(status.eq.published,pushed_at.is.null,published_at.lt." +
           fiveMinAgo + ",published_at.gt." + twentyFourHoursAgo + ")"
         )
+        // Push-eligibility gate (Lesson 76). Routines tag fun-trivia
+        // items (e.g. "Arsenal's Odegaard heading to the WC as Norway
+        // captain" written for Arsenal followers) with
+        // push_eligible=false. They still publish to the feed; this
+        // filter just excludes them from the APNs fanout. Default TRUE
+        // on the column means legacy rows and routines that don't know
+        // about the field ship the legacy behaviour.
+        .eq("push_eligible", true)
         .limit(50);
     }
 

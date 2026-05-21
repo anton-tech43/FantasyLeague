@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-21 late-late (gd-news dedup tightening — lookback 24h → 72h + MAJOR EVENT cooldown rule prevents follow-up stories from re-headlining a status-changing event. Closes the May 19-21 Arsenal-champion repeated-push issue. Routines repo commit `693bc67`.)
+**Last updated:** 2026-05-22 (push-eligibility gate — content_items now carries push_eligible: bool; PROMPT.md TEAM IMPACT gate sets it false for fun-trivia items so an Arsenal-tagged item about Odegaard's Norway WC duty publishes to feed but doesn't trigger an emotional "He'll be buzzing" push. Migration 052 + notification-sender filter + routines commit b6a3e19.)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
@@ -9,6 +9,26 @@ A one-page snapshot of where the project is. For the deep history, see [IMPLEMEN
 ## TL;DR
 
 GoalDigger is live on TestFlight (V1.3 build). **World Cup 2026 support (V2.0) is feature-complete and verified** — backend + iOS shipped, build green, cron auth healthy after Phase 28 hardening, WC routine prompts now country-aware. **Push pipeline was completely dead from May 11 → May 17** (Vault had wrong-shape key, gateway 401'd every cron tick); **fixed and end-to-end verified**. Remaining work for June 11 launch: gd-news-wc routine creation (separate cron slot for 48 countries to avoid context blowout), TestFlight beta with V2.0 build, App Store submission by June 4.
+
+---
+
+## Verified today (May 22 — push-eligibility gate)
+
+User received a push: **"He'll be absolutely buzzing"** / *"Arsenal's captain Odegaard is heading to the World Cup as Norway's captain…"*. For an Arsenal-ONLY follower, that's fun-to-know trivia — not buzzing territory. The emotional opener framed his response as bigger than reality. User's clarification: _"if he was also a Norway fan this would work for sure but not now, should just be in feed."_
+
+Fix shipped — separate gate on **push eligibility** independent of content. The item still publishes to the feed for Arsenal followers (discoverable on next app open); it just doesn't trigger a notification. Norway followers get the same news via gd-news-wc's Norway-tagged item, which IS team-impact for them and pushes normally.
+
+Pieces:
+
+- **Migration 052** — `content_items.push_eligible BOOLEAN NOT NULL DEFAULT TRUE`. Backward-compatible — every existing row stays push-eligible, every routine that doesn't know about the field continues to ship the legacy behaviour.
+- **notification-sender** — sweep query gains `.eq("push_eligible", true)` filter. `specificItemId` path unchanged so manual recovery of a feed-only item is still possible.
+- **PROMPT.md** in `goaldigger-routines` (commit `b6a3e19`) — new "TEAM IMPACT gate" section that runs BEFORE the existing emotional_context calibration. Six ✅ team-impact categories vs six ❌ fun-trivia categories with explicit good/bad push-field examples. The Odegaard incident is embedded as a worked example.
+- **schema.json** — added optional `push_eligible: boolean` property. `push_title` + `push_text` stay required because they're rendered in non-push surfaces; feed-only items just write them neutrally ("Odegaard, Norway captain" / "Arsenal's Odegaard will lead Norway at the World Cup").
+- **PROMPT_WC.md** inherits PROMPT.md verbatim per its line 7, so gd-news-wc gets the same gate automatically.
+
+Verification: next gd-news fire (next 22:30 UTC) will preflight commit `b6a3e19`. Confirmation that the gate is honoured comes from psql: a `WHERE push_eligible = false` query on `content_items` should return > 0 rows for next-fire output if any fun-trivia items shipped, and zero `apns_send` rows in `pipeline_health` for those items' team_ids.
+
+Architecture cost: one migration (additive column with safe default), one notification-sender filter, one PROMPT.md section. Zero new routines. Zero API credits. Zero schema breakage.
 
 ---
 

@@ -2716,3 +2716,88 @@ A worked example from the May 19-21 Arsenal incident is embedded in the prompt s
 - **Dedicated `event_cooldowns` table.** Same logic — defer.
 - **Backfilling May 19-21 Arsenal pushes.** Already landed; nothing to roll back.
 - **Cross-routine dedup** (e.g. an `insider` item and a `news` item covering the same event in the same week). The 72h lookback applies per team but reads any `pipeline_source='routine'` item, so insider items in the window already factor into news routine's dedup. Implicitly addressed.
+
+### 76. The push-eligibility gate — feed-only as a first-class concept
+
+**What happened (May 22, 2026):** A push landed: **"He'll be absolutely buzzing"** / *"Arsenal's captain Odegaard is heading to the World Cup as Norway's captain…"*. The voice opener framed the recipient as having a strong emotional response. But for an Arsenal-ONLY follower, their captain on international duty is fun-to-know trivia — it doesn't move Arsenal's lineup, league position, transfers, or fixtures. He's not buzzing. He's mildly interested.
+
+User clarification, verbatim: _"if he was also a Norway fan this would work for sure but not now, should just be in feed."_
+
+**The architectural gap.** The routine prompt already had voice rules to prevent the WORST cases — no "Brace yourself", no "He'll be unbearable", no sports-app push categories. But the rules calibrated tone based on `emotional_context` (exciting/bad_news/drama/boring). They didn't have a layer above that asking _"is this even push-worthy for the team_id you're writing for?"_. So the routine, classifying the Odegaard story as `exciting` (positive story about an Arsenal player), reached for an emotional opener — correctly per the existing rules, wrongly per the user's mental model of what merits a notification.
+
+Worse, `post_news.sh` REQUIRES `push_title` and `push_text` for every content_item it accepts. So even if the routine had concluded "this is fun trivia, skip the push," it had no way to express that — the choice was binary: ship the item with a push, or don't ship it at all. Most fun-trivia items are still good FEED content (Arsenal fans casually care about Odegaard's international form), so dropping them entirely was the wrong default.
+
+**The fix — push-eligibility as a first-class column.** A new `content_items.push_eligible BOOLEAN NOT NULL DEFAULT TRUE` column. notification-sender's sweep filters `WHERE push_eligible = true`. The routine, when classifying a story under the new TEAM IMPACT gate, sets `push_eligible: false` for items that should publish to the feed but not trigger a notification.
+
+Crucially: `push_title` and `push_text` stay REQUIRED in the schema. They're rendered in non-push surfaces in the app (immersive card, contextual previews, share UI). Feed-only items still write them — they just write them NEUTRALLY:
+
+- ✅ `push_title: "Odegaard, Norway captain"` / `push_text: "Arsenal's Odegaard will lead Norway at the World Cup."`
+- ❌ `push_title: "He'll be absolutely buzzing"` / `push_text: "Arsenal's captain Odegaard is heading to the World Cup as Norway's captain…"`
+
+**The cross-team symmetry.** The SAME Odegaard story, when written by `gd-news-wc` for Norway, IS team-impact for Norway followers ("our captain is leading us at the WC"). That item ships with `push_eligible: true` and gets the appropriate Norway-fan opener. Result:
+
+- Arsenal-only followers: see the Arsenal item in their feed, no push. ✓
+- Norway-only followers: see the Norway item in their feed AND get a push. ✓
+- Arsenal+Norway dual followers: see BOTH items in their feed AND get one push (the Norway one). ✓
+
+Each team's audience gets the angle they care about, at the salience level they care about. No user-level routing logic in notification-sender required — the team_id-level gate plus the two-routine architecture (gd-news for clubs, gd-news-wc for countries) handles it naturally.
+
+**Pieces shipped:**
+
+1. **Migration 052** — `ALTER TABLE content_items ADD COLUMN push_eligible BOOLEAN NOT NULL DEFAULT TRUE` + a long COMMENT explaining why. Backward-compatible: every existing row stays push-eligible, every routine that doesn't know about the new field continues shipping legacy behaviour.
+
+2. **`notification-sender/index.ts`** — added `.eq("push_eligible", true)` to the sweep query (the `else` branch around line 71). Kept the `specificItemId` path unchanged so manual recovery of a feed-only item is still possible — an operator who explicitly targets an item by ID can override the gate.
+
+3. **PROMPT.md** in `goaldigger-routines` (commit `b6a3e19`) — new "TEAM IMPACT gate" section inserted before the existing `emotional_context` calibration. Six ✅ team-impact categories (wins/losses/signings/injuries/fixtures/management) vs six ❌ fun-trivia categories (international duty/off-pitch interviews/anniversaries/tactical analysis/ex-players/training photos), each with explicit good/bad push-field examples. The 2026-05-22 Odegaard incident is embedded as a worked example.
+
+4. **schema.json** — added optional `push_eligible: boolean`. NOT in `required` — omission means DB default TRUE.
+
+5. **`post_news.sh`** — unchanged. The payload passes through to Supabase REST as-is (lines 273-285), so `push_eligible` flows through naturally when the routine includes it.
+
+6. **PROMPT_WC.md** — unchanged. Inherits PROMPT.md's content rules verbatim per its line 7. gd-news-wc automatically picks up the TEAM IMPACT gate; the WC side of the same Odegaard story ships with `push_eligible: true` because "captain confirmed for WC" IS team-impact for Norway followers.
+
+**Rules:**
+
+1. **Push-worthiness is a separate concept from publishability.** The old binary "ship + push" vs "drop entirely" was a false dichotomy. Most apps need a third state: feed-only. We didn't have it for 18 months; the cost was a steady drip of low-value pushes (fun trivia in emotional voice). Add the feed-only concept early in any notification-driven app's lifecycle.
+
+2. **The team_id IS the audience signal.** Notification-sender routes to whoever follows that team_id. So push-worthiness is per-(content_item, team_id) — not per-content-item-globally. The Odegaard story is push-worthy for Norway-tagged audiences, not Arsenal-tagged. Same story, two content_items, two team_ids, two `push_eligible` values. Clean.
+
+3. **A schema-level required field can still be a content-policy variable.** `push_title` + `push_text` stay required for ALL items (they appear in non-push surfaces). For `push_eligible: false` items, they go neutral. We didn't have to remove the requirement to add the gate — the routine just writes both the push fields AND the eligibility flag.
+
+4. **`emotional_context` is a tone calibration, not a push gate.** Conflating the two was the structural confusion. `exciting` describes the EMOTIONAL VALENCE of the story (positive vs negative); the TEAM IMPACT gate is upstream of that, asking whether the story belongs in the push channel at all. Both layers exist now.
+
+5. **Default-TRUE on the column makes the migration safe.** Routines that don't know about `push_eligible` continue shipping at the old behaviour. The gate is OPT-OUT — the routine has to explicitly opt out of pushing for an item. Zero risk of accidentally silencing legitimate pushes during the rollout window.
+
+**Files touched:**
+
+- This repo: `backend/supabase/migrations/052_push_eligible.sql` (new), `backend/supabase/functions/notification-sender/index.ts` (+10 lines, sweep query filter + comment), STATUS.md May 22 section, this lesson.
+- `anton-tech43/goaldigger-routines` commit `b6a3e19`: PROMPT.md (+~40 lines, TEAM IMPACT gate + worked example + self-check update) and schema.json (+5 lines, optional property).
+
+**Cost:** zero new routines, zero Anthropic API credits, one additive migration. The notification-sender redeploy was the only deploy required in this repo.
+
+**Verification:** next `gd-news` fire (next 22:30 UTC) will preflight commit `b6a3e19`. Two checks for whether the gate is honoured:
+
+```sql
+-- Fun-trivia items should now show up with push_eligible = false
+SELECT count(*) FROM content_items
+WHERE created_at > '<last fire>' AND push_eligible = false;
+-- > 0 expected if any fun-trivia items shipped this run.
+
+-- And those team_ids should have ZERO apns_send rows in pipeline_health
+-- for that content_item's window:
+SELECT count(*) FROM pipeline_health ph
+JOIN content_items ci ON ci.team_id = ph.team_id
+WHERE ph.stage = 'apns_send'
+  AND ci.push_eligible = false
+  AND ph.created_at > ci.created_at
+  AND ph.created_at < ci.created_at + interval '5 minutes';
+-- 0 expected — push_eligible: false items should never trigger an APNs send.
+```
+
+**Out of scope:**
+
+- **Per-user push routing** (only push X story to users who follow BOTH team A AND team B). Would need user-level preference signals in notification-sender's fanout. Defer until V2.x — the team_id-level gate handles the 80% case cleanly.
+- **Automatic detection of fun-trivia headlines** via post-script regex/hash. Trust the prompt rule. Add automated enforcement only if real fun-trivia items still ship with `push_eligible: true` after the rule lands.
+- **iOS UI distinguishing feed-only items** (e.g. a "no push" indicator). They render identically in the feed; the difference is only at notification dispatch time. No iOS change needed.
+- **Backfilling May 22's Odegaard push.** Already landed. Move forward.
+- **Lifting the `push_title`/`push_text` requirement for feed-only items.** Keep them required — they appear in non-push surfaces. Marginal extra prompt budget; not worth removing the schema invariant.
