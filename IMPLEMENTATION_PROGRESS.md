@@ -2644,3 +2644,75 @@ Manchester United 3     68      37        1         68    71
 - **Backfill of last night's Bournemouth-City moment.** User-explicit call — this is a learning moment.
 - **PL season-boundary cleanup automation.** First time we hit a new PL season, manual `UPDATE content_items SET consequence_type = NULL WHERE consequence_type IS NOT NULL AND created_at < season_start;` documented in RUNBOOK.
 - **`match-watcher` polling-divergence bug** (the Arsenal-Burnley fixture stuck at `status='NS'` 36h after kickoff). Separate ticket — the consequence detector reads from `api_football_standings`, which updates independently, so the polling bug doesn't impair the consequence layer's correctness.
+
+### 75. The dedup-window-off-by-four-minutes — same-event repeats and headline cooldowns
+
+**What happened (May 19-21, 2026):** After Lesson 74 shipped, the user reported getting three Arsenal-title-themed pushes over a 36-hour window:
+
+| When (UTC) | Headline |
+|---|---|
+| Wed 20 06:37 | "Arsenal are Premier League champions for the first time in 22 years…" |
+| Thu 21 06:41 | "Arsenal won the Premier League for the first time in 22 years. Fans are calling…" |
+| Thu 21 18:36 | "Arteta could not watch the moment they won the title…" |
+
+The user perceived this as "Arsenal won the league" being pushed three times. The Wed→Thu morning pair is the worst — same news, slightly different prose. The Thu evening Arteta angle is a genuinely new story but the headline still references "won the title" so it lands as a fourth duplicate.
+
+**This was NOT the new consequence layer.** Confirmed via `SELECT count(*) FROM pipeline_health WHERE stage='consequence_fire'` → zero rows. The consequence layer hadn't fired since deploy (API-Football was on free tier from late May 20 until the user topped up Thu evening, so match-watcher saw zero FT transitions). All three pushes came from the existing `gd-news` cloud routine doing its normal twice-daily fire (`30 6,22 * * *` UTC after Lesson 74's news-cadence shift).
+
+**Where the routine's dedup logic broke down.** `PROMPT.md` step 2.c already had a dedup section:
+
+```
+c. Dedup check — fetch what this team already has from the last 24h ...
+   If a story you're about to write covers the same person/topic/event
+   as one already in the response, skip it.
+```
+
+Two structural weaknesses surfaced:
+
+1. **The 24h lookback misses by minutes.** Wed 06:37 → Thu 06:41 morning fires are 24h 04m apart. Thursday's `SINCE = now − 24h` query starts at Wed 06:41 UTC → looks AHEAD of the Wed 06:37 item by 4 minutes. The Wed item is **just outside the lookback**. Two morning fires running near the same UTC minute will alternately miss yesterday's item every other day for any major story.
+
+2. **The "same story" rule was structurally narrow.** It told Claude to skip if the EVENT was the same, but didn't handle the "major status-changing event spawns follow-up angles that all reference the event in the headline" pattern. The Arteta-watched-his-son-cry moment is a legitimately new story. It just shouldn't share top billing with "the title" in the headline.
+
+**The fix (single PROMPT.md edit, +16 / -3 lines).** Routines repo `anton-tech43/goaldigger-routines` commit `693bc67`:
+
+- Lookback extended from 24h → 72h. Covers the previous 5-6 fires plus slow-developing stories.
+- New MAJOR EVENT cooldown rule added with explicit good/bad headline examples:
+
+```
+✅ Acceptable: "Arteta's son cried into his shoulder on the touchline."
+❌ Not acceptable: "Arteta couldn't watch the moment Arsenal won the title."
+✅ Acceptable: "The post-match speech Saka gave the dressing room."
+❌ Not acceptable: "Saka reflects on Arsenal winning the league."
+```
+
+The rule: when the lookback contains a status-changing event item (title clinched, team relegated, manager sacked/appointed, major trophy won/lost), follow-ups still publish — but the headline must lead with the new angle and must NOT contain the same key phrase that defined the original headline ("won the league", "are champions", "relegated", "sacked", "lifted the trophy").
+
+A worked example from the May 19-21 Arsenal incident is embedded in the prompt so future runs see exactly what went wrong before the rule landed.
+
+**PROMPT_WC.md inherits this dedup logic verbatim** (its line 7 reads _"dedup logic ... inherited from PROMPT.md verbatim"_), so the single PROMPT.md change covers both `gd-news` and `gd-news-wc` automatically. Zero schema migrations, zero Edge Function changes, zero routine count change.
+
+**Rules:**
+
+1. **Time-window dedup needs slack for cron drift.** Two routines firing at "06:30 daily" can land at 06:30:XX with XX varying by ~5s per day. A `now − 24h` lookback misses yesterday's item the moment XX drifts upward. Use a window that comfortably covers the inter-fire gap plus margin — for a 12h cadence, 72h is the right ratio (covers 5-6 prior fires).
+
+2. **A "same story" rule isn't enough for narrative continuity.** Real news has follow-ups: player reactions, opposition reactions, manager comments. The follow-up angle is a NEW story (deserves to be told). But its HEADLINE shouldn't re-front the original event — otherwise the user reads it as a repeat. The rule needs to be both: skip same-event AND for major events in the lookback, gate the follow-up's headline framing.
+
+3. **Pure prompt fix is cheap when the rule is enforceable by Claude's judgment.** This shipped as 16 lines in PROMPT.md with no system changes. Per Lesson 17 / Lesson 73 / BACKFILL_RULES, content-policy fixes belong in the prompt unless we have evidence the LLM ignores the rule. Add post-script hashing or a dedicated `event_cooldowns` table only if a future major event still slips through.
+
+4. **Worked examples in the prompt are documentation that runs at execution time.** Future routine sessions will see the May 19-21 Arsenal incident in their prompt context. Cheap insurance — Claude reads the example and internalises the rule shape better than abstract instructions alone.
+
+**Files touched:**
+
+- `anton-tech43/goaldigger-routines` PROMPT.md step 2.c (commit `693bc67`).
+- This repo: STATUS.md May 21 late-late section + this lesson.
+
+**Cost:** zero. No routines added or rescheduled, no API credits, no migrations.
+
+**Verification:** the next `gd-news` fire (next 22:30 UTC) will output its `[ROUTINE VERSION] 693bc67 ...` preflight log, confirming the new prompt is live. The next time a PL team clinches title / relegation / Europe will be the real-world test.
+
+**Out of scope:**
+
+- **Post-script signature hashing.** Defer until prompt-level rule fails on a future major event.
+- **Dedicated `event_cooldowns` table.** Same logic — defer.
+- **Backfilling May 19-21 Arsenal pushes.** Already landed; nothing to roll back.
+- **Cross-routine dedup** (e.g. an `insider` item and a `news` item covering the same event in the same week). The 72h lookback applies per team but reads any `pipeline_source='routine'` item, so insider items in the window already factor into news routine's dedup. Implicitly addressed.

@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-21 late (cross-team consequence layer + news cadence shift — match-watcher now INSERTs templated title-won/relegated/UCL-clinched/WC-knockout content for non-playing teams within seconds of FT, zero new routines, zero API credits; gd-news + gd-news-wc evening fires shifted from 18:30 → 22:30 UTC to cover the same night's results)
+**Last updated:** 2026-05-21 late-late (gd-news dedup tightening — lookback 24h → 72h + MAJOR EVENT cooldown rule prevents follow-up stories from re-headlining a status-changing event. Closes the May 19-21 Arsenal-champion repeated-push issue. Routines repo commit `693bc67`.)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
@@ -9,6 +9,25 @@ A one-page snapshot of where the project is. For the deep history, see [IMPLEMEN
 ## TL;DR
 
 GoalDigger is live on TestFlight (V1.3 build). **World Cup 2026 support (V2.0) is feature-complete and verified** — backend + iOS shipped, build green, cron auth healthy after Phase 28 hardening, WC routine prompts now country-aware. **Push pipeline was completely dead from May 11 → May 17** (Vault had wrong-shape key, gateway 401'd every cron tick); **fixed and end-to-end verified**. Remaining work for June 11 launch: gd-news-wc routine creation (separate cron slot for 48 countries to avoid context blowout), TestFlight beta with V2.0 build, App Store submission by June 4.
+
+---
+
+## Verified today (May 21 late-late — gd-news dedup tightening)
+
+User reported receiving three Arsenal-title-themed pushes over Wed 20 → Thu 21 (Wed morning, Thu morning, Thu evening). All three came from the existing `gd-news` cloud routine — confirmed zero `consequence_fire` rows in `pipeline_health`, so the new layer was NOT involved. Root cause was in the routine's `PROMPT.md` step 2.c dedup:
+
+1. **24h lookback was off by minutes.** Two morning fires drift by ~4 min UTC → today's `SINCE = now − 24h` query misses yesterday's same-time-of-day item.
+2. **The "same story" rule didn't handle follow-up-angle headlines that still reference the major event** (e.g. the Arteta story whose headline mentioned "the moment they won the title").
+
+Fix shipped to `anton-tech43/goaldigger-routines` commit `693bc67`:
+
+- Extended dedup lookback from 24h → 72h. Covers 5-6 fires, robust to UTC-minute drift.
+- Added a MAJOR EVENT cooldown rule with explicit good/bad headline examples. When a status-changing event (title, relegation, sacking, trophy) is in the lookback, follow-ups still publish but the headline must lead with the new angle, not the event itself. "Arteta's son cried into his shoulder" ✓; "Arteta couldn't watch the moment Arsenal won the title" ✗.
+- Includes a worked example from the May 19-21 Arsenal incident in the prompt so future runs see exactly what went wrong before the rule.
+
+PROMPT_WC.md inherits dedup logic from PROMPT.md verbatim, so both gd-news and gd-news-wc are covered by the single PROMPT.md change. Zero schema changes, zero Edge Function changes, zero quota impact.
+
+Verification on next fire: the `[ROUTINE VERSION]` preflight log on the next 22:30 UTC gd-news fire will echo the new commit SHA, confirming the routine picked up the updated prompt.
 
 ---
 
