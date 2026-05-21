@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-22 (push-eligibility gate — content_items now carries push_eligible: bool; PROMPT.md TEAM IMPACT gate sets it false for fun-trivia items so an Arsenal-tagged item about Odegaard's Norway WC duty publishes to feed but doesn't trigger an emotional "He'll be buzzing" push. Migration 052 + notification-sender filter + routines commit b6a3e19.)
+**Last updated:** 2026-05-22 (end of day — push-eligibility gate + /simplify pass + MARKETING_VERSION 2.0 bumped + API-Football top-up verified + crest header swap. Submission targeted for Tue May 26. See "Pre-submission roadmap" below.)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
@@ -8,7 +8,87 @@ A one-page snapshot of where the project is. For the deep history, see [IMPLEMEN
 
 ## TL;DR
 
-GoalDigger is live on TestFlight (V1.3 build). **World Cup 2026 support (V2.0) is feature-complete and verified** — backend + iOS shipped, build green, cron auth healthy after Phase 28 hardening, WC routine prompts now country-aware. **Push pipeline was completely dead from May 11 → May 17** (Vault had wrong-shape key, gateway 401'd every cron tick); **fixed and end-to-end verified**. Remaining work for June 11 launch: gd-news-wc routine creation (separate cron slot for 48 countries to avoid context blowout), TestFlight beta with V2.0 build, App Store submission by June 4.
+GoalDigger is live on TestFlight (V1.3 build). **World Cup 2026 support (V2.0) is feature-complete + structurally hardened across the May 17–22 sprint** — content layer (basics card / player photos / consequence layer / news cadence / push-eligibility gate), data layer (every team has manager + crest + venue), iOS layer (slicker tabs / crest headers / circular player avatars). Submission targeted for **Tuesday May 26** (WC kicks off June 11, gives Apple ~14-day review buffer).
+
+---
+
+## Pre-submission roadmap (Tue May 26 target)
+
+### Ready to ship — everything below is in the branch and tested
+
+| Layer | What landed in the May 17–22 sprint |
+|---|---|
+| Backend | Migrations 051 (consequence layer) + 052 (push-eligibility). New `_shared/detect-consequences.ts` (pure-math) + `_shared/consequence-templates.ts`. match-watcher post-matchday hook. notification-sender gated on push_eligible. team-page-generator basics generation + venue data + squad top-up. |
+| iOS | Slicker segmented control (no gutter, transparent unselected). Circular player photos in "The ones to know" expand (reuses onboarding's avatar pattern). Real team crest in the team-page header (no more "S" placeholder). Optional `BasicsCard.stadium` (graceful WC fallback). `MARKETING_VERSION = 2.0`. |
+| Routines | gd-news + gd-news-wc cadence 18:30 → 22:30 UTC (covers same-night matchday results). PROMPT.md: 72h dedup + MAJOR EVENT cooldown + TEAM IMPACT gate. |
+| Docs | BACKFILL_RULES.md + CLAUDE.md (cost-discipline guardrails). Lessons 72–76 in IMPLEMENTATION_PROGRESS. |
+| Verified | iOS build green on iPhone 17 Pro sim. match-watcher + notification-sender + team-page-generator deploys clean. Cron auth 4/4 ✓. API-Football PL + WC standings flowing. 71/71 team_pages have basics. 70/71 have all 3 player photos (Canada's Davies legitimately missing from the API roster). |
+
+### Outstanding by day
+
+| Day | Owner | What |
+|---|---|---|
+| **Fri 23 morning** | you | Run the audit query on the 06:30 UTC `gd-news` fire. Confirm commit `b6a3e19` echoed in `[ROUTINE VERSION]` preflight. Confirm at least a handful of items shipped with `push_eligible = false` (international duty / fun trivia). If everything is `push_eligible = true`, the TEAM IMPACT gate isn't being honored and the prompt needs another tightening pass. |
+| **Fri 23 evening** | you | Optional: also audit the 22:30 UTC fire. Second test of the gate + Friday post-match coverage if any leagues have games. |
+| **Sat 24** | you | Soak. Spot-check the day's content for tone/accuracy. Read 5-10 random items per day and confirm voice is right. |
+| **Sun 25** | you | Real-device TestFlight smoke test — install latest internal build, complete onboarding with WC country selection, verify push delivery via a manual content_items INSERT. Final read-through of `APP_STORE_V2.0_COPY.md` (description, What's New, keywords, promo). |
+| **Mon 26** | you | Screenshots — 12 PNGs (6 at 6.9", 6 at 6.3") per `APP_STORE_V2.0_SCREENSHOT_PLAN.md`. Archive iOS app in Xcode (Product → Archive). Upload to App Store Connect. Wait for "Ready to Submit" email. |
+| **Tue 27** | you | App Store Connect: paste copy from `APP_STORE_V2.0_COPY.md`, upload screenshots, select build, answer export compliance, click **Submit for Review**. |
+
+### Audit query for Friday morning
+
+```bash
+set -a && source backend/.env && set +a
+/opt/homebrew/opt/libpq/bin/psql "$SUPABASE_DB_URL" <<'SQL'
+-- Fri morning fire (06:30 UTC) — should be done by 07:00 UTC = 09:00 CEST
+SELECT to_char(created_at AT TIME ZONE 'UTC', 'HH24:MI') AS t,
+       team_id, push_eligible,
+       substring(headline FROM 1 FOR 60) AS headline
+FROM content_items
+WHERE created_at > now() - interval '90 minutes'
+ORDER BY team_id, created_at;
+
+-- Sanity: no apns_send for push_eligible=false items
+SELECT count(*) AS feed_only_items_that_leaked
+FROM content_items ci
+JOIN pipeline_health ph ON ph.stage='apns_send' AND ph.team_id=ci.team_id
+ AND ph.created_at BETWEEN ci.created_at AND ci.created_at + interval '5 minutes'
+WHERE ci.push_eligible = false AND ci.created_at > now() - interval '90 minutes';
+-- Expected: 0
+SQL
+```
+
+### If the morning fire doesn't honor the gate
+
+If everything comes back `push_eligible = true`, the Claude routine isn't following the new prompt rule. Two options:
+1. **Tighten the prompt** — add a stricter validator (post-script hash on headline → if "He'll" + an international-duty player, reject).
+2. **Soft block** in post_news.sh — script-level enforcement (similar to the headline cap rule from Lesson 17).
+
+That's a same-day fix if it surfaces.
+
+---
+
+## Today's session log (May 21–22 UTC) — the work that landed
+
+Eleven commits across this 24-hour arc:
+
+1. `0bc9350` — Manager card unlocked for every team (three-layer coachs fix — Lesson 72)
+2. `8437ede` — Circular player photos in "The ones to know" + optional stadium
+3. `11f56c1` — "The basics" card generated for every team
+4. `4e18f48` — Lesson 73 (basics-card unlock + credit-balance trap)
+5. `66cde39` — Canada player photos via direct SQL (cost-discipline rule applied)
+6. `cbc17d5` — BACKFILL_RULES.md + CLAUDE.md (cost-discipline guardrails — never repeat the burst-API-call mistake)
+7. `d8ef854` — Cross-team consequence layer shipped (Lesson 74)
+8. `ab57527` — STATUS + Lesson 74
+9. `ff313d4` — STATUS + Lesson 75 (gd-news dedup tightening — 72h + MAJOR EVENT cooldown)
+10. `3caf707` — Team page header real crest (no more "S" placeholder)
+11. `ce5bf6d` — Push-eligibility gate (Lesson 76)
+12. `308eea2` — `MARKETING_VERSION = 2.0`
+13. `3ec9289` — `/simplify` pass (-48 LOC, six review-found issues fixed)
+
+Routines repo: `693bc67` (72h dedup) + `b6a3e19` (TEAM IMPACT gate).
+
+Operationally: API-Football account topped up + verified flowing; data-fetcher manually fired to land fresh standings/fixtures/squad/coachs/teams; cron auth verified 4/4 ✓.
 
 ---
 
