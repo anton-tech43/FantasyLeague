@@ -46,12 +46,33 @@ struct TeamPageView: View {
         return ""
     }
 
-    private var teamInitials: String {
-        let name = entityDisplayName
-        guard !name.isEmpty else { return "" }
-        let words = name.split(separator: " ")
-        let letters = words.prefix(2).compactMap { $0.first.map { String($0).uppercased() } }
-        return letters.joined()
+    /// Crest for the team-page header. PL clubs render their club crest;
+    /// WC countries render their flag. Both come from API-Football's CDN
+    /// via `TeamCrestView`, which falls back to a soft-blush shield icon
+    /// if the image is still loading or the URL is unavailable. Replaces
+    /// the pink-circle-with-first-letter placeholder used in V1, which
+    /// rendered "S" for Sweden, "A" for Arsenal etc. — a brand-aligned
+    /// placeholder that became a regression once the team data carried
+    /// real crest URLs.
+    @ViewBuilder
+    private var entityCrest: some View {
+        if let team = Team(rawValue: teamId) {
+            TeamCrestView(team: team, size: 64)
+        } else if let country = Country(rawValue: teamId) {
+            TeamCrestView(country: country, size: 64)
+        } else {
+            // Last-resort fallback — same shape as TeamCrestView's internal
+            // fallback. Only reachable if a teamId arrives that matches
+            // neither the PL Team enum nor the WC Country enum, which would
+            // be a data integrity issue elsewhere.
+            ZStack {
+                Circle().fill(Color.mutedText.opacity(0.1))
+                Image(systemName: "shield.fill")
+                    .font(.system(size: 32))
+                    .foregroundColor(.mutedText.opacity(0.5))
+            }
+            .frame(width: 64, height: 64)
+        }
     }
 
     /// Word-aware truncation; avoids mid-word cuts.
@@ -111,14 +132,7 @@ struct TeamPageView: View {
 
     private var headerSection: some View {
         VStack(spacing: 12) {
-            Circle()
-                .fill(Color.hotRose)
-                .frame(width: 64, height: 64)
-                .overlay(
-                    Text(teamInitials)
-                        .font(.jakarta(24, weight: .bold))
-                        .foregroundColor(.warmWhite)
-                )
+            entityCrest
 
             Text(entityDisplayName)
                 .font(.jakarta(20, weight: .bold))
