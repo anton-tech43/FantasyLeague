@@ -85,6 +85,7 @@ export interface PipelineHealthLog {
     | "publish"
     | "live_brief_fire"   // match-watcher firing gd-live-brief via routine API
     | "matchday_fire"     // match-watcher firing gd-matchday via routine API
+    | "consequence_fire"  // match-watcher INSERTing a templated cross-team consequence row (no LLM call). See Lesson 74.
     | "apns_send"         // notification-sender sending a single APNs push
     | "routine_post"      // routine post_*.sh POSTing to Supabase REST
     | "cron_invoke";      // pg_cron invoking an Edge Function
