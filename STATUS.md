@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-22 early morning (06:55 UTC — TEAM IMPACT gate FAILED on first live fire. Two fun-trivia pushes landed at 06:41 (Hamilton crying over Arsenal title) + 06:45 (Prince William with Aston Villa). Both `push_eligible: true`. Prompt-following failure, not a deploy issue. **Lesson 77 / first task tomorrow morning: script-level enforcement in `post_news.sh`** per Lesson 17's pattern ("soft caps don't work; hard rejection does"). Submission still targeted for Tue May 26.)
+**Last updated:** 2026-05-22 morning (Lesson 77 shipped — `post_news.sh` now force-downgrades push_eligible=false for two narrow fun-trivia patterns: non-football celebrity reactions and international-duty stories written for PL clubs. 10/10 fixture tests pass, including the two May 22 misses (Hamilton, Prince William). Routines repo commit `82b18aa`. Verifies on the 22:30 UTC fire tonight. Tuesday May 26 submission on track.)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
@@ -28,8 +28,9 @@ GoalDigger is live on TestFlight (V1.3 build). **World Cup 2026 support (V2.0) i
 
 | Day | Owner | What |
 |---|---|---|
-| **Fri 22 morning (06:55 UTC audit — DONE)** | me | Audit confirmed the gate FAILED. Two pushes landed (Hamilton-cried + Prince-William-beer) with `push_eligible: true`. Both classic fun-trivia. The routine had the new prompt but the LLM didn't apply the rule. See "Lesson 77 / next-day fix" below. |
-| **Fri 22 daytime** | me | Ship script-level enforcement: `post_news.sh` heuristic force-downgrade for known fun-trivia patterns (royal cameos, F1/NBA/tennis celebrity-cried, international-duty when writing for the CLUB). Same shape as Lesson 17's headline-cap hard reject. Verify on 22:30 UTC fire. |
+| **Fri 22 morning (06:55 UTC audit — DONE)** | me | Audit confirmed the gate FAILED. Two pushes landed (Hamilton-cried + Prince-William-beer) with `push_eligible: true`. Both classic fun-trivia. The routine had the new prompt but the LLM didn't apply the rule. |
+| **Fri 22 morning (Lesson 77 — DONE)** | me | Shipped script-level enforcement in `post_news.sh`: two narrow regex patterns (non-football celebrity reactions + international-duty written for PL clubs) silently force `push_eligible=false`. Item still publishes to the feed, just no push. 10/10 fixture tests pass. Routines repo commit `82b18aa`. |
+| **Fri 22 evening** | you | Audit the 22:30 UTC fire. If any fun-trivia headlines shipped, check whether they're in the regex's catch — adjust on Sat morning if needed. Quick query: `SELECT push_eligible, headline FROM content_items WHERE created_at > now() - interval '90 minutes';` |
 | **Fri 23 evening** | you | Optional: also audit the 22:30 UTC fire. Second test of the gate + Friday post-match coverage if any leagues have games. |
 | **Sat 24** | you | Soak. Spot-check the day's content for tone/accuracy. Read 5-10 random items per day and confirm voice is right. |
 | **Sun 25** | you | Real-device TestFlight smoke test — install latest internal build, complete onboarding with WC country selection, verify push delivery via a manual content_items INSERT. Final read-through of `APP_STORE_V2.0_COPY.md` (description, What's New, keywords, promo). |

@@ -2801,3 +2801,88 @@ WHERE ph.stage = 'apns_send'
 - **iOS UI distinguishing feed-only items** (e.g. a "no push" indicator). They render identically in the feed; the difference is only at notification dispatch time. No iOS change needed.
 - **Backfilling May 22's Odegaard push.** Already landed. Move forward.
 - **Lifting the `push_title`/`push_text` requirement for feed-only items.** Keep them required — they appear in non-push surfaces. Marginal extra prompt budget; not worth removing the schema invariant.
+
+### 77. Script-level enforcement of the TEAM IMPACT gate — the prompt rule didn't hold
+
+**What happened (May 22, 2026):** Lesson 76's prompt-level TEAM IMPACT gate failed on its first live fire (06:30 UTC `gd-news`, ~7 hours after the routines-repo commit `b6a3e19`). The routine session correctly loaded the new prompt — confirmed by checking `origin/main` HEAD vs fire time — but the LLM ignored the classification rule. Two pushes landed in the user's lock screen:
+
+| Time UTC | Team | Headline (truncated) | What it actually was |
+|---|---|---|---|
+| 06:41 | arsenal | "Lewis Hamilton (F1 world champion) shed a tear watching Arsenal clinch the title" | Celebrity-fan reaction to the title win |
+| 06:45 | aston_villa | "Prince William was pictured sharing a beer with Aston Villa players" | Royal cameo |
+
+Both shipped with `push_eligible: true` and emotional sister-voice openers. Both pushed via APNs.
+
+The user surfaced it with a screenshot of the Hamilton card and a tight diagnostic: _"How can this come as a push, how is that news AND push worthy"_. Two complaints in one — the story isn't push-worthy, AND the story barely belongs as news for Arsenal followers.
+
+**The Lesson 76 out-of-scope predicted exactly this case:** _"Add automated enforcement only if real fun-trivia items still ship with `push_eligible: true` after the rule lands."_ The fall-back plan was already in place; it just had to be built.
+
+**Same playbook as Lesson 17.** Headline length caps were "soft" in the prompt for the first 6 weeks of routine ops — the model drifted past the 160-char limit on ~67% of items. Lesson 17 added a hard-reject in `post_news.sh` and the drift stopped overnight. Lesson 77 applies the same shape to the TEAM IMPACT classification — except force-downgrade rather than reject (the item itself is fine, only the push channel is wrong).
+
+**The two patterns shipped (commit `82b18aa` in `goaldigger-routines`):**
+
+1. **Non-football observer + reaction verb.** Observer keywords name the SPEAKER's domain (F1 driver / F1 world champion / Formula 1 / NBA / tennis star / Wimbledon / Olympic / boxing champion / rapper / musician / singer / actor / Hollywood / royal / Prince [Name] / Princess [Name] / King [Name] / Queen [Name] / President [Name]). Reaction verbs are any observational third-person verb (shed a tear / cried / congratulated / pictured / gushed / raved / sent best wishes / toasted). If both match in the headline (either order), force-downgrade.
+
+2. **Country possessive + national-team keyword, written for a PL club.** `team_id` is one of the 20 PL clubs AND the headline contains `<Country>'s (squad|World Cup|national team|captain|coaching staff|starting eleven)`. The possessive form is the trigger — "Brazil at the new stadium" doesn't match; "Brazil's World Cup squad" does. Country list mirrors `Country.swift`'s 48-nation enum.
+
+Both patterns fire as a silent **force-downgrade** (`payload = jq '.push_eligible = false' <<< "$payload"`) right before the Supabase REST INSERT. The story still publishes to the feed for the team's subscribers; it just doesn't trigger an APNs send. Every downgrade is logged to stderr with reason + team_id + headline so routine session logs surface every catch.
+
+**False-positive audit against 28 items shipped in the prior 18h:** zero items would have been wrongly downgraded under the new rules.
+
+**Test fixture (10/10 pass):**
+
+- ✓ Hamilton crying (`arsenal`) → downgraded (Pattern 1)
+- ✓ Prince William beer (`aston_villa`) → downgraded (Pattern 1)
+- ✓ Foden miss England squad (`man_city`) → downgraded (Pattern 2)
+- ✓ Maguire out of England squad (`man_utd`) → downgraded (Pattern 2)
+- ✓ Odegaard captain (`norway` team_id) → push stays — for Norway followers this IS team-impact
+- ✓ Foden miss England squad (`england` team_id) → push stays — same logic
+- ✓ Arsenal transfer signing → push stays
+- ✓ Arteta crying (Arsenal manager) → push stays — Arteta is a football figure, not on the observer list
+- ✓ Liverpool match win → push stays
+- ✓ "Arsenal will face Brazil at..." → push stays — no possessive form
+
+**Rules:**
+
+1. **Soft rules in the prompt are unreliable for binary classifications.** "Voice" can be calibrated via prompt rules (Lesson 17 confirmed). But binary gates — should this push? does this exceed N chars? — drift the moment the model judges differently. For binary gates, script-level enforcement is the durable answer. Lesson 17 was the canary; Lesson 76 → 77 is the cementing pattern.
+
+2. **Force-downgrade beats hard-reject when only the channel is wrong.** Lesson 17's headline-cap rejects the whole item because a too-long headline ships nothing usable. Lesson 77's fun-trivia detection downgrades the push channel only because the item is still fine in the feed. Distinguish "the content is broken" (reject) from "the routing is wrong" (silent fix).
+
+3. **Heuristic patterns should be narrow enough to audit by hand.** Two patterns × ~50 keywords each = ~100 ways to trigger. Tested against 28 real items + 10 fixtures = 38 known-shape cases. Tighten the regex if a real false-positive surfaces; widen it if a real fun-trivia case slips through. The narrow scope is the feature.
+
+4. **Log every catch loudly.** Every downgrade writes to stderr with reason + team_id + headline. Routine session logs become the audit trail. If the next morning's audit shows a downgrade you disagree with, the data to argue back is in the log.
+
+5. **Don't ship the V2 of a fragile fix during exhaustion.** The Lesson 76 out-of-scope explicitly said "Add automated enforcement only if real fun-trivia items still ship after the rule lands." The fall-through-to-enforcement plan was logged before the failure. When the failure hit, the answer was already filed. Lesson: when shipping a soft rule, write down what the hard backup looks like — half the work of the V2 is done.
+
+**Files touched:**
+
+- Routines repo `goaldigger-routines` commit `82b18aa`: `post_news.sh` (+54 lines, two pattern blocks after the existing length-validation section).
+- This repo: STATUS.md May 22 morning section + this lesson.
+
+**Cost:** zero new routines, zero API credits, zero schema migrations.
+
+**Verification:** next `gd-news` fire is tonight at 22:30 UTC. Two checks:
+
+```sql
+-- Items downgraded by Lesson 77 — should match fun-trivia patterns
+SELECT to_char(created_at AT TIME ZONE 'UTC', 'HH24:MI') AS t,
+       team_id, push_eligible, substring(headline FROM 1 FOR 80) AS headline
+FROM content_items
+WHERE created_at > now() - interval '90 minutes'
+ORDER BY push_eligible, team_id;
+
+-- No apns_send for push_eligible=false items
+SELECT count(*) AS feed_only_leaks
+FROM content_items ci
+JOIN pipeline_health ph ON ph.stage='apns_send' AND ph.team_id=ci.team_id
+ AND ph.created_at BETWEEN ci.created_at AND ci.created_at + interval '5 minutes'
+WHERE ci.push_eligible = false AND ci.created_at > now() - interval '90 minutes';
+-- Expected: 0
+```
+
+**Out of scope:**
+
+- **Pattern 3 — player's CLUB news when writing for the COUNTRY** (e.g. Vinícius's Real Madrid fixture absence written for Brazil-tagged audience). Requires a player→country map; defer to V2.1.
+- **Anniversary nostalgia detection.** Low frequency; skip.
+- **Ex-player commentary catching.** Would need a recently-active-players list. Skip.
+- **Hard-rejecting the writing of fun-trivia items entirely.** The force-downgrade keeps the items in the feed; user said _"should just be in feed"_. Don't go further than that until evidence suggests the feed surface is itself harmed by these items.
