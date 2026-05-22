@@ -36,6 +36,14 @@ struct ContentItem: Identifiable, Codable {
     /// so older items decoded from cache don't break. V2.0.
     let affectedTeamIds: [String]?
 
+    /// Links this content_item to a specific upcoming fixture. When set,
+    /// the iOS Calendar tab uses this to navigate from a fixture row to
+    /// the preview's ContentDetailView. Format:
+    /// `"<team_id>:<iso-date>:<opponent-slug>"`. Used by the V2.0 WC
+    /// pre-tournament preview content. nil for normal feed items.
+    /// See Lesson 78.
+    let previewFixtureId: String?
+
     enum ContentType: String, Codable {
         case news
         case matchday
@@ -80,6 +88,9 @@ struct ContentItem: Identifiable, Codable {
 
         // V2.0 team-crest header
         case affectedTeamIds = "affected_team_ids"
+
+        // V2.0 WC pre-tournament preview linking — see previewFixtureId
+        case previewFixtureId = "preview_fixture_id"
     }
 
     // Custom decoder for backward compatibility with cached items missing new fields
@@ -109,6 +120,7 @@ struct ContentItem: Identifiable, Codable {
         analogyApproved = (try? container.decodeIfPresent(Bool.self, forKey: .analogyApproved)) ?? false
         analogyAutoPublished = (try? container.decodeIfPresent(Bool.self, forKey: .analogyAutoPublished)) ?? false
         affectedTeamIds = try? container.decodeIfPresent([String].self, forKey: .affectedTeamIds)
+        previewFixtureId = try? container.decodeIfPresent(String.self, forKey: .previewFixtureId)
     }
 
     /// The context/analogy line to display on the immersive card.

@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-22 morning (Lesson 77 shipped — `post_news.sh` now force-downgrades push_eligible=false for two narrow fun-trivia patterns: non-football celebrity reactions and international-duty stories written for PL clubs. 10/10 fixture tests pass, including the two May 22 misses (Hamilton, Prince William). Routines repo commit `82b18aa`. Verifies on the 22:30 UTC fire tonight. Tuesday May 26 submission on track.)
+**Last updated:** 2026-05-22 mid-morning (V1 of pre-tournament WC preview content shipped — migration 053 adds `preview_fixture_id` on content_items; iOS Calendar tab now navigates to preview ContentDetailView on fixture tap; 4 hand-curated England preview items seeded (Group F overview + Croatia + Ghana + Panama). Other 47 WC countries follow via a one-off routine before Jun 11. Lesson 78.)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
@@ -30,6 +30,7 @@ GoalDigger is live on TestFlight (V1.3 build). **World Cup 2026 support (V2.0) i
 |---|---|---|
 | **Fri 22 morning (06:55 UTC audit — DONE)** | me | Audit confirmed the gate FAILED. Two pushes landed (Hamilton-cried + Prince-William-beer) with `push_eligible: true`. Both classic fun-trivia. The routine had the new prompt but the LLM didn't apply the rule. |
 | **Fri 22 morning (Lesson 77 — DONE)** | me | Shipped script-level enforcement in `post_news.sh`: two narrow regex patterns (non-football celebrity reactions + international-duty written for PL clubs) silently force `push_eligible=false`. Item still publishes to the feed, just no push. 10/10 fixture tests pass. Routines repo commit `82b18aa`. |
+| **Fri 22 mid-morning (DONE)** | me | V1 of WC pre-tournament preview content. Migration 053 (`preview_fixture_id`), iOS Calendar tap-to-detail wiring, 4 England preview items seeded. Sim verify pending. |
 | **Fri 22 evening** | you | Audit the 22:30 UTC fire. If any fun-trivia headlines shipped, check whether they're in the regex's catch — adjust on Sat morning if needed. Quick query: `SELECT push_eligible, headline FROM content_items WHERE created_at > now() - interval '90 minutes';` |
 | **Fri 23 evening** | you | Optional: also audit the 22:30 UTC fire. Second test of the gate + Friday post-match coverage if any leagues have games. |
 | **Sat 24** | you | Soak. Spot-check the day's content for tone/accuracy. Read 5-10 random items per day and confirm voice is right. |

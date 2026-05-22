@@ -360,6 +360,27 @@ class APIClient {
         return order.compactMap { t in all.first(where: { $0.type == t }) }
     }
 
+    /// Fetch content_items for this team that link to a specific upcoming
+    /// fixture via preview_fixture_id. Used by the Calendar tab to map a
+    /// fixture row to its preview ContentDetailView. Returns an empty
+    /// array on error or for teams with no previews seeded (which is
+    /// most teams pre-V1.1). One small REST call, payload bounded by the
+    /// number of upcoming fixtures (~3-6 per WC country, 0 for PL clubs).
+    func fetchPreviewItems(teamId: String) async throws -> [ContentItem] {
+        let url = try buildURL(path: "content_items", queryItems: [
+            URLQueryItem(name: "team_id", value: "eq.\(teamId)"),
+            URLQueryItem(name: "preview_fixture_id", value: "not.is.null"),
+            URLQueryItem(name: "status", value: "eq.published"),
+            URLQueryItem(name: "order", value: "published_at.desc"),
+            URLQueryItem(name: "limit", value: "20"),
+        ])
+        var request = makeRequest(url: url)
+        request.timeoutInterval = 10
+        let (data, response) = try await URLSession.shared.data(for: request)
+        try validateResponse(response)
+        return try decodeArrayLoosely(data: data)
+    }
+
     // MARK: - Live match brief (V1.1 task C5)
 
     /// Fetch the current live match brief for the team — the LiveMatchCard

@@ -9,6 +9,12 @@ struct TeamPageView: View {
     /// anecdote). Powers the redesigned "Things he doesn't know" section
     /// at the bottom of the team page. Empty array = section hidden.
     @State private var insiderSet: [InsiderItem] = []
+    /// Pre-tournament preview content_items keyed by synthetic fixture
+    /// id (`"<team_id>:<iso-date>:<opponent-slug>"`). When a row in the
+    /// Calendar tab matches a key here, tapping the row navigates to
+    /// that content_item's ContentDetailView. Empty for PL clubs and
+    /// for any WC country that hasn't been seeded yet. See Lesson 78.
+    @State private var previewByFixtureId: [String: ContentItem] = [:]
     @State private var isLoading = true
     @State private var hasError = false
     @State private var presentedPlayer: PlayerCard?
@@ -486,14 +492,38 @@ struct TeamPageView: View {
         } else {
             VStack(spacing: Layout.cardSpacing) {
                 ForEach(fixtures) { fixture in
-                    calendarRow(fixture)
+                    let preview = previewByFixtureId[previewKey(for: fixture)]
+                    calendarRow(fixture, preview: preview)
                 }
             }
         }
     }
 
+    /// Renders one Calendar row. When `preview` is non-nil, the row is
+    /// wrapped in a NavigationLink that opens the preview content_item's
+    /// ContentDetailView. Rows without a preview render the same visual
+    /// but are tap-inert (matches V1 behaviour — graceful for friendlies
+    /// and post-group fixtures that aren't previewed).
     @ViewBuilder
-    private func calendarRow(_ f: UpcomingFixture) -> some View {
+    private func calendarRow(_ f: UpcomingFixture, preview: ContentItem?) -> some View {
+        let row = calendarRowBody(f, hasPreview: preview != nil)
+        if let preview {
+            NavigationLink(value: ContentDetailDestination(
+                contentId: preview.id,
+                scrollToTalkingPoints: false,
+                isEveryoneContext: false,
+                preloadedItem: preview
+            )) {
+                row
+            }
+            .buttonStyle(.plain)
+        } else {
+            row
+        }
+    }
+
+    @ViewBuilder
+    private func calendarRowBody(_ f: UpcomingFixture, hasPreview: Bool) -> some View {
         let parsed = Self.isoFormatter.date(from: f.date)
         HStack(alignment: .top, spacing: 14) {
             // Left: date stack
@@ -517,7 +547,7 @@ struct TeamPageView: View {
             }
             Spacer(minLength: 0)
 
-            // Right: dots + label
+            // Right: dots + label (+ chevron hint when the row is tappable)
             VStack(alignment: .trailing, spacing: 4) {
                 HStack(spacing: 3) {
                     ForEach(1...5, id: \.self) { dot in
@@ -526,11 +556,18 @@ struct TeamPageView: View {
                             .frame(width: 6, height: 6)
                     }
                 }
-                Text(f.importanceLabel)
-                    .font(.feedTimestamp).foregroundColor(.hotRose)
-                    .lineLimit(1)
+                HStack(spacing: 4) {
+                    Text(f.importanceLabel)
+                        .font(.feedTimestamp).foregroundColor(.hotRose)
+                        .lineLimit(1)
+                    if hasPreview {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.hotRose.opacity(0.7))
+                    }
+                }
             }
-            .frame(width: 100, alignment: .trailing)
+            .frame(width: 110, alignment: .trailing)
         }
         .padding(Layout.cardPadding)
         .frame(maxWidth: .infinity, alignment: .topLeading)
@@ -904,13 +941,15 @@ struct TeamPageView: View {
             content = cached.content
             isLoading = false
 
-            // Fetch player cards + insider set in parallel with fresh data
+            // Fetch player cards + insider set + previews in parallel with fresh data
             async let freshContent = fetchFromNetwork()
             async let players = fetchPlayerCards()
             async let insider = fetchInsiderSet()
+            async let previews = fetchPreviewItems()
 
             playerCards = await players
             insiderSet = await insider
+            previewByFixtureId = indexPreviews(await previews)
 
             if let fresh = await freshContent {
                 content = fresh
@@ -927,8 +966,10 @@ struct TeamPageView: View {
                 TeamPageCache.save(content: fetched, teamId: teamId)
                 async let players = fetchPlayerCards()
                 async let insider = fetchInsiderSet()
+                async let previews = fetchPreviewItems()
                 playerCards = await players
                 insiderSet = await insider
+                previewByFixtureId = indexPreviews(await previews)
             } else {
                 #if DEBUG
                 if let mock = MockData.teamPage(for: teamId) {
@@ -966,5 +1007,39 @@ struct TeamPageView: View {
     /// (the section just hides).
     private func fetchInsiderSet() async -> [InsiderItem] {
         (try? await APIClient.shared.fetchInsiderSet(teamId: teamId)) ?? []
+    }
+
+    /// Fetches pre-tournament preview content_items for this team. Used to
+    /// power the Calendar tap-to-detail navigation. Empty array on error
+    /// or for teams without seeded previews (most teams pre-V1.1).
+    private func fetchPreviewItems() async -> [ContentItem] {
+        (try? await APIClient.shared.fetchPreviewItems(teamId: teamId)) ?? []
+    }
+
+    /// Build a `previewFixtureId → ContentItem` map for fast lookup at
+    /// row-render time. Only items with non-nil `previewFixtureId` enter
+    /// the map; the fetch query already filters for these, but the guard
+    /// is cheap and defensive.
+    private func indexPreviews(_ items: [ContentItem]) -> [String: ContentItem] {
+        var out: [String: ContentItem] = [:]
+        for item in items {
+            if let key = item.previewFixtureId { out[key] = item }
+        }
+        return out
+    }
+
+    /// Compute the synthetic fixture id used to link an upcoming fixture
+    /// row to its preview content_item. Format mirrors the migration 053
+    /// COMMENT: `"<team_id>:<iso-date>:<opponent-slug>"`. ISO date is
+    /// the date portion only (no time) so minor timestamp drift between
+    /// the team_pages payload and the content_items row doesn't break
+    /// the match. Opponent slug lowercases the display name and swaps
+    /// spaces for underscores ("Costa Rica" → "costa_rica").
+    private func previewKey(for fixture: UpcomingFixture) -> String {
+        let datePart = String(fixture.date.prefix(10))
+        let slug = fixture.opponent
+            .lowercased()
+            .replacingOccurrences(of: " ", with: "_")
+        return "\(teamId):\(datePart):\(slug)"
     }
 }

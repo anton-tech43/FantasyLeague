@@ -2886,3 +2886,107 @@ WHERE ci.push_eligible = false AND ci.created_at > now() - interval '90 minutes'
 - **Anniversary nostalgia detection.** Low frequency; skip.
 - **Ex-player commentary catching.** Would need a recently-active-players list. Skip.
 - **Hard-rejecting the writing of fun-trivia items entirely.** The force-downgrade keeps the items in the feed; user said _"should just be in feed"_. Don't go further than that until evidence suggests the feed surface is itself harmed by these items.
+
+### 78. Pre-tournament preview content — primer for an empty WC feed + calendar tap detail
+
+**What prompted this (May 22, 2026):** The World Cup kicks off June 11. The user base will lean UK-heavy. **Right now England's feed is empty** — no PL season news (England aren't in the PL), and `gd-news-wc` has nothing newsworthy because the tournament hasn't started. A first-time UK user downloading the app today opens it, picks England as their country, lands on a barren feed. Poor first impression.
+
+User's framing: _"Since there are no news until WC starts we should fill the page with something else, something that creates value for the first time user."_ Plus _"this info about the games could also be in the calendar when you click on the game"_ — the same content powers a second surface, the Calendar tab's previously-inert fixture rows.
+
+**The architecture (one source of truth, two surfaces).** Pre-tournament preview content lives as **content_items rows** (no new content type — reuse `type='news'`). Two surfaces consume them:
+
+1. **Feed** — the team's regular feed picks these up via the existing pipeline. They render as feed cards alongside any other team content.
+2. **Calendar tap** — tapping a fixture row in the Calendar tab navigates to the matching preview via the existing `ContentDetailDestination` / `ContentDetailView`. A new optional column `preview_fixture_id TEXT` on `content_items` links a preview to its specific upcoming fixture.
+
+Each WC country gets **4 preview items**:
+- 1 group overview ("Group F at a glance — Croatia, Ghana, Panama")
+- 3 per-opponent previews (one per group game)
+
+All `push_eligible: false` (Lessons 76+77). These are evergreen feed content, not notification-worthy. The user downloading today needs a feed that has something to read; they don't need a push about Croatia's preview.
+
+**Synthetic fixture-id linkage.** The `upcoming_fixtures` entries in `team_pages.content.cards` don't carry an API-Football fixture id today (only `date`, `opponent`, `venue`, `importance_dots`, `importance_label`). To link a content_item to a specific fixture without a schema change to `upcoming_fixtures`, the linkage is a synthetic string of the form:
+
+```
+"<team_id>:<iso-date>:<opponent-slug>"
+
+e.g. "england:2026-06-17:croatia"
+```
+
+Built identically on both sides:
+- **SQL INSERT**: sets `content_items.preview_fixture_id` to this string at write time.
+- **iOS lookup** (`TeamPageView.previewKey(for: fixture)`): builds the same string from the `UpcomingFixture.date.prefix(10)` + `opponent.lowercased().replacingOccurrences(of: " ", with: "_")`.
+
+Deterministic, stable across minor timestamp drift, doesn't require API-Football's fixture.id to be plumbed through to iOS.
+
+**iOS wiring.** The His Team tab's NavigationStack already had a child view (`TeamPageView`) but no registered `.navigationDestination(for: ContentDetailDestination.self)` — that destination handler lived only on the Feed tab. Adding it to the His Team tab is one block; ContentDetailView is unchanged. `TeamPageView.calendarRow` becomes conditionally wrapped in `NavigationLink(value: ContentDetailDestination(...))` when a matching preview exists, and renders the same visual but tap-inert when it doesn't (graceful for friendlies and post-group fixtures). The chevron-right hint on the row signals tap affordance only when a preview exists.
+
+**V1 — England as canonical.** Four hand-curated content_items INSERTed via SQL. Zero LLM cost. Quality entirely under our control. Acts as the gold-standard reference for the V1.1 routine.
+
+Content shape per item:
+- Headline (≤280 chars) — narrative, not wire-service
+- Body (2-4 short paragraphs) — storyline, key opponent player to watch, England's task, what to expect at the pub
+- Talking points (3) — variety rule (at most one "Ask him"), mix of Tell/Notice/Ask
+- Immersive headline (lowercase, ~22 chars/line per the immersive-headline rule)
+- Immersive context (analogy in GoalDigger voice)
+- Push fields (neutral fact-only, push_eligible=false so they never fire but the schema still requires them)
+
+All voice rules from PROMPT.md held: British register, no emoji, no crisis-counsellor "He'll be unbearable" framing, no broadcast-question TP1 opener.
+
+**V1.1 — template across the 47 other WC countries (after Tuesday submission, before June 11).** Build a one-off `gd-wc-preview` claude.ai routine that loops the 48 WC countries, reads their group + opponents + key squad data from `team_pages.content` + `raw_fetch_logs`, writes 4 content_items per country in the same shape, POSTs via Supabase REST. Fires ONCE. Zero API credits (routine quota, not API account — per `BACKFILL_RULES.md` discipline). Optional refresh after each group game; knockout-stage previews are V1.2.
+
+**Rules:**
+
+1. **Empty-feed-day-one is a real product problem.** Apps that ship with an empty feed for a country's launch day get a bad first impression and get deleted. Pre-tournament evergreen content is the cheapest, most controllable fill — write it once, ships silently to feed, gives the user 5 minutes of curated reading before any live news.
+
+2. **One content_item type can power multiple iOS surfaces with a single optional linkage column.** Adding a new content `type='preview'` would have required iOS rendering changes, type-specific filtering, possibly new view components. Reusing `type='news'` with `preview_fixture_id` as a marker for the Calendar surface kept the iOS code tiny. **Linkage columns are cheaper than type proliferation.**
+
+3. **Synthetic IDs beat scheme migrations when the data is locally derivable.** The `team_pages.content.cards.upcoming_fixtures` entries lack a stable id today. Adding one would have required schema change + backend regen + iOS model update. Instead, both sides derive the same synthetic id from `team_id + date + opponent` — zero migration on the existing data, full bidirectional lookup.
+
+4. **Hand-curate the canonical, template the rest.** England is the V1. The voice, structure, depth all set the bar for what the 47 other WC countries should match. The routine that writes them later doesn't have to invent the shape; it has 4 strong reference items to pattern-match against.
+
+5. **`push_eligible=false` is the right default for pre-launch evergreen content.** Per Lessons 76+77, anything that isn't direct team-impact stays in the feed only. Pre-tournament previews are 100% in this bucket — the user discovers them on app open, doesn't need a push.
+
+**Files touched:**
+
+- `backend/supabase/migrations/053_content_preview_fixture_id.sql` (new) — `preview_fixture_id TEXT` column + partial index.
+- `ios/GoalDigger/Models/ContentItem.swift` — `previewFixtureId: String?` field + CodingKey + custom-decoder line.
+- `ios/GoalDigger/Services/APIClient.swift` — `fetchPreviewItems(teamId:)` (single REST call filtered on `preview_fixture_id=not.is.null`).
+- `ios/GoalDigger/Views/Team/TeamPageView.swift` — new `@State previewByFixtureId`, `fetchPreviewItems()` + `indexPreviews()` + `previewKey(for:)` helpers, `calendarTab` + `calendarRow` accept preview and wrap in NavigationLink conditionally, chevron hint when tappable.
+- `ios/GoalDigger/App/GoalDiggerApp.swift` — His Team tab's NavigationStack gets `.navigationDestination(for: ContentDetailDestination.self)` so the new Calendar-tap NavigationLink lands somewhere.
+- Direct SQL INSERT — 4 England content_items via `/tmp/england_previews.sql` (committed inline as part of this lesson narrative; the live rows are in Supabase, not in git).
+
+**Cost:** zero new routines, zero Anthropic API credits. One additive migration. Four hand-curated content rows. Build time ~3 hours.
+
+**Verification:**
+
+```sql
+-- Column + index exist
+\d content_items   -- preview_fixture_id present
+\di+ idx_content_items_team_preview
+
+-- 4 England previews land
+SELECT count(*) FROM content_items
+WHERE team_id='england' AND preview_fixture_id IS NOT NULL OR
+      (team_id='england' AND headline ILIKE 'England''s World Cup starts%');
+-- Expected: 4
+
+-- iOS build green
+xcodebuild -scheme GoalDigger -destination 'iPhone 17 Pro,OS=26.4' build
+
+-- Sim verify (manual, owner: user before submission)
+-- 1. Open app → switch context to England
+-- 2. Feed shows 4 new preview cards
+-- 3. Switch to His Team tab → Calendar tab
+-- 4. Tap each group fixture (Jun 17 Croatia / Jun 23 Ghana / Jun 27 Panama)
+-- 5. Each opens the matching ContentDetailView with full body + talking points
+-- 6. Tap friendlies (Jun 6 NZ, Jun 10 Costa Rica) → no navigation (graceful)
+```
+
+**Out of scope:**
+
+- **The other 47 WC countries.** V1.1 — one-off `gd-wc-preview` routine. Fires once before Jun 11.
+- **Knockout-stage previews.** Defer until group standings settle. V1.2.
+- **Refreshing preview content after each group game.** Static V1; dynamic refresh in V1.2.
+- **A new content `type='preview'`.** Reuse `type='news'` with `preview_fixture_id` as the marker. Smaller blast radius on iOS rendering.
+- **Push notifications for previews.** Per Lessons 76+77, fun-tier evergreen content is feed-only.
+- **Per-user preview customisation.** Implicit via `team_id` scope.

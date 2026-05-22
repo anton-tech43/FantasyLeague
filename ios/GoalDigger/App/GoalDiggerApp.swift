@@ -224,6 +224,20 @@ struct MainTabView: View {
             NavigationStack {
                 if let teamId = teamPageEntityId {
                     TeamPageView(teamId: teamId)
+                        // V2.0 WC preview surface: TeamPageView's Calendar
+                        // tab can navigate to a preview content_item's
+                        // detail view via NavigationLink(value:
+                        // ContentDetailDestination(...)). Same destination
+                        // type as the Feed tab uses, so we register the
+                        // handler here too. See Lesson 78.
+                        .navigationDestination(for: ContentDetailDestination.self) { dest in
+                            ContentDetailView(
+                                contentId: dest.contentId,
+                                scrollToTalkingPoints: dest.scrollToTalkingPoints,
+                                isEveryoneContext: dest.isEveryoneContext,
+                                preloadedItem: dest.preloadedItem
+                            )
+                        }
                 }
             }
             .tabItem {
