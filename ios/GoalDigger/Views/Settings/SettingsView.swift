@@ -7,6 +7,7 @@ struct SettingsView: View {
     @Environment(\.modelContext) var modelContext
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
     @State private var showTeamPicker = false
+    @State private var showCountryPicker = false
     @State private var showTierPicker = false
     @State private var showDeleteConfirmation = false
     @State private var showDeleteSuccess = false
@@ -45,6 +46,10 @@ struct SettingsView: View {
                         VStack(spacing: Layout.cardSpacing) {
                             yourNameRow
                             hisNameRow
+                            // V2.0: country is the PRIMARY entity (WC) and
+                            // sits above PL club (optional secondary). Order
+                            // mirrors the onboarding flow.
+                            hisCountryRow
                             hisTeamRow
                             yourModeRow
                         }
@@ -79,6 +84,9 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showTeamPicker) {
             TeamPickerSheet()
+        }
+        .sheet(isPresented: $showCountryPicker) {
+            CountryPickerSheet()
         }
         .sheet(isPresented: $showTierPicker) {
             TierPickerSheet()
@@ -202,6 +210,27 @@ struct SettingsView: View {
                             .font(.feedTimestamp)
                             .foregroundColor(.textSecondaryOnCard)
                         Text(appState.selectedTeam?.displayName ?? "None")
+                            .font(.feedHeadline)
+                            .foregroundColor(.textPrimaryOnCard)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.textSecondaryOnCard)
+                        .font(.system(size: 12))
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var hisCountryRow: some View {
+        settingsRow {
+            Button { showCountryPicker = true } label: {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("\(appState.hisName.isEmpty ? "His" : appState.hisName + "'s") Country")
+                            .font(.feedTimestamp)
+                            .foregroundColor(.textSecondaryOnCard)
+                        Text(appState.selectedCountry?.displayName ?? "None — tap to choose")
                             .font(.feedHeadline)
                             .foregroundColor(.textPrimaryOnCard)
                     }
@@ -571,6 +600,58 @@ struct TeamPickerSheet: View {
                 Button("Cancel", role: .cancel) { selected = nil }
             } message: {
                 Text("Your feed will update to show content for the new team.")
+            }
+        }
+    }
+}
+
+// MARK: - Country Picker Sheet
+//
+// V2.0: parallel to TeamPickerSheet but for the WC country. Reuses
+// `CountrySelectionView` (the same grid used in onboarding +
+// WCMigrationSheetView) so the picker UX stays consistent. The
+// onContinue closure handles cache clear + active-context switch +
+// device_token PATCH + dismiss.
+struct CountryPickerSheet: View {
+    @Environment(AppState.self) var appState
+    @Environment(\.modelContext) var modelContext
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.appBackground.ignoresSafeArea()
+
+                // CountrySelectionView writes the picked country to
+                // appState.selectedCountry directly inside its Continue
+                // button. By the time this closure fires, the new
+                // country is already set — we just propagate the change
+                // to active context + cache + the device_tokens row.
+                CountrySelectionView {
+                    guard let country = appState.selectedCountry else {
+                        dismiss()
+                        return
+                    }
+                    CacheService.shared.clearAll(in: modelContext)
+                    appState.activeContext = .country(country)
+                    appState.isContextSwitcherOpen = false
+                    if let token = UserDefaults.standard.string(forKey: "apnsToken") {
+                        Task {
+                            try? await APIClient.shared.updateTokenCountry(token, newCountryId: country.rawValue)
+                        }
+                    }
+                    dismiss()
+                }
+            }
+            .navigationTitle("Change Country")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(Color.appBackground, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                        .foregroundColor(.hotRose)
+                }
             }
         }
     }

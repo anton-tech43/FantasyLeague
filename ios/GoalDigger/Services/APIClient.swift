@@ -242,6 +242,22 @@ class APIClient {
         try validateResponse(response)
     }
 
+    /// V2.0: update the country_id on the device_tokens row. Mirrors
+    /// updateTokenTeam but for the WC country picker in Settings.
+    /// notification-sender's per-token routing already reads country_id
+    /// (the `or(...)` filter that supports dual-followers), so once this
+    /// PATCH lands the user's pushes for the new country flow.
+    func updateTokenCountry(_ token: String, newCountryId: String) async throws {
+        let url = try buildURL(path: "device_tokens", queryItems: [
+            URLQueryItem(name: "apns_token", value: "eq.\(token)")
+        ])
+        let body: [String: Any] = ["country_id": newCountryId, "updated_at": ISO8601DateFormatter().string(from: Date())]
+        let bodyData = try JSONSerialization.data(withJSONObject: body)
+        let request = makeRequest(url: url, method: "PATCH", body: bodyData)
+        let (_, response) = try await URLSession.shared.data(for: request)
+        try validateResponse(response)
+    }
+
     func updateTokenTier(_ token: String, tier: Int) async throws {
         let url = try buildURL(path: "device_tokens", queryItems: [
             URLQueryItem(name: "apns_token", value: "eq.\(token)")
