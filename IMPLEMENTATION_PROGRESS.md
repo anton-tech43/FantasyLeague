@@ -3084,3 +3084,30 @@ A naive `== SUPABASE_SERVICE_ROLE_KEY` check rejects every cron → would have 4
 - device_tokens full lockdown (Edge Function registration + revoke anon) — needs iOS change.
 - delete-my-data rate-limit / token-ownership.
 - OpenAPI introspection restriction, Cloudflare rate-limiting, dashboard 2FA, key-rotation runbook — platform/user actions.
+
+### 81. Secret-audit + filter-injection verification pass — both clean, and why a non-fix is still worth writing down
+
+**What prompted this (May 28, launch window):** After Lessons 79-80 closed the live holes, the user asked "what other security checks do you recommend?" Two from that list were runnable read-only against the working tree: (1) confirm the iOS app ships only the publishable key, never the `.p8`/service/API-Football secret; (2) confirm no PostgREST raw-filter (`.or()/.filter()`) interpolates attacker-controlled input. Both came back clean — but the *reasoning* is the lesson, because "looks clean" and "is clean" diverge exactly where injection lives.
+
+**iOS secret audit — method + result.** `grep -rnE 'sk-ant-|sb_secret_|BEGIN PRIVATE KEY|api-sports|service_role|API_FOOTBALL' ios/`. Every hit triaged: the only secret-shaped match is `sb_publishable_*` (the anon key, which is *meant* to ship). Every `api-sports.io` hit is the **public image CDN** (`media.api-sports.io/football/{teams,players}/{id}.png`) — unauthenticated URLs, no key attached. `git check-ignore` confirmed the real `Configuration.xcconfig` is ignored; only `Configuration.xcconfig.example` (placeholder) is tracked. No `.p8/.pem/.env/.key/.p12/.mobileprovision` tracked. PASS.
+
+**Filter injection — the triage that matters.** 3 sites interpolate into a PostgREST raw-filter string. The risk: PostgREST's `.or("team_id.eq.${x}")` is *string-built*, so if `x` were attacker-controlled and could carry `,`, `.`, `(`, `)`, `=`, an attacker could rewrite the filter (e.g. broaden a `device_tokens` read). The triage:
+- `live-brief-current:68` — the ONLY site reachable with **request input** (`?team_id=`). It validates `/^[a-z_]{2,32}$/` BEFORE the `.or()`. That allow-list rejects every character injection needs. Safe.
+- `notification-sender:128`, `morning-push:147` — interpolate `item.team_id` / `fix.home_team_id`, which are **DB-sourced**, not request input. Three independent reasons they're not exploitable: (a) both functions are now behind `require-service-auth` (Lesson 80); (b) anon **can't write the source tables** — `content_items` has no anon INSERT policy (SELECT-published only, mig 001), fixtures are server-written; (c) even a successful injection only widens a push fanout — nothing is returned to the caller, so there's no exfiltration. Defense-in-depth at most.
+- The other 3 anon iOS endpoints (`quiz-current`, `team-season-state`, `delete-my-data`) all validate input (`/^[a-z_]{2,32}$/`, or `/^[a-fA-F0-9]{64}$/` for the apns_token) AND use parameterized `.eq("col", value)` — which the supabase-js client sends as a literal value, not a filter expression. Safe by construction.
+
+**The decision: declined the optional guard.** The "fix" on the table was a shared `isValidEntityId()` applied to the two DB-sourced sites. Declined — the values are DB-sourced + constrained + the functions are service-gated, so there is no live path to mitigate. Writing a validator for an input that can't be attacker-controlled is motion without protection.
+
+**Rules:**
+
+1. **Injection risk = raw-filter string + attacker-controlled value. Both required.** `.or()/.filter()/.match()` build a filter *expression* from a string → injectable. `.eq("col", value)` sends `value` as a literal param → not injectable regardless of contents. When auditing PostgREST, grep for the raw-filter forms specifically, then for each one ask "where does the interpolated value originate?" A raw filter over a DB-sourced value is a different risk class than one over `?team_id=`.
+
+2. **Trace provenance before severity.** The same `.or("...${teamId}...")` line is CRITICAL if `teamId` is `req` input and a non-issue if it's a server-written DB column behind an auth gate. The line looks identical; the data flow decides. Don't grade the pattern — grade the source.
+
+3. **An allow-list regex at the boundary closes a whole class.** `/^[a-z_]{2,32}$/` on every user-supplied entity id means no downstream raw-filter, log line, or query can be injected through it — one cheap check, applied at all 4 anon endpoints, removes the need to reason about each sink. Validate at the door, not at each sink.
+
+4. **A non-fix is still worth recording.** Declining the redundant validator is a decision a future reader (or auditor) will second-guess. Writing down *why* it's safe (provenance + gate + no-exfil) is the durable artifact — it prevents both the "why didn't we guard this?" re-litigation and the reflexive "add validation everywhere" that buries the real boundaries in noise. Same discipline as Lesson 80's pg_net skip: documenting the deliberate non-action is part of the audit.
+
+**Files touched:** STATUS.md (audit-table verification row + dateline) + this lesson. No code, no migration, no deploy.
+
+**Verification:** read-only — grep across `ios/` + `backend/supabase/functions/`, `git check-ignore` on the xcconfig, and an RLS/grant trace confirming anon has no INSERT on `content_items`/fixtures. Nothing to re-test live (no behavior changed).
