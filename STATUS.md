@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-22 mid-morning (V1 of pre-tournament WC preview content shipped — migration 053 adds `preview_fixture_id` on content_items; iOS Calendar tab now navigates to preview ContentDetailView on fixture tap; 4 hand-curated England preview items seeded (Group F overview + Croatia + Ghana + Panama). Other 47 WC countries follow via a one-off routine before Jun 11. Lesson 78.)
+**Last updated:** 2026-05-27 LAUNCH DAY (pre-launch DB security audit — closed a CRITICAL hole: `get_cron_service_key()` (returns the service-role JWT from Vault) was anon-EXECUTEable → full DB compromise via the publishable key. Migration 055 revokes it. Migration 054 locks two no-RLS tables (match_status_state, analogy_rejections). All holes verified closed from the live attack surface. England federation crest wired; other 47 + device_tokens hardening are fast-follow. Lesson 79.)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
@@ -9,6 +9,25 @@ A one-page snapshot of where the project is. For the deep history, see [IMPLEMEN
 ## TL;DR
 
 GoalDigger is live on TestFlight (V1.3 build). **World Cup 2026 support (V2.0) is feature-complete + structurally hardened across the May 17–22 sprint** — content layer (basics card / player photos / consequence layer / news cadence / push-eligibility gate), data layer (every team has manager + crest + venue), iOS layer (slicker tabs / crest headers / circular player avatars). Submission targeted for **Tuesday May 26** (WC kicks off June 11, gives Apple ~14-day review buffer).
+
+---
+
+## Launch-day DB security audit (May 27) — RESULTS
+
+Full RLS + privilege sweep before public users hit the DB. Three classes of finding, all fixed + verified from the live attack surface (PostgREST + the publishable key that ships in the iOS binary).
+
+| Finding | Severity | Fix | Verified |
+|---|---|---|---|
+| `get_cron_service_key()` (SECURITY DEFINER, returns the service-role JWT from Vault) was EXECUTEable by `anon` → `POST /rpc/get_cron_service_key` returns the key → bypass all RLS, dump/delete everything | 🔴 CRITICAL | Migration 055: REVOKE EXECUTE FROM PUBLIC, anon, authenticated (+ same on get_device_tokens_acl, get_pipeline_diagnostics) | `permission denied for function` via publishable key ✓ |
+| `match_status_state` + `analogy_rejections`: RLS OFF, anon had SELECT/INSERT/UPDATE/DELETE/TRUNCATE → wipe match-watcher's ledger → no pushes | 🔴 CRITICAL | Migration 054: ENABLE RLS + service_role-only policy + REVOKE anon/authenticated grants | `permission denied for table` + 401 on DELETE ✓ |
+| `device_tokens` anon SELECT/UPDATE (`USING true`) — needed for the merge-duplicates registration upsert (migration 030) | 🟠 MEDIUM (griefing, not breach) | Accepted for launch (matches migration 030's assessment). Fast-follow: route token writes through register-dev-device Edge Function + revoke anon | — |
+
+Confirmed safe / no action:
+- All other 14 public tables already RLS-locked (content_items public-reads published only; raw_fetch_logs / pipeline_health / client_errors service_role-only).
+- Vault secrets live in the `vault` schema — never exposed by PostgREST.
+- `pg_net` http functions: owned by supabase_admin, `net` schema not REST-exposed → no anon SSRF from the API. Defense-in-depth revoke deferred (not exploitable from attack surface).
+- `everyone_talking_daily` view: aggregate counts of content only, benign.
+- Post-fix: cron auth still healthy (verify-cron-auth.sh 4/4 ✓ — pg_cron runs as postgres, unaffected by the revokes), and the legit app path (anon read of published content_items) still works.
 
 ---
 

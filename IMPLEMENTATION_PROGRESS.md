@@ -2990,3 +2990,52 @@ xcodebuild -scheme GoalDigger -destination 'iPhone 17 Pro,OS=26.4' build
 - **A new content `type='preview'`.** Reuse `type='news'` with `preview_fixture_id` as the marker. Smaller blast radius on iOS rendering.
 - **Push notifications for previews.** Per Lessons 76+77, fun-tier evergreen content is feed-only.
 - **Per-user preview customisation.** Implicit via `team_id` scope.
+
+### 79. Launch-day DB security audit — the SECURITY DEFINER function that leaked the service key
+
+**What prompted this (May 27, launch day):** User asked, before public users hit the DB, _"do we need to double check that our database is safe, RLS and so on?"_ Yes. A full RLS + privilege sweep found three classes of issue, one of them catastrophic.
+
+**🔴 The catastrophic one — `get_cron_service_key()` anon-EXECUTEable.** This SECURITY DEFINER function (migration 020) decrypts and returns the `cron_service_key` from `vault.decrypted_secrets` — i.e. the service-role JWT. It exists so pg_cron jobs can authenticate their `net.http_post` calls to Edge Functions. The trap: **Postgres grants EXECUTE to PUBLIC by default on every function at creation time, and PostgREST exposes public-schema functions as RPC endpoints.** So the function was reachable as:
+
+```
+POST /rest/v1/rpc/get_cron_service_key
+apikey: <publishable key — extractable from the iOS binary>
+```
+
+→ returns the service-role key → bypass ALL RLS, read/modify/delete every table, dump the entire user base. Total compromise, exploitable by anyone who decompiles the app. **Verified the hole was live** (the function returned the 219-char JWT) and **verified it closed** after the fix (`permission denied for function` from the publishable key).
+
+Fix (migration 055): `REVOKE EXECUTE ON FUNCTION ... FROM PUBLIC, anon, authenticated` on `get_cron_service_key` + two internal diagnostics (`get_device_tokens_acl`, `get_pipeline_diagnostics`) that had the same default-PUBLIC-grant exposure. pg_cron is unaffected — it runs as the postgres owner, which executes regardless of the PUBLIC grant.
+
+**🔴 Two tables with RLS OFF — `match_status_state` + `analogy_rejections`.** Shipped with RLS disabled AND full anon grants (incl. TRUNCATE/DELETE). Anyone with the publishable key could TRUNCATE `match_status_state` → match-watcher's fixture-state ledger gone → no FT detection → no matchday/live pushes. Fix (migration 054): ENABLE RLS + service_role-only policy + REVOKE anon/authenticated grants. Neither table is touched by the iOS app directly (both server-side only), so zero client risk.
+
+**🟠 `device_tokens` anon SELECT/UPDATE (`USING true`).** Accepted for launch. The anon SELECT is genuinely needed for the `Prefer: resolution=merge-duplicates` registration upsert — Postgres's ON CONFLICT path needs SELECT visibility on the conflicting row, and without it registration 401s (the exact bug migration 030 fixed). The exposure is medium-severity griefing (enumerate the follow graph; mass-reassign teams or set is_active=false to silence pushes), not a data breach — APNs tokens are useless without the .p8 key, no passwords/payment/identity. Fast-follow: route token writes through the `register-dev-device` Edge Function (service_role) then revoke anon entirely.
+
+**Confirmed safe (no action):**
+- All other 14 public tables already RLS-locked correctly.
+- Vault secrets live in the `vault` schema — PostgREST only exposes `public` (+ `graphql_public`), never `vault`.
+- `pg_net` http functions (http_get/post/delete): owned by `supabase_admin`, and the `net` schema isn't in Supabase's default REST-exposed schemas → anon can't reach them via the API. The default PUBLIC EXECUTE grant is moot for a REST attacker. Defense-in-depth revoke deferred (not exploitable from the attack surface; would also need supabase_admin ownership to revoke).
+- `everyone_talking_daily` view (postgres-owned, anon SELECT): aggregate COUNT()s over content_items only — no PII, benign.
+
+**Rules:**
+
+1. **SECURITY DEFINER + the default PUBLIC EXECUTE grant + PostgREST = a service-key leak waiting to happen.** Any SECURITY DEFINER function in the `public` schema that touches secrets/privileged data is an RPC endpoint callable by `anon` unless you explicitly `REVOKE EXECUTE ... FROM PUBLIC`. This is the highest-leverage thing to audit in any Supabase project. The vault-accessor pattern (definer function reading `vault.decrypted_secrets`) is especially dangerous — it MUST have its EXECUTE locked the moment it's created. Migration 020 created it without the revoke; it sat exposed until this audit.
+
+2. **Verify from the attack surface, not just the grant table.** Reading `has_function_privilege('anon', ...)` tells you the grant; actually hitting `POST /rest/v1/rpc/...` with the publishable key tells you the EXPLOIT. Do both — the live test caught that the fix worked end-to-end (permission denied) AND that the legit path (anon reading published content_items) still worked.
+
+3. **RLS-disabled is wide-open in Supabase, not closed.** A table without RLS + the default anon grants is fully readable/writable/TRUNCATEable by anyone with the publishable key. "No policy" doesn't mean "no access" — it means "no restriction." Every public table needs RLS ON with explicit policies.
+
+4. **"Needed for a legit flow" doesn't mean "leave it wide" — but sometimes you accept it with eyes open.** device_tokens anon SELECT is needed for the upsert; the proper fix (Edge Function registration) is real work and risky on launch day. Documenting the accepted risk + the fast-follow is the honest call, vs. either silently leaving it or breaking registration hours before launch.
+
+5. **Launch day is the right forcing function for this audit, but it should have happened at every `SECURITY DEFINER` / `CREATE TABLE` along the way.** The holes existed for weeks (migration 020 = the vault accessor, the no-RLS tables). A standing checklist — "new table → RLS + policy; new definer function → REVOKE PUBLIC" — catches these at write time instead of in a panicked launch-day sweep.
+
+**Files touched:**
+- `backend/supabase/migrations/054_lock_open_tables.sql` (new) — RLS + revoke on the two open tables.
+- `backend/supabase/migrations/055_revoke_definer_fn_execute.sql` (new) — revoke anon/authenticated/PUBLIC EXECUTE on the three definer functions.
+- STATUS.md launch-day security-audit section.
+
+**Cost:** zero app changes, two additive migrations, ~zero risk (cron + legit app paths verified intact post-fix).
+
+**Out of scope / fast-follow:**
+- device_tokens → Edge Function registration + anon revoke (this week).
+- pg_net PUBLIC-grant revoke (defense-in-depth; needs supabase_admin; not REST-exposed so low priority).
+- A standing "new table/definer-function security checklist" baked into the migration workflow.
