@@ -25,6 +25,7 @@
 // Calendar tab is where the user goes to see the fixture details.
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { sendPushNotification, buildAPNsPayload } from "../_shared/apns-client.ts";
 import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
@@ -72,7 +73,12 @@ function formatKickoff(iso: string): string {
   return `${time} ${suffix}`;
 }
 
-serve(async (_req) => {
+serve(async (req) => {
+  // Caller-auth gate (see _shared/require-service-auth.ts). Server-only
+  // function — rejects anon-key / no-auth callers; accepts the service
+  // key that triggerFunction + pg_cron present.
+  const denied = requireServiceAuth(req);
+  if (denied) return denied;
   const startTime = Date.now();
   const supabase = getSupabaseClient();
 

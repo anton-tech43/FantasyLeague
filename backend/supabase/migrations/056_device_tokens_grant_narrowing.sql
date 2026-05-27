@@ -1,0 +1,29 @@
+-- 056_device_tokens_grant_narrowing.sql
+--
+-- device_tokens hardening, Wave 1 (server-only, no iOS change).
+--
+-- Strips the grants anon/authenticated never need. They held the FULL
+-- set (DELETE, TRUNCATE, TRIGGER, REFERENCES, plus INSERT/SELECT/UPDATE).
+-- RLS already blocks anon DELETE via the API (no permissive DELETE
+-- policy — only the service_delete policy) and PostgREST can't issue
+-- TRUNCATE, but the grants shouldn't exist. The TRUNCATE grant in
+-- particular is a table-wipe primitive that has no business on anon.
+-- Strip DELETE / TRUNCATE / TRIGGER / REFERENCES; keep INSERT / SELECT /
+-- UPDATE (all three are needed — see below).
+--
+-- WHAT WE TRIED AND BACKED OUT: column-restricting anon SELECT to just
+-- `apns_token` (to kill the bulk follow-graph enumeration). It BROKE the
+-- `Prefer: resolution=merge-duplicates` registration upsert with 42501 —
+-- PostgREST's ON CONFLICT path needs SELECT on more than the conflict
+-- key. Verified live (registration 401'd, then 201'd again after
+-- restoring full table SELECT). So full table SELECT stays, and the
+-- follow-graph narrowing moves to Wave 2: route registration + updates
+-- through an Edge Function (service role) and revoke anon SELECT/UPDATE
+-- entirely. Tracked in STATUS + Lesson 80.
+--
+-- Net effect of this migration: anon/authenticated lose the ability to
+-- DELETE or TRUNCATE device_tokens; everything the app needs (register
+-- via upsert, read-own-row for ON CONFLICT, PATCH team/country/tier)
+-- still works.
+
+REVOKE DELETE, TRUNCATE, TRIGGER, REFERENCES ON device_tokens FROM anon, authenticated;

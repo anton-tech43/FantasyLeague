@@ -10,6 +10,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
+import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { sendPushNotification, buildAPNsPayload } from "../_shared/apns-client.ts";
 // Anti-spam removed 2026-05-17 — see _shared/anti-spam.ts header for rationale.
 // Volume control now lives in tier-based content-type filtering (minTierForType)
@@ -30,6 +31,12 @@ function getCategoryFromType(
 }
 
 serve(async (req) => {
+  // Caller-auth gate. Server-only — invoked by the notification-sweep
+  // cron (CRON_AUTH_KEY) + content-reviewer triggerFunction (SERVICE_KEY).
+  // Without it, anyone with the anon key could drive APNs sends.
+  const denied = requireServiceAuth(req);
+  if (denied) return denied;
+
   const startTime = Date.now();
   const supabase = getSupabaseClient();
 

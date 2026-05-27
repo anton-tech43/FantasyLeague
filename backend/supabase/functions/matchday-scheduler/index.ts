@@ -3,6 +3,7 @@
 // Schedules content generation at kickoff - 90 minutes for each matched team
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { triggerFunction } from "../_shared/trigger.ts";
 import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
@@ -26,7 +27,12 @@ interface Fixture {
   };
 }
 
-serve(async (_req) => {
+serve(async (req) => {
+  // Caller-auth gate (see _shared/require-service-auth.ts). Server-only
+  // function — rejects anon-key / no-auth callers; accepts the service
+  // key that triggerFunction + pg_cron present.
+  const denied = requireServiceAuth(req);
+  if (denied) return denied;
   const startTime = Date.now();
   const supabase = getSupabaseClient();
 

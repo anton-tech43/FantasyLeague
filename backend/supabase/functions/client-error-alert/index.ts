@@ -21,6 +21,7 @@
 // }
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { sendPushNotification } from "../_shared/apns-client.ts";
 
@@ -37,6 +38,11 @@ interface ErrorReport {
 }
 
 serve(async (req) => {
+  // Caller-auth gate (see _shared/require-service-auth.ts). Server-only
+  // function — rejects anon-key / no-auth callers; accepts the service
+  // key that triggerFunction + pg_cron present.
+  const denied = requireServiceAuth(req);
+  if (denied) return denied;
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }

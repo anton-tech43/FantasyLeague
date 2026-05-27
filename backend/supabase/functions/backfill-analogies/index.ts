@@ -11,6 +11,7 @@
 //     https://<project>.supabase.co/functions/v1/backfill-analogies
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { callClaude } from "../_shared/claude-client.ts";
 import type { AnalogyScore } from "../_shared/types.ts";
@@ -155,7 +156,12 @@ interface BackfillResult {
   reason?: string;
 }
 
-serve(async (_req) => {
+serve(async (req) => {
+  // Caller-auth gate (see _shared/require-service-auth.ts). Server-only
+  // function — rejects anon-key / no-auth callers; accepts the service
+  // key that triggerFunction + pg_cron present.
+  const denied = requireServiceAuth(req);
+  if (denied) return denied;
   const supabase = getSupabaseClient();
   const startedAt = Date.now();
 

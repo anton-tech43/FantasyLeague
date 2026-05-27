@@ -15,6 +15,7 @@ import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { callClaude } from "../_shared/claude-client.ts";
 import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 import { wrapExternalData } from "../_shared/input-sanitizer.ts";
+import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import type { Team } from "../_shared/types.ts";
 
 // ============================================================
@@ -282,6 +283,13 @@ function buildStandingsCard(
 // ============================================================
 
 serve(async (req) => {
+  // Caller-auth gate — this function makes paid Claude calls. Without it,
+  // anyone with the anon key (shipped in the app) could loop POSTs and
+  // drain the Anthropic balance. All legit callers (data-fetcher +
+  // content-generator via triggerFunction) send the service key.
+  const denied = requireServiceAuth(req);
+  if (denied) return denied;
+
   const startTime = Date.now();
   const supabase = getSupabaseClient();
 

@@ -15,6 +15,7 @@
 // Schedule: every 1 min via pg_cron (see migration 017).
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { seasonForLeague, FALLBACK_ACTIVE_LEAGUES } from "../_shared/league-helpers.ts";
 import { detectConsequences } from "../_shared/detect-consequences.ts";
@@ -39,6 +40,11 @@ interface ApiFixture {
 }
 
 serve(async (req) => {
+  // Caller-auth gate (see _shared/require-service-auth.ts). Server-only
+  // function — rejects anon-key / no-auth callers; accepts the service
+  // key that triggerFunction + pg_cron present.
+  const denied = requireServiceAuth(req);
+  if (denied) return denied;
   try {
     return await handleRequest(req);
   } catch (e) {
