@@ -186,10 +186,46 @@ enum Country: String, CaseIterable, Identifiable, Codable {
         }
     }
 
-    /// Crest/flag URL on API-Football's CDN. Same shape as Team.crestURL —
-    /// the existing TeamCrestView component renders it via AsyncImage.
+    /// Crest URL used everywhere a country team's emblem is rendered
+    /// (team page header, context switcher, picker grid, AffectedTeams,
+    /// etc). Prefers the country's FEDERATION CREST when we have one —
+    /// the Three Lions for England, CBF for Brazil, AFA for Argentina,
+    /// etc. — over API-Football's CDN URL (which returns the country
+    /// flag for national teams, not the football federation badge).
+    ///
+    /// Falls back to the API-Football flag for countries we haven't
+    /// sourced a federation-crest URL for yet. iOS AsyncImage handles
+    /// both PNG/JPG/SVG; we standardise on PNG.
     var crestURL: URL? {
-        URL(string: "https://media.api-sports.io/football/teams/\(apiFootballId).png")
+        if let override = federationCrestURL { return override }
+        return URL(string: "https://media.api-sports.io/football/teams/\(apiFootballId).png")
+    }
+
+    /// Hand-curated federation-crest URL per country. Returns nil for
+    /// any country we haven't sourced a stable URL for yet — `crestURL`
+    /// falls back to the API-Football flag in that case (graceful, no
+    /// broken image). URLs are Wikipedia upload-CDN thumb URLs.
+    ///
+    /// FAST-FOLLOW: only England is wired for the launch (UK is the
+    /// launch-screenshot audience). The other 47 WC countries fall back
+    /// to the flag until their crest URLs are sourced + validated. See
+    /// STATUS.md / Lesson 79 for the fast-follow plan.
+    ///
+    /// To add a country: GET the infobox image from the Wikipedia REST
+    /// API — `https://en.wikipedia.org/api/rest_v1/page/summary/<X>_
+    /// national_football_team` returns `.originalimage.source`, which is
+    /// already a valid upload-CDN URL. Use that verbatim (do NOT
+    /// hand-build a `/thumb/.../<N>px-` URL — Wikipedia rejects
+    /// arbitrary thumbnail widths with a 400; only sizes the REST API
+    /// hands back are guaranteed served). Verify it returns a PNG.
+    private var federationCrestURL: URL? {
+        switch self {
+        case .england:
+            // Three Lions crest. Verified PNG (330x516) via the REST API.
+            return URL(string: "https://upload.wikimedia.org/wikipedia/en/thumb/8/8b/England_national_football_team_crest.svg/330px-England_national_football_team_crest.svg.png")
+        default:
+            return nil
+        }
     }
 
     /// FIFA confederation. Used for grouping countries in the picker
