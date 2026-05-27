@@ -1,6 +1,6 @@
 # GoalDigger — Project Status
 
-**Last updated:** 2026-05-27 LAUNCH DAY (pre-launch DB security audit — closed a CRITICAL hole: `get_cron_service_key()` (returns the service-role JWT from Vault) was anon-EXECUTEable → full DB compromise via the publishable key. Migration 055 revokes it. Migration 054 locks two no-RLS tables (match_status_state, analogy_rejections). All holes verified closed from the live attack surface. England federation crest wired; other 47 + device_tokens hardening are fast-follow. Lesson 79.)
+**Last updated:** 2026-05-28 (full pre-launch security sweep COMPLETE — Lessons 79 + 80. Closed: anon-callable service-key RPC (mig 055), two no-RLS tables (mig 054), unauthenticated cost-drain on 11 Edge Functions (require-service-auth gate), device_tokens table-wipe grants (mig 056), unfiltered routine content (post_news.sh injection/PII guard). Every fix verified from the live attack surface; live crons confirmed 200 post-deploy. Wave-2 fast-follows (device_tokens full lockdown, delete-my-data rate-limit) + Wave-3 platform items (rate-limiting, dashboard 2FA, OpenAPI restriction, key-rotation runbook, 47 remaining WC crests) documented + deferred. DB + function layer launch-safe.)
 
 A one-page snapshot of where the project is. For the deep history, see [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (phase-by-phase log) and [V1.1_FEATURE_BUNDLE.md](./V1.1_FEATURE_BUNDLE.md) (task-level tracker for V1.1 surfaces).
 
