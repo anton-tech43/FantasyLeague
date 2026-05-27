@@ -3039,3 +3039,48 @@ Fix (migration 055): `REVOKE EXECUTE ON FUNCTION ... FROM PUBLIC, anon, authenti
 - device_tokens → Edge Function registration + anon revoke (this week).
 - pg_net PUBLIC-grant revoke (defense-in-depth; needs supabase_admin; not REST-exposed so low priority).
 - A standing "new table/definer-function security checklist" baked into the migration workflow.
+
+### 80. The full security sweep — caller-auth gate, the verify_jwt trap, and a fix that nearly broke the crons
+
+**What prompted this (May 27-28, launch window):** After Lesson 79 closed the service-key RPC leak + the no-RLS tables, the user asked for the rest of the threat model — "any other cyberattacks?" — and then "we will do all fixes, both red, orange and lower." This lesson is the full sweep.
+
+**🔴 The biggest live hole: unauthenticated Edge Function invocation → cost-drain.** `team-page-generator` (and 10 other server-only functions) had NO internal caller check. Confirmed live: a POST with **zero auth header** ran the function (returned "Team not found", not 401) — so an attacker could loop `POST {team_id:"arsenal"}` and bill the Anthropic balance ~$0.045/call indefinitely. Same primitive against `data-fetcher` drains the API-Football quota; against `morning-push`/`notification-sender` spams APNs.
+
+**The verify_jwt trap (the insight that reshaped the scope).** I initially assumed `data-fetcher` was safe because it 401'd on a no-auth request. Wrong: Supabase's gateway `verify_jwt` flag only validates a JWT is **present + signed + unexpired** — NOT its role. The anon/publishable key is a valid JWT that **ships in the iOS binary**. So `verify_jwt: on` blocks no-auth requests but NOT anon-key requests. **Any sensitive function without an INTERNAL service-key check is exploitable by anyone with the anon key, regardless of the deploy flag.** The fix had to be an internal check on every server-only function, not a deploy-flag toggle.
+
+**The fix that nearly broke everything — key fragmentation.** Built `_shared/require-service-auth.ts` (reject unless the Authorization bearer matches the service key) and gated `team-page-generator` first. Test: the service key got **401**. The cause — the May-11 rotation left THREE distinct service credentials in play:
+- `SERVICE_KEY` (sb_secret_*) — what `triggerFunction` + the DB client use.
+- `SUPABASE_SERVICE_ROLE_KEY` (auto-injected legacy JWT) — what the Edge runtime exposes.
+- The Vault `cron_service_key` — what pg_cron sends via `get_cron_service_key()`, byte-identical to `backend/.env`'s key but DIVERGED from the auto-injected one.
+
+A naive `== SUPABASE_SERVICE_ROLE_KEY` check rejects every cron → would have 401'd `match-watcher` (every 60s), `notification-sweep`, `data-fetcher`, `morning-push` → **total push + pipeline outage on launch day.** Caught only because I gated ONE function first and tested before rolling out. Fix: the helper accepts the union of all three (`SERVICE_KEY ∪ SUPABASE_SERVICE_ROLE_KEY ∪ CRON_AUTH_KEY`), where `CRON_AUTH_KEY` is a new secret set to the Vault cron key value. Then gated all 11, redeployed, and **verified the live crons stayed 200 (watched `net._http_response` for a post-deploy cron tick: 200 ×2, zero 401s)** before declaring done.
+
+**🟠 device_tokens — the narrowing that broke registration.** Tried column-restricting anon SELECT to `apns_token` to kill the follow-graph enumeration. It 401'd the `merge-duplicates` registration upsert (PG's ON CONFLICT path needs SELECT on more than the conflict key). Verified live (registration 401'd, then 201'd after restoring full table SELECT), backed it out. What DID land: revoked anon's `DELETE/TRUNCATE/TRIGGER/REFERENCES` (it had a table-wipe TRUNCATE grant). Full follow-graph lockdown moves to Wave 2 (route registration through an Edge Function, then revoke anon SELECT/UPDATE).
+
+**🟠 Content-safety guard.** content-reviewer is gated off → routine output publishes unfiltered, and the routines ingest attacker-influenceable RSS (prompt-injection vector to every subscriber). Added a hard-reject guard to `post_news.sh` (injection signatures + PII shapes), same enforcement shape as Lesson 17/77. 8/8 fixture tests.
+
+**🟡 pg_net revoke — correctly NOT done.** The plan called for revoking PUBLIC EXECUTE on `net.http_*` as defence-in-depth. On inspection: `net` isn't REST-exposed (no live exploit), AND a blanket `REVOKE FROM PUBLIC` would strip `postgres`'s ability to call `net.http_post` in the cron jobs → kill the entire pipeline. Skipped deliberately; revisit post-launch with role-scoped grants. **A defence-in-depth fix that risks a production outage on a non-exploitable surface is a bad trade.**
+
+**Rules:**
+
+1. **Supabase `verify_jwt` ≠ authorization.** It authenticates (valid JWT) but doesn't authorize (role). The anon key passes it. Treat every public Edge Function as anon-reachable and add an internal service-key check to the ones that do privileged/paid work. The deploy flag is not a security boundary.
+
+2. **Gate ONE function, test all its real callers, THEN roll out.** The cron-key mismatch would have caused a total launch-day outage if applied to all 11 at once. Testing team-page-generator first surfaced it cheaply. Never batch-apply an auth change across a fleet without proving the caller contract on one.
+
+3. **Know exactly what credential each caller presents before locking a door.** Key rotation fragments the credential set silently — the Vault key, the auto-injected key, and the custom secret can all differ. Fingerprint them (hash, don't print) and make the gate accept the real set. Verify in production (`net._http_response` post-deploy) — a green unit test doesn't prove the cron still authenticates.
+
+4. **Verify a hardening change didn't break the legit path, every time.** The device_tokens SELECT-narrowing and the auth gate both LOOKED correct and both broke a real flow (registration upsert; cron auth). Only the live re-test caught them. For security changes especially: test the attack is blocked AND the legit user still works.
+
+5. **A defence-in-depth fix on a non-exploitable surface is not worth a production-outage risk.** pg_net wasn't reachable from the attack surface; revoking it risked the cron pipeline. Skipping was the disciplined call. Match the fix's risk to the threat's reality.
+
+**Files touched:**
+- New: `_shared/require-service-auth.ts`. Gate added to 11 functions. Migration 056 (device_tokens grants). New Supabase secret `CRON_AUTH_KEY`.
+- Routines repo `520b4d3`: `post_news.sh` content-safety guard.
+- This repo: STATUS launch-day audit table + this lesson.
+
+**Verification:** no-auth + anon-key → 401 on all 11; service key → runs; live crons → 200 (zero 401s post-deploy); registration upsert → 201; content filter 8/8; published-content read (anon) → still works.
+
+**Out of scope / Wave 2-3:**
+- device_tokens full lockdown (Edge Function registration + revoke anon) — needs iOS change.
+- delete-my-data rate-limit / token-ownership.
+- OpenAPI introspection restriction, Cloudflare rate-limiting, dashboard 2FA, key-rotation runbook — platform/user actions.
