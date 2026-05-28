@@ -3111,3 +3111,42 @@ A naive `== SUPABASE_SERVICE_ROLE_KEY` check rejects every cron → would have 4
 **Files touched:** STATUS.md (audit-table verification row + dateline) + this lesson. No code, no migration, no deploy.
 
 **Verification:** read-only — grep across `ios/` + `backend/supabase/functions/`, `git check-ignore` on the xcconfig, and an RLS/grant trace confirming anon has no INSERT on `content_items`/fixtures. Nothing to re-test live (no behavior changed).
+
+### 82. Speculation + opaque-teaser push downgrade — Arsenal user feedback turned into two new script patterns
+
+**What prompted this (2026-05-28, launch window).** Real Arsenal-user feedback on the last seven days of pushes. Four items, four complaints:
+
+| Push title | Push text | Feedback |
+|---|---|---|
+| "He'll quote this all week" | "Four Arsenal players told the BBC it's already written. He'll repeat this all week." | "How come this is a push? Also a bit unclear." |
+| "He's going to have opinions" | "Arsenal want £20m for striker Jesus this summer." | "Nobody cares about our third striker." |
+| "He'll have spreadsheets out" | "Arsenal reportedly targeting Villa winger Rogers this summer." | "Nobody cares." |
+| "He'll have opinions" | "Arsenal reportedly eyeing Villa midfielder Rogers this summer." | "Potentially, nothing of value here. Would skip." |
+
+Three of four are the same root cause: **speculative transfer rumours dressed up with the strong "He'll [verb]" certainty voice.** All three use "reportedly / want £ / eyeing." None are confirmed moves. The fourth is a separate failure mode: **opaque teaser** — the push hints at his reaction without conveying what the news IS ("it's already written" — what is?).
+
+The TEAM IMPACT gate (Lesson 76) classifies any signing/sale as team-impact, but it doesn't distinguish *confirmed* from *speculative*, or *first-XI* from *third-choice*. So speculation slipped through into pushes wearing the same emotional opener as a real signing.
+
+**The fix — same shape as Lesson 77 (soft prompt rule + hard script enforcement).** Two new force-downgrade patterns in `post_news.sh` and a paired PROMPT.md gate:
+
+- **Pattern 3 — speculative transfer rumour.** Regex on `headline + push_text` for `reportedly|rumou?red|eyeing|interested in|linked with|set to (bid|swoop|offer|move)|according to (reports|sources)|wants? to (sign|land|bring in)|wants? £|wants? \$[0-9]|in the market for|considering a (move|bid)`. Hit → `push_eligible=false`. Confirmed moves (announced, signed, medical complete) don't match, stay push-eligible.
+- **Pattern 4 — opaque-teaser headline.** Regex for `it'?s already written|you won'?t believe|wait until you hear|you have to (see|hear) this`. Starter list — iterate as new variants surface.
+- **PROMPT.md** gains a **TRANSFER PUSH-WORTHINESS gate** (CONFIRMED vs SPECULATIVE + hedged voice for the latter — "he might have opinions" rather than "He'll have spreadsheets out") and a **HEADLINE CLARITY rule** ("push_text must state the news; title can tease his reaction, text must convey the event"). Self-check list extended.
+
+**Tested 13/13 before shipping.** All four user-flagged items downgrade (3 by speculation, 1 by teaser). Nine legitimate pushes from the same week (UCL final ×2, Arteta MOTS, Sunday brief, "Arteta says he knew in March", Hamilton-and-Odegaard, Arteta-BBQ, Kroupi-chelsea-tag) all correctly allow. Hamilton + Odegaard remain caught upstream by Lesson 77 Patterns 1+2 — Lesson 82 doesn't double-handle them.
+
+**Rules:**
+
+1. **The same enforcement shape keeps working: prompt rule + script backup.** Lesson 17 (headline-cap), Lessons 76/77 (fun-trivia gate), and now Lesson 82 (speculation + teaser) all use the same pattern — write the soft rule in PROMPT.md to teach the model the principle, then enforce the binary decision in `post_news.sh` so drift can't reach the lock screen. Three independent confirmations now: when a soft prompt rule guards a binary outcome (push y/n, length cap, voice category), pair it with a script-level check. The script is the durable layer.
+
+2. **"He'll [verb]" is the certainty voice — match it to certain news.** The Lesson 76 emotional opener was framed as a TEAM IMPACT distinction (does the story affect the team?). Lesson 82 adds a CERTAINTY distinction: even when the story does affect the team, if it's *speculation* about the team, hedge the voice. "Arsenal want X" is a price expectation, not a deal — write it like a maybe, not like a foregone conclusion. The voice carries information about confidence; mismatched confidence reads as hype and erodes trust.
+
+3. **The reader who sees ONLY the push must know what happened.** Push_text is the entire surface area for users who don't open the app — the lock-screen preview is the product for them. "He'll quote this all week" + "it's already written" tells the reader something happened, but not what. That's bait, not news. The HEADLINE CLARITY rule encodes the test: does push_text contain a concrete subject + verb + object describing the event? If no, rewrite. Title can tease the reaction; text states the event.
+
+4. **Listen to user feedback like it's an audit log.** The Arsenal user gave exact phrasing on four pushes — "nobody cares," "would skip," "a bit unclear." That's a labelled dataset. The patterns derived directly from those four items, then verified against the prior week's 15 pushes for false positives, are way more reliable than abstract principles about "speculation is bad." Real complaints → concrete patterns → fixture-tested → shipped. Same loop as Lessons 17, 77.
+
+**Files touched:** routines repo `1222ed7` — `post_news.sh` + `PROMPT.md`. This repo — this lesson + STATUS note.
+
+**Verification:** 13/13 fixture tests passed pre-commit (4 user-flagged → downgrade, 9 legit → allow). Live verification deferred to the next routine fire — confirm in the morning that any new speculation items ship with `push_eligible=false` and any confirmed-transfer items still push. If false positives surface, narrow the regex; if speculation items slip through with new phrasing, extend the pattern list (same iterative pattern as Lessons 17 + 77).
+
+**Known follow-up — the depth-player threshold (NOT in scope here, flagged for a later version).** The Arsenal user's "nobody cares about our third striker" feedback identifies a class Lesson 82 doesn't catch: roster moves involving depth players. A CONFIRMED sale of a third-choice striker IS technically team-impact (Lesson 76 ✓) and IS confirmed (Lesson 82 transfer gate ✓), so both gates pass — and the push goes out. But the user doesn't want it. The fix needs either (a) a per-team "key players" list (top-XI + immediate rotation, ~14 names) that the prompt consults to differentiate "Saka leaving" from "fourth-choice keeper leaving," OR (b) a script-level deny-list of "depth/third/fourth-choice/youth/reserve" qualifier phrases in push_text. Deferred — the speculation downgrade catches the Jesus case anyway (he's described with "want £20m," not "completes move"), so the depth-player gap is real but not currently leaking to lock screens. Re-evaluate after a week of Lesson 82 data: if a confirmed-but-depth move still pushes and draws feedback, build (a) or (b).
