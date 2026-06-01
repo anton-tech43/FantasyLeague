@@ -44,6 +44,11 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const specificItemId = body.content_item_id as string | undefined;
     const specificTeamId = body.team_id as string | undefined;
+    // Manual-recovery override. The specific-item path normally respects
+    // push_eligible (Lesson 83) so a feed-only item can't be force-pushed
+    // through the side door. An operator replaying a push deliberately can
+    // pass force_push:true to bypass the gate.
+    const forcePush = body.force_push === true;
 
     // Three modes:
     //   1. Specific-item (caller passes content_item_id): routine path. Item
@@ -59,10 +64,17 @@ serve(async (req) => {
     //   own push trigger.
     let query = supabase.from("content_items").select("*");
     if (specificItemId) {
-      // Explicit per-item invocation. Don't filter by push_eligible — a
-      // manual recovery / testing call may want to push an item that
-      // shipped as feed-only. The operator decides.
+      // Explicit per-item invocation (the routine path: post_news.sh POSTs
+      // {content_item_id} right after insert). Lesson 83: this path MUST
+      // respect push_eligible, otherwise the Lesson 82 speculation/teaser
+      // downgrade is defeated — the item ships push_eligible=false but the
+      // direct trigger pushes it anyway (the Rogers/PSG push, 2026-06-01).
+      // The sweep already filtered; this side door has to as well. Manual
+      // recovery can still override with force_push:true.
       query = query.eq("id", specificItemId);
+      if (!forcePush) {
+        query = query.eq("push_eligible", true);
+      }
     } else {
       // Sweep: union of (a) and (b) above. Limit to 50 per run so a long
       // outage doesn't trigger a flood when the sweep recovers. The 24h
