@@ -25,6 +25,7 @@
       "Bash(tr:*)",
       "Bash(awk:*)",
       "Bash(sed:*)",
+      "Bash(tee:*)",
       "Bash(xargs:*)",
       "Bash(diff:*)",
       "Bash(test:*)",
@@ -33,16 +34,26 @@
       "Bash(printf:*)",
       "Bash(which:*)",
       "Bash(env:*)",
+      "Bash(file:*)",
 
       "Bash(mkdir:*)",
       "Bash(cp:*)",
       "Bash(mv:*)",
+      "Bash(rm:*)",
       "Bash(touch:*)",
       "Bash(chmod:*)",
       "Bash(open:*)",
+      "Bash(zip:*)",
+      "Bash(unzip:*)",
+
+      "Bash(kill:*)",
+      "Bash(pkill:*)",
 
       "Bash(xcodebuild:*)",
-      "Bash(xcrun simctl:*)",
+      "Bash(xcrun:*)",
+      "Bash(plutil:*)",
+      "Bash(sips:*)",
+      "Bash(gh:*)",
 
       "Bash(supabase:*)",
       "Bash(/opt/homebrew/Cellar/libpq/*)",
@@ -53,7 +64,14 @@
       "Bash(npm:*)",
       "Bash(npx:*)",
       "Bash(python3:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+
+      "Bash(ffmpeg:*)",
+      "Bash(ffprobe:*)",
+      "Bash(higgsfield:*)",
+
+      "WebFetch",
+      "WebSearch"
     ]
   }
 }
