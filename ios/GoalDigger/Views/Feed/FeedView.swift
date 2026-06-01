@@ -46,6 +46,19 @@ struct FeedView: View {
         return month >= 6 && month <= 8
     }
 
+    /// The entity (club or country) the feed is currently showing, resolved
+    /// from activeContext. Quiz, live-brief, insider, and player-card fetches
+    /// all key off THIS — not appState.selectedTeam — so a country context
+    /// loads country data, and a WC-only user (no club) still works. (2026-06-01)
+    private var activeEntityId: String? {
+        switch appState.activeContext {
+        case .country(let c): return c.rawValue
+        case .team(let t):    return t.rawValue
+        case .everyoneTalking:
+            return appState.selectedTeam?.rawValue ?? appState.selectedCountry?.rawValue
+        }
+    }
+
     /// Items for the active context
     private var displayItems: [ContentItem] {
         switch appState.activeContext {
@@ -110,14 +123,14 @@ struct FeedView: View {
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(.hidden, for: .tabBar)
         .task { await loadInitial() }
-        .task(id: appState.selectedTeam?.rawValue) {
+        .task(id: activeEntityId) {
             // Live brief poll lifecycle. Kicks off on first appear and on
-            // team change. The task body is the poll loop itself; it
-            // exits when SwiftUI cancels the task (view disappear, id
-            // change, app suspend). T1 users opt-out via TierGating.
+            // entity change (team OR country context). The task body is the
+            // poll loop itself; it exits when SwiftUI cancels the task (view
+            // disappear, id change, app suspend). T1 users opt-out via TierGating.
             await runLiveBriefPoll()
         }
-        .task(id: appState.selectedTeam?.rawValue) {
+        .task(id: activeEntityId) {
             // Saturday Quiz fetch (V1.1 task C3). Single-shot, not a poll
             // — the routine writes once a week and the server gates on a
             // 36-hour freshness window. T3+ only; T1/T2 users skip the
@@ -163,7 +176,7 @@ struct FeedView: View {
         liveBriefPollTask?.cancel()
 
         guard TierGating.isAvailable(.matchDayLive, tier: appState.selectedTier),
-              let teamId = appState.selectedTeam?.rawValue else {
+              let teamId = activeEntityId else {
             liveBrief = nil
             return
         }
@@ -202,7 +215,7 @@ struct FeedView: View {
     /// away a card the user was about to tap.
     private func loadSaturdayQuiz() async {
         guard TierGating.isAvailable(.saturdayQuiz, tier: appState.selectedTier),
-              let teamId = appState.selectedTeam?.rawValue else {
+              let teamId = activeEntityId else {
             currentQuiz = nil
             return
         }
