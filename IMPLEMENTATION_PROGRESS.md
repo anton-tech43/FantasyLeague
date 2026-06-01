@@ -3150,3 +3150,74 @@ The TEAM IMPACT gate (Lesson 76) classifies any signing/sale as team-impact, but
 **Verification:** 13/13 fixture tests passed pre-commit (4 user-flagged → downgrade, 9 legit → allow). Live verification deferred to the next routine fire — confirm in the morning that any new speculation items ship with `push_eligible=false` and any confirmed-transfer items still push. If false positives surface, narrow the regex; if speculation items slip through with new phrasing, extend the pattern list (same iterative pattern as Lessons 17 + 77).
 
 **Known follow-up — the depth-player threshold (NOT in scope here, flagged for a later version).** The Arsenal user's "nobody cares about our third striker" feedback identifies a class Lesson 82 doesn't catch: roster moves involving depth players. A CONFIRMED sale of a third-choice striker IS technically team-impact (Lesson 76 ✓) and IS confirmed (Lesson 82 transfer gate ✓), so both gates pass — and the push goes out. But the user doesn't want it. The fix needs either (a) a per-team "key players" list (top-XI + immediate rotation, ~14 names) that the prompt consults to differentiate "Saka leaving" from "fourth-choice keeper leaving," OR (b) a script-level deny-list of "depth/third/fourth-choice/youth/reserve" qualifier phrases in push_text. Deferred — the speculation downgrade catches the Jesus case anyway (he's described with "want £20m," not "completes move"), so the depth-player gap is real but not currently leaking to lock screens. Re-evaluate after a week of Lesson 82 data: if a confirmed-but-depth move still pushes and draws feedback, build (a) or (b).
+
+### 83. The feed-only side door — push_eligible defeated by the direct push trigger
+
+**What happened (2026-06-01):** Arsenal user got a push — "He might have opinions / Arsenal are linked with Aston Villa's Rogers this summer. PSG want him too." Lesson 82 was supposed to stop exactly this. Investigation: the item DID ship `push_eligible=false` (the speculation downgrade worked) — but `pushed_at` was set. It pushed anyway.
+
+**Root cause — two push paths, one gated, one not.** `post_news.sh` inserts the content_item, then POSTs `{content_item_id}` to notification-sender to fire the push immediately. notification-sender has two modes: the **sweep** (hourly cron) filters `.eq("push_eligible", true)`, but the **specific-item** path (`if specificItemId`) deliberately skipped that filter — a comment said "manual recovery may want to push a feed-only item, operator decides." So the routine's own post-insert trigger went through the ungated side door. The Lesson 82 downgrade was real but cosmetic.
+
+**The blast radius was wider than the one reported push.** `verify-push-eligible.sh` against the prior two fires found **5** feed-only items that pushed (Rogers ×2, Alisson-to-Juventus speculation, Ugarte + Fletcher international call-ups). The entire feed-only mechanism — Lessons 76, 77, AND 82 — was being bypassed for every routine item, because every routine item goes through that direct trigger.
+
+**Fix.** notification-sender specific-item path now also `.eq("push_eligible", true)` UNLESS the body carries `force_push: true` (preserves the manual-recovery escape hatch). `post_news.sh` additionally skips the trigger entirely when it set `push_eligible=false` (saves a wasted call). Verified live: POSTing the Rogers item's id now returns "No items to publish".
+
+**Rules:**
+1. **A flag is only as strong as every code path that reads it.** push_eligible was correct in the DB the whole time; one of two consumers ignored it. When you add a gate, grep for EVERY reader of the gated field and confirm each honours it. The sweep honoured it; the trigger didn't; the bug hid for three lessons.
+2. **"Operator override" defaults are footguns when an automated caller uses the same path.** The specific-item path was designed for human recovery, but the routine is its highest-volume caller. Safe-by-default + explicit opt-out (`force_push`) beats unsafe-by-default + implicit trust.
+3. **Build the regression check the moment you fix the leak.** `verify-push-eligible.sh` both proved the fix and quantified the historical blast radius. A fix you can't measure is a fix you can't trust held.
+
+### 84. The Disk IO budget — a missing composite index, not the row count
+
+**What prompted this (2026-06-01):** Supabase alert — "project depleting its Disk IO Budget." User didn't want to pay for an upgrade.
+
+**The obvious suspect was wrong.** `raw_fetch_logs` had grown to 93,727 rows / 340MB of large JSONB, never pruned. Easy to assume "table too big → trim it." But `pg_stat_user_tables` showed only **32 seq scans** vs **25,058 index scans** — it wasn't being scanned to death. The real signal: `idx_tup_fetch = 1.39M`, ~55 heap rows fetched per index scan.
+
+**Root cause — the index didn't match the query.** The hot reads (detect-consequences after every FT, team-page-generator per source) are `.eq("team_id", X).eq("source", Y).order("fetched_at" DESC).limit(1)`. The only index was `(team_id, fetched_at)`. So Postgres seeked the team, then walked ~55 recent rows (all sources) reading each large JSONB heap tuple to filter by source. That heap churn — not the row count — drained the IO budget.
+
+**Fix (all free):** (a) composite index `(team_id, source, fetched_at DESC)` → single seek + 1 heap fetch; (b) one-time trim of 61,475 stale rows preserving the latest snapshot per (source, team_id) + last 7 days; (c) migration 057 daily retention cron. Crons verified green post-change.
+
+**Rules:**
+1. **"Big table" and "IO problem" are not the same diagnosis.** Read `pg_stat_user_tables` (seq vs idx scans, tuples fetched per scan) before assuming size is the issue. The fix here was an index, not a delete — the delete was secondary.
+2. **An index must cover the WHOLE predicate, in the right order.** `(team_id, fetched_at)` looked reasonable but left `source` to be filtered in-heap. For `eq + eq + order-by-limit`, the index needs all three columns with the ordering column last. Each in-heap filter on a large-JSONB row is amplified IO.
+3. **Match the fix to the alert.** The alert was IO budget, not disk space — so a regular VACUUM (mark reusable, no lock) + index was right; a locking VACUUM FULL to reclaim 340MB of disk would have spiked the very budget we were trying to protect.
+
+### 85. WC consequence math — three bugs that would fire wrong or contradictory pushes
+
+**What prompted this (2026-06-01):** Pre-WC quality audit of the cross-team consequence detector (`detect-consequences.ts`). Three bugs found, all WC-launch-relevant.
+
+**B1 — false "you're OUT" (the worst one).** `WC_KNOCKOUT_ELIMINATED` fired when a team couldn't reach top-2 in its OWN group. But the 2026 format advances top-2 + the **8 best third-placed** teams. A 3rd-place team on 4 pts that can't reach 2nd can still advance as a best-third. The code's own comments admitted best-third was "V1.1/unhandled" — yet it shipped as live logic. Telling a fan their team is out when it isn't is the single worst push, and unlike a false "you're through," it can't be walked back. **Disabled ELIMINATED entirely** until a cross-group best-third comparator exists; group-stage exit is conveyed by the team's own matchday brief.
+
+**B2 — no knockout-stage gate.** WC knockout fixtures still carry `league.id=1`. Running group-qualification math against a stale group table after a knockout match could fire a contradictory QUALIFIED/GROUP_WON for a team already knocked out. Now match-watcher passes `league.round`; the detector early-returns for any non-"Group" round.
+
+**B3 — points-only re-rank ignored goal difference.** `applyResult` re-sorted by points alone, so on tied points (common on the final group matchday) the 2nd/3rd "boundary" team a check compares against was arbitrary — and differed between the fresh-snapshot path (kept API's GD-correct rank) and the stale path (re-ranked points-only). Now ranks by points, then GD, then goals-for. Added `goalsDiff`/`goals` to StandingsEntry/cloneGroup/applyResult.
+
+QUALIFIED and GROUP_WON *direction* math confirmed correct via a standalone node test (top-2 clinch guarantees advancement regardless of best-third); ELIMINATED confirmed never to fire.
+
+**Rules:**
+1. **A false negative that can't be retracted is worse than a false positive.** "You qualified" turning out wrong is embarrassing; "you're eliminated" turning out wrong is a betrayal. When the math is uncertain (best-third), suppress the unrecoverable direction and keep the recoverable one.
+2. **Idempotency ≠ consistency.** The `(team_id, consequence_type)` unique index prevents duplicate QUALIFIED, but a team can still hold BOTH a QUALIFIED and an ELIMINATED row (different types). The index guards duplication, not contradiction — B1/B2/B3 were the real contradiction sources.
+3. **A re-rank must use the same tiebreakers as the real table, or it ranks the wrong team.** Points-only ordering silently mislabels the boundary team a threshold compares against. Half-right tiebreakers (points + GD) remove the worst flips even before full H2H.
+
+### 86. The WC pre-launch quality review — active-entity bugs and the content gap
+
+**What prompted this (2026-06-01):** User asked for a "higher intelligence" pass to find WC bugs/contradictions before launch. Ran three parallel review agents (push/news logic, content correctness, iOS) plus live-data checks.
+
+**The iOS theme: the app asked for the wrong team.** A cluster of bugs all shared one root — fetches keyed off `appState.selectedTeam` (the PL club) instead of the active entity (which can be a WC country):
+- **Immersive feed didn't reload on a club↔country switch** — `switchContext` guarded reload on `if teamItems.isEmpty`, but that array held the PREVIOUS entity's stories, so it never refetched. Only pull-to-refresh (which bypasses the guard) worked. User reported this independently.
+- **"Things he doesn't know" (insider), matchday player cards, the Saturday quiz, and the live-match card** all fetched by `selectedTeam`. A WC-only user (no club) saw none of them; a dual-follower viewing their country saw the CLUB's data. Countries have their own insider (693 items) and quiz support — the data existed; the app asked for the wrong id.
+
+Fix: an `activeEntityId` computed property resolving club/country from `activeContext`, threaded through every feed fetch + the `.task(id:)` lifecycles so they reload on a context switch. All build-verified.
+
+**The content theme: the feeds are empty.** 47 of 48 countries have NO preview content (only England was hand-curated); **14 have zero content_items of any kind**. The `gd-wc-preview` routine was never built. Also found: England had 2 leftover content_items still saying "Group F" (England is Group L) plus an invented "runners-up of Group E" bracket route — the Lesson-78 fix had corrected team_pages but missed content_items free-text. Fixed via targeted SQL (NOT a blind Group F→L swap — Japan/Netherlands/Sweden/Tunisia are legitimately Group F). Canada (host) has null standings.
+
+**Product direction noted (2026-06-02):** With the PL season over, club quizzes are dormant; the value now is country quizzes + bite-size team info during the WC window. The quiz routine already does this (WC-MODE, suppressed until ~June 4) — the active-entity fix above is what makes it actually surface to country followers.
+
+**Rules:**
+1. **A polymorphic entity needs ONE resolver, used everywhere.** The club/country duality leaked because each fetch re-derived "which team" independently and several defaulted to the club. Centralising `activeEntityId` and threading it through is the durable fix; scattered `selectedTeam` reads are the bug factory.
+2. **"The data exists" and "the app shows it" are separate audits.** Country insider/quiz content was present; the iOS layer just never requested it. Verify both ends.
+3. **A migration-era fix can miss a sibling table.** Lesson 78's group-label correction fixed team_pages but not content_items — same data, different table, different fix pass. When correcting denormalised/duplicated data, enumerate every place it lives.
+4. **Parallel review agents earn their cost on breadth.** Three agents across logic/content/iOS surfaced more in one pass than a serial read would have — and each finding was then verified against live data or the actual code before acting.
+
+**Open follow-ups (documented, not done):**
+- **Content gap** — build `gd-wc-preview` (4 items/country, grounded on standings competition_label, push_eligible=false) for the 47 empty feeds; prioritise the 14 zero-content countries; fix Canada standings. Free (subscription quota). Deferred per user.
+- **iOS 2.0.1 fast-follow** — the active-entity fixes above + lighter review findings (TeamPageView reload on context change, group-table verdict scale, sparse-item decode guard, multi-word-country calendar slug). Ship after the in-review build clears; not in the current submission.
