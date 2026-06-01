@@ -84,7 +84,11 @@ export interface Consequence {
 interface StandingsEntry {
   rank: number;
   points: number;
-  all: { played: number; win: number; draw: number; lose: number };
+  goalsDiff: number; // B3: needed to break points ties when re-ranking
+  all: {
+    played: number; win: number; draw: number; lose: number;
+    goals?: { for: number; against: number };
+  };
   team: { id: number; name: string };
   group?: string; // present on WC standings; ignored on PL
 }
@@ -107,6 +111,7 @@ export async function detectConsequences(
     awayGoals: number;
     homeDisplayName: string;
     awayDisplayName: string;
+    round?: string;         // B2: API-Football league.round, e.g. "Group Stage - 3" / "Round of 16"
   },
 ): Promise<Consequence[]> {
   // 1. Load the latest standings snapshot for this league.
@@ -143,6 +148,15 @@ export async function detectConsequences(
   if (args.leagueId === PL_LEAGUE_ID) {
     group = standings[0];
   } else if (args.leagueId === WC_LEAGUE_ID) {
+    // B2: group-qualification math applies ONLY to the group stage. WC
+    // knockout fixtures still carry league.id=1, but losing a knockout tie
+    // IS the elimination (covered by the matchday brief) — running group
+    // math against a stale group table here could fire a contradictory
+    // "qualified/group-won" for a team already knocked out. Gate on the
+    // round: anything that isn't a group-stage round returns no consequence.
+    const round = (args.round ?? "").toLowerCase();
+    if (round.length > 0 && !round.includes("group")) return [];
+
     group = standings.find((g) =>
       Array.isArray(g) &&
       g.some((t) => t.team?.id === args.homeApiId) &&
@@ -222,7 +236,13 @@ function cloneGroup(group: StandingsEntry[]): StandingsEntry[] {
   return group.map((t) => ({
     rank: t.rank,
     points: t.points,
-    all: { played: t.all.played, win: t.all.win, draw: t.all.draw, lose: t.all.lose },
+    goalsDiff: t.goalsDiff ?? 0,
+    all: {
+      played: t.all.played, win: t.all.win, draw: t.all.draw, lose: t.all.lose,
+      goals: t.all.goals
+        ? { for: t.all.goals.for, against: t.all.goals.against }
+        : { for: 0, against: 0 },
+    },
     team: { id: t.team.id, name: t.team.name },
     group: t.group,
   }));
@@ -257,8 +277,26 @@ function applyResult(
   home.all.played += 1;
   away.all.played += 1;
 
-  // Re-rank by points DESC. Tiebreakers (GD, GS, H2H) are V1.1.
-  copy.sort((a, b) => b.points - a.points);
+  // B3: keep goals + goalsDiff current so the re-rank below can break
+  // points ties the way the real table does (cloneGroup guarantees
+  // all.goals is present).
+  home.all.goals!.for += args.homeGoals;
+  home.all.goals!.against += args.awayGoals;
+  away.all.goals!.for += args.awayGoals;
+  away.all.goals!.against += args.homeGoals;
+  home.goalsDiff = home.all.goals!.for - home.all.goals!.against;
+  away.goalsDiff = away.all.goals!.for - away.all.goals!.against;
+
+  // Re-rank by points DESC, then goal difference, then goals scored — the
+  // first two FIFA/PL tiebreakers. Head-to-head is still V1.1, but
+  // points-only ranking (the old behaviour) put tied teams in arbitrary
+  // order, which could mislabel the 2nd/3rd boundary team a consequence
+  // check compares against. GD-awareness removes the worst misfires.
+  copy.sort((a, b) =>
+    b.points - a.points ||
+    b.goalsDiff - a.goalsDiff ||
+    (b.all.goals?.for ?? 0) - (a.all.goals?.for ?? 0)
+  );
   copy.forEach((t, i) => (t.rank = i + 1));
   return copy;
 }
@@ -317,9 +355,16 @@ function consequencesForTeam(
     // WC_GROUP_WON: my floor exceeds the 2nd-ranked team's ceiling.
     if (group.length >= 2 && myFloorBeatsRankCeiling(1)) out.push("WC_GROUP_WON");
 
-    // WC_KNOCKOUT_ELIMINATED: my ceiling below the 2nd-ranked team's
-    // floor. Conservative — ignores best-3rd cohort. V1.1 will tighten.
-    if (group.length >= 2 && myCeilingBelowRankFloor(1)) out.push("WC_KNOCKOUT_ELIMINATED");
+    // WC_KNOCKOUT_ELIMINATED: DISABLED (B1). The single-group check
+    // (my ceiling < 2nd-placed floor) is WRONG for the 2026 format: a
+    // 3rd-placed team that can't reach top-2 can STILL advance as one of
+    // the 8 best third-placed sides. Firing "you're out" when a team is
+    // actually still alive is the worst possible push, and unlike a false
+    // "you're through" it can't be walked back. A correct ELIMINATED needs
+    // a cross-group best-third comparator (3rd-place points across all 12
+    // groups) — that's V1.1. Until then we never fire it; group-stage exit
+    // is conveyed by the team's own matchday brief instead.
+    // if (group.length >= 2 && myCeilingBelowRankFloor(1)) out.push("WC_KNOCKOUT_ELIMINATED");
   }
 
   return out;

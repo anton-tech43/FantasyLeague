@@ -34,7 +34,7 @@ interface ApiFixture {
     status: { short: string; elapsed: number | null };
     date: string;
   };
-  league: { id: number; name: string; season: number };
+  league: { id: number; name: string; season: number; round?: string };
   teams: { home: { id: number; name: string }; away: { id: number; name: string } };
   goals: { home: number | null; away: number | null };
 }
@@ -429,6 +429,7 @@ async function handleRequest(req: Request): Promise<Response> {
             awayGoals: awayGoals ?? 0,
             homeDisplayName: fx.teams.home.name,
             awayDisplayName: fx.teams.away.name,
+            round: fx.league?.round,   // B2: knockout-stage gate in detectConsequences
           });
 
           // Batch-resolve affected teams in ONE query rather than per-
