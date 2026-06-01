@@ -570,16 +570,33 @@ struct FeedView: View {
         // Save scroll position for current context
         // (handled automatically via @State — session only)
 
+        let previous = appState.activeContext
         UnreadTracker.shared.markViewed(appState.activeContext)
         appState.activeContext = context
         UnreadTracker.shared.markViewed(context)
         freshnessCardDismissed = false
 
-        // Load data for new context if empty
+        // Re-tapping the current context: nothing to reload.
+        if previous == context { return }
+
+        // Load data for the new context.
         Task {
             switch context {
             case .team, .country:
-                if teamItems.isEmpty { await loadTeamFeed() }
+                // Always reload. `teamItems` still holds the PREVIOUS
+                // entity's stories, so the old `if teamItems.isEmpty` guard
+                // skipped the reload and left the immersive feed showing the
+                // wrong team until a manual pull-to-refresh (reported bug
+                // 2026-06-01). Clear stale state and refetch for the new
+                // entity, mirroring onChange(of: selectedTeam).
+                teamItems = []
+                teamOffset = 0
+                teamCanLoadMore = true
+                isLoading = true
+                matchdayPlayers = []
+                liveBrief = nil
+                currentQuiz = nil
+                await loadTeamFeed()
             case .everyoneTalking:
                 if everyoneItems.isEmpty { await loadEveryoneFeed() }
             }
@@ -674,9 +691,12 @@ struct FeedView: View {
         // flashes the generic "nothing today" state. The fetch is
         // best-effort: failure leaves emptyStateInsider nil and emptyView
         // falls back to the generic state. Cleared when items come back.
+        // Use the ACTIVE entity (teamId, resolved above from activeContext),
+        // not appState.selectedTeam — otherwise a country feed shows the
+        // club's "things he doesn't know" (or nothing, for a WC-only user
+        // with no club). Countries have their own insider rows. (bug 2026-06-01)
         if teamItems.isEmpty,
-           TierGating.isAvailable(.insiderCard, tier: appState.selectedTier),
-           let teamId = appState.selectedTeam?.rawValue {
+           TierGating.isAvailable(.insiderCard, tier: appState.selectedTier) {
             let items = (try? await APIClient.shared.fetchInsiderItems(teamId: teamId, limit: 1)) ?? []
             emptyStateInsider = items.first
         } else {
@@ -686,9 +706,10 @@ struct FeedView: View {
         isLoading = false
         freshnessCardDismissed = false
 
-        // Fetch player cards for matchday card if needed
-        if teamItems.contains(where: { $0.type == .matchday }),
-           let teamId = appState.selectedTeam?.rawValue {
+        // Fetch player cards for matchday card if needed. Uses the active
+        // entity (teamId) so a country matchday gets the country's players,
+        // not the club's. (bug 2026-06-01)
+        if teamItems.contains(where: { $0.type == .matchday }) {
             matchdayPlayers = (try? await APIClient.shared.fetchPlayerCards(teamId: teamId)) ?? []
         }
     }
