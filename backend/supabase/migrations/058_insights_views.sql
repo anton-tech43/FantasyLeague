@@ -23,36 +23,41 @@
 
 -- ── Audience ──────────────────────────────────────────────────────────
 
+-- Audience views are scoped to PRODUCTION (App Store) tokens only —
+-- TestFlight/dev installs are noise for product insights (per user, 2026-06-02).
+-- apns_environment='production' = App Store / TestFlight prod build.
+
 -- Active followers per entity. A token may follow a club AND a country;
 -- both are counted under their respective kind.
 CREATE OR REPLACE VIEW v_audience_by_entity AS
   SELECT 'team'::text AS entity_kind, team_id AS entity_id, count(*) AS active_followers
-  FROM device_tokens WHERE is_active AND team_id IS NOT NULL
+  FROM device_tokens
+  WHERE is_active AND apns_environment = 'production' AND team_id IS NOT NULL
   GROUP BY team_id
   UNION ALL
   SELECT 'country'::text, country_id, count(*)
-  FROM device_tokens WHERE is_active AND country_id IS NOT NULL
+  FROM device_tokens
+  WHERE is_active AND apns_environment = 'production' AND country_id IS NOT NULL
   GROUP BY country_id;
 
--- Single-row headline totals.
+-- Single-row headline totals (App Store users only).
 CREATE OR REPLACE VIEW v_audience_summary AS
   SELECT
-    count(*) FILTER (WHERE is_active)                                          AS active,
-    count(*) FILTER (WHERE NOT is_active)                                      AS inactive,
-    count(*) FILTER (WHERE is_active AND apns_environment = 'production')       AS active_app_store,
-    count(*) FILTER (WHERE is_active AND apns_environment = 'development')      AS active_testflight,
-    count(*) FILTER (WHERE is_active AND tier = 1)                             AS tier1,
-    count(*) FILTER (WHERE is_active AND tier = 2)                             AS tier2,
-    count(*) FILTER (WHERE is_active AND tier = 3)                             AS tier3,
-    count(*) FILTER (WHERE is_active AND country_id IS NOT NULL)               AS following_country,
-    count(*) FILTER (WHERE is_active AND team_id IS NOT NULL)                  AS following_team
-  FROM device_tokens;
+    count(*) FILTER (WHERE is_active)                            AS active,
+    count(*) FILTER (WHERE NOT is_active)                        AS inactive,
+    count(*) FILTER (WHERE is_active AND tier = 1)               AS tier1,
+    count(*) FILTER (WHERE is_active AND tier = 2)               AS tier2,
+    count(*) FILTER (WHERE is_active AND tier = 3)               AS tier3,
+    count(*) FILTER (WHERE is_active AND country_id IS NOT NULL) AS following_country,
+    count(*) FILTER (WHERE is_active AND team_id IS NOT NULL)    AS following_team
+  FROM device_tokens
+  WHERE apns_environment = 'production';
 
--- ── Growth + churn ────────────────────────────────────────────────────
+-- ── Growth + churn (App Store only) ───────────────────────────────────
 
 CREATE OR REPLACE VIEW v_registrations_daily AS
   SELECT date_trunc('day', created_at)::date AS day, count(*) AS new_registrations
-  FROM device_tokens
+  FROM device_tokens WHERE apns_environment = 'production'
   GROUP BY 1;
 
 -- Churn proxy: inactive rows by the day they were deactivated. Lazy —
@@ -60,7 +65,7 @@ CREATE OR REPLACE VIEW v_registrations_daily AS
 -- to that token and APNs rejects it (updated_at is set at that flip).
 CREATE OR REPLACE VIEW v_churn_daily AS
   SELECT date_trunc('day', updated_at)::date AS day, count(*) AS deactivated
-  FROM device_tokens WHERE NOT is_active
+  FROM device_tokens WHERE NOT is_active AND apns_environment = 'production'
   GROUP BY 1;
 
 -- ── Push delivery ─────────────────────────────────────────────────────

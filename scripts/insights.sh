@@ -24,9 +24,9 @@ echo " GoalDigger insights — last $DAYS days   ($(echo "$J" | jq -r '.snapshot
 echo "=========================================================="
 
 echo
-echo "── AUDIENCE ──────────────────────────────────────────────"
+echo "── AUDIENCE (App Store users) ────────────────────────────"
 echo "$J" | jq -r '.audience |
-  "  Active:        \(.active)   (App Store: \(.active_app_store), TestFlight: \(.active_testflight))",
+  "  Active:        \(.active)",
   "  Inactive:      \(.inactive)   (churned / dead tokens)",
   "  Following:     country \(.following_country) | club \(.following_team)",
   "  Tier mix:      T1 \(.tier1) · T2 \(.tier2) · T3 \(.tier3)"'
