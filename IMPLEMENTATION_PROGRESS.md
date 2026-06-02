@@ -3221,3 +3221,24 @@ Fix: an `activeEntityId` computed property resolving club/country from `activeCo
 **Open follow-ups (documented, not done):**
 - **Content gap** — build `gd-wc-preview` (4 items/country, grounded on standings competition_label, push_eligible=false) for the 47 empty feeds; prioritise the 14 zero-content countries; fix Canada standings. Free (subscription quota). Deferred per user.
 - **iOS 2.0.1 fast-follow** — the active-entity fixes above + lighter review findings (TeamPageView reload on context change, group-table verdict scale, sparse-item decode guard, multi-word-country calendar slug). Ship after the in-review build clears; not in the current submission.
+
+### 87. Insights from data we already have — server-side tracking that honours "we don't track you"
+
+**What prompted this (2026-06-02):** Post-submission, the user wanted launch insights — which team/country people pick, push opens, deletes/refunds, sessions — but asked the sharp question: *can we get it server-side WITHOUT a new App Store build? If yes, do that; only instrument the app if we must.* The app's brand promise is "we don't track you. No accounts, no ads, no personal data beyond what's needed to send you notifications."
+
+**The split (after mapping each ask to the data we already collect):**
+- **Server-side NOW (no build, no new tracking):** team/country chosen (`device_tokens.team_id`/`country_id`), growth (`created_at`), tier mix, TestFlight-vs-App-Store (`apns_environment`), churn/uninstalls (`is_active=false` — notification-sender ALREADY flips this on APNs 410/Unregistered + 400/BadDeviceToken and logs it to `pipeline_health`), push delivery success, content production.
+- **Needs the app (Phase B / iOS 2.0.1):** push OPENS (Apple never reports them; the tap handler exists but POSTs nothing) and in-app SESSIONS (inherently client-side; feed fetches aren't per-user attributable).
+- **N/A:** refunds — the app is free.
+
+**What shipped (Phase A):** migration 058 — seven read-only aggregate VIEWs + a service-role `get_insights(days)` RPC (mirroring `everyone_talking_daily` + `get_pipeline_diagnostics`), all locked off the anon surface. Plus `scripts/insights.sh`, an on-demand psql dashboard. Every output is a COUNT — no `apns_token`, no per-user rows. Zero iOS change, no resubmit, no privacy-policy change.
+
+**It earned its keep on first run:** surfaced the 13 zero-content WC feeds (quantifying the empty-feed gap), the historical push-delivery dips (May 19–22 bad-token failures, pre-rotation), and the Lesson 83 feed-only leak (2026-06-01: 10 pushed vs 7 push-eligible → 3 leaked).
+
+**Rules:**
+1. **Most "we need analytics" questions are answerable from operational data you already keep.** Registration rows, token state, and delivery logs already encode audience, growth, churn, and reach — no behavioral tracking required. Inventory what you have before instrumenting.
+2. **Privacy posture is a design input, not an afterthought.** Framing it as "aggregate-only from data we already collect to run the service" keeps the insights layer squarely inside the "we don't track you" promise; opens/sessions are the line where you must consciously opt into client analytics.
+3. **Churn was free because a side-effect already captured it.** notification-sender deactivates dead tokens to avoid wasting APNs calls — that same mechanism IS the uninstall signal. Look for signals that fall out of existing correctness logic before building new capture.
+4. **Caveat-in-the-output beats silent imprecision.** Churn is lazy (only detected on the next push attempt to a dead token); the dashboard and view comments say so, so nobody reads the trend as real-time.
+
+**Open (Phase B, decision-gated):** push opens + sessions via an anonymous `track-event` Edge Function + `AppDelegate` fire-and-forget, bundled into iOS 2.0.1 — needs the user's opt-in to anonymous (no-PII) analytics + one privacy-policy line (the PRD already scoped TelemetryDeck for this).
