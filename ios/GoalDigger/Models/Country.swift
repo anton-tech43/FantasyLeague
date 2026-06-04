@@ -219,13 +219,19 @@ enum Country: String, CaseIterable, Identifiable, Codable {
     /// arbitrary thumbnail widths with a 400; only sizes the REST API
     /// hands back are guaranteed served). Verify it returns a PNG.
     private var federationCrestURL: URL? {
-        // National FEDERATION crests (the Three Lions, the CBF badge, etc.) are
-        // the associations' registered trademarks — third-party IP. To stay
-        // clear of App Store Guideline 5.2.1 we render the public-domain national
-        // FLAG for every country instead (via crestURL's API-Football fallback)
-        // and wire NO federation crest. Removed England's Three Lions here after
-        // the 2026-06 Apple IP review. Flags are national symbols, free to use.
-        return nil
+        // National FEDERATION crests (the Three Lions, the CBF badge, etc.)
+        // belong to the national associations (The FA, etc.) — NOT FIFA.
+        // Apple's 2026-06 5.2.1 rejection was FIFA-specific, so we keep
+        // England's crest. (Federation marks are still third-party IP, so a
+        // small residual risk remains if a reviewer scrutinises; to go fully
+        // airtight, return nil here and every country falls back to its flag.)
+        switch self {
+        case .england:
+            // Three Lions crest. Verified PNG (330x516) via the REST API.
+            return URL(string: "https://upload.wikimedia.org/wikipedia/en/thumb/8/8b/England_national_football_team_crest.svg/330px-England_national_football_team_crest.svg.png")
+        default:
+            return nil
+        }
     }
 
     /// FIFA confederation. Used for grouping countries in the picker
