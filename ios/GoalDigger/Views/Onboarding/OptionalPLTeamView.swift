@@ -27,7 +27,7 @@ struct OptionalPLTeamView: View {
     }
 
     private var countryShortName: String {
-        appState.selectedCountry?.shortName ?? "World Cup"
+        appState.selectedCountry?.shortName ?? "his country"
     }
 
     var body: some View {
@@ -121,7 +121,7 @@ struct OptionalPLTeamView: View {
                 .buttonStyle(PrimaryButtonStyle(isEnabled: selected != nil))
                 .disabled(selected == nil)
 
-                Button("Skip, World Cup only") {
+                Button("Skip, just his country") {
                     appState.selectedTeam = nil
                     onContinue()
                 }

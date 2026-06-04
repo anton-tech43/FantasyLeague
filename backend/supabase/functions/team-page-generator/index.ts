@@ -105,7 +105,7 @@ const TEAM_PAGE_TOOL = {
 
       // Card: form
       league_position: { type: "integer", minimum: 1, maximum: 20 },
-      league_position_label: { type: "string", description: "Plain-English ranking. For Premier League clubs: '2nd in the Premier League'. For World Cup countries during group stage: '1st in Group D'. Match the competition context provided." },
+      league_position_label: { type: "string", description: "Plain-English ranking. For Premier League clubs: '2nd in the Premier League'. For World Championship countries during group stage: '1st in Group D'. Match the competition context provided." },
       recent_form: { type: "string", description: "Last 5 results as W/D/L string, e.g. 'WWDLW'" },
       form_summary: { type: "string", description: "One sentence connecting form to [his name]'s mood" },
 
@@ -589,7 +589,7 @@ async function generateFullPage(
   // labels shift (Premier League table vs WC group stage, club season vs
   // tournament). Single source of truth — the team's entity_type column.
   const leagueContext = team.entity_type === "country"
-    ? "FIFA World Cup 2026 — a national team competing at the tournament in USA, Canada and Mexico from June 11. Group stage runs June 11-27, knockouts June 30 onwards. Players here represent their country, NOT their club. For league_position_label use 'Xst in Group Y' format (look at the Standings data for the group letter and the team's position within that group)."
+    ? "the 2026 World Championship — a national team competing at the tournament in USA, Canada and Mexico from June 11. Group stage runs June 11-27, knockouts June 30 onwards. Players here represent their country, NOT their club. For league_position_label use 'Xst in Group Y' format (look at the Standings data for the group letter and the team's position within that group)."
     : "Premier League (2025-26 season). League table runs August to May. For league_position_label use 'Xst in the Premier League' format.";
 
   const systemPrompt = TEAM_PAGE_SYSTEM_PROMPT

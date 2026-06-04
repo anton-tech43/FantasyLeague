@@ -136,28 +136,28 @@ const TEMPLATES: Record<ConsequenceType, ConsequenceTemplate> = {
       `${teamName} relegated from the Premier League.`,
   },
 
-  // ---------- World Cup ----------
+  // ---------- World Championship ----------
 
   WC_GROUP_WON: {
     push_title: ({ teamName }) => `🥇 ${teamName} win the group`,
     push_text: ({ teamName, trigger }) =>
-      `${teamName} have topped their World Cup group. ${trigger}.`,
+      `${teamName} have topped their World Championship group. ${trigger}.`,
     headline: ({ teamName }) =>
-      `${teamName} finish top of their World Cup group.`,
+      `${teamName} finish top of their World Championship group.`,
     body: [
       ({ teamName, trigger }) =>
-        `${teamName} are through as group winners. ${trigger}, and that puts them mathematically clear of second place. Top of the group usually means a slightly kinder knockout bracket — small advantages stack up at a World Cup.`,
+        `${teamName} are through as group winners. ${trigger}, and that puts them mathematically clear of second place. Top of the group usually means a slightly kinder knockout bracket — small advantages stack up at a World Championship.`,
       ({ teamName, trigger }) =>
         `Group topped. After ${trigger.toLowerCase()}, ${teamName} can't be overtaken in their group. They go into the knockouts as a top seed, which is exactly where you want to be.`,
     ],
     everyone_talking_headline: ({ teamName }) =>
-      `${teamName} clinch top spot in their World Cup group.`,
+      `${teamName} clinch top spot in their World Championship group.`,
   },
 
   WC_KNOCKOUT_QUALIFIED: {
     push_title: ({ teamName }) => `✅ ${teamName} into the knockouts`,
     push_text: ({ teamName, trigger }) =>
-      `${teamName} have qualified for the World Cup knockouts. ${trigger}.`,
+      `${teamName} have qualified for the World Championship knockouts. ${trigger}.`,
     headline: ({ teamName }) =>
       `${teamName} are through to the knockout stage.`,
     body: [
@@ -167,22 +167,22 @@ const TEMPLATES: Record<ConsequenceType, ConsequenceTemplate> = {
         `${teamName} into the knockouts. After ${trigger.toLowerCase()}, the maths confirms they can't be caught for at least second in their group. Knockout football arrives next week.`,
     ],
     everyone_talking_headline: ({ teamName }) =>
-      `${teamName} reach the World Cup knockout stage.`,
+      `${teamName} reach the World Championship knockout stage.`,
   },
 
   WC_KNOCKOUT_ELIMINATED: {
-    push_title: ({ teamName }) => `⚠️ ${teamName} out of the World Cup`,
+    push_title: ({ teamName }) => `⚠️ ${teamName} out of the World Championship`,
     push_text: ({ trigger }) =>
       `${trigger}. The group-stage exit is confirmed.`,
     headline: ({ teamName }) =>
-      `${teamName} are out of the World Cup.`,
+      `${teamName} are out of the World Championship.`,
     body: [
       ({ teamName, trigger }) =>
         `${trigger} ended it. ${teamName} can no longer reach the knockout stage. One game left, but the tournament is effectively over for them — and for him, the focus shifts to whoever's still in.`,
       ({ teamName, trigger }) =>
-        `World Cup over for ${teamName}. After ${trigger.toLowerCase()}, the qualification maths is closed — they can't reach the top two. He'll need a new team to root for in the knockouts.`,
+        `World Championship over for ${teamName}. After ${trigger.toLowerCase()}, the qualification maths is closed — they can't reach the top two. He'll need a new team to root for in the knockouts.`,
     ],
     everyone_talking_headline: ({ teamName }) =>
-      `${teamName} eliminated from the World Cup group stage.`,
+      `${teamName} eliminated from the World Championship group stage.`,
   },
 };

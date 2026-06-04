@@ -522,7 +522,7 @@ struct FeedView: View {
         if case .country(let country) = appState.activeContext {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("WORLD CUP STARTS JUNE 11")
+                    Text("WORLD CHAMPIONSHIP STARTS JUNE 11")
                         .font(.sectionHeader)
                         .tracking(1)
                         .foregroundColor(.mutedText)

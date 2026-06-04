@@ -12,7 +12,7 @@
  *     (July) gives a 1-month buffer before kickoff. Without this the old
  *     hardcoded `return 2025` would silently return empty fixtures from
  *     August 2026 onwards (when PL switches to season 2026).
- *   - 1  (FIFA World Cup): season 2026 = the 2026 tournament.
+ *   - 1  (World Championship): season 2026 = the 2026 tournament.
  *     Stays 2026 until WC 2030 enters API-Football.
  *
  * For any unknown league, defaults to the current calendar year — safe-ish
