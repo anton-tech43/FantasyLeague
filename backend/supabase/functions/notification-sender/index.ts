@@ -116,11 +116,70 @@ serve(async (req) => {
       teamShortNames[t.id] = t.short_name;
     }
 
+    // Per-team push throttle window (audit 2026-06-05, Lesson 89). Kept at
+    // 5 min — tight enough to collapse same-fire doubles (a routine writing
+    // two items seconds apart, each triggering a push) without suppressing
+    // genuinely-spaced matchday news (a result then a later, different item).
+    const PUSH_THROTTLE_MINUTES = 5;
+
     for (const item of items) {
       const teamId = item.team_id;
       const shortName = teamShortNames[teamId] ?? teamId;
       const category = getCategoryFromType(item.type, item.emotional_context);
       const isResult = category === "RESULT";
+
+      // Guard A — never send a push with an empty push_title. The 2026-06-05
+      // audit found 17 (backfilled) items with null push_title; a real one
+      // would render a blank/broken lock-screen ping. Publish to the feed +
+      // mark pushed_at (so the sweep won't retry), but send no APNs.
+      if (!item.push_title || String(item.push_title).trim() === "") {
+        const update: Record<string, string> = { pushed_at: new Date().toISOString() };
+        if (item.status !== "published") {
+          update.status = "published";
+          update.published_at = new Date().toISOString();
+        }
+        await supabase.from("content_items").update(update).eq("id", item.id);
+        await logPipelineEvent(supabase, {
+          team_id: teamId,
+          stage: "publish",
+          status: "skipped",
+          duration_ms: Date.now() - startTime,
+          message: "Skipped push: empty push_title",
+          content_item_id: item.id,
+        });
+        continue;
+      }
+
+      // Guard B — per-team push throttle. If this team already received a
+      // push within PUSH_THROTTLE_MINUTES, leave this item feed-only (the
+      // story still publishes). force_push bypasses for manual recovery.
+      if (!forcePush) {
+        const throttleSince = new Date(Date.now() - PUSH_THROTTLE_MINUTES * 60_000).toISOString();
+        const { count: recentCount } = await supabase
+          .from("content_items")
+          .select("id", { count: "exact", head: true })
+          .eq("team_id", teamId)
+          .not("pushed_at", "is", null)
+          .gte("pushed_at", throttleSince)
+          .neq("id", item.id);
+        if ((recentCount ?? 0) > 0) {
+          const update: Record<string, string> = { pushed_at: new Date().toISOString() };
+          if (item.status !== "published") {
+            update.status = "published";
+            update.published_at = new Date().toISOString();
+          }
+          await supabase.from("content_items").update(update).eq("id", item.id);
+          await logPipelineEvent(supabase, {
+            team_id: teamId,
+            stage: "publish",
+            status: "skipped",
+            duration_ms: Date.now() - startTime,
+            message: `Throttled: ${teamId} already pushed within ${PUSH_THROTTLE_MINUTES}m`,
+            content_item_id: item.id,
+          });
+          continue;
+        }
+      }
 
       // Get all active device tokens for this team OR country with their
       // tiers + APNs env. The env tells us whether to push to sandbox
