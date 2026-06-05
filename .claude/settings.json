@@ -11,6 +11,7 @@
       "Bash(git branch:*)",
       "Bash(git stash list:*)",
 
+      "Bash(cd:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
@@ -35,6 +36,8 @@
       "Bash(which:*)",
       "Bash(env:*)",
       "Bash(file:*)",
+      "Bash(set:*)",
+      "Bash(source:*)",
 
       "Bash(mkdir:*)",
       "Bash(cp:*)",
