@@ -3242,3 +3242,37 @@ Fix: an `activeEntityId` computed property resolving club/country from `activeCo
 4. **Caveat-in-the-output beats silent imprecision.** Churn is lazy (only detected on the next push attempt to a dead token); the dashboard and view comments say so, so nobody reads the trend as real-time.
 
 **Open (Phase B, decision-gated):** push opens + sessions via an anonymous `track-event` Edge Function + `AppDelegate` fire-and-forget, bundled into iOS 2.0.1 — needs the user's opt-in to anonymous (no-PII) analytics + one privacy-policy line (the PRD already scoped TelemetryDeck for this).
+
+### 88. Deterministic content auditor — the West Ham miscount → a $0 standings-claim linter
+
+**What prompted this (2026-06-05):** A Sunday brief told West Ham followers they "stayed up" while they finished **18th** (relegated — the PL drops the bottom THREE). The routine had the correct standings; it reasoned wrongly about them ("17 points clear of 19th, so safe" — forgetting 18th is itself a drop place). An LLM re-reading the same data can repeat the mistake, so the robust check is **deterministic**: compare the CLAIM to the RANK.
+
+**What shipped:** `content-audit` Edge Function + `_shared/audit-claims.ts` (pure regex + integer comparison — **zero Claude/API-Football calls, never pushes, never mutates content**) + migration 059 (a `content_audit` pipeline_health stage + nightly cron). It flags content whose terminal claims (safe / relegated / champions / top-four) contradict the actual table, logging contradictions for human review.
+
+**The build's real lesson — precision is the whole product.** A naive first pass produced **24 false positives and 0 true positives** on the live 729-item corpus (the one real bug was already fixed). A linter that cries wolf 24× trains you to ignore it. Three tightening rounds got it to **0 false positives while still catching the real bug** (18 unit tests pin both directions):
+1. **Subject attribution** — the claim must be about the *tagged* team. A club's feed constantly references other clubs ("Arsenal are champions" inside Man City's feed must not flag City). Match the team whose alias is *nearest* the claim.
+2. **Terminal-only phrasing** — "stayed up" not "fighting to stay up"; "avoided relegation" (past) not "avoid relegation" (a goal). Whole-sentence blockers kill conditionals/predictions ("if both happen, West Ham stay up"; "Sky predict they go down").
+3. **Competition + temporal escapes** — "Europa League champions" ≠ PL champions; "won the league last season" / "in 2012" / "went from champions to" are history, not claims.
+
+**Rules:**
+1. **Deterministic guards beat hoping the LLM follows prose.** Same philosophy as the post_news.sh char/voice guards: when correctness matters, enforce it in code, not in the prompt.
+2. **A noisy detector is worse than none.** Bias hard toward precision; missing a rare real bug is acceptable, crying wolf is not. Tune against the live corpus until false positives hit zero.
+3. **The app's data can be fresher than the model's training.** (Carried into Lesson 89 — see the Semenyo reversal.)
+
+### 89. The 577-push audit — the rules existed, enforcement didn't
+
+**What prompted this (2026-06-05):** After the West Ham fix, the user asked for a full audit: PL news (7d), WC news (all), and **every push of the last 30 days (577)** scored on relevant / timing / quality / true / prompt-fix. Run in-session via the `content-audit` linter (truth) + 10 fan-out evaluation agents (one per team-group). Findings: `CONTENT_PUSH_AUDIT_2026-06.md`.
+
+**Result:** the system is voice-competent and (where checkable) truthful, but **massively over-pushes** — ~a third of pushes flagged. The dominant leaks were unconfirmed transfer/manager speculation pushed as certain, and international call-ups pushed on club feeds with emotional openers — **exactly the cases the PROMPT.md TEAM IMPACT (Lesson 76) and TRANSFER (Lesson 82) gates already forbade.** The rules existed and were ignored at scale.
+
+**The fix — widen the deterministic guards in `post_news.sh`, don't add more prose:**
+- Speculation guard: added "in talks / close to / chasing / shortlist / could join / open to / bid rejected / manager-search" phrasings + a CONFIRMED-news override.
+- Int'l-duty guard: it still searched for "World Cup" — but the FIFA-5.2.1 sweep renamed everything to **"World Championship"**, so the guard had been silently missing every call-up since. Added the new term + non-possessive forms + call-up verbs.
+- New banned-register hard-reject on `push_title` ("Big drama", "The plot twist at keeper", "Strong reaction incoming"…).
+- PROMPT.md: opener-rotation rule + SAGA/REPEAT cooldown (one push per result/fixture/rumour-thread). SUNDAY_BRIEF: internal-consistency rule (points gaps, qualification, cup rounds).
+
+**Rules:**
+1. **A gate that the LLM "should" honour is not a gate.** If a prompt rule is being violated at scale, the rule isn't the fix — deterministic enforcement in the publish path is. Audit whether your guards actually fire, not just whether the rule is written down.
+2. **A rename can silently disable a guard.** The int'l-duty downgrade broke the moment "World Cup" → "World Championship" shipped, because the regex hard-coded the old term. When you rename a domain term, grep every guard/pattern that matches on it.
+3. **The model's "fact-checks" are stale; trust the data.** Agents flagged "Semenyo plays for Bournemouth" as a content error — but he'd transferred to Man City, so the app was right and the agents (and I) were wrong. A "fix" applied on that basis was reverted. For roster/transfer facts, the live squad data is the source of truth, not the LLM. Reliable truth signals = deterministic standings checks + internal self-contradictions only.
+4. **Verify "spam" before reporting it.** The scariest-looking findings (23-push bursts, null-title pushes, 1:37am sends) were largely BACKFILL artifacts (bulk-stamped `pushed_at` over many hours), not real user notifications. Check `created_at` vs `pushed_at` spread before claiming users were spammed.
