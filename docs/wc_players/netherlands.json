@@ -1,251 +1,253 @@
 {
-  "country": "netherlands",
-  "displayName": "Netherlands",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Ronald Koeman",
-  "captain": "V. van Dijk",
-  "keyPlayers": [
-    "V. van Dijk",
-    "M. Depay",
-    "C. Gakpo",
-    "F. de Jong",
-    "R. Gravenberch",
-    "T. Reijnders"
-  ],
-  "players": [
-    {
-      "id": 26232,
-      "name": "M. Flekken",
-      "age": 32,
-      "position": "Goalkeeper",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/26232.png",
-      "club": "Bayer Leverkusen"
-    },
-    {
-      "id": 194536,
-      "name": "R. Roefs",
-      "age": 22,
-      "position": "Goalkeeper",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/194536.png",
-      "club": "Sunderland"
-    },
-    {
-      "id": 129058,
-      "name": "B. Verbruggen",
-      "age": 23,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/129058.png",
-      "club": "Brighton"
-    },
-    {
-      "id": 18861,
-      "name": "N. Ak\u00e9",
-      "age": 30,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/18861.png",
-      "club": "Manchester City"
-    },
-    {
-      "id": 226,
-      "name": "D. Dumfries",
-      "age": 29,
-      "position": "Defender",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/226.png",
-      "club": "Inter"
-    },
-    {
-      "id": 341642,
-      "name": "J. Hato",
-      "age": 19,
-      "position": "Defender",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/341642.png",
-      "club": "Chelsea"
-    },
-    {
-      "id": 38746,
-      "name": "J. Timber",
-      "age": 24,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/38746.png",
-      "club": "Arsenal"
-    },
-    {
-      "id": 290,
-      "name": "V. van Dijk",
-      "age": 34,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/290.png",
-      "club": "Liverpool"
-    },
-    {
-      "id": 38695,
-      "name": "J. van Hecke",
-      "age": 25,
-      "position": "Defender",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/38695.png",
-      "club": "Brighton"
-    },
-    {
-      "id": 152849,
-      "name": "M. van de Ven",
-      "age": 24,
-      "position": "Defender",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/152849.png",
-      "club": "Tottenham"
-    },
-    {
-      "id": 92993,
-      "name": "M. Wieffer",
-      "age": 26,
-      "position": "Defender",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/92993.png",
-      "club": "Brighton"
-    },
-    {
-      "id": 542,
-      "name": "R. Gravenberch",
-      "age": 23,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/542.png",
-      "club": "Liverpool"
-    },
-    {
-      "id": 36899,
-      "name": "T. Koopmeiners",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/36899.png",
-      "club": "Juventus"
-    },
-    {
-      "id": 36902,
-      "name": "T. Reijnders",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/36902.png",
-      "club": "Manchester City"
-    },
-    {
-      "id": 36905,
-      "name": "G. Til",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/36905.png",
-      "club": "PSV Eindhoven"
-    },
-    {
-      "id": 38747,
-      "name": "Q. Timber",
-      "age": 24,
-      "position": "Midfielder",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/38747.png",
-      "club": "Feyenoord"
-    },
-    {
-      "id": 538,
-      "name": "F. de Jong",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/538.png",
-      "club": "Barcelona"
-    },
-    {
-      "id": 30432,
-      "name": "M. de Roon",
-      "age": 34,
-      "position": "Midfielder",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/30432.png",
-      "club": "Atalanta"
-    },
-    {
-      "id": 792,
-      "name": "J. Kluivert",
-      "age": 26,
-      "position": "Midfielder",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/792.png",
-      "club": "Bournemouth"
-    },
-    {
-      "id": 38750,
-      "name": "B. Brobbey",
-      "age": 23,
-      "position": "Attacker",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/38750.png",
-      "club": "Sunderland"
-    },
-    {
-      "id": 667,
-      "name": "M. Depay",
-      "age": 31,
-      "position": "Attacker",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/667.png",
-      "club": "Corinthians"
-    },
-    {
-      "id": 247,
-      "name": "C. Gakpo",
-      "age": 26,
-      "position": "Attacker",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/247.png",
-      "club": "Liverpool"
-    },
-    {
-      "id": 544,
-      "name": "N. Lang",
-      "age": 26,
-      "position": "Attacker",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/544.png",
-      "club": "Napoli"
-    },
-    {
-      "id": 249,
-      "name": "D. Malen",
-      "age": 26,
-      "position": "Attacker",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/249.png",
-      "club": "Aston Villa"
-    },
-    {
-      "id": 37724,
-      "name": "C. Summerville",
-      "age": 24,
-      "position": "Attacker",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/37724.png",
-      "club": "West Ham"
-    },
-    {
-      "id": 25416,
-      "name": "W. Weghorst",
-      "age": 33,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/25416.png",
-      "club": "Ajax"
-    }
-  ]
+ "country": "netherlands",
+ "displayName": "Netherlands",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Ronald Koeman",
+ "captain": "V. van Dijk",
+ "keyPlayers": [
+  "V. van Dijk",
+  "M. Depay",
+  "C. Gakpo",
+  "F. de Jong",
+  "R. Gravenberch",
+  "T. Reijnders"
+ ],
+ "players": [
+  {
+   "id": 26232,
+   "name": "M. Flekken",
+   "age": 32,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/26232.png",
+   "club": "Bayer Leverkusen"
+  },
+  {
+   "id": 194536,
+   "name": "R. Roefs",
+   "age": 22,
+   "position": "Goalkeeper",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/194536.png",
+   "club": "Sunderland"
+  },
+  {
+   "id": 129058,
+   "name": "B. Verbruggen",
+   "age": 23,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/129058.png",
+   "club": "Brighton"
+  },
+  {
+   "id": 18861,
+   "name": "N. Ak\u00e9",
+   "age": 30,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/18861.png",
+   "club": "Manchester City"
+  },
+  {
+   "id": 226,
+   "name": "D. Dumfries",
+   "age": 29,
+   "position": "Defender",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/226.png",
+   "club": "Inter"
+  },
+  {
+   "id": 341642,
+   "name": "J. Hato",
+   "age": 19,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/341642.png",
+   "club": "Chelsea"
+  },
+  {
+   "id": 38746,
+   "name": "J. Timber",
+   "age": 24,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/38746.png",
+   "club": "Arsenal"
+  },
+  {
+   "id": 290,
+   "name": "V. van Dijk",
+   "age": 34,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/290.png",
+   "club": "Liverpool"
+  },
+  {
+   "id": 38695,
+   "name": "J. van Hecke",
+   "age": 25,
+   "position": "Defender",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/38695.png",
+   "club": "Brighton"
+  },
+  {
+   "id": 152849,
+   "name": "M. van de Ven",
+   "age": 24,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/152849.png",
+   "club": "Tottenham"
+  },
+  {
+   "id": 92993,
+   "name": "M. Wieffer",
+   "age": 26,
+   "position": "Defender",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/92993.png",
+   "club": "Brighton"
+  },
+  {
+   "id": 542,
+   "name": "R. Gravenberch",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/542.png",
+   "club": "Liverpool"
+  },
+  {
+   "id": 36899,
+   "name": "T. Koopmeiners",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/36899.png",
+   "club": "Juventus"
+  },
+  {
+   "id": 36902,
+   "name": "T. Reijnders",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/36902.png",
+   "club": "Manchester City"
+  },
+  {
+   "id": 36905,
+   "name": "G. Til",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/36905.png",
+   "club": "PSV Eindhoven"
+  },
+  {
+   "id": 38747,
+   "name": "Q. Timber",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/38747.png",
+   "club": "Feyenoord"
+  },
+  {
+   "id": 538,
+   "name": "F. de Jong",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/538.png",
+   "club": "Barcelona"
+  },
+  {
+   "id": 30432,
+   "name": "M. de Roon",
+   "age": 34,
+   "position": "Midfielder",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/30432.png",
+   "club": "Atalanta"
+  },
+  {
+   "id": 792,
+   "name": "J. Kluivert",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/792.png",
+   "club": "Bournemouth"
+  },
+  {
+   "id": 38750,
+   "name": "B. Brobbey",
+   "age": 23,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/38750.png",
+   "club": "Sunderland"
+  },
+  {
+   "id": 667,
+   "name": "M. Depay",
+   "age": 31,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/667.png",
+   "club": "Corinthians"
+  },
+  {
+   "id": 247,
+   "name": "C. Gakpo",
+   "age": 26,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/247.png",
+   "club": "Liverpool"
+  },
+  {
+   "id": 544,
+   "name": "N. Lang",
+   "age": 26,
+   "position": "Attacker",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/544.png",
+   "club": "Napoli"
+  },
+  {
+   "id": 249,
+   "name": "D. Malen",
+   "age": 26,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/249.png",
+   "club": "Aston Villa"
+  },
+  {
+   "id": 37724,
+   "name": "C. Summerville",
+   "age": 24,
+   "position": "Attacker",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/37724.png",
+   "club": "West Ham"
+  },
+  {
+   "id": 25416,
+   "name": "W. Weghorst",
+   "age": 33,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/25416.png",
+   "club": "Ajax"
+  }
+ ],
+ "guardianStarPlayer": "Virgil van Dijk",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

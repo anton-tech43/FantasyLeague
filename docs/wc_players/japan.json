@@ -1,251 +1,253 @@
 {
-  "country": "japan",
-  "displayName": "Japan",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Hajime Moriyasu",
-  "captain": "W. Endo",
-  "keyPlayers": [
-    "T. Kubo",
-    "W. Endo",
-    "R. Doan",
-    "D. Kamada",
-    "A. Ueda",
-    "K. Goto"
-  ],
-  "players": [
-    {
-      "id": 304782,
-      "name": "T. Hayakawa",
-      "age": 26,
-      "position": "Goalkeeper",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/304782.png",
-      "club": "Kashima"
-    },
-    {
-      "id": 33034,
-      "name": "K. Osako",
-      "age": 26,
-      "position": "Goalkeeper",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/33034.png",
-      "club": "Sanfrecce Hiroshima"
-    },
-    {
-      "id": 199578,
-      "name": "Z. Suzuki",
-      "age": 23,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/199578.png",
-      "club": "Parma"
-    },
-    {
-      "id": 38114,
-      "name": "K. Itakura",
-      "age": 28,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/38114.png",
-      "club": "Ajax"
-    },
-    {
-      "id": 32893,
-      "name": "H. Ito",
-      "age": 26,
-      "position": "Defender",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/32893.png",
-      "club": "Bayern M\u00fcnchen"
-    },
-    {
-      "id": 440,
-      "name": "Y. Nagatomo",
-      "age": 39,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/440.png",
-      "club": "FC Tokyo"
-    },
-    {
-      "id": 33165,
-      "name": "A. Seko",
-      "age": 25,
-      "position": "Defender",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/33165.png",
-      "club": "Le Havre"
-    },
-    {
-      "id": 32887,
-      "name": "Y. Sugawara",
-      "age": 25,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/32887.png",
-      "club": "Werder Bremen"
-    },
-    {
-      "id": 351014,
-      "name": "J. Suzuki",
-      "age": 22,
-      "position": "Defender",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/351014.png",
-      "club": "FC Copenhagen"
-    },
-    {
-      "id": 32954,
-      "name": "S. Taniguchi",
-      "age": 34,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/32954.png",
-      "club": "St. Truiden"
-    },
-    {
-      "id": 2597,
-      "name": "T. Tomiyasu",
-      "age": 27,
-      "position": "Defender",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/2597.png",
-      "club": "Ajax"
-    },
-    {
-      "id": 32858,
-      "name": "T. Watanabe",
-      "age": 28,
-      "position": "Defender",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/32858.png",
-      "club": "Feyenoord"
-    },
-    {
-      "id": 2598,
-      "name": "R. Doan",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/2598.png",
-      "club": "Eintracht Frankfurt"
-    },
-    {
-      "id": 8500,
-      "name": "W. Endo",
-      "age": 32,
-      "position": "Midfielder",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/8500.png",
-      "club": "Liverpool"
-    },
-    {
-      "id": 2601,
-      "name": "D. Kamada",
-      "age": 29,
-      "position": "Midfielder",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/2601.png",
-      "club": "Crystal Palace"
-    },
-    {
-      "id": 33889,
-      "name": "K. Sano",
-      "age": 25,
-      "position": "Midfielder",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/33889.png",
-      "club": "FSV Mainz 05"
-    },
-    {
-      "id": 32966,
-      "name": "A. Tanaka",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/32966.png",
-      "club": "Leeds"
-    },
-    {
-      "id": 1942,
-      "name": "J. Ito",
-      "age": 32,
-      "position": "Midfielder",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/1942.png",
-      "club": "Genk"
-    },
-    {
-      "id": 32862,
-      "name": "T. Kubo",
-      "age": 24,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/32862.png",
-      "club": "Real Sociedad"
-    },
-    {
-      "id": 33224,
-      "name": "D. Maeda",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/33224.png",
-      "club": "Celtic"
-    },
-    {
-      "id": 33321,
-      "name": "Keito Nakamura",
-      "age": 25,
-      "position": "Midfielder",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/33321.png",
-      "club": "Reims"
-    },
-    {
-      "id": 199143,
-      "name": "Y. Suzuki",
-      "age": 24,
-      "position": "Midfielder",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/199143.png",
-      "club": "SC Freiburg"
-    },
-    {
-      "id": 375930,
-      "name": "K. Goto",
-      "age": 20,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/375930.png",
-      "club": "St. Truiden"
-    },
-    {
-      "id": 33289,
-      "name": "Koki Ogawa",
-      "age": 28,
-      "position": "Attacker",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/33289.png",
-      "club": "NEC Nijmegen"
-    },
-    {
-      "id": 422572,
-      "name": "K. Shiogai",
-      "age": 20,
-      "position": "Attacker",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/422572.png",
-      "club": "NEC Nijmegen"
-    },
-    {
-      "id": 72155,
-      "name": "A. Ueda",
-      "age": 27,
-      "position": "Attacker",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/72155.png",
-      "club": "Feyenoord"
-    }
-  ]
+ "country": "japan",
+ "displayName": "Japan",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Hajime Moriyasu",
+ "captain": "W. Endo",
+ "keyPlayers": [
+  "T. Kubo",
+  "W. Endo",
+  "R. Doan",
+  "D. Kamada",
+  "A. Ueda",
+  "K. Goto"
+ ],
+ "players": [
+  {
+   "id": 304782,
+   "name": "T. Hayakawa",
+   "age": 26,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/304782.png",
+   "club": "Kashima"
+  },
+  {
+   "id": 33034,
+   "name": "K. Osako",
+   "age": 26,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/33034.png",
+   "club": "Sanfrecce Hiroshima"
+  },
+  {
+   "id": 199578,
+   "name": "Z. Suzuki",
+   "age": 23,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/199578.png",
+   "club": "Parma"
+  },
+  {
+   "id": 38114,
+   "name": "K. Itakura",
+   "age": 28,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/38114.png",
+   "club": "Ajax"
+  },
+  {
+   "id": 32893,
+   "name": "H. Ito",
+   "age": 26,
+   "position": "Defender",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/32893.png",
+   "club": "Bayern M\u00fcnchen"
+  },
+  {
+   "id": 440,
+   "name": "Y. Nagatomo",
+   "age": 39,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/440.png",
+   "club": "FC Tokyo"
+  },
+  {
+   "id": 33165,
+   "name": "A. Seko",
+   "age": 25,
+   "position": "Defender",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/33165.png",
+   "club": "Le Havre"
+  },
+  {
+   "id": 32887,
+   "name": "Y. Sugawara",
+   "age": 25,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/32887.png",
+   "club": "Werder Bremen"
+  },
+  {
+   "id": 351014,
+   "name": "J. Suzuki",
+   "age": 22,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/351014.png",
+   "club": "FC Copenhagen"
+  },
+  {
+   "id": 32954,
+   "name": "S. Taniguchi",
+   "age": 34,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/32954.png",
+   "club": "St. Truiden"
+  },
+  {
+   "id": 2597,
+   "name": "T. Tomiyasu",
+   "age": 27,
+   "position": "Defender",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/2597.png",
+   "club": "Ajax"
+  },
+  {
+   "id": 32858,
+   "name": "T. Watanabe",
+   "age": 28,
+   "position": "Defender",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/32858.png",
+   "club": "Feyenoord"
+  },
+  {
+   "id": 2598,
+   "name": "R. Doan",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/2598.png",
+   "club": "Eintracht Frankfurt"
+  },
+  {
+   "id": 8500,
+   "name": "W. Endo",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/8500.png",
+   "club": "Liverpool"
+  },
+  {
+   "id": 2601,
+   "name": "D. Kamada",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/2601.png",
+   "club": "Crystal Palace"
+  },
+  {
+   "id": 33889,
+   "name": "K. Sano",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/33889.png",
+   "club": "FSV Mainz 05"
+  },
+  {
+   "id": 32966,
+   "name": "A. Tanaka",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/32966.png",
+   "club": "Leeds"
+  },
+  {
+   "id": 1942,
+   "name": "J. Ito",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/1942.png",
+   "club": "Genk"
+  },
+  {
+   "id": 32862,
+   "name": "T. Kubo",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/32862.png",
+   "club": "Real Sociedad"
+  },
+  {
+   "id": 33224,
+   "name": "D. Maeda",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/33224.png",
+   "club": "Celtic"
+  },
+  {
+   "id": 33321,
+   "name": "Keito Nakamura",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/33321.png",
+   "club": "Reims"
+  },
+  {
+   "id": 199143,
+   "name": "Y. Suzuki",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/199143.png",
+   "club": "SC Freiburg"
+  },
+  {
+   "id": 375930,
+   "name": "K. Goto",
+   "age": 20,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/375930.png",
+   "club": "St. Truiden"
+  },
+  {
+   "id": 33289,
+   "name": "Koki Ogawa",
+   "age": 28,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/33289.png",
+   "club": "NEC Nijmegen"
+  },
+  {
+   "id": 422572,
+   "name": "K. Shiogai",
+   "age": 20,
+   "position": "Attacker",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/422572.png",
+   "club": "NEC Nijmegen"
+  },
+  {
+   "id": 72155,
+   "name": "A. Ueda",
+   "age": 27,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/72155.png",
+   "club": "Feyenoord"
+  }
+ ],
+ "guardianStarPlayer": "Takefusa Kubo",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

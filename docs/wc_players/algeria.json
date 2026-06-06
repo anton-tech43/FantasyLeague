@@ -1,251 +1,253 @@
 {
-  "country": "algeria",
-  "displayName": "Algeria",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Vladimir Petković",
-  "captain": "R. Mahrez",
-  "keyPlayers": [
-    "R. Mahrez",
-    "M. Amoura",
-    "A. Gouiri",
-    "R. Aït-Nouri",
-    "R. Bensebaïni",
-    "I. Maza"
-  ],
-  "players": [
-    {
-      "id": 4414,
-      "name": "O. Benbot",
-      "age": 31,
-      "position": "Goalkeeper",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/4414.png",
-      "club": "USM Alger"
-    },
-    {
-      "id": 304229,
-      "name": "M. Mastil",
-      "age": 25,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/304229.png",
-      "club": "Stade Nyonnais"
-    },
-    {
-      "id": 732,
-      "name": "L. Zidane",
-      "age": 27,
-      "position": "Goalkeeper",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/732.png",
-      "club": "Granada CF"
-    },
-    {
-      "id": 342740,
-      "name": "A. Abada",
-      "age": 26,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/342740.png",
-      "club": "ASO Chlef"
-    },
-    {
-      "id": 21138,
-      "name": "R. A\u00eft-Nouri",
-      "age": 24,
-      "position": "Defender",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/21138.png",
-      "club": "Manchester City"
-    },
-    {
-      "id": 4561,
-      "name": "Z. Bela\u00efd",
-      "age": 27,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/4561.png",
-      "club": "JS Kabylie"
-    },
-    {
-      "id": 303362,
-      "name": "R. Belghali",
-      "age": 23,
-      "position": "Defender",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/303362.png",
-      "club": "Hellas Verona"
-    },
-    {
-      "id": 2194,
-      "name": "R. Benseba\u00efni",
-      "age": 30,
-      "position": "Defender",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/2194.png",
-      "club": "Borussia Dortmund"
-    },
-    {
-      "id": 20869,
-      "name": "S. Chergui",
-      "age": 26,
-      "position": "Defender",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/20869.png",
-      "club": "Paris FC"
-    },
-    {
-      "id": 271539,
-      "name": "J. Hadjam",
-      "age": 22,
-      "position": "Defender",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/271539.png",
-      "club": "BSC Young Boys"
-    },
-    {
-      "id": 1567,
-      "name": "A. Mandi",
-      "age": 34,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/1567.png",
-      "club": "Lille"
-    },
-    {
-      "id": 4569,
-      "name": "M. Tougai",
-      "age": 26,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/4569.png",
-      "club": "ES Tunis"
-    },
-    {
-      "id": 658,
-      "name": "H. Aouar",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/658.png",
-      "club": "Al-Ittihad FC"
-    },
-    {
-      "id": 409,
-      "name": "N. Bentaleb",
-      "age": 31,
-      "position": "Midfielder",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/409.png",
-      "club": "Lille"
-    },
-    {
-      "id": 4399,
-      "name": "H. Boudaoui",
-      "age": 26,
-      "position": "Midfielder",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/4399.png",
-      "club": "Nice"
-    },
-    {
-      "id": 380587,
-      "name": "I. Maza",
-      "age": 20,
-      "position": "Midfielder",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/380587.png",
-      "club": "Bayer Leverkusen"
-    },
-    {
-      "id": 327599,
-      "name": "Y. Titraoui",
-      "age": 22,
-      "position": "Midfielder",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/327599.png",
-      "club": "Charleroi"
-    },
-    {
-      "id": 129047,
-      "name": "R. Zerrouki",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/129047.png",
-      "club": "Twente"
-    },
-    {
-      "id": 276670,
-      "name": "F. Cha\u00efbi",
-      "age": 23,
-      "position": "Midfielder",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/276670.png",
-      "club": "Eintracht Frankfurt"
-    },
-    {
-      "id": 200139,
-      "name": "M. Amoura",
-      "age": 26,
-      "position": "Attacker",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/200139.png",
-      "club": "VfL Wolfsburg"
-    },
-    {
-      "id": 292924,
-      "name": "A. Benbouali",
-      "age": 26,
-      "position": "Attacker",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/292924.png",
-      "club": "Gyori ETO FC"
-    },
-    {
-      "id": 329163,
-      "name": "A. Boulbina",
-      "age": 22,
-      "position": "Attacker",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/329163.png",
-      "club": "Al-Duhail SC"
-    },
-    {
-      "id": 334915,
-      "name": "F. Ghedjemis",
-      "age": 23,
-      "position": "Attacker",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/334915.png",
-      "club": "Frosinone"
-    },
-    {
-      "id": 85041,
-      "name": "A. Gouiri",
-      "age": 25,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/85041.png",
-      "club": "Marseille"
-    },
-    {
-      "id": 326067,
-      "name": "A. Hadj-Moussa",
-      "age": 23,
-      "position": "Attacker",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/326067.png",
-      "club": "Feyenoord"
-    },
-    {
-      "id": 635,
-      "name": "R. Mahrez",
-      "age": 34,
-      "position": "Attacker",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/635.png",
-      "club": "Al-Ahli Jeddah"
-    }
-  ]
+ "country": "algeria",
+ "displayName": "Algeria",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Vladimir Petkovi\u0107",
+ "captain": "R. Mahrez",
+ "keyPlayers": [
+  "R. Mahrez",
+  "M. Amoura",
+  "A. Gouiri",
+  "R. A\u00eft-Nouri",
+  "R. Benseba\u00efni",
+  "I. Maza"
+ ],
+ "players": [
+  {
+   "id": 4414,
+   "name": "O. Benbot",
+   "age": 31,
+   "position": "Goalkeeper",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/4414.png",
+   "club": "USM Alger"
+  },
+  {
+   "id": 304229,
+   "name": "M. Mastil",
+   "age": 25,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/304229.png",
+   "club": "Stade Nyonnais"
+  },
+  {
+   "id": 732,
+   "name": "L. Zidane",
+   "age": 27,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/732.png",
+   "club": "Granada CF"
+  },
+  {
+   "id": 342740,
+   "name": "A. Abada",
+   "age": 26,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/342740.png",
+   "club": "ASO Chlef"
+  },
+  {
+   "id": 21138,
+   "name": "R. A\u00eft-Nouri",
+   "age": 24,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/21138.png",
+   "club": "Manchester City"
+  },
+  {
+   "id": 4561,
+   "name": "Z. Bela\u00efd",
+   "age": 27,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/4561.png",
+   "club": "JS Kabylie"
+  },
+  {
+   "id": 303362,
+   "name": "R. Belghali",
+   "age": 23,
+   "position": "Defender",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/303362.png",
+   "club": "Hellas Verona"
+  },
+  {
+   "id": 2194,
+   "name": "R. Benseba\u00efni",
+   "age": 30,
+   "position": "Defender",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/2194.png",
+   "club": "Borussia Dortmund"
+  },
+  {
+   "id": 20869,
+   "name": "S. Chergui",
+   "age": 26,
+   "position": "Defender",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/20869.png",
+   "club": "Paris FC"
+  },
+  {
+   "id": 271539,
+   "name": "J. Hadjam",
+   "age": 22,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/271539.png",
+   "club": "BSC Young Boys"
+  },
+  {
+   "id": 1567,
+   "name": "A. Mandi",
+   "age": 34,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/1567.png",
+   "club": "Lille"
+  },
+  {
+   "id": 4569,
+   "name": "M. Tougai",
+   "age": 26,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/4569.png",
+   "club": "ES Tunis"
+  },
+  {
+   "id": 658,
+   "name": "H. Aouar",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/658.png",
+   "club": "Al-Ittihad FC"
+  },
+  {
+   "id": 409,
+   "name": "N. Bentaleb",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/409.png",
+   "club": "Lille"
+  },
+  {
+   "id": 4399,
+   "name": "H. Boudaoui",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/4399.png",
+   "club": "Nice"
+  },
+  {
+   "id": 380587,
+   "name": "I. Maza",
+   "age": 20,
+   "position": "Midfielder",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/380587.png",
+   "club": "Bayer Leverkusen"
+  },
+  {
+   "id": 327599,
+   "name": "Y. Titraoui",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/327599.png",
+   "club": "Charleroi"
+  },
+  {
+   "id": 129047,
+   "name": "R. Zerrouki",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/129047.png",
+   "club": "Twente"
+  },
+  {
+   "id": 276670,
+   "name": "F. Cha\u00efbi",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/276670.png",
+   "club": "Eintracht Frankfurt"
+  },
+  {
+   "id": 200139,
+   "name": "M. Amoura",
+   "age": 26,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/200139.png",
+   "club": "VfL Wolfsburg"
+  },
+  {
+   "id": 292924,
+   "name": "A. Benbouali",
+   "age": 26,
+   "position": "Attacker",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/292924.png",
+   "club": "Gyori ETO FC"
+  },
+  {
+   "id": 329163,
+   "name": "A. Boulbina",
+   "age": 22,
+   "position": "Attacker",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/329163.png",
+   "club": "Al-Duhail SC"
+  },
+  {
+   "id": 334915,
+   "name": "F. Ghedjemis",
+   "age": 23,
+   "position": "Attacker",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/334915.png",
+   "club": "Frosinone"
+  },
+  {
+   "id": 85041,
+   "name": "A. Gouiri",
+   "age": 25,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/85041.png",
+   "club": "Marseille"
+  },
+  {
+   "id": 326067,
+   "name": "A. Hadj-Moussa",
+   "age": 23,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/326067.png",
+   "club": "Feyenoord"
+  },
+  {
+   "id": 635,
+   "name": "R. Mahrez",
+   "age": 34,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/635.png",
+   "club": "Al-Ahli Jeddah"
+  }
+ ],
+ "guardianStarPlayer": "Riyad Mahrez",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

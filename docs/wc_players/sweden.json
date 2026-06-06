@@ -1,251 +1,253 @@
 {
-  "country": "sweden",
-  "displayName": "Sweden",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Graham Potter",
-  "captain": "V. Lindelöf",
-  "keyPlayers": [
-    "V. Lindelöf",
-    "A. Isak",
-    "V. Gyökeres",
-    "A. Elanga",
-    "L. Bergvall",
-    "I. Hien"
-  ],
-  "players": [
-    {
-      "id": 158700,
-      "name": "V. Johansson",
-      "age": 27,
-      "position": "Goalkeeper",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/158700.png",
-      "club": "Stoke City"
-    },
-    {
-      "id": 2851,
-      "name": "K. Nordfeldt",
-      "age": 36,
-      "position": "Goalkeeper",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/2851.png",
-      "club": "AIK Stockholm"
-    },
-    {
-      "id": 48033,
-      "name": "J. Widell Zetterstr\u00f6m",
-      "age": 27,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/48033.png",
-      "club": "Derby"
-    },
-    {
-      "id": 47903,
-      "name": "H. Ekdal",
-      "age": 27,
-      "position": "Defender",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/47903.png",
-      "club": "Burnley"
-    },
-    {
-      "id": 47969,
-      "name": "G. Gudmundsson",
-      "age": 26,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/47969.png",
-      "club": "Leeds"
-    },
-    {
-      "id": 137976,
-      "name": "I. Hien",
-      "age": 26,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/137976.png",
-      "club": "Atalanta"
-    },
-    {
-      "id": 137721,
-      "name": "G. Lagerbielke",
-      "age": 25,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/137721.png",
-      "club": "SC Braga"
-    },
-    {
-      "id": 889,
-      "name": "V. Lindel\u00f6f",
-      "age": 31,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/889.png",
-      "club": "Aston Villa"
-    },
-    {
-      "id": 47988,
-      "name": "C. Starfelt",
-      "age": 30,
-      "position": "Defender",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/47988.png",
-      "club": "Celta Vigo"
-    },
-    {
-      "id": 161504,
-      "name": "H. Johansson",
-      "age": 28,
-      "position": "Defender",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/161504.png",
-      "club": "Mjallby AIF"
-    },
-    {
-      "id": 8486,
-      "name": "E. Smith",
-      "age": 28,
-      "position": "Defender",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/8486.png",
-      "club": "FC St. Pauli"
-    },
-    {
-      "id": 226765,
-      "name": "E. Stroud",
-      "age": 23,
-      "position": "Defender",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/226765.png",
-      "club": "Mjallby AIF"
-    },
-    {
-      "id": 198654,
-      "name": "D. Svensson",
-      "age": 23,
-      "position": "Defender",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/198654.png",
-      "club": "Borussia Dortmund"
-    },
-    {
-      "id": 47696,
-      "name": "A. Bernhardsson",
-      "age": 27,
-      "position": "Defender",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/47696.png",
-      "club": "Holstein Kiel"
-    },
-    {
-      "id": 265820,
-      "name": "Y. Ayari",
-      "age": 22,
-      "position": "Midfielder",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/265820.png",
-      "club": "Brighton"
-    },
-    {
-      "id": 347316,
-      "name": "L. Bergvall",
-      "age": 19,
-      "position": "Midfielder",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/347316.png",
-      "club": "Tottenham"
-    },
-    {
-      "id": 48002,
-      "name": "B. Nygren",
-      "age": 24,
-      "position": "Midfielder",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/48002.png",
-      "club": "Celtic"
-    },
-    {
-      "id": 48047,
-      "name": "J. Karlstr\u00f6m",
-      "age": 30,
-      "position": "Midfielder",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/48047.png",
-      "club": "Udinese"
-    },
-    {
-      "id": 2860,
-      "name": "K. Sema",
-      "age": 32,
-      "position": "Midfielder",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/2860.png",
-      "club": "Pafos"
-    },
-    {
-      "id": 30484,
-      "name": "M. Svanberg",
-      "age": 26,
-      "position": "Midfielder",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/30484.png",
-      "club": "VfL Wolfsburg"
-    },
-    {
-      "id": 350850,
-      "name": "B. Zeneli",
-      "age": 23,
-      "position": "Midfielder",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/350850.png",
-      "club": "IF Elfsborg"
-    },
-    {
-      "id": 160925,
-      "name": "T. Ali",
-      "age": 27,
-      "position": "Attacker",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/160925.png",
-      "club": "Malmo FF"
-    },
-    {
-      "id": 153430,
-      "name": "A. Elanga",
-      "age": 23,
-      "position": "Attacker",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/153430.png",
-      "club": "Newcastle"
-    },
-    {
-      "id": 18979,
-      "name": "V. Gy\u00f6keres",
-      "age": 27,
-      "position": "Attacker",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/18979.png",
-      "club": "Arsenal"
-    },
-    {
-      "id": 2864,
-      "name": "A. Isak",
-      "age": 26,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/2864.png",
-      "club": "Liverpool"
-    },
-    {
-      "id": 15683,
-      "name": "G. Nilsson",
-      "age": 28,
-      "position": "Attacker",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/15683.png",
-      "club": "Club Brugge KV"
-    }
-  ]
+ "country": "sweden",
+ "displayName": "Sweden",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Graham Potter",
+ "captain": "V. Lindel\u00f6f",
+ "keyPlayers": [
+  "V. Lindel\u00f6f",
+  "A. Isak",
+  "V. Gy\u00f6keres",
+  "A. Elanga",
+  "L. Bergvall",
+  "I. Hien"
+ ],
+ "players": [
+  {
+   "id": 158700,
+   "name": "V. Johansson",
+   "age": 27,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/158700.png",
+   "club": "Stoke City"
+  },
+  {
+   "id": 2851,
+   "name": "K. Nordfeldt",
+   "age": 36,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/2851.png",
+   "club": "AIK Stockholm"
+  },
+  {
+   "id": 48033,
+   "name": "J. Widell Zetterstr\u00f6m",
+   "age": 27,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/48033.png",
+   "club": "Derby"
+  },
+  {
+   "id": 47903,
+   "name": "H. Ekdal",
+   "age": 27,
+   "position": "Defender",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/47903.png",
+   "club": "Burnley"
+  },
+  {
+   "id": 47969,
+   "name": "G. Gudmundsson",
+   "age": 26,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/47969.png",
+   "club": "Leeds"
+  },
+  {
+   "id": 137976,
+   "name": "I. Hien",
+   "age": 26,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/137976.png",
+   "club": "Atalanta"
+  },
+  {
+   "id": 137721,
+   "name": "G. Lagerbielke",
+   "age": 25,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/137721.png",
+   "club": "SC Braga"
+  },
+  {
+   "id": 889,
+   "name": "V. Lindel\u00f6f",
+   "age": 31,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/889.png",
+   "club": "Aston Villa"
+  },
+  {
+   "id": 47988,
+   "name": "C. Starfelt",
+   "age": 30,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/47988.png",
+   "club": "Celta Vigo"
+  },
+  {
+   "id": 161504,
+   "name": "H. Johansson",
+   "age": 28,
+   "position": "Defender",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/161504.png",
+   "club": "Mjallby AIF"
+  },
+  {
+   "id": 8486,
+   "name": "E. Smith",
+   "age": 28,
+   "position": "Defender",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/8486.png",
+   "club": "FC St. Pauli"
+  },
+  {
+   "id": 226765,
+   "name": "E. Stroud",
+   "age": 23,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/226765.png",
+   "club": "Mjallby AIF"
+  },
+  {
+   "id": 198654,
+   "name": "D. Svensson",
+   "age": 23,
+   "position": "Defender",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/198654.png",
+   "club": "Borussia Dortmund"
+  },
+  {
+   "id": 47696,
+   "name": "A. Bernhardsson",
+   "age": 27,
+   "position": "Defender",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/47696.png",
+   "club": "Holstein Kiel"
+  },
+  {
+   "id": 265820,
+   "name": "Y. Ayari",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/265820.png",
+   "club": "Brighton"
+  },
+  {
+   "id": 347316,
+   "name": "L. Bergvall",
+   "age": 19,
+   "position": "Midfielder",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/347316.png",
+   "club": "Tottenham"
+  },
+  {
+   "id": 48002,
+   "name": "B. Nygren",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/48002.png",
+   "club": "Celtic"
+  },
+  {
+   "id": 48047,
+   "name": "J. Karlstr\u00f6m",
+   "age": 30,
+   "position": "Midfielder",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/48047.png",
+   "club": "Udinese"
+  },
+  {
+   "id": 2860,
+   "name": "K. Sema",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/2860.png",
+   "club": "Pafos"
+  },
+  {
+   "id": 30484,
+   "name": "M. Svanberg",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/30484.png",
+   "club": "VfL Wolfsburg"
+  },
+  {
+   "id": 350850,
+   "name": "B. Zeneli",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/350850.png",
+   "club": "IF Elfsborg"
+  },
+  {
+   "id": 160925,
+   "name": "T. Ali",
+   "age": 27,
+   "position": "Attacker",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/160925.png",
+   "club": "Malmo FF"
+  },
+  {
+   "id": 153430,
+   "name": "A. Elanga",
+   "age": 23,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/153430.png",
+   "club": "Newcastle"
+  },
+  {
+   "id": 18979,
+   "name": "V. Gy\u00f6keres",
+   "age": 27,
+   "position": "Attacker",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/18979.png",
+   "club": "Arsenal"
+  },
+  {
+   "id": 2864,
+   "name": "A. Isak",
+   "age": 26,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/2864.png",
+   "club": "Liverpool"
+  },
+  {
+   "id": 15683,
+   "name": "G. Nilsson",
+   "age": 28,
+   "position": "Attacker",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/15683.png",
+   "club": "Club Brugge KV"
+  }
+ ],
+ "guardianStarPlayer": "Alexander Isak",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

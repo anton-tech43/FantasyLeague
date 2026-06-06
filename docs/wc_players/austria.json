@@ -1,251 +1,253 @@
 {
-  "country": "austria",
-  "displayName": "Austria",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Ralf Rangnick",
-  "captain": "D. Alaba",
-  "keyPlayers": [
-    "D. Alaba",
-    "M. Arnautovic",
-    "K. Laimer",
-    "M. Sabitzer",
-    "K. Danso",
-    "N. Seiwald"
-  ],
-  "players": [
-    {
-      "id": 7598,
-      "name": "P. Pentz",
-      "age": 28,
-      "position": "Goalkeeper",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/7598.png",
-      "club": "Brondby"
-    },
-    {
-      "id": 7525,
-      "name": "A. Schlager",
-      "age": 29,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/7525.png",
-      "club": "Red Bull Salzburg"
-    },
-    {
-      "id": 221605,
-      "name": "F. Wiegele",
-      "age": 24,
-      "position": "Goalkeeper",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/221605.png",
-      "club": "Plzen"
-    },
-    {
-      "id": 126640,
-      "name": "D. Affengruber",
-      "age": 24,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/126640.png",
-      "club": "Elche"
-    },
-    {
-      "id": 505,
-      "name": "D. Alaba",
-      "age": 33,
-      "position": "Defender",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/505.png",
-      "club": "Real Madrid"
-    },
-    {
-      "id": 25287,
-      "name": "K. Danso",
-      "age": 27,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/25287.png",
-      "club": "Tottenham"
-    },
-    {
-      "id": 25314,
-      "name": "M. Friedl",
-      "age": 27,
-      "position": "Defender",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/25314.png",
-      "club": "Werder Bremen"
-    },
-    {
-      "id": 26240,
-      "name": "P. Lienhart",
-      "age": 29,
-      "position": "Defender",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/26240.png",
-      "club": "SC Freiburg"
-    },
-    {
-      "id": 25915,
-      "name": "P. Mwene",
-      "age": 31,
-      "position": "Defender",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/25915.png",
-      "club": "FSV Mainz 05"
-    },
-    {
-      "id": 711,
-      "name": "S. Posch",
-      "age": 28,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/711.png",
-      "club": "FSV Mainz 05"
-    },
-    {
-      "id": 7090,
-      "name": "M. Svoboda",
-      "age": 27,
-      "position": "Defender",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/7090.png",
-      "club": "Venezia"
-    },
-    {
-      "id": 715,
-      "name": "C. Baumgartner",
-      "age": 26,
-      "position": "Midfielder",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/715.png",
-      "club": "RB Leipzig"
-    },
-    {
-      "id": 138935,
-      "name": "C. Chukwuemeka",
-      "age": 22,
-      "position": "Midfielder",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/138935.png",
-      "club": "Borussia Dortmund"
-    },
-    {
-      "id": 719,
-      "name": "F. Grillitsch",
-      "age": 30,
-      "position": "Midfielder",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/719.png",
-      "club": "SC Braga"
-    },
-    {
-      "id": 1157,
-      "name": "K. Laimer",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/1157.png",
-      "club": "Bayern M\u00fcnchen"
-    },
-    {
-      "id": 7327,
-      "name": "A. Prass",
-      "age": 24,
-      "position": "Midfielder",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/7327.png",
-      "club": "1899 Hoffenheim"
-    },
-    {
-      "id": 1159,
-      "name": "M. Sabitzer",
-      "age": 31,
-      "position": "Midfielder",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/1159.png",
-      "club": "Borussia Dortmund"
-    },
-    {
-      "id": 1095,
-      "name": "X. Schlager",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/1095.png",
-      "club": "RB Leipzig"
-    },
-    {
-      "id": 7562,
-      "name": "R. Schmid",
-      "age": 25,
-      "position": "Midfielder",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/7562.png",
-      "club": "Werder Bremen"
-    },
-    {
-      "id": 417,
-      "name": "A. Sch\u00f6pf",
-      "age": 31,
-      "position": "Midfielder",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/417.png",
-      "club": "Wolfsberger AC"
-    },
-    {
-      "id": 7328,
-      "name": "N. Seiwald",
-      "age": 24,
-      "position": "Midfielder",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/7328.png",
-      "club": "RB Leipzig"
-    },
-    {
-      "id": 327895,
-      "name": "P. Wanner",
-      "age": 20,
-      "position": "Midfielder",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/327895.png",
-      "club": "PSV Eindhoven"
-    },
-    {
-      "id": 126642,
-      "name": "P. Wimmer",
-      "age": 24,
-      "position": "Attacker",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/126642.png",
-      "club": "VfL Wolfsburg"
-    },
-    {
-      "id": 18830,
-      "name": "M. Arnautovic",
-      "age": 36,
-      "position": "Attacker",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/18830.png",
-      "club": "FK Crvena Zvezda"
-    },
-    {
-      "id": 25297,
-      "name": "M. Gregoritsch",
-      "age": 31,
-      "position": "Attacker",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/25297.png",
-      "club": "FC Augsburg"
-    },
-    {
-      "id": 7722,
-      "name": "S. Kalajdzic",
-      "age": 28,
-      "position": "Attacker",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/7722.png",
-      "club": "Lask Linz"
-    }
-  ]
+ "country": "austria",
+ "displayName": "Austria",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Ralf Rangnick",
+ "captain": "D. Alaba",
+ "keyPlayers": [
+  "D. Alaba",
+  "M. Arnautovic",
+  "K. Laimer",
+  "M. Sabitzer",
+  "K. Danso",
+  "N. Seiwald"
+ ],
+ "players": [
+  {
+   "id": 7598,
+   "name": "P. Pentz",
+   "age": 28,
+   "position": "Goalkeeper",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/7598.png",
+   "club": "Brondby"
+  },
+  {
+   "id": 7525,
+   "name": "A. Schlager",
+   "age": 29,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/7525.png",
+   "club": "Red Bull Salzburg"
+  },
+  {
+   "id": 221605,
+   "name": "F. Wiegele",
+   "age": 24,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/221605.png",
+   "club": "Plzen"
+  },
+  {
+   "id": 126640,
+   "name": "D. Affengruber",
+   "age": 24,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/126640.png",
+   "club": "Elche"
+  },
+  {
+   "id": 505,
+   "name": "D. Alaba",
+   "age": 33,
+   "position": "Defender",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/505.png",
+   "club": "Real Madrid"
+  },
+  {
+   "id": 25287,
+   "name": "K. Danso",
+   "age": 27,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/25287.png",
+   "club": "Tottenham"
+  },
+  {
+   "id": 25314,
+   "name": "M. Friedl",
+   "age": 27,
+   "position": "Defender",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/25314.png",
+   "club": "Werder Bremen"
+  },
+  {
+   "id": 26240,
+   "name": "P. Lienhart",
+   "age": 29,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/26240.png",
+   "club": "SC Freiburg"
+  },
+  {
+   "id": 25915,
+   "name": "P. Mwene",
+   "age": 31,
+   "position": "Defender",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/25915.png",
+   "club": "FSV Mainz 05"
+  },
+  {
+   "id": 711,
+   "name": "S. Posch",
+   "age": 28,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/711.png",
+   "club": "FSV Mainz 05"
+  },
+  {
+   "id": 7090,
+   "name": "M. Svoboda",
+   "age": 27,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/7090.png",
+   "club": "Venezia"
+  },
+  {
+   "id": 715,
+   "name": "C. Baumgartner",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/715.png",
+   "club": "RB Leipzig"
+  },
+  {
+   "id": 138935,
+   "name": "C. Chukwuemeka",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/138935.png",
+   "club": "Borussia Dortmund"
+  },
+  {
+   "id": 719,
+   "name": "F. Grillitsch",
+   "age": 30,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/719.png",
+   "club": "SC Braga"
+  },
+  {
+   "id": 1157,
+   "name": "K. Laimer",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/1157.png",
+   "club": "Bayern M\u00fcnchen"
+  },
+  {
+   "id": 7327,
+   "name": "A. Prass",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/7327.png",
+   "club": "1899 Hoffenheim"
+  },
+  {
+   "id": 1159,
+   "name": "M. Sabitzer",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/1159.png",
+   "club": "Borussia Dortmund"
+  },
+  {
+   "id": 1095,
+   "name": "X. Schlager",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/1095.png",
+   "club": "RB Leipzig"
+  },
+  {
+   "id": 7562,
+   "name": "R. Schmid",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/7562.png",
+   "club": "Werder Bremen"
+  },
+  {
+   "id": 417,
+   "name": "A. Sch\u00f6pf",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/417.png",
+   "club": "Wolfsberger AC"
+  },
+  {
+   "id": 7328,
+   "name": "N. Seiwald",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/7328.png",
+   "club": "RB Leipzig"
+  },
+  {
+   "id": 327895,
+   "name": "P. Wanner",
+   "age": 20,
+   "position": "Midfielder",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/327895.png",
+   "club": "PSV Eindhoven"
+  },
+  {
+   "id": 126642,
+   "name": "P. Wimmer",
+   "age": 24,
+   "position": "Attacker",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/126642.png",
+   "club": "VfL Wolfsburg"
+  },
+  {
+   "id": 18830,
+   "name": "M. Arnautovic",
+   "age": 36,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/18830.png",
+   "club": "FK Crvena Zvezda"
+  },
+  {
+   "id": 25297,
+   "name": "M. Gregoritsch",
+   "age": 31,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/25297.png",
+   "club": "FC Augsburg"
+  },
+  {
+   "id": 7722,
+   "name": "S. Kalajdzic",
+   "age": 28,
+   "position": "Attacker",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/7722.png",
+   "club": "Lask Linz"
+  }
+ ],
+ "guardianStarPlayer": "Konrad Laimer",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

@@ -1,252 +1,254 @@
 {
-  "country": "mexico",
-  "displayName": "Mexico",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Javier Aguirre",
-  "captain": "Edson Álvarez",
-  "keyPlayers": [
-    "Edson Álvarez",
-    "Raúl Jiménez",
-    "Santiago Giménez",
-    "Álvaro Fidalgo",
-    "Orbelín Pineda",
-    "Guillermo Ochoa",
-    "Gilberto Mora"
-  ],
-  "players": [
-    {
-      "id": 35769,
-      "name": "C. Acevedo",
-      "age": 29,
-      "position": "Goalkeeper",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/35769.png",
-      "club": "Santos Laguna"
-    },
-    {
-      "id": 2098,
-      "name": "G. Ochoa",
-      "age": 40,
-      "position": "Goalkeeper",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/2098.png",
-      "club": "AEL"
-    },
-    {
-      "id": 270774,
-      "name": "J. Rangel",
-      "age": 25,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/270774.png",
-      "club": "Guadalajara Chivas"
-    },
-    {
-      "id": 2881,
-      "name": "J. Gallardo",
-      "age": 31,
-      "position": "Defender",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/2881.png",
-      "club": "Toluca"
-    },
-    {
-      "id": 2873,
-      "name": "C. Montes",
-      "age": 28,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/2873.png",
-      "club": "Lokomotiv"
-    },
-    {
-      "id": 127227,
-      "name": "I. Reyes",
-      "age": 25,
-      "position": "Defender",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/127227.png",
-      "club": "Club America"
-    },
-    {
-      "id": 2878,
-      "name": "J. S\u00e1nchez",
-      "age": 28,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/2878.png",
-      "club": "Cruz Azul"
-    },
-    {
-      "id": 35544,
-      "name": "J. V\u00e1squez",
-      "age": 27,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/35544.png",
-      "club": "Genoa"
-    },
-    {
-      "id": 2869,
-      "name": "E. \u00c1lvarez",
-      "age": 28,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/2869.png",
-      "club": "Fenerbah\u00e7e"
-    },
-    {
-      "id": 390002,
-      "name": "M. Ch\u00e1vez",
-      "age": 21,
-      "position": "Defender",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/390002.png",
-      "club": "AZ Alkmaar"
-    },
-    {
-      "id": 313383,
-      "name": "O. Vargas",
-      "age": 20,
-      "position": "Midfielder",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/313383.png",
-      "club": "Seattle Sounders"
-    },
-    {
-      "id": 35690,
-      "name": "L. Ch\u00e1vez",
-      "age": 29,
-      "position": "Midfielder",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/35690.png",
-      "club": "Dynamo"
-    },
-    {
-      "id": 750,
-      "name": "\u00c1lvaro Fidalgo",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/750.png",
-      "club": "Club America"
-    },
-    {
-      "id": 212233,
-      "name": "B. Guti\u00e9rrez",
-      "age": 22,
-      "position": "Midfielder",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/212233.png",
-      "club": "Chicago Fire"
-    },
-    {
-      "id": 266345,
-      "name": "\u00c9. Lira",
-      "age": 25,
-      "position": "Midfielder",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/266345.png",
-      "club": "Cruz Azul"
-    },
-    {
-      "id": 482605,
-      "name": "G. Mora",
-      "age": 17,
-      "position": "Midfielder",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/482605.png",
-      "club": "Club Tijuana"
-    },
-    {
-      "id": 35576,
-      "name": "O. Pineda",
-      "age": 29,
-      "position": "Midfielder",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/35576.png",
-      "club": "AEK Athens FC"
-    },
-    {
-      "id": 35970,
-      "name": "L. Romo",
-      "age": 30,
-      "position": "Midfielder",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/35970.png",
-      "club": "Guadalajara Chivas"
-    },
-    {
-      "id": 2879,
-      "name": "R. Alvarado",
-      "age": 27,
-      "position": "Attacker",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/2879.png",
-      "club": "Guadalajara Chivas"
-    },
-    {
-      "id": 94562,
-      "name": "S. Gim\u00e9nez",
-      "age": 24,
-      "position": "Attacker",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/94562.png",
-      "club": "AC Milan"
-    },
-    {
-      "id": 291713,
-      "name": "A. Gonz\u00e1lez",
-      "age": 22,
-      "position": "Attacker",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/291713.png",
-      "club": "Guadalajara Chivas"
-    },
-    {
-      "id": 36111,
-      "name": "C. Huerta",
-      "age": 25,
-      "position": "Attacker",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/36111.png",
-      "club": "Anderlecht"
-    },
-    {
-      "id": 2887,
-      "name": "R. Jim\u00e9nez",
-      "age": 34,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/2887.png",
-      "club": "Fulham"
-    },
-    {
-      "id": 36088,
-      "name": "G. Mart\u00ednez",
-      "age": 30,
-      "position": "Attacker",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/36088.png",
-      "club": "U.N.A.M. - Pumas"
-    },
-    {
-      "id": 35532,
-      "name": "J. Qui\u00f1ones",
-      "age": 28,
-      "position": "Attacker",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/35532.png",
-      "club": "Al-Qadisiyah FC"
-    },
-    {
-      "id": 2889,
-      "name": "A. Vega",
-      "age": 28,
-      "position": "Attacker",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/2889.png",
-      "club": "Toluca"
-    }
-  ]
+ "country": "mexico",
+ "displayName": "Mexico",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Javier Aguirre",
+ "captain": "Edson \u00c1lvarez",
+ "keyPlayers": [
+  "Edson \u00c1lvarez",
+  "Ra\u00fal Jim\u00e9nez",
+  "Santiago Gim\u00e9nez",
+  "\u00c1lvaro Fidalgo",
+  "Orbel\u00edn Pineda",
+  "Guillermo Ochoa",
+  "Gilberto Mora"
+ ],
+ "players": [
+  {
+   "id": 35769,
+   "name": "C. Acevedo",
+   "age": 29,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/35769.png",
+   "club": "Santos Laguna"
+  },
+  {
+   "id": 2098,
+   "name": "G. Ochoa",
+   "age": 40,
+   "position": "Goalkeeper",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/2098.png",
+   "club": "AEL"
+  },
+  {
+   "id": 270774,
+   "name": "J. Rangel",
+   "age": 25,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/270774.png",
+   "club": "Guadalajara Chivas"
+  },
+  {
+   "id": 2881,
+   "name": "J. Gallardo",
+   "age": 31,
+   "position": "Defender",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/2881.png",
+   "club": "Toluca"
+  },
+  {
+   "id": 2873,
+   "name": "C. Montes",
+   "age": 28,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/2873.png",
+   "club": "Lokomotiv"
+  },
+  {
+   "id": 127227,
+   "name": "I. Reyes",
+   "age": 25,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/127227.png",
+   "club": "Club America"
+  },
+  {
+   "id": 2878,
+   "name": "J. S\u00e1nchez",
+   "age": 28,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/2878.png",
+   "club": "Cruz Azul"
+  },
+  {
+   "id": 35544,
+   "name": "J. V\u00e1squez",
+   "age": 27,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/35544.png",
+   "club": "Genoa"
+  },
+  {
+   "id": 2869,
+   "name": "E. \u00c1lvarez",
+   "age": 28,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/2869.png",
+   "club": "Fenerbah\u00e7e"
+  },
+  {
+   "id": 390002,
+   "name": "M. Ch\u00e1vez",
+   "age": 21,
+   "position": "Defender",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/390002.png",
+   "club": "AZ Alkmaar"
+  },
+  {
+   "id": 313383,
+   "name": "O. Vargas",
+   "age": 20,
+   "position": "Midfielder",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/313383.png",
+   "club": "Seattle Sounders"
+  },
+  {
+   "id": 35690,
+   "name": "L. Ch\u00e1vez",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/35690.png",
+   "club": "Dynamo"
+  },
+  {
+   "id": 750,
+   "name": "\u00c1lvaro Fidalgo",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/750.png",
+   "club": "Club America"
+  },
+  {
+   "id": 212233,
+   "name": "B. Guti\u00e9rrez",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/212233.png",
+   "club": "Chicago Fire"
+  },
+  {
+   "id": 266345,
+   "name": "\u00c9. Lira",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/266345.png",
+   "club": "Cruz Azul"
+  },
+  {
+   "id": 482605,
+   "name": "G. Mora",
+   "age": 17,
+   "position": "Midfielder",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/482605.png",
+   "club": "Club Tijuana"
+  },
+  {
+   "id": 35576,
+   "name": "O. Pineda",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/35576.png",
+   "club": "AEK Athens FC"
+  },
+  {
+   "id": 35970,
+   "name": "L. Romo",
+   "age": 30,
+   "position": "Midfielder",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/35970.png",
+   "club": "Guadalajara Chivas"
+  },
+  {
+   "id": 2879,
+   "name": "R. Alvarado",
+   "age": 27,
+   "position": "Attacker",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/2879.png",
+   "club": "Guadalajara Chivas"
+  },
+  {
+   "id": 94562,
+   "name": "S. Gim\u00e9nez",
+   "age": 24,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/94562.png",
+   "club": "AC Milan"
+  },
+  {
+   "id": 291713,
+   "name": "A. Gonz\u00e1lez",
+   "age": 22,
+   "position": "Attacker",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/291713.png",
+   "club": "Guadalajara Chivas"
+  },
+  {
+   "id": 36111,
+   "name": "C. Huerta",
+   "age": 25,
+   "position": "Attacker",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/36111.png",
+   "club": "Anderlecht"
+  },
+  {
+   "id": 2887,
+   "name": "R. Jim\u00e9nez",
+   "age": 34,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/2887.png",
+   "club": "Fulham"
+  },
+  {
+   "id": 36088,
+   "name": "G. Mart\u00ednez",
+   "age": 30,
+   "position": "Attacker",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/36088.png",
+   "club": "U.N.A.M. - Pumas"
+  },
+  {
+   "id": 35532,
+   "name": "J. Qui\u00f1ones",
+   "age": 28,
+   "position": "Attacker",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/35532.png",
+   "club": "Al-Qadisiyah FC"
+  },
+  {
+   "id": 2889,
+   "name": "A. Vega",
+   "age": 28,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/2889.png",
+   "club": "Toluca"
+  }
+ ],
+ "guardianStarPlayer": "Ra\u00fal Jim\u00e9nez",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

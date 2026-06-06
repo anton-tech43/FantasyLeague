@@ -1,251 +1,253 @@
 {
-  "country": "brazil",
-  "displayName": "Brazil",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Carlo Ancelotti",
-  "captain": "Marquinhos",
-  "keyPlayers": [
-    "Vinícius Júnior",
-    "Raphinha",
-    "Marquinhos",
-    "Casemiro",
-    "Bruno Guimarães",
-    "Neymar"
-  ],
-  "players": [
-    {
-      "id": 280,
-      "name": "Alisson Becker",
-      "age": 33,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/280.png",
-      "club": "Liverpool"
-    },
-    {
-      "id": 617,
-      "name": "Ederson",
-      "age": 32,
-      "position": "Goalkeeper",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/617.png",
-      "club": "Fenerbah\u00e7e"
-    },
-    {
-      "id": 2410,
-      "name": "Weverton",
-      "age": 38,
-      "position": "Goalkeeper",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/2410.png",
-      "club": "Palmeiras"
-    },
-    {
-      "id": 860,
-      "name": "Alex Sandro",
-      "age": 34,
-      "position": "Defender",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/860.png",
-      "club": "Flamengo"
-    },
-    {
-      "id": 30497,
-      "name": "Bremer",
-      "age": 28,
-      "position": "Defender",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/30497.png",
-      "club": "Juventus"
-    },
-    {
-      "id": 22224,
-      "name": "Gabriel Magalh\u00e3es",
-      "age": 28,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/22224.png",
-      "club": "Arsenal"
-    },
-    {
-      "id": 30424,
-      "name": "Iba\u00f1ez",
-      "age": 27,
-      "position": "Defender",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/30424.png",
-      "club": "Al-Ahli Jeddah"
-    },
-    {
-      "id": 10124,
-      "name": "L\u00e9o Pereira",
-      "age": 29,
-      "position": "Defender",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/10124.png",
-      "club": "Flamengo"
-    },
-    {
-      "id": 257,
-      "name": "Marquinhos",
-      "age": 31,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/257.png",
-      "club": "Paris Saint Germain"
-    },
-    {
-      "id": 24866,
-      "name": "Douglas Santos",
-      "age": 31,
-      "position": "Defender",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/24866.png",
-      "club": "Zenit"
-    },
-    {
-      "id": 349001,
-      "name": "Wesley",
-      "age": 22,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/349001.png",
-      "club": "AS Roma"
-    },
-    {
-      "id": 618,
-      "name": "Danilo",
-      "age": 34,
-      "position": "Defender",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/618.png",
-      "club": "Flamengo"
-    },
-    {
-      "id": 10135,
-      "name": "Bruno Guimar\u00e3es",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/10135.png",
-      "club": "Newcastle"
-    },
-    {
-      "id": 747,
-      "name": "Casemiro",
-      "age": 33,
-      "position": "Midfielder",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/747.png",
-      "club": "Manchester United"
-    },
-    {
-      "id": 299,
-      "name": "Fabinho",
-      "age": 32,
-      "position": "Midfielder",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/299.png",
-      "club": "Al-Ittihad FC"
-    },
-    {
-      "id": 1646,
-      "name": "Lucas Paquet\u00e1",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/1646.png",
-      "club": "West Ham"
-    },
-    {
-      "id": 275170,
-      "name": "Danilo Santos",
-      "age": 24,
-      "position": "Midfielder",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/275170.png",
-      "club": "Botafogo"
-    },
-    {
-      "id": 1165,
-      "name": "Matheus Cunha",
-      "age": 26,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/1165.png",
-      "club": "Manchester United"
-    },
-    {
-      "id": 377122,
-      "name": "Endrick",
-      "age": 19,
-      "position": "Attacker",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/377122.png",
-      "club": "Lyon"
-    },
-    {
-      "id": 265785,
-      "name": "Luiz Henrique",
-      "age": 24,
-      "position": "Attacker",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/265785.png",
-      "club": "Zenit"
-    },
-    {
-      "id": 127769,
-      "name": "Gabriel Martinelli",
-      "age": 24,
-      "position": "Attacker",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/127769.png",
-      "club": "Arsenal"
-    },
-    {
-      "id": 276,
-      "name": "Neymar",
-      "age": 33,
-      "position": "Attacker",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/276.png",
-      "club": "Santos"
-    },
-    {
-      "id": 1496,
-      "name": "Raphinha",
-      "age": 29,
-      "position": "Attacker",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/1496.png",
-      "club": "Barcelona"
-    },
-    {
-      "id": 407806,
-      "name": "Rayan",
-      "age": 19,
-      "position": "Attacker",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/407806.png",
-      "club": "Vasco DA Gama"
-    },
-    {
-      "id": 196156,
-      "name": "Thiago",
-      "age": 24,
-      "position": "Attacker",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/196156.png",
-      "club": "Brentford"
-    },
-    {
-      "id": 762,
-      "name": "Vin\u00edcius J\u00fanior",
-      "age": 25,
-      "position": "Attacker",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/762.png",
-      "club": "Real Madrid"
-    }
-  ]
+ "country": "brazil",
+ "displayName": "Brazil",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Carlo Ancelotti",
+ "captain": "Marquinhos",
+ "keyPlayers": [
+  "Vin\u00edcius J\u00fanior",
+  "Raphinha",
+  "Marquinhos",
+  "Casemiro",
+  "Bruno Guimar\u00e3es",
+  "Neymar"
+ ],
+ "players": [
+  {
+   "id": 280,
+   "name": "Alisson Becker",
+   "age": 33,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/280.png",
+   "club": "Liverpool"
+  },
+  {
+   "id": 617,
+   "name": "Ederson",
+   "age": 32,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/617.png",
+   "club": "Fenerbah\u00e7e"
+  },
+  {
+   "id": 2410,
+   "name": "Weverton",
+   "age": 38,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/2410.png",
+   "club": "Palmeiras"
+  },
+  {
+   "id": 860,
+   "name": "Alex Sandro",
+   "age": 34,
+   "position": "Defender",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/860.png",
+   "club": "Flamengo"
+  },
+  {
+   "id": 30497,
+   "name": "Bremer",
+   "age": 28,
+   "position": "Defender",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/30497.png",
+   "club": "Juventus"
+  },
+  {
+   "id": 22224,
+   "name": "Gabriel Magalh\u00e3es",
+   "age": 28,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/22224.png",
+   "club": "Arsenal"
+  },
+  {
+   "id": 30424,
+   "name": "Iba\u00f1ez",
+   "age": 27,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/30424.png",
+   "club": "Al-Ahli Jeddah"
+  },
+  {
+   "id": 10124,
+   "name": "L\u00e9o Pereira",
+   "age": 29,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/10124.png",
+   "club": "Flamengo"
+  },
+  {
+   "id": 257,
+   "name": "Marquinhos",
+   "age": 31,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/257.png",
+   "club": "Paris Saint Germain"
+  },
+  {
+   "id": 24866,
+   "name": "Douglas Santos",
+   "age": 31,
+   "position": "Defender",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/24866.png",
+   "club": "Zenit"
+  },
+  {
+   "id": 349001,
+   "name": "Wesley",
+   "age": 22,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/349001.png",
+   "club": "AS Roma"
+  },
+  {
+   "id": 618,
+   "name": "Danilo",
+   "age": 34,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/618.png",
+   "club": "Flamengo"
+  },
+  {
+   "id": 10135,
+   "name": "Bruno Guimar\u00e3es",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/10135.png",
+   "club": "Newcastle"
+  },
+  {
+   "id": 747,
+   "name": "Casemiro",
+   "age": 33,
+   "position": "Midfielder",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/747.png",
+   "club": "Manchester United"
+  },
+  {
+   "id": 299,
+   "name": "Fabinho",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/299.png",
+   "club": "Al-Ittihad FC"
+  },
+  {
+   "id": 1646,
+   "name": "Lucas Paquet\u00e1",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/1646.png",
+   "club": "West Ham"
+  },
+  {
+   "id": 275170,
+   "name": "Danilo Santos",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/275170.png",
+   "club": "Botafogo"
+  },
+  {
+   "id": 1165,
+   "name": "Matheus Cunha",
+   "age": 26,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/1165.png",
+   "club": "Manchester United"
+  },
+  {
+   "id": 377122,
+   "name": "Endrick",
+   "age": 19,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/377122.png",
+   "club": "Lyon"
+  },
+  {
+   "id": 265785,
+   "name": "Luiz Henrique",
+   "age": 24,
+   "position": "Attacker",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/265785.png",
+   "club": "Zenit"
+  },
+  {
+   "id": 127769,
+   "name": "Gabriel Martinelli",
+   "age": 24,
+   "position": "Attacker",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/127769.png",
+   "club": "Arsenal"
+  },
+  {
+   "id": 276,
+   "name": "Neymar",
+   "age": 33,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/276.png",
+   "club": "Santos"
+  },
+  {
+   "id": 1496,
+   "name": "Raphinha",
+   "age": 29,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/1496.png",
+   "club": "Barcelona"
+  },
+  {
+   "id": 407806,
+   "name": "Rayan",
+   "age": 19,
+   "position": "Attacker",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/407806.png",
+   "club": "Vasco DA Gama"
+  },
+  {
+   "id": 196156,
+   "name": "Thiago",
+   "age": 24,
+   "position": "Attacker",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/196156.png",
+   "club": "Brentford"
+  },
+  {
+   "id": 762,
+   "name": "Vin\u00edcius J\u00fanior",
+   "age": 25,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/762.png",
+   "club": "Real Madrid"
+  }
+ ],
+ "guardianStarPlayer": "Vin\u00edcius J\u00fanior",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

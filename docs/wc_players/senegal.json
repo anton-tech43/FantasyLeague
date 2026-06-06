@@ -1,252 +1,254 @@
 {
-  "country": "senegal",
-  "displayName": "Senegal",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Pape Thiaw",
-  "captain": "K. Koulibaly",
-  "keyPlayers": [
-    "K. Koulibaly",
-    "S. Mané",
-    "É. Mendy",
-    "N. Jackson",
-    "I. Sarr",
-    "I. Gueye",
-    "H. Diarra"
-  ],
-  "players": [
-    {
-      "id": 119853,
-      "name": "M. Diaw",
-      "age": 32,
-      "position": "Goalkeeper",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/119853.png",
-      "club": "Le Havre"
-    },
-    {
-      "id": 20566,
-      "name": "Y. Diouf",
-      "age": 26,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/20566.png",
-      "club": "Nice"
-    },
-    {
-      "id": 2986,
-      "name": "\u00c9. Mendy",
-      "age": 33,
-      "position": "Goalkeeper",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/2986.png",
-      "club": "Al-Ahli Jeddah"
-    },
-    {
-      "id": 409303,
-      "name": "E. Diouf",
-      "age": 21,
-      "position": "Defender",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/409303.png",
-      "club": "West Ham"
-    },
-    {
-      "id": 158121,
-      "name": "I. Jakobs",
-      "age": 26,
-      "position": "Defender",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/158121.png",
-      "club": "Galatasaray"
-    },
-    {
-      "id": 318,
-      "name": "K. Koulibaly",
-      "age": 34,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/318.png",
-      "club": "Al-Hilal Saudi FC"
-    },
-    {
-      "id": 313937,
-      "name": "A. Mendy",
-      "age": 21,
-      "position": "Defender",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/313937.png",
-      "club": "Nice"
-    },
-    {
-      "id": 25916,
-      "name": "M. Niakhat\u00e9",
-      "age": 29,
-      "position": "Defender",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/25916.png",
-      "club": "Lyon"
-    },
-    {
-      "id": 276184,
-      "name": "M. Sarr",
-      "age": 20,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/276184.png",
-      "club": "Strasbourg"
-    },
-    {
-      "id": 8450,
-      "name": "A. Seck",
-      "age": 33,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/8450.png",
-      "club": "Maccabi Haifa"
-    },
-    {
-      "id": 81,
-      "name": "K. Diatta",
-      "age": 26,
-      "position": "Defender",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/81.png",
-      "club": "Monaco"
-    },
-    {
-      "id": 374058,
-      "name": "L. Camara",
-      "age": 21,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/374058.png",
-      "club": "Monaco"
-    },
-    {
-      "id": 41552,
-      "name": "P. Ciss",
-      "age": 31,
-      "position": "Midfielder",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/41552.png",
-      "club": "Rayo Vallecano"
-    },
-    {
-      "id": 327631,
-      "name": "H. Diarra",
-      "age": 21,
-      "position": "Midfielder",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/327631.png",
-      "club": "Sunderland"
-    },
-    {
-      "id": 2990,
-      "name": "I. Gueye",
-      "age": 36,
-      "position": "Midfielder",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/2990.png",
-      "club": "Everton"
-    },
-    {
-      "id": 20696,
-      "name": "P. Gueye",
-      "age": 26,
-      "position": "Midfielder",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/20696.png",
-      "club": "Villarreal"
-    },
-    {
-      "id": 630895,
-      "name": "Bara Ndiaye",
-      "age": 18,
-      "position": "Midfielder",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/630895.png",
-      "club": "Bayern M\u00fcnchen"
-    },
-    {
-      "id": 237129,
-      "name": "P. Sarr",
-      "age": 23,
-      "position": "Midfielder",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/237129.png",
-      "club": "Tottenham"
-    },
-    {
-      "id": 400948,
-      "name": "Assane Diao",
-      "age": 20,
-      "position": "Attacker",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/400948.png",
-      "club": "Como"
-    },
-    {
-      "id": 284072,
-      "name": "B. Dieng",
-      "age": 25,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/284072.png",
-      "club": "Lorient"
-    },
-    {
-      "id": 283058,
-      "name": "N. Jackson",
-      "age": 24,
-      "position": "Attacker",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/283058.png",
-      "club": "Bayern M\u00fcnchen"
-    },
-    {
-      "id": 304,
-      "name": "S. Man\u00e9",
-      "age": 33,
-      "position": "Attacker",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/304.png",
-      "club": "Al-Nassr"
-    },
-    {
-      "id": 446249,
-      "name": "I. Mbaye",
-      "age": 17,
-      "position": "Attacker",
-      "number": 27,
-      "photo": "https://media.api-sports.io/football/players/446249.png",
-      "club": "Paris Saint Germain"
-    },
-    {
-      "id": 14379,
-      "name": "C. Ndiaye",
-      "age": 30,
-      "position": "Attacker",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/14379.png",
-      "club": "Samsunspor"
-    },
-    {
-      "id": 18592,
-      "name": "I. Ndiaye",
-      "age": 25,
-      "position": "Attacker",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/18592.png",
-      "club": "Everton"
-    },
-    {
-      "id": 2218,
-      "name": "I. Sarr",
-      "age": 27,
-      "position": "Attacker",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/2218.png",
-      "club": "Crystal Palace"
-    }
-  ]
+ "country": "senegal",
+ "displayName": "Senegal",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Pape Thiaw",
+ "captain": "K. Koulibaly",
+ "keyPlayers": [
+  "K. Koulibaly",
+  "S. Man\u00e9",
+  "\u00c9. Mendy",
+  "N. Jackson",
+  "I. Sarr",
+  "I. Gueye",
+  "H. Diarra"
+ ],
+ "players": [
+  {
+   "id": 119853,
+   "name": "M. Diaw",
+   "age": 32,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/119853.png",
+   "club": "Le Havre"
+  },
+  {
+   "id": 20566,
+   "name": "Y. Diouf",
+   "age": 26,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/20566.png",
+   "club": "Nice"
+  },
+  {
+   "id": 2986,
+   "name": "\u00c9. Mendy",
+   "age": 33,
+   "position": "Goalkeeper",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/2986.png",
+   "club": "Al-Ahli Jeddah"
+  },
+  {
+   "id": 409303,
+   "name": "E. Diouf",
+   "age": 21,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/409303.png",
+   "club": "West Ham"
+  },
+  {
+   "id": 158121,
+   "name": "I. Jakobs",
+   "age": 26,
+   "position": "Defender",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/158121.png",
+   "club": "Galatasaray"
+  },
+  {
+   "id": 318,
+   "name": "K. Koulibaly",
+   "age": 34,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/318.png",
+   "club": "Al-Hilal Saudi FC"
+  },
+  {
+   "id": 313937,
+   "name": "A. Mendy",
+   "age": 21,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/313937.png",
+   "club": "Nice"
+  },
+  {
+   "id": 25916,
+   "name": "M. Niakhat\u00e9",
+   "age": 29,
+   "position": "Defender",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/25916.png",
+   "club": "Lyon"
+  },
+  {
+   "id": 276184,
+   "name": "M. Sarr",
+   "age": 20,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/276184.png",
+   "club": "Strasbourg"
+  },
+  {
+   "id": 8450,
+   "name": "A. Seck",
+   "age": 33,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/8450.png",
+   "club": "Maccabi Haifa"
+  },
+  {
+   "id": 81,
+   "name": "K. Diatta",
+   "age": 26,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/81.png",
+   "club": "Monaco"
+  },
+  {
+   "id": 374058,
+   "name": "L. Camara",
+   "age": 21,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/374058.png",
+   "club": "Monaco"
+  },
+  {
+   "id": 41552,
+   "name": "P. Ciss",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/41552.png",
+   "club": "Rayo Vallecano"
+  },
+  {
+   "id": 327631,
+   "name": "H. Diarra",
+   "age": 21,
+   "position": "Midfielder",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/327631.png",
+   "club": "Sunderland"
+  },
+  {
+   "id": 2990,
+   "name": "I. Gueye",
+   "age": 36,
+   "position": "Midfielder",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/2990.png",
+   "club": "Everton"
+  },
+  {
+   "id": 20696,
+   "name": "P. Gueye",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/20696.png",
+   "club": "Villarreal"
+  },
+  {
+   "id": 630895,
+   "name": "Bara Ndiaye",
+   "age": 18,
+   "position": "Midfielder",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/630895.png",
+   "club": "Bayern M\u00fcnchen"
+  },
+  {
+   "id": 237129,
+   "name": "P. Sarr",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/237129.png",
+   "club": "Tottenham"
+  },
+  {
+   "id": 400948,
+   "name": "Assane Diao",
+   "age": 20,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/400948.png",
+   "club": "Como"
+  },
+  {
+   "id": 284072,
+   "name": "B. Dieng",
+   "age": 25,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/284072.png",
+   "club": "Lorient"
+  },
+  {
+   "id": 283058,
+   "name": "N. Jackson",
+   "age": 24,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/283058.png",
+   "club": "Bayern M\u00fcnchen"
+  },
+  {
+   "id": 304,
+   "name": "S. Man\u00e9",
+   "age": 33,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/304.png",
+   "club": "Al-Nassr"
+  },
+  {
+   "id": 446249,
+   "name": "I. Mbaye",
+   "age": 17,
+   "position": "Attacker",
+   "number": 27,
+   "photo": "https://media.api-sports.io/football/players/446249.png",
+   "club": "Paris Saint Germain"
+  },
+  {
+   "id": 14379,
+   "name": "C. Ndiaye",
+   "age": 30,
+   "position": "Attacker",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/14379.png",
+   "club": "Samsunspor"
+  },
+  {
+   "id": 18592,
+   "name": "I. Ndiaye",
+   "age": 25,
+   "position": "Attacker",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/18592.png",
+   "club": "Everton"
+  },
+  {
+   "id": 2218,
+   "name": "I. Sarr",
+   "age": 27,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/2218.png",
+   "club": "Crystal Palace"
+  }
+ ],
+ "guardianStarPlayer": "Sadio Man\u00e9",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

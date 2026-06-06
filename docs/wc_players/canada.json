@@ -1,250 +1,252 @@
 {
-  "country": "canada",
-  "displayName": "Canada",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Jesse Marsch",
-  "captain": "Alphonso Davies",
-  "keyPlayers": [
-    "Alphonso Davies",
-    "Jonathan David",
-    "Stephen Eustáquio",
-    "Ismaël Koné",
-    "Promise David"
-  ],
-  "players": [
-    {
-      "id": 51274,
-      "name": "M. Cr\u00e9peau",
-      "age": 31,
-      "position": "Goalkeeper",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/51274.png",
-      "club": "Portland Timbers"
-    },
-    {
-      "id": 284554,
-      "name": "O. Goodman",
-      "age": 22,
-      "position": "Goalkeeper",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/284554.png",
-      "club": "Barnsley"
-    },
-    {
-      "id": 51148,
-      "name": "D. St. Clair",
-      "age": 28,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/51148.png",
-      "club": "Minnesota United FC"
-    },
-    {
-      "id": 51295,
-      "name": "D. Cornelius",
-      "age": 28,
-      "position": "Defender",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/51295.png",
-      "club": "Rangers"
-    },
-    {
-      "id": 327738,
-      "name": "L. De Fougerolles",
-      "age": 20,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/327738.png",
-      "club": "Dender"
-    },
-    {
-      "id": 50816,
-      "name": "R. Laryea",
-      "age": 30,
-      "position": "Defender",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/50816.png",
-      "club": "Toronto FC"
-    },
-    {
-      "id": 78494,
-      "name": "J. Waterman",
-      "age": 29,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/78494.png",
-      "club": "CF Montreal"
-    },
-    {
-      "id": 78547,
-      "name": "A. Johnston",
-      "age": 27,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/78547.png",
-      "club": "Celtic"
-    },
-    {
-      "id": 18938,
-      "name": "A. Jones",
-      "age": 28,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/18938.png",
-      "club": "Middlesbrough"
-    },
-    {
-      "id": 407017,
-      "name": "M. Bombito",
-      "age": 26,
-      "position": "Defender",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/407017.png",
-      "club": "Nice"
-    },
-    {
-      "id": 509,
-      "name": "A. Davies",
-      "age": 25,
-      "position": "Defender",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/509.png",
-      "club": "Bayern M\u00fcnchen"
-    },
-    {
-      "id": 416901,
-      "name": "N. Sigur",
-      "age": 22,
-      "position": "Defender",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/416901.png",
-      "club": "HNK Hajduk Split"
-    },
-    {
-      "id": 50826,
-      "name": "J. Shaffelburg",
-      "age": 26,
-      "position": "Midfielder",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/50826.png",
-      "club": "Nashville SC"
-    },
-    {
-      "id": 44798,
-      "name": "L. Millar",
-      "age": 26,
-      "position": "Midfielder",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/44798.png",
-      "club": "Hull City"
-    },
-    {
-      "id": 50788,
-      "name": "M. Choini\u00e8re",
-      "age": 26,
-      "position": "Midfielder",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/50788.png",
-      "club": "Los Angeles FC"
-    },
-    {
-      "id": 35570,
-      "name": "S. Eust\u00e1quio",
-      "age": 29,
-      "position": "Midfielder",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/35570.png",
-      "club": "FC Porto"
-    },
-    {
-      "id": 328046,
-      "name": "I. Kon\u00e9",
-      "age": 23,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/328046.png",
-      "club": "Sassuolo"
-    },
-    {
-      "id": 50817,
-      "name": "J. Osorio",
-      "age": 33,
-      "position": "Midfielder",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/50817.png",
-      "club": "Toronto FC"
-    },
-    {
-      "id": 294824,
-      "name": "N. Saliba",
-      "age": 21,
-      "position": "Midfielder",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/294824.png",
-      "club": "Anderlecht"
-    },
-    {
-      "id": 284061,
-      "name": "M. Flores",
-      "age": 22,
-      "position": "Midfielder",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/284061.png",
-      "club": "Tigres UANL"
-    },
-    {
-      "id": 51016,
-      "name": "T. Buchanan",
-      "age": 26,
-      "position": "Attacker",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/51016.png",
-      "club": "Villarreal"
-    },
-    {
-      "id": 8489,
-      "name": "J. David",
-      "age": 25,
-      "position": "Attacker",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/8489.png",
-      "club": "Juventus"
-    },
-    {
-      "id": 313353,
-      "name": "P. David",
-      "age": 24,
-      "position": "Attacker",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/313353.png",
-      "club": "Union St. Gilloise"
-    },
-    {
-      "id": 2001,
-      "name": "C. Larin",
-      "age": 30,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/2001.png",
-      "club": "Southampton"
-    },
-    {
-      "id": 362145,
-      "name": "A. Ahmed",
-      "age": 25,
-      "position": "Attacker",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/362145.png",
-      "club": "Vancouver Whitecaps"
-    },
-    {
-      "id": 351587,
-      "name": "T. Oluwaseyi",
-      "age": 25,
-      "position": "Attacker",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/351587.png",
-      "club": "Villarreal"
-    }
-  ]
+ "country": "canada",
+ "displayName": "Canada",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Jesse Marsch",
+ "captain": "Alphonso Davies",
+ "keyPlayers": [
+  "Alphonso Davies",
+  "Jonathan David",
+  "Stephen Eust\u00e1quio",
+  "Isma\u00ebl Kon\u00e9",
+  "Promise David"
+ ],
+ "players": [
+  {
+   "id": 51274,
+   "name": "M. Cr\u00e9peau",
+   "age": 31,
+   "position": "Goalkeeper",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/51274.png",
+   "club": "Portland Timbers"
+  },
+  {
+   "id": 284554,
+   "name": "O. Goodman",
+   "age": 22,
+   "position": "Goalkeeper",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/284554.png",
+   "club": "Barnsley"
+  },
+  {
+   "id": 51148,
+   "name": "D. St. Clair",
+   "age": 28,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/51148.png",
+   "club": "Minnesota United FC"
+  },
+  {
+   "id": 51295,
+   "name": "D. Cornelius",
+   "age": 28,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/51295.png",
+   "club": "Rangers"
+  },
+  {
+   "id": 327738,
+   "name": "L. De Fougerolles",
+   "age": 20,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/327738.png",
+   "club": "Dender"
+  },
+  {
+   "id": 50816,
+   "name": "R. Laryea",
+   "age": 30,
+   "position": "Defender",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/50816.png",
+   "club": "Toronto FC"
+  },
+  {
+   "id": 78494,
+   "name": "J. Waterman",
+   "age": 29,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/78494.png",
+   "club": "CF Montreal"
+  },
+  {
+   "id": 78547,
+   "name": "A. Johnston",
+   "age": 27,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/78547.png",
+   "club": "Celtic"
+  },
+  {
+   "id": 18938,
+   "name": "A. Jones",
+   "age": 28,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/18938.png",
+   "club": "Middlesbrough"
+  },
+  {
+   "id": 407017,
+   "name": "M. Bombito",
+   "age": 26,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/407017.png",
+   "club": "Nice"
+  },
+  {
+   "id": 509,
+   "name": "A. Davies",
+   "age": 25,
+   "position": "Defender",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/509.png",
+   "club": "Bayern M\u00fcnchen"
+  },
+  {
+   "id": 416901,
+   "name": "N. Sigur",
+   "age": 22,
+   "position": "Defender",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/416901.png",
+   "club": "HNK Hajduk Split"
+  },
+  {
+   "id": 50826,
+   "name": "J. Shaffelburg",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/50826.png",
+   "club": "Nashville SC"
+  },
+  {
+   "id": 44798,
+   "name": "L. Millar",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/44798.png",
+   "club": "Hull City"
+  },
+  {
+   "id": 50788,
+   "name": "M. Choini\u00e8re",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/50788.png",
+   "club": "Los Angeles FC"
+  },
+  {
+   "id": 35570,
+   "name": "S. Eust\u00e1quio",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/35570.png",
+   "club": "FC Porto"
+  },
+  {
+   "id": 328046,
+   "name": "I. Kon\u00e9",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/328046.png",
+   "club": "Sassuolo"
+  },
+  {
+   "id": 50817,
+   "name": "J. Osorio",
+   "age": 33,
+   "position": "Midfielder",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/50817.png",
+   "club": "Toronto FC"
+  },
+  {
+   "id": 294824,
+   "name": "N. Saliba",
+   "age": 21,
+   "position": "Midfielder",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/294824.png",
+   "club": "Anderlecht"
+  },
+  {
+   "id": 284061,
+   "name": "M. Flores",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/284061.png",
+   "club": "Tigres UANL"
+  },
+  {
+   "id": 51016,
+   "name": "T. Buchanan",
+   "age": 26,
+   "position": "Attacker",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/51016.png",
+   "club": "Villarreal"
+  },
+  {
+   "id": 8489,
+   "name": "J. David",
+   "age": 25,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/8489.png",
+   "club": "Juventus"
+  },
+  {
+   "id": 313353,
+   "name": "P. David",
+   "age": 24,
+   "position": "Attacker",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/313353.png",
+   "club": "Union St. Gilloise"
+  },
+  {
+   "id": 2001,
+   "name": "C. Larin",
+   "age": 30,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/2001.png",
+   "club": "Southampton"
+  },
+  {
+   "id": 362145,
+   "name": "A. Ahmed",
+   "age": 25,
+   "position": "Attacker",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/362145.png",
+   "club": "Vancouver Whitecaps"
+  },
+  {
+   "id": 351587,
+   "name": "T. Oluwaseyi",
+   "age": 25,
+   "position": "Attacker",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/351587.png",
+   "club": "Villarreal"
+  }
+ ],
+ "guardianStarPlayer": "Alphonso Davies",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

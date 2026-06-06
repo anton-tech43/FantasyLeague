@@ -1,251 +1,253 @@
 {
-  "country": "panama",
-  "displayName": "Panama",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Thomas Christiansen",
-  "captain": "Aníbal Godoy",
-  "keyPlayers": [
-    "Aníbal Godoy",
-    "Adalberto Carrasquilla",
-    "Ismael Díaz",
-    "José Córdoba",
-    "José Fajardo",
-    "Amir Murillo"
-  ],
-  "players": [
-    {
-      "id": 2967,
-      "name": "L. Mej\u00eda",
-      "age": 34,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/2967.png",
-      "club": "Club Nacional"
-    },
-    {
-      "id": 2968,
-      "name": "O. Mosquera",
-      "age": 31,
-      "position": "Goalkeeper",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/2968.png",
-      "club": "Al-Fayha"
-    },
-    {
-      "id": 57861,
-      "name": "C. Samudio",
-      "age": 31,
-      "position": "Goalkeeper",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/57861.png",
-      "club": "CD Marathon"
-    },
-    {
-      "id": 7197,
-      "name": "A. Andrade",
-      "age": 27,
-      "position": "Defender",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/7197.png",
-      "club": "Lask Linz"
-    },
-    {
-      "id": 2975,
-      "name": "C. Blackman",
-      "age": 27,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/2975.png",
-      "club": "Slovan Bratislava"
-    },
-    {
-      "id": 57739,
-      "name": "J. C\u00f3rdoba",
-      "age": 24,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/57739.png",
-      "club": "Norwich"
-    },
-    {
-      "id": 2970,
-      "name": "\u00c9. Davis",
-      "age": 34,
-      "position": "Defender",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/2970.png",
-      "club": "Vila Nova"
-    },
-    {
-      "id": 2971,
-      "name": "F. Escobar",
-      "age": 30,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/2971.png",
-      "club": "Deportivo Saprissa"
-    },
-    {
-      "id": 328148,
-      "name": "E. Fari\u00f1a",
-      "age": 24,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/328148.png",
-      "club": "Nizhny Novgorod"
-    },
-    {
-      "id": 57803,
-      "name": "J. Guti\u00e9rrez",
-      "age": 27,
-      "position": "Defender",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/57803.png",
-      "club": "Deportivo La Guaira"
-    },
-    {
-      "id": 71230,
-      "name": "C. Harvey",
-      "age": 25,
-      "position": "Defender",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/71230.png",
-      "club": "Minnesota United FC"
-    },
-    {
-      "id": 81659,
-      "name": "R. Miller",
-      "age": 33,
-      "position": "Defender",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/81659.png",
-      "club": "Turan Tovuz"
-    },
-    {
-      "id": 2973,
-      "name": "A. Murillo",
-      "age": 29,
-      "position": "Defender",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/2973.png",
-      "club": "Marseille"
-    },
-    {
-      "id": 57667,
-      "name": "J. Ramos",
-      "age": 28,
-      "position": "Defender",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/57667.png",
-      "club": "Independiente de La Chorrera"
-    },
-    {
-      "id": 57807,
-      "name": "A. Carrasquilla",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/57807.png",
-      "club": "U.N.A.M. - Pumas"
-    },
-    {
-      "id": 2977,
-      "name": "A. Godoy",
-      "age": 35,
-      "position": "Midfielder",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/2977.png",
-      "club": "San Diego"
-    },
-    {
-      "id": 554208,
-      "name": "C. Martinez",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/554208.png",
-      "club": "Ironi Kiryat Shmona"
-    },
-    {
-      "id": 2979,
-      "name": "J. Rodr\u00edguez",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/2979.png",
-      "club": "FC Juarez"
-    },
-    {
-      "id": 46855,
-      "name": "Y. B\u00e1rcenas",
-      "age": 32,
-      "position": "Midfielder",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/46855.png",
-      "club": "Mazatl\u00e1n"
-    },
-    {
-      "id": 96615,
-      "name": "I. D\u00edaz",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/96615.png",
-      "club": "Leon"
-    },
-    {
-      "id": 2978,
-      "name": "A. Quintero",
-      "age": 38,
-      "position": "Midfielder",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/2978.png",
-      "club": "Plaza Amador"
-    },
-    {
-      "id": 57875,
-      "name": "C. Yanis",
-      "age": 29,
-      "position": "Midfielder",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/57875.png",
-      "club": "Cobresal"
-    },
-    {
-      "id": 2983,
-      "name": "J. Fajardo",
-      "age": 32,
-      "position": "Attacker",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/2983.png",
-      "club": "Universidad Catolica"
-    },
-    {
-      "id": 292396,
-      "name": "A. Londo\u00f1o",
-      "age": 24,
-      "position": "Attacker",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/292396.png",
-      "club": "Universidad Catolica"
-    },
-    {
-      "id": 57910,
-      "name": "T. Rodr\u00edguez",
-      "age": 26,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/57910.png",
-      "club": "Monagas SC"
-    },
-    {
-      "id": 51648,
-      "name": "C. Waterman",
-      "age": 34,
-      "position": "Attacker",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/51648.png",
-      "club": "Coquimbo Unido"
-    }
-  ]
+ "country": "panama",
+ "displayName": "Panama",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Thomas Christiansen",
+ "captain": "An\u00edbal Godoy",
+ "keyPlayers": [
+  "An\u00edbal Godoy",
+  "Adalberto Carrasquilla",
+  "Ismael D\u00edaz",
+  "Jos\u00e9 C\u00f3rdoba",
+  "Jos\u00e9 Fajardo",
+  "Amir Murillo"
+ ],
+ "players": [
+  {
+   "id": 2967,
+   "name": "L. Mej\u00eda",
+   "age": 34,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/2967.png",
+   "club": "Club Nacional"
+  },
+  {
+   "id": 2968,
+   "name": "O. Mosquera",
+   "age": 31,
+   "position": "Goalkeeper",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/2968.png",
+   "club": "Al-Fayha"
+  },
+  {
+   "id": 57861,
+   "name": "C. Samudio",
+   "age": 31,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/57861.png",
+   "club": "CD Marathon"
+  },
+  {
+   "id": 7197,
+   "name": "A. Andrade",
+   "age": 27,
+   "position": "Defender",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/7197.png",
+   "club": "Lask Linz"
+  },
+  {
+   "id": 2975,
+   "name": "C. Blackman",
+   "age": 27,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/2975.png",
+   "club": "Slovan Bratislava"
+  },
+  {
+   "id": 57739,
+   "name": "J. C\u00f3rdoba",
+   "age": 24,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/57739.png",
+   "club": "Norwich"
+  },
+  {
+   "id": 2970,
+   "name": "\u00c9. Davis",
+   "age": 34,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/2970.png",
+   "club": "Vila Nova"
+  },
+  {
+   "id": 2971,
+   "name": "F. Escobar",
+   "age": 30,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/2971.png",
+   "club": "Deportivo Saprissa"
+  },
+  {
+   "id": 328148,
+   "name": "E. Fari\u00f1a",
+   "age": 24,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/328148.png",
+   "club": "Nizhny Novgorod"
+  },
+  {
+   "id": 57803,
+   "name": "J. Guti\u00e9rrez",
+   "age": 27,
+   "position": "Defender",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/57803.png",
+   "club": "Deportivo La Guaira"
+  },
+  {
+   "id": 71230,
+   "name": "C. Harvey",
+   "age": 25,
+   "position": "Defender",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/71230.png",
+   "club": "Minnesota United FC"
+  },
+  {
+   "id": 81659,
+   "name": "R. Miller",
+   "age": 33,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/81659.png",
+   "club": "Turan Tovuz"
+  },
+  {
+   "id": 2973,
+   "name": "A. Murillo",
+   "age": 29,
+   "position": "Defender",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/2973.png",
+   "club": "Marseille"
+  },
+  {
+   "id": 57667,
+   "name": "J. Ramos",
+   "age": 28,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/57667.png",
+   "club": "Independiente de La Chorrera"
+  },
+  {
+   "id": 57807,
+   "name": "A. Carrasquilla",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/57807.png",
+   "club": "U.N.A.M. - Pumas"
+  },
+  {
+   "id": 2977,
+   "name": "A. Godoy",
+   "age": 35,
+   "position": "Midfielder",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/2977.png",
+   "club": "San Diego"
+  },
+  {
+   "id": 554208,
+   "name": "C. Martinez",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/554208.png",
+   "club": "Ironi Kiryat Shmona"
+  },
+  {
+   "id": 2979,
+   "name": "J. Rodr\u00edguez",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/2979.png",
+   "club": "FC Juarez"
+  },
+  {
+   "id": 46855,
+   "name": "Y. B\u00e1rcenas",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/46855.png",
+   "club": "Mazatl\u00e1n"
+  },
+  {
+   "id": 96615,
+   "name": "I. D\u00edaz",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/96615.png",
+   "club": "Leon"
+  },
+  {
+   "id": 2978,
+   "name": "A. Quintero",
+   "age": 38,
+   "position": "Midfielder",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/2978.png",
+   "club": "Plaza Amador"
+  },
+  {
+   "id": 57875,
+   "name": "C. Yanis",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/57875.png",
+   "club": "Cobresal"
+  },
+  {
+   "id": 2983,
+   "name": "J. Fajardo",
+   "age": 32,
+   "position": "Attacker",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/2983.png",
+   "club": "Universidad Catolica"
+  },
+  {
+   "id": 292396,
+   "name": "A. Londo\u00f1o",
+   "age": 24,
+   "position": "Attacker",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/292396.png",
+   "club": "Universidad Catolica"
+  },
+  {
+   "id": 57910,
+   "name": "T. Rodr\u00edguez",
+   "age": 26,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/57910.png",
+   "club": "Monagas SC"
+  },
+  {
+   "id": 51648,
+   "name": "C. Waterman",
+   "age": 34,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/51648.png",
+   "club": "Coquimbo Unido"
+  }
+ ],
+ "guardianStarPlayer": "Michael Murillo",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

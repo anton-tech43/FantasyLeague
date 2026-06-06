@@ -1,252 +1,254 @@
 {
-  "country": "croatia",
-  "displayName": "Croatia",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Zlatko Dalic",
-  "captain": "L. Modric",
-  "keyPlayers": [
-    "L. Modric",
-    "J. Gvardiol",
-    "M. Kovacic",
-    "I. Perisic",
-    "A. Kramaric",
-    "M. Pasalic",
-    "L. Vuskovic"
-  ],
-  "players": [
-    {
-      "id": 524,
-      "name": "D. Kotarski",
-      "age": 25,
-      "position": "Goalkeeper",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/524.png",
-      "club": "FC Copenhagen"
-    },
-    {
-      "id": 1305,
-      "name": "D. Livakovic",
-      "age": 31,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/1305.png",
-      "club": "Dinamo Zagreb"
-    },
-    {
-      "id": 14268,
-      "name": "I. Pandur",
-      "age": 25,
-      "position": "Goalkeeper",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/14268.png",
-      "club": "Hull City"
-    },
-    {
-      "id": 1902,
-      "name": "D. Caleta-Car",
-      "age": 29,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/1902.png",
-      "club": "Real Sociedad"
-    },
-    {
-      "id": 30827,
-      "name": "M. Erlic",
-      "age": 27,
-      "position": "Defender",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/30827.png",
-      "club": "FC Midtjylland"
-    },
-    {
-      "id": 129033,
-      "name": "J. Gvardiol",
-      "age": 23,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/129033.png",
-      "club": "Manchester City"
-    },
-    {
-      "id": 1084,
-      "name": "M. Pongracic",
-      "age": 28,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/1084.png",
-      "club": "Fiorentina"
-    },
-    {
-      "id": 125171,
-      "name": "J. Stanisic",
-      "age": 25,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/125171.png",
-      "club": "Bayern M\u00fcnchen"
-    },
-    {
-      "id": 14701,
-      "name": "J. Sutalo",
-      "age": 25,
-      "position": "Defender",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/14701.png",
-      "club": "Ajax"
-    },
-    {
-      "id": 387521,
-      "name": "L. Vuskovic",
-      "age": 18,
-      "position": "Defender",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/387521.png",
-      "club": "Hamburger SV"
-    },
-    {
-      "id": 295026,
-      "name": "M. Baturina",
-      "age": 22,
-      "position": "Midfielder",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/295026.png",
-      "club": "Como"
-    },
-    {
-      "id": 284869,
-      "name": "T. Fruk",
-      "age": 24,
-      "position": "Midfielder",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/284869.png",
-      "club": "HNK Rijeka"
-    },
-    {
-      "id": 14395,
-      "name": "K. Jakic",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/14395.png",
-      "club": "FC Augsburg"
-    },
-    {
-      "id": 2291,
-      "name": "M. Kovacic",
-      "age": 31,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/2291.png",
-      "club": "Manchester City"
-    },
-    {
-      "id": 754,
-      "name": "L. Modric",
-      "age": 40,
-      "position": "Midfielder",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/754.png",
-      "club": "AC Milan"
-    },
-    {
-      "id": 1322,
-      "name": "N. Moro",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/1322.png",
-      "club": "Bologna"
-    },
-    {
-      "id": 2763,
-      "name": "M. Pasalic",
-      "age": 30,
-      "position": "Midfielder",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/2763.png",
-      "club": "Atalanta"
-    },
-    {
-      "id": 7332,
-      "name": "L. Sucic",
-      "age": 23,
-      "position": "Midfielder",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/7332.png",
-      "club": "Real Sociedad"
-    },
-    {
-      "id": 348205,
-      "name": "P. Sucic",
-      "age": 22,
-      "position": "Midfielder",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/348205.png",
-      "club": "Inter"
-    },
-    {
-      "id": 842,
-      "name": "N. Vlasic",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/842.png",
-      "club": "Torino"
-    },
-    {
-      "id": 46746,
-      "name": "A. Budimir",
-      "age": 34,
-      "position": "Attacker",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/46746.png",
-      "club": "Osasuna"
-    },
-    {
-      "id": 726,
-      "name": "A. Kramaric",
-      "age": 34,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/726.png",
-      "club": "1899 Hoffenheim"
-    },
-    {
-      "id": 202696,
-      "name": "I. Matanovic",
-      "age": 22,
-      "position": "Attacker",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/202696.png",
-      "club": "SC Freiburg"
-    },
-    {
-      "id": 66055,
-      "name": "P. Musa",
-      "age": 27,
-      "position": "Attacker",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/66055.png",
-      "club": "FC Dallas"
-    },
-    {
-      "id": 260865,
-      "name": "M. Pasalic",
-      "age": 25,
-      "position": "Attacker",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/260865.png",
-      "club": "Orlando City SC"
-    },
-    {
-      "id": 207,
-      "name": "I. Perisic",
-      "age": 36,
-      "position": "Attacker",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/207.png",
-      "club": "PSV Eindhoven"
-    }
-  ]
+ "country": "croatia",
+ "displayName": "Croatia",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Zlatko Dalic",
+ "captain": "L. Modric",
+ "keyPlayers": [
+  "L. Modric",
+  "J. Gvardiol",
+  "M. Kovacic",
+  "I. Perisic",
+  "A. Kramaric",
+  "M. Pasalic",
+  "L. Vuskovic"
+ ],
+ "players": [
+  {
+   "id": 524,
+   "name": "D. Kotarski",
+   "age": 25,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/524.png",
+   "club": "FC Copenhagen"
+  },
+  {
+   "id": 1305,
+   "name": "D. Livakovic",
+   "age": 31,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/1305.png",
+   "club": "Dinamo Zagreb"
+  },
+  {
+   "id": 14268,
+   "name": "I. Pandur",
+   "age": 25,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/14268.png",
+   "club": "Hull City"
+  },
+  {
+   "id": 1902,
+   "name": "D. Caleta-Car",
+   "age": 29,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/1902.png",
+   "club": "Real Sociedad"
+  },
+  {
+   "id": 30827,
+   "name": "M. Erlic",
+   "age": 27,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/30827.png",
+   "club": "FC Midtjylland"
+  },
+  {
+   "id": 129033,
+   "name": "J. Gvardiol",
+   "age": 23,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/129033.png",
+   "club": "Manchester City"
+  },
+  {
+   "id": 1084,
+   "name": "M. Pongracic",
+   "age": 28,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/1084.png",
+   "club": "Fiorentina"
+  },
+  {
+   "id": 125171,
+   "name": "J. Stanisic",
+   "age": 25,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/125171.png",
+   "club": "Bayern M\u00fcnchen"
+  },
+  {
+   "id": 14701,
+   "name": "J. Sutalo",
+   "age": 25,
+   "position": "Defender",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/14701.png",
+   "club": "Ajax"
+  },
+  {
+   "id": 387521,
+   "name": "L. Vuskovic",
+   "age": 18,
+   "position": "Defender",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/387521.png",
+   "club": "Hamburger SV"
+  },
+  {
+   "id": 295026,
+   "name": "M. Baturina",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/295026.png",
+   "club": "Como"
+  },
+  {
+   "id": 284869,
+   "name": "T. Fruk",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/284869.png",
+   "club": "HNK Rijeka"
+  },
+  {
+   "id": 14395,
+   "name": "K. Jakic",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/14395.png",
+   "club": "FC Augsburg"
+  },
+  {
+   "id": 2291,
+   "name": "M. Kovacic",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/2291.png",
+   "club": "Manchester City"
+  },
+  {
+   "id": 754,
+   "name": "L. Modric",
+   "age": 40,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/754.png",
+   "club": "AC Milan"
+  },
+  {
+   "id": 1322,
+   "name": "N. Moro",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/1322.png",
+   "club": "Bologna"
+  },
+  {
+   "id": 2763,
+   "name": "M. Pasalic",
+   "age": 30,
+   "position": "Midfielder",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/2763.png",
+   "club": "Atalanta"
+  },
+  {
+   "id": 7332,
+   "name": "L. Sucic",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/7332.png",
+   "club": "Real Sociedad"
+  },
+  {
+   "id": 348205,
+   "name": "P. Sucic",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/348205.png",
+   "club": "Inter"
+  },
+  {
+   "id": 842,
+   "name": "N. Vlasic",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/842.png",
+   "club": "Torino"
+  },
+  {
+   "id": 46746,
+   "name": "A. Budimir",
+   "age": 34,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/46746.png",
+   "club": "Osasuna"
+  },
+  {
+   "id": 726,
+   "name": "A. Kramaric",
+   "age": 34,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/726.png",
+   "club": "1899 Hoffenheim"
+  },
+  {
+   "id": 202696,
+   "name": "I. Matanovic",
+   "age": 22,
+   "position": "Attacker",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/202696.png",
+   "club": "SC Freiburg"
+  },
+  {
+   "id": 66055,
+   "name": "P. Musa",
+   "age": 27,
+   "position": "Attacker",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/66055.png",
+   "club": "FC Dallas"
+  },
+  {
+   "id": 260865,
+   "name": "M. Pasalic",
+   "age": 25,
+   "position": "Attacker",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/260865.png",
+   "club": "Orlando City SC"
+  },
+  {
+   "id": 207,
+   "name": "I. Perisic",
+   "age": 36,
+   "position": "Attacker",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/207.png",
+   "club": "PSV Eindhoven"
+  }
+ ],
+ "guardianStarPlayer": "Luka Modric",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

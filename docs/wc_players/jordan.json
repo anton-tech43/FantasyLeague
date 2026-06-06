@@ -1,250 +1,252 @@
 {
-  "country": "jordan",
-  "displayName": "Jordan",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Jamal Sellami",
-  "captain": "Ehsan Haddad",
-  "keyPlayers": [
-    "Mousa Tamari",
-    "Ali Olwan",
-    "Yazan Al Arab",
-    "Ehsan Haddad",
-    "Yazid Abu Layla"
-  ],
-  "players": [
-    {
-      "id": 140607,
-      "name": "Yazid Abu Layla",
-      "age": 32,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/140607.png",
-      "club": "Al Hussein"
-    },
-    {
-      "id": 163884,
-      "name": "Abdallah Al Fakhouri",
-      "age": 25,
-      "position": "Goalkeeper",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/163884.png",
-      "club": "Al Wihdat"
-    },
-    {
-      "id": 163908,
-      "name": "Noureddin Zaid",
-      "age": 32,
-      "position": "Goalkeeper",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/163908.png",
-      "club": "Al-Faisaly"
-    },
-    {
-      "id": 542822,
-      "name": "H. Abu Al Dahab",
-      "age": 25,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/542822.png",
-      "club": "Al-Samiya"
-    },
-    {
-      "id": 542710,
-      "name": "M. Abu Hasheesh",
-      "age": 30,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/542710.png",
-      "club": "Al-Karma"
-    },
-    {
-      "id": 102538,
-      "name": "M. Abualnadi",
-      "age": 24,
-      "position": "Defender",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/102538.png",
-      "club": "Selangor"
-    },
-    {
-      "id": 53900,
-      "name": "Yazan Al Arab",
-      "age": 29,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/53900.png",
-      "club": "FC Seoul"
-    },
-    {
-      "id": 213978,
-      "name": "Saed Al Rosan",
-      "age": 28,
-      "position": "Defender",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/213978.png",
-      "club": "Al Hussein"
-    },
-    {
-      "id": 664028,
-      "name": "A. Badawi",
-      "age": 28,
-      "position": "Defender",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/664028.png",
-      "club": "Al-Faisaly"
-    },
-    {
-      "id": 310835,
-      "name": "Abdallah Naseeb",
-      "age": 31,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/310835.png",
-      "club": "Al Zawra'a"
-    },
-    {
-      "id": 72140,
-      "name": "Saleem Obaid",
-      "age": 33,
-      "position": "Defender",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/72140.png",
-      "club": "Al Hussein"
-    },
-    {
-      "id": 53902,
-      "name": "Ehsan Haddad",
-      "age": 31,
-      "position": "Defender",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/53902.png",
-      "club": "Al Hussein"
-    },
-    {
-      "id": 310785,
-      "name": "Mohannad Abu Taha",
-      "age": 22,
-      "position": "Midfielder",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/310785.png",
-      "club": "Al-Quwa Al-Jawiya"
-    },
-    {
-      "id": 651096,
-      "name": "M. Al Daoud",
-      "age": 33,
-      "position": "Midfielder",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/651096.png",
-      "club": "Al Wihdat"
-    },
-    {
-      "id": 542768,
-      "name": "Ibrahim Sa'deh",
-      "age": 25,
-      "position": "Midfielder",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/542768.png",
-      "club": "Al-Karma"
-    },
-    {
-      "id": 213980,
-      "name": "Nizar Al Rashdan",
-      "age": 26,
-      "position": "Midfielder",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/213980.png",
-      "club": "Qatar SC"
-    },
-    {
-      "id": 140609,
-      "name": "Noor Al Rawabdeh",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/140609.png",
-      "club": "Selangor"
-    },
-    {
-      "id": 104242,
-      "name": "Rajaei Ayed",
-      "age": 32,
-      "position": "Midfielder",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/104242.png",
-      "club": "Al Hussein"
-    },
-    {
-      "id": 198211,
-      "name": "Amer Jamous",
-      "age": 23,
-      "position": "Midfielder",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/198211.png",
-      "club": "Al Wihdat"
-    },
-    {
-      "id": 123530,
-      "name": "Mahmoud Al Mardi",
-      "age": 32,
-      "position": "Attacker",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/123530.png",
-      "club": "Dibba Al-Fujairah"
-    },
-    {
-      "id": 72142,
-      "name": "Mohammed Abu Zurayq",
-      "age": 28,
-      "position": "Attacker",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/72142.png",
-      "club": "Raja CA"
-    },
-    {
-      "id": 568556,
-      "name": "O. Al Fakhouri",
-      "age": 19,
-      "position": "Attacker",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/568556.png",
-      "club": "Pyramids FC"
-    },
-    {
-      "id": 575283,
-      "name": "A. Azaizeh",
-      "age": 21,
-      "position": "Attacker",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/575283.png",
-      "club": "Al Shabab"
-    },
-    {
-      "id": 164026,
-      "name": "Ali Olwan",
-      "age": 25,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/164026.png",
-      "club": "Al-Sailiya"
-    },
-    {
-      "id": 432841,
-      "name": "Ibrahim Sabra",
-      "age": 20,
-      "position": "Attacker",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/432841.png",
-      "club": "NK Lokomotiva Zagreb"
-    },
-    {
-      "id": 15286,
-      "name": "Mousa Tamari",
-      "age": 28,
-      "position": "Attacker",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/15286.png",
-      "club": "Rennes"
-    }
-  ]
+ "country": "jordan",
+ "displayName": "Jordan",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Jamal Sellami",
+ "captain": "Ehsan Haddad",
+ "keyPlayers": [
+  "Mousa Tamari",
+  "Ali Olwan",
+  "Yazan Al Arab",
+  "Ehsan Haddad",
+  "Yazid Abu Layla"
+ ],
+ "players": [
+  {
+   "id": 140607,
+   "name": "Yazid Abu Layla",
+   "age": 32,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/140607.png",
+   "club": "Al Hussein"
+  },
+  {
+   "id": 163884,
+   "name": "Abdallah Al Fakhouri",
+   "age": 25,
+   "position": "Goalkeeper",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/163884.png",
+   "club": "Al Wihdat"
+  },
+  {
+   "id": 163908,
+   "name": "Noureddin Zaid",
+   "age": 32,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/163908.png",
+   "club": "Al-Faisaly"
+  },
+  {
+   "id": 542822,
+   "name": "H. Abu Al Dahab",
+   "age": 25,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/542822.png",
+   "club": "Al-Samiya"
+  },
+  {
+   "id": 542710,
+   "name": "M. Abu Hasheesh",
+   "age": 30,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/542710.png",
+   "club": "Al-Karma"
+  },
+  {
+   "id": 102538,
+   "name": "M. Abualnadi",
+   "age": 24,
+   "position": "Defender",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/102538.png",
+   "club": "Selangor"
+  },
+  {
+   "id": 53900,
+   "name": "Yazan Al Arab",
+   "age": 29,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/53900.png",
+   "club": "FC Seoul"
+  },
+  {
+   "id": 213978,
+   "name": "Saed Al Rosan",
+   "age": 28,
+   "position": "Defender",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/213978.png",
+   "club": "Al Hussein"
+  },
+  {
+   "id": 664028,
+   "name": "A. Badawi",
+   "age": 28,
+   "position": "Defender",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/664028.png",
+   "club": "Al-Faisaly"
+  },
+  {
+   "id": 310835,
+   "name": "Abdallah Naseeb",
+   "age": 31,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/310835.png",
+   "club": "Al Zawra'a"
+  },
+  {
+   "id": 72140,
+   "name": "Saleem Obaid",
+   "age": 33,
+   "position": "Defender",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/72140.png",
+   "club": "Al Hussein"
+  },
+  {
+   "id": 53902,
+   "name": "Ehsan Haddad",
+   "age": 31,
+   "position": "Defender",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/53902.png",
+   "club": "Al Hussein"
+  },
+  {
+   "id": 310785,
+   "name": "Mohannad Abu Taha",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/310785.png",
+   "club": "Al-Quwa Al-Jawiya"
+  },
+  {
+   "id": 651096,
+   "name": "M. Al Daoud",
+   "age": 33,
+   "position": "Midfielder",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/651096.png",
+   "club": "Al Wihdat"
+  },
+  {
+   "id": 542768,
+   "name": "Ibrahim Sa'deh",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/542768.png",
+   "club": "Al-Karma"
+  },
+  {
+   "id": 213980,
+   "name": "Nizar Al Rashdan",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/213980.png",
+   "club": "Qatar SC"
+  },
+  {
+   "id": 140609,
+   "name": "Noor Al Rawabdeh",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/140609.png",
+   "club": "Selangor"
+  },
+  {
+   "id": 104242,
+   "name": "Rajaei Ayed",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/104242.png",
+   "club": "Al Hussein"
+  },
+  {
+   "id": 198211,
+   "name": "Amer Jamous",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/198211.png",
+   "club": "Al Wihdat"
+  },
+  {
+   "id": 123530,
+   "name": "Mahmoud Al Mardi",
+   "age": 32,
+   "position": "Attacker",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/123530.png",
+   "club": "Dibba Al-Fujairah"
+  },
+  {
+   "id": 72142,
+   "name": "Mohammed Abu Zurayq",
+   "age": 28,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/72142.png",
+   "club": "Raja CA"
+  },
+  {
+   "id": 568556,
+   "name": "O. Al Fakhouri",
+   "age": 19,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/568556.png",
+   "club": "Pyramids FC"
+  },
+  {
+   "id": 575283,
+   "name": "A. Azaizeh",
+   "age": 21,
+   "position": "Attacker",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/575283.png",
+   "club": "Al Shabab"
+  },
+  {
+   "id": 164026,
+   "name": "Ali Olwan",
+   "age": 25,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/164026.png",
+   "club": "Al-Sailiya"
+  },
+  {
+   "id": 432841,
+   "name": "Ibrahim Sabra",
+   "age": 20,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/432841.png",
+   "club": "NK Lokomotiva Zagreb"
+  },
+  {
+   "id": 15286,
+   "name": "Mousa Tamari",
+   "age": 28,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/15286.png",
+   "club": "Rennes"
+  }
+ ],
+ "guardianStarPlayer": "Mousa Al-Tamari",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

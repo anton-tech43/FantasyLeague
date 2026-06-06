@@ -1,251 +1,253 @@
 {
-  "country": "scotland",
-  "displayName": "Scotland",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Steve Clarke",
-  "captain": "A. Robertson",
-  "keyPlayers": [
-    "S. McTominay",
-    "A. Robertson",
-    "J. McGinn",
-    "C. Adams",
-    "A. Gunn",
-    "B. Doak"
-  ],
-  "players": [
-    {
-      "id": 1106,
-      "name": "C. Gordon",
-      "age": 43,
-      "position": "Goalkeeper",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/1106.png",
-      "club": "Heart Of Midlothian"
-    },
-    {
-      "id": 18933,
-      "name": "A. Gunn",
-      "age": 29,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/18933.png",
-      "club": "Nottingham Forest"
-    },
-    {
-      "id": 44937,
-      "name": "L. Kelly",
-      "age": 29,
-      "position": "Goalkeeper",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/44937.png",
-      "club": "Rangers"
-    },
-    {
-      "id": 19066,
-      "name": "G. Hanley",
-      "age": 34,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/19066.png",
-      "club": "Hibernian"
-    },
-    {
-      "id": 1111,
-      "name": "J. Hendry",
-      "age": 30,
-      "position": "Defender",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/1111.png",
-      "club": "Al-Ettifaq"
-    },
-    {
-      "id": 44871,
-      "name": "A. Hickey",
-      "age": 23,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/44871.png",
-      "club": "Brentford"
-    },
-    {
-      "id": 19987,
-      "name": "D. Hyam",
-      "age": 30,
-      "position": "Defender",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/19987.png",
-      "club": "Wrexham"
-    },
-    {
-      "id": 44811,
-      "name": "S. McKenna",
-      "age": 29,
-      "position": "Defender",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/44811.png",
-      "club": "Dinamo Zagreb"
-    },
-    {
-      "id": 138417,
-      "name": "N. Patterson",
-      "age": 24,
-      "position": "Defender",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/138417.png",
-      "club": "Everton"
-    },
-    {
-      "id": 1115,
-      "name": "A. Ralston",
-      "age": 27,
-      "position": "Defender",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/1115.png",
-      "club": "Celtic"
-    },
-    {
-      "id": 289,
-      "name": "A. Robertson",
-      "age": 31,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/289.png",
-      "club": "Liverpool"
-    },
-    {
-      "id": 44865,
-      "name": "J. Souttar",
-      "age": 29,
-      "position": "Defender",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/44865.png",
-      "club": "Rangers"
-    },
-    {
-      "id": 1117,
-      "name": "K. Tierney",
-      "age": 28,
-      "position": "Defender",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/1117.png",
-      "club": "Celtic"
-    },
-    {
-      "id": 1125,
-      "name": "R. Christie",
-      "age": 30,
-      "position": "Midfielder",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/1125.png",
-      "club": "Bournemouth"
-    },
-    {
-      "id": 44814,
-      "name": "L. Ferguson",
-      "age": 26,
-      "position": "Midfielder",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/44814.png",
-      "club": "Bologna"
-    },
-    {
-      "id": 557460,
-      "name": "T. Fletcher",
-      "age": 18,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/557460.png",
-      "club": "Manchester United U21"
-    },
-    {
-      "id": 19191,
-      "name": "J.  McGinn",
-      "age": 31,
-      "position": "Midfielder",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/19191.png",
-      "club": "Aston Villa"
-    },
-    {
-      "id": 19077,
-      "name": "K. McLean",
-      "age": 33,
-      "position": "Midfielder",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/19077.png",
-      "club": "Norwich"
-    },
-    {
-      "id": 903,
-      "name": "S. McTominay",
-      "age": 29,
-      "position": "Midfielder",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/903.png",
-      "club": "Napoli"
-    },
-    {
-      "id": 19524,
-      "name": "C. Adams",
-      "age": 29,
-      "position": "Attacker",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/19524.png",
-      "club": "Torino"
-    },
-    {
-      "id": 45307,
-      "name": "L. Dykes",
-      "age": 30,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/45307.png",
-      "club": "Birmingham"
-    },
-    {
-      "id": 343576,
-      "name": "B. Doak",
-      "age": 20,
-      "position": "Attacker",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/343576.png",
-      "club": "Bournemouth"
-    },
-    {
-      "id": 8794,
-      "name": "G. Hirst",
-      "age": 26,
-      "position": "Attacker",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/8794.png",
-      "club": "Ipswich"
-    },
-    {
-      "id": 45175,
-      "name": "L. Shankland",
-      "age": 30,
-      "position": "Attacker",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/45175.png",
-      "club": "Heart Of Midlothian"
-    },
-    {
-      "id": 45078,
-      "name": "R. Stewart",
-      "age": 29,
-      "position": "Attacker",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/45078.png",
-      "club": "Southampton"
-    },
-    {
-      "id": 433272,
-      "name": "Findlay Curtis",
-      "age": 19,
-      "position": "Attacker",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/433272.png",
-      "club": "Rangers"
-    }
-  ]
+ "country": "scotland",
+ "displayName": "Scotland",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Steve Clarke",
+ "captain": "A. Robertson",
+ "keyPlayers": [
+  "S. McTominay",
+  "A. Robertson",
+  "J. McGinn",
+  "C. Adams",
+  "A. Gunn",
+  "B. Doak"
+ ],
+ "players": [
+  {
+   "id": 1106,
+   "name": "C. Gordon",
+   "age": 43,
+   "position": "Goalkeeper",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/1106.png",
+   "club": "Heart Of Midlothian"
+  },
+  {
+   "id": 18933,
+   "name": "A. Gunn",
+   "age": 29,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/18933.png",
+   "club": "Nottingham Forest"
+  },
+  {
+   "id": 44937,
+   "name": "L. Kelly",
+   "age": 29,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/44937.png",
+   "club": "Rangers"
+  },
+  {
+   "id": 19066,
+   "name": "G. Hanley",
+   "age": 34,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/19066.png",
+   "club": "Hibernian"
+  },
+  {
+   "id": 1111,
+   "name": "J. Hendry",
+   "age": 30,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/1111.png",
+   "club": "Al-Ettifaq"
+  },
+  {
+   "id": 44871,
+   "name": "A. Hickey",
+   "age": 23,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/44871.png",
+   "club": "Brentford"
+  },
+  {
+   "id": 19987,
+   "name": "D. Hyam",
+   "age": 30,
+   "position": "Defender",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/19987.png",
+   "club": "Wrexham"
+  },
+  {
+   "id": 44811,
+   "name": "S. McKenna",
+   "age": 29,
+   "position": "Defender",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/44811.png",
+   "club": "Dinamo Zagreb"
+  },
+  {
+   "id": 138417,
+   "name": "N. Patterson",
+   "age": 24,
+   "position": "Defender",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/138417.png",
+   "club": "Everton"
+  },
+  {
+   "id": 1115,
+   "name": "A. Ralston",
+   "age": 27,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/1115.png",
+   "club": "Celtic"
+  },
+  {
+   "id": 289,
+   "name": "A. Robertson",
+   "age": 31,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/289.png",
+   "club": "Liverpool"
+  },
+  {
+   "id": 44865,
+   "name": "J. Souttar",
+   "age": 29,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/44865.png",
+   "club": "Rangers"
+  },
+  {
+   "id": 1117,
+   "name": "K. Tierney",
+   "age": 28,
+   "position": "Defender",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/1117.png",
+   "club": "Celtic"
+  },
+  {
+   "id": 1125,
+   "name": "R. Christie",
+   "age": 30,
+   "position": "Midfielder",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/1125.png",
+   "club": "Bournemouth"
+  },
+  {
+   "id": 44814,
+   "name": "L. Ferguson",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/44814.png",
+   "club": "Bologna"
+  },
+  {
+   "id": 557460,
+   "name": "T. Fletcher",
+   "age": 18,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/557460.png",
+   "club": "Manchester United U21"
+  },
+  {
+   "id": 19191,
+   "name": "J.  McGinn",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/19191.png",
+   "club": "Aston Villa"
+  },
+  {
+   "id": 19077,
+   "name": "K. McLean",
+   "age": 33,
+   "position": "Midfielder",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/19077.png",
+   "club": "Norwich"
+  },
+  {
+   "id": 903,
+   "name": "S. McTominay",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/903.png",
+   "club": "Napoli"
+  },
+  {
+   "id": 19524,
+   "name": "C. Adams",
+   "age": 29,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/19524.png",
+   "club": "Torino"
+  },
+  {
+   "id": 45307,
+   "name": "L. Dykes",
+   "age": 30,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/45307.png",
+   "club": "Birmingham"
+  },
+  {
+   "id": 343576,
+   "name": "B. Doak",
+   "age": 20,
+   "position": "Attacker",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/343576.png",
+   "club": "Bournemouth"
+  },
+  {
+   "id": 8794,
+   "name": "G. Hirst",
+   "age": 26,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/8794.png",
+   "club": "Ipswich"
+  },
+  {
+   "id": 45175,
+   "name": "L. Shankland",
+   "age": 30,
+   "position": "Attacker",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/45175.png",
+   "club": "Heart Of Midlothian"
+  },
+  {
+   "id": 45078,
+   "name": "R. Stewart",
+   "age": 29,
+   "position": "Attacker",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/45078.png",
+   "club": "Southampton"
+  },
+  {
+   "id": 433272,
+   "name": "Findlay Curtis",
+   "age": 19,
+   "position": "Attacker",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/433272.png",
+   "club": "Rangers"
+  }
+ ],
+ "guardianStarPlayer": "Scott McTominay",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

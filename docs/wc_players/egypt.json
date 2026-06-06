@@ -1,251 +1,253 @@
 {
-  "country": "egypt",
-  "displayName": "Egypt",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Hossam Hassan",
-  "captain": "Mohamed Salah",
-  "keyPlayers": [
-    "Mohamed Salah",
-    "Omar Marmoush",
-    "Mohamed El Shenawy",
-    "Emam Ashour",
-    "Trézéguet",
-    "Ahmed Zizo"
-  ],
-  "players": [
-    {
-      "id": 550469,
-      "name": "M. Alaa",
-      "age": 26,
-      "position": "Goalkeeper",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/550469.png",
-      "club": "El Gouna FC"
-    },
-    {
-      "id": 16797,
-      "name": "Mohamed El Shenawy",
-      "age": 37,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/16797.png",
-      "club": "Al Ahly"
-    },
-    {
-      "id": 269174,
-      "name": "Mostafa Shobeir",
-      "age": 25,
-      "position": "Goalkeeper",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/269174.png",
-      "club": "Al Ahly"
-    },
-    {
-      "id": 16831,
-      "name": "Al Mahdi Soliman",
-      "age": 38,
-      "position": "Goalkeeper",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/16831.png",
-      "club": "Zamalek SC"
-    },
-    {
-      "id": 269621,
-      "name": "Hossam Abdelmaguid",
-      "age": 24,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/269621.png",
-      "club": "Zamalek SC"
-    },
-    {
-      "id": 196343,
-      "name": "Mohamed Abdelmonem",
-      "age": 26,
-      "position": "Defender",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/196343.png",
-      "club": "Nice"
-    },
-    {
-      "id": 2649,
-      "name": "Ahmed Fatouh",
-      "age": 27,
-      "position": "Defender",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/2649.png",
-      "club": "Zamalek SC"
-    },
-    {
-      "id": 2656,
-      "name": "Karim Hafez",
-      "age": 29,
-      "position": "Defender",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/2656.png",
-      "club": "Pyramids FC"
-    },
-    {
-      "id": 2654,
-      "name": "Mohamed Hany",
-      "age": 29,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/2654.png",
-      "club": "Al Ahly"
-    },
-    {
-      "id": 16804,
-      "name": "Yasser Ibrahim",
-      "age": 32,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/16804.png",
-      "club": "Al Ahly"
-    },
-    {
-      "id": 16805,
-      "name": "Rami Rabia",
-      "age": 32,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/16805.png",
-      "club": "Al Ain"
-    },
-    {
-      "id": 550371,
-      "name": "T. Alaa",
-      "age": 23,
-      "position": "Defender",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/550371.png",
-      "club": "Masr"
-    },
-    {
-      "id": 17269,
-      "name": "Emam Ashour",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/17269.png",
-      "club": "Al Ahly"
-    },
-    {
-      "id": 190575,
-      "name": "Marwan Attia",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/190575.png",
-      "club": "Al Ahly"
-    },
-    {
-      "id": 2660,
-      "name": "Nabil Emad Dunga",
-      "age": 29,
-      "position": "Midfielder",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/2660.png",
-      "club": "Zamalek SC"
-    },
-    {
-      "id": 16813,
-      "name": "Hamdi Fathy",
-      "age": 31,
-      "position": "Midfielder",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/16813.png",
-      "club": "Al Wakrah"
-    },
-    {
-      "id": 16841,
-      "name": "Mohanad Lasheen",
-      "age": 29,
-      "position": "Midfielder",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/16841.png",
-      "club": "Pyramids FC"
-    },
-    {
-      "id": 69196,
-      "name": "Mahmoud Saber",
-      "age": 24,
-      "position": "Midfielder",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/69196.png",
-      "club": "Masr"
-    },
-    {
-      "id": 395075,
-      "name": "Mostafa Zico",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/395075.png",
-      "club": "Pyramids FC"
-    },
-    {
-      "id": 2664,
-      "name": "Tr\u00e9z\u00e9guet",
-      "age": 31,
-      "position": "Attacker",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/2664.png",
-      "club": "Al Ahly"
-    },
-    {
-      "id": 20844,
-      "name": "H. Hassan",
-      "age": 23,
-      "position": "Attacker",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/20844.png",
-      "club": "Oviedo"
-    },
-    {
-      "id": 664079,
-      "name": "Ahmed Zizo",
-      "age": 30,
-      "position": "Attacker",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/664079.png",
-      "club": "Al Ahly"
-    },
-    {
-      "id": 550547,
-      "name": "H. Abdelkarim",
-      "age": 17,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/550547.png",
-      "club": "Al Ahly"
-    },
-    {
-      "id": 70535,
-      "name": "Ibrahim Adel",
-      "age": 24,
-      "position": "Attacker",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/70535.png",
-      "club": "FC Nordsjaelland"
-    },
-    {
-      "id": 81573,
-      "name": "Omar Marmoush",
-      "age": 26,
-      "position": "Attacker",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/81573.png",
-      "club": "Manchester City"
-    },
-    {
-      "id": 306,
-      "name": "Mohamed Salah",
-      "age": 33,
-      "position": "Attacker",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/306.png",
-      "club": "Liverpool"
-    }
-  ]
+ "country": "egypt",
+ "displayName": "Egypt",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Hossam Hassan",
+ "captain": "Mohamed Salah",
+ "keyPlayers": [
+  "Mohamed Salah",
+  "Omar Marmoush",
+  "Mohamed El Shenawy",
+  "Emam Ashour",
+  "Tr\u00e9z\u00e9guet",
+  "Ahmed Zizo"
+ ],
+ "players": [
+  {
+   "id": 550469,
+   "name": "M. Alaa",
+   "age": 26,
+   "position": "Goalkeeper",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/550469.png",
+   "club": "El Gouna FC"
+  },
+  {
+   "id": 16797,
+   "name": "Mohamed El Shenawy",
+   "age": 37,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/16797.png",
+   "club": "Al Ahly"
+  },
+  {
+   "id": 269174,
+   "name": "Mostafa Shobeir",
+   "age": 25,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/269174.png",
+   "club": "Al Ahly"
+  },
+  {
+   "id": 16831,
+   "name": "Al Mahdi Soliman",
+   "age": 38,
+   "position": "Goalkeeper",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/16831.png",
+   "club": "Zamalek SC"
+  },
+  {
+   "id": 269621,
+   "name": "Hossam Abdelmaguid",
+   "age": 24,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/269621.png",
+   "club": "Zamalek SC"
+  },
+  {
+   "id": 196343,
+   "name": "Mohamed Abdelmonem",
+   "age": 26,
+   "position": "Defender",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/196343.png",
+   "club": "Nice"
+  },
+  {
+   "id": 2649,
+   "name": "Ahmed Fatouh",
+   "age": 27,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/2649.png",
+   "club": "Zamalek SC"
+  },
+  {
+   "id": 2656,
+   "name": "Karim Hafez",
+   "age": 29,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/2656.png",
+   "club": "Pyramids FC"
+  },
+  {
+   "id": 2654,
+   "name": "Mohamed Hany",
+   "age": 29,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/2654.png",
+   "club": "Al Ahly"
+  },
+  {
+   "id": 16804,
+   "name": "Yasser Ibrahim",
+   "age": 32,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/16804.png",
+   "club": "Al Ahly"
+  },
+  {
+   "id": 16805,
+   "name": "Rami Rabia",
+   "age": 32,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/16805.png",
+   "club": "Al Ain"
+  },
+  {
+   "id": 550371,
+   "name": "T. Alaa",
+   "age": 23,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/550371.png",
+   "club": "Masr"
+  },
+  {
+   "id": 17269,
+   "name": "Emam Ashour",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/17269.png",
+   "club": "Al Ahly"
+  },
+  {
+   "id": 190575,
+   "name": "Marwan Attia",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/190575.png",
+   "club": "Al Ahly"
+  },
+  {
+   "id": 2660,
+   "name": "Nabil Emad Dunga",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/2660.png",
+   "club": "Zamalek SC"
+  },
+  {
+   "id": 16813,
+   "name": "Hamdi Fathy",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/16813.png",
+   "club": "Al Wakrah"
+  },
+  {
+   "id": 16841,
+   "name": "Mohanad Lasheen",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/16841.png",
+   "club": "Pyramids FC"
+  },
+  {
+   "id": 69196,
+   "name": "Mahmoud Saber",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/69196.png",
+   "club": "Masr"
+  },
+  {
+   "id": 395075,
+   "name": "Mostafa Zico",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/395075.png",
+   "club": "Pyramids FC"
+  },
+  {
+   "id": 2664,
+   "name": "Tr\u00e9z\u00e9guet",
+   "age": 31,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/2664.png",
+   "club": "Al Ahly"
+  },
+  {
+   "id": 20844,
+   "name": "H. Hassan",
+   "age": 23,
+   "position": "Attacker",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/20844.png",
+   "club": "Oviedo"
+  },
+  {
+   "id": 664079,
+   "name": "Ahmed Zizo",
+   "age": 30,
+   "position": "Attacker",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/664079.png",
+   "club": "Al Ahly"
+  },
+  {
+   "id": 550547,
+   "name": "H. Abdelkarim",
+   "age": 17,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/550547.png",
+   "club": "Al Ahly"
+  },
+  {
+   "id": 70535,
+   "name": "Ibrahim Adel",
+   "age": 24,
+   "position": "Attacker",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/70535.png",
+   "club": "FC Nordsjaelland"
+  },
+  {
+   "id": 81573,
+   "name": "Omar Marmoush",
+   "age": 26,
+   "position": "Attacker",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/81573.png",
+   "club": "Manchester City"
+  },
+  {
+   "id": 306,
+   "name": "Mohamed Salah",
+   "age": 33,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/306.png",
+   "club": "Liverpool"
+  }
+ ],
+ "guardianStarPlayer": "Mohamed Salah",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

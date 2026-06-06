@@ -1,251 +1,253 @@
 {
-  "country": "czech_republic",
-  "displayName": "Czech Republic",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Miroslav Koubek",
-  "captain": "L. Krejcí",
-  "keyPlayers": [
-    "P. Schick",
-    "T. Soucek",
-    "L. Krejcí",
-    "V. Coufal",
-    "A. Hlozek",
-    "P. Sulc"
-  ],
-  "players": [
-    {
-      "id": 269349,
-      "name": "L. Horn\u00edcek",
-      "age": 23,
-      "position": "Goalkeeper",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/269349.png",
-      "club": "SC Braga"
-    },
-    {
-      "id": 138804,
-      "name": "M. Kov\u00e1r",
-      "age": 25,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/138804.png",
-      "club": "PSV Eindhoven"
-    },
-    {
-      "id": 66347,
-      "name": "J. Stanek",
-      "age": 29,
-      "position": "Goalkeeper",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/66347.png",
-      "club": "Slavia Praha"
-    },
-    {
-      "id": 337740,
-      "name": "S. Chaloupek",
-      "age": 22,
-      "position": "Defender",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/337740.png",
-      "club": "Slavia Praha"
-    },
-    {
-      "id": 1231,
-      "name": "V. Coufal",
-      "age": 33,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/1231.png",
-      "club": "1899 Hoffenheim"
-    },
-    {
-      "id": 2252,
-      "name": "T. Holes",
-      "age": 32,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/2252.png",
-      "club": "Slavia Praha"
-    },
-    {
-      "id": 162964,
-      "name": "R. Hran\u00e1c",
-      "age": 25,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/162964.png",
-      "club": "1899 Hoffenheim"
-    },
-    {
-      "id": 128793,
-      "name": "D. Jur\u00e1sek",
-      "age": 25,
-      "position": "Defender",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/128793.png",
-      "club": "Slavia Praha"
-    },
-    {
-      "id": 66407,
-      "name": "L. Krejc\u00ed",
-      "age": 26,
-      "position": "Defender",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/66407.png",
-      "club": "Wolves"
-    },
-    {
-      "id": 1237,
-      "name": "J. Zelen\u00fd",
-      "age": 33,
-      "position": "Defender",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/1237.png",
-      "club": "Sparta Praha"
-    },
-    {
-      "id": 128772,
-      "name": "D. Zima",
-      "age": 25,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/128772.png",
-      "club": "Slavia Praha"
-    },
-    {
-      "id": 66214,
-      "name": "D. Doudera",
-      "age": 27,
-      "position": "Defender",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/66214.png",
-      "club": "Slavia Praha"
-    },
-    {
-      "id": 162194,
-      "name": "L. Cerv",
-      "age": 24,
-      "position": "Midfielder",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/162194.png",
-      "club": "Plzen"
-    },
-    {
-      "id": 25348,
-      "name": "V. Darida",
-      "age": 35,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/25348.png",
-      "club": "Hradec Kr\u00e1lov\u00e9"
-    },
-    {
-      "id": 66353,
-      "name": "L. Provod",
-      "age": 29,
-      "position": "Midfielder",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/66353.png",
-      "club": "Slavia Praha"
-    },
-    {
-      "id": 241,
-      "name": "M. Sad\u00edlek",
-      "age": 26,
-      "position": "Midfielder",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/241.png",
-      "club": "Slavia Praha"
-    },
-    {
-      "id": 555437,
-      "name": "H. Sochurek",
-      "age": 17,
-      "position": "Midfielder",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/555437.png",
-      "club": "Sparta Praha"
-    },
-    {
-      "id": 386837,
-      "name": "A. Sojka",
-      "age": 22,
-      "position": "Midfielder",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/386837.png",
-      "club": "Hradec Kr\u00e1lov\u00e9"
-    },
-    {
-      "id": 1243,
-      "name": "T. Soucek",
-      "age": 30,
-      "position": "Midfielder",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/1243.png",
-      "club": "West Ham"
-    },
-    {
-      "id": 66387,
-      "name": "P. Sulc",
-      "age": 25,
-      "position": "Attacker",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/66387.png",
-      "club": "Lyon"
-    },
-    {
-      "id": 818,
-      "name": "T. Chor\u00fd",
-      "age": 30,
-      "position": "Attacker",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/818.png",
-      "club": "Slavia Praha"
-    },
-    {
-      "id": 66275,
-      "name": "M. Chytil",
-      "age": 26,
-      "position": "Attacker",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/66275.png",
-      "club": "Slavia Praha"
-    },
-    {
-      "id": 66019,
-      "name": "A. Hlozek",
-      "age": 23,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/66019.png",
-      "club": "1899 Hoffenheim"
-    },
-    {
-      "id": 66340,
-      "name": "J. Kuchta",
-      "age": 28,
-      "position": "Attacker",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/66340.png",
-      "club": "Sparta Praha"
-    },
-    {
-      "id": 794,
-      "name": "P. Schick",
-      "age": 29,
-      "position": "Attacker",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/794.png",
-      "club": "Bayer Leverkusen"
-    },
-    {
-      "id": 290212,
-      "name": "D. Visinsk\u00fd",
-      "age": 22,
-      "position": "Attacker",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/290212.png",
-      "club": "Plzen"
-    }
-  ]
+ "country": "czech_republic",
+ "displayName": "Czech Republic",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Miroslav Koubek",
+ "captain": "L. Krejc\u00ed",
+ "keyPlayers": [
+  "P. Schick",
+  "T. Soucek",
+  "L. Krejc\u00ed",
+  "V. Coufal",
+  "A. Hlozek",
+  "P. Sulc"
+ ],
+ "players": [
+  {
+   "id": 269349,
+   "name": "L. Horn\u00edcek",
+   "age": 23,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/269349.png",
+   "club": "SC Braga"
+  },
+  {
+   "id": 138804,
+   "name": "M. Kov\u00e1r",
+   "age": 25,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/138804.png",
+   "club": "PSV Eindhoven"
+  },
+  {
+   "id": 66347,
+   "name": "J. Stanek",
+   "age": 29,
+   "position": "Goalkeeper",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/66347.png",
+   "club": "Slavia Praha"
+  },
+  {
+   "id": 337740,
+   "name": "S. Chaloupek",
+   "age": 22,
+   "position": "Defender",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/337740.png",
+   "club": "Slavia Praha"
+  },
+  {
+   "id": 1231,
+   "name": "V. Coufal",
+   "age": 33,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/1231.png",
+   "club": "1899 Hoffenheim"
+  },
+  {
+   "id": 2252,
+   "name": "T. Holes",
+   "age": 32,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/2252.png",
+   "club": "Slavia Praha"
+  },
+  {
+   "id": 162964,
+   "name": "R. Hran\u00e1c",
+   "age": 25,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/162964.png",
+   "club": "1899 Hoffenheim"
+  },
+  {
+   "id": 128793,
+   "name": "D. Jur\u00e1sek",
+   "age": 25,
+   "position": "Defender",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/128793.png",
+   "club": "Slavia Praha"
+  },
+  {
+   "id": 66407,
+   "name": "L. Krejc\u00ed",
+   "age": 26,
+   "position": "Defender",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/66407.png",
+   "club": "Wolves"
+  },
+  {
+   "id": 1237,
+   "name": "J. Zelen\u00fd",
+   "age": 33,
+   "position": "Defender",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/1237.png",
+   "club": "Sparta Praha"
+  },
+  {
+   "id": 128772,
+   "name": "D. Zima",
+   "age": 25,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/128772.png",
+   "club": "Slavia Praha"
+  },
+  {
+   "id": 66214,
+   "name": "D. Doudera",
+   "age": 27,
+   "position": "Defender",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/66214.png",
+   "club": "Slavia Praha"
+  },
+  {
+   "id": 162194,
+   "name": "L. Cerv",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/162194.png",
+   "club": "Plzen"
+  },
+  {
+   "id": 25348,
+   "name": "V. Darida",
+   "age": 35,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/25348.png",
+   "club": "Hradec Kr\u00e1lov\u00e9"
+  },
+  {
+   "id": 66353,
+   "name": "L. Provod",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/66353.png",
+   "club": "Slavia Praha"
+  },
+  {
+   "id": 241,
+   "name": "M. Sad\u00edlek",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/241.png",
+   "club": "Slavia Praha"
+  },
+  {
+   "id": 555437,
+   "name": "H. Sochurek",
+   "age": 17,
+   "position": "Midfielder",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/555437.png",
+   "club": "Sparta Praha"
+  },
+  {
+   "id": 386837,
+   "name": "A. Sojka",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/386837.png",
+   "club": "Hradec Kr\u00e1lov\u00e9"
+  },
+  {
+   "id": 1243,
+   "name": "T. Soucek",
+   "age": 30,
+   "position": "Midfielder",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/1243.png",
+   "club": "West Ham"
+  },
+  {
+   "id": 66387,
+   "name": "P. Sulc",
+   "age": 25,
+   "position": "Attacker",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/66387.png",
+   "club": "Lyon"
+  },
+  {
+   "id": 818,
+   "name": "T. Chor\u00fd",
+   "age": 30,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/818.png",
+   "club": "Slavia Praha"
+  },
+  {
+   "id": 66275,
+   "name": "M. Chytil",
+   "age": 26,
+   "position": "Attacker",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/66275.png",
+   "club": "Slavia Praha"
+  },
+  {
+   "id": 66019,
+   "name": "A. Hlozek",
+   "age": 23,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/66019.png",
+   "club": "1899 Hoffenheim"
+  },
+  {
+   "id": 66340,
+   "name": "J. Kuchta",
+   "age": 28,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/66340.png",
+   "club": "Sparta Praha"
+  },
+  {
+   "id": 794,
+   "name": "P. Schick",
+   "age": 29,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/794.png",
+   "club": "Bayer Leverkusen"
+  },
+  {
+   "id": 290212,
+   "name": "D. Visinsk\u00fd",
+   "age": 22,
+   "position": "Attacker",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/290212.png",
+   "club": "Plzen"
+  }
+ ],
+ "guardianStarPlayer": "Patrik Schick",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

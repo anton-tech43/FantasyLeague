@@ -1,250 +1,252 @@
 {
-  "country": "iran",
-  "displayName": "Iran",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Amir Ghalenoei",
-  "captain": "Alireza Jahanbakhsh",
-  "keyPlayers": [
-    "M. Taremi",
-    "A. Jahanbakhsh",
-    "A. Beiranvand",
-    "S. Ezatolahi",
-    "M. Ghaedi"
-  ],
-  "players": [
-    {
-      "id": 2682,
-      "name": "A. Beiranvand",
-      "age": 33,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/2682.png",
-      "club": "Tractor Sazi"
-    },
-    {
-      "id": 29755,
-      "name": "H. Hosseini",
-      "age": 33,
-      "position": "Goalkeeper",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/29755.png",
-      "club": "Sepahan FC"
-    },
-    {
-      "id": 2681,
-      "name": "P. Niazmand",
-      "age": 30,
-      "position": "Goalkeeper",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/2681.png",
-      "club": "Persepolis FC"
-    },
-    {
-      "id": 532950,
-      "name": "D. Eiri",
-      "age": 21,
-      "position": "Defender",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/532950.png",
-      "club": "Malavan FC"
-    },
-    {
-      "id": 2691,
-      "name": "R. Rezaeian",
-      "age": 35,
-      "position": "Defender",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/2691.png",
-      "club": "Esteghlal FC"
-    },
-    {
-      "id": 2685,
-      "name": "E. Hajisafi",
-      "age": 35,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/2685.png",
-      "club": "Sepahan FC"
-    },
-    {
-      "id": 136880,
-      "name": "Saleh Hardani",
-      "age": 27,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/136880.png",
-      "club": "Esteghlal FC"
-    },
-    {
-      "id": 2687,
-      "name": "H. Kanani",
-      "age": 31,
-      "position": "Defender",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/2687.png",
-      "club": "Persepolis FC"
-    },
-    {
-      "id": 29704,
-      "name": "S. Khalilzadeh",
-      "age": 36,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/29704.png",
-      "club": "Tractor Sazi"
-    },
-    {
-      "id": 2688,
-      "name": "M. Mohammadi",
-      "age": 32,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/2688.png",
-      "club": "Persepolis FC"
-    },
-    {
-      "id": 533035,
-      "name": "A. Nemati",
-      "age": 29,
-      "position": "Defender",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/533035.png",
-      "club": "Foolad FC"
-    },
-    {
-      "id": 343405,
-      "name": "A. Yousefi",
-      "age": 23,
-      "position": "Defender",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/343405.png",
-      "club": "Sepahan FC"
-    },
-    {
-      "id": 2700,
-      "name": "A. Jahanbakhsh",
-      "age": 32,
-      "position": "Midfielder",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/2700.png",
-      "club": "Dender"
-    },
-    {
-      "id": 2683,
-      "name": "R. Cheshmi",
-      "age": 32,
-      "position": "Midfielder",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/2683.png",
-      "club": "Esteghlal FC"
-    },
-    {
-      "id": 19614,
-      "name": "S. Ezatolahi",
-      "age": 29,
-      "position": "Midfielder",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/19614.png",
-      "club": "Shabab Al Ahli Dubai"
-    },
-    {
-      "id": 2699,
-      "name": "S. Ghoddos",
-      "age": 32,
-      "position": "Midfielder",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/2699.png",
-      "club": "Al-Ittihad Kalba"
-    },
-    {
-      "id": 423753,
-      "name": "A. Razzaghinia",
-      "age": 19,
-      "position": "Midfielder",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/423753.png",
-      "club": "Esteghlal FC"
-    },
-    {
-      "id": 341844,
-      "name": "M. Ghorbani",
-      "age": 24,
-      "position": "Midfielder",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/341844.png",
-      "club": "Al Wahda FC"
-    },
-    {
-      "id": 134217,
-      "name": "M. Mohebi",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/134217.png",
-      "club": "FC Rostov"
-    },
-    {
-      "id": 2697,
-      "name": "M. Torabi",
-      "age": 31,
-      "position": "Midfielder",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/2697.png",
-      "club": "Tractor Sazi"
-    },
-    {
-      "id": 643918,
-      "name": "M. Ghaedi",
-      "age": 27,
-      "position": "Attacker",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/643918.png",
-      "club": "Al-Nasr SC"
-    },
-    {
-      "id": 29937,
-      "name": "A. Hosseinzadeh",
-      "age": 25,
-      "position": "Attacker",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/29937.png",
-      "club": "Tractor Sazi"
-    },
-    {
-      "id": 29720,
-      "name": "A. Alipour",
-      "age": 30,
-      "position": "Attacker",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/29720.png",
-      "club": "Persepolis FC"
-    },
-    {
-      "id": 89982,
-      "name": "S. Moghanlou",
-      "age": 31,
-      "position": "Attacker",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/89982.png",
-      "club": "Al-Ittihad Kalba"
-    },
-    {
-      "id": 37892,
-      "name": "D. Eckert Ayensa",
-      "age": 28,
-      "position": "Attacker",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/37892.png",
-      "club": "Standard Liege"
-    },
-    {
-      "id": 42315,
-      "name": "M. Taremi",
-      "age": 33,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/42315.png",
-      "club": "Olympiakos Piraeus"
-    }
-  ]
+ "country": "iran",
+ "displayName": "Iran",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Amir Ghalenoei",
+ "captain": "Alireza Jahanbakhsh",
+ "keyPlayers": [
+  "M. Taremi",
+  "A. Jahanbakhsh",
+  "A. Beiranvand",
+  "S. Ezatolahi",
+  "M. Ghaedi"
+ ],
+ "players": [
+  {
+   "id": 2682,
+   "name": "A. Beiranvand",
+   "age": 33,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/2682.png",
+   "club": "Tractor Sazi"
+  },
+  {
+   "id": 29755,
+   "name": "H. Hosseini",
+   "age": 33,
+   "position": "Goalkeeper",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/29755.png",
+   "club": "Sepahan FC"
+  },
+  {
+   "id": 2681,
+   "name": "P. Niazmand",
+   "age": 30,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/2681.png",
+   "club": "Persepolis FC"
+  },
+  {
+   "id": 532950,
+   "name": "D. Eiri",
+   "age": 21,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/532950.png",
+   "club": "Malavan FC"
+  },
+  {
+   "id": 2691,
+   "name": "R. Rezaeian",
+   "age": 35,
+   "position": "Defender",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/2691.png",
+   "club": "Esteghlal FC"
+  },
+  {
+   "id": 2685,
+   "name": "E. Hajisafi",
+   "age": 35,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/2685.png",
+   "club": "Sepahan FC"
+  },
+  {
+   "id": 136880,
+   "name": "Saleh Hardani",
+   "age": 27,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/136880.png",
+   "club": "Esteghlal FC"
+  },
+  {
+   "id": 2687,
+   "name": "H. Kanani",
+   "age": 31,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/2687.png",
+   "club": "Persepolis FC"
+  },
+  {
+   "id": 29704,
+   "name": "S. Khalilzadeh",
+   "age": 36,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/29704.png",
+   "club": "Tractor Sazi"
+  },
+  {
+   "id": 2688,
+   "name": "M. Mohammadi",
+   "age": 32,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/2688.png",
+   "club": "Persepolis FC"
+  },
+  {
+   "id": 533035,
+   "name": "A. Nemati",
+   "age": 29,
+   "position": "Defender",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/533035.png",
+   "club": "Foolad FC"
+  },
+  {
+   "id": 343405,
+   "name": "A. Yousefi",
+   "age": 23,
+   "position": "Defender",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/343405.png",
+   "club": "Sepahan FC"
+  },
+  {
+   "id": 2700,
+   "name": "A. Jahanbakhsh",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/2700.png",
+   "club": "Dender"
+  },
+  {
+   "id": 2683,
+   "name": "R. Cheshmi",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/2683.png",
+   "club": "Esteghlal FC"
+  },
+  {
+   "id": 19614,
+   "name": "S. Ezatolahi",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/19614.png",
+   "club": "Shabab Al Ahli Dubai"
+  },
+  {
+   "id": 2699,
+   "name": "S. Ghoddos",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/2699.png",
+   "club": "Al-Ittihad Kalba"
+  },
+  {
+   "id": 423753,
+   "name": "A. Razzaghinia",
+   "age": 19,
+   "position": "Midfielder",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/423753.png",
+   "club": "Esteghlal FC"
+  },
+  {
+   "id": 341844,
+   "name": "M. Ghorbani",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/341844.png",
+   "club": "Al Wahda FC"
+  },
+  {
+   "id": 134217,
+   "name": "M. Mohebi",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/134217.png",
+   "club": "FC Rostov"
+  },
+  {
+   "id": 2697,
+   "name": "M. Torabi",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/2697.png",
+   "club": "Tractor Sazi"
+  },
+  {
+   "id": 643918,
+   "name": "M. Ghaedi",
+   "age": 27,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/643918.png",
+   "club": "Al-Nasr SC"
+  },
+  {
+   "id": 29937,
+   "name": "A. Hosseinzadeh",
+   "age": 25,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/29937.png",
+   "club": "Tractor Sazi"
+  },
+  {
+   "id": 29720,
+   "name": "A. Alipour",
+   "age": 30,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/29720.png",
+   "club": "Persepolis FC"
+  },
+  {
+   "id": 89982,
+   "name": "S. Moghanlou",
+   "age": 31,
+   "position": "Attacker",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/89982.png",
+   "club": "Al-Ittihad Kalba"
+  },
+  {
+   "id": 37892,
+   "name": "D. Eckert Ayensa",
+   "age": 28,
+   "position": "Attacker",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/37892.png",
+   "club": "Standard Liege"
+  },
+  {
+   "id": 42315,
+   "name": "M. Taremi",
+   "age": 33,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/42315.png",
+   "club": "Olympiakos Piraeus"
+  }
+ ],
+ "guardianStarPlayer": "Mehdi Taremi",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

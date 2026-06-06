@@ -1,251 +1,253 @@
 {
-  "country": "qatar",
-  "displayName": "Qatar",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Julen Lopetegui",
-  "captain": "Hassan Al Haydos",
-  "keyPlayers": [
-    "Akram Afif",
-    "Almoez Ali",
-    "Hassan Al Haydos",
-    "Boualem Khoukhi",
-    "Assim Madibo",
-    "Tahsin Jamshid"
-  ],
-  "players": [
-    {
-      "id": 42207,
-      "name": "Mahmud Abunada",
-      "age": 25,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/42207.png",
-      "club": "Al-Rayyan SC"
-    },
-    {
-      "id": 42021,
-      "name": "Meshaal Barsham",
-      "age": 27,
-      "position": "Goalkeeper",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/42021.png",
-      "club": "Al Sadd"
-    },
-    {
-      "id": 136503,
-      "name": "Salah Zakaria",
-      "age": 26,
-      "position": "Goalkeeper",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/136503.png",
-      "club": "Al-Duhail SC"
-    },
-    {
-      "id": 175439,
-      "name": "Homam Ahmed",
-      "age": 26,
-      "position": "Defender",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/175439.png",
-      "club": "Al-Duhail SC"
-    },
-    {
-      "id": 42060,
-      "name": "Sultan Al Braik",
-      "age": 29,
-      "position": "Defender",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/42060.png",
-      "club": "Al-Duhail SC"
-    },
-    {
-      "id": 542542,
-      "name": "A. Al Hussain",
-      "age": 22,
-      "position": "Defender",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/542542.png",
-      "club": "Al-Arabi SC"
-    },
-    {
-      "id": 542548,
-      "name": "A. Al Oui",
-      "age": 20,
-      "position": "Defender",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/542548.png",
-      "club": "Al-Gharafa"
-    },
-    {
-      "id": 200981,
-      "name": "Jassem Gaber",
-      "age": 23,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/200981.png",
-      "club": "Al-Rayyan SC"
-    },
-    {
-      "id": 2532,
-      "name": "Boualem Khoukhi",
-      "age": 35,
-      "position": "Defender",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/2532.png",
-      "club": "Al Sadd"
-    },
-    {
-      "id": 42288,
-      "name": "Lucas Mendes",
-      "age": 35,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/42288.png",
-      "club": "Al Wakrah"
-    },
-    {
-      "id": 542536,
-      "name": "G. Laye",
-      "age": 27,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/542536.png",
-      "club": "Al-Arabi SC"
-    },
-    {
-      "id": 2530,
-      "name": "Pedro Miguel",
-      "age": 35,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/2530.png",
-      "club": "Al Sadd"
-    },
-    {
-      "id": 2535,
-      "name": "Assim Madibo",
-      "age": 29,
-      "position": "Midfielder",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/2535.png",
-      "club": "Al Wakrah"
-    },
-    {
-      "id": 42286,
-      "name": "Ahmed Al Ganehi",
-      "age": 25,
-      "position": "Midfielder",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/42286.png",
-      "club": "Al-Gharafa"
-    },
-    {
-      "id": 2533,
-      "name": "Abdulaziz Hatem",
-      "age": 35,
-      "position": "Midfielder",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/2533.png",
-      "club": "Al-Rayyan SC"
-    },
-    {
-      "id": 2537,
-      "name": "Karim Boudiaf",
-      "age": 35,
-      "position": "Midfielder",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/2537.png",
-      "club": "Al-Duhail SC"
-    },
-    {
-      "id": 2539,
-      "name": "Ahmed Fathi",
-      "age": 32,
-      "position": "Midfielder",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/2539.png",
-      "club": "Al-Arabi SC"
-    },
-    {
-      "id": 2545,
-      "name": "Hassan Al Haydos",
-      "age": 35,
-      "position": "Attacker",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/2545.png",
-      "club": "Al Sadd"
-    },
-    {
-      "id": 283174,
-      "name": "Mohamed Al Manai",
-      "age": 22,
-      "position": "Attacker",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/283174.png",
-      "club": "Al Shamal"
-    },
-    {
-      "id": 542541,
-      "name": "Y. Abdurisag",
-      "age": 26,
-      "position": "Attacker",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/542541.png",
-      "club": "Al Wakrah"
-    },
-    {
-      "id": 2544,
-      "name": "Akram Afif",
-      "age": 29,
-      "position": "Attacker",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/2544.png",
-      "club": "Al Sadd"
-    },
-    {
-      "id": 2542,
-      "name": "Ahmed Alaa",
-      "age": 32,
-      "position": "Attacker",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/2542.png",
-      "club": "Al-Rayyan SC"
-    },
-    {
-      "id": 2543,
-      "name": "Almoez Ali",
-      "age": 29,
-      "position": "Attacker",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/2543.png",
-      "club": "Al-Duhail SC"
-    },
-    {
-      "id": 42075,
-      "name": "Edmilson Junior",
-      "age": 31,
-      "position": "Attacker",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/42075.png",
-      "club": "Al-Duhail SC"
-    },
-    {
-      "id": 423737,
-      "name": "Tahsin Jamshid",
-      "age": 19,
-      "position": "Attacker",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/423737.png",
-      "club": "Al-Duhail SC"
-    },
-    {
-      "id": 42089,
-      "name": "Mohammed Muntari",
-      "age": 32,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/42089.png",
-      "club": "Al-Gharafa"
-    }
-  ]
+ "country": "qatar",
+ "displayName": "Qatar",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Julen Lopetegui",
+ "captain": "Hassan Al Haydos",
+ "keyPlayers": [
+  "Akram Afif",
+  "Almoez Ali",
+  "Hassan Al Haydos",
+  "Boualem Khoukhi",
+  "Assim Madibo",
+  "Tahsin Jamshid"
+ ],
+ "players": [
+  {
+   "id": 42207,
+   "name": "Mahmud Abunada",
+   "age": 25,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/42207.png",
+   "club": "Al-Rayyan SC"
+  },
+  {
+   "id": 42021,
+   "name": "Meshaal Barsham",
+   "age": 27,
+   "position": "Goalkeeper",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/42021.png",
+   "club": "Al Sadd"
+  },
+  {
+   "id": 136503,
+   "name": "Salah Zakaria",
+   "age": 26,
+   "position": "Goalkeeper",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/136503.png",
+   "club": "Al-Duhail SC"
+  },
+  {
+   "id": 175439,
+   "name": "Homam Ahmed",
+   "age": 26,
+   "position": "Defender",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/175439.png",
+   "club": "Al-Duhail SC"
+  },
+  {
+   "id": 42060,
+   "name": "Sultan Al Braik",
+   "age": 29,
+   "position": "Defender",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/42060.png",
+   "club": "Al-Duhail SC"
+  },
+  {
+   "id": 542542,
+   "name": "A. Al Hussain",
+   "age": 22,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/542542.png",
+   "club": "Al-Arabi SC"
+  },
+  {
+   "id": 542548,
+   "name": "A. Al Oui",
+   "age": 20,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/542548.png",
+   "club": "Al-Gharafa"
+  },
+  {
+   "id": 200981,
+   "name": "Jassem Gaber",
+   "age": 23,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/200981.png",
+   "club": "Al-Rayyan SC"
+  },
+  {
+   "id": 2532,
+   "name": "Boualem Khoukhi",
+   "age": 35,
+   "position": "Defender",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/2532.png",
+   "club": "Al Sadd"
+  },
+  {
+   "id": 42288,
+   "name": "Lucas Mendes",
+   "age": 35,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/42288.png",
+   "club": "Al Wakrah"
+  },
+  {
+   "id": 542536,
+   "name": "G. Laye",
+   "age": 27,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/542536.png",
+   "club": "Al-Arabi SC"
+  },
+  {
+   "id": 2530,
+   "name": "Pedro Miguel",
+   "age": 35,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/2530.png",
+   "club": "Al Sadd"
+  },
+  {
+   "id": 2535,
+   "name": "Assim Madibo",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/2535.png",
+   "club": "Al Wakrah"
+  },
+  {
+   "id": 42286,
+   "name": "Ahmed Al Ganehi",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/42286.png",
+   "club": "Al-Gharafa"
+  },
+  {
+   "id": 2533,
+   "name": "Abdulaziz Hatem",
+   "age": 35,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/2533.png",
+   "club": "Al-Rayyan SC"
+  },
+  {
+   "id": 2537,
+   "name": "Karim Boudiaf",
+   "age": 35,
+   "position": "Midfielder",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/2537.png",
+   "club": "Al-Duhail SC"
+  },
+  {
+   "id": 2539,
+   "name": "Ahmed Fathi",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/2539.png",
+   "club": "Al-Arabi SC"
+  },
+  {
+   "id": 2545,
+   "name": "Hassan Al Haydos",
+   "age": 35,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/2545.png",
+   "club": "Al Sadd"
+  },
+  {
+   "id": 283174,
+   "name": "Mohamed Al Manai",
+   "age": 22,
+   "position": "Attacker",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/283174.png",
+   "club": "Al Shamal"
+  },
+  {
+   "id": 542541,
+   "name": "Y. Abdurisag",
+   "age": 26,
+   "position": "Attacker",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/542541.png",
+   "club": "Al Wakrah"
+  },
+  {
+   "id": 2544,
+   "name": "Akram Afif",
+   "age": 29,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/2544.png",
+   "club": "Al Sadd"
+  },
+  {
+   "id": 2542,
+   "name": "Ahmed Alaa",
+   "age": 32,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/2542.png",
+   "club": "Al-Rayyan SC"
+  },
+  {
+   "id": 2543,
+   "name": "Almoez Ali",
+   "age": 29,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/2543.png",
+   "club": "Al-Duhail SC"
+  },
+  {
+   "id": 42075,
+   "name": "Edmilson Junior",
+   "age": 31,
+   "position": "Attacker",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/42075.png",
+   "club": "Al-Duhail SC"
+  },
+  {
+   "id": 423737,
+   "name": "Tahsin Jamshid",
+   "age": 19,
+   "position": "Attacker",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/423737.png",
+   "club": "Al-Duhail SC"
+  },
+  {
+   "id": 42089,
+   "name": "Mohammed Muntari",
+   "age": 32,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/42089.png",
+   "club": "Al-Gharafa"
+  }
+ ],
+ "guardianStarPlayer": "Akram Afif",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

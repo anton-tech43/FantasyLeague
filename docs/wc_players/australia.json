@@ -1,251 +1,253 @@
 {
-  "country": "australia",
-  "displayName": "Australia",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Tony Popovic",
-  "captain": "Mathew Ryan",
-  "keyPlayers": [
-    "Mathew Ryan",
-    "Harry Souttar",
-    "Jordan Bos",
-    "Alessandro Circati",
-    "Jackson Irvine",
-    "Nestory Irankunda"
-  ],
-  "players": [
-    {
-      "id": 353883,
-      "name": "P. Beach",
-      "age": 22,
-      "position": "Goalkeeper",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/353883.png",
-      "club": "Melbourne City"
-    },
-    {
-      "id": 6870,
-      "name": "P. Izzo",
-      "age": 30,
-      "position": "Goalkeeper",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/6870.png",
-      "club": "Randers FC"
-    },
-    {
-      "id": 2741,
-      "name": "M. Ryan",
-      "age": 33,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/2741.png",
-      "club": "Levante"
-    },
-    {
-      "id": 225,
-      "name": "A. Behich",
-      "age": 35,
-      "position": "Defender",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/225.png",
-      "club": "Melbourne City"
-    },
-    {
-      "id": 337587,
-      "name": "J. Bos",
-      "age": 23,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/337587.png",
-      "club": "Feyenoord"
-    },
-    {
-      "id": 20457,
-      "name": "C. Burgess",
-      "age": 30,
-      "position": "Defender",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/20457.png",
-      "club": "Swansea"
-    },
-    {
-      "id": 348568,
-      "name": "A. Circati",
-      "age": 22,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/348568.png",
-      "club": "Parma"
-    },
-    {
-      "id": 33847,
-      "name": "J. Geria",
-      "age": 32,
-      "position": "Defender",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/33847.png",
-      "club": "Albirex Niigata"
-    },
-    {
-      "id": 426480,
-      "name": "L. Herrington",
-      "age": 18,
-      "position": "Defender",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/426480.png",
-      "club": "Brisbane Roar"
-    },
-    {
-      "id": 20079,
-      "name": "H. Souttar",
-      "age": 27,
-      "position": "Defender",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/20079.png",
-      "club": "Leicester"
-    },
-    {
-      "id": 2742,
-      "name": "M. Degenek",
-      "age": 31,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/2742.png",
-      "club": "TSC Backa Topola"
-    },
-    {
-      "id": 6808,
-      "name": "J. Italiano",
-      "age": 24,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/6808.png",
-      "club": "Grazer AK"
-    },
-    {
-      "id": 153622,
-      "name": "K. Trewin",
-      "age": 24,
-      "position": "Defender",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/153622.png",
-      "club": "Melbourne City"
-    },
-    {
-      "id": 2749,
-      "name": "J. Irvine",
-      "age": 32,
-      "position": "Midfielder",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/2749.png",
-      "club": "FC St. Pauli"
-    },
-    {
-      "id": 6832,
-      "name": "C. Devlin",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/6832.png",
-      "club": "Heart Of Midlothian"
-    },
-    {
-      "id": 7050,
-      "name": "A. O Neill",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/7050.png",
-      "club": "New York City FC"
-    },
-    {
-      "id": 441269,
-      "name": "Paul Okon-Engstler",
-      "age": 20,
-      "position": "Midfielder",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/441269.png",
-      "club": "Sydney"
-    },
-    {
-      "id": 6904,
-      "name": "C. Metcalfe",
-      "age": 26,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/6904.png",
-      "club": "FC St. Pauli"
-    },
-    {
-      "id": 38123,
-      "name": "A. Hrustic",
-      "age": 29,
-      "position": "Attacker",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/38123.png",
-      "club": "Heracles"
-    },
-    {
-      "id": 342035,
-      "name": "C. Volpato",
-      "age": 22,
-      "position": "Attacker",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/342035.png",
-      "club": "Sassuolo"
-    },
-    {
-      "id": 338014,
-      "name": "N. Irankunda",
-      "age": 19,
-      "position": "Attacker",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/338014.png",
-      "club": "Watford"
-    },
-    {
-      "id": 2751,
-      "name": "M. Leckie",
-      "age": 34,
-      "position": "Attacker",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/2751.png",
-      "club": "Melbourne City"
-    },
-    {
-      "id": 2755,
-      "name": "A. Mabil",
-      "age": 30,
-      "position": "Attacker",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/2755.png",
-      "club": "Castell\u00f3n"
-    },
-    {
-      "id": 296645,
-      "name": "T. Yengi",
-      "age": 25,
-      "position": "Attacker",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/296645.png",
-      "club": "Livingston"
-    },
-    {
-      "id": 198352,
-      "name": "M. Tour\u00e9",
-      "age": 21,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/198352.png",
-      "club": "Randers FC"
-    },
-    {
-      "id": 312459,
-      "name": "N. Velupillay",
-      "age": 24,
-      "position": "Attacker",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/312459.png",
-      "club": "Melbourne Victory"
-    }
-  ]
+ "country": "australia",
+ "displayName": "Australia",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Tony Popovic",
+ "captain": "Mathew Ryan",
+ "keyPlayers": [
+  "Mathew Ryan",
+  "Harry Souttar",
+  "Jordan Bos",
+  "Alessandro Circati",
+  "Jackson Irvine",
+  "Nestory Irankunda"
+ ],
+ "players": [
+  {
+   "id": 353883,
+   "name": "P. Beach",
+   "age": 22,
+   "position": "Goalkeeper",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/353883.png",
+   "club": "Melbourne City"
+  },
+  {
+   "id": 6870,
+   "name": "P. Izzo",
+   "age": 30,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/6870.png",
+   "club": "Randers FC"
+  },
+  {
+   "id": 2741,
+   "name": "M. Ryan",
+   "age": 33,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/2741.png",
+   "club": "Levante"
+  },
+  {
+   "id": 225,
+   "name": "A. Behich",
+   "age": 35,
+   "position": "Defender",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/225.png",
+   "club": "Melbourne City"
+  },
+  {
+   "id": 337587,
+   "name": "J. Bos",
+   "age": 23,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/337587.png",
+   "club": "Feyenoord"
+  },
+  {
+   "id": 20457,
+   "name": "C. Burgess",
+   "age": 30,
+   "position": "Defender",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/20457.png",
+   "club": "Swansea"
+  },
+  {
+   "id": 348568,
+   "name": "A. Circati",
+   "age": 22,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/348568.png",
+   "club": "Parma"
+  },
+  {
+   "id": 33847,
+   "name": "J. Geria",
+   "age": 32,
+   "position": "Defender",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/33847.png",
+   "club": "Albirex Niigata"
+  },
+  {
+   "id": 426480,
+   "name": "L. Herrington",
+   "age": 18,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/426480.png",
+   "club": "Brisbane Roar"
+  },
+  {
+   "id": 20079,
+   "name": "H. Souttar",
+   "age": 27,
+   "position": "Defender",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/20079.png",
+   "club": "Leicester"
+  },
+  {
+   "id": 2742,
+   "name": "M. Degenek",
+   "age": 31,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/2742.png",
+   "club": "TSC Backa Topola"
+  },
+  {
+   "id": 6808,
+   "name": "J. Italiano",
+   "age": 24,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/6808.png",
+   "club": "Grazer AK"
+  },
+  {
+   "id": 153622,
+   "name": "K. Trewin",
+   "age": 24,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/153622.png",
+   "club": "Melbourne City"
+  },
+  {
+   "id": 2749,
+   "name": "J. Irvine",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/2749.png",
+   "club": "FC St. Pauli"
+  },
+  {
+   "id": 6832,
+   "name": "C. Devlin",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/6832.png",
+   "club": "Heart Of Midlothian"
+  },
+  {
+   "id": 7050,
+   "name": "A. O Neill",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/7050.png",
+   "club": "New York City FC"
+  },
+  {
+   "id": 441269,
+   "name": "Paul Okon-Engstler",
+   "age": 20,
+   "position": "Midfielder",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/441269.png",
+   "club": "Sydney"
+  },
+  {
+   "id": 6904,
+   "name": "C. Metcalfe",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/6904.png",
+   "club": "FC St. Pauli"
+  },
+  {
+   "id": 38123,
+   "name": "A. Hrustic",
+   "age": 29,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/38123.png",
+   "club": "Heracles"
+  },
+  {
+   "id": 342035,
+   "name": "C. Volpato",
+   "age": 22,
+   "position": "Attacker",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/342035.png",
+   "club": "Sassuolo"
+  },
+  {
+   "id": 338014,
+   "name": "N. Irankunda",
+   "age": 19,
+   "position": "Attacker",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/338014.png",
+   "club": "Watford"
+  },
+  {
+   "id": 2751,
+   "name": "M. Leckie",
+   "age": 34,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/2751.png",
+   "club": "Melbourne City"
+  },
+  {
+   "id": 2755,
+   "name": "A. Mabil",
+   "age": 30,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/2755.png",
+   "club": "Castell\u00f3n"
+  },
+  {
+   "id": 296645,
+   "name": "T. Yengi",
+   "age": 25,
+   "position": "Attacker",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/296645.png",
+   "club": "Livingston"
+  },
+  {
+   "id": 198352,
+   "name": "M. Tour\u00e9",
+   "age": 21,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/198352.png",
+   "club": "Randers FC"
+  },
+  {
+   "id": 312459,
+   "name": "N. Velupillay",
+   "age": 24,
+   "position": "Attacker",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/312459.png",
+   "club": "Melbourne Victory"
+  }
+ ],
+ "guardianStarPlayer": "Jackson Irvine",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

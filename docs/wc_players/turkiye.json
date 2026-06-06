@@ -1,251 +1,253 @@
 {
-  "country": "turkiye",
-  "displayName": "T\u00fcrkiye",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Vincenzo Montella",
-  "captain": "H. \u00c7alhanoglu",
-  "keyPlayers": [
-    "H. \u00c7alhanoglu",
-    "A. G\u00fcler",
-    "K. Yildiz",
-    "K. Akt\u00fcrkoglu",
-    "M. Demiral",
-    "C. Uzun"
-  ],
-  "players": [
-    {
-      "id": 50132,
-      "name": "A. Bayindir",
-      "age": 27,
-      "position": "Goalkeeper",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/50132.png",
-      "club": "Manchester United"
-    },
-    {
-      "id": 49866,
-      "name": "U. \u00c7akir",
-      "age": 29,
-      "position": "Goalkeeper",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/49866.png",
-      "club": "Galatasaray"
-    },
-    {
-      "id": 49837,
-      "name": "M. G\u00fcnok",
-      "age": 36,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/49837.png",
-      "club": "Be\u015fikta\u015f"
-    },
-    {
-      "id": 62490,
-      "name": "S. Akaydin",
-      "age": 31,
-      "position": "Defender",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/62490.png",
-      "club": "Rizespor"
-    },
-    {
-      "id": 61837,
-      "name": "A. Bardakci",
-      "age": 31,
-      "position": "Defender",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/61837.png",
-      "club": "Galatasaray"
-    },
-    {
-      "id": 22222,
-      "name": "Z. \u00c7elik",
-      "age": 28,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/22222.png",
-      "club": "AS Roma"
-    },
-    {
-      "id": 30521,
-      "name": "M. Demiral",
-      "age": 27,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/30521.png",
-      "club": "Al-Ahli Jeddah"
-    },
-    {
-      "id": 50057,
-      "name": "E. Elmali",
-      "age": 25,
-      "position": "Defender",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/50057.png",
-      "club": "Galatasaray"
-    },
-    {
-      "id": 26300,
-      "name": "O. Kabak",
-      "age": 25,
-      "position": "Defender",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/26300.png",
-      "club": "1899 Hoffenheim"
-    },
-    {
-      "id": 1361,
-      "name": "F. Kadioglu",
-      "age": 26,
-      "position": "Defender",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/1361.png",
-      "club": "Brighton"
-    },
-    {
-      "id": 1719,
-      "name": "M. M\u00fcld\u00fcr",
-      "age": 26,
-      "position": "Defender",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/1719.png",
-      "club": "Fenerbah\u00e7e"
-    },
-    {
-      "id": 18776,
-      "name": "\u00c7. S\u00f6y\u00fcnc\u00fc",
-      "age": 29,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/18776.png",
-      "club": "Fenerbah\u00e7e"
-    },
-    {
-      "id": 1640,
-      "name": "H. \u00c7alhanoglu",
-      "age": 31,
-      "position": "Midfielder",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/1640.png",
-      "club": "Inter"
-    },
-    {
-      "id": 25448,
-      "name": "K. Ayhan",
-      "age": 31,
-      "position": "Midfielder",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/25448.png",
-      "club": "Galatasaray"
-    },
-    {
-      "id": 37155,
-      "name": "O. Kok\u00e7u",
-      "age": 25,
-      "position": "Midfielder",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/37155.png",
-      "club": "Be\u015fikta\u015f"
-    },
-    {
-      "id": 24807,
-      "name": "S. \u00d6zcan",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/24807.png",
-      "club": "Borussia Dortmund"
-    },
-    {
-      "id": 214463,
-      "name": "I. Y\u00fcksek",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/214463.png",
-      "club": "Fenerbah\u00e7e"
-    },
-    {
-      "id": 339887,
-      "name": "C. Uzun",
-      "age": 20,
-      "position": "Attacker",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/339887.png",
-      "club": "Eintracht Frankfurt"
-    },
-    {
-      "id": 134590,
-      "name": "O. Aydin",
-      "age": 25,
-      "position": "Attacker",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/134590.png",
-      "club": "Fenerbah\u00e7e"
-    },
-    {
-      "id": 291964,
-      "name": "A. G\u00fcler",
-      "age": 20,
-      "position": "Attacker",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/291964.png",
-      "club": "Real Madrid"
-    },
-    {
-      "id": 454,
-      "name": "Y. Akg\u00fcn",
-      "age": 25,
-      "position": "Attacker",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/454.png",
-      "club": "Galatasaray"
-    },
-    {
-      "id": 142959,
-      "name": "K. Akt\u00fcrkoglu",
-      "age": 27,
-      "position": "Attacker",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/142959.png",
-      "club": "Fenerbah\u00e7e"
-    },
-    {
-      "id": 388570,
-      "name": "D. G\u00fcl",
-      "age": 21,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/388570.png",
-      "club": "FC Porto"
-    },
-    {
-      "id": 49857,
-      "name": "I. Kahveci",
-      "age": 30,
-      "position": "Attacker",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/49857.png",
-      "club": "Kas\u0131mpa\u015fa"
-    },
-    {
-      "id": 339883,
-      "name": "K. Yildiz",
-      "age": 20,
-      "position": "Attacker",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/339883.png",
-      "club": "Juventus"
-    },
-    {
-      "id": 63274,
-      "name": "B. Yilmaz",
-      "age": 25,
-      "position": "Attacker",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/63274.png",
-      "club": "Galatasaray"
-    }
-  ]
+ "country": "turkiye",
+ "displayName": "T\u00fcrkiye",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Vincenzo Montella",
+ "captain": "H. \u00c7alhanoglu",
+ "keyPlayers": [
+  "H. \u00c7alhanoglu",
+  "A. G\u00fcler",
+  "K. Yildiz",
+  "K. Akt\u00fcrkoglu",
+  "M. Demiral",
+  "C. Uzun"
+ ],
+ "players": [
+  {
+   "id": 50132,
+   "name": "A. Bayindir",
+   "age": 27,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/50132.png",
+   "club": "Manchester United"
+  },
+  {
+   "id": 49866,
+   "name": "U. \u00c7akir",
+   "age": 29,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/49866.png",
+   "club": "Galatasaray"
+  },
+  {
+   "id": 49837,
+   "name": "M. G\u00fcnok",
+   "age": 36,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/49837.png",
+   "club": "Be\u015fikta\u015f"
+  },
+  {
+   "id": 62490,
+   "name": "S. Akaydin",
+   "age": 31,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/62490.png",
+   "club": "Rizespor"
+  },
+  {
+   "id": 61837,
+   "name": "A. Bardakci",
+   "age": 31,
+   "position": "Defender",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/61837.png",
+   "club": "Galatasaray"
+  },
+  {
+   "id": 22222,
+   "name": "Z. \u00c7elik",
+   "age": 28,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/22222.png",
+   "club": "AS Roma"
+  },
+  {
+   "id": 30521,
+   "name": "M. Demiral",
+   "age": 27,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/30521.png",
+   "club": "Al-Ahli Jeddah"
+  },
+  {
+   "id": 50057,
+   "name": "E. Elmali",
+   "age": 25,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/50057.png",
+   "club": "Galatasaray"
+  },
+  {
+   "id": 26300,
+   "name": "O. Kabak",
+   "age": 25,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/26300.png",
+   "club": "1899 Hoffenheim"
+  },
+  {
+   "id": 1361,
+   "name": "F. Kadioglu",
+   "age": 26,
+   "position": "Defender",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/1361.png",
+   "club": "Brighton"
+  },
+  {
+   "id": 1719,
+   "name": "M. M\u00fcld\u00fcr",
+   "age": 26,
+   "position": "Defender",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/1719.png",
+   "club": "Fenerbah\u00e7e"
+  },
+  {
+   "id": 18776,
+   "name": "\u00c7. S\u00f6y\u00fcnc\u00fc",
+   "age": 29,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/18776.png",
+   "club": "Fenerbah\u00e7e"
+  },
+  {
+   "id": 1640,
+   "name": "H. \u00c7alhanoglu",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/1640.png",
+   "club": "Inter"
+  },
+  {
+   "id": 25448,
+   "name": "K. Ayhan",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/25448.png",
+   "club": "Galatasaray"
+  },
+  {
+   "id": 37155,
+   "name": "O. Kok\u00e7u",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/37155.png",
+   "club": "Be\u015fikta\u015f"
+  },
+  {
+   "id": 24807,
+   "name": "S. \u00d6zcan",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/24807.png",
+   "club": "Borussia Dortmund"
+  },
+  {
+   "id": 214463,
+   "name": "I. Y\u00fcksek",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/214463.png",
+   "club": "Fenerbah\u00e7e"
+  },
+  {
+   "id": 339887,
+   "name": "C. Uzun",
+   "age": 20,
+   "position": "Attacker",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/339887.png",
+   "club": "Eintracht Frankfurt"
+  },
+  {
+   "id": 134590,
+   "name": "O. Aydin",
+   "age": 25,
+   "position": "Attacker",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/134590.png",
+   "club": "Fenerbah\u00e7e"
+  },
+  {
+   "id": 291964,
+   "name": "A. G\u00fcler",
+   "age": 20,
+   "position": "Attacker",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/291964.png",
+   "club": "Real Madrid"
+  },
+  {
+   "id": 454,
+   "name": "Y. Akg\u00fcn",
+   "age": 25,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/454.png",
+   "club": "Galatasaray"
+  },
+  {
+   "id": 142959,
+   "name": "K. Akt\u00fcrkoglu",
+   "age": 27,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/142959.png",
+   "club": "Fenerbah\u00e7e"
+  },
+  {
+   "id": 388570,
+   "name": "D. G\u00fcl",
+   "age": 21,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/388570.png",
+   "club": "FC Porto"
+  },
+  {
+   "id": 49857,
+   "name": "I. Kahveci",
+   "age": 30,
+   "position": "Attacker",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/49857.png",
+   "club": "Kas\u0131mpa\u015fa"
+  },
+  {
+   "id": 339883,
+   "name": "K. Yildiz",
+   "age": 20,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/339883.png",
+   "club": "Juventus"
+  },
+  {
+   "id": 63274,
+   "name": "B. Yilmaz",
+   "age": 25,
+   "position": "Attacker",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/63274.png",
+   "club": "Galatasaray"
+  }
+ ],
+ "guardianStarPlayer": "Arda Guler",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

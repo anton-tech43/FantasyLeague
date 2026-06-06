@@ -1,251 +1,253 @@
 {
-  "country": "congo_dr",
-  "displayName": "Congo DR",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Sébastien Desabre",
-  "captain": "Chancel Mbemba",
-  "keyPlayers": [
-    "Chancel Mbemba",
-    "Yoane Wissa",
-    "Cédric Bakambu",
-    "Noah Sadiki",
-    "Aaron Wan-Bissaka",
-    "Axel Tuanzebe"
-  ],
-  "players": [
-    {
-      "id": 314509,
-      "name": "M. Epolo",
-      "age": 20,
-      "position": "Goalkeeper",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/314509.png",
-      "club": "Standard Liege"
-    },
-    {
-      "id": 48501,
-      "name": "T. Fayulu",
-      "age": 26,
-      "position": "Goalkeeper",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/48501.png",
-      "club": "FC Noah"
-    },
-    {
-      "id": 24012,
-      "name": "L. Mpasi",
-      "age": 31,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/24012.png",
-      "club": "Le Havre"
-    },
-    {
-      "id": 8445,
-      "name": "D. Batubinsika",
-      "age": 29,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/8445.png",
-      "club": "Larisa"
-    },
-    {
-      "id": 24245,
-      "name": "G. Kalulu",
-      "age": 28,
-      "position": "Defender",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/24245.png",
-      "club": "Aris"
-    },
-    {
-      "id": 199767,
-      "name": "S. Kapuadi",
-      "age": 27,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/199767.png",
-      "club": "Legia Warszawa"
-    },
-    {
-      "id": 21098,
-      "name": "J. Kayembe",
-      "age": 31,
-      "position": "Defender",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/21098.png",
-      "club": "Genk"
-    },
-    {
-      "id": 18816,
-      "name": "A. Masuaku",
-      "age": 32,
-      "position": "Defender",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/18816.png",
-      "club": "Lens"
-    },
-    {
-      "id": 375,
-      "name": "C. Mbemba",
-      "age": 31,
-      "position": "Defender",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/375.png",
-      "club": "Lille"
-    },
-    {
-      "id": 19182,
-      "name": "A. Tuanzebe",
-      "age": 28,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/19182.png",
-      "club": "Burnley"
-    },
-    {
-      "id": 18846,
-      "name": "A. Wan-Bissaka",
-      "age": 28,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/18846.png",
-      "club": "West Ham"
-    },
-    {
-      "id": 1424,
-      "name": "E. Kayembe",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/1424.png",
-      "club": "Watford"
-    },
-    {
-      "id": 21101,
-      "name": "S. Moutoussamy",
-      "age": 29,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/21101.png",
-      "club": "Atromitos"
-    },
-    {
-      "id": 375598,
-      "name": "N. Mukau",
-      "age": 21,
-      "position": "Midfielder",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/375598.png",
-      "club": "Lille"
-    },
-    {
-      "id": 48555,
-      "name": "C. Pickel",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/48555.png",
-      "club": "Espanyol"
-    },
-    {
-      "id": 365331,
-      "name": "N. Sadiki",
-      "age": 21,
-      "position": "Midfielder",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/365331.png",
-      "club": "Sunderland"
-    },
-    {
-      "id": 44791,
-      "name": "A. Tshibola",
-      "age": 30,
-      "position": "Midfielder",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/44791.png",
-      "club": "Kilmarnock"
-    },
-    {
-      "id": 129670,
-      "name": "N. Mbuku",
-      "age": 23,
-      "position": "Midfielder",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/129670.png",
-      "club": "Montpellier"
-    },
-    {
-      "id": 8627,
-      "name": "T. Bongonda",
-      "age": 30,
-      "position": "Midfielder",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/8627.png",
-      "club": "Spartak Moscow"
-    },
-    {
-      "id": 3033,
-      "name": "C. Bakambu",
-      "age": 34,
-      "position": "Attacker",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/3033.png",
-      "club": "Real Betis"
-    },
-    {
-      "id": 20674,
-      "name": "S. Banza",
-      "age": 29,
-      "position": "Attacker",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/20674.png",
-      "club": "Al-Jazira"
-    },
-    {
-      "id": 279482,
-      "name": "B. Cipenga",
-      "age": 27,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/279482.png",
-      "club": "Castell\u00f3n"
-    },
-    {
-      "id": 3034,
-      "name": "M. Elia",
-      "age": 28,
-      "position": "Attacker",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/3034.png",
-      "club": "Alanyaspor"
-    },
-    {
-      "id": 47545,
-      "name": "G. Kakuta",
-      "age": 34,
-      "position": "Attacker",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/47545.png",
-      "club": "Sakaryaspor"
-    },
-    {
-      "id": 179699,
-      "name": "F. Mayele",
-      "age": 31,
-      "position": "Attacker",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/179699.png",
-      "club": "Pyramids FC"
-    },
-    {
-      "id": 20649,
-      "name": "Y. Wissa",
-      "age": 29,
-      "position": "Attacker",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/20649.png",
-      "club": "Newcastle"
-    }
-  ]
+ "country": "congo_dr",
+ "displayName": "Congo DR",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "S\u00e9bastien Desabre",
+ "captain": "Chancel Mbemba",
+ "keyPlayers": [
+  "Chancel Mbemba",
+  "Yoane Wissa",
+  "C\u00e9dric Bakambu",
+  "Noah Sadiki",
+  "Aaron Wan-Bissaka",
+  "Axel Tuanzebe"
+ ],
+ "players": [
+  {
+   "id": 314509,
+   "name": "M. Epolo",
+   "age": 20,
+   "position": "Goalkeeper",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/314509.png",
+   "club": "Standard Liege"
+  },
+  {
+   "id": 48501,
+   "name": "T. Fayulu",
+   "age": 26,
+   "position": "Goalkeeper",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/48501.png",
+   "club": "FC Noah"
+  },
+  {
+   "id": 24012,
+   "name": "L. Mpasi",
+   "age": 31,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/24012.png",
+   "club": "Le Havre"
+  },
+  {
+   "id": 8445,
+   "name": "D. Batubinsika",
+   "age": 29,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/8445.png",
+   "club": "Larisa"
+  },
+  {
+   "id": 24245,
+   "name": "G. Kalulu",
+   "age": 28,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/24245.png",
+   "club": "Aris"
+  },
+  {
+   "id": 199767,
+   "name": "S. Kapuadi",
+   "age": 27,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/199767.png",
+   "club": "Legia Warszawa"
+  },
+  {
+   "id": 21098,
+   "name": "J. Kayembe",
+   "age": 31,
+   "position": "Defender",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/21098.png",
+   "club": "Genk"
+  },
+  {
+   "id": 18816,
+   "name": "A. Masuaku",
+   "age": 32,
+   "position": "Defender",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/18816.png",
+   "club": "Lens"
+  },
+  {
+   "id": 375,
+   "name": "C. Mbemba",
+   "age": 31,
+   "position": "Defender",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/375.png",
+   "club": "Lille"
+  },
+  {
+   "id": 19182,
+   "name": "A. Tuanzebe",
+   "age": 28,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/19182.png",
+   "club": "Burnley"
+  },
+  {
+   "id": 18846,
+   "name": "A. Wan-Bissaka",
+   "age": 28,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/18846.png",
+   "club": "West Ham"
+  },
+  {
+   "id": 1424,
+   "name": "E. Kayembe",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/1424.png",
+   "club": "Watford"
+  },
+  {
+   "id": 21101,
+   "name": "S. Moutoussamy",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/21101.png",
+   "club": "Atromitos"
+  },
+  {
+   "id": 375598,
+   "name": "N. Mukau",
+   "age": 21,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/375598.png",
+   "club": "Lille"
+  },
+  {
+   "id": 48555,
+   "name": "C. Pickel",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/48555.png",
+   "club": "Espanyol"
+  },
+  {
+   "id": 365331,
+   "name": "N. Sadiki",
+   "age": 21,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/365331.png",
+   "club": "Sunderland"
+  },
+  {
+   "id": 44791,
+   "name": "A. Tshibola",
+   "age": 30,
+   "position": "Midfielder",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/44791.png",
+   "club": "Kilmarnock"
+  },
+  {
+   "id": 129670,
+   "name": "N. Mbuku",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/129670.png",
+   "club": "Montpellier"
+  },
+  {
+   "id": 8627,
+   "name": "T. Bongonda",
+   "age": 30,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/8627.png",
+   "club": "Spartak Moscow"
+  },
+  {
+   "id": 3033,
+   "name": "C. Bakambu",
+   "age": 34,
+   "position": "Attacker",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/3033.png",
+   "club": "Real Betis"
+  },
+  {
+   "id": 20674,
+   "name": "S. Banza",
+   "age": 29,
+   "position": "Attacker",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/20674.png",
+   "club": "Al-Jazira"
+  },
+  {
+   "id": 279482,
+   "name": "B. Cipenga",
+   "age": 27,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/279482.png",
+   "club": "Castell\u00f3n"
+  },
+  {
+   "id": 3034,
+   "name": "M. Elia",
+   "age": 28,
+   "position": "Attacker",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/3034.png",
+   "club": "Alanyaspor"
+  },
+  {
+   "id": 47545,
+   "name": "G. Kakuta",
+   "age": 34,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/47545.png",
+   "club": "Sakaryaspor"
+  },
+  {
+   "id": 179699,
+   "name": "F. Mayele",
+   "age": 31,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/179699.png",
+   "club": "Pyramids FC"
+  },
+  {
+   "id": 20649,
+   "name": "Y. Wissa",
+   "age": 29,
+   "position": "Attacker",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/20649.png",
+   "club": "Newcastle"
+  }
+ ],
+ "guardianStarPlayer": "Yoane Wissa",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

@@ -1,251 +1,253 @@
 {
-  "country": "germany",
-  "displayName": "Germany",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Julian Nagelsmann",
-  "captain": "J. Kimmich",
-  "keyPlayers": [
-    "J. Kimmich",
-    "A. Rüdiger",
-    "M. Neuer",
-    "J. Musiala",
-    "F. Wirtz",
-    "K. Havertz"
-  ],
-  "players": [
-    {
-      "id": 702,
-      "name": "O. Baumann",
-      "age": 35,
-      "position": "Goalkeeper",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/702.png",
-      "club": "1899 Hoffenheim"
-    },
-    {
-      "id": 497,
-      "name": "M. Neuer",
-      "age": 39,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/497.png",
-      "club": "Bayern M\u00fcnchen"
-    },
-    {
-      "id": 399,
-      "name": "A. N\u00fcbel",
-      "age": 29,
-      "position": "Goalkeeper",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/399.png",
-      "club": "VfB Stuttgart"
-    },
-    {
-      "id": 25368,
-      "name": "W. Anton",
-      "age": 29,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/25368.png",
-      "club": "Borussia Dortmund"
-    },
-    {
-      "id": 280074,
-      "name": "N. Brown",
-      "age": 22,
-      "position": "Defender",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/280074.png",
-      "club": "Eintracht Frankfurt"
-    },
-    {
-      "id": 25158,
-      "name": "D. Raum",
-      "age": 27,
-      "position": "Defender",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/25158.png",
-      "club": "RB Leipzig"
-    },
-    {
-      "id": 2285,
-      "name": "A. R\u00fcdiger",
-      "age": 32,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/2285.png",
-      "club": "Real Madrid"
-    },
-    {
-      "id": 26243,
-      "name": "N. Schlotterbeck",
-      "age": 26,
-      "position": "Defender",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/26243.png",
-      "club": "Borussia Dortmund"
-    },
-    {
-      "id": 972,
-      "name": "J. Tah",
-      "age": 29,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/972.png",
-      "club": "Bayern M\u00fcnchen"
-    },
-    {
-      "id": 163189,
-      "name": "M. Thiaw",
-      "age": 24,
-      "position": "Defender",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/163189.png",
-      "club": "Newcastle"
-    },
-    {
-      "id": 502,
-      "name": "J. Kimmich",
-      "age": 30,
-      "position": "Defender",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/502.png",
-      "club": "Bayern M\u00fcnchen"
-    },
-    {
-      "id": 714,
-      "name": "N. Amiri",
-      "age": 29,
-      "position": "Midfielder",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/714.png",
-      "club": "FSV Mainz 05"
-    },
-    {
-      "id": 511,
-      "name": "L. Goretzka",
-      "age": 30,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/511.png",
-      "club": "Bayern M\u00fcnchen"
-    },
-    {
-      "id": 18970,
-      "name": "P. Gro\u00df",
-      "age": 34,
-      "position": "Midfielder",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/18970.png",
-      "club": "Brighton"
-    },
-    {
-      "id": 494131,
-      "name": "L. Karl",
-      "age": 17,
-      "position": "Midfielder",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/494131.png",
-      "club": "Bayern M\u00fcnchen"
-    },
-    {
-      "id": 128533,
-      "name": "J. Leweling",
-      "age": 24,
-      "position": "Midfielder",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/128533.png",
-      "club": "VfB Stuttgart"
-    },
-    {
-      "id": 181812,
-      "name": "J. Musiala",
-      "age": 22,
-      "position": "Midfielder",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/181812.png",
-      "club": "Bayern M\u00fcnchen"
-    },
-    {
-      "id": 637,
-      "name": "F. Nmecha",
-      "age": 25,
-      "position": "Midfielder",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/637.png",
-      "club": "Borussia Dortmund"
-    },
-    {
-      "id": 328033,
-      "name": "A. Pavlovic",
-      "age": 21,
-      "position": "Midfielder",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/328033.png",
-      "club": "Bayern M\u00fcnchen"
-    },
-    {
-      "id": 644,
-      "name": "L. San\u00e9",
-      "age": 30,
-      "position": "Midfielder",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/644.png",
-      "club": "Galatasaray"
-    },
-    {
-      "id": 137210,
-      "name": "A. Stiller",
-      "age": 24,
-      "position": "Midfielder",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/137210.png",
-      "club": "VfB Stuttgart"
-    },
-    {
-      "id": 203224,
-      "name": "F. Wirtz",
-      "age": 22,
-      "position": "Midfielder",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/203224.png",
-      "club": "Liverpool"
-    },
-    {
-      "id": 978,
-      "name": "K. Havertz",
-      "age": 26,
-      "position": "Attacker",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/978.png",
-      "club": "Arsenal"
-    },
-    {
-      "id": 158644,
-      "name": "M. Beier",
-      "age": 23,
-      "position": "Attacker",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/158644.png",
-      "club": "Borussia Dortmund"
-    },
-    {
-      "id": 26475,
-      "name": "D. Undav",
-      "age": 29,
-      "position": "Attacker",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/26475.png",
-      "club": "VfB Stuttgart"
-    },
-    {
-      "id": 158054,
-      "name": "N. Woltemade",
-      "age": 23,
-      "position": "Attacker",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/158054.png",
-      "club": "Newcastle"
-    }
-  ]
+ "country": "germany",
+ "displayName": "Germany",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Julian Nagelsmann",
+ "captain": "J. Kimmich",
+ "keyPlayers": [
+  "J. Kimmich",
+  "A. R\u00fcdiger",
+  "M. Neuer",
+  "J. Musiala",
+  "F. Wirtz",
+  "K. Havertz"
+ ],
+ "players": [
+  {
+   "id": 702,
+   "name": "O. Baumann",
+   "age": 35,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/702.png",
+   "club": "1899 Hoffenheim"
+  },
+  {
+   "id": 497,
+   "name": "M. Neuer",
+   "age": 39,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/497.png",
+   "club": "Bayern M\u00fcnchen"
+  },
+  {
+   "id": 399,
+   "name": "A. N\u00fcbel",
+   "age": 29,
+   "position": "Goalkeeper",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/399.png",
+   "club": "VfB Stuttgart"
+  },
+  {
+   "id": 25368,
+   "name": "W. Anton",
+   "age": 29,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/25368.png",
+   "club": "Borussia Dortmund"
+  },
+  {
+   "id": 280074,
+   "name": "N. Brown",
+   "age": 22,
+   "position": "Defender",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/280074.png",
+   "club": "Eintracht Frankfurt"
+  },
+  {
+   "id": 25158,
+   "name": "D. Raum",
+   "age": 27,
+   "position": "Defender",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/25158.png",
+   "club": "RB Leipzig"
+  },
+  {
+   "id": 2285,
+   "name": "A. R\u00fcdiger",
+   "age": 32,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/2285.png",
+   "club": "Real Madrid"
+  },
+  {
+   "id": 26243,
+   "name": "N. Schlotterbeck",
+   "age": 26,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/26243.png",
+   "club": "Borussia Dortmund"
+  },
+  {
+   "id": 972,
+   "name": "J. Tah",
+   "age": 29,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/972.png",
+   "club": "Bayern M\u00fcnchen"
+  },
+  {
+   "id": 163189,
+   "name": "M. Thiaw",
+   "age": 24,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/163189.png",
+   "club": "Newcastle"
+  },
+  {
+   "id": 502,
+   "name": "J. Kimmich",
+   "age": 30,
+   "position": "Defender",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/502.png",
+   "club": "Bayern M\u00fcnchen"
+  },
+  {
+   "id": 714,
+   "name": "N. Amiri",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/714.png",
+   "club": "FSV Mainz 05"
+  },
+  {
+   "id": 511,
+   "name": "L. Goretzka",
+   "age": 30,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/511.png",
+   "club": "Bayern M\u00fcnchen"
+  },
+  {
+   "id": 18970,
+   "name": "P. Gro\u00df",
+   "age": 34,
+   "position": "Midfielder",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/18970.png",
+   "club": "Brighton"
+  },
+  {
+   "id": 494131,
+   "name": "L. Karl",
+   "age": 17,
+   "position": "Midfielder",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/494131.png",
+   "club": "Bayern M\u00fcnchen"
+  },
+  {
+   "id": 128533,
+   "name": "J. Leweling",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/128533.png",
+   "club": "VfB Stuttgart"
+  },
+  {
+   "id": 181812,
+   "name": "J. Musiala",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/181812.png",
+   "club": "Bayern M\u00fcnchen"
+  },
+  {
+   "id": 637,
+   "name": "F. Nmecha",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/637.png",
+   "club": "Borussia Dortmund"
+  },
+  {
+   "id": 328033,
+   "name": "A. Pavlovic",
+   "age": 21,
+   "position": "Midfielder",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/328033.png",
+   "club": "Bayern M\u00fcnchen"
+  },
+  {
+   "id": 644,
+   "name": "L. San\u00e9",
+   "age": 30,
+   "position": "Midfielder",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/644.png",
+   "club": "Galatasaray"
+  },
+  {
+   "id": 137210,
+   "name": "A. Stiller",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/137210.png",
+   "club": "VfB Stuttgart"
+  },
+  {
+   "id": 203224,
+   "name": "F. Wirtz",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/203224.png",
+   "club": "Liverpool"
+  },
+  {
+   "id": 978,
+   "name": "K. Havertz",
+   "age": 26,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/978.png",
+   "club": "Arsenal"
+  },
+  {
+   "id": 158644,
+   "name": "M. Beier",
+   "age": 23,
+   "position": "Attacker",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/158644.png",
+   "club": "Borussia Dortmund"
+  },
+  {
+   "id": 26475,
+   "name": "D. Undav",
+   "age": 29,
+   "position": "Attacker",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/26475.png",
+   "club": "VfB Stuttgart"
+  },
+  {
+   "id": 158054,
+   "name": "N. Woltemade",
+   "age": 23,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/158054.png",
+   "club": "Newcastle"
+  }
+ ],
+ "guardianStarPlayer": "Florian Wirtz",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

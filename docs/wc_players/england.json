@@ -1,250 +1,252 @@
 {
-  "country": "england",
-  "displayName": "England",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Thomas Tuchel",
-  "captain": "H. Kane",
-  "keyPlayers": [
-    "H. Kane",
-    "J. Bellingham",
-    "D. Rice",
-    "B. Saka",
-    "J. Pickford"
-  ],
-  "players": [
-    {
-      "id": 19088,
-      "name": "D. Henderson",
-      "age": 28,
-      "position": "Goalkeeper",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/19088.png",
-      "club": "Crystal Palace"
-    },
-    {
-      "id": 2932,
-      "name": "J. Pickford",
-      "age": 31,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/2932.png",
-      "club": "Everton"
-    },
-    {
-      "id": 162489,
-      "name": "J. Trafford",
-      "age": 23,
-      "position": "Goalkeeper",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/162489.png",
-      "club": "Manchester City"
-    },
-    {
-      "id": 18961,
-      "name": "D. Burn",
-      "age": 33,
-      "position": "Defender",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/18961.png",
-      "club": "Newcastle"
-    },
-    {
-      "id": 67971,
-      "name": "M. Gu\u00e9hi",
-      "age": 25,
-      "position": "Defender",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/67971.png",
-      "club": "Crystal Palace"
-    },
-    {
-      "id": 19545,
-      "name": "R. James",
-      "age": 26,
-      "position": "Defender",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/19545.png",
-      "club": "Chelsea"
-    },
-    {
-      "id": 19354,
-      "name": "E. Konsa",
-      "age": 28,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/19354.png",
-      "club": "Aston Villa"
-    },
-    {
-      "id": 158694,
-      "name": "T. Livramento",
-      "age": 23,
-      "position": "Defender",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/158694.png",
-      "club": "Newcastle"
-    },
-    {
-      "id": 307123,
-      "name": "N. Oreilly",
-      "age": 20,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/307123.png",
-      "club": "Manchester City"
-    },
-    {
-      "id": 158698,
-      "name": "J. Quansah",
-      "age": 22,
-      "position": "Defender",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/158698.png",
-      "club": "Bayer Leverkusen"
-    },
-    {
-      "id": 19235,
-      "name": "D. Spence",
-      "age": 25,
-      "position": "Defender",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/19235.png",
-      "club": "Tottenham"
-    },
-    {
-      "id": 626,
-      "name": "J. Stones",
-      "age": 31,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/626.png",
-      "club": "Manchester City"
-    },
-    {
-      "id": 138908,
-      "name": "E. Anderson",
-      "age": 23,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/138908.png",
-      "club": "Nottingham Forest"
-    },
-    {
-      "id": 129718,
-      "name": "J. Bellingham",
-      "age": 22,
-      "position": "Midfielder",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/129718.png",
-      "club": "Real Madrid"
-    },
-    {
-      "id": 19586,
-      "name": "E. Eze",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/19586.png",
-      "club": "Arsenal"
-    },
-    {
-      "id": 292,
-      "name": "J. Henderson",
-      "age": 35,
-      "position": "Midfielder",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/292.png",
-      "club": "Brentford"
-    },
-    {
-      "id": 284322,
-      "name": "K. Mainoo",
-      "age": 20,
-      "position": "Midfielder",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/284322.png",
-      "club": "Manchester United"
-    },
-    {
-      "id": 2937,
-      "name": "D. Rice",
-      "age": 26,
-      "position": "Midfielder",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/2937.png",
-      "club": "Arsenal"
-    },
-    {
-      "id": 19170,
-      "name": "M. Rogers",
-      "age": 23,
-      "position": "Midfielder",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/19170.png",
-      "club": "Aston Villa"
-    },
-    {
-      "id": 138787,
-      "name": "A. Gordon",
-      "age": 24,
-      "position": "Attacker",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/138787.png",
-      "club": "Newcastle"
-    },
-    {
-      "id": 184,
-      "name": "H. Kane",
-      "age": 32,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/184.png",
-      "club": "Bayern M\u00fcnchen"
-    },
-    {
-      "id": 136723,
-      "name": "N. Madueke",
-      "age": 23,
-      "position": "Attacker",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/136723.png",
-      "club": "Arsenal"
-    },
-    {
-      "id": 909,
-      "name": "M. Rashford",
-      "age": 28,
-      "position": "Attacker",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/909.png",
-      "club": "Barcelona"
-    },
-    {
-      "id": 1460,
-      "name": "B. Saka",
-      "age": 24,
-      "position": "Attacker",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/1460.png",
-      "club": "Arsenal"
-    },
-    {
-      "id": 19974,
-      "name": "I. Toney",
-      "age": 29,
-      "position": "Attacker",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/19974.png",
-      "club": "Al-Ahli Jeddah"
-    },
-    {
-      "id": 19366,
-      "name": "O. Watkins",
-      "age": 30,
-      "position": "Attacker",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/19366.png",
-      "club": "Aston Villa"
-    }
-  ]
+ "country": "england",
+ "displayName": "England",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Thomas Tuchel",
+ "captain": "H. Kane",
+ "keyPlayers": [
+  "H. Kane",
+  "J. Bellingham",
+  "D. Rice",
+  "B. Saka",
+  "J. Pickford"
+ ],
+ "players": [
+  {
+   "id": 19088,
+   "name": "D. Henderson",
+   "age": 28,
+   "position": "Goalkeeper",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/19088.png",
+   "club": "Crystal Palace"
+  },
+  {
+   "id": 2932,
+   "name": "J. Pickford",
+   "age": 31,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/2932.png",
+   "club": "Everton"
+  },
+  {
+   "id": 162489,
+   "name": "J. Trafford",
+   "age": 23,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/162489.png",
+   "club": "Manchester City"
+  },
+  {
+   "id": 18961,
+   "name": "D. Burn",
+   "age": 33,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/18961.png",
+   "club": "Newcastle"
+  },
+  {
+   "id": 67971,
+   "name": "M. Gu\u00e9hi",
+   "age": 25,
+   "position": "Defender",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/67971.png",
+   "club": "Crystal Palace"
+  },
+  {
+   "id": 19545,
+   "name": "R. James",
+   "age": 26,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/19545.png",
+   "club": "Chelsea"
+  },
+  {
+   "id": 19354,
+   "name": "E. Konsa",
+   "age": 28,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/19354.png",
+   "club": "Aston Villa"
+  },
+  {
+   "id": 158694,
+   "name": "T. Livramento",
+   "age": 23,
+   "position": "Defender",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/158694.png",
+   "club": "Newcastle"
+  },
+  {
+   "id": 307123,
+   "name": "N. Oreilly",
+   "age": 20,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/307123.png",
+   "club": "Manchester City"
+  },
+  {
+   "id": 158698,
+   "name": "J. Quansah",
+   "age": 22,
+   "position": "Defender",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/158698.png",
+   "club": "Bayer Leverkusen"
+  },
+  {
+   "id": 19235,
+   "name": "D. Spence",
+   "age": 25,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/19235.png",
+   "club": "Tottenham"
+  },
+  {
+   "id": 626,
+   "name": "J. Stones",
+   "age": 31,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/626.png",
+   "club": "Manchester City"
+  },
+  {
+   "id": 138908,
+   "name": "E. Anderson",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/138908.png",
+   "club": "Nottingham Forest"
+  },
+  {
+   "id": 129718,
+   "name": "J. Bellingham",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/129718.png",
+   "club": "Real Madrid"
+  },
+  {
+   "id": 19586,
+   "name": "E. Eze",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/19586.png",
+   "club": "Arsenal"
+  },
+  {
+   "id": 292,
+   "name": "J. Henderson",
+   "age": 35,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/292.png",
+   "club": "Brentford"
+  },
+  {
+   "id": 284322,
+   "name": "K. Mainoo",
+   "age": 20,
+   "position": "Midfielder",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/284322.png",
+   "club": "Manchester United"
+  },
+  {
+   "id": 2937,
+   "name": "D. Rice",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/2937.png",
+   "club": "Arsenal"
+  },
+  {
+   "id": 19170,
+   "name": "M. Rogers",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/19170.png",
+   "club": "Aston Villa"
+  },
+  {
+   "id": 138787,
+   "name": "A. Gordon",
+   "age": 24,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/138787.png",
+   "club": "Newcastle"
+  },
+  {
+   "id": 184,
+   "name": "H. Kane",
+   "age": 32,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/184.png",
+   "club": "Bayern M\u00fcnchen"
+  },
+  {
+   "id": 136723,
+   "name": "N. Madueke",
+   "age": 23,
+   "position": "Attacker",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/136723.png",
+   "club": "Arsenal"
+  },
+  {
+   "id": 909,
+   "name": "M. Rashford",
+   "age": 28,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/909.png",
+   "club": "Barcelona"
+  },
+  {
+   "id": 1460,
+   "name": "B. Saka",
+   "age": 24,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/1460.png",
+   "club": "Arsenal"
+  },
+  {
+   "id": 19974,
+   "name": "I. Toney",
+   "age": 29,
+   "position": "Attacker",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/19974.png",
+   "club": "Al-Ahli Jeddah"
+  },
+  {
+   "id": 19366,
+   "name": "O. Watkins",
+   "age": 30,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/19366.png",
+   "club": "Aston Villa"
+  }
+ ],
+ "guardianStarPlayer": "Harry Kane",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

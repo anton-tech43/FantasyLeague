@@ -1,250 +1,252 @@
 {
-  "country": "tunisia",
-  "displayName": "Tunisia",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Sabri Lamouchi",
-  "captain": "Ellyes Skhiri",
-  "keyPlayers": [
-    "Ellyes Skhiri",
-    "Hannibal Mejbri",
-    "Montassar Talbi",
-    "Sebastian Tounekti",
-    "Firas Chaouat"
-  ],
-  "players": [
-    {
-      "id": 49423,
-      "name": "S. Ben Hsan",
-      "age": 29,
-      "position": "Goalkeeper",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/49423.png",
-      "club": "Etoile du Sahel"
-    },
-    {
-      "id": 533394,
-      "name": "C. Abdelmouhib",
-      "age": 24,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/533394.png",
-      "club": "Club Africain"
-    },
-    {
-      "id": 49424,
-      "name": "A. Dahmen",
-      "age": 28,
-      "position": "Goalkeeper",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/49424.png",
-      "club": "CS Sfaxien"
-    },
-    {
-      "id": 49583,
-      "name": "A. Abdi",
-      "age": 32,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/49583.png",
-      "club": "Nice"
-    },
-    {
-      "id": 393977,
-      "name": "A. Arous",
-      "age": 21,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/393977.png",
-      "club": "Kas\u0131mpa\u015fa"
-    },
-    {
-      "id": 135059,
-      "name": "A. Ben Hmida",
-      "age": 30,
-      "position": "Defender",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/135059.png",
-      "club": "ES Tunis"
-    },
-    {
-      "id": 2945,
-      "name": "D. Bronn",
-      "age": 30,
-      "position": "Defender",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/2945.png",
-      "club": "Servette FC"
-    },
-    {
-      "id": 533360,
-      "name": "R. Chikhaoui",
-      "age": 21,
-      "position": "Defender",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/533360.png",
-      "club": "US Monastir"
-    },
-    {
-      "id": 375608,
-      "name": "M. Neffati",
-      "age": 21,
-      "position": "Defender",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/375608.png",
-      "club": "IFK Norrkoping"
-    },
-    {
-      "id": 163068,
-      "name": "O. Rekik",
-      "age": 24,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/163068.png",
-      "club": "Maribor"
-    },
-    {
-      "id": 50030,
-      "name": "M. Talbi",
-      "age": 27,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/50030.png",
-      "club": "Lorient"
-    },
-    {
-      "id": 18942,
-      "name": "Y. Valery",
-      "age": 26,
-      "position": "Defender",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/18942.png",
-      "club": "Sheffield Wednesday"
-    },
-    {
-      "id": 49469,
-      "name": "M. Ben Ouanes",
-      "age": 31,
-      "position": "Defender",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/49469.png",
-      "club": "Kas\u0131mpa\u015fa"
-    },
-    {
-      "id": 533295,
-      "name": "K. Ayari",
-      "age": 20,
-      "position": "Midfielder",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/533295.png",
-      "club": "Paris Saint-Germain"
-    },
-    {
-      "id": 310196,
-      "name": "Isma\u00ebl Gharbi",
-      "age": 21,
-      "position": "Midfielder",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/310196.png",
-      "club": "FC Augsburg"
-    },
-    {
-      "id": 25300,
-      "name": "R. Khedira",
-      "age": 31,
-      "position": "Midfielder",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/25300.png",
-      "club": "Union Berlin"
-    },
-    {
-      "id": 180560,
-      "name": "H. Mejbri",
-      "age": 22,
-      "position": "Midfielder",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/180560.png",
-      "club": "Burnley"
-    },
-    {
-      "id": 21587,
-      "name": "E. Skhiri",
-      "age": 30,
-      "position": "Midfielder",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/21587.png",
-      "club": "Eintracht Frankfurt"
-    },
-    {
-      "id": 199310,
-      "name": "A. Ben Slimane",
-      "age": 24,
-      "position": "Midfielder",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/199310.png",
-      "club": "Norwich"
-    },
-    {
-      "id": 67195,
-      "name": "H. Mahmoud",
-      "age": 25,
-      "position": "Midfielder",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/67195.png",
-      "club": "FC Lugano"
-    },
-    {
-      "id": 57518,
-      "name": "S. Tounekti",
-      "age": 23,
-      "position": "Midfielder",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/57518.png",
-      "club": "Celtic"
-    },
-    {
-      "id": 42012,
-      "name": "E. Achouri",
-      "age": 26,
-      "position": "Attacker",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/42012.png",
-      "club": "FC Copenhagen"
-    },
-    {
-      "id": 2962,
-      "name": "F. Chaouat",
-      "age": 29,
-      "position": "Attacker",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/2962.png",
-      "club": "Club Africain"
-    },
-    {
-      "id": 566059,
-      "name": "R. Elloumi",
-      "age": 18,
-      "position": "Attacker",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/566059.png",
-      "club": "Vancouver Whitecaps"
-    },
-    {
-      "id": 344862,
-      "name": "H. Mastouri",
-      "age": 28,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/344862.png",
-      "club": "Dinamo Makhachkala"
-    },
-    {
-      "id": 323974,
-      "name": "E. Saad",
-      "age": 26,
-      "position": "Attacker",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/323974.png",
-      "club": "Hannover 96"
-    }
-  ]
+ "country": "tunisia",
+ "displayName": "Tunisia",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Sabri Lamouchi",
+ "captain": "Ellyes Skhiri",
+ "keyPlayers": [
+  "Ellyes Skhiri",
+  "Hannibal Mejbri",
+  "Montassar Talbi",
+  "Sebastian Tounekti",
+  "Firas Chaouat"
+ ],
+ "players": [
+  {
+   "id": 49423,
+   "name": "S. Ben Hsan",
+   "age": 29,
+   "position": "Goalkeeper",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/49423.png",
+   "club": "Etoile du Sahel"
+  },
+  {
+   "id": 533394,
+   "name": "C. Abdelmouhib",
+   "age": 24,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/533394.png",
+   "club": "Club Africain"
+  },
+  {
+   "id": 49424,
+   "name": "A. Dahmen",
+   "age": 28,
+   "position": "Goalkeeper",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/49424.png",
+   "club": "CS Sfaxien"
+  },
+  {
+   "id": 49583,
+   "name": "A. Abdi",
+   "age": 32,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/49583.png",
+   "club": "Nice"
+  },
+  {
+   "id": 393977,
+   "name": "A. Arous",
+   "age": 21,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/393977.png",
+   "club": "Kas\u0131mpa\u015fa"
+  },
+  {
+   "id": 135059,
+   "name": "A. Ben Hmida",
+   "age": 30,
+   "position": "Defender",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/135059.png",
+   "club": "ES Tunis"
+  },
+  {
+   "id": 2945,
+   "name": "D. Bronn",
+   "age": 30,
+   "position": "Defender",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/2945.png",
+   "club": "Servette FC"
+  },
+  {
+   "id": 533360,
+   "name": "R. Chikhaoui",
+   "age": 21,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/533360.png",
+   "club": "US Monastir"
+  },
+  {
+   "id": 375608,
+   "name": "M. Neffati",
+   "age": 21,
+   "position": "Defender",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/375608.png",
+   "club": "IFK Norrkoping"
+  },
+  {
+   "id": 163068,
+   "name": "O. Rekik",
+   "age": 24,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/163068.png",
+   "club": "Maribor"
+  },
+  {
+   "id": 50030,
+   "name": "M. Talbi",
+   "age": 27,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/50030.png",
+   "club": "Lorient"
+  },
+  {
+   "id": 18942,
+   "name": "Y. Valery",
+   "age": 26,
+   "position": "Defender",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/18942.png",
+   "club": "Sheffield Wednesday"
+  },
+  {
+   "id": 49469,
+   "name": "M. Ben Ouanes",
+   "age": 31,
+   "position": "Defender",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/49469.png",
+   "club": "Kas\u0131mpa\u015fa"
+  },
+  {
+   "id": 533295,
+   "name": "K. Ayari",
+   "age": 20,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/533295.png",
+   "club": "Paris Saint-Germain"
+  },
+  {
+   "id": 310196,
+   "name": "Isma\u00ebl Gharbi",
+   "age": 21,
+   "position": "Midfielder",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/310196.png",
+   "club": "FC Augsburg"
+  },
+  {
+   "id": 25300,
+   "name": "R. Khedira",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/25300.png",
+   "club": "Union Berlin"
+  },
+  {
+   "id": 180560,
+   "name": "H. Mejbri",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/180560.png",
+   "club": "Burnley"
+  },
+  {
+   "id": 21587,
+   "name": "E. Skhiri",
+   "age": 30,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/21587.png",
+   "club": "Eintracht Frankfurt"
+  },
+  {
+   "id": 199310,
+   "name": "A. Ben Slimane",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/199310.png",
+   "club": "Norwich"
+  },
+  {
+   "id": 67195,
+   "name": "H. Mahmoud",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/67195.png",
+   "club": "FC Lugano"
+  },
+  {
+   "id": 57518,
+   "name": "S. Tounekti",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/57518.png",
+   "club": "Celtic"
+  },
+  {
+   "id": 42012,
+   "name": "E. Achouri",
+   "age": 26,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/42012.png",
+   "club": "FC Copenhagen"
+  },
+  {
+   "id": 2962,
+   "name": "F. Chaouat",
+   "age": 29,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/2962.png",
+   "club": "Club Africain"
+  },
+  {
+   "id": 566059,
+   "name": "R. Elloumi",
+   "age": 18,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/566059.png",
+   "club": "Vancouver Whitecaps"
+  },
+  {
+   "id": 344862,
+   "name": "H. Mastouri",
+   "age": 28,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/344862.png",
+   "club": "Dinamo Makhachkala"
+  },
+  {
+   "id": 323974,
+   "name": "E. Saad",
+   "age": 26,
+   "position": "Attacker",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/323974.png",
+   "club": "Hannover 96"
+  }
+ ],
+ "guardianStarPlayer": "Hannibal Mejbri",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

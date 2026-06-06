@@ -1,251 +1,253 @@
 {
-  "country": "south_korea",
-  "displayName": "South Korea",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Hong Myung-bo",
-  "captain": "Son Heung-Min",
-  "keyPlayers": [
-    "Son Heung-Min",
-    "Kim Min-Jae",
-    "Lee Kang-In",
-    "Hwang Hee-Chan",
-    "Lee Jae-Sung",
-    "Bae Jun-Ho"
-  ],
-  "players": [
-    {
-      "id": 2890,
-      "name": "Jo Hyeon-Woo",
-      "age": 34,
-      "position": "Goalkeeper",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/2890.png",
-      "club": "Ulsan Hyundai FC"
-    },
-    {
-      "id": 2892,
-      "name": "Kim Seung-Gyu",
-      "age": 35,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/2892.png",
-      "club": "FC Tokyo"
-    },
-    {
-      "id": 34374,
-      "name": "Song Bum-Keun",
-      "age": 28,
-      "position": "Goalkeeper",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/34374.png",
-      "club": "Jeonbuk Motors"
-    },
-    {
-      "id": 547307,
-      "name": "Cho Wi-Je",
-      "age": 24,
-      "position": "Defender",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/547307.png",
-      "club": "Jeonbuk Motors"
-    },
-    {
-      "id": 2897,
-      "name": "Kim Min-Jae",
-      "age": 29,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/2897.png",
-      "club": "Bayern M\u00fcnchen"
-    },
-    {
-      "id": 2912,
-      "name": "Kim Moon-Hwan",
-      "age": 30,
-      "position": "Defender",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/2912.png",
-      "club": "Daejeon Citizen"
-    },
-    {
-      "id": 34418,
-      "name": "Kim Tae-Hyeon",
-      "age": 25,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/34418.png",
-      "club": "Kashima"
-    },
-    {
-      "id": 237218,
-      "name": "Lee Han-Beom",
-      "age": 23,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/237218.png",
-      "club": "FC Midtjylland"
-    },
-    {
-      "id": 99211,
-      "name": "Park Jin-Seop",
-      "age": 30,
-      "position": "Defender",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/99211.png",
-      "club": "Jeonbuk Motors"
-    },
-    {
-      "id": 237220,
-      "name": "Lee Tae-Seok",
-      "age": 23,
-      "position": "Defender",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/237220.png",
-      "club": "Austria Vienna"
-    },
-    {
-      "id": 197985,
-      "name": "Seol Young-Woo",
-      "age": 27,
-      "position": "Defender",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/197985.png",
-      "club": "FK Crvena Zvezda"
-    },
-    {
-      "id": 280358,
-      "name": "J. Castrop",
-      "age": 22,
-      "position": "Defender",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/280358.png",
-      "club": "Borussia M\u00f6nchengladbach"
-    },
-    {
-      "id": 304951,
-      "name": "Lee Gi-Hyuk",
-      "age": 25,
-      "position": "Midfielder",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/304951.png",
-      "club": "Gangwon FC"
-    },
-    {
-      "id": 357286,
-      "name": "Bae Jun-Ho",
-      "age": 22,
-      "position": "Midfielder",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/357286.png",
-      "club": "Stoke City"
-    },
-    {
-      "id": 237050,
-      "name": "Eom Ji-Sung",
-      "age": 23,
-      "position": "Midfielder",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/237050.png",
-      "club": "Swansea"
-    },
-    {
-      "id": 2901,
-      "name": "Hwang In-Beom",
-      "age": 29,
-      "position": "Midfielder",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/2901.png",
-      "club": "Feyenoord"
-    },
-    {
-      "id": 34168,
-      "name": "Kim Jin-Gyu",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/34168.png",
-      "club": "Jeonbuk Motors"
-    },
-    {
-      "id": 34431,
-      "name": "Lee Dong-Gyeong",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/34431.png",
-      "club": "Gimcheon Sangmu FC"
-    },
-    {
-      "id": 2906,
-      "name": "Lee Jae-Sung",
-      "age": 33,
-      "position": "Midfielder",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/2906.png",
-      "club": "FSV Mainz 05"
-    },
-    {
-      "id": 927,
-      "name": "Lee Kang-In",
-      "age": 24,
-      "position": "Midfielder",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/927.png",
-      "club": "Paris Saint Germain"
-    },
-    {
-      "id": 2909,
-      "name": "Paik Seung-Ho",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/2909.png",
-      "club": "Birmingham"
-    },
-    {
-      "id": 304958,
-      "name": "Yang Hyun-Jun",
-      "age": 23,
-      "position": "Midfielder",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/304958.png",
-      "club": "Celtic"
-    },
-    {
-      "id": 24888,
-      "name": "Hwang Hee-Chan",
-      "age": 29,
-      "position": "Midfielder",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/24888.png",
-      "club": "Wolves"
-    },
-    {
-      "id": 34211,
-      "name": "Cho Gue-Sung",
-      "age": 28,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/34211.png",
-      "club": "FC Midtjylland"
-    },
-    {
-      "id": 34710,
-      "name": "Oh Hyeon-Gyu",
-      "age": 24,
-      "position": "Attacker",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/34710.png",
-      "club": "Genk"
-    },
-    {
-      "id": 186,
-      "name": "Son Heung-Min",
-      "age": 33,
-      "position": "Attacker",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/186.png",
-      "club": "Los Angeles FC"
-    }
-  ]
+ "country": "south_korea",
+ "displayName": "South Korea",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Hong Myung-bo",
+ "captain": "Son Heung-Min",
+ "keyPlayers": [
+  "Son Heung-Min",
+  "Kim Min-Jae",
+  "Lee Kang-In",
+  "Hwang Hee-Chan",
+  "Lee Jae-Sung",
+  "Bae Jun-Ho"
+ ],
+ "players": [
+  {
+   "id": 2890,
+   "name": "Jo Hyeon-Woo",
+   "age": 34,
+   "position": "Goalkeeper",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/2890.png",
+   "club": "Ulsan Hyundai FC"
+  },
+  {
+   "id": 2892,
+   "name": "Kim Seung-Gyu",
+   "age": 35,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/2892.png",
+   "club": "FC Tokyo"
+  },
+  {
+   "id": 34374,
+   "name": "Song Bum-Keun",
+   "age": 28,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/34374.png",
+   "club": "Jeonbuk Motors"
+  },
+  {
+   "id": 547307,
+   "name": "Cho Wi-Je",
+   "age": 24,
+   "position": "Defender",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/547307.png",
+   "club": "Jeonbuk Motors"
+  },
+  {
+   "id": 2897,
+   "name": "Kim Min-Jae",
+   "age": 29,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/2897.png",
+   "club": "Bayern M\u00fcnchen"
+  },
+  {
+   "id": 2912,
+   "name": "Kim Moon-Hwan",
+   "age": 30,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/2912.png",
+   "club": "Daejeon Citizen"
+  },
+  {
+   "id": 34418,
+   "name": "Kim Tae-Hyeon",
+   "age": 25,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/34418.png",
+   "club": "Kashima"
+  },
+  {
+   "id": 237218,
+   "name": "Lee Han-Beom",
+   "age": 23,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/237218.png",
+   "club": "FC Midtjylland"
+  },
+  {
+   "id": 99211,
+   "name": "Park Jin-Seop",
+   "age": 30,
+   "position": "Defender",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/99211.png",
+   "club": "Jeonbuk Motors"
+  },
+  {
+   "id": 237220,
+   "name": "Lee Tae-Seok",
+   "age": 23,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/237220.png",
+   "club": "Austria Vienna"
+  },
+  {
+   "id": 197985,
+   "name": "Seol Young-Woo",
+   "age": 27,
+   "position": "Defender",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/197985.png",
+   "club": "FK Crvena Zvezda"
+  },
+  {
+   "id": 280358,
+   "name": "J. Castrop",
+   "age": 22,
+   "position": "Defender",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/280358.png",
+   "club": "Borussia M\u00f6nchengladbach"
+  },
+  {
+   "id": 304951,
+   "name": "Lee Gi-Hyuk",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/304951.png",
+   "club": "Gangwon FC"
+  },
+  {
+   "id": 357286,
+   "name": "Bae Jun-Ho",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/357286.png",
+   "club": "Stoke City"
+  },
+  {
+   "id": 237050,
+   "name": "Eom Ji-Sung",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/237050.png",
+   "club": "Swansea"
+  },
+  {
+   "id": 2901,
+   "name": "Hwang In-Beom",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/2901.png",
+   "club": "Feyenoord"
+  },
+  {
+   "id": 34168,
+   "name": "Kim Jin-Gyu",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/34168.png",
+   "club": "Jeonbuk Motors"
+  },
+  {
+   "id": 34431,
+   "name": "Lee Dong-Gyeong",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/34431.png",
+   "club": "Gimcheon Sangmu FC"
+  },
+  {
+   "id": 2906,
+   "name": "Lee Jae-Sung",
+   "age": 33,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/2906.png",
+   "club": "FSV Mainz 05"
+  },
+  {
+   "id": 927,
+   "name": "Lee Kang-In",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/927.png",
+   "club": "Paris Saint Germain"
+  },
+  {
+   "id": 2909,
+   "name": "Paik Seung-Ho",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/2909.png",
+   "club": "Birmingham"
+  },
+  {
+   "id": 304958,
+   "name": "Yang Hyun-Jun",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/304958.png",
+   "club": "Celtic"
+  },
+  {
+   "id": 24888,
+   "name": "Hwang Hee-Chan",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/24888.png",
+   "club": "Wolves"
+  },
+  {
+   "id": 34211,
+   "name": "Cho Gue-Sung",
+   "age": 28,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/34211.png",
+   "club": "FC Midtjylland"
+  },
+  {
+   "id": 34710,
+   "name": "Oh Hyeon-Gyu",
+   "age": 24,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/34710.png",
+   "club": "Genk"
+  },
+  {
+   "id": 186,
+   "name": "Son Heung-Min",
+   "age": 33,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/186.png",
+   "club": "Los Angeles FC"
+  }
+ ],
+ "guardianStarPlayer": "Son Heung-min",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }

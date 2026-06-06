@@ -1,251 +1,253 @@
 {
-  "country": "cape_verde",
-  "displayName": "Cape Verde Islands",
-  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
-  "manager": "Bubista (Pedro Leitão Brito)",
-  "captain": "Ryan Mendes",
-  "keyPlayers": [
-    "Ryan Mendes",
-    "Logan Costa",
-    "Jamiro Monteiro",
-    "Vózinha",
-    "Jovane Cabral",
-    "D. Livramento"
-  ],
-  "players": [
-    {
-      "id": 41764,
-      "name": "M\u00e1rcio Rosa",
-      "age": 28,
-      "position": "Goalkeeper",
-      "number": 12,
-      "photo": "https://media.api-sports.io/football/players/41764.png",
-      "club": "Montana"
-    },
-    {
-      "id": 15304,
-      "name": "V\u00f3zinha",
-      "age": 39,
-      "position": "Goalkeeper",
-      "number": 1,
-      "photo": "https://media.api-sports.io/football/players/15304.png",
-      "club": "Chaves"
-    },
-    {
-      "id": 163200,
-      "name": "C. dos Santos",
-      "age": 25,
-      "position": "Goalkeeper",
-      "number": 23,
-      "photo": "https://media.api-sports.io/football/players/163200.png",
-      "club": "San Diego"
-    },
-    {
-      "id": 41608,
-      "name": "Diney Borges",
-      "age": 30,
-      "position": "Defender",
-      "number": 3,
-      "photo": "https://media.api-sports.io/football/players/41608.png",
-      "club": "Al Bataeh"
-    },
-    {
-      "id": 21997,
-      "name": "Logan Costa",
-      "age": 24,
-      "position": "Defender",
-      "number": 5,
-      "photo": "https://media.api-sports.io/football/players/21997.png",
-      "club": "Villarreal"
-    },
-    {
-      "id": 308689,
-      "name": "S. Lopes Cabral",
-      "age": 23,
-      "position": "Defender",
-      "number": 13,
-      "photo": "https://media.api-sports.io/football/players/308689.png",
-      "club": "Benfica"
-    },
-    {
-      "id": 69260,
-      "name": "Pico",
-      "age": 33,
-      "position": "Defender",
-      "number": 4,
-      "photo": "https://media.api-sports.io/football/players/69260.png",
-      "club": "Shamrock Rovers"
-    },
-    {
-      "id": 22139,
-      "name": "S. Moreira",
-      "age": 31,
-      "position": "Defender",
-      "number": 22,
-      "photo": "https://media.api-sports.io/football/players/22139.png",
-      "club": "Columbus Crew"
-    },
-    {
-      "id": 332056,
-      "name": "Wagner Pina",
-      "age": 23,
-      "position": "Defender",
-      "number": 24,
-      "photo": "https://media.api-sports.io/football/players/332056.png",
-      "club": "Trabzonspor"
-    },
-    {
-      "id": 268806,
-      "name": "Kelvin Pires",
-      "age": 25,
-      "position": "Defender",
-      "number": 25,
-      "photo": "https://media.api-sports.io/football/players/268806.png",
-      "club": "SJK"
-    },
-    {
-      "id": 2331,
-      "name": "Stopira",
-      "age": 37,
-      "position": "Defender",
-      "number": 2,
-      "photo": "https://media.api-sports.io/football/players/2331.png",
-      "club": "Torreense"
-    },
-    {
-      "id": 265556,
-      "name": "Telmo Arcanjo",
-      "age": 24,
-      "position": "Midfielder",
-      "number": 18,
-      "photo": "https://media.api-sports.io/football/players/265556.png",
-      "club": "Guimaraes"
-    },
-    {
-      "id": 37435,
-      "name": "Deroy Duarte",
-      "age": 26,
-      "position": "Midfielder",
-      "number": 14,
-      "photo": "https://media.api-sports.io/football/players/37435.png",
-      "club": "Ludogorets"
-    },
-    {
-      "id": 37436,
-      "name": "L. Duarte",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 15,
-      "photo": "https://media.api-sports.io/football/players/37436.png",
-      "club": "Puskas Academy"
-    },
-    {
-      "id": 142016,
-      "name": "Jo\u00e3o Paulo",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 8,
-      "photo": "https://media.api-sports.io/football/players/142016.png",
-      "club": "O\u0163elul"
-    },
-    {
-      "id": 96512,
-      "name": "Kevin Pina",
-      "age": 28,
-      "position": "Midfielder",
-      "number": 6,
-      "photo": "https://media.api-sports.io/football/players/96512.png",
-      "club": "FC Krasnodar"
-    },
-    {
-      "id": 50745,
-      "name": "Jamiro Monteiro",
-      "age": 32,
-      "position": "Midfielder",
-      "number": 10,
-      "photo": "https://media.api-sports.io/football/players/50745.png",
-      "club": "PEC Zwolle"
-    },
-    {
-      "id": 128007,
-      "name": "Yannick Semedo",
-      "age": 30,
-      "position": "Midfielder",
-      "number": 16,
-      "photo": "https://media.api-sports.io/football/players/128007.png",
-      "club": "Farense"
-    },
-    {
-      "id": 44612,
-      "name": "Garry Rodrigues",
-      "age": 35,
-      "position": "Midfielder",
-      "number": 11,
-      "photo": "https://media.api-sports.io/football/players/44612.png",
-      "club": "Apollon Limassol"
-    },
-    {
-      "id": 22265,
-      "name": "Nuno da Costa",
-      "age": 34,
-      "position": "Midfielder",
-      "number": 21,
-      "photo": "https://media.api-sports.io/football/players/22265.png",
-      "club": "Ba\u015fak\u015fehir"
-    },
-    {
-      "id": 1494,
-      "name": "Jovane Cabral",
-      "age": 27,
-      "position": "Midfielder",
-      "number": 7,
-      "photo": "https://media.api-sports.io/football/players/1494.png",
-      "club": "Estrela"
-    },
-    {
-      "id": 113580,
-      "name": "Willy Semedo",
-      "age": 31,
-      "position": "Midfielder",
-      "number": 17,
-      "photo": "https://media.api-sports.io/football/players/113580.png",
-      "club": "Omonia Nicosia"
-    },
-    {
-      "id": 291024,
-      "name": "H\u00e9lio Varela",
-      "age": 23,
-      "position": "Midfielder",
-      "number": 26,
-      "photo": "https://media.api-sports.io/football/players/291024.png",
-      "club": "Maccabi Tel Aviv"
-    },
-    {
-      "id": 50270,
-      "name": "Ryan Mendes",
-      "age": 36,
-      "position": "Attacker",
-      "number": 20,
-      "photo": "https://media.api-sports.io/football/players/50270.png",
-      "club": "I\u011fd\u0131r FK"
-    },
-    {
-      "id": 309182,
-      "name": "Gilson Benchimol",
-      "age": 24,
-      "position": "Attacker",
-      "number": 9,
-      "photo": "https://media.api-sports.io/football/players/309182.png",
-      "club": "Akron"
-    },
-    {
-      "id": 343287,
-      "name": "D. Livramento",
-      "age": 24,
-      "position": "Attacker",
-      "number": 19,
-      "photo": "https://media.api-sports.io/football/players/343287.png",
-      "club": "Casa Pia"
-    }
-  ]
+ "country": "cape_verde",
+ "displayName": "Cape Verde Islands",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Bubista (Pedro Leit\u00e3o Brito)",
+ "captain": "Ryan Mendes",
+ "keyPlayers": [
+  "Ryan Mendes",
+  "Logan Costa",
+  "Jamiro Monteiro",
+  "V\u00f3zinha",
+  "Jovane Cabral",
+  "D. Livramento"
+ ],
+ "players": [
+  {
+   "id": 41764,
+   "name": "M\u00e1rcio Rosa",
+   "age": 28,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/41764.png",
+   "club": "Montana"
+  },
+  {
+   "id": 15304,
+   "name": "V\u00f3zinha",
+   "age": 39,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/15304.png",
+   "club": "Chaves"
+  },
+  {
+   "id": 163200,
+   "name": "C. dos Santos",
+   "age": 25,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/163200.png",
+   "club": "San Diego"
+  },
+  {
+   "id": 41608,
+   "name": "Diney Borges",
+   "age": 30,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/41608.png",
+   "club": "Al Bataeh"
+  },
+  {
+   "id": 21997,
+   "name": "Logan Costa",
+   "age": 24,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/21997.png",
+   "club": "Villarreal"
+  },
+  {
+   "id": 308689,
+   "name": "S. Lopes Cabral",
+   "age": 23,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/308689.png",
+   "club": "Benfica"
+  },
+  {
+   "id": 69260,
+   "name": "Pico",
+   "age": 33,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/69260.png",
+   "club": "Shamrock Rovers"
+  },
+  {
+   "id": 22139,
+   "name": "S. Moreira",
+   "age": 31,
+   "position": "Defender",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/22139.png",
+   "club": "Columbus Crew"
+  },
+  {
+   "id": 332056,
+   "name": "Wagner Pina",
+   "age": 23,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/332056.png",
+   "club": "Trabzonspor"
+  },
+  {
+   "id": 268806,
+   "name": "Kelvin Pires",
+   "age": 25,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/268806.png",
+   "club": "SJK"
+  },
+  {
+   "id": 2331,
+   "name": "Stopira",
+   "age": 37,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/2331.png",
+   "club": "Torreense"
+  },
+  {
+   "id": 265556,
+   "name": "Telmo Arcanjo",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/265556.png",
+   "club": "Guimaraes"
+  },
+  {
+   "id": 37435,
+   "name": "Deroy Duarte",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/37435.png",
+   "club": "Ludogorets"
+  },
+  {
+   "id": 37436,
+   "name": "L. Duarte",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/37436.png",
+   "club": "Puskas Academy"
+  },
+  {
+   "id": 142016,
+   "name": "Jo\u00e3o Paulo",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/142016.png",
+   "club": "O\u0163elul"
+  },
+  {
+   "id": 96512,
+   "name": "Kevin Pina",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/96512.png",
+   "club": "FC Krasnodar"
+  },
+  {
+   "id": 50745,
+   "name": "Jamiro Monteiro",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/50745.png",
+   "club": "PEC Zwolle"
+  },
+  {
+   "id": 128007,
+   "name": "Yannick Semedo",
+   "age": 30,
+   "position": "Midfielder",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/128007.png",
+   "club": "Farense"
+  },
+  {
+   "id": 44612,
+   "name": "Garry Rodrigues",
+   "age": 35,
+   "position": "Midfielder",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/44612.png",
+   "club": "Apollon Limassol"
+  },
+  {
+   "id": 22265,
+   "name": "Nuno da Costa",
+   "age": 34,
+   "position": "Midfielder",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/22265.png",
+   "club": "Ba\u015fak\u015fehir"
+  },
+  {
+   "id": 1494,
+   "name": "Jovane Cabral",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/1494.png",
+   "club": "Estrela"
+  },
+  {
+   "id": 113580,
+   "name": "Willy Semedo",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/113580.png",
+   "club": "Omonia Nicosia"
+  },
+  {
+   "id": 291024,
+   "name": "H\u00e9lio Varela",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/291024.png",
+   "club": "Maccabi Tel Aviv"
+  },
+  {
+   "id": 50270,
+   "name": "Ryan Mendes",
+   "age": 36,
+   "position": "Attacker",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/50270.png",
+   "club": "I\u011fd\u0131r FK"
+  },
+  {
+   "id": 309182,
+   "name": "Gilson Benchimol",
+   "age": 24,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/309182.png",
+   "club": "Akron"
+  },
+  {
+   "id": 343287,
+   "name": "D. Livramento",
+   "age": 24,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/343287.png",
+   "club": "Casa Pia"
+  }
+ ],
+ "guardianStarPlayer": "Dailon Livramento",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
 }
