@@ -1,0 +1,251 @@
+{
+  "country": "morocco",
+  "displayName": "Morocco",
+  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+  "manager": "Mohamed Ouahbi",
+  "captain": "Achraf Hakimi",
+  "keyPlayers": [
+    "Achraf Hakimi",
+    "Brahim Díaz",
+    "Ayoub El Kaabi",
+    "Yassine Bounou",
+    "Sofyan Amrabat",
+    "Bilal El Khannouss"
+  ],
+  "players": [
+    {
+      "id": 2701,
+      "name": "Y. Bounou",
+      "age": 34,
+      "position": "Goalkeeper",
+      "number": 1,
+      "photo": "https://media.api-sports.io/football/players/2701.png",
+      "club": "Al-Hilal Saudi FC"
+    },
+    {
+      "id": 2702,
+      "name": "M. Mohamedi",
+      "age": 36,
+      "position": "Goalkeeper",
+      "number": 12,
+      "photo": "https://media.api-sports.io/football/players/2702.png",
+      "club": "Renaissance Berkane"
+    },
+    {
+      "id": 2703,
+      "name": "A. Tagnaouti",
+      "age": 29,
+      "position": "Goalkeeper",
+      "number": 22,
+      "photo": "https://media.api-sports.io/football/players/2703.png",
+      "club": "FAR Rabat"
+    },
+    {
+      "id": 21694,
+      "name": "N. Aguerd",
+      "age": 29,
+      "position": "Defender",
+      "number": 5,
+      "photo": "https://media.api-sports.io/football/players/21694.png",
+      "club": "Marseille"
+    },
+    {
+      "id": 18814,
+      "name": "I. Diop",
+      "age": 28,
+      "position": "Defender",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/18814.png",
+      "club": "Fulham"
+    },
+    {
+      "id": 283252,
+      "name": "Z. El Ouahdi",
+      "age": 24,
+      "position": "Defender",
+      "number": 13,
+      "photo": "https://media.api-sports.io/football/players/283252.png",
+      "club": "Genk"
+    },
+    {
+      "id": 9,
+      "name": "A. Hakimi",
+      "age": 27,
+      "position": "Defender",
+      "number": 2,
+      "photo": "https://media.api-sports.io/football/players/9.png",
+      "club": "Paris Saint Germain"
+    },
+    {
+      "id": 326183,
+      "name": "R. Halhal",
+      "age": 22,
+      "position": "Defender",
+      "number": 25,
+      "photo": "https://media.api-sports.io/football/players/326183.png",
+      "club": "KV Mechelen"
+    },
+    {
+      "id": 545,
+      "name": "N. Mazraoui",
+      "age": 28,
+      "position": "Defender",
+      "number": 3,
+      "photo": "https://media.api-sports.io/football/players/545.png",
+      "club": "Manchester United"
+    },
+    {
+      "id": 278898,
+      "name": "C. Riad",
+      "age": 22,
+      "position": "Defender",
+      "number": 18,
+      "photo": "https://media.api-sports.io/football/players/278898.png",
+      "club": "Crystal Palace"
+    },
+    {
+      "id": 162451,
+      "name": "A. Salah-Eddine",
+      "age": 24,
+      "position": "Defender",
+      "number": 26,
+      "photo": "https://media.api-sports.io/football/players/162451.png",
+      "club": "PSV Eindhoven"
+    },
+    {
+      "id": 146772,
+      "name": "Y. Belammari",
+      "age": 27,
+      "position": "Defender",
+      "number": 19,
+      "photo": "https://media.api-sports.io/football/players/146772.png",
+      "club": "Al Ahly"
+    },
+    {
+      "id": 74,
+      "name": "S. Amrabat",
+      "age": 29,
+      "position": "Midfielder",
+      "number": 4,
+      "photo": "https://media.api-sports.io/football/players/74.png",
+      "club": "Real Betis"
+    },
+    {
+      "id": 438688,
+      "name": "A. Bouaddi",
+      "age": 18,
+      "position": "Midfielder",
+      "number": 6,
+      "photo": "https://media.api-sports.io/football/players/438688.png",
+      "club": "Lille"
+    },
+    {
+      "id": 277003,
+      "name": "N. El Aynaoui",
+      "age": 24,
+      "position": "Midfielder",
+      "number": 24,
+      "photo": "https://media.api-sports.io/football/players/277003.png",
+      "club": "AS Roma"
+    },
+    {
+      "id": 340573,
+      "name": "B. El Khannouss",
+      "age": 21,
+      "position": "Midfielder",
+      "number": 23,
+      "photo": "https://media.api-sports.io/football/players/340573.png",
+      "club": "VfB Stuttgart"
+    },
+    {
+      "id": 415431,
+      "name": "S. El Mourabet",
+      "age": 20,
+      "position": "Midfielder",
+      "number": 15,
+      "photo": "https://media.api-sports.io/football/players/415431.png",
+      "club": "Strasbourg"
+    },
+    {
+      "id": 129678,
+      "name": "A. Ounahi",
+      "age": 25,
+      "position": "Midfielder",
+      "number": 8,
+      "photo": "https://media.api-sports.io/football/players/129678.png",
+      "club": "Girona"
+    },
+    {
+      "id": 161897,
+      "name": "I. Saibari",
+      "age": 24,
+      "position": "Midfielder",
+      "number": 11,
+      "photo": "https://media.api-sports.io/football/players/161897.png",
+      "club": "PSV Eindhoven"
+    },
+    {
+      "id": 336659,
+      "name": "C. Talbi",
+      "age": 20,
+      "position": "Midfielder",
+      "number": 7,
+      "photo": "https://media.api-sports.io/football/players/336659.png",
+      "club": "Sunderland"
+    },
+    {
+      "id": 369544,
+      "name": "Gessime Yassine",
+      "age": 20,
+      "position": "Midfielder",
+      "number": 16,
+      "photo": "https://media.api-sports.io/football/players/369544.png",
+      "club": "Strasbourg"
+    },
+    {
+      "id": 744,
+      "name": "Brahim D\u00edaz",
+      "age": 26,
+      "position": "Attacker",
+      "number": 10,
+      "photo": "https://media.api-sports.io/football/players/744.png",
+      "club": "Real Madrid"
+    },
+    {
+      "id": 535046,
+      "name": "A. Amaimouni",
+      "age": 20,
+      "position": "Attacker",
+      "number": 21,
+      "photo": "https://media.api-sports.io/football/players/535046.png",
+      "club": "Hoffenheim II"
+    },
+    {
+      "id": 2722,
+      "name": "A. El Kaabi",
+      "age": 32,
+      "position": "Attacker",
+      "number": 20,
+      "photo": "https://media.api-sports.io/football/players/2722.png",
+      "club": "Olympiakos Piraeus"
+    },
+    {
+      "id": 181421,
+      "name": "A. Ezzalzouli",
+      "age": 24,
+      "position": "Attacker",
+      "number": 17,
+      "photo": "https://media.api-sports.io/football/players/181421.png",
+      "club": "Real Betis"
+    },
+    {
+      "id": 36579,
+      "name": "S. Rahimi",
+      "age": 29,
+      "position": "Attacker",
+      "number": 9,
+      "photo": "https://media.api-sports.io/football/players/36579.png",
+      "club": "Al Ain"
+    }
+  ]
+}

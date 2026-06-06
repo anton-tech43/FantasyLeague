@@ -1,0 +1,251 @@
+{
+  "country": "ivory_coast",
+  "displayName": "Ivory Coast",
+  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+  "manager": "Emerse Fae",
+  "captain": "F. Kessié",
+  "keyPlayers": [
+    "F. Kessié",
+    "A. Diallo",
+    "W. Singo",
+    "S. Adingra",
+    "S. Fofana",
+    "Y. Diomande"
+  ],
+  "players": [
+    {
+      "id": 64190,
+      "name": "Y. Fofana",
+      "age": 25,
+      "position": "Goalkeeper",
+      "number": 1,
+      "photo": "https://media.api-sports.io/football/players/64190.png",
+      "club": "Rizespor"
+    },
+    {
+      "id": 277046,
+      "name": "M. Kon\u00e9",
+      "age": 23,
+      "position": "Goalkeeper",
+      "number": 16,
+      "photo": "https://media.api-sports.io/football/players/277046.png",
+      "club": "Charleroi"
+    },
+    {
+      "id": 30393,
+      "name": "A. Lafont",
+      "age": 26,
+      "position": "Goalkeeper",
+      "number": 23,
+      "photo": "https://media.api-sports.io/football/players/30393.png",
+      "club": "Panathinaikos"
+    },
+    {
+      "id": 135068,
+      "name": "E. Agbadou",
+      "age": 28,
+      "position": "Defender",
+      "number": 20,
+      "photo": "https://media.api-sports.io/football/players/135068.png",
+      "club": "Wolves"
+    },
+    {
+      "id": 354753,
+      "name": "O. Diomande",
+      "age": 22,
+      "position": "Defender",
+      "number": 2,
+      "photo": "https://media.api-sports.io/football/players/354753.png",
+      "club": "Sporting CP"
+    },
+    {
+      "id": 161747,
+      "name": "G. Dou\u00e9",
+      "age": 23,
+      "position": "Defender",
+      "number": 17,
+      "photo": "https://media.api-sports.io/football/players/161747.png",
+      "club": "Strasbourg"
+    },
+    {
+      "id": 22002,
+      "name": "G. Konan",
+      "age": 30,
+      "position": "Defender",
+      "number": 3,
+      "photo": "https://media.api-sports.io/football/players/22002.png",
+      "club": "GIL Vicente"
+    },
+    {
+      "id": 48119,
+      "name": "O. Kossounou",
+      "age": 24,
+      "position": "Defender",
+      "number": 7,
+      "photo": "https://media.api-sports.io/football/players/48119.png",
+      "club": "Atalanta"
+    },
+    {
+      "id": 1807,
+      "name": "E. Ndicka",
+      "age": 26,
+      "position": "Defender",
+      "number": 21,
+      "photo": "https://media.api-sports.io/football/players/1807.png",
+      "club": "AS Roma"
+    },
+    {
+      "id": 20836,
+      "name": "C. Operi",
+      "age": 28,
+      "position": "Defender",
+      "number": 13,
+      "photo": "https://media.api-sports.io/football/players/20836.png",
+      "club": "Ba\u015fak\u015fehir"
+    },
+    {
+      "id": 30504,
+      "name": "W. Singo",
+      "age": 25,
+      "position": "Defender",
+      "number": 5,
+      "photo": "https://media.api-sports.io/football/players/30504.png",
+      "club": "Galatasaray"
+    },
+    {
+      "id": 30807,
+      "name": "S. Fofana",
+      "age": 30,
+      "position": "Midfielder",
+      "number": 6,
+      "photo": "https://media.api-sports.io/football/players/30807.png",
+      "club": "FC Porto"
+    },
+    {
+      "id": 474591,
+      "name": "C. Inao Oulai",
+      "age": 19,
+      "position": "Midfielder",
+      "number": 26,
+      "photo": "https://media.api-sports.io/football/players/474591.png",
+      "club": "Trabzonspor"
+    },
+    {
+      "id": 1642,
+      "name": "F. Kessi\u00e9",
+      "age": 29,
+      "position": "Midfielder",
+      "number": 8,
+      "photo": "https://media.api-sports.io/football/players/1642.png",
+      "club": "Al-Ahli Jeddah"
+    },
+    {
+      "id": 22149,
+      "name": "I. Sangar\u00e9",
+      "age": 28,
+      "position": "Midfielder",
+      "number": 18,
+      "photo": "https://media.api-sports.io/football/players/22149.png",
+      "club": "Nottingham Forest"
+    },
+    {
+      "id": 3243,
+      "name": "J. Seri",
+      "age": 34,
+      "position": "Midfielder",
+      "number": 4,
+      "photo": "https://media.api-sports.io/football/players/3243.png",
+      "club": "Maribor"
+    },
+    {
+      "id": 263228,
+      "name": "P. Guiagon",
+      "age": 24,
+      "position": "Midfielder",
+      "number": 25,
+      "photo": "https://media.api-sports.io/football/players/263228.png",
+      "club": "Charleroi"
+    },
+    {
+      "id": 387643,
+      "name": "B. Tour\u00e9",
+      "age": 19,
+      "position": "Attacker",
+      "number": 24,
+      "photo": "https://media.api-sports.io/football/players/387643.png",
+      "club": "1899 Hoffenheim"
+    },
+    {
+      "id": 301771,
+      "name": "S. Adingra",
+      "age": 23,
+      "position": "Attacker",
+      "number": 10,
+      "photo": "https://media.api-sports.io/football/players/301771.png",
+      "club": "Monaco"
+    },
+    {
+      "id": 275651,
+      "name": "A. Bonny",
+      "age": 22,
+      "position": "Attacker",
+      "number": 9,
+      "photo": "https://media.api-sports.io/football/players/275651.png",
+      "club": "Inter"
+    },
+    {
+      "id": 334429,
+      "name": "O. Diakit\u00e9",
+      "age": 22,
+      "position": "Attacker",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/334429.png",
+      "club": "Cercle Brugge"
+    },
+    {
+      "id": 157997,
+      "name": "A. Diallo",
+      "age": 23,
+      "position": "Attacker",
+      "number": 15,
+      "photo": "https://media.api-sports.io/football/players/157997.png",
+      "club": "Manchester United"
+    },
+    {
+      "id": 513776,
+      "name": "Y. Diomande",
+      "age": 19,
+      "position": "Attacker",
+      "number": 11,
+      "photo": "https://media.api-sports.io/football/players/513776.png",
+      "club": "RB Leipzig"
+    },
+    {
+      "id": 137303,
+      "name": "E. Guessand",
+      "age": 24,
+      "position": "Attacker",
+      "number": 22,
+      "photo": "https://media.api-sports.io/football/players/137303.png",
+      "club": "Aston Villa"
+    },
+    {
+      "id": 3246,
+      "name": "N. P\u00e9p\u00e9",
+      "age": 30,
+      "position": "Attacker",
+      "number": 19,
+      "photo": "https://media.api-sports.io/football/players/3246.png",
+      "club": "Villarreal"
+    },
+    {
+      "id": 162707,
+      "name": "E. Wahi",
+      "age": 22,
+      "position": "Attacker",
+      "number": 12,
+      "photo": "https://media.api-sports.io/football/players/162707.png",
+      "club": "Nice"
+    }
+  ]
+}

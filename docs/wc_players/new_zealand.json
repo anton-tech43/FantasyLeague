@@ -1,0 +1,251 @@
+{
+  "country": "new_zealand",
+  "displayName": "New Zealand",
+  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+  "manager": "Darren Bazeley",
+  "captain": "C. Wood",
+  "keyPlayers": [
+    "C. Wood",
+    "M. Stamenic",
+    "L. Cacace",
+    "Tyler Bindon",
+    "A. Paulsen",
+    "B. Old"
+  ],
+  "players": [
+    {
+      "id": 18110,
+      "name": "M. Crocombe",
+      "age": 32,
+      "position": "Goalkeeper",
+      "number": 1,
+      "photo": "https://media.api-sports.io/football/players/18110.png",
+      "club": "Millwall"
+    },
+    {
+      "id": 94360,
+      "name": "A. Paulsen",
+      "age": 23,
+      "position": "Goalkeeper",
+      "number": 12,
+      "photo": "https://media.api-sports.io/football/players/94360.png",
+      "club": "Lechia Gdansk"
+    },
+    {
+      "id": 36777,
+      "name": "M. Woud",
+      "age": 26,
+      "position": "Goalkeeper",
+      "number": 22,
+      "photo": "https://media.api-sports.io/football/players/36777.png",
+      "club": "Auckland"
+    },
+    {
+      "id": 430835,
+      "name": "Tyler Bindon",
+      "age": 20,
+      "position": "Defender",
+      "number": 4,
+      "photo": "https://media.api-sports.io/football/players/430835.png",
+      "club": "Sheffield Utd"
+    },
+    {
+      "id": 51149,
+      "name": "M. Boxall",
+      "age": 37,
+      "position": "Defender",
+      "number": 5,
+      "photo": "https://media.api-sports.io/football/players/51149.png",
+      "club": "Minnesota United FC"
+    },
+    {
+      "id": 6931,
+      "name": "L. Cacace",
+      "age": 25,
+      "position": "Defender",
+      "number": 13,
+      "photo": "https://media.api-sports.io/football/players/6931.png",
+      "club": "Wrexham"
+    },
+    {
+      "id": 94405,
+      "name": "F. de Vries",
+      "age": 31,
+      "position": "Defender",
+      "number": 3,
+      "photo": "https://media.api-sports.io/football/players/94405.png",
+      "club": "Auckland"
+    },
+    {
+      "id": 6932,
+      "name": "C. Elliot",
+      "age": 26,
+      "position": "Defender",
+      "number": 24,
+      "photo": "https://media.api-sports.io/football/players/6932.png",
+      "club": "Auckland"
+    },
+    {
+      "id": 94346,
+      "name": "T. Payne",
+      "age": 31,
+      "position": "Defender",
+      "number": 2,
+      "photo": "https://media.api-sports.io/football/players/94346.png",
+      "club": "Wellington Phoenix"
+    },
+    {
+      "id": 94344,
+      "name": "N. Pijnaker",
+      "age": 26,
+      "position": "Defender",
+      "number": 15,
+      "photo": "https://media.api-sports.io/football/players/94344.png",
+      "club": "Auckland"
+    },
+    {
+      "id": 51307,
+      "name": "T. Smith",
+      "age": 35,
+      "position": "Defender",
+      "number": 26,
+      "photo": "https://media.api-sports.io/football/players/51307.png",
+      "club": "Braintree"
+    },
+    {
+      "id": 210165,
+      "name": "F. Surman",
+      "age": 22,
+      "position": "Defender",
+      "number": 16,
+      "photo": "https://media.api-sports.io/football/players/210165.png",
+      "club": "Portland Timbers"
+    },
+    {
+      "id": 405957,
+      "name": "L. Bayliss",
+      "age": 23,
+      "position": "Midfielder",
+      "number": 25,
+      "photo": "https://media.api-sports.io/football/players/405957.png",
+      "club": "Newcastle Jets"
+    },
+    {
+      "id": 94541,
+      "name": "J. Bell",
+      "age": 26,
+      "position": "Midfielder",
+      "number": 6,
+      "photo": "https://media.api-sports.io/football/players/94541.png",
+      "club": "Viking"
+    },
+    {
+      "id": 180455,
+      "name": "M. Garbett",
+      "age": 23,
+      "position": "Midfielder",
+      "number": 7,
+      "photo": "https://media.api-sports.io/football/players/180455.png",
+      "club": "Peterborough"
+    },
+    {
+      "id": 94322,
+      "name": "C. McCowatt",
+      "age": 26,
+      "position": "Midfielder",
+      "number": 20,
+      "photo": "https://media.api-sports.io/football/players/94322.png",
+      "club": "Silkeborg"
+    },
+    {
+      "id": 6934,
+      "name": "A. Rufer",
+      "age": 29,
+      "position": "Midfielder",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/6934.png",
+      "club": "Wellington Phoenix"
+    },
+    {
+      "id": 6935,
+      "name": "S. Singh",
+      "age": 26,
+      "position": "Midfielder",
+      "number": 10,
+      "photo": "https://media.api-sports.io/football/players/6935.png",
+      "club": "TSC Backa Topola"
+    },
+    {
+      "id": 179862,
+      "name": "M. Stamenic",
+      "age": 23,
+      "position": "Midfielder",
+      "number": 8,
+      "photo": "https://media.api-sports.io/football/players/179862.png",
+      "club": "Swansea"
+    },
+    {
+      "id": 242,
+      "name": "R. Thomas",
+      "age": 31,
+      "position": "Midfielder",
+      "number": 23,
+      "photo": "https://media.api-sports.io/football/players/242.png",
+      "club": "PEC Zwolle"
+    },
+    {
+      "id": 94333,
+      "name": "E. Just",
+      "age": 25,
+      "position": "Midfielder",
+      "number": 11,
+      "photo": "https://media.api-sports.io/football/players/94333.png",
+      "club": "Motherwell"
+    },
+    {
+      "id": 179856,
+      "name": "B. Old",
+      "age": 23,
+      "position": "Midfielder",
+      "number": 19,
+      "photo": "https://media.api-sports.io/football/players/179856.png",
+      "club": "Saint Etienne"
+    },
+    {
+      "id": 6865,
+      "name": "K. Barbarouses",
+      "age": 35,
+      "position": "Attacker",
+      "number": 17,
+      "photo": "https://media.api-sports.io/football/players/6865.png",
+      "club": "Western Sydney Wanderers"
+    },
+    {
+      "id": 158688,
+      "name": "J. Randall",
+      "age": 23,
+      "position": "Attacker",
+      "number": 21,
+      "photo": "https://media.api-sports.io/football/players/158688.png",
+      "club": "Auckland"
+    },
+    {
+      "id": 6938,
+      "name": "B. Waine",
+      "age": 24,
+      "position": "Attacker",
+      "number": 18,
+      "photo": "https://media.api-sports.io/football/players/6938.png",
+      "club": "Port Vale"
+    },
+    {
+      "id": 18931,
+      "name": "C. Wood",
+      "age": 34,
+      "position": "Attacker",
+      "number": 9,
+      "photo": "https://media.api-sports.io/football/players/18931.png",
+      "club": "Nottingham Forest"
+    }
+  ]
+}

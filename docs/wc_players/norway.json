@@ -1,0 +1,251 @@
+{
+  "country": "norway",
+  "displayName": "Norway",
+  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+  "manager": "Ståle Solbakken",
+  "captain": "Martin Ødegaard",
+  "keyPlayers": [
+    "Erling Haaland",
+    "Martin Ødegaard",
+    "Alexander Sørloth",
+    "Antonio Nusa",
+    "Sander Berge",
+    "Andreas Schjelderup"
+  ],
+  "players": [
+    {
+      "id": 19172,
+      "name": "\u00d8. Nyland",
+      "age": 35,
+      "position": "Goalkeeper",
+      "number": 1,
+      "photo": "https://media.api-sports.io/football/players/19172.png",
+      "club": "Sevilla"
+    },
+    {
+      "id": 39082,
+      "name": "E. Selvik",
+      "age": 28,
+      "position": "Goalkeeper",
+      "number": 13,
+      "photo": "https://media.api-sports.io/football/players/39082.png",
+      "club": "Watford"
+    },
+    {
+      "id": 264378,
+      "name": "S. Tangvik",
+      "age": 23,
+      "position": "Goalkeeper",
+      "number": 12,
+      "photo": "https://media.api-sports.io/football/players/264378.png",
+      "club": "Rosenborg"
+    },
+    {
+      "id": 1119,
+      "name": "K. Ajer",
+      "age": 27,
+      "position": "Defender",
+      "number": 3,
+      "photo": "https://media.api-sports.io/football/players/1119.png",
+      "club": "Brentford"
+    },
+    {
+      "id": 39058,
+      "name": "F. Bj\u00f8rkan",
+      "age": 27,
+      "position": "Defender",
+      "number": 15,
+      "photo": "https://media.api-sports.io/football/players/39058.png",
+      "club": "Bodo/Glimt"
+    },
+    {
+      "id": 180937,
+      "name": "H. Falchener",
+      "age": 22,
+      "position": "Defender",
+      "number": 25,
+      "photo": "https://media.api-sports.io/football/players/180937.png",
+      "club": "Viking"
+    },
+    {
+      "id": 265444,
+      "name": "S. Lang\u00e5s",
+      "age": 24,
+      "position": "Defender",
+      "number": 24,
+      "photo": "https://media.api-sports.io/football/players/265444.png",
+      "club": "Derby"
+    },
+    {
+      "id": 39254,
+      "name": "T. Heggem",
+      "age": 26,
+      "position": "Defender",
+      "number": 17,
+      "photo": "https://media.api-sports.io/football/players/39254.png",
+      "club": "Bologna"
+    },
+    {
+      "id": 18967,
+      "name": "L. \u00d8stig\u00e5rd",
+      "age": 26,
+      "position": "Defender",
+      "number": 4,
+      "photo": "https://media.api-sports.io/football/players/18967.png",
+      "club": "Genoa"
+    },
+    {
+      "id": 39362,
+      "name": "M. Pedersen",
+      "age": 25,
+      "position": "Defender",
+      "number": 16,
+      "photo": "https://media.api-sports.io/football/players/39362.png",
+      "club": "Torino"
+    },
+    {
+      "id": 265782,
+      "name": "D. M\u00f8ller Wolfe",
+      "age": 23,
+      "position": "Defender",
+      "number": 5,
+      "photo": "https://media.api-sports.io/football/players/265782.png",
+      "club": "Wolves"
+    },
+    {
+      "id": 277930,
+      "name": "T. Aasgaard",
+      "age": 23,
+      "position": "Midfielder",
+      "number": 19,
+      "photo": "https://media.api-sports.io/football/players/277930.png",
+      "club": "Rangers"
+    },
+    {
+      "id": 39043,
+      "name": "F. Aursnes",
+      "age": 30,
+      "position": "Midfielder",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/39043.png",
+      "club": "Benfica"
+    },
+    {
+      "id": 39064,
+      "name": "P. Berg",
+      "age": 28,
+      "position": "Midfielder",
+      "number": 6,
+      "photo": "https://media.api-sports.io/football/players/39064.png",
+      "club": "Bodo/Glimt"
+    },
+    {
+      "id": 1934,
+      "name": "S. Berge",
+      "age": 27,
+      "position": "Midfielder",
+      "number": 8,
+      "photo": "https://media.api-sports.io/football/players/1934.png",
+      "club": "Fulham"
+    },
+    {
+      "id": 278133,
+      "name": "Oscar Bobb",
+      "age": 22,
+      "position": "Midfielder",
+      "number": 22,
+      "photo": "https://media.api-sports.io/football/players/278133.png",
+      "club": "Fulham"
+    },
+    {
+      "id": 37127,
+      "name": "M. \u00d8degaard",
+      "age": 27,
+      "position": "Midfielder",
+      "number": 10,
+      "photo": "https://media.api-sports.io/football/players/37127.png",
+      "club": "Arsenal"
+    },
+    {
+      "id": 36980,
+      "name": "M. Thorsby",
+      "age": 29,
+      "position": "Midfielder",
+      "number": 2,
+      "photo": "https://media.api-sports.io/football/players/36980.png",
+      "club": "Genoa"
+    },
+    {
+      "id": 39143,
+      "name": "K. Thorstvedt",
+      "age": 26,
+      "position": "Midfielder",
+      "number": 18,
+      "photo": "https://media.api-sports.io/football/players/39143.png",
+      "club": "Sassuolo"
+    },
+    {
+      "id": 301528,
+      "name": "A. Schjelderup",
+      "age": 21,
+      "position": "Midfielder",
+      "number": 21,
+      "photo": "https://media.api-sports.io/football/players/301528.png",
+      "club": "Benfica"
+    },
+    {
+      "id": 39073,
+      "name": "J. Hauge",
+      "age": 26,
+      "position": "Midfielder",
+      "number": 23,
+      "photo": "https://media.api-sports.io/football/players/39073.png",
+      "club": "Bodo/Glimt"
+    },
+    {
+      "id": 1100,
+      "name": "E. Haaland",
+      "age": 25,
+      "position": "Attacker",
+      "number": 9,
+      "photo": "https://media.api-sports.io/football/players/1100.png",
+      "club": "Manchester City"
+    },
+    {
+      "id": 2032,
+      "name": "J. Strand Larsen",
+      "age": 25,
+      "position": "Attacker",
+      "number": 11,
+      "photo": "https://media.api-sports.io/football/players/2032.png",
+      "club": "Wolves"
+    },
+    {
+      "id": 314511,
+      "name": "A. Nusa",
+      "age": 20,
+      "position": "Attacker",
+      "number": 20,
+      "photo": "https://media.api-sports.io/football/players/314511.png",
+      "club": "RB Leipzig"
+    },
+    {
+      "id": 8492,
+      "name": "A. S\u00f8rloth",
+      "age": 30,
+      "position": "Attacker",
+      "number": 7,
+      "photo": "https://media.api-sports.io/football/players/8492.png",
+      "club": "Atletico Madrid"
+    },
+    {
+      "id": 24845,
+      "name": "J. Ryerson",
+      "age": 28,
+      "position": "Attacker",
+      "number": 26,
+      "photo": "https://media.api-sports.io/football/players/24845.png",
+      "club": "Borussia Dortmund"
+    }
+  ]
+}

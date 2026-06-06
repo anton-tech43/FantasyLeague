@@ -1,0 +1,249 @@
+{
+  "country": "iraq",
+  "displayName": "Iraq",
+  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+  "players": [
+    {
+      "id": 197933,
+      "name": "Ahmed Basil",
+      "age": 29,
+      "position": "Goalkeeper",
+      "number": 22,
+      "photo": "https://media.api-sports.io/football/players/197933.png",
+      "club": "Al Shorta"
+    },
+    {
+      "id": 53886,
+      "name": "Jalal Hassan Hachim",
+      "age": 34,
+      "position": "Goalkeeper",
+      "number": 12,
+      "photo": "https://media.api-sports.io/football/players/53886.png",
+      "club": "Al Zawra'a"
+    },
+    {
+      "id": 123802,
+      "name": "Fahad Talib",
+      "age": 31,
+      "position": "Goalkeeper",
+      "number": 1,
+      "photo": "https://media.api-sports.io/football/players/123802.png",
+      "club": "Al Talaba"
+    },
+    {
+      "id": 145465,
+      "name": "Hussein Ali",
+      "age": 23,
+      "position": "Defender",
+      "number": 3,
+      "photo": "https://media.api-sports.io/football/players/145465.png",
+      "club": "Pogon Szczecin"
+    },
+    {
+      "id": 271444,
+      "name": "Merchas Doski",
+      "age": 26,
+      "position": "Defender",
+      "number": 23,
+      "photo": "https://media.api-sports.io/football/players/271444.png",
+      "club": "Plzen"
+    },
+    {
+      "id": 15769,
+      "name": "Frans Putros",
+      "age": 32,
+      "position": "Defender",
+      "number": 26,
+      "photo": "https://media.api-sports.io/football/players/15769.png",
+      "club": "Persib Bandung"
+    },
+    {
+      "id": 427187,
+      "name": "Mustafa Saadoun",
+      "age": 24,
+      "position": "Defender",
+      "number": 25,
+      "photo": "https://media.api-sports.io/football/players/427187.png",
+      "club": "Al Shorta"
+    },
+    {
+      "id": 42261,
+      "name": "Rebin Solaka",
+      "age": 33,
+      "position": "Defender",
+      "number": 2,
+      "photo": "https://media.api-sports.io/football/players/42261.png",
+      "club": "Port FC"
+    },
+    {
+      "id": 296373,
+      "name": "Zayed Tahseen",
+      "age": 24,
+      "position": "Defender",
+      "number": 4,
+      "photo": "https://media.api-sports.io/football/players/296373.png",
+      "club": "Pakhtakor"
+    },
+    {
+      "id": 542849,
+      "name": "A. Yahya",
+      "age": 30,
+      "position": "Defender",
+      "number": 15,
+      "photo": "https://media.api-sports.io/football/players/542849.png",
+      "club": "Al Shorta"
+    },
+    {
+      "id": 295394,
+      "name": "Munaf Younus",
+      "age": 29,
+      "position": "Defender",
+      "number": 6,
+      "photo": "https://media.api-sports.io/football/players/295394.png",
+      "club": "Al Shorta"
+    },
+    {
+      "id": 453073,
+      "name": "Akam Rahman",
+      "age": 27,
+      "position": "Defender",
+      "number": 5,
+      "photo": "https://media.api-sports.io/football/players/453073.png",
+      "club": "Al Zawra'a"
+    },
+    {
+      "id": 47792,
+      "name": "Amir Al Ammari",
+      "age": 28,
+      "position": "Midfielder",
+      "number": 16,
+      "photo": "https://media.api-sports.io/football/players/47792.png",
+      "club": "Cracovia Krakow"
+    },
+    {
+      "id": 282065,
+      "name": "Youssef Amyn",
+      "age": 22,
+      "position": "Midfielder",
+      "number": 7,
+      "photo": "https://media.api-sports.io/football/players/282065.png",
+      "club": "AEK Larnaca"
+    },
+    {
+      "id": 140747,
+      "name": "Ibraheem Bayesh",
+      "age": 25,
+      "position": "Midfielder",
+      "number": 8,
+      "photo": "https://media.api-sports.io/football/players/140747.png",
+      "club": "Al Riyadh"
+    },
+    {
+      "id": 284295,
+      "name": "Zidane Iqbal",
+      "age": 22,
+      "position": "Midfielder",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/284295.png",
+      "club": "Jong Utrecht"
+    },
+    {
+      "id": 626479,
+      "name": "Z. Ismaeel",
+      "age": 23,
+      "position": "Midfielder",
+      "number": 24,
+      "photo": "https://media.api-sports.io/football/players/626479.png",
+      "club": "Al Talaba"
+    },
+    {
+      "id": 48129,
+      "name": "A. Sher",
+      "age": 23,
+      "position": "Midfielder",
+      "number": 20,
+      "photo": "https://media.api-sports.io/football/players/48129.png",
+      "club": "Sarpsborg 08 FF"
+    },
+    {
+      "id": 48025,
+      "name": "Kevin Yakob",
+      "age": 25,
+      "position": "Midfielder",
+      "number": 19,
+      "photo": "https://media.api-sports.io/football/players/48025.png",
+      "club": "Aarhus"
+    },
+    {
+      "id": 542644,
+      "name": "A. Jasim",
+      "age": 21,
+      "position": "Attacker",
+      "number": 17,
+      "photo": "https://media.api-sports.io/football/players/542644.png",
+      "club": "Al Najma"
+    },
+    {
+      "id": 299813,
+      "name": "Ali Al Hamadi",
+      "age": 23,
+      "position": "Attacker",
+      "number": 9,
+      "photo": "https://media.api-sports.io/football/players/299813.png",
+      "club": "Luton"
+    },
+    {
+      "id": 265448,
+      "name": "M. Farji",
+      "age": 21,
+      "position": "Attacker",
+      "number": 21,
+      "photo": "https://media.api-sports.io/football/players/265448.png",
+      "club": "Stromsgodset"
+    },
+    {
+      "id": 49451,
+      "name": "Aymen Hussein",
+      "age": 29,
+      "position": "Attacker",
+      "number": 18,
+      "photo": "https://media.api-sports.io/football/players/49451.png",
+      "club": "Al Karma"
+    },
+    {
+      "id": 542697,
+      "name": "Meme",
+      "age": 25,
+      "position": "Attacker",
+      "number": 10,
+      "photo": "https://media.api-sports.io/football/players/542697.png",
+      "club": "Dibba Al Fujairah"
+    },
+    {
+      "id": 229112,
+      "name": "A. Qasem",
+      "age": 22,
+      "position": "Attacker",
+      "number": 11,
+      "photo": "https://media.api-sports.io/football/players/229112.png",
+      "club": "Nashville SC"
+    },
+    {
+      "id": 542842,
+      "name": "A. Y. Hashim",
+      "age": 29,
+      "position": "Attacker",
+      "number": 13,
+      "photo": "https://media.api-sports.io/football/players/542842.png",
+      "club": "Al Talaba"
+    }
+  ],
+  "manager": "Graham Arnold",
+  "captain": "Jalal Hassan Hachim",
+  "keyPlayers": [
+    "Aymen Hussein",
+    "Zidane Iqbal",
+    "Ali Al Hamadi",
+    "Amir Al Ammari"
+  ]
+}

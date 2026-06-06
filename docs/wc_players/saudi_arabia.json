@@ -1,0 +1,250 @@
+{
+  "country": "saudi_arabia",
+  "displayName": "Saudi Arabia",
+  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+  "manager": "Georgios Donis",
+  "captain": "Salem Al Dawsari",
+  "keyPlayers": [
+    "Salem Al Dawsari",
+    "Saud Abdulhamid",
+    "Feras Al Brikan",
+    "Musab Al Juwayr",
+    "Mohammed Al Owais"
+  ],
+  "players": [
+    {
+      "id": 193288,
+      "name": "Nawaf Al Aqidi",
+      "age": 25,
+      "position": "Goalkeeper",
+      "number": 1,
+      "photo": "https://media.api-sports.io/football/players/193288.png",
+      "club": "Al-Nassr"
+    },
+    {
+      "id": 44449,
+      "name": "Ahmed Al Kassar",
+      "age": 34,
+      "position": "Goalkeeper",
+      "number": 22,
+      "photo": "https://media.api-sports.io/football/players/44449.png",
+      "club": "Al-Qadisiyah FC"
+    },
+    {
+      "id": 44411,
+      "name": "Mohammed Al Owais",
+      "age": 34,
+      "position": "Goalkeeper",
+      "number": 21,
+      "photo": "https://media.api-sports.io/football/players/44411.png",
+      "club": "Al-Ula"
+    },
+    {
+      "id": 44594,
+      "name": "Saud Abdulhamid",
+      "age": 26,
+      "position": "Defender",
+      "number": 12,
+      "photo": "https://media.api-sports.io/football/players/44594.png",
+      "club": "Lens"
+    },
+    {
+      "id": 403087,
+      "name": "Mohammed Abu Al Shamat",
+      "age": 23,
+      "position": "Defender",
+      "number": 26,
+      "photo": "https://media.api-sports.io/football/players/403087.png",
+      "club": "Al-Qadisiyah FC"
+    },
+    {
+      "id": 134995,
+      "name": "Nawaf Boushal",
+      "age": 26,
+      "position": "Defender",
+      "number": 13,
+      "photo": "https://media.api-sports.io/football/players/134995.png",
+      "club": "Al-Nassr"
+    },
+    {
+      "id": 44475,
+      "name": "Abdulelah Al Amri",
+      "age": 28,
+      "position": "Defender",
+      "number": 4,
+      "photo": "https://media.api-sports.io/football/players/44475.png",
+      "club": "Al-Nassr"
+    },
+    {
+      "id": 202381,
+      "name": "Moteb Al Harbi",
+      "age": 25,
+      "position": "Defender",
+      "number": 24,
+      "photo": "https://media.api-sports.io/football/players/202381.png",
+      "club": "Al-Hilal Saudi FC"
+    },
+    {
+      "id": 44335,
+      "name": "Hassan Kadesh",
+      "age": 33,
+      "position": "Defender",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/44335.png",
+      "club": "Al-Ittihad FC"
+    },
+    {
+      "id": 44507,
+      "name": "Ali Lajami",
+      "age": 29,
+      "position": "Defender",
+      "number": 3,
+      "photo": "https://media.api-sports.io/football/players/44507.png",
+      "club": "Al-Hilal Saudi FC"
+    },
+    {
+      "id": 44367,
+      "name": "Ali Majrashi",
+      "age": 26,
+      "position": "Defender",
+      "number": 2,
+      "photo": "https://media.api-sports.io/football/players/44367.png",
+      "club": "Al-Ahli Jeddah"
+    },
+    {
+      "id": 44362,
+      "name": "Hassan Tambakti",
+      "age": 26,
+      "position": "Defender",
+      "number": 5,
+      "photo": "https://media.api-sports.io/football/players/44362.png",
+      "club": "Al-Hilal Saudi FC"
+    },
+    {
+      "id": 543059,
+      "name": "J. Thakri",
+      "age": 24,
+      "position": "Defender",
+      "number": 25,
+      "photo": "https://media.api-sports.io/football/players/543059.png",
+      "club": "Al-Qadisiyah FC"
+    },
+    {
+      "id": 44339,
+      "name": "Nasser Al Dawsari",
+      "age": 27,
+      "position": "Midfielder",
+      "number": 6,
+      "photo": "https://media.api-sports.io/football/players/44339.png",
+      "club": "Al-Hilal Saudi FC"
+    },
+    {
+      "id": 44349,
+      "name": "Mohamed Kanno",
+      "age": 31,
+      "position": "Midfielder",
+      "number": 23,
+      "photo": "https://media.api-sports.io/football/players/44349.png",
+      "club": "Al-Hilal Saudi FC"
+    },
+    {
+      "id": 269172,
+      "name": "Ziyad Al Johani",
+      "age": 24,
+      "position": "Midfielder",
+      "number": 16,
+      "photo": "https://media.api-sports.io/football/players/269172.png",
+      "club": "Al-Ahli Jeddah"
+    },
+    {
+      "id": 306380,
+      "name": "Musab Al Juwayr",
+      "age": 22,
+      "position": "Midfielder",
+      "number": 7,
+      "photo": "https://media.api-sports.io/football/players/306380.png",
+      "club": "Al-Qadisiyah FC"
+    },
+    {
+      "id": 44315,
+      "name": "Abdullah Al Khaibari",
+      "age": 29,
+      "position": "Midfielder",
+      "number": 15,
+      "photo": "https://media.api-sports.io/football/players/44315.png",
+      "club": "Al-Nassr"
+    },
+    {
+      "id": 593759,
+      "name": "Ala Al Haji",
+      "age": 29,
+      "position": "Midfielder",
+      "number": 18,
+      "photo": "https://media.api-sports.io/football/players/593759.png",
+      "club": "Neom SC"
+    },
+    {
+      "id": 44701,
+      "name": "Khalid Al Ghannam",
+      "age": 25,
+      "position": "Attacker",
+      "number": 17,
+      "photo": "https://media.api-sports.io/football/players/44701.png",
+      "club": "Al-Ettifaq"
+    },
+    {
+      "id": 2639,
+      "name": "Sultan Mandash",
+      "age": 31,
+      "position": "Attacker",
+      "number": 20,
+      "photo": "https://media.api-sports.io/football/players/2639.png",
+      "club": "Al-Hilal Saudi FC"
+    },
+    {
+      "id": 147812,
+      "name": "Ayman Yahya",
+      "age": 24,
+      "position": "Attacker",
+      "number": 8,
+      "photo": "https://media.api-sports.io/football/players/147812.png",
+      "club": "Al-Nassr"
+    },
+    {
+      "id": 44324,
+      "name": "Feras Al Brikan",
+      "age": 25,
+      "position": "Attacker",
+      "number": 9,
+      "photo": "https://media.api-sports.io/football/players/44324.png",
+      "club": "Al-Ahli Jeddah"
+    },
+    {
+      "id": 44382,
+      "name": "Abdullah Al Hamdan",
+      "age": 26,
+      "position": "Attacker",
+      "number": 19,
+      "photo": "https://media.api-sports.io/football/players/44382.png",
+      "club": "Al-Hilal Saudi FC"
+    },
+    {
+      "id": 44551,
+      "name": "Saleh Al Shehri",
+      "age": 32,
+      "position": "Attacker",
+      "number": 11,
+      "photo": "https://media.api-sports.io/football/players/44551.png",
+      "club": "Al-Ittihad FC"
+    },
+    {
+      "id": 44340,
+      "name": "Salem Al Dawsari",
+      "age": 34,
+      "position": "Attacker",
+      "number": 10,
+      "photo": "https://media.api-sports.io/football/players/44340.png",
+      "club": "Al-Hilal Saudi FC"
+    }
+  ]
+}

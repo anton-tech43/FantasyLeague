@@ -1,0 +1,250 @@
+{
+  "country": "uzbekistan",
+  "displayName": "Uzbekistan",
+  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+  "manager": "Fabio Cannavaro",
+  "captain": "E. Shomurodov",
+  "keyPlayers": [
+    "A. Khusanov",
+    "E. Shomurodov",
+    "J. Masharipov",
+    "A. Fayzullaev",
+    "J. Iskanderov"
+  ],
+  "players": [
+    {
+      "id": 72120,
+      "name": "B. Ergashev",
+      "age": 30,
+      "position": "Goalkeeper",
+      "number": 16,
+      "photo": "https://media.api-sports.io/football/players/72120.png",
+      "club": "Neftchi"
+    },
+    {
+      "id": 73507,
+      "name": "A. Nematov",
+      "age": 24,
+      "position": "Goalkeeper",
+      "number": 12,
+      "photo": "https://media.api-sports.io/football/players/73507.png",
+      "club": "Nasaf"
+    },
+    {
+      "id": 73534,
+      "name": "U. Yusupov",
+      "age": 34,
+      "position": "Goalkeeper",
+      "number": 1,
+      "photo": "https://media.api-sports.io/football/players/73534.png",
+      "club": "Foolad FC"
+    },
+    {
+      "id": 72122,
+      "name": "K. Alijonov",
+      "age": 28,
+      "position": "Defender",
+      "number": 3,
+      "photo": "https://media.api-sports.io/football/players/72122.png",
+      "club": "Pakhtakor"
+    },
+    {
+      "id": 34121,
+      "name": "R. Ashurmatov",
+      "age": 29,
+      "position": "Defender",
+      "number": 5,
+      "photo": "https://media.api-sports.io/football/players/34121.png",
+      "club": "Esteghlal FC"
+    },
+    {
+      "id": 73510,
+      "name": "U. Eshmurodov",
+      "age": 33,
+      "position": "Defender",
+      "number": 15,
+      "photo": "https://media.api-sports.io/football/players/73510.png",
+      "club": "Nasaf"
+    },
+    {
+      "id": 416964,
+      "name": "B. Karimov",
+      "age": 18,
+      "position": "Defender",
+      "number": 24,
+      "photo": "https://media.api-sports.io/football/players/416964.png",
+      "club": "Surkhon"
+    },
+    {
+      "id": 360114,
+      "name": "A. Khusanov",
+      "age": 21,
+      "position": "Defender",
+      "number": 2,
+      "photo": "https://media.api-sports.io/football/players/360114.png",
+      "club": "Manchester City"
+    },
+    {
+      "id": 73514,
+      "name": "S. Nasrullayev",
+      "age": 27,
+      "position": "Defender",
+      "number": 13,
+      "photo": "https://media.api-sports.io/football/players/73514.png",
+      "club": "Nasaf"
+    },
+    {
+      "id": 532759,
+      "name": "F. Sayfiev",
+      "age": 34,
+      "position": "Defender",
+      "number": 4,
+      "photo": "https://media.api-sports.io/football/players/532759.png",
+      "club": "Neftchi"
+    },
+    {
+      "id": 358427,
+      "name": "J. Urozov",
+      "age": 22,
+      "position": "Defender",
+      "number": 26,
+      "photo": "https://media.api-sports.io/football/players/358427.png",
+      "club": "Dinamo Samarqand"
+    },
+    {
+      "id": 416952,
+      "name": "A. Abdullaev",
+      "age": 28,
+      "position": "Defender",
+      "number": 18,
+      "photo": "https://media.api-sports.io/football/players/416952.png",
+      "club": "Dibba"
+    },
+    {
+      "id": 65571,
+      "name": "A. Ulmasaliev",
+      "age": 26,
+      "position": "Defender",
+      "number": 25,
+      "photo": "https://media.api-sports.io/football/players/65571.png",
+      "club": "Olmaliq"
+    },
+    {
+      "id": 53836,
+      "name": "J. Masharipov",
+      "age": 32,
+      "position": "Midfielder",
+      "number": 10,
+      "photo": "https://media.api-sports.io/football/players/53836.png",
+      "club": "Esteghlal FC"
+    },
+    {
+      "id": 73520,
+      "name": "A. Ganiyev",
+      "age": 27,
+      "position": "Midfielder",
+      "number": 19,
+      "photo": "https://media.api-sports.io/football/players/73520.png",
+      "club": "Al Bataeh"
+    },
+    {
+      "id": 65576,
+      "name": "J. Iskanderov",
+      "age": 32,
+      "position": "Midfielder",
+      "number": 8,
+      "photo": "https://media.api-sports.io/football/players/65576.png",
+      "club": "Neftchi"
+    },
+    {
+      "id": 53835,
+      "name": "O. Hamrobekov",
+      "age": 29,
+      "position": "Midfielder",
+      "number": 9,
+      "photo": "https://media.api-sports.io/football/players/53835.png",
+      "club": "Bunyodkor"
+    },
+    {
+      "id": 73522,
+      "name": "A. Mozgovoy",
+      "age": 26,
+      "position": "Midfielder",
+      "number": 6,
+      "photo": "https://media.api-sports.io/football/players/73522.png",
+      "club": "Nasaf"
+    },
+    {
+      "id": 50272,
+      "name": "O. Shukurov",
+      "age": 29,
+      "position": "Midfielder",
+      "number": 7,
+      "photo": "https://media.api-sports.io/football/players/50272.png",
+      "club": "Baniyas SC"
+    },
+    {
+      "id": 263676,
+      "name": "A. Fayzullaev",
+      "age": 22,
+      "position": "Midfielder",
+      "number": 22,
+      "photo": "https://media.api-sports.io/football/players/263676.png",
+      "club": "Ba\u015fak\u015fehir"
+    },
+    {
+      "id": 363723,
+      "name": "S. Esanov",
+      "age": 23,
+      "position": "Midfielder",
+      "number": 23,
+      "photo": "https://media.api-sports.io/football/players/363723.png",
+      "club": "Buxoro"
+    },
+    {
+      "id": 72127,
+      "name": "O. Orunov",
+      "age": 25,
+      "position": "Midfielder",
+      "number": 11,
+      "photo": "https://media.api-sports.io/football/players/72127.png",
+      "club": "Persepolis FC"
+    },
+    {
+      "id": 53834,
+      "name": "D. Khamdamov",
+      "age": 29,
+      "position": "Midfielder",
+      "number": 17,
+      "photo": "https://media.api-sports.io/football/players/53834.png",
+      "club": "Pakhtakor"
+    },
+    {
+      "id": 65584,
+      "name": "A. Amonov",
+      "age": 28,
+      "position": "Attacker",
+      "number": 20,
+      "photo": "https://media.api-sports.io/football/players/65584.png",
+      "club": "Bunyodkor"
+    },
+    {
+      "id": 72128,
+      "name": "I. Sergeev",
+      "age": 32,
+      "position": "Attacker",
+      "number": 21,
+      "photo": "https://media.api-sports.io/football/players/72128.png",
+      "club": "Pakhtakor"
+    },
+    {
+      "id": 53535,
+      "name": "E. Shomurodov",
+      "age": 30,
+      "position": "Attacker",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/53535.png",
+      "club": "Ba\u015fak\u015fehir"
+    }
+  ]
+}

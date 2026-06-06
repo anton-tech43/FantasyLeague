@@ -1,0 +1,250 @@
+{
+  "country": "ghana",
+  "displayName": "Ghana",
+  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+  "manager": "Carlos Queiroz",
+  "captain": "Jordan Ayew",
+  "keyPlayers": [
+    "Antoine Semenyo",
+    "Thomas Partey",
+    "Iñaki Williams",
+    "Jordan Ayew",
+    "Kamaldeen Sulemana"
+  ],
+  "players": [
+    {
+      "id": 480108,
+      "name": "B. Asare",
+      "age": 33,
+      "position": "Goalkeeper",
+      "number": 16,
+      "photo": "https://media.api-sports.io/football/players/480108.png",
+      "club": "Hearts of Oak"
+    },
+    {
+      "id": 144709,
+      "name": "J. Anang",
+      "age": 25,
+      "position": "Goalkeeper",
+      "number": 12,
+      "photo": "https://media.api-sports.io/football/players/144709.png",
+      "club": "St Patrick's Athl."
+    },
+    {
+      "id": 3412,
+      "name": "L. Zigi",
+      "age": 29,
+      "position": "Goalkeeper",
+      "number": 1,
+      "photo": "https://media.api-sports.io/football/players/3412.png",
+      "club": "FC ST. Gallen"
+    },
+    {
+      "id": 369425,
+      "name": "J. Adjetey",
+      "age": 22,
+      "position": "Defender",
+      "number": 4,
+      "photo": "https://media.api-sports.io/football/players/369425.png",
+      "club": "FC Basel 1893"
+    },
+    {
+      "id": 25341,
+      "name": "D. Luckassen",
+      "age": 30,
+      "position": "Defender",
+      "number": 23,
+      "photo": "https://media.api-sports.io/football/players/25341.png",
+      "club": "Pafos"
+    },
+    {
+      "id": 7578,
+      "name": "G. Mensah",
+      "age": 27,
+      "position": "Defender",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/7578.png",
+      "club": "Auxerre"
+    },
+    {
+      "id": 196187,
+      "name": "A. Seidu",
+      "age": 26,
+      "position": "Defender",
+      "number": 2,
+      "photo": "https://media.api-sports.io/football/players/196187.png",
+      "club": "Rennes"
+    },
+    {
+      "id": 137223,
+      "name": "J. Opoku",
+      "age": 27,
+      "position": "Defender",
+      "number": 18,
+      "photo": "https://media.api-sports.io/football/players/137223.png",
+      "club": "Ba\u015fak\u015fehir"
+    },
+    {
+      "id": 404172,
+      "name": "K. Peprah Oppong",
+      "age": 21,
+      "position": "Defender",
+      "number": 21,
+      "photo": "https://media.api-sports.io/football/players/404172.png",
+      "club": "Nice"
+    },
+    {
+      "id": 15900,
+      "name": "A. Mumin",
+      "age": 28,
+      "position": "Defender",
+      "number": 6,
+      "photo": "https://media.api-sports.io/football/players/15900.png",
+      "club": "Rayo Vallecano"
+    },
+    {
+      "id": 191240,
+      "name": "M. Senaya",
+      "age": 24,
+      "position": "Defender",
+      "number": 26,
+      "photo": "https://media.api-sports.io/football/players/191240.png",
+      "club": "Auxerre"
+    },
+    {
+      "id": 21996,
+      "name": "A. Baba",
+      "age": 31,
+      "position": "Defender",
+      "number": 17,
+      "photo": "https://media.api-sports.io/football/players/21996.png",
+      "club": "PAOK"
+    },
+    {
+      "id": 21010,
+      "name": "E. Owusu",
+      "age": 28,
+      "position": "Midfielder",
+      "number": 15,
+      "photo": "https://media.api-sports.io/football/players/21010.png",
+      "club": "Auxerre"
+    },
+    {
+      "id": 49,
+      "name": "T. Partey",
+      "age": 32,
+      "position": "Midfielder",
+      "number": 5,
+      "photo": "https://media.api-sports.io/football/players/49.png",
+      "club": "Villarreal"
+    },
+    {
+      "id": 3608,
+      "name": "K. Sibo",
+      "age": 27,
+      "position": "Midfielder",
+      "number": 8,
+      "photo": "https://media.api-sports.io/football/players/3608.png",
+      "club": "Oviedo"
+    },
+    {
+      "id": 475575,
+      "name": "Caleb Marfo Yirenkyi",
+      "age": 19,
+      "position": "Midfielder",
+      "number": 3,
+      "photo": "https://media.api-sports.io/football/players/475575.png",
+      "club": "FC Nordsjaelland"
+    },
+    {
+      "id": 19281,
+      "name": "A. Semenyo",
+      "age": 25,
+      "position": "Midfielder",
+      "number": 11,
+      "photo": "https://media.api-sports.io/football/players/19281.png",
+      "club": "Manchester City"
+    },
+    {
+      "id": 337426,
+      "name": "A. Boakye",
+      "age": 25,
+      "position": "Midfielder",
+      "number": 20,
+      "photo": "https://media.api-sports.io/football/players/337426.png",
+      "club": "Saint Etienne"
+    },
+    {
+      "id": 303467,
+      "name": "A. Fatawu",
+      "age": 21,
+      "position": "Attacker",
+      "number": 7,
+      "photo": "https://media.api-sports.io/football/players/303467.png",
+      "club": "Leicester"
+    },
+    {
+      "id": 410016,
+      "name": "P. Adu",
+      "age": 22,
+      "position": "Attacker",
+      "number": 25,
+      "photo": "https://media.api-sports.io/football/players/410016.png",
+      "club": "Plzen"
+    },
+    {
+      "id": 82090,
+      "name": "B. Thomas-Asante",
+      "age": 27,
+      "position": "Attacker",
+      "number": 10,
+      "photo": "https://media.api-sports.io/football/players/82090.png",
+      "club": "Coventry"
+    },
+    {
+      "id": 3428,
+      "name": "J. Ayew",
+      "age": 34,
+      "position": "Attacker",
+      "number": 9,
+      "photo": "https://media.api-sports.io/football/players/3428.png",
+      "club": "Leicester"
+    },
+    {
+      "id": 411800,
+      "name": "C. Bonsu Baah",
+      "age": 21,
+      "position": "Attacker",
+      "number": 13,
+      "photo": "https://media.api-sports.io/football/players/411800.png",
+      "club": "Al-Qadisiyah FC"
+    },
+    {
+      "id": 47294,
+      "name": "I. Williams",
+      "age": 31,
+      "position": "Attacker",
+      "number": 19,
+      "photo": "https://media.api-sports.io/football/players/47294.png",
+      "club": "Athletic Club"
+    },
+    {
+      "id": 350856,
+      "name": "E. Nuamah",
+      "age": 22,
+      "position": "Attacker",
+      "number": 24,
+      "photo": "https://media.api-sports.io/football/players/350856.png",
+      "club": "Lyon"
+    },
+    {
+      "id": 199837,
+      "name": "K. Sulemana",
+      "age": 23,
+      "position": "Attacker",
+      "number": 22,
+      "photo": "https://media.api-sports.io/football/players/199837.png",
+      "club": "Atalanta"
+    }
+  ]
+}

@@ -1,0 +1,251 @@
+{
+  "country": "belgium",
+  "displayName": "Belgium",
+  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+  "manager": "Rudi Garcia",
+  "captain": "Youri Tielemans",
+  "keyPlayers": [
+    "T. Courtois",
+    "K. De Bruyne",
+    "R. Lukaku",
+    "Y. Tielemans",
+    "A. Onana",
+    "J. Doku"
+  ],
+  "players": [
+    {
+      "id": 730,
+      "name": "T. Courtois",
+      "age": 33,
+      "position": "Goalkeeper",
+      "number": 1,
+      "photo": "https://media.api-sports.io/football/players/730.png",
+      "club": "Real Madrid"
+    },
+    {
+      "id": 162511,
+      "name": "S. Lammens",
+      "age": 23,
+      "position": "Goalkeeper",
+      "number": 12,
+      "photo": "https://media.api-sports.io/football/players/162511.png",
+      "club": "Manchester United"
+    },
+    {
+      "id": 340151,
+      "name": "M. Penders",
+      "age": 20,
+      "position": "Goalkeeper",
+      "number": 13,
+      "photo": "https://media.api-sports.io/football/players/340151.png",
+      "club": "Strasbourg"
+    },
+    {
+      "id": 2920,
+      "name": "T. Castagne",
+      "age": 30,
+      "position": "Defender",
+      "number": 21,
+      "photo": "https://media.api-sports.io/football/players/2920.png",
+      "club": "Fulham"
+    },
+    {
+      "id": 162007,
+      "name": "M. De Cuyper",
+      "age": 25,
+      "position": "Defender",
+      "number": 5,
+      "photo": "https://media.api-sports.io/football/players/162007.png",
+      "club": "Brighton"
+    },
+    {
+      "id": 162141,
+      "name": "K. De Winter",
+      "age": 23,
+      "position": "Defender",
+      "number": 16,
+      "photo": "https://media.api-sports.io/football/players/162141.png",
+      "club": "AC Milan"
+    },
+    {
+      "id": 304228,
+      "name": "Z. Debast",
+      "age": 22,
+      "position": "Defender",
+      "number": 2,
+      "photo": "https://media.api-sports.io/football/players/304228.png",
+      "club": "Sporting CP"
+    },
+    {
+      "id": 69,
+      "name": "B. Mechele",
+      "age": 32,
+      "position": "Defender",
+      "number": 4,
+      "photo": "https://media.api-sports.io/football/players/69.png",
+      "club": "Club Brugge KV"
+    },
+    {
+      "id": 264,
+      "name": "T. Meunier",
+      "age": 34,
+      "position": "Defender",
+      "number": 15,
+      "photo": "https://media.api-sports.io/football/players/264.png",
+      "club": "Lille"
+    },
+    {
+      "id": 312964,
+      "name": "N. Ngoy",
+      "age": 22,
+      "position": "Defender",
+      "number": 25,
+      "photo": "https://media.api-sports.io/football/players/312964.png",
+      "club": "Lille"
+    },
+    {
+      "id": 375974,
+      "name": "J. Seys",
+      "age": 20,
+      "position": "Defender",
+      "number": 18,
+      "photo": "https://media.api-sports.io/football/players/375974.png",
+      "club": "Club Brugge KV"
+    },
+    {
+      "id": 204043,
+      "name": "A. Theate",
+      "age": 25,
+      "position": "Defender",
+      "number": 3,
+      "photo": "https://media.api-sports.io/football/players/204043.png",
+      "club": "Eintracht Frankfurt"
+    },
+    {
+      "id": 629,
+      "name": "K. De Bruyne",
+      "age": 34,
+      "position": "Midfielder",
+      "number": 7,
+      "photo": "https://media.api-sports.io/football/players/629.png",
+      "club": "Napoli"
+    },
+    {
+      "id": 162714,
+      "name": "A. Onana",
+      "age": 24,
+      "position": "Midfielder",
+      "number": 24,
+      "photo": "https://media.api-sports.io/football/players/162714.png",
+      "club": "Aston Villa"
+    },
+    {
+      "id": 2120,
+      "name": "N. Raskin",
+      "age": 24,
+      "position": "Midfielder",
+      "number": 23,
+      "photo": "https://media.api-sports.io/football/players/2120.png",
+      "club": "Rangers"
+    },
+    {
+      "id": 1417,
+      "name": "A. Saelemaekers",
+      "age": 26,
+      "position": "Midfielder",
+      "number": 22,
+      "photo": "https://media.api-sports.io/football/players/1417.png",
+      "club": "AC Milan"
+    },
+    {
+      "id": 2926,
+      "name": "Y. Tielemans",
+      "age": 28,
+      "position": "Midfielder",
+      "number": 8,
+      "photo": "https://media.api-sports.io/football/players/2926.png",
+      "club": "Aston Villa"
+    },
+    {
+      "id": 335056,
+      "name": "D. Moreira",
+      "age": 21,
+      "position": "Midfielder",
+      "number": 19,
+      "photo": "https://media.api-sports.io/football/players/335056.png",
+      "club": "Strasbourg"
+    },
+    {
+      "id": 78,
+      "name": "H. Vanaken",
+      "age": 33,
+      "position": "Midfielder",
+      "number": 20,
+      "photo": "https://media.api-sports.io/football/players/78.png",
+      "club": "Club Brugge KV"
+    },
+    {
+      "id": 20,
+      "name": "A. Witsel",
+      "age": 36,
+      "position": "Midfielder",
+      "number": 6,
+      "photo": "https://media.api-sports.io/football/players/20.png",
+      "club": "Girona"
+    },
+    {
+      "id": 1422,
+      "name": "J. Doku",
+      "age": 23,
+      "position": "Attacker",
+      "number": 11,
+      "photo": "https://media.api-sports.io/football/players/1422.png",
+      "club": "Manchester City"
+    },
+    {
+      "id": 340077,
+      "name": "M. Fernandez-Pardo",
+      "age": 20,
+      "position": "Attacker",
+      "number": 26,
+      "photo": "https://media.api-sports.io/football/players/340077.png",
+      "club": "Lille"
+    },
+    {
+      "id": 907,
+      "name": "R. Lukaku",
+      "age": 32,
+      "position": "Attacker",
+      "number": 9,
+      "photo": "https://media.api-sports.io/football/players/907.png",
+      "club": "Napoli"
+    },
+    {
+      "id": 25458,
+      "name": "D. Lukebakio",
+      "age": 28,
+      "position": "Attacker",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/25458.png",
+      "club": "Benfica"
+    },
+    {
+      "id": 147859,
+      "name": "C. De Ketelaere",
+      "age": 24,
+      "position": "Attacker",
+      "number": 17,
+      "photo": "https://media.api-sports.io/football/players/147859.png",
+      "club": "Atalanta"
+    },
+    {
+      "id": 1946,
+      "name": "L. Trossard",
+      "age": 31,
+      "position": "Attacker",
+      "number": 10,
+      "photo": "https://media.api-sports.io/football/players/1946.png",
+      "club": "Arsenal"
+    }
+  ]
+}

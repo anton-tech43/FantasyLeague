@@ -1,0 +1,251 @@
+{
+  "country": "bosnia_herzegovina",
+  "displayName": "Bosnia & Herzegovina",
+  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+  "manager": "Sergej Barbarez",
+  "captain": "E. Dzeko",
+  "keyPlayers": [
+    "E. Dzeko",
+    "E. Demirovic",
+    "E. Bajraktarevic",
+    "H. Tabakovic",
+    "S. Kolasinac",
+    "A. Dedic"
+  ],
+  "players": [
+    {
+      "id": 446130,
+      "name": "M. Jurkas",
+      "age": 29,
+      "position": "Goalkeeper",
+      "number": 12,
+      "photo": "https://media.api-sports.io/football/players/446130.png",
+      "club": "Bosnia-Herzegovina U17"
+    },
+    {
+      "id": 9026,
+      "name": "N. Vasilj",
+      "age": 30,
+      "position": "Goalkeeper",
+      "number": 1,
+      "photo": "https://media.api-sports.io/football/players/9026.png",
+      "club": "FC St. Pauli"
+    },
+    {
+      "id": 108370,
+      "name": "M. Zlomislic",
+      "age": 27,
+      "position": "Goalkeeper",
+      "number": 22,
+      "photo": "https://media.api-sports.io/football/players/108370.png",
+      "club": "HNK Rijeka"
+    },
+    {
+      "id": 395589,
+      "name": "N. Celik",
+      "age": 19,
+      "position": "Defender",
+      "number": 24,
+      "photo": "https://media.api-sports.io/football/players/395589.png",
+      "club": "Lens"
+    },
+    {
+      "id": 7318,
+      "name": "A. Dedic",
+      "age": 23,
+      "position": "Defender",
+      "number": 7,
+      "photo": "https://media.api-sports.io/football/players/7318.png",
+      "club": "Benfica"
+    },
+    {
+      "id": 53517,
+      "name": "D. Hadzikadunic",
+      "age": 27,
+      "position": "Defender",
+      "number": 3,
+      "photo": "https://media.api-sports.io/football/players/53517.png",
+      "club": "Sampdoria"
+    },
+    {
+      "id": 1741,
+      "name": "N. Katic",
+      "age": 29,
+      "position": "Defender",
+      "number": 18,
+      "photo": "https://media.api-sports.io/football/players/1741.png",
+      "club": "FC Schalke 04"
+    },
+    {
+      "id": 1442,
+      "name": "S. Kolasinac",
+      "age": 32,
+      "position": "Defender",
+      "number": 5,
+      "photo": "https://media.api-sports.io/football/players/1442.png",
+      "club": "Atalanta"
+    },
+    {
+      "id": 271350,
+      "name": "T. Muharemovic",
+      "age": 22,
+      "position": "Defender",
+      "number": 4,
+      "photo": "https://media.api-sports.io/football/players/271350.png",
+      "club": "Sassuolo"
+    },
+    {
+      "id": 76867,
+      "name": "N. Mujakic",
+      "age": 27,
+      "position": "Defender",
+      "number": 2,
+      "photo": "https://media.api-sports.io/football/players/76867.png",
+      "club": "Ey\u00fcpspor"
+    },
+    {
+      "id": 14301,
+      "name": "S. Radeljic",
+      "age": 28,
+      "position": "Defender",
+      "number": 21,
+      "photo": "https://media.api-sports.io/football/players/14301.png",
+      "club": "HNK Rijeka"
+    },
+    {
+      "id": 162222,
+      "name": "I. Basic",
+      "age": 23,
+      "position": "Midfielder",
+      "number": 13,
+      "photo": "https://media.api-sports.io/football/players/162222.png",
+      "club": "FC Astana"
+    },
+    {
+      "id": 70514,
+      "name": "A. Gigovic",
+      "age": 23,
+      "position": "Midfielder",
+      "number": 8,
+      "photo": "https://media.api-sports.io/football/players/70514.png",
+      "club": "BSC Young Boys"
+    },
+    {
+      "id": 50006,
+      "name": "A. Hadziahmetovic",
+      "age": 28,
+      "position": "Midfielder",
+      "number": 16,
+      "photo": "https://media.api-sports.io/football/players/50006.png",
+      "club": "Hull City"
+    },
+    {
+      "id": 340173,
+      "name": "Ermin Mahmic",
+      "age": 20,
+      "position": "Midfielder",
+      "number": 26,
+      "photo": "https://media.api-sports.io/football/players/340173.png",
+      "club": "Slovan Liberec"
+    },
+    {
+      "id": 1324,
+      "name": "I. Sunjic",
+      "age": 29,
+      "position": "Midfielder",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/1324.png",
+      "club": "Pafos"
+    },
+    {
+      "id": 264094,
+      "name": "B. Tahirovic",
+      "age": 22,
+      "position": "Midfielder",
+      "number": 6,
+      "photo": "https://media.api-sports.io/football/players/264094.png",
+      "club": "Brondby"
+    },
+    {
+      "id": 322101,
+      "name": "A. Memic",
+      "age": 24,
+      "position": "Midfielder",
+      "number": 15,
+      "photo": "https://media.api-sports.io/football/players/322101.png",
+      "club": "Plzen"
+    },
+    {
+      "id": 25129,
+      "name": "D. Burnic",
+      "age": 27,
+      "position": "Midfielder",
+      "number": 17,
+      "photo": "https://media.api-sports.io/football/players/25129.png",
+      "club": "Karlsruher SC"
+    },
+    {
+      "id": 395559,
+      "name": "Kerim-Sam Alajbegovic",
+      "age": 18,
+      "position": "Attacker",
+      "number": 19,
+      "photo": "https://media.api-sports.io/football/players/395559.png",
+      "club": "Red Bull Salzburg"
+    },
+    {
+      "id": 329409,
+      "name": "E. Bajraktarevic",
+      "age": 20,
+      "position": "Attacker",
+      "number": 20,
+      "photo": "https://media.api-sports.io/football/players/329409.png",
+      "club": "PSV Eindhoven"
+    },
+    {
+      "id": 314377,
+      "name": "S. Bazdar",
+      "age": 21,
+      "position": "Attacker",
+      "number": 9,
+      "photo": "https://media.api-sports.io/football/players/314377.png",
+      "club": "Jagiellonia"
+    },
+    {
+      "id": 46930,
+      "name": "E. Demirovic",
+      "age": 27,
+      "position": "Attacker",
+      "number": 10,
+      "photo": "https://media.api-sports.io/football/players/46930.png",
+      "club": "VfB Stuttgart"
+    },
+    {
+      "id": 790,
+      "name": "E. Dzeko",
+      "age": 39,
+      "position": "Attacker",
+      "number": 11,
+      "photo": "https://media.api-sports.io/football/players/790.png",
+      "club": "Fiorentina"
+    },
+    {
+      "id": 77037,
+      "name": "J. Lukic",
+      "age": 27,
+      "position": "Attacker",
+      "number": 25,
+      "photo": "https://media.api-sports.io/football/players/77037.png",
+      "club": "Universitatea Cluj"
+    },
+    {
+      "id": 28382,
+      "name": "H. Tabakovic",
+      "age": 31,
+      "position": "Attacker",
+      "number": 23,
+      "photo": "https://media.api-sports.io/football/players/28382.png",
+      "club": "Borussia M\u00f6nchengladbach"
+    }
+  ]
+}

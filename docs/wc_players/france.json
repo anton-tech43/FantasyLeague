@@ -1,0 +1,251 @@
+{
+  "country": "france",
+  "displayName": "France",
+  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+  "manager": "Didier Deschamps",
+  "captain": "Kylian Mbappé",
+  "keyPlayers": [
+    "Kylian Mbappé",
+    "Ousmane Dembélé",
+    "Mike Maignan",
+    "William Saliba",
+    "Aurélien Tchouaméni",
+    "Michael Olise"
+  ],
+  "players": [
+    {
+      "id": 22221,
+      "name": "M. Maignan",
+      "age": 30,
+      "position": "Goalkeeper",
+      "number": 16,
+      "photo": "https://media.api-sports.io/football/players/22221.png",
+      "club": "AC Milan"
+    },
+    {
+      "id": 347211,
+      "name": "R. Risser",
+      "age": 21,
+      "position": "Goalkeeper",
+      "number": 23,
+      "photo": "https://media.api-sports.io/football/players/347211.png",
+      "club": "Lens"
+    },
+    {
+      "id": 21628,
+      "name": "B. Samba",
+      "age": 31,
+      "position": "Goalkeeper",
+      "number": 1,
+      "photo": "https://media.api-sports.io/football/players/21628.png",
+      "club": "Rennes"
+    },
+    {
+      "id": 2724,
+      "name": "L. Digne",
+      "age": 32,
+      "position": "Defender",
+      "number": 3,
+      "photo": "https://media.api-sports.io/football/players/2724.png",
+      "club": "Aston Villa"
+    },
+    {
+      "id": 161907,
+      "name": "M. Gusto",
+      "age": 22,
+      "position": "Defender",
+      "number": 2,
+      "photo": "https://media.api-sports.io/football/players/161907.png",
+      "club": "Chelsea"
+    },
+    {
+      "id": 33,
+      "name": "L. Hern\u00e1ndez",
+      "age": 29,
+      "position": "Defender",
+      "number": 21,
+      "photo": "https://media.api-sports.io/football/players/33.png",
+      "club": "Paris Saint Germain"
+    },
+    {
+      "id": 47300,
+      "name": "T. Hern\u00e1ndez",
+      "age": 28,
+      "position": "Defender",
+      "number": 19,
+      "photo": "https://media.api-sports.io/football/players/47300.png",
+      "club": "Al-Hilal Saudi FC"
+    },
+    {
+      "id": 1145,
+      "name": "I. Konat\u00e9",
+      "age": 26,
+      "position": "Defender",
+      "number": 15,
+      "photo": "https://media.api-sports.io/football/players/1145.png",
+      "club": "Liverpool"
+    },
+    {
+      "id": 1257,
+      "name": "J. Kound\u00e9",
+      "age": 27,
+      "position": "Defender",
+      "number": 5,
+      "photo": "https://media.api-sports.io/football/players/1257.png",
+      "club": "Barcelona"
+    },
+    {
+      "id": 20995,
+      "name": "M. Lacroix",
+      "age": 25,
+      "position": "Defender",
+      "number": 26,
+      "photo": "https://media.api-sports.io/football/players/20995.png",
+      "club": "Crystal Palace"
+    },
+    {
+      "id": 22090,
+      "name": "W. Saliba",
+      "age": 24,
+      "position": "Defender",
+      "number": 17,
+      "photo": "https://media.api-sports.io/football/players/22090.png",
+      "club": "Arsenal"
+    },
+    {
+      "id": 1149,
+      "name": "D. Upamecano",
+      "age": 27,
+      "position": "Defender",
+      "number": 4,
+      "photo": "https://media.api-sports.io/football/players/1149.png",
+      "club": "Bayern M\u00fcnchen"
+    },
+    {
+      "id": 156477,
+      "name": "R. Cherki",
+      "age": 22,
+      "position": "Midfielder",
+      "number": 24,
+      "photo": "https://media.api-sports.io/football/players/156477.png",
+      "club": "Manchester City"
+    },
+    {
+      "id": 2290,
+      "name": "N. Kant\u00e9",
+      "age": 34,
+      "position": "Midfielder",
+      "number": 13,
+      "photo": "https://media.api-sports.io/football/players/2290.png",
+      "club": "Al-Ittihad FC"
+    },
+    {
+      "id": 22147,
+      "name": "M. Kon\u00e9",
+      "age": 24,
+      "position": "Midfielder",
+      "number": 6,
+      "photo": "https://media.api-sports.io/football/players/22147.png",
+      "club": "AS Roma"
+    },
+    {
+      "id": 272,
+      "name": "A. Rabiot",
+      "age": 30,
+      "position": "Midfielder",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/272.png",
+      "club": "AC Milan"
+    },
+    {
+      "id": 1271,
+      "name": "A. Tchouam\u00e9ni",
+      "age": 25,
+      "position": "Midfielder",
+      "number": 8,
+      "photo": "https://media.api-sports.io/football/players/1271.png",
+      "club": "Real Madrid"
+    },
+    {
+      "id": 336657,
+      "name": "W. Za\u00efre-Emery",
+      "age": 19,
+      "position": "Midfielder",
+      "number": 18,
+      "photo": "https://media.api-sports.io/football/players/336657.png",
+      "club": "Paris Saint Germain"
+    },
+    {
+      "id": 274300,
+      "name": "M. Akliouche",
+      "age": 23,
+      "position": "Midfielder",
+      "number": 25,
+      "photo": "https://media.api-sports.io/football/players/274300.png",
+      "club": "Monaco"
+    },
+    {
+      "id": 161904,
+      "name": "B. Barcola",
+      "age": 23,
+      "position": "Attacker",
+      "number": 12,
+      "photo": "https://media.api-sports.io/football/players/161904.png",
+      "club": "Paris Saint Germain"
+    },
+    {
+      "id": 25927,
+      "name": "J. Mateta",
+      "age": 28,
+      "position": "Attacker",
+      "number": 22,
+      "photo": "https://media.api-sports.io/football/players/25927.png",
+      "club": "Crystal Palace"
+    },
+    {
+      "id": 153,
+      "name": "O. Demb\u00e9l\u00e9",
+      "age": 28,
+      "position": "Attacker",
+      "number": 7,
+      "photo": "https://media.api-sports.io/football/players/153.png",
+      "club": "Paris Saint Germain"
+    },
+    {
+      "id": 343027,
+      "name": "D. Dou\u00e9",
+      "age": 20,
+      "position": "Attacker",
+      "number": 20,
+      "photo": "https://media.api-sports.io/football/players/343027.png",
+      "club": "Paris Saint Germain"
+    },
+    {
+      "id": 278,
+      "name": "Kylian Mbapp\u00e9",
+      "age": 27,
+      "position": "Attacker",
+      "number": 10,
+      "photo": "https://media.api-sports.io/football/players/278.png",
+      "club": "Real Madrid"
+    },
+    {
+      "id": 21509,
+      "name": "M. Thuram",
+      "age": 28,
+      "position": "Attacker",
+      "number": 9,
+      "photo": "https://media.api-sports.io/football/players/21509.png",
+      "club": "Inter"
+    },
+    {
+      "id": 19617,
+      "name": "M. Olise",
+      "age": 24,
+      "position": "Attacker",
+      "number": 11,
+      "photo": "https://media.api-sports.io/football/players/19617.png",
+      "club": "Bayern M\u00fcnchen"
+    }
+  ]
+}

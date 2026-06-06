@@ -1,0 +1,251 @@
+{
+  "country": "curacao",
+  "displayName": "Cura\u00e7ao",
+  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+  "manager": "Dick Advocaat",
+  "captain": "Leandro Bacuna",
+  "keyPlayers": [
+    "Leandro Bacuna",
+    "Eloy Room",
+    "Tahith Chong",
+    "Sontje Hansen",
+    "Jürgen Locadia",
+    "Livano Comenencia"
+  ],
+  "players": [
+    {
+      "id": 214129,
+      "name": "T. Bodak",
+      "age": 23,
+      "position": "Goalkeeper",
+      "number": 25,
+      "photo": "https://media.api-sports.io/football/players/214129.png",
+      "club": "Telstar"
+    },
+    {
+      "id": 36967,
+      "name": "T. Doornbusch",
+      "age": 26,
+      "position": "Goalkeeper",
+      "number": 26,
+      "photo": "https://media.api-sports.io/football/players/36967.png",
+      "club": "VVV Venlo"
+    },
+    {
+      "id": 221,
+      "name": "E. Room",
+      "age": 36,
+      "position": "Goalkeeper",
+      "number": 1,
+      "photo": "https://media.api-sports.io/football/players/221.png",
+      "club": "Cercle Brugge"
+    },
+    {
+      "id": 37175,
+      "name": "R. Bazoer",
+      "age": 29,
+      "position": "Defender",
+      "number": 23,
+      "photo": "https://media.api-sports.io/football/players/37175.png",
+      "club": "Konyaspor"
+    },
+    {
+      "id": 706,
+      "name": "J. Brenet",
+      "age": 31,
+      "position": "Defender",
+      "number": 20,
+      "photo": "https://media.api-sports.io/football/players/706.png",
+      "club": "Livingston"
+    },
+    {
+      "id": 36970,
+      "name": "S. Floranus",
+      "age": 27,
+      "position": "Defender",
+      "number": 5,
+      "photo": "https://media.api-sports.io/football/players/36970.png",
+      "club": "PEC Zwolle"
+    },
+    {
+      "id": 353808,
+      "name": "Deveron Fonville",
+      "age": 22,
+      "position": "Defender",
+      "number": 24,
+      "photo": "https://media.api-sports.io/football/players/353808.png",
+      "club": "NEC Nijmegen"
+    },
+    {
+      "id": 36857,
+      "name": "J. Gaari",
+      "age": 32,
+      "position": "Defender",
+      "number": 3,
+      "photo": "https://media.api-sports.io/football/players/36857.png",
+      "club": "Abha Club"
+    },
+    {
+      "id": 194645,
+      "name": "S. Sambo",
+      "age": 24,
+      "position": "Defender",
+      "number": 2,
+      "photo": "https://media.api-sports.io/football/players/194645.png",
+      "club": "Sparta Rotterdam"
+    },
+    {
+      "id": 37066,
+      "name": "R. van Eijma",
+      "age": 27,
+      "position": "Defender",
+      "number": 4,
+      "photo": "https://media.api-sports.io/football/players/37066.png",
+      "club": "Waalwijk"
+    },
+    {
+      "id": 228,
+      "name": "A. Obispo",
+      "age": 26,
+      "position": "Defender",
+      "number": 18,
+      "photo": "https://media.api-sports.io/football/players/228.png",
+      "club": "PSV Eindhoven"
+    },
+    {
+      "id": 18997,
+      "name": "L. Bacuna",
+      "age": 34,
+      "position": "Midfielder",
+      "number": 10,
+      "photo": "https://media.api-sports.io/football/players/18997.png",
+      "club": "Band\u0131rmaspor"
+    },
+    {
+      "id": 162199,
+      "name": "A. Martha",
+      "age": 22,
+      "position": "Midfielder",
+      "number": 15,
+      "photo": "https://media.api-sports.io/football/players/162199.png",
+      "club": "Rotherham"
+    },
+    {
+      "id": 406846,
+      "name": "T. Noslin",
+      "age": 23,
+      "position": "Midfielder",
+      "number": 13,
+      "photo": "https://media.api-sports.io/football/players/406846.png",
+      "club": "Telstar"
+    },
+    {
+      "id": 309763,
+      "name": "L. Comenencia",
+      "age": 21,
+      "position": "Midfielder",
+      "number": 8,
+      "photo": "https://media.api-sports.io/football/players/309763.png",
+      "club": "FC Zurich"
+    },
+    {
+      "id": 37461,
+      "name": "K. Felida",
+      "age": 26,
+      "position": "Midfielder",
+      "number": 22,
+      "photo": "https://media.api-sports.io/football/players/37461.png",
+      "club": "Den Bosch"
+    },
+    {
+      "id": 906,
+      "name": "T. Chong",
+      "age": 26,
+      "position": "Midfielder",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/906.png",
+      "club": "Sheffield Utd"
+    },
+    {
+      "id": 36842,
+      "name": "G. Roemeratoe",
+      "age": 26,
+      "position": "Midfielder",
+      "number": 6,
+      "photo": "https://media.api-sports.io/football/players/36842.png",
+      "club": "Waalwijk"
+    },
+    {
+      "id": 19047,
+      "name": "J. Bacuna",
+      "age": 28,
+      "position": "Midfielder",
+      "number": 7,
+      "photo": "https://media.api-sports.io/football/players/19047.png",
+      "club": "FC Volendam"
+    },
+    {
+      "id": 163220,
+      "name": "J. Antonisse",
+      "age": 23,
+      "position": "Attacker",
+      "number": 11,
+      "photo": "https://media.api-sports.io/football/players/163220.png",
+      "club": "Kifisia"
+    },
+    {
+      "id": 37272,
+      "name": "B. Kuwas",
+      "age": 33,
+      "position": "Attacker",
+      "number": 17,
+      "photo": "https://media.api-sports.io/football/players/37272.png",
+      "club": "FC Volendam"
+    },
+    {
+      "id": 41627,
+      "name": "K. Gorr\u00e9",
+      "age": 31,
+      "position": "Attacker",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/41627.png",
+      "club": "Maccabi Haifa"
+    },
+    {
+      "id": 161884,
+      "name": "S. Hansen",
+      "age": 23,
+      "position": "Attacker",
+      "number": 12,
+      "photo": "https://media.api-sports.io/football/players/161884.png",
+      "club": "Middlesbrough"
+    },
+    {
+      "id": 38708,
+      "name": "G. Kastaneer",
+      "age": 29,
+      "position": "Attacker",
+      "number": 19,
+      "photo": "https://media.api-sports.io/football/players/38708.png",
+      "club": "Terengganu FC"
+    },
+    {
+      "id": 18981,
+      "name": "J. Locadia",
+      "age": 32,
+      "position": "Attacker",
+      "number": 9,
+      "photo": "https://media.api-sports.io/football/players/18981.png",
+      "club": "Miami FC"
+    },
+    {
+      "id": 195067,
+      "name": "J. Margaritha",
+      "age": 25,
+      "position": "Attacker",
+      "number": 16,
+      "photo": "https://media.api-sports.io/football/players/195067.png",
+      "club": "Phoenix Rising"
+    }
+  ]
+}

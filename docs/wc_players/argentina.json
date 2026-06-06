@@ -1,0 +1,251 @@
+{
+  "country": "argentina",
+  "displayName": "Argentina",
+  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+  "manager": "Lionel Scaloni",
+  "captain": "L. Messi",
+  "keyPlayers": [
+    "L. Messi",
+    "Lautaro Martínez",
+    "J. Álvarez",
+    "E. Fernández",
+    "C. Romero",
+    "E. Martínez"
+  ],
+  "players": [
+    {
+      "id": 19599,
+      "name": "E. Mart\u00ednez",
+      "age": 33,
+      "position": "Goalkeeper",
+      "number": 23,
+      "photo": "https://media.api-sports.io/football/players/19599.png",
+      "club": "Aston Villa"
+    },
+    {
+      "id": 2465,
+      "name": "J. Musso",
+      "age": 31,
+      "position": "Goalkeeper",
+      "number": 1,
+      "photo": "https://media.api-sports.io/football/players/2465.png",
+      "club": "Atletico Madrid"
+    },
+    {
+      "id": 47296,
+      "name": "G. Rulli",
+      "age": 33,
+      "position": "Goalkeeper",
+      "number": 12,
+      "photo": "https://media.api-sports.io/football/players/47296.png",
+      "club": "Marseille"
+    },
+    {
+      "id": 6,
+      "name": "L. Balerdi",
+      "age": 26,
+      "position": "Defender",
+      "number": 2,
+      "photo": "https://media.api-sports.io/football/players/6.png",
+      "club": "Marseille"
+    },
+    {
+      "id": 2467,
+      "name": "Lisandro Mart\u00ednez",
+      "age": 27,
+      "position": "Defender",
+      "number": 6,
+      "photo": "https://media.api-sports.io/football/players/2467.png",
+      "club": "Manchester United"
+    },
+    {
+      "id": 6231,
+      "name": "F. Medina",
+      "age": 26,
+      "position": "Defender",
+      "number": 25,
+      "photo": "https://media.api-sports.io/football/players/6231.png",
+      "club": "Marseille"
+    },
+    {
+      "id": 6503,
+      "name": "N. Molina",
+      "age": 27,
+      "position": "Defender",
+      "number": 26,
+      "photo": "https://media.api-sports.io/football/players/6503.png",
+      "club": "Atletico Madrid"
+    },
+    {
+      "id": 2468,
+      "name": "G. Montiel",
+      "age": 28,
+      "position": "Defender",
+      "number": 4,
+      "photo": "https://media.api-sports.io/football/players/2468.png",
+      "club": "River Plate"
+    },
+    {
+      "id": 624,
+      "name": "N. Otamendi",
+      "age": 37,
+      "position": "Defender",
+      "number": 19,
+      "photo": "https://media.api-sports.io/football/players/624.png",
+      "club": "Benfica"
+    },
+    {
+      "id": 30776,
+      "name": "C. Romero",
+      "age": 27,
+      "position": "Defender",
+      "number": 13,
+      "photo": "https://media.api-sports.io/football/players/30776.png",
+      "club": "Tottenham"
+    },
+    {
+      "id": 529,
+      "name": "N. Tagliafico",
+      "age": 33,
+      "position": "Defender",
+      "number": 3,
+      "photo": "https://media.api-sports.io/football/players/529.png",
+      "club": "Lyon"
+    },
+    {
+      "id": 319572,
+      "name": "V. Barco",
+      "age": 21,
+      "position": "Midfielder",
+      "number": 8,
+      "photo": "https://media.api-sports.io/football/players/319572.png",
+      "club": "Strasbourg"
+    },
+    {
+      "id": 5996,
+      "name": "E. Fern\u00e1ndez",
+      "age": 24,
+      "position": "Midfielder",
+      "number": 24,
+      "photo": "https://media.api-sports.io/football/players/5996.png",
+      "club": "Chelsea"
+    },
+    {
+      "id": 1578,
+      "name": "G. Lo Celso",
+      "age": 29,
+      "position": "Midfielder",
+      "number": 11,
+      "photo": "https://media.api-sports.io/football/players/1578.png",
+      "club": "Real Betis"
+    },
+    {
+      "id": 6716,
+      "name": "A. Mac Allister",
+      "age": 27,
+      "position": "Midfielder",
+      "number": 20,
+      "photo": "https://media.api-sports.io/football/players/6716.png",
+      "club": "Liverpool"
+    },
+    {
+      "id": 6002,
+      "name": "E. Palacios",
+      "age": 27,
+      "position": "Midfielder",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/6002.png",
+      "club": "Bayer Leverkusen"
+    },
+    {
+      "id": 271,
+      "name": "L. Paredes",
+      "age": 31,
+      "position": "Midfielder",
+      "number": 5,
+      "photo": "https://media.api-sports.io/football/players/271.png",
+      "club": "Boca Juniors"
+    },
+    {
+      "id": 26315,
+      "name": "N. Gonz\u00e1lez",
+      "age": 27,
+      "position": "Midfielder",
+      "number": 15,
+      "photo": "https://media.api-sports.io/football/players/26315.png",
+      "club": "Atletico Madrid"
+    },
+    {
+      "id": 2472,
+      "name": "R. De Paul",
+      "age": 31,
+      "position": "Midfielder",
+      "number": 7,
+      "photo": "https://media.api-sports.io/football/players/2472.png",
+      "club": "Inter Miami"
+    },
+    {
+      "id": 6067,
+      "name": "T. Almada",
+      "age": 24,
+      "position": "Attacker",
+      "number": 16,
+      "photo": "https://media.api-sports.io/football/players/6067.png",
+      "club": "Atletico Madrid"
+    },
+    {
+      "id": 6009,
+      "name": "J. \u00c1lvarez",
+      "age": 25,
+      "position": "Attacker",
+      "number": 9,
+      "photo": "https://media.api-sports.io/football/players/6009.png",
+      "club": "Atletico Madrid"
+    },
+    {
+      "id": 350037,
+      "name": "N. Paz",
+      "age": 21,
+      "position": "Attacker",
+      "number": 18,
+      "photo": "https://media.api-sports.io/football/players/350037.png",
+      "club": "Como"
+    },
+    {
+      "id": 295513,
+      "name": "J. L\u00f3pez",
+      "age": 25,
+      "position": "Attacker",
+      "number": 21,
+      "photo": "https://media.api-sports.io/football/players/295513.png",
+      "club": "Palmeiras"
+    },
+    {
+      "id": 217,
+      "name": "Lautaro Mart\u00ednez",
+      "age": 28,
+      "position": "Attacker",
+      "number": 22,
+      "photo": "https://media.api-sports.io/football/players/217.png",
+      "club": "Inter"
+    },
+    {
+      "id": 154,
+      "name": "L. Messi",
+      "age": 38,
+      "position": "Attacker",
+      "number": 10,
+      "photo": "https://media.api-sports.io/football/players/154.png",
+      "club": "Inter Miami"
+    },
+    {
+      "id": 323935,
+      "name": "G. Simeone",
+      "age": 23,
+      "position": "Attacker",
+      "number": 17,
+      "photo": "https://media.api-sports.io/football/players/323935.png",
+      "club": "Atletico Madrid"
+    }
+  ]
+}

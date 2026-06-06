@@ -1,0 +1,252 @@
+{
+  "country": "portugal",
+  "displayName": "Portugal",
+  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+  "manager": "Roberto Martínez",
+  "captain": "Cristiano Ronaldo",
+  "keyPlayers": [
+    "Cristiano Ronaldo",
+    "Bruno Fernandes",
+    "Vitinha",
+    "Rúben Dias",
+    "Nuno Mendes",
+    "Bernardo Silva",
+    "João Neves"
+  ],
+  "players": [
+    {
+      "id": 369,
+      "name": "Diogo Costa",
+      "age": 26,
+      "position": "Goalkeeper",
+      "number": 1,
+      "photo": "https://media.api-sports.io/football/players/369.png",
+      "club": "FC Porto"
+    },
+    {
+      "id": 1590,
+      "name": "Jos\u00e9 S\u00e1",
+      "age": 32,
+      "position": "Goalkeeper",
+      "number": 12,
+      "photo": "https://media.api-sports.io/football/players/1590.png",
+      "club": "Wolves"
+    },
+    {
+      "id": 46672,
+      "name": "Rui Silva",
+      "age": 31,
+      "position": "Goalkeeper",
+      "number": 22,
+      "photo": "https://media.api-sports.io/football/players/46672.png",
+      "club": "Sporting CP"
+    },
+    {
+      "id": 161939,
+      "name": "Tom\u00e1s Ara\u00fajo",
+      "age": 23,
+      "position": "Defender",
+      "number": 4,
+      "photo": "https://media.api-sports.io/football/players/161939.png",
+      "club": "Benfica"
+    },
+    {
+      "id": 855,
+      "name": "Jo\u00e3o Cancelo",
+      "age": 31,
+      "position": "Defender",
+      "number": 20,
+      "photo": "https://media.api-sports.io/football/players/855.png",
+      "club": "Al-Hilal Saudi FC"
+    },
+    {
+      "id": 886,
+      "name": "Diogo Dalot",
+      "age": 26,
+      "position": "Defender",
+      "number": 5,
+      "photo": "https://media.api-sports.io/football/players/886.png",
+      "club": "Manchester United"
+    },
+    {
+      "id": 567,
+      "name": "R\u00faben Dias",
+      "age": 28,
+      "position": "Defender",
+      "number": 3,
+      "photo": "https://media.api-sports.io/football/players/567.png",
+      "club": "Manchester City"
+    },
+    {
+      "id": 265595,
+      "name": "Gon\u00e7alo In\u00e1cio",
+      "age": 24,
+      "position": "Defender",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/265595.png",
+      "club": "Sporting CP"
+    },
+    {
+      "id": 263482,
+      "name": "Nuno Mendes",
+      "age": 23,
+      "position": "Defender",
+      "number": 25,
+      "photo": "https://media.api-sports.io/football/players/263482.png",
+      "club": "Paris Saint Germain"
+    },
+    {
+      "id": 130,
+      "name": "N\u00e9lson Semedo",
+      "age": 32,
+      "position": "Defender",
+      "number": 2,
+      "photo": "https://media.api-sports.io/football/players/130.png",
+      "club": "Fenerbah\u00e7e"
+    },
+    {
+      "id": 336671,
+      "name": "Renato Veiga",
+      "age": 22,
+      "position": "Defender",
+      "number": 13,
+      "photo": "https://media.api-sports.io/football/players/336671.png",
+      "club": "Villarreal"
+    },
+    {
+      "id": 190485,
+      "name": "Sam\u00fa Costa",
+      "age": 25,
+      "position": "Defender",
+      "number": 24,
+      "photo": "https://media.api-sports.io/football/players/190485.png",
+      "club": "Mallorca"
+    },
+    {
+      "id": 1485,
+      "name": "Bruno Fernandes",
+      "age": 31,
+      "position": "Midfielder",
+      "number": 8,
+      "photo": "https://media.api-sports.io/football/players/1485.png",
+      "club": "Manchester United"
+    },
+    {
+      "id": 335051,
+      "name": "Jo\u00e3o Neves",
+      "age": 21,
+      "position": "Midfielder",
+      "number": 15,
+      "photo": "https://media.api-sports.io/football/players/335051.png",
+      "club": "Paris Saint Germain"
+    },
+    {
+      "id": 2676,
+      "name": "R\u00faben Neves",
+      "age": 28,
+      "position": "Midfielder",
+      "number": 21,
+      "photo": "https://media.api-sports.io/football/players/2676.png",
+      "club": "Al-Hilal Saudi FC"
+    },
+    {
+      "id": 41621,
+      "name": "Matheus Nunes",
+      "age": 27,
+      "position": "Midfielder",
+      "number": 6,
+      "photo": "https://media.api-sports.io/football/players/41621.png",
+      "club": "Manchester City"
+    },
+    {
+      "id": 636,
+      "name": "Bernardo Silva",
+      "age": 31,
+      "position": "Midfielder",
+      "number": 10,
+      "photo": "https://media.api-sports.io/football/players/636.png",
+      "club": "Manchester City"
+    },
+    {
+      "id": 128384,
+      "name": "Vitinha",
+      "age": 25,
+      "position": "Midfielder",
+      "number": 23,
+      "photo": "https://media.api-sports.io/football/players/128384.png",
+      "club": "Paris Saint Germain"
+    },
+    {
+      "id": 161585,
+      "name": "Francisco Concei\u00e7\u00e3o",
+      "age": 23,
+      "position": "Attacker",
+      "number": 26,
+      "photo": "https://media.api-sports.io/football/players/161585.png",
+      "club": "Juventus"
+    },
+    {
+      "id": 925,
+      "name": "Gon\u00e7alo Guedes",
+      "age": 29,
+      "position": "Attacker",
+      "number": 19,
+      "photo": "https://media.api-sports.io/football/players/925.png",
+      "club": "Real Sociedad"
+    },
+    {
+      "id": 583,
+      "name": "Jo\u00e3o F\u00e9lix",
+      "age": 26,
+      "position": "Attacker",
+      "number": 11,
+      "photo": "https://media.api-sports.io/football/players/583.png",
+      "club": "Al-Nassr"
+    },
+    {
+      "id": 22236,
+      "name": "Rafael Le\u00e3o",
+      "age": 26,
+      "position": "Attacker",
+      "number": 17,
+      "photo": "https://media.api-sports.io/football/players/22236.png",
+      "club": "AC Milan"
+    },
+    {
+      "id": 1864,
+      "name": "Pedro Neto",
+      "age": 25,
+      "position": "Attacker",
+      "number": 18,
+      "photo": "https://media.api-sports.io/football/players/1864.png",
+      "club": "Chelsea"
+    },
+    {
+      "id": 41585,
+      "name": "Gon\u00e7alo Ramos",
+      "age": 24,
+      "position": "Attacker",
+      "number": 9,
+      "photo": "https://media.api-sports.io/football/players/41585.png",
+      "club": "Paris Saint Germain"
+    },
+    {
+      "id": 874,
+      "name": "Cristiano Ronaldo",
+      "age": 40,
+      "position": "Attacker",
+      "number": 7,
+      "photo": "https://media.api-sports.io/football/players/874.png",
+      "club": "Al-Nassr"
+    },
+    {
+      "id": 41112,
+      "name": "Trinc\u00e3o",
+      "age": 26,
+      "position": "Attacker",
+      "number": 16,
+      "photo": "https://media.api-sports.io/football/players/41112.png",
+      "club": "Sporting CP"
+    }
+  ]
+}

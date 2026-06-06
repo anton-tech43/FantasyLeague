@@ -1,0 +1,251 @@
+{
+  "country": "spain",
+  "displayName": "Spain",
+  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+  "manager": "Luis de la Fuente",
+  "captain": "Rodri",
+  "keyPlayers": [
+    "Rodri",
+    "Pedri",
+    "Lamine Yamal",
+    "Mikel Oyarzabal",
+    "Nico Williams",
+    "Unai Simón"
+  ],
+  "players": [
+    {
+      "id": 182718,
+      "name": "Joan Garc\u00eda",
+      "age": 24,
+      "position": "Goalkeeper",
+      "number": 13,
+      "photo": "https://media.api-sports.io/football/players/182718.png",
+      "club": "Barcelona"
+    },
+    {
+      "id": 19465,
+      "name": "David Raya",
+      "age": 30,
+      "position": "Goalkeeper",
+      "number": 1,
+      "photo": "https://media.api-sports.io/football/players/19465.png",
+      "club": "Arsenal"
+    },
+    {
+      "id": 47270,
+      "name": "Unai Sim\u00f3n",
+      "age": 28,
+      "position": "Goalkeeper",
+      "number": 23,
+      "photo": "https://media.api-sports.io/football/players/47270.png",
+      "club": "Athletic Club"
+    },
+    {
+      "id": 396623,
+      "name": "Pau Cubars\u00ed Paredes",
+      "age": 18,
+      "position": "Defender",
+      "number": 22,
+      "photo": "https://media.api-sports.io/football/players/396623.png",
+      "club": "Barcelona"
+    },
+    {
+      "id": 47380,
+      "name": "Marc Cucurella",
+      "age": 27,
+      "position": "Defender",
+      "number": 24,
+      "photo": "https://media.api-sports.io/football/players/47380.png",
+      "club": "Chelsea"
+    },
+    {
+      "id": 619,
+      "name": "Eric Garc\u00eda",
+      "age": 24,
+      "position": "Defender",
+      "number": 4,
+      "photo": "https://media.api-sports.io/football/players/619.png",
+      "club": "Barcelona"
+    },
+    {
+      "id": 563,
+      "name": "\u00c1lex Grimaldo",
+      "age": 30,
+      "position": "Defender",
+      "number": 3,
+      "photo": "https://media.api-sports.io/football/players/563.png",
+      "club": "Bayer Leverkusen"
+    },
+    {
+      "id": 622,
+      "name": "Aymeric Laporte",
+      "age": 31,
+      "position": "Defender",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/622.png",
+      "club": "Athletic Club"
+    },
+    {
+      "id": 753,
+      "name": "Marcos Llorente",
+      "age": 30,
+      "position": "Defender",
+      "number": 5,
+      "photo": "https://media.api-sports.io/football/players/753.png",
+      "club": "Atletico Madrid"
+    },
+    {
+      "id": 47519,
+      "name": "Pedro Porro",
+      "age": 26,
+      "position": "Defender",
+      "number": 12,
+      "photo": "https://media.api-sports.io/football/players/47519.png",
+      "club": "Tottenham"
+    },
+    {
+      "id": 295793,
+      "name": "Marc Pubill",
+      "age": 22,
+      "position": "Defender",
+      "number": 2,
+      "photo": "https://media.api-sports.io/football/players/295793.png",
+      "club": "Atletico Madrid"
+    },
+    {
+      "id": 296667,
+      "name": "Gavi",
+      "age": 21,
+      "position": "Midfielder",
+      "number": 9,
+      "photo": "https://media.api-sports.io/football/players/296667.png",
+      "club": "Barcelona"
+    },
+    {
+      "id": 47311,
+      "name": "Mikel Merino",
+      "age": 29,
+      "position": "Midfielder",
+      "number": 6,
+      "photo": "https://media.api-sports.io/football/players/47311.png",
+      "club": "Arsenal"
+    },
+    {
+      "id": 133609,
+      "name": "Pedri",
+      "age": 23,
+      "position": "Midfielder",
+      "number": 20,
+      "photo": "https://media.api-sports.io/football/players/133609.png",
+      "club": "Barcelona"
+    },
+    {
+      "id": 44,
+      "name": "Rodri",
+      "age": 29,
+      "position": "Midfielder",
+      "number": 16,
+      "photo": "https://media.api-sports.io/football/players/44.png",
+      "club": "Manchester City"
+    },
+    {
+      "id": 328,
+      "name": "Fabi\u00e1n Ruiz",
+      "age": 29,
+      "position": "Midfielder",
+      "number": 8,
+      "photo": "https://media.api-sports.io/football/players/328.png",
+      "club": "Paris Saint Germain"
+    },
+    {
+      "id": 47315,
+      "name": "Mart\u00edn Zubimendi",
+      "age": 26,
+      "position": "Midfielder",
+      "number": 18,
+      "photo": "https://media.api-sports.io/football/players/47315.png",
+      "club": "Arsenal"
+    },
+    {
+      "id": 182219,
+      "name": "\u00c1lex Baena",
+      "age": 24,
+      "position": "Midfielder",
+      "number": 15,
+      "photo": "https://media.api-sports.io/football/players/182219.png",
+      "club": "Atletico Madrid"
+    },
+    {
+      "id": 1323,
+      "name": "Dani Olmo",
+      "age": 27,
+      "position": "Attacker",
+      "number": 10,
+      "photo": "https://media.api-sports.io/football/players/1323.png",
+      "club": "Barcelona"
+    },
+    {
+      "id": 47348,
+      "name": "Borja Iglesias",
+      "age": 32,
+      "position": "Attacker",
+      "number": 26,
+      "photo": "https://media.api-sports.io/football/players/47348.png",
+      "club": "Celta Vigo"
+    },
+    {
+      "id": 386828,
+      "name": "Lamine Yamal",
+      "age": 18,
+      "position": "Attacker",
+      "number": 19,
+      "photo": "https://media.api-sports.io/football/players/386828.png",
+      "club": "Barcelona"
+    },
+    {
+      "id": 338751,
+      "name": "V\u00edctor Mu\u00f1oz",
+      "age": 22,
+      "position": "Attacker",
+      "number": 25,
+      "photo": "https://media.api-sports.io/football/players/338751.png",
+      "club": "Osasuna"
+    },
+    {
+      "id": 47323,
+      "name": "Mikel Oyarzabal",
+      "age": 28,
+      "position": "Attacker",
+      "number": 21,
+      "photo": "https://media.api-sports.io/football/players/47323.png",
+      "club": "Real Sociedad"
+    },
+    {
+      "id": 184226,
+      "name": "Yeremy Pino",
+      "age": 23,
+      "position": "Attacker",
+      "number": 11,
+      "photo": "https://media.api-sports.io/football/players/184226.png",
+      "club": "Crystal Palace"
+    },
+    {
+      "id": 931,
+      "name": "Ferran Torres",
+      "age": 25,
+      "position": "Attacker",
+      "number": 7,
+      "photo": "https://media.api-sports.io/football/players/931.png",
+      "club": "Barcelona"
+    },
+    {
+      "id": 183799,
+      "name": "Nico Williams",
+      "age": 23,
+      "position": "Attacker",
+      "number": 17,
+      "photo": "https://media.api-sports.io/football/players/183799.png",
+      "club": "Athletic Club"
+    }
+  ]
+}

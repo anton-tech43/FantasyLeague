@@ -1,0 +1,251 @@
+{
+  "country": "switzerland",
+  "displayName": "Switzerland",
+  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+  "manager": "Murat Yakin",
+  "captain": "G. Xhaka",
+  "keyPlayers": [
+    "G. Xhaka",
+    "M. Akanji",
+    "B. Embolo",
+    "D. Ndoye",
+    "A. Jashari",
+    "R. Rodríguez"
+  ],
+  "players": [
+    {
+      "id": 123468,
+      "name": "M. Keller",
+      "age": 23,
+      "position": "Goalkeeper",
+      "number": 21,
+      "photo": "https://media.api-sports.io/football/players/123468.png",
+      "club": "BSC Young Boys"
+    },
+    {
+      "id": 25282,
+      "name": "G. Kobel",
+      "age": 28,
+      "position": "Goalkeeper",
+      "number": 1,
+      "photo": "https://media.api-sports.io/football/players/25282.png",
+      "club": "Borussia Dortmund"
+    },
+    {
+      "id": 1142,
+      "name": "Y. Mvogo",
+      "age": 31,
+      "position": "Goalkeeper",
+      "number": 12,
+      "photo": "https://media.api-sports.io/football/players/1142.png",
+      "club": "Lorient"
+    },
+    {
+      "id": 5,
+      "name": "M. Akanji",
+      "age": 30,
+      "position": "Defender",
+      "number": 5,
+      "photo": "https://media.api-sports.io/football/players/5.png",
+      "club": "Inter"
+    },
+    {
+      "id": 162414,
+      "name": "A. Amenda",
+      "age": 22,
+      "position": "Defender",
+      "number": 24,
+      "photo": "https://media.api-sports.io/football/players/162414.png",
+      "club": "Eintracht Frankfurt"
+    },
+    {
+      "id": 48372,
+      "name": "E. C\u00f6mert",
+      "age": 27,
+      "position": "Defender",
+      "number": 18,
+      "photo": "https://media.api-sports.io/football/players/48372.png",
+      "club": "Valencia"
+    },
+    {
+      "id": 2803,
+      "name": "N. Elvedi",
+      "age": 29,
+      "position": "Defender",
+      "number": 4,
+      "photo": "https://media.api-sports.io/football/players/2803.png",
+      "club": "Borussia M\u00f6nchengladbach"
+    },
+    {
+      "id": 349344,
+      "name": "L. Jaquez",
+      "age": 22,
+      "position": "Defender",
+      "number": 25,
+      "photo": "https://media.api-sports.io/football/players/349344.png",
+      "club": "VfB Stuttgart"
+    },
+    {
+      "id": 48489,
+      "name": "M. Muheim",
+      "age": 27,
+      "position": "Defender",
+      "number": 2,
+      "photo": "https://media.api-sports.io/football/players/48489.png",
+      "club": "Hamburger SV"
+    },
+    {
+      "id": 1631,
+      "name": "R. Rodr\u00edguez",
+      "age": 33,
+      "position": "Defender",
+      "number": 13,
+      "photo": "https://media.api-sports.io/football/players/1631.png",
+      "club": "Real Betis"
+    },
+    {
+      "id": 48378,
+      "name": "S. Widmer",
+      "age": 32,
+      "position": "Defender",
+      "number": 3,
+      "photo": "https://media.api-sports.io/football/players/48378.png",
+      "club": "FSV Mainz 05"
+    },
+    {
+      "id": 951,
+      "name": "M. Aebischer",
+      "age": 28,
+      "position": "Midfielder",
+      "number": 20,
+      "photo": "https://media.api-sports.io/football/players/951.png",
+      "club": "Pisa"
+    },
+    {
+      "id": 2807,
+      "name": "R. Freuler",
+      "age": 33,
+      "position": "Midfielder",
+      "number": 8,
+      "photo": "https://media.api-sports.io/football/players/2807.png",
+      "club": "Bologna"
+    },
+    {
+      "id": 264705,
+      "name": "A. Jashari",
+      "age": 23,
+      "position": "Midfielder",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/264705.png",
+      "club": "AC Milan"
+    },
+    {
+      "id": 957,
+      "name": "D. Sow",
+      "age": 28,
+      "position": "Midfielder",
+      "number": 15,
+      "photo": "https://media.api-sports.io/football/players/957.png",
+      "club": "Sevilla"
+    },
+    {
+      "id": 1464,
+      "name": "G. Xhaka",
+      "age": 33,
+      "position": "Midfielder",
+      "number": 10,
+      "photo": "https://media.api-sports.io/football/players/1464.png",
+      "club": "Sunderland"
+    },
+    {
+      "id": 2810,
+      "name": "D. Zakaria",
+      "age": 29,
+      "position": "Midfielder",
+      "number": 6,
+      "photo": "https://media.api-sports.io/football/players/2810.png",
+      "club": "Monaco"
+    },
+    {
+      "id": 952,
+      "name": "C. Fassnacht",
+      "age": 32,
+      "position": "Midfielder",
+      "number": 16,
+      "photo": "https://media.api-sports.io/football/players/952.png",
+      "club": "BSC Young Boys"
+    },
+    {
+      "id": 48497,
+      "name": "C. Itten",
+      "age": 29,
+      "position": "Midfielder",
+      "number": 26,
+      "photo": "https://media.api-sports.io/football/players/48497.png",
+      "club": "Fortuna D\u00fcsseldorf"
+    },
+    {
+      "id": 163032,
+      "name": "F. Rieder",
+      "age": 23,
+      "position": "Midfielder",
+      "number": 22,
+      "photo": "https://media.api-sports.io/football/players/163032.png",
+      "club": "FC Augsburg"
+    },
+    {
+      "id": 48471,
+      "name": "R. Vargas",
+      "age": 27,
+      "position": "Attacker",
+      "number": 17,
+      "photo": "https://media.api-sports.io/football/players/48471.png",
+      "club": "Sevilla"
+    },
+    {
+      "id": 123469,
+      "name": "Z. Amdouni",
+      "age": 25,
+      "position": "Attacker",
+      "number": 23,
+      "photo": "https://media.api-sports.io/football/players/123469.png",
+      "club": "Burnley"
+    },
+    {
+      "id": 421,
+      "name": "B. Embolo",
+      "age": 28,
+      "position": "Attacker",
+      "number": 7,
+      "photo": "https://media.api-sports.io/football/players/421.png",
+      "club": "Rennes"
+    },
+    {
+      "id": 406244,
+      "name": "J. Manzambi",
+      "age": 20,
+      "position": "Attacker",
+      "number": 9,
+      "photo": "https://media.api-sports.io/football/players/406244.png",
+      "club": "SC Freiburg"
+    },
+    {
+      "id": 48389,
+      "name": "N. Okafor",
+      "age": 25,
+      "position": "Attacker",
+      "number": 19,
+      "photo": "https://media.api-sports.io/football/players/48389.png",
+      "club": "Leeds"
+    },
+    {
+      "id": 48648,
+      "name": "D. Ndoye",
+      "age": 25,
+      "position": "Attacker",
+      "number": 11,
+      "photo": "https://media.api-sports.io/football/players/48648.png",
+      "club": "Nottingham Forest"
+    }
+  ]
+}

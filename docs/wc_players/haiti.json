@@ -1,0 +1,251 @@
+{
+  "country": "haiti",
+  "displayName": "Haiti",
+  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+  "manager": "Sébastien Migné",
+  "captain": "Johny Placide",
+  "keyPlayers": [
+    "Johny Placide",
+    "Jean-Ricner Bellegarde",
+    "Wilson Isidor",
+    "Duckens Nazon",
+    "Frantzdy Pierrot",
+    "Danley Jean-Jacques"
+  ],
+  "players": [
+    {
+      "id": 123742,
+      "name": "J. Duverger",
+      "age": 23,
+      "position": "Goalkeeper",
+      "number": 23,
+      "photo": "https://media.api-sports.io/football/players/123742.png",
+      "club": "FC Cosmos Koblenz"
+    },
+    {
+      "id": 174768,
+      "name": "A. Pierre",
+      "age": 24,
+      "position": "Goalkeeper",
+      "number": 12,
+      "photo": "https://media.api-sports.io/football/players/174768.png",
+      "club": "Sochaux"
+    },
+    {
+      "id": 87789,
+      "name": "J. Placide",
+      "age": 38,
+      "position": "Goalkeeper",
+      "number": 1,
+      "photo": "https://media.api-sports.io/football/players/87789.png",
+      "club": "Bastia"
+    },
+    {
+      "id": 20850,
+      "name": "C. Arcus",
+      "age": 29,
+      "position": "Defender",
+      "number": 2,
+      "photo": "https://media.api-sports.io/football/players/20850.png",
+      "club": "Angers"
+    },
+    {
+      "id": 573613,
+      "name": "K. Thermoncy",
+      "age": 20,
+      "position": "Defender",
+      "number": 3,
+      "photo": "https://media.api-sports.io/football/players/573613.png",
+      "club": "BSC Young Boys"
+    },
+    {
+      "id": 12303,
+      "name": "Ricardo Ade",
+      "age": 35,
+      "position": "Defender",
+      "number": 4,
+      "photo": "https://media.api-sports.io/football/players/12303.png",
+      "club": "LDU de Quito"
+    },
+    {
+      "id": 1411,
+      "name": "H. Delcroix",
+      "age": 26,
+      "position": "Defender",
+      "number": 5,
+      "photo": "https://media.api-sports.io/football/players/1411.png",
+      "club": "FC Lugano"
+    },
+    {
+      "id": 20655,
+      "name": "J. Duverne",
+      "age": 28,
+      "position": "Defender",
+      "number": 22,
+      "photo": "https://media.api-sports.io/football/players/20655.png",
+      "club": "Gent"
+    },
+    {
+      "id": 190747,
+      "name": "M. Exp\u00e9rience",
+      "age": 26,
+      "position": "Defender",
+      "number": 8,
+      "photo": "https://media.api-sports.io/football/players/190747.png",
+      "club": "Nancy"
+    },
+    {
+      "id": 102505,
+      "name": "D. Lacroix",
+      "age": 32,
+      "position": "Defender",
+      "number": 13,
+      "photo": "https://media.api-sports.io/football/players/102505.png",
+      "club": "Colorado Springs"
+    },
+    {
+      "id": 275367,
+      "name": "W. Paugain",
+      "age": 24,
+      "position": "Defender",
+      "number": 24,
+      "photo": "https://media.api-sports.io/football/players/275367.png",
+      "club": "Zulte Waregem"
+    },
+    {
+      "id": 20665,
+      "name": "J. Bellegarde",
+      "age": 27,
+      "position": "Midfielder",
+      "number": 10,
+      "photo": "https://media.api-sports.io/football/players/20665.png",
+      "club": "Wolves"
+    },
+    {
+      "id": 338367,
+      "name": "D. Jean-Jacques",
+      "age": 25,
+      "position": "Midfielder",
+      "number": 17,
+      "photo": "https://media.api-sports.io/football/players/338367.png",
+      "club": "Philadelphia Union"
+    },
+    {
+      "id": 20538,
+      "name": "L. Pierre",
+      "age": 27,
+      "position": "Midfielder",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/20538.png",
+      "club": "Vizela"
+    },
+    {
+      "id": 371050,
+      "name": "W. Pierre",
+      "age": 21,
+      "position": "Midfielder",
+      "number": 26,
+      "photo": "https://media.api-sports.io/football/players/371050.png",
+      "club": "Real du Cap"
+    },
+    {
+      "id": 540857,
+      "name": "C. F. Sainte",
+      "age": 23,
+      "position": "Midfielder",
+      "number": 6,
+      "photo": "https://media.api-sports.io/football/players/540857.png",
+      "club": "El Paso Locomotive FC"
+    },
+    {
+      "id": 194242,
+      "name": "D. Simon",
+      "age": 25,
+      "position": "Midfielder",
+      "number": 25,
+      "photo": "https://media.api-sports.io/football/players/194242.png",
+      "club": "Tatran Pre\u0161ov"
+    },
+    {
+      "id": 174915,
+      "name": "J. Casimir",
+      "age": 24,
+      "position": "Attacker",
+      "number": 21,
+      "photo": "https://media.api-sports.io/football/players/174915.png",
+      "club": "Auxerre"
+    },
+    {
+      "id": 128766,
+      "name": "L. Deedson",
+      "age": 24,
+      "position": "Attacker",
+      "number": 11,
+      "photo": "https://media.api-sports.io/football/players/128766.png",
+      "club": "FC Dallas"
+    },
+    {
+      "id": 50958,
+      "name": "D. Etienne",
+      "age": 29,
+      "position": "Attacker",
+      "number": 7,
+      "photo": "https://media.api-sports.io/football/players/50958.png",
+      "club": "Toronto FC"
+    },
+    {
+      "id": 48535,
+      "name": "Y. Fortun\u00e9",
+      "age": 26,
+      "position": "Attacker",
+      "number": 19,
+      "photo": "https://media.api-sports.io/football/players/48535.png",
+      "club": "Vizela"
+    },
+    {
+      "id": 84087,
+      "name": "W. Isidor",
+      "age": 25,
+      "position": "Attacker",
+      "number": 18,
+      "photo": "https://media.api-sports.io/football/players/84087.png",
+      "club": "Sunderland"
+    },
+    {
+      "id": 21613,
+      "name": "L. Joseph",
+      "age": 25,
+      "position": "Attacker",
+      "number": 16,
+      "photo": "https://media.api-sports.io/football/players/21613.png",
+      "club": "Ferencvarosi TC"
+    },
+    {
+      "id": 45020,
+      "name": "D. Nazon",
+      "age": 31,
+      "position": "Attacker",
+      "number": 9,
+      "photo": "https://media.api-sports.io/football/players/45020.png",
+      "club": "Esteghlal FC"
+    },
+    {
+      "id": 8601,
+      "name": "F. Pierrot",
+      "age": 30,
+      "position": "Attacker",
+      "number": 20,
+      "photo": "https://media.api-sports.io/football/players/8601.png",
+      "club": "AEK Athens FC"
+    },
+    {
+      "id": 162733,
+      "name": "R. Providence",
+      "age": 24,
+      "position": "Attacker",
+      "number": 15,
+      "photo": "https://media.api-sports.io/football/players/162733.png",
+      "club": "Almere City FC"
+    }
+  ]
+}

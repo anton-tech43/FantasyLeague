@@ -1,0 +1,250 @@
+{
+  "country": "south_africa",
+  "displayName": "South Africa",
+  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+  "manager": "Hugo Broos",
+  "captain": "R. Williams",
+  "keyPlayers": [
+    "R. Williams",
+    "L. Foster",
+    "T. Mokoena",
+    "O. Appollis",
+    "R. Mofokeng"
+  ],
+  "players": [
+    {
+      "id": 46417,
+      "name": "S. Chaine",
+      "age": 29,
+      "position": "Goalkeeper",
+      "number": 16,
+      "photo": "https://media.api-sports.io/football/players/46417.png",
+      "club": "Orlando Pirates"
+    },
+    {
+      "id": 46245,
+      "name": "R. Goss",
+      "age": 31,
+      "position": "Goalkeeper",
+      "number": 22,
+      "photo": "https://media.api-sports.io/football/players/46245.png",
+      "club": "Siwelele"
+    },
+    {
+      "id": 3275,
+      "name": "R. Williams",
+      "age": 33,
+      "position": "Goalkeeper",
+      "number": 1,
+      "photo": "https://media.api-sports.io/football/players/3275.png",
+      "club": "Mamelodi Sundowns"
+    },
+    {
+      "id": 163041,
+      "name": "B. Cross",
+      "age": 24,
+      "position": "Defender",
+      "number": 26,
+      "photo": "https://media.api-sports.io/football/players/163041.png",
+      "club": "Kaizer Chiefs"
+    },
+    {
+      "id": 430078,
+      "name": "S. Kabini",
+      "age": 21,
+      "position": "Defender",
+      "number": 18,
+      "photo": "https://media.api-sports.io/football/players/430078.png",
+      "club": "Molde"
+    },
+    {
+      "id": 392387,
+      "name": "O. Makhanya",
+      "age": 21,
+      "position": "Defender",
+      "number": 24,
+      "photo": "https://media.api-sports.io/football/players/392387.png",
+      "club": "Philadelphia Union"
+    },
+    {
+      "id": 510799,
+      "name": "M. Mbokazi",
+      "age": 20,
+      "position": "Defender",
+      "number": 14,
+      "photo": "https://media.api-sports.io/football/players/510799.png",
+      "club": "Orlando Pirates"
+    },
+    {
+      "id": 46334,
+      "name": "A. Modiba",
+      "age": 30,
+      "position": "Defender",
+      "number": 6,
+      "photo": "https://media.api-sports.io/football/players/46334.png",
+      "club": "Mamelodi Sundowns"
+    },
+    {
+      "id": 46601,
+      "name": "K. Mudau",
+      "age": 30,
+      "position": "Defender",
+      "number": 20,
+      "photo": "https://media.api-sports.io/football/players/46601.png",
+      "club": "Mamelodi Sundowns"
+    },
+    {
+      "id": 474630,
+      "name": "K. Ndamane",
+      "age": 21,
+      "position": "Defender",
+      "number": 3,
+      "photo": "https://media.api-sports.io/football/players/474630.png",
+      "club": "Mamelodi Sundowns"
+    },
+    {
+      "id": 406752,
+      "name": "I. Okon",
+      "age": 21,
+      "position": "Defender",
+      "number": 21,
+      "photo": "https://media.api-sports.io/football/players/406752.png",
+      "club": "Hannover 96"
+    },
+    {
+      "id": 46458,
+      "name": "N. Sibisi",
+      "age": 30,
+      "position": "Defender",
+      "number": 19,
+      "photo": "https://media.api-sports.io/football/players/46458.png",
+      "club": "Orlando Pirates"
+    },
+    {
+      "id": 330174,
+      "name": "T. Matuludi",
+      "age": 26,
+      "position": "Defender",
+      "number": 2,
+      "photo": "https://media.api-sports.io/football/players/330174.png",
+      "club": "Polokwane City"
+    },
+    {
+      "id": 268710,
+      "name": "J. Adams",
+      "age": 24,
+      "position": "Midfielder",
+      "number": 23,
+      "photo": "https://media.api-sports.io/football/players/268710.png",
+      "club": "Mamelodi Sundowns"
+    },
+    {
+      "id": 194430,
+      "name": "T. Mbatha",
+      "age": 25,
+      "position": "Midfielder",
+      "number": 5,
+      "photo": "https://media.api-sports.io/football/players/194430.png",
+      "club": "Orlando Pirates"
+    },
+    {
+      "id": 3287,
+      "name": "T. Mokoena",
+      "age": 28,
+      "position": "Midfielder",
+      "number": 4,
+      "photo": "https://media.api-sports.io/football/players/3287.png",
+      "club": "Mamelodi Sundowns"
+    },
+    {
+      "id": 158433,
+      "name": "S. Sithole",
+      "age": 26,
+      "position": "Midfielder",
+      "number": 13,
+      "photo": "https://media.api-sports.io/football/players/158433.png",
+      "club": "Tondela"
+    },
+    {
+      "id": 3289,
+      "name": "T. Zwane",
+      "age": 36,
+      "position": "Midfielder",
+      "number": 11,
+      "photo": "https://media.api-sports.io/football/players/3289.png",
+      "club": "Mamelodi Sundowns"
+    },
+    {
+      "id": 179893,
+      "name": "O. Appollis",
+      "age": 24,
+      "position": "Attacker",
+      "number": 7,
+      "photo": "https://media.api-sports.io/football/players/179893.png",
+      "club": "Orlando Pirates"
+    },
+    {
+      "id": 98936,
+      "name": "L. Foster",
+      "age": 25,
+      "position": "Attacker",
+      "number": 9,
+      "photo": "https://media.api-sports.io/football/players/98936.png",
+      "club": "Burnley"
+    },
+    {
+      "id": 201354,
+      "name": "E. Makgopa",
+      "age": 25,
+      "position": "Attacker",
+      "number": 17,
+      "photo": "https://media.api-sports.io/football/players/201354.png",
+      "club": "Orlando Pirates"
+    },
+    {
+      "id": 354831,
+      "name": "T. Maseko",
+      "age": 22,
+      "position": "Attacker",
+      "number": 12,
+      "photo": "https://media.api-sports.io/football/players/354831.png",
+      "club": "AEL"
+    },
+    {
+      "id": 414149,
+      "name": "R. Mofokeng",
+      "age": 21,
+      "position": "Attacker",
+      "number": 10,
+      "photo": "https://media.api-sports.io/football/players/414149.png",
+      "club": "Orlando Pirates"
+    },
+    {
+      "id": 295977,
+      "name": "T. Moremi",
+      "age": 25,
+      "position": "Attacker",
+      "number": 8,
+      "photo": "https://media.api-sports.io/football/players/295977.png",
+      "club": "Orlando Pirates"
+    },
+    {
+      "id": 127429,
+      "name": "I. Rayners",
+      "age": 30,
+      "position": "Attacker",
+      "number": 15,
+      "photo": "https://media.api-sports.io/football/players/127429.png",
+      "club": "Mamelodi Sundowns"
+    },
+    {
+      "id": 359561,
+      "name": "K. Sebelebele",
+      "age": 23,
+      "position": "Attacker",
+      "number": 25,
+      "photo": "https://media.api-sports.io/football/players/359561.png",
+      "club": "Orlando Pirates"
+    }
+  ]
+}
