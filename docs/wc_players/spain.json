@@ -10,17 +10,18 @@
   "Lamine Yamal",
   "Mikel Oyarzabal",
   "Nico Williams",
-  "Unai Sim\u00f3n"
+  "Unai Simón"
  ],
  "players": [
   {
    "id": 182718,
-   "name": "Joan Garc\u00eda",
+   "name": "Joan García",
    "age": 24,
    "position": "Goalkeeper",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/182718.png",
-   "club": "Barcelona"
+   "club": "Barcelona",
+   "note": "Barcelona paid his release clause from neighbours Espanyol in 2025, and he repaid them by walking straight into the team and helping win the league. The kind of summer signing that makes the move look obvious in hindsight."
   },
   {
    "id": 19465,
@@ -29,25 +30,28 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/19465.png",
-   "club": "Arsenal"
+   "club": "Arsenal",
+   "note": "Arsenal's number one, prized less for spectacular saves than for being calm with the ball at his feet, which is exactly how Spain like their keepers to play. Here he is one of three good ones competing for the gloves."
   },
   {
    "id": 47270,
-   "name": "Unai Sim\u00f3n",
+   "name": "Unai Simón",
    "age": 28,
    "position": "Goalkeeper",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/47270.png",
-   "club": "Athletic Club"
+   "club": "Athletic Club",
+   "note": "Spain's go-to keeper through their Euro 2024 win, the steady hand behind a young squad. A one-club man at Athletic Club, where he has spent his whole career in the Basque country."
   },
   {
    "id": 396623,
-   "name": "Pau Cubars\u00ed Paredes",
+   "name": "Pau Cubarsí Paredes",
    "age": 18,
    "position": "Defender",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/396623.png",
-   "club": "Barcelona"
+   "club": "Barcelona",
+   "note": "An 18-year-old centre-back who already looks unbothered playing for Barcelona, reading the game like someone twice his age. His coach Hansi Flick calls him the defensive answer to Lamine Yamal, which tells you the hype is real."
   },
   {
    "id": 47380,
@@ -56,25 +60,28 @@
    "position": "Defender",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/47380.png",
-   "club": "Chelsea"
+   "club": "Chelsea",
+   "note": "The Chelsea left-back with the unmistakable curly mop, who set up Spain's winner in the Euro 2024 final. Tireless up and down the flank, and impossible to miss in a crowd."
   },
   {
    "id": 619,
-   "name": "Eric Garc\u00eda",
+   "name": "Eric García",
    "age": 24,
    "position": "Defender",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/619.png",
-   "club": "Barcelona"
+   "club": "Barcelona",
+   "note": "A Barcelona academy defender comfortable wherever the team needs him, from centre-back to full-back. The sort of reliable utility player every tournament squad quietly depends on."
   },
   {
    "id": 563,
-   "name": "\u00c1lex Grimaldo",
+   "name": "Álex Grimaldo",
    "age": 30,
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/563.png",
-   "club": "Bayer Leverkusen"
+   "club": "Bayer Leverkusen",
+   "note": "A left-back who is really an attacker in disguise, with a free-kick and a cross good enough to rack up goals and assists in Germany. Spent years at Benfica before reinventing himself at Bayer Leverkusen."
   },
   {
    "id": 622,
@@ -83,7 +90,8 @@
    "position": "Defender",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/622.png",
-   "club": "Athletic Club"
+   "club": "Athletic Club",
+   "note": "The senior centre-back who organises Spain's defence, born in France but capped by the country he chose. Now back home at Athletic Club, the team he came through as a teenager."
   },
   {
    "id": 753,
@@ -92,7 +100,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/753.png",
-   "club": "Atletico Madrid"
+   "club": "Atletico Madrid",
+   "note": "Atletico's Swiss-army-knife, equally happy at right-back, in midfield or charging forward, which is exactly why Simeone never lets him go. After missing Euro 2024, this is his long-awaited shot at a World Cup."
   },
   {
    "id": 47519,
@@ -101,7 +110,8 @@
    "position": "Defender",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/47519.png",
-   "club": "Tottenham"
+   "club": "Tottenham",
+   "note": "Tottenham's attacking right-back, more interested in whipping in crosses than sitting back defending. Pace and a delivery that makes him dangerous the moment he gets forward."
   },
   {
    "id": 295793,
@@ -110,7 +120,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/295793.png",
-   "club": "Atletico Madrid"
+   "club": "Atletico Madrid",
+   "note": "A right-back who earned his big move to Atletico after impressing at smaller Almeria, and now finds himself on a World Cup squad. An Olympic gold medallist with Spain in Paris, so he knows what a tournament high feels like."
   },
   {
    "id": 296667,
@@ -119,7 +130,8 @@
    "position": "Midfielder",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/296667.png",
-   "club": "Barcelona"
+   "club": "Barcelona",
+   "note": "The Barcelona midfielder who plays every minute like a tackle is owed to him, all snarl and energy. His place here is a feel-good story after a long climb back from a serious knee injury."
   },
   {
    "id": 47311,
@@ -128,7 +140,8 @@
    "position": "Midfielder",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/47311.png",
-   "club": "Arsenal"
+   "club": "Arsenal",
+   "note": "A tall, two-footed midfielder at Arsenal who is surprisingly handy in the air at both ends, and has even filled in up front in a pinch. The kind of player a manager loves because he can do a bit of everything."
   },
   {
    "id": 133609,
@@ -137,7 +150,8 @@
    "position": "Midfielder",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/133609.png",
-   "club": "Barcelona"
+   "club": "Barcelona",
+   "note": "The midfielder who runs the tempo for both Barcelona and Spain, gliding past challenges and rarely giving the ball away. Still only 23, yet he plays with the calm of someone who has seen it all."
   },
   {
    "id": 44,
@@ -146,34 +160,38 @@
    "position": "Midfielder",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/44.png",
-   "club": "Manchester City"
+   "club": "Manchester City",
+   "note": "The captain and 2024 Ballon d'Or winner, the metronome who sits in front of the defence and makes everything tick. He lost most of last season to a knee injury, so a World Cup back at full strength is a story in itself."
   },
   {
    "id": 328,
-   "name": "Fabi\u00e1n Ruiz",
+   "name": "Fabián Ruiz",
    "age": 29,
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/328.png",
-   "club": "Paris Saint Germain"
+   "club": "Paris Saint Germain",
+   "note": "A languid, left-footed midfielder at Paris Saint-Germain who makes the hard things look effortless. Easy to overlook next to the bigger names, but Spain rarely play well without him."
   },
   {
    "id": 47315,
-   "name": "Mart\u00edn Zubimendi",
+   "name": "Martín Zubimendi",
    "age": 26,
    "position": "Midfielder",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/47315.png",
-   "club": "Arsenal"
+   "club": "Arsenal",
+   "note": "The holding midfielder Arsenal paid big money for in 2025, having once turned down a move to Liverpool to stay loyal to his hometown Real Sociedad. He does the unglamorous shielding work that lets the flair players sparkle."
   },
   {
    "id": 182219,
-   "name": "\u00c1lex Baena",
+   "name": "Álex Baena",
    "age": 24,
    "position": "Midfielder",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/182219.png",
-   "club": "Atletico Madrid"
+   "club": "Atletico Madrid",
+   "note": "A creative left-footer who racked up more assists than anyone else in Spain before Atletico signed him in 2025. The man you want on the ball when a defence needs unpicking."
   },
   {
    "id": 1323,
@@ -182,7 +200,8 @@
    "position": "Attacker",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/1323.png",
-   "club": "Barcelona"
+   "club": "Barcelona",
+   "note": "A clever forward who drifts between the lines, learning his trade in Croatia at Dinamo Zagreb before coming home to Barcelona. A regular scorer in Spain's biggest moments, including at Euro 2024."
   },
   {
    "id": 47348,
@@ -191,7 +210,8 @@
    "position": "Attacker",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/47348.png",
-   "club": "Celta Vigo"
+   "club": "Celta Vigo",
+   "note": "A proper penalty-box striker nicknamed Panda, back in the squad at 32 after rediscovering his scoring touch at Celta Vigo. The elder statesman among Spain's forwards and a feel-good recall."
   },
   {
    "id": 386828,
@@ -200,16 +220,18 @@
    "position": "Attacker",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/386828.png",
-   "club": "Barcelona"
+   "club": "Barcelona",
+   "note": "The 18-year-old Barcelona winger already treated as a global star, who curled in a jaw-dropping goal against France on Spain's way to the Euro 2024 title. Give him the right boot and a sliver of space and he can decide a match on his own."
   },
   {
    "id": 338751,
-   "name": "V\u00edctor Mu\u00f1oz",
+   "name": "Víctor Muñoz",
    "age": 22,
    "position": "Attacker",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/338751.png",
-   "club": "Osasuna"
+   "club": "Osasuna",
+   "note": "A 22-year-old who scored on his Spain debut against Serbia, despite never being picked at any youth level first. A breakout season at Osasuna turned him from unknown into World Cup squad member in a matter of months."
   },
   {
    "id": 47323,
@@ -218,7 +240,8 @@
    "position": "Attacker",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/47323.png",
-   "club": "Real Sociedad"
+   "club": "Real Sociedad",
+   "note": "The Real Sociedad forward who came off the bench to score Spain's winner against England in the Euro 2024 final, the night he became a national hero. Hard-working and dependable rather than flashy, exactly the man you want with the game on the line."
   },
   {
    "id": 184226,
@@ -227,7 +250,8 @@
    "position": "Attacker",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/184226.png",
-   "club": "Crystal Palace"
+   "club": "Crystal Palace",
+   "note": "A direct, two-footed winger who won the Europa League as a teenager at Villarreal before moving to Crystal Palace in 2025. Quick and fearless, the type to take on a full-back the moment he gets the ball."
   },
   {
    "id": 931,
@@ -236,7 +260,8 @@
    "position": "Attacker",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/931.png",
-   "club": "Barcelona"
+   "club": "Barcelona",
+   "note": "A Barcelona forward who can play across the front line and has quietly become one of Spain's most reliable finishers. Often the man who pops up with a goal when the famous names are being marked out of the game."
   },
   {
    "id": 183799,
@@ -245,7 +270,8 @@
    "position": "Attacker",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/183799.png",
-   "club": "Athletic Club"
+   "club": "Athletic Club",
+   "note": "A blistering Athletic Club winger who shone at Euro 2024, and stayed loyal to his Basque club despite plenty of bigger offers. Brother of Ghana striker Inaki, and a one-on-one nightmare for any defender."
   }
  ],
  "guardianStarPlayer": "Lamine Yamal",

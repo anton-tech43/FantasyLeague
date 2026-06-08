@@ -20,7 +20,8 @@
    "position": "Goalkeeper",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/266606.png",
-   "club": "Chicago Fire"
+   "club": "Chicago Fire",
+   "note": "The youngest of the three keepers and the first homegrown player Chicago Fire have ever sent to a World Cup. He's here mostly to learn from the older two, but at 21 the future net is probably his."
   },
   {
    "id": 50728,
@@ -29,7 +30,8 @@
    "position": "Goalkeeper",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/50728.png",
-   "club": "New York City FC"
+   "club": "New York City FC",
+   "note": "He wrote a college research paper on penalty kicks, then put it to use by saving three in a Gold Cup shootout against Costa Rica. Those saves turned him from backup into the man most likely to start in goal at a home World Cup."
   },
   {
    "id": 50999,
@@ -38,7 +40,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/50999.png",
-   "club": "New England Revolution"
+   "club": "New England Revolution",
+   "note": "He played every minute of the 2022 World Cup in goal, spent a few years in England, then came home to New England to rebuild his form. This time he arrives as the experienced head rather than the guaranteed starter."
   },
   {
    "id": 38735,
@@ -47,7 +50,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/38735.png",
-   "club": "PSV Eindhoven"
+   "club": "PSV Eindhoven",
+   "note": "An attacking full-back who came up through Barcelona's academy before settling in the Netherlands with PSV. He defends like he'd rather be galloping forward, which is both his charm and his risk."
   },
   {
    "id": 355994,
@@ -56,7 +60,8 @@
    "position": "Defender",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/355994.png",
-   "club": "Orlando City SC"
+   "club": "Orlando City SC",
+   "note": "The youngest man in the squad and the son of Super Bowl-winning receiver Antonio Freeman, so the athletic genes were never in doubt. A flying right-back who climbed every rung of Orlando's academy before forcing his way into the picture."
   },
   {
    "id": 50735,
@@ -65,7 +70,8 @@
    "position": "Defender",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/50735.png",
-   "club": "Toulouse"
+   "club": "Toulouse",
+   "note": "A calm, ball-playing centre-back from Delaware who has quietly made himself a regular in France's top flight with Toulouse. The kind of defender you only notice when he's missing."
   },
   {
    "id": 19023,
@@ -74,7 +80,8 @@
    "position": "Defender",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/19023.png",
-   "club": "Charlotte"
+   "club": "Charlotte",
+   "note": "At 38 he's comfortably the oldest player in the squad and wears the captain's armband, the steady veteran voice marshalling a young back line. He left the Premier League to come home to Charlotte but never gave up his spot for the U.S."
   },
   {
    "id": 126949,
@@ -83,7 +90,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/126949.png",
-   "club": "Crystal Palace"
+   "club": "Crystal Palace",
+   "note": "He anchored Crystal Palace's defence as they beat Manchester City to win their first major trophy, the 2025 FA Cup, then was named U.S. Soccer's Player of the Year. The Alabama-born centre-back has gone from promising prospect to the squad's most reliable defender."
   },
   {
    "id": 19549,
@@ -92,7 +100,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/19549.png",
-   "club": "Fulham"
+   "club": "Fulham",
+   "note": "A left-back at Fulham who is genuinely one of the quickest defenders in the Premier League, forever sprinting back to clean up trouble. His overlapping runs are a big part of how the U.S. attacks down that flank."
   },
   {
    "id": 50879,
@@ -101,7 +110,8 @@
    "position": "Defender",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/50879.png",
-   "club": "FC Cincinnati"
+   "club": "FC Cincinnati",
+   "note": "A powerful, recovery-fast centre-back at FC Cincinnati who came back from a torn Achilles to keep his national-team place. Between him and Tim Ream, this defensive pairing has racked up well over 100 caps."
   },
   {
    "id": 50852,
@@ -110,7 +120,8 @@
    "position": "Defender",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/50852.png",
-   "club": "Borussia M\u00f6nchengladbach"
+   "club": "Borussia M\u00f6nchengladbach",
+   "note": "A New York-raised full-back who moved to Germany as a teenager and has been a Bundesliga regular at M\u00f6nchengladbach ever since. Comfortable down either flank, which makes him a useful spare part to have on the bench."
   },
   {
    "id": 50737,
@@ -119,7 +130,8 @@
    "position": "Defender",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/50737.png",
-   "club": "Celtic"
+   "club": "Celtic",
+   "note": "A Pennsylvania-born centre-back who just won the Scottish league title with Celtic and is heading to his first World Cup. A late bloomer who keeps quietly answering every question asked of him."
   },
   {
    "id": 362400,
@@ -128,7 +140,8 @@
    "position": "Defender",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/362400.png",
-   "club": "Columbus Crew"
+   "club": "Columbus Crew",
+   "note": "A wing-back at Columbus Crew who brings pace and a willingness to get forward and create. One of the home-grown MLS picks Pochettino trusts to stretch a defence down the left."
   },
   {
    "id": 201713,
@@ -137,7 +150,8 @@
    "position": "Midfielder",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/201713.png",
-   "club": "Vancouver Whitecaps"
+   "club": "Vancouver Whitecaps",
+   "note": "His father Gregg used to coach this team, so playing at the World Cup makes them only the second father-son pair to represent the U.S. there. He earned the call on his own merit after a breakout year setting up goals for Vancouver."
   },
   {
    "id": 415,
@@ -146,7 +160,8 @@
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/415.png",
-   "club": "Juventus"
+   "club": "Juventus",
+   "note": "The all-action engine of the midfield, a Texan who has spent years at Juventus and will play almost any role he's handed, from box-crashing runner to emergency full-back. Often described as the heart of this team, and he plays like it."
   },
   {
    "id": 161921,
@@ -155,7 +170,8 @@
    "position": "Midfielder",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/161921.png",
-   "club": "Borussia M\u00f6nchengladbach"
+   "club": "Borussia M\u00f6nchengladbach",
+   "note": "Son of former U.S. captain Claudio Reyna and blessed with a left foot that can unlock any defence, when his body cooperates. A run of injuries stalled his Dortmund career, so a fresh start at M\u00f6nchengladbach was meant to get him back to the World Cup, and it did."
   },
   {
    "id": 51114,
@@ -164,7 +180,8 @@
    "position": "Midfielder",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/51114.png",
-   "club": "Seattle Sounders"
+   "club": "Seattle Sounders",
+   "note": "A tireless, do-the-dirty-work midfielder who has spent his whole career at Seattle and just made the league's best eleven. He's the only player here who was an active MLS man at both the 2022 World Cup and this one."
   },
   {
    "id": 162037,
@@ -173,7 +190,8 @@
    "position": "Midfielder",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/162037.png",
-   "club": "Bayer Leverkusen"
+   "club": "Bayer Leverkusen",
+   "note": "A smooth attacking midfielder who earned a club-record move to Bayer Leverkusen after starring in the Netherlands. He was the U.S.'s standout at the 2025 Gold Cup, and on his day he glides past people like the game is in slow motion."
   },
   {
    "id": 1150,
@@ -182,7 +200,8 @@
    "position": "Midfielder",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/1150.png",
-   "club": "Bournemouth"
+   "club": "Bournemouth",
+   "note": "The team's main holding midfielder, the one who breaks up attacks and tidies up before anyone realises there was danger. He's the only natural ball-winner of his type in the squad, so a lot rests on him staying fit after a strong season at Bournemouth."
   },
   {
    "id": 1138,
@@ -191,7 +210,8 @@
    "position": "Attacker",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/1138.png",
-   "club": "Marseille"
+   "club": "Marseille",
+   "note": "Son of George Weah, the only African ever to win the Ballon d'Or and later president of Liberia, so the surname carries weight. Tim is a quick, hard-running wide forward at Marseille, and he was one of just three Americans to score at the 2022 World Cup."
   },
   {
    "id": 35885,
@@ -200,7 +220,8 @@
    "position": "Attacker",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/35885.png",
-   "club": "Club America"
+   "club": "Club America",
+   "note": "A tricky winger who stars for Club America in Mexico and could have played for Mexico himself before committing to the U.S. He'd been out of the picture for a while, but a hot end to the Liga MX season earned him a late ticket onto the plane."
   },
   {
    "id": 50739,
@@ -209,7 +230,8 @@
    "position": "Attacker",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/50739.png",
-   "club": "Leeds"
+   "club": "Leeds",
+   "note": "A high-energy attacking midfielder at Leeds whose game is built on pressing and pestering opponents into mistakes. Nicknamed the Medford Messi back home in New Jersey, a tag he carries with a grin rather than any real pressure."
   },
   {
    "id": 138835,
@@ -218,7 +240,8 @@
    "position": "Attacker",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/138835.png",
-   "club": "Monaco"
+   "club": "Monaco",
+   "note": "Born in New York, raised in London and an Arsenal academy product, he chose the U.S. over England and France. After a 19-goal season for Monaco, including a long late-season scoring run, he looks like the centre-forward this team has been waiting for."
   },
   {
    "id": 73868,
@@ -227,7 +250,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/73868.png",
-   "club": "PSV Eindhoven"
+   "club": "PSV Eindhoven",
+   "note": "A poacher's poacher who scored 19 goals to lead PSV to another Dutch title, despite missing a chunk of the season injured. He once briefly switched allegiance toward Mexico before settling firmly with the U.S., and now he's the lively alternative to Balogun up front."
   },
   {
    "id": 17,
@@ -236,7 +260,8 @@
    "position": "Attacker",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/17.png",
-   "club": "AC Milan"
+   "club": "AC Milan",
+   "note": "The face of American soccer, nicknamed Captain America, and the most-capped, most relied-upon player in the squad. He keeps rewriting U.S. record books while starring for AC Milan, and if anyone is going to win a knockout game on his own, it's him."
   },
   {
    "id": 427,
@@ -245,7 +270,8 @@
    "position": "Attacker",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/427.png",
-   "club": "Coventry"
+   "club": "Coventry",
+   "note": "A big, physical forward who scored 17 goals to help fire Coventry to promotion to the Premier League. He took a long road through Turkey and the lower leagues to get here, and he was one of only three Americans to score at the last World Cup."
   }
  ],
  "guardianStarPlayer": "Christian Pulisic",

@@ -19,7 +19,8 @@
    "position": "Goalkeeper",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/51274.png",
-   "club": "Portland Timbers"
+   "club": "Portland Timbers",
+   "note": "He came back from a broken leg suffered in the 2022 MLS Cup final, which tells you most of what you need to know about his stubbornness. A safe pair of hands who has waited a long time for a tournament like this."
   },
   {
    "id": 284554,
@@ -28,7 +29,8 @@
    "position": "Goalkeeper",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/284554.png",
-   "club": "Barnsley"
+   "club": "Barnsley",
+   "note": "Born in England but raised in small-town Ontario from age five, he took his citizenship oath in late 2025 just in time to make the squad. A Crystal Palace keeper still collecting his first regular senior minutes out on loan."
   },
   {
    "id": 51148,
@@ -37,7 +39,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/51148.png",
-   "club": "Minnesota United FC"
+   "club": "Minnesota United FC",
+   "note": "He was named the 2025 MLS Goalkeeper of the Year, only the second Canadian ever to win it, after a season of league-leading saves. The number one shirt and the gloves both look very much like his to lose."
   },
   {
    "id": 51295,
@@ -46,7 +49,8 @@
    "position": "Defender",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/51295.png",
-   "club": "Rangers"
+   "club": "Rangers",
+   "note": "After falling out of favour at Marseille he took a deadline-day loan to Rangers to get his career back on the pitch. The kind of well-travelled centre-back who has learned to win his place over and over again."
   },
   {
    "id": 327738,
@@ -55,7 +59,8 @@
    "position": "Defender",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/327738.png",
-   "club": "Dender"
+   "club": "Dender",
+   "note": "A Fulham academy graduate sent to Belgium on loan to grow up faster, he was Canada's Young Player of the Year for 2025 at just 20. Already trusted enough to share the back line with far older heads."
   },
   {
    "id": 50816,
@@ -64,7 +69,8 @@
    "position": "Defender",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/50816.png",
-   "club": "Toronto FC"
+   "club": "Toronto FC",
+   "note": "He spent the back half of 2025 playing nearly every outfield position for Toronto, the squad's reliable handyman. If Davies isn't fit, this is the energetic full-back most likely to step in."
   },
   {
    "id": 78494,
@@ -73,7 +79,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/78494.png",
-   "club": "CF Montreal"
+   "club": "CF Montreal",
+   "note": "A centre-back who can also fill in at right-back or in midfield, useful for a manager who likes options on his bench. Steady and unflashy, exactly the type you only notice when he's missing."
   },
   {
    "id": 78547,
@@ -82,7 +89,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/78547.png",
-   "club": "Celtic"
+   "club": "Celtic",
+   "note": "A reliable fixture at right-back for Celtic, though hamstring trouble cost him big stretches of the 2025-26 season. When he's on the pitch, the whole right side of the team tends to tick along better."
   },
   {
    "id": 18938,
@@ -91,7 +99,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/18938.png",
-   "club": "Middlesbrough"
+   "club": "Middlesbrough",
+   "note": "Bristol-born and a relative latecomer, he qualifies through an Alberta-born grandmother and only made his Canada debut in late 2025. The newest face in the back line, brought in for his Championship steadiness at centre-back."
   },
   {
    "id": 407017,
@@ -100,7 +109,8 @@
    "position": "Defender",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/407017.png",
-   "club": "Nice"
+   "club": "Nice",
+   "note": "The Montreal-born centre-back fractured his leg playing for Nice in October and spent much of the season clawing his way back to fitness. A powerful young defender Marsch clearly wants in this team, injury permitting."
   },
   {
    "id": 509,
@@ -109,7 +119,8 @@
    "position": "Defender",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/509.png",
-   "club": "Bayern M\u00fcnchen"
+   "club": "Bayern M\u00fcnchen",
+   "note": "Born in a Ghanaian refugee camp and resettled in Edmonton at five, the captain is now the most famous footballer his country has produced. He's still rebuilding after a torn ACL kept him out for most of a year, so his fitness may be the headline of Canada's whole tournament."
   },
   {
    "id": 416901,
@@ -118,7 +129,8 @@
    "position": "Defender",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/416901.png",
-   "club": "HNK Hajduk Split"
+   "club": "HNK Hajduk Split",
+   "note": "Born in Burnaby with dual Croatian citizenship, he switched his allegiance from Croatia to Canada in 2024. A right-back who can also sit in midfield, he has done enough at Hajduk Split to draw scouts from bigger leagues."
   },
   {
    "id": 50826,
@@ -127,7 +139,8 @@
    "position": "Midfielder",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/50826.png",
-   "club": "Nashville SC"
+   "club": "Nashville SC",
+   "note": "A winger from Kentville, Nova Scotia whose entire game is built around frightening pace down the left. He helped Nashville lift the club's first trophy in 2025, then carried that form straight into the national team."
   },
   {
    "id": 44798,
@@ -136,7 +149,8 @@
    "position": "Midfielder",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/44798.png",
-   "club": "Hull City"
+   "club": "Hull City",
+   "note": "He spent nearly a year out with a torn ACL before returning to help Hull win promotion to the Premier League late in the season. A left-sided attacker whose timing to make this squad was tight but ultimately rewarded."
   },
   {
    "id": 50788,
@@ -145,7 +159,8 @@
    "position": "Midfielder",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/50788.png",
-   "club": "Los Angeles FC"
+   "club": "Los Angeles FC",
+   "note": "He took the long way round, from Montreal to Switzerland and back to MLS with LAFC, picking up two Canadian Championships along the way. A tidy central midfielder who keeps the ball moving without much fuss."
   },
   {
    "id": 35570,
@@ -154,7 +169,8 @@
    "position": "Midfielder",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/35570.png",
-   "club": "FC Porto"
+   "club": "FC Porto",
+   "note": "Born in Leamington, Ontario to Portuguese parents, the vice-captain is the calm metronome who sets Canada's tempo from deep. If you want to understand how this team plays, watch where he stands when they have the ball."
   },
   {
    "id": 328046,
@@ -163,7 +179,8 @@
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/328046.png",
-   "club": "Sassuolo"
+   "club": "Sassuolo",
+   "note": "After a move to Marseille stalled, he chose Sassuolo on loan chasing the regular minutes a young midfielder needs, and the club later made it permanent. A box-to-box runner finally settling into a club where he plays every week."
   },
   {
    "id": 50817,
@@ -172,7 +189,8 @@
    "position": "Midfielder",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/50817.png",
-   "club": "Toronto FC"
+   "club": "Toronto FC",
+   "note": "He has spent his entire career with hometown Toronto FC and holds the club's all-time appearance record, a rare one-club man at 33. This is his second World Cup, and very likely the sentimental veteran of the dressing room."
   },
   {
    "id": 294824,
@@ -181,7 +199,8 @@
    "position": "Midfielder",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/294824.png",
-   "club": "Anderlecht"
+   "club": "Anderlecht",
+   "note": "A Longueuil, Quebec product who left CF Montreal for Anderlecht in 2025 and was once named Canada's Young Player of the Year. At 21 he's one for the future, here mostly to learn from the older midfielders around him."
   },
   {
    "id": 284061,
@@ -190,7 +209,8 @@
    "position": "Midfielder",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/284061.png",
-   "club": "Tigres UANL"
+   "club": "Tigres UANL",
+   "note": "Georgetown, Ontario born and Arsenal academy raised, he switched his allegiance from Mexico to Canada in early 2026 saying Canada simply felt more like home. A creative number ten who can unpick a defence with one clever pass."
   },
   {
    "id": 51016,
@@ -199,7 +219,8 @@
    "position": "Attacker",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/51016.png",
-   "club": "Villarreal"
+   "club": "Villarreal",
+   "note": "A loan spell at Villarreal went well enough that they signed him outright from Inter Milan, the player saying it helped him rediscover his confidence. Quick and direct on the wing, he can also drop back and cover at full-back when needed."
   },
   {
    "id": 8489,
@@ -208,7 +229,8 @@
    "position": "Attacker",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/8489.png",
-   "club": "Juventus"
+   "club": "Juventus",
+   "note": "Canada's all-time leading scorer left Lille on a free transfer to become the first Canadian Juventus have ever signed. His first Serie A season was quieter than he'd like, so a home World Cup is the perfect stage to remind everyone what he does best."
   },
   {
    "id": 313353,
@@ -217,7 +239,8 @@
    "position": "Attacker",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/313353.png",
-   "club": "Union St. Gilloise"
+   "club": "Union St. Gilloise",
+   "note": "Born in Brampton to Nigerian parents, he was in Nigeria's youth setup before switching to Canada and scoring on his senior debut. His 24 goals helped Union to their first Belgian title in 90 years, the sort of breakout that gets a striker on a plane."
   },
   {
    "id": 2001,
@@ -226,7 +249,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/2001.png",
-   "club": "Southampton"
+   "club": "Southampton",
+   "note": "Once Canada's all-time top scorer before Jonathan David passed him, he revived his career at Southampton by scoring with his first touch on debut. A penalty-box poacher who has been doing this for the national team for the better part of a decade."
   },
   {
    "id": 362145,
@@ -235,7 +259,8 @@
    "position": "Attacker",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/362145.png",
-   "club": "Vancouver Whitecaps"
+   "club": "Vancouver Whitecaps",
+   "note": "A winger who lit up 2025 with a pile of assists and a starring role in Vancouver's cup run before earning a move to England. Fearless at taking on defenders, the kind of player a home crowd will lift off their seats for."
   },
   {
    "id": 351587,
@@ -244,7 +269,8 @@
    "position": "Attacker",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/351587.png",
-   "club": "Villarreal"
+   "club": "Villarreal",
+   "note": "Nigerian-born and Canada-capped, his goals for Minnesota earned a club-record move to Villarreal, where he scored within weeks of arriving. A big, mobile forward giving Marsch a different shape of striker to bring off the bench."
   }
  ],
  "guardianStarPlayer": "Alphonso Davies",

@@ -20,7 +20,8 @@
    "position": "Goalkeeper",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/26232.png",
-   "club": "Bayer Leverkusen"
+   "club": "Bayer Leverkusen",
+   "note": "After two seasons in England with Brentford, Flekken went back to Germany with Leverkusen chasing the Champions League nights he'd been missing. He's the experienced hand in the Dutch keeping order, even if the gloves aren't guaranteed to be his."
   },
   {
    "id": 194536,
@@ -29,7 +30,8 @@
    "position": "Goalkeeper",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/194536.png",
-   "club": "Sunderland"
+   "club": "Sunderland",
+   "note": "Two summers ago Roefs was an unknown keeping goal for NEC in the Dutch league; now he's a Premier League starter at Sunderland and along for the World Cup ride. A rapid rise for a 22-year-old most fans couldn't have named a year ago."
   },
   {
    "id": 129058,
@@ -38,7 +40,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/129058.png",
-   "club": "Brighton"
+   "club": "Brighton",
+   "note": "Don't let the low squad number fool you into thinking he's a veteran; Verbruggen is barely into his twenties but has already been the Netherlands' first-choice keeper since their run to the Euro 2024 semi-finals. This is his first proper World Cup as the number one."
   },
   {
    "id": 18861,
@@ -47,7 +50,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/18861.png",
-   "club": "Manchester City"
+   "club": "Manchester City",
+   "note": "Aké is the Swiss-army-knife defender Koeman loves: happy at centre-back, just as comfortable filling in at left-back, and quietly reliable at Manchester City for years. The one knock is that injuries keep nibbling at his big tournaments."
   },
   {
    "id": 226,
@@ -56,7 +60,8 @@
    "position": "Defender",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/226.png",
-   "club": "Inter"
+   "club": "Inter",
+   "note": "Dumfries is the engine down the Dutch right: technically a defender, but he spends most of the game charging up and down the touchline and turning up in the box to score. Years at Inter have made him one of the most dependable wing-backs in Europe."
   },
   {
    "id": 341642,
@@ -65,7 +70,8 @@
    "position": "Defender",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/341642.png",
-   "club": "Chelsea"
+   "club": "Chelsea",
+   "note": "At 19, Hato is the baby of the squad, a left-sided defender Chelsea paid serious money to prise out of Ajax's famous youth setup. He's been captaining the youth teams and earning senior caps almost simultaneously, which tells you how highly he's rated."
   },
   {
    "id": 38746,
@@ -74,7 +80,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/38746.png",
-   "club": "Arsenal"
+   "club": "Arsenal",
+   "note": "Jurrien is the Timber twin who went to England, where he's become a defensive fixture at Arsenal capable of slotting in at right-back or centre-back. His identical twin Quinten is also in this squad, so good luck telling the team sheet apart."
   },
   {
    "id": 290,
@@ -83,7 +90,8 @@
    "position": "Defender",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/290.png",
-   "club": "Liverpool"
+   "club": "Liverpool",
+   "note": "The captain and the calm at the back: Van Dijk has anchored Liverpool's defence for years and is the player every Dutch teammate looks to when things get nervy. At 34 this is almost certainly his last World Cup, and the Guardian made him their Dutch star pick."
   },
   {
    "id": 38695,
@@ -92,7 +100,8 @@
    "position": "Defender",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/38695.png",
-   "club": "Brighton"
+   "club": "Brighton",
+   "note": "Van Hecke is the late bloomer who turned himself into Brighton's defensive leader and Player of the Season, which got bigger clubs sniffing around. He only broke into the senior Dutch side a couple of years ago, but he's earned his seat on the plane."
   },
   {
    "id": 152849,
@@ -101,7 +110,8 @@
    "position": "Defender",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/152849.png",
-   "club": "Tottenham"
+   "club": "Tottenham",
+   "note": "Van de Ven's superpower is flat-out speed: he's been clocked as one of the fastest players in the Premier League, which lets him cover acres of space behind the Dutch defence. A ball-playing centre-back who can sprint a striker down and start the attack himself."
   },
   {
    "id": 92993,
@@ -110,7 +120,8 @@
    "position": "Defender",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/92993.png",
-   "club": "Brighton"
+   "club": "Brighton",
+   "note": "Wieffer is a holding midfielder by trade who Brighton also use further back, the kind of all-running, hard-tackling player who does the unglamorous work so the stars can shine. He cost Feyenoord's record sale fee, so someone clearly values that engine."
   },
   {
    "id": 542,
@@ -119,7 +130,8 @@
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/542.png",
-   "club": "Liverpool"
+   "club": "Liverpool",
+   "note": "Gravenberch finally clicked at Liverpool, anchoring their midfield in a standout season and shaking off the 'wasted talent' label that once followed him. For the Dutch he sits deep alongside Frenkie de Jong, doing the calm, composed work in the middle."
   },
   {
    "id": 36899,
@@ -128,7 +140,8 @@
    "position": "Midfielder",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/36899.png",
-   "club": "Juventus"
+   "club": "Juventus",
+   "note": "Koopmeiners arrived at Juventus for a fortune off the back of brilliant box-to-box years at Atalanta, but the move just hasn't sparked and he's been in and out of form ever since. The talent's there; the World Cup is a chance to remind everyone of it."
   },
   {
    "id": 36902,
@@ -137,7 +150,8 @@
    "position": "Midfielder",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/36902.png",
-   "club": "Manchester City"
+   "club": "Manchester City",
+   "note": "Reijnders is the Dutch midfield's link man, breaking up play and then gliding forward to join the attack; when he plays well, the Netherlands usually do too. He was named Serie A's best midfielder at Milan before Manchester City came calling."
   },
   {
    "id": 36905,
@@ -146,7 +160,8 @@
    "position": "Midfielder",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/36905.png",
-   "club": "PSV Eindhoven"
+   "club": "PSV Eindhoven",
+   "note": "Til is an attacking midfielder who scores like a forward: he banged in 14 league goals for PSV this season, which is a lot for a man supposedly playing behind the strikers. The squad's quiet goal threat from deep."
   },
   {
    "id": 38747,
@@ -155,7 +170,8 @@
    "position": "Midfielder",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/38747.png",
-   "club": "Feyenoord"
+   "club": "Feyenoord",
+   "note": "The other Timber twin, a midfielder rather than a defender like brother Jurrien, who skippered Feyenoord and scored in World Cup qualifying. Knee trouble cost him a big chunk of last season, so this tournament is a welcome clean slate."
   },
   {
    "id": 538,
@@ -164,7 +180,8 @@
    "position": "Midfielder",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/538.png",
-   "club": "Barcelona"
+   "club": "Barcelona",
+   "note": "De Jong is the metronome who keeps Barcelona and the Netherlands ticking, gliding past pressers and rarely giving the ball away. He makes the hard stuff look unhurried, which is exactly why every coach wants him in the middle."
   },
   {
    "id": 30432,
@@ -173,7 +190,8 @@
    "position": "Midfielder",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/30432.png",
-   "club": "Atalanta"
+   "club": "Atalanta",
+   "note": "At 34, De Roon is the squad's grizzled holding midfielder, a one-club loyalist who recently became Atalanta's all-time appearance record holder. Not flashy, but the sort of dependable presence you want when a tournament tightens up."
   },
   {
    "id": 792,
@@ -182,7 +200,8 @@
    "position": "Midfielder",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/792.png",
-   "club": "Bournemouth"
+   "club": "Bournemouth",
+   "note": "Yes, that surname is the giveaway: Justin is the son of Dutch great Patrick Kluivert, and he's carved out his own name at Bournemouth as a sharp attacking threat. He famously scored a Premier League hat-trick entirely from the penalty spot, which is as rare as it sounds."
   },
   {
    "id": 38750,
@@ -191,7 +210,8 @@
    "position": "Attacker",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/38750.png",
-   "club": "Sunderland"
+   "club": "Sunderland",
+   "note": "A powerful, bustling striker who made his name banging in goals for Ajax before moving to the Premier League with Sunderland. Brobbey leads the line with muscle rather than finesse, the kind of forward who wrestles defenders all afternoon."
   },
   {
    "id": 667,
@@ -200,7 +220,8 @@
    "position": "Attacker",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/667.png",
-   "club": "Corinthians"
+   "club": "Corinthians",
+   "note": "Depay is the Netherlands' all-time leading scorer, the talisman who took a left turn most European stars don't and went to play in Brazil with Corinthians. He's the squad's only player from the Brazilian league, and still the man they look to for a moment of magic."
   },
   {
    "id": 247,
@@ -209,7 +230,8 @@
    "position": "Attacker",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/247.png",
-   "club": "Liverpool"
+   "club": "Liverpool",
+   "note": "Gakpo can play left wing or lead the line, and his calm finishing helped Liverpool win the league. For the Dutch he's a likely starter up top, a versatile attacker who tends to deliver his goals on the biggest nights."
   },
   {
    "id": 544,
@@ -218,7 +240,8 @@
    "position": "Attacker",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/544.png",
-   "club": "Napoli"
+   "club": "Napoli",
+   "note": "Lang is the squad's flair pick, a direct, tricky winger who tore up the Dutch league for PSV before his move to Italy. Confident on and off the pitch, he's the kind of player who can win a game on his own or frustrate you trying."
   },
   {
    "id": 249,
@@ -227,7 +250,8 @@
    "position": "Attacker",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/249.png",
-   "club": "Aston Villa"
+   "club": "Aston Villa",
+   "note": "Malen is a pacey winger-cum-forward who made his name with bundles of goals at Borussia Dortmund. He's in the mix for the spot on the right of the Dutch attack, the sort of player who's most dangerous running at a tired defence."
   },
   {
    "id": 37724,
@@ -236,7 +260,8 @@
    "position": "Attacker",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/37724.png",
-   "club": "West Ham"
+   "club": "West Ham",
+   "note": "Summerville was a surprise late call-up who only earned his first senior Dutch cap in the warm-up games, having been the standout player in England's second tier before stepping up. A quick, direct winger getting his shot at the very biggest stage."
   },
   {
    "id": 25416,
@@ -245,7 +270,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/25416.png",
-   "club": "Ajax"
+   "club": "Ajax",
+   "note": "At nearly six-and-a-half feet, Weghorst is the squad's old-fashioned target man, the giant you bring on to win headers and bully tired defenders late in games. A folk hero since his dramatic 2022 World Cup cameo against Argentina, he's exactly the plan B you want."
   }
  ],
  "guardianStarPlayer": "Virgil van Dijk",

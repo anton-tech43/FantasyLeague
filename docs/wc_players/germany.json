@@ -20,7 +20,8 @@
    "position": "Goalkeeper",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/702.png",
-   "club": "1899 Hoffenheim"
+   "club": "1899 Hoffenheim",
+   "note": "The Hoffenheim keeper carried Germany through qualifying, keeping clean sheet after clean sheet while Neuer was retired. Then the legend changed his mind and reclaimed the No. 1 shirt, leaving Baumann to take a tough demotion on the chin."
   },
   {
    "id": 497,
@@ -29,7 +30,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/497.png",
-   "club": "Bayern M\u00fcnchen"
+   "club": "Bayern M\u00fcnchen",
+   "note": "Germany's great goalkeeper came out of international retirement to chase one last World Cup, and Nagelsmann handed him back the No. 1 shirt without hesitation. He's the man who rewrote what a keeper is allowed to do, charging out of his box like an extra defender."
   },
   {
    "id": 399,
@@ -38,7 +40,8 @@
    "position": "Goalkeeper",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/399.png",
-   "club": "VfB Stuttgart"
+   "club": "VfB Stuttgart",
+   "note": "He's technically a Bayern keeper, but he's spent years out on loan at Stuttgart because the man ahead of him simply wouldn't budge. Patient, reliable, and forever waiting for a door that Neuer keeps holding shut."
   },
   {
    "id": 25368,
@@ -47,7 +50,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/25368.png",
-   "club": "Borussia Dortmund"
+   "club": "Borussia Dortmund",
+   "note": "Born in Uzbekistan to Russian-German parents and brought to Germany as a toddler, the Dortmund centre-back is the quiet, unflashy type who just keeps things tidy at the back. A captain's temperament without needing the armband to prove it."
   },
   {
    "id": 280074,
@@ -56,7 +60,8 @@
    "position": "Defender",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/280074.png",
-   "club": "Eintracht Frankfurt"
+   "club": "Eintracht Frankfurt",
+   "note": "The Frankfurt left-back burst from nowhere into the World Cup conversation, with the manager praising his pace and one-on-one bite enough to suggest he could shove the established starter aside. A fast, fearless newcomer barging into the picture at exactly the right moment."
   },
   {
    "id": 25158,
@@ -65,7 +70,8 @@
    "position": "Defender",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/25158.png",
-   "club": "RB Leipzig"
+   "club": "RB Leipzig",
+   "note": "The Leipzig captain has been Germany's first-choice left-back for years, famous for whipping in crosses with the precision of a set-piece specialist. He goes into this tournament fending off a younger challenger and nursing a few knocks, so the spot isn't quite as nailed-on as it once was."
   },
   {
    "id": 2285,
@@ -74,7 +80,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/2285.png",
-   "club": "Real Madrid"
+   "club": "Real Madrid",
+   "note": "Germany's defensive leader and a serial winner at Real Madrid, heading to his third World Cup as the snarling, combative presence every back line wants. Forwards know that getting a quiet afternoon against him is not on the menu."
   },
   {
    "id": 26243,
@@ -83,7 +90,8 @@
    "position": "Defender",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/26243.png",
-   "club": "Borussia Dortmund"
+   "club": "Borussia Dortmund",
+   "note": "A left-footed Dortmund centre-back who treats defending as the start of an attack, slicing passes through the lines to launch his team forward. Increasingly the man Germany trusts most at the heart of the back four."
   },
   {
    "id": 972,
@@ -92,7 +100,8 @@
    "position": "Defender",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/972.png",
-   "club": "Bayern M\u00fcnchen"
+   "club": "Bayern M\u00fcnchen",
+   "note": "A calm, towering centre-back who won the Bundesliga title with Leverkusen, then strolled across to Bayern on a free transfer when his contract ran out. The understated half of Germany's first-choice defensive pairing, all positioning and composure rather than fireworks."
   },
   {
    "id": 163189,
@@ -101,7 +110,8 @@
    "position": "Defender",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/163189.png",
-   "club": "Newcastle"
+   "club": "Newcastle",
+   "note": "Born in Germany to a Senegalese father and Finnish mother, he polished his game in Italy with AC Milan before a big-money move to Newcastle. A first World Cup for a defender who's quietly become one of the squad's coolest heads under pressure."
   },
   {
    "id": 502,
@@ -110,7 +120,8 @@
    "position": "Defender",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/502.png",
-   "club": "Bayern M\u00fcnchen"
+   "club": "Bayern M\u00fcnchen",
+   "note": "The captain and the brain of this team, a Bayern leader who'll likely line up at right-back even though midfield is his natural home. Wherever you put him, he organises everyone around him and rarely wastes a pass."
   },
   {
    "id": 714,
@@ -119,7 +130,8 @@
    "position": "Midfielder",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/714.png",
-   "club": "FSV Mainz 05"
+   "club": "FSV Mainz 05",
+   "note": "The Mainz playmaker forced his way into the squad on the back of a career-best season, finishing as his club's top scorer and barely missing from the penalty spot. A late-blooming reward for a player most had stopped expecting to see in a Germany shirt."
   },
   {
    "id": 511,
@@ -128,7 +140,8 @@
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/511.png",
-   "club": "Bayern M\u00fcnchen"
+   "club": "Bayern M\u00fcnchen",
+   "note": "Written off at Bayern barely a year ago, the powerful midfielder fought his way back into the team and then back into the national side. Box-to-box, good in the air, and a likely starter in Germany's engine room after the comeback nobody saw coming."
   },
   {
    "id": 18970,
@@ -137,7 +150,8 @@
    "position": "Midfielder",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/18970.png",
-   "club": "Brighton"
+   "club": "Brighton",
+   "note": "The squad's elder statesman in midfield, who didn't earn his first Germany cap until he was 32 after years of being quietly brilliant in the Premier League. A clever, do-it-all operator who can fill in at right-back, the kind of low-maintenance pro every manager wants on the bench."
   },
   {
    "id": 494131,
@@ -146,7 +160,8 @@
    "position": "Midfielder",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/494131.png",
-   "club": "Bayern M\u00fcnchen"
+   "club": "Bayern M\u00fcnchen",
+   "note": "At 17, the Bayern wonderkid had a breakout season so wild he became the youngest player ever to score in three Champions League games in a row, beating a record once held by Mbapp\u00e9. The youngest face in the squad and proof Germany's production line is still humming."
   },
   {
    "id": 128533,
@@ -155,7 +170,8 @@
    "position": "Midfielder",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/128533.png",
-   "club": "VfB Stuttgart"
+   "club": "VfB Stuttgart",
+   "note": "A direct, busy winger who's racked up goals and assists for Stuttgart and turned himself into a useful option off the flank for Germany. The sort who runs at defenders all day and asks questions they'd rather not answer."
   },
   {
    "id": 181812,
@@ -164,7 +180,8 @@
    "position": "Midfielder",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/181812.png",
-   "club": "Bayern M\u00fcnchen"
+   "club": "Bayern M\u00fcnchen",
+   "note": "The squad's spark of pure magic, a dribbler who glides through crowds of defenders like they aren't there, and the star of Germany's last big tournament. He's only just back from a horrible leg-and-ankle injury, so every minute he plays here feels like a small miracle."
   },
   {
    "id": 637,
@@ -173,7 +190,8 @@
    "position": "Midfielder",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/637.png",
-   "club": "Borussia Dortmund"
+   "club": "Borussia Dortmund",
+   "note": "A Hamburg-born, English-raised midfielder who came up through Manchester City's academy before settling at Dortmund, and yes, his older brother Lukas is a footballer too. He fought back from a knee injury just in time to make the plane."
   },
   {
    "id": 328033,
@@ -182,7 +200,8 @@
    "position": "Midfielder",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/328033.png",
-   "club": "Bayern M\u00fcnchen"
+   "club": "Bayern M\u00fcnchen",
+   "note": "A homegrown Bayern midfielder with a Serbian father and German mother, all calm passing and tidy ball-winning in front of the back four. He missed Euro 2024 after illness cruelly struck on the eve of the squad announcement, so this is the big stage he was robbed of last time."
   },
   {
    "id": 644,
@@ -191,7 +210,8 @@
    "position": "Midfielder",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/644.png",
-   "club": "Galatasaray"
+   "club": "Galatasaray",
+   "note": "A blisteringly quick winger with Manchester City and Bayern on his CV, who took the bold step of leaving Munich for the noise and passion of Galatasaray in Turkey. On his day he's unplayable, all pace and a vicious left foot, even if the consistency comes and goes."
   },
   {
    "id": 137210,
@@ -200,7 +220,8 @@
    "position": "Midfielder",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/137210.png",
-   "club": "VfB Stuttgart"
+   "club": "VfB Stuttgart",
+   "note": "The metronome at the base of Stuttgart's midfield, a left-footed passer who dictates tempo and quietly became one of the league's most efficient playmakers. The kind of deep-lying conductor good teams build everything around, even if casual fans rarely notice him."
   },
   {
    "id": 203224,
@@ -209,7 +230,8 @@
    "position": "Midfielder",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/203224.png",
-   "club": "Liverpool"
+   "club": "Liverpool",
+   "note": "Widely rated as one of the best attacking midfielders alive, the silky playmaker swapped a title-winning Leverkusen for Liverpool and the Premier League spotlight. Germany's creative heartbeat, the player they hope sets this whole tournament alight."
   },
   {
    "id": 978,
@@ -218,7 +240,8 @@
    "position": "Attacker",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/978.png",
-   "club": "Arsenal"
+   "club": "Arsenal",
+   "note": "The Arsenal forward is the likeliest man to lead the line, more of an elegant all-rounder than a brute of a No. 9. With Germany short of a classic goal-poacher, a lot rests on whether his clever movement and finishing click at the right moments."
   },
   {
    "id": 158644,
@@ -227,7 +250,8 @@
    "position": "Attacker",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/158644.png",
-   "club": "Borussia Dortmund"
+   "club": "Borussia Dortmund",
+   "note": "A sharp, mobile Dortmund forward who chipped in close to double figures in goals this season and snuck into the squad almost as a surprise pick. Quick, willing to run the channels, and the type of fresh-legged option a manager loves to throw on late."
   },
   {
    "id": 26475,
@@ -236,7 +260,8 @@
    "position": "Attacker",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/26475.png",
-   "club": "VfB Stuttgart"
+   "club": "VfB Stuttgart",
+   "note": "Released by Werder Bremen as a kid for being too small, he clawed his way up through the lower leagues to become one of the Bundesliga's deadliest finishers at Stuttgart. A late-developing box striker whose whole career is a quiet two fingers to everyone who wrote him off."
   },
   {
    "id": 158054,
@@ -245,7 +270,8 @@
    "position": "Attacker",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/158054.png",
-   "club": "Newcastle"
+   "club": "Newcastle",
+   "note": "A towering striker at around 6ft 6in who exploded out of nowhere, top-scored at the Under-21 Euros, and earned a club-record move to Newcastle. Surprisingly nimble for his size, he often drops deep to link play rather than just loiter in the box."
   }
  ],
  "guardianStarPlayer": "Florian Wirtz",

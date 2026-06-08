@@ -20,7 +20,8 @@
    "position": "Goalkeeper",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/1106.png",
-   "club": "Heart Of Midlothian"
+   "club": "Heart Of Midlothian",
+   "note": "At 43 he's the grand old man of this whole tournament, on course to be one of the oldest players ever to feature at a World Cup. Still Hearts' first-choice keeper and still standing after a career-threatening broken leg a few years back, which tells you how stubborn he is about hanging up the gloves."
   },
   {
    "id": 18933,
@@ -29,7 +30,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/18933.png",
-   "club": "Nottingham Forest"
+   "club": "Nottingham Forest",
+   "note": "Handed the No 1 shirt, which is a strong hint he's the one Steve Clarke trusts between the posts. He's the son of former Norwich keeper Bryan Gunn, so minding goals is very much the family business."
   },
   {
    "id": 44937,
@@ -38,7 +40,8 @@
    "position": "Goalkeeper",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/44937.png",
-   "club": "Rangers"
+   "club": "Rangers",
+   "note": "The third keeper in the pecking order, with only a couple of caps to his name, so this is a watching-and-learning kind of trip. He earned the call on the back of plenty of steady games for Rangers."
   },
   {
    "id": 19066,
@@ -47,7 +50,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/19066.png",
-   "club": "Hibernian"
+   "club": "Hibernian",
+   "note": "A 34-year-old centre-back who has fought through injuries and a suspension just to prove he's fit enough to make the plane. The kind of old-school, no-nonsense defender a squad keeps around for the dressing room as much as the pitch."
   },
   {
    "id": 1111,
@@ -56,7 +60,8 @@
    "position": "Defender",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/1111.png",
-   "club": "Al-Ettifaq"
+   "club": "Al-Ettifaq",
+   "note": "A centre-back who has taken the well-trodden route to the Saudi league, where he played a full season's worth of games and stayed match-sharp. Comfortable on the ball, he's the type who likes to step out of defence and start something."
   },
   {
    "id": 44871,
@@ -65,7 +70,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/44871.png",
-   "club": "Brentford"
+   "club": "Brentford",
+   "note": "At 23 he's already racked up close to twenty caps, even though injuries and bit-part minutes at Brentford have stalled his club season. A modern full-back who can play either flank, he's in a straight fight with Patterson for the right-back slot."
   },
   {
    "id": 19987,
@@ -74,7 +80,8 @@
    "position": "Defender",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/19987.png",
-   "club": "Wrexham"
+   "club": "Wrexham",
+   "note": "A dependable centre-back who built his name at Coventry before signing on with Wrexham, the club Hollywood made famous. He's exactly the sort of unflashy, gets-the-job-done defender Clarke likes having in reserve."
   },
   {
    "id": 44811,
@@ -83,7 +90,8 @@
    "position": "Defender",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/44811.png",
-   "club": "Dinamo Zagreb"
+   "club": "Dinamo Zagreb",
+   "note": "A centre-back who reinvented himself in Croatia, enjoying a fine season as Dinamo Zagreb went chasing the title. With nearly fifty caps behind him he's one of the more seasoned heads in the back line."
   },
   {
    "id": 138417,
@@ -92,7 +100,8 @@
    "position": "Defender",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/138417.png",
-   "club": "Everton"
+   "club": "Everton",
+   "note": "A flying right-back whose Everton season has been mostly spent waiting for chances, yet he stays a key man for the national side. Quick and keen to overlap, he's young enough that the best version of him may still be coming."
   },
   {
    "id": 1115,
@@ -101,7 +110,8 @@
    "position": "Defender",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/1115.png",
-   "club": "Celtic"
+   "club": "Celtic",
+   "note": "A Celtic full-back who has quietly collected a cabinet's worth of Scottish league titles without ever being the headline act. The handy, do-as-he's-told utility man every winning squad needs."
   },
   {
    "id": 289,
@@ -110,7 +120,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/289.png",
-   "club": "Liverpool"
+   "club": "Liverpool",
+   "note": "The captain and Scotland's most-capped man in this squad, now within touching distance of the all-time record set by Kenny Dalglish. A Champions League and Premier League winner with Liverpool who famously went from being released as a teenager to one of the best left-backs in the world, so leading his country at a first World Cup in nearly thirty years is a fitting reward."
   },
   {
    "id": 44865,
@@ -119,7 +130,8 @@
    "position": "Defender",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/44865.png",
-   "club": "Rangers"
+   "club": "Rangers",
+   "note": "A tall Rangers centre-back who debuted in Scottish football at just sixteen and has spent years since fighting off a string of nasty injuries. Left out of the last Euros, so this call-up is something of a comeback story for him."
   },
   {
    "id": 1117,
@@ -128,7 +140,8 @@
    "position": "Defender",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/1117.png",
-   "club": "Celtic"
+   "club": "Celtic",
+   "note": "A left-back who couldn't nail down a regular spot at Arsenal and chose to go home to Celtic, where he's thriving again. He scored the dramatic 93rd-minute goal that put Scotland back in front against Denmark on the night they sealed qualification, so the homecoming gamble has paid off handsomely."
   },
   {
    "id": 1125,
@@ -137,7 +150,8 @@
    "position": "Midfielder",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/1125.png",
-   "club": "Bournemouth"
+   "club": "Bournemouth",
+   "note": "An Inverness-born midfielder who has become a reliable Premier League operator at Bournemouth and is heading to his third major tournament with Scotland. Versatile enough to play anywhere across the middle, he does a lot of the running others don't notice."
   },
   {
    "id": 44814,
@@ -146,7 +160,8 @@
    "position": "Midfielder",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/44814.png",
-   "club": "Bologna"
+   "club": "Bologna",
+   "note": "The captain at Bologna, where he played a packed season and helped them reach the latter stages in Europe, which says plenty about how an Italian club rates him. A box-to-box midfielder who comes from proper football stock as the nephew of former Rangers man Barry Ferguson."
   },
   {
    "id": 557460,
@@ -155,7 +170,8 @@
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/557460.png",
-   "club": "Manchester United U21"
+   "club": "Manchester United U21",
+   "note": "An 18-year-old midfielder and son of the former United and Scotland captain Darren Fletcher, drafted in late as cover after Billy Gilmour got injured. His twin brother Jack opted to play for England, so the family is neatly split across the border."
   },
   {
    "id": 19191,
@@ -164,7 +180,8 @@
    "position": "Midfielder",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/19191.png",
-   "club": "Aston Villa"
+   "club": "Aston Villa",
+   "note": "The Aston Villa skipper and one of Scotland's surest sources of a goal from midfield, with around twenty to his name in over eighty caps. Nicknamed the Meatball by team-mates, he brings the energy and end-product that ties this side together."
   },
   {
    "id": 19077,
@@ -173,7 +190,8 @@
    "position": "Midfielder",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/19077.png",
-   "club": "Norwich"
+   "club": "Norwich",
+   "note": "The Norwich captain who put the bow on Scotland's qualification with a jaw-dropping lob from the halfway line against Denmark, spotting the keeper off his line and going for it. Proof that the unglamorous, hard-running midfielders get their moment too."
   },
   {
    "id": 903,
@@ -182,7 +200,8 @@
    "position": "Midfielder",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/903.png",
-   "club": "Napoli"
+   "club": "Napoli",
+   "note": "The squad's standout name, fresh off being voted the best player in Serie A after leaving Manchester United and inspiring Napoli to the Italian title in his first season. He opened the scoring against Denmark with a stunning overhead kick on the night Scotland booked their place, so he arrives as a genuine star turn."
   },
   {
    "id": 19524,
@@ -191,7 +210,8 @@
    "position": "Attacker",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/19524.png",
-   "club": "Torino"
+   "club": "Torino",
+   "note": "A striker plying his trade in Serie A with Torino, English-born but committed to Scotland through his family roots. A reliable scorer at international level, he leads the line with hard running as much as with goals."
   },
   {
    "id": 45307,
@@ -200,7 +220,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/45307.png",
-   "club": "Birmingham"
+   "club": "Birmingham",
+   "note": "A big, awkward target man who was actually born and raised in Australia before choosing Scotland through his heritage. Not the flashiest finisher, but the kind of bustling number nine who occupies defenders and brings others into the game."
   },
   {
    "id": 343576,
@@ -209,7 +230,8 @@
    "position": "Attacker",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/343576.png",
-   "club": "Bournemouth"
+   "club": "Bournemouth",
+   "note": "A direct, fearless winger who once became the youngest Scot ever to play for Liverpool before moving on for regular football. At 20 he's the bright spark of the attack, the player likely to run straight at full-backs and make something happen."
   },
   {
    "id": 8794,
@@ -218,7 +240,8 @@
    "position": "Attacker",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/8794.png",
-   "club": "Ipswich"
+   "club": "Ipswich",
+   "note": "A late convert who only switched his international allegiance to Scotland in 2025, qualifying through his family despite being English-born. The son of former Sheffield Wednesday striker David Hirst, he's a forward still making up for lost time in the dark blue."
   },
   {
    "id": 45175,
@@ -227,7 +250,8 @@
    "position": "Attacker",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/45175.png",
-   "club": "Heart Of Midlothian"
+   "club": "Heart Of Midlothian",
+   "note": "The Hearts captain and a prolific goalscorer at home, who fired in around twenty goals last season and very nearly dragged his club to a title. A proper poacher whose club form is hard to ignore, even if the international starting spot is hotly contested."
   },
   {
    "id": 45078,
@@ -236,7 +260,8 @@
    "position": "Attacker",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/45078.png",
-   "club": "Southampton"
+   "club": "Southampton",
+   "note": "Nicknamed the Loch Ness Drogba in his Sunderland days, this big striker is back in the squad after four years lost largely to injury. He rebuilt his career with a double-figure goal haul for Southampton, making his recall one of the feel-good stories of the selection."
   },
   {
    "id": 433272,
@@ -245,7 +270,8 @@
    "position": "Attacker",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/433272.png",
-   "club": "Rangers"
+   "club": "Rangers",
+   "note": "The squad's surprise inclusion, a 19-year-old winger who came through the Rangers academy from the age of six and spent the back half of the season on loan getting minutes. He'd only earned his first cap a few months earlier, so this is a whirlwind rise to a World Cup."
   }
  ],
  "guardianStarPlayer": "Scott McTominay",

@@ -20,7 +20,8 @@
    "position": "Goalkeeper",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/214129.png",
-   "club": "Telstar"
+   "club": "Telstar",
+   "note": "The youngest of the three keepers, plying his trade at Dutch second-tier Telstar. He's almost certainly here to watch, learn and soak up a World Cup most goalkeepers his age only dream about."
   },
   {
    "id": 36967,
@@ -29,7 +30,8 @@
    "position": "Goalkeeper",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/36967.png",
-   "club": "VVV Venlo"
+   "club": "VVV Venlo",
+   "note": "A backup keeper at VVV-Venlo who's used to waiting his turn, and he's the squad's number 26, which tells you where he sits in the pecking order. He calls the whole thing a dream coming true, and honestly, who could argue."
   },
   {
    "id": 221,
@@ -38,7 +40,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/221.png",
-   "club": "Cercle Brugge"
+   "club": "Cercle Brugge",
+   "note": "At 36 he's the steady hand between the posts and, alongside captain Bacuna, the most-capped man in the whole squad. He's won two MLS Cups with Columbus Crew, so the big-occasion nerves got left behind years ago."
   },
   {
    "id": 37175,
@@ -47,7 +50,8 @@
    "position": "Defender",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/37175.png",
-   "club": "Konyaspor"
+   "club": "Konyaspor",
+   "note": "Once tipped as the next big thing at Ajax, he's since wound his way to Turkey's Konyaspor and only switched to Curaçao in the summer of 2025. A late convert who brings proper pedigree to the back line."
   },
   {
    "id": 706,
@@ -56,7 +60,8 @@
    "position": "Defender",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/706.png",
-   "club": "Livingston"
+   "club": "Livingston",
+   "note": "A PSV academy graduate full-back who's bounced around Europe and landed at Scotland's Livingston. The well-travelled sort who's seen enough dressing rooms to keep the younger lads calm."
   },
   {
    "id": 36970,
@@ -65,7 +70,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/36970.png",
-   "club": "PEC Zwolle"
+   "club": "PEC Zwolle",
+   "note": "A right-back who came up through Sparta Rotterdam and now patrols the flank for PEC Zwolle in the Eredivisie. Dependable rather than flashy, which is exactly what you want from a defender."
   },
   {
    "id": 353808,
@@ -74,7 +80,8 @@
    "position": "Defender",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/353808.png",
-   "club": "NEC Nijmegen"
+   "club": "NEC Nijmegen",
+   "note": "At 22 he's one of the babies of the group, a left-back who earned a move up to NEC Nijmegen after working through the PSV and Utrecht youth setups. Young legs for a squad that leans a little experienced."
   },
   {
    "id": 36857,
@@ -83,7 +90,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/36857.png",
-   "club": "Abha Club"
+   "club": "Abha Club",
+   "note": "A right-back earning his living in Saudi Arabia's second tier with Abha, and reportedly straight back to the day job once qualification was done. The kind of quiet professional who turns up and gets the work in."
   },
   {
    "id": 194645,
@@ -92,7 +100,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/194645.png",
-   "club": "Sparta Rotterdam"
+   "club": "Sparta Rotterdam",
+   "note": "A PSV-schooled right-back currently on loan at Sparta Rotterdam, still only in his early twenties. Quick and willing to get forward, the sort who likes the touchline more than his own box."
   },
   {
    "id": 37066,
@@ -101,7 +110,8 @@
    "position": "Defender",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/37066.png",
-   "club": "Waalwijk"
+   "club": "Waalwijk",
+   "note": "A centre-back who joined RKC Waalwijk on a free and has quietly stacked up Eerste Divisie minutes ever since. Carries the full set of given names but keeps things simple where it counts, at the heart of defence."
   },
   {
    "id": 228,
@@ -110,7 +120,8 @@
    "position": "Defender",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/228.png",
-   "club": "PSV Eindhoven"
+   "club": "PSV Eindhoven",
+   "note": "A left-footed centre-back at PSV Eindhoven, which makes him one of the few in this squad still playing Champions League nights. Probably the most coveted defender Curaçao can put on the pitch."
   },
   {
    "id": 18997,
@@ -119,7 +130,8 @@
    "position": "Midfielder",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/18997.png",
-   "club": "Band\u0131rmaspor"
+   "club": "Band\u0131rmaspor",
+   "note": "The captain and beating heart of the side, with nearly a hundred Premier League games for Aston Villa behind him and the joint-most caps Cura\u00e7ao has ever handed out. At 34, leading the smallest nation ever to reach a World Cup is the story he'll tell forever."
   },
   {
    "id": 162199,
@@ -128,7 +140,8 @@
    "position": "Midfielder",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/162199.png",
-   "club": "Rotherham"
+   "club": "Rotherham",
+   "note": "A 22-year-old winger who became Rotherham's first player ever to reach a World Cup, and called it a boyhood dream out loud. Direct, quick, and not shy about taking a defender on."
   },
   {
    "id": 406846,
@@ -137,7 +150,8 @@
    "position": "Midfielder",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/406846.png",
-   "club": "Telstar"
+   "club": "Telstar",
+   "note": "A versatile right-sided player who only made his Eredivisie debut with Telstar in 2025 and got off the mark soon after. A fresh face whose rise has been quick enough to land him on the biggest stage of all."
   },
   {
    "id": 309763,
@@ -146,7 +160,8 @@
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/309763.png",
-   "club": "FC Zurich"
+   "club": "FC Zurich",
+   "note": "A 21-year-old right-back who came through PSV, spent time on Juventus's books with their reserve side, and now plays his football in Switzerland with Zürich. A tidy CV for someone so young, and one of the squad's brightest prospects."
   },
   {
    "id": 37461,
@@ -155,7 +170,8 @@
    "position": "Midfielder",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/37461.png",
-   "club": "Den Bosch"
+   "club": "Den Bosch",
+   "note": "A defensive midfielder at Den Bosch who does the unglamorous job of breaking up play and letting the flair players ahead of him shine. The kind of name fans forget until they notice how much he covers."
   },
   {
    "id": 906,
@@ -164,7 +180,8 @@
    "position": "Midfielder",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/906.png",
-   "club": "Sheffield Utd"
+   "club": "Sheffield Utd",
+   "note": "Born in Willemstad and groomed at Manchester United before settling at Sheffield United, he switched to the country of his birth in 2025 and promptly scored twice against Bermuda. The most natural-born Curaçaoan story in the whole guide."
   },
   {
    "id": 36842,
@@ -173,7 +190,8 @@
    "position": "Midfielder",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/36842.png",
-   "club": "Waalwijk"
+   "club": "Waalwijk",
+   "note": "A defensive midfielder who can fill in at right-back for RKC Waalwijk, the sort of flexibility a manager quietly treasures. He does his shift wherever the team needs a body."
   },
   {
    "id": 19047,
@@ -182,7 +200,8 @@
    "position": "Midfielder",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/19047.png",
-   "club": "FC Volendam"
+   "club": "FC Volendam",
+   "note": "The captain's younger brother and one of the team's more inventive passers, with Premier League time at Huddersfield and a spell at Rangers on his ticket. Curaçao gets the Bacuna brothers in the same engine room, which is rather lovely."
   },
   {
    "id": 163220,
@@ -191,7 +210,8 @@
    "position": "Attacker",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/163220.png",
-   "club": "Kifisia"
+   "club": "Kifisia",
+   "note": "A forward who took the road less travelled to Greek football with Kifisia, well off the usual Dutch-and-English path the rest of the squad walked. Sometimes the scouting net stretches further than you'd expect."
   },
   {
    "id": 37272,
@@ -200,7 +220,8 @@
    "position": "Attacker",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/37272.png",
-   "club": "FC Volendam"
+   "club": "FC Volendam",
+   "note": "At 33 he's one of the elder statesmen of the front line, a winger with years of Dutch football in his legs at Volendam. The experienced head you bring on when a game needs settling rather than starting."
   },
   {
    "id": 41627,
@@ -209,7 +230,8 @@
    "position": "Attacker",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/41627.png",
-   "club": "Maccabi Haifa"
+   "club": "Maccabi Haifa",
+   "note": "A winger who passed through the youth ranks of Manchester City, United and Swansea before finding his level at Maccabi Haifa in Israel. English academies raised him, but it was his mother's Curaçao that he chose to play for."
   },
   {
    "id": 161884,
@@ -218,7 +240,8 @@
    "position": "Attacker",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/161884.png",
-   "club": "Middlesbrough"
+   "club": "Middlesbrough",
+   "note": "An Ajax-schooled winger who cost Middlesbrough a few million in 2025 and switched to Curaçao that same autumn. Brings pace and width down the left, and is one of the more recent additions to the project."
   },
   {
    "id": 38708,
@@ -227,7 +250,8 @@
    "position": "Attacker",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/38708.png",
-   "club": "Terengganu FC"
+   "club": "Terengganu FC",
+   "note": "A forward who signed for Malaysia's Terengganu early in 2026, making him the squad's furthest-flung traveller by some distance. From a Caribbean island of 150,000 to the Malaysia Super League, the geography alone is a talking point."
   },
   {
    "id": 18981,
@@ -236,7 +260,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/18981.png",
-   "club": "Miami FC"
+   "club": "Miami FC",
+   "note": "The squad's marquee striker, who banged in goals for PSV as a youngster and had a Premier League spell at Brighton before drifting through Hoffenheim, Cincinnati and beyond. He carries the number 9 and the weight of being Curaçao's most proven finisher."
   },
   {
    "id": 195067,
@@ -245,7 +270,8 @@
    "position": "Attacker",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/195067.png",
-   "club": "Phoenix Rising"
+   "club": "Phoenix Rising",
+   "note": "A left winger born in Groningen who took his game across the Atlantic to Phoenix Rising in the American second tier. A USL Championship forward at a World Cup is the sort of underdog detail this whole squad is built on."
   }
  ],
  "guardianStarPlayer": "Leandro Bacuna",

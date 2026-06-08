@@ -20,7 +20,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/280.png",
-   "club": "Liverpool"
+   "club": "Liverpool",
+   "note": "Brazil's first-choice keeper and one of the calmest in the game, equally happy making a point-blank save or starting an attack with a pass off his feet. He has spent years as a Liverpool mainstay, so a packed stadium is nothing new to him."
   },
   {
    "id": 617,
@@ -29,7 +30,8 @@
    "position": "Goalkeeper",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/617.png",
-   "club": "Fenerbah\u00e7e"
+   "club": "Fenerbah\u00e7e",
+   "note": "The backup keeper famous for treating goal kicks like passing drills, so confident on the ball he sometimes dribbles past forwards inside his own box. After eight trophy-filled years at Manchester City he moved to Turkey with Fenerbah\u00e7e in 2025."
   },
   {
    "id": 2410,
@@ -38,7 +40,8 @@
    "position": "Goalkeeper",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/2410.png",
-   "club": "Palmeiras"
+   "club": "Palmeiras",
+   "note": "At 38, the elder statesman of the squad and almost certainly here as the third keeper rather than to play. He won Olympic gold with Brazil back in 2016 and has been a steady fixture in goal for Palmeiras for years."
   },
   {
    "id": 860,
@@ -47,7 +50,8 @@
    "position": "Defender",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/860.png",
-   "club": "Flamengo"
+   "club": "Flamengo",
+   "note": "A vastly experienced left-back who spent the best part of a decade winning league titles at Juventus before heading home to Flamengo. At 34 he leans on positioning and know-how rather than raw pace these days."
   },
   {
    "id": 30497,
@@ -56,7 +60,8 @@
    "position": "Defender",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/30497.png",
-   "club": "Juventus"
+   "club": "Juventus",
+   "note": "A powerful, no-nonsense centre-back who became Juventus's defensive anchor, though a serious knee injury in late 2024 cost him a long chunk of football. The big question is whether he has fully rediscovered his old sharpness in time."
   },
   {
    "id": 22224,
@@ -65,7 +70,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/22224.png",
-   "club": "Arsenal"
+   "club": "Arsenal",
+   "note": "Arsenal's commanding left-sided centre-back, the kind of defender who throws himself in front of shots and is a genuine threat from corners at the other end. A knee problem picked up late in the club season is the worry hanging over his tournament."
   },
   {
    "id": 30424,
@@ -74,7 +80,8 @@
    "position": "Defender",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/30424.png",
-   "club": "Al-Ahli Jeddah"
+   "club": "Al-Ahli Jeddah",
+   "note": "A comfortable, ball-playing centre-back who made his name at Roma before a big-money move to Saudi Arabia's Al-Ahli. He won a European trophy with Roma, so he is no stranger to the big nights."
   },
   {
    "id": 10124,
@@ -83,7 +90,8 @@
    "position": "Defender",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/10124.png",
-   "club": "Flamengo"
+   "club": "Flamengo",
+   "note": "A tall, left-footed centre-back who has built his reputation at home with Flamengo rather than chasing a move to Europe. His left foot gives Ancelotti useful balance alongside the more familiar right-footers."
   },
   {
    "id": 257,
@@ -92,7 +100,8 @@
    "position": "Defender",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/257.png",
-   "club": "Paris Saint Germain"
+   "club": "Paris Saint Germain",
+   "note": "The captain and defensive heartbeat, a long-serving Paris Saint-Germain centre-back who reads the game a step ahead of everyone else. The armband sits naturally on a player this calm under pressure."
   },
   {
    "id": 24866,
@@ -101,7 +110,8 @@
    "position": "Defender",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/24866.png",
-   "club": "Zenit"
+   "club": "Zenit",
+   "note": "A left-back who has quietly racked up the trophies with Zenit in Russia, which keeps him a little out of the everyday spotlight back home. He offers Ancelotti a tidy, dependable option down the left flank."
   },
   {
    "id": 349001,
@@ -110,7 +120,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/349001.png",
-   "club": "AS Roma"
+   "club": "AS Roma",
+   "note": "An attacking right-back with a remarkable backstory, having reportedly not kicked a ball seriously until 17 before a Flamengo breakthrough earned him a move to Roma. At 22 he is one of the youngest in the squad and loves bombing forward."
   },
   {
    "id": 618,
@@ -119,7 +130,8 @@
    "position": "Defender",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/618.png",
-   "club": "Flamengo"
+   "club": "Flamengo",
+   "note": "A do-everything defender who can fill in at right-back or centre-back, and who captained Juventus before bringing all that experience home to Flamengo. That versatility is exactly the sort of insurance a manager wants on the bench."
   },
   {
    "id": 10135,
@@ -128,7 +140,8 @@
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/10135.png",
-   "club": "Newcastle"
+   "club": "Newcastle",
+   "note": "Newcastle's elegant midfield conductor, the player who keeps the ball moving and ties the defence to the attack. If you only watch the goalscorers you will miss why Brazil's midfield ticks, and the answer is usually him."
   },
   {
    "id": 747,
@@ -137,7 +150,8 @@
    "position": "Midfielder",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/747.png",
-   "club": "Manchester United"
+   "club": "Manchester United",
+   "note": "The squad's serial winner, a holding midfielder who lifted five Champions League titles at Real Madrid and exists to break up the other team's attacks. He is set to leave Manchester United at the end of the season, so this could be a fitting last big stage."
   },
   {
    "id": 299,
@@ -146,7 +160,8 @@
    "position": "Midfielder",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/299.png",
-   "club": "Al-Ittihad FC"
+   "club": "Al-Ittihad FC",
+   "note": "A holding midfielder who shielded the back four during Liverpool's best years before moving to the Saudi league with Al-Ittihad. He does the unglamorous screening work that lets the flashier players shine."
   },
   {
    "id": 1646,
@@ -155,7 +170,8 @@
    "position": "Midfielder",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/1646.png",
-   "club": "West Ham"
+   "club": "West Ham",
+   "note": "West Ham's creative midfielder, all silky touches and clever passes from the centre of the pitch. He spent a long stretch under the cloud of an FA betting investigation before being cleared of the most serious charges, so a clean run at a World Cup is a welcome change."
   },
   {
    "id": 275170,
@@ -164,7 +180,8 @@
    "position": "Midfielder",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/275170.png",
-   "club": "Botafogo"
+   "club": "Botafogo",
+   "note": "A 24-year-old midfielder who stayed in Brazil with Botafogo and earned his call-up through consistently strong domestic form. He is one of the less familiar names here, very much a player making the most of his moment."
   },
   {
    "id": 1165,
@@ -173,7 +190,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/1165.png",
-   "club": "Manchester United"
+   "club": "Manchester United",
+   "note": "A restless, skilful forward who can lead the line or drift wide, signed by Manchester United for a hefty fee in 2025. He plays with a bit of needle and never seems to stand still."
   },
   {
    "id": 377122,
@@ -182,7 +200,8 @@
    "position": "Attacker",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/377122.png",
-   "club": "Lyon"
+   "club": "Lyon",
+   "note": "The teenage striker once hyped as the next big thing, who found minutes hard to come by at Real Madrid and went to Lyon on loan to actually play football. At 19 he is the baby of the attack, with everything still in front of him."
   },
   {
    "id": 265785,
@@ -191,7 +210,8 @@
    "position": "Attacker",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/265785.png",
-   "club": "Zenit"
+   "club": "Zenit",
+   "note": "A direct, dribbling winger who shone for Botafogo before a big move to Zenit in Russia early in 2025. He gives Ancelotti pace and trickery off the bench when a game needs unlocking."
   },
   {
    "id": 127769,
@@ -200,7 +220,8 @@
    "position": "Attacker",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/127769.png",
-   "club": "Arsenal"
+   "club": "Arsenal",
+   "note": "Arsenal's flying left winger, blessed with the kind of acceleration that turns a half-chance into a goal in a couple of strides. His job off the bench is simple, run tiring defenders into the ground."
   },
   {
    "id": 276,
@@ -209,7 +230,8 @@
    "position": "Attacker",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/276.png",
-   "club": "Santos"
+   "club": "Santos",
+   "note": "Brazil's all-time top scorer, back at boyhood club Santos and chasing one last World Cup after years of injuries kept interrupting him. A calf strain in the build-up means even getting on the pitch is no certainty, but few players generate this much hope and worry at once."
   },
   {
    "id": 1496,
@@ -218,7 +240,8 @@
    "position": "Attacker",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/1496.png",
-   "club": "Barcelona"
+   "club": "Barcelona",
+   "note": "Arrives off a brilliant season at Barcelona where he chipped in with goals and assists in roughly equal measure. A right winger who cuts inside onto his stronger left foot, he is one of Brazil's most reliable sources of end product."
   },
   {
    "id": 407806,
@@ -227,7 +250,8 @@
    "position": "Attacker",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/407806.png",
-   "club": "Vasco DA Gama"
+   "club": "Vasco DA Gama",
+   "note": "A 19-year-old winger who burst out of Vasco da Gama and onto Europe's transfer radar before earning his first Brazil caps in early 2026. A genuine bolt-from-the-blue pick whose inclusion turned plenty of heads."
   },
   {
    "id": 196156,
@@ -236,7 +260,8 @@
    "position": "Attacker",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/196156.png",
-   "club": "Brentford"
+   "club": "Brentford",
+   "note": "A proper centre-forward who answered a slow start at Brentford by becoming one of the Premier League's most prolific strikers, finishing the season just behind Erling Haaland in the scoring charts. After a year like that he has earned the right to lead Brazil's line."
   },
   {
    "id": 762,
@@ -245,7 +270,8 @@
    "position": "Attacker",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/762.png",
-   "club": "Real Madrid"
+   "club": "Real Madrid",
+   "note": "The star of the show and Brazil's main attacking threat, a Real Madrid winger whose dribbling can pull a defence apart on its own. The puzzle Ancelotti has to solve is why his ruthless club form has never quite carried over to the national team."
   }
  ],
  "guardianStarPlayer": "Vin\u00edcius J\u00fanior",

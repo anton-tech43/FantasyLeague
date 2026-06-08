@@ -21,7 +21,8 @@
    "position": "Goalkeeper",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/524.png",
-   "club": "FC Copenhagen"
+   "club": "FC Copenhagen",
+   "note": "A Dinamo Zagreb academy keeper who rebuilt his career abroad, first in Greece and now as Copenhagen's number one. He's the youngest of Croatia's three goalkeepers and very much the understudy here."
   },
   {
    "id": 1305,
@@ -30,7 +31,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/1305.png",
-   "club": "Dinamo Zagreb"
+   "club": "Dinamo Zagreb",
+   "note": "The man who turned Croatia's 2022 World Cup run into folklore, saving three penalties against Japan and standing on his head against Brazil. If a knockout game goes to a shootout, he's the reason Croatia fans quietly fancy their chances."
   },
   {
    "id": 14268,
@@ -39,7 +41,8 @@
    "position": "Goalkeeper",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/14268.png",
-   "club": "Hull City"
+   "club": "Hull City",
+   "note": "Hull City's keeper, who swept their 2024-25 player-of-the-year awards in a season where he was about the only thing the fans agreed on. He's the third-choice gloves here but has quietly earned the trip."
   },
   {
    "id": 1902,
@@ -48,7 +51,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/1902.png",
-   "club": "Real Sociedad"
+   "club": "Real Sociedad",
+   "note": "A towering centre-back, nearly two metres tall, who was already winning headers for Croatia in the 2018 final. Now at Real Sociedad, he's the steady old hand at the back rather than the star."
   },
   {
    "id": 30827,
@@ -57,7 +61,8 @@
    "position": "Defender",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/30827.png",
-   "club": "FC Midtjylland"
+   "club": "FC Midtjylland",
+   "note": "A no-frills defender who became Danish side Midtjylland's record signing in 2025 after years in Italy. He made his Croatia debut in a draw with France, which is a fairly intimidating place to start."
   },
   {
    "id": 129033,
@@ -66,7 +71,8 @@
    "position": "Defender",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/129033.png",
-   "club": "Manchester City"
+   "club": "Manchester City",
+   "note": "Croatia's defensive crown jewel, a Manchester City centre-back happy to bomb forward at left-back, who's just battled back from a broken shin in time for the tournament. Quick, calm and only getting better."
   },
   {
    "id": 1084,
@@ -75,7 +81,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/1084.png",
-   "club": "Fiorentina"
+   "club": "Fiorentina",
+   "note": "A German-born centre-back at Fiorentina who can also fill in at right-back or in front of the defence. He's the kind of versatile body every manager likes to have on the bench just in case."
   },
   {
    "id": 125171,
@@ -84,7 +91,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/125171.png",
-   "club": "Bayern M\u00fcnchen"
+   "club": "Bayern München",
+   "note": "Bayern Munich's Swiss-army-knife defender, comfortable at either full-back or centre-back, who could have played for Germany but chose Croatia. Bayern rate him so highly they've declared him not for sale."
   },
   {
    "id": 14701,
@@ -93,7 +101,8 @@
    "position": "Defender",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/14701.png",
-   "club": "Ajax"
+   "club": "Ajax",
+   "note": "A tall, ball-playing centre-back who left Dinamo Zagreb for Ajax in a big-money move. Settling in Amsterdam took a while, but he's grown into a regular for club and country."
   },
   {
    "id": 387521,
@@ -102,7 +111,8 @@
    "position": "Defender",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/387521.png",
-   "club": "Hamburger SV"
+   "club": "Hamburger SV",
+   "note": "The teenage prodigy of this squad, a Tottenham-owned centre-back who spent the season on loan in Germany and was voted one of the Bundesliga's standout players, ahead of Harry Kane in one poll. Croatia's defensive future, arriving early."
   },
   {
    "id": 295026,
@@ -111,7 +121,8 @@
    "position": "Midfielder",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/295026.png",
-   "club": "Como"
+   "club": "Como",
+   "note": "A Dinamo Zagreb academy playmaker who led the Croatian league in assists before joining Como, and gets the inevitable next-Modric comparisons. A creative passer being eased in behind the old guard."
   },
   {
    "id": 284869,
@@ -120,7 +131,8 @@
    "position": "Midfielder",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/284869.png",
-   "club": "HNK Rijeka"
+   "club": "HNK Rijeka",
+   "note": "An attacking midfielder who was Rijeka's top scorer as they won the Croatian league and cup double. One of the few squad members still playing his football back home."
   },
   {
    "id": 14395,
@@ -129,7 +141,8 @@
    "position": "Midfielder",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/14395.png",
-   "club": "FC Augsburg"
+   "club": "FC Augsburg",
+   "note": "Augsburg's defensive midfielder, the type who breaks up play and lets the artists create, and who can drop into defence if needed. He has a Europa League winner's medal from his Eintracht Frankfurt days."
   },
   {
    "id": 2291,
@@ -138,7 +151,8 @@
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/2291.png",
-   "club": "Manchester City"
+   "club": "Manchester City",
+   "note": "A Manchester City midfielder with over 100 caps who glides past challenges and ties Croatia's defence to its attack. With Modric ahead of him, he does the running so the captain doesn't have to."
   },
   {
    "id": 754,
@@ -147,7 +161,8 @@
    "position": "Midfielder",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/754.png",
-   "club": "AC Milan"
+   "club": "AC Milan",
+   "note": "The 40-year-old captain and 2018 Ballon d'Or winner, still pulling the strings, now at AC Milan and heading to a record sixth World Cup alongside the likes of Messi and Ronaldo. Croatia's most-capped player and the heartbeat of everything they do."
   },
   {
    "id": 1322,
@@ -156,7 +171,8 @@
    "position": "Midfielder",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/1322.png",
-   "club": "Bologna"
+   "club": "Bologna",
+   "note": "A defensive midfielder at Bologna who does the unglamorous tidying-up in front of the back four. Another of the depth options in a midfield that runs deep."
   },
   {
    "id": 2763,
@@ -165,7 +181,8 @@
    "position": "Midfielder",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/2763.png",
-   "club": "Atalanta"
+   "club": "Atalanta",
+   "note": "Atalanta's all-time leading scorer in the Champions League, a midfielder with a knack for arriving late in the box to finish. He chips in with goals from deep that Croatia badly need."
   },
   {
    "id": 7332,
@@ -174,7 +191,8 @@
    "position": "Midfielder",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/7332.png",
-   "club": "Real Sociedad"
+   "club": "Real Sociedad",
+   "note": "An Austrian-born midfielder at Real Sociedad, and cousin of teammate Petar Sucic. The two play together for Croatia, which makes for an unusual family WhatsApp group."
   },
   {
    "id": 348205,
@@ -183,7 +201,8 @@
    "position": "Midfielder",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/348205.png",
-   "club": "Inter"
+   "club": "Inter",
+   "note": "A young central midfielder who earned a big move from Dinamo Zagreb to Inter Milan, and is cousin to fellow squad member Luka Sucic. He shuns social media and keeps his head down, which in modern football is almost a personality trait."
   },
   {
    "id": 842,
@@ -192,7 +211,8 @@
    "position": "Midfielder",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/842.png",
-   "club": "Torino"
+   "club": "Torino",
+   "note": "An attacking midfielder enjoying a strong scoring season at Torino, and a regular at major tournaments since 2018. The kind of player who can pop up with a goal when the bigger names are being marked."
   },
   {
    "id": 46746,
@@ -201,7 +221,8 @@
    "position": "Attacker",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/46746.png",
-   "club": "Osasuna"
+   "club": "Osasuna",
+   "note": "A proper old-school number nine who finished third in the La Liga scoring charts with Osasuna, behind only Mbappe and Muriqi, and was Croatia's top scorer in qualifying. At 34 he's having the best run of his career at exactly the right time."
   },
   {
    "id": 726,
@@ -210,7 +231,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/726.png",
-   "club": "1899 Hoffenheim"
+   "club": "1899 Hoffenheim",
+   "note": "Hoffenheim's all-time record scorer who has spent more than a decade quietly racking up goals at the same German club. A clever finisher and one of Croatia's most reliable sources of goals over the years."
   },
   {
    "id": 202696,
@@ -219,7 +241,8 @@
    "position": "Attacker",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/202696.png",
-   "club": "SC Freiburg"
+   "club": "SC Freiburg",
+   "note": "A towering young striker, nearly two metres tall, now leading the line for Freiburg in Germany. He's early in his Croatia career but offers a different, more physical option up front."
   },
   {
    "id": 66055,
@@ -228,7 +251,8 @@
    "position": "Attacker",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/66055.png",
-   "club": "FC Dallas"
+   "club": "FC Dallas",
+   "note": "A big striker scoring freely in MLS for FC Dallas, where he's their record signing and a regular near the top of the goal charts. His club form dragged him back into the national team after a couple of years in the wilderness, on home soil no less."
   },
   {
    "id": 260865,
@@ -237,7 +261,8 @@
    "position": "Attacker",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/260865.png",
-   "club": "Orlando City SC"
+   "club": "Orlando City SC",
+   "note": "A right winger (no relation to Croatia's other Pasalic) who moved from Rijeka to Orlando City as a designated player. Direct and quick, he's one of the squad's fresher attacking faces."
   },
   {
    "id": 207,
@@ -246,7 +271,8 @@
    "position": "Attacker",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/207.png",
-   "club": "PSV Eindhoven"
+   "club": "PSV Eindhoven",
+   "note": "The veteran left-sided forward who scored in the 2018 World Cup final and is now winning Eredivisie titles with PSV well into his thirties. Heading to his fourth World Cup, he's living proof that Croatia's golden generation just won't quit."
   }
  ],
  "guardianStarPlayer": "Luka Modric",

@@ -20,7 +20,8 @@
    "position": "Goalkeeper",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/314509.png",
-   "club": "Standard Liege"
+   "club": "Standard Liege",
+   "note": "The youngest name in the squad, a 20-year-old keeper who came up through Standard Liege. He's the long-shot understudy here, more likely to be soaking it all in than starting."
   },
   {
    "id": 48501,
@@ -29,7 +30,8 @@
    "position": "Goalkeeper",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/48501.png",
-   "club": "FC Noah"
+   "club": "FC Noah",
+   "note": "A keeper who's wandered far from the bright leagues to find regular football, these days minding the net in Armenia. Steady and well-travelled, the kind who knows exactly what a tournament squad needs from him."
   },
   {
    "id": 24012,
@@ -38,7 +40,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/24012.png",
-   "club": "Le Havre"
+   "club": "Le Havre",
+   "note": "The most experienced of the three keepers and the one wearing the number one, plying his trade in France's top flight at Le Havre. At 31 he's the safe pair of hands the Leopards lean on."
   },
   {
    "id": 8445,
@@ -47,7 +50,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/8445.png",
-   "club": "Larisa"
+   "club": "Larisa",
+   "note": "A centre-back who moved to Greece's Larisa early in 2026, having helped DR Congo grind to the last 16 at the Africa Cup of Nations. Not flashy, just the sort who throws himself in front of things."
   },
   {
    "id": 24245,
@@ -56,7 +60,8 @@
    "position": "Defender",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/24245.png",
-   "club": "Aris"
+   "club": "Aris",
+   "note": "A right-back from Lyon who is one of four footballing Kalulu brothers, two of whom chose DR Congo while younger sibling Pierre went with France. He earns his living in Cyprus and offers honest cover down the right."
   },
   {
    "id": 199767,
@@ -65,7 +70,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/199767.png",
-   "club": "Legia Warszawa"
+   "club": "Legia Warszawa",
+   "note": "A centre-back who has built his career in Poland and become a reliable fixture in the Leopards' back line. Quietly dependable, the kind of defender you only notice when he isn't there."
   },
   {
    "id": 21098,
@@ -74,7 +80,8 @@
    "position": "Defender",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/21098.png",
-   "club": "Genk"
+   "club": "Genk",
+   "note": "A left-sided defender at Belgian side Genk who once turned out for Belgium in friendlies before committing to DR Congo. Comfortable on the ball and happy to push forward, he's a different flavour of full-back than the no-nonsense types around him."
   },
   {
    "id": 18816,
@@ -83,7 +90,8 @@
    "position": "Defender",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/18816.png",
-   "club": "Lens"
+   "club": "Lens",
+   "note": "A left-back born in Lille to Congolese parents, now back in France with Lens after years in the Premier League with West Ham. He brings a bit of an attacking streak and plenty of big-game miles in the legs."
   },
   {
    "id": 375,
@@ -92,7 +100,8 @@
    "position": "Defender",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/375.png",
-   "club": "Lille"
+   "club": "Lille",
+   "note": "The captain and the country's all-time most-capped player, a centre-back whose career climbed from a rocky Newcastle start to standout years at Porto and Marseille before Lille. He has a habit of popping up with vital late goals, including in the playoff run that got DR Congo here."
   },
   {
    "id": 19182,
@@ -101,7 +110,8 @@
    "position": "Defender",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/19182.png",
-   "club": "Burnley"
+   "club": "Burnley",
+   "note": "Born in DR Congo and raised in England, he came up through Manchester United's academy and even captained England's under-21s before switching to the country of his birth. He scored the extra-time goal against Jamaica that finally booked this World Cup place."
   },
   {
    "id": 18846,
@@ -110,7 +120,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/18846.png",
-   "club": "West Ham"
+   "club": "West Ham",
+   "note": "The West Ham right-back famous for tackles that arrive out of nowhere, born in England but Congolese by descent. With Walker, Alexander-Arnold and others blocking his England path, he switched to DR Congo in 2025 and slotted straight in."
   },
   {
    "id": 1424,
@@ -119,7 +130,8 @@
    "position": "Midfielder",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/1424.png",
-   "club": "Watford"
+   "club": "Watford",
+   "note": "A central midfielder at Watford who does the unglamorous covering and shuffling that lets the more eye-catching names get forward. The sort of engine-room player every squad quietly relies on."
   },
   {
    "id": 21101,
@@ -128,7 +140,8 @@
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/21101.png",
-   "club": "Atromitos"
+   "club": "Atromitos",
+   "note": "A defensive midfielder of Indo-Guadeloupean and Congolese roots, now in Greece after a long spell at Nantes. With more than fifty caps he's become one of the steadier voices in the Leopards' midfield."
   },
   {
    "id": 375598,
@@ -137,7 +150,8 @@
    "position": "Midfielder",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/375598.png",
-   "club": "Lille"
+   "club": "Lille",
+   "note": "At 21 one of the brightest young midfielders in the group, holding his own at Lille and drawing interest from Premier League clubs. A composed passer who looks years older than he is in the middle of the park."
   },
   {
    "id": 48555,
@@ -146,7 +160,8 @@
    "position": "Midfielder",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/48555.png",
-   "club": "Espanyol"
+   "club": "Espanyol",
+   "note": "A defensive midfielder born in Switzerland to Congolese parents, who joined Espanyol in 2025 for his first taste of Spanish football. He's the screen in front of the back four, the bloke who breaks things up before they get dangerous."
   },
   {
    "id": 365331,
@@ -155,7 +170,8 @@
    "position": "Midfielder",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/365331.png",
-   "club": "Sunderland"
+   "club": "Sunderland",
+   "note": "A 21-year-old midfielder who earned a big-money move from Union Saint-Gilloise to newly promoted Sunderland in 2025, and is already tipped to become one of the Premier League's better ones. Born in Belgium, he chose the Leopards and looks like a foundation piece for years."
   },
   {
    "id": 44791,
@@ -164,7 +180,8 @@
    "position": "Midfielder",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/44791.png",
-   "club": "Kilmarnock"
+   "club": "Kilmarnock",
+   "note": "A combative midfielder who once wore England youth shirts before turning out for DR Congo, and who returned to Kilmarnock in Scotland early in 2026. A well-travelled pro adding bite and depth to the middle."
   },
   {
    "id": 129670,
@@ -173,7 +190,8 @@
    "position": "Midfielder",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/129670.png",
-   "club": "Montpellier"
+   "club": "Montpellier",
+   "note": "A quick, direct wide player on loan at Montpellier from Augsburg, who only switched his allegiance to DR Congo in 2024. Once a hyped French youth talent, he's looking to rediscover that early spark on the biggest stage."
   },
   {
    "id": 8627,
@@ -182,7 +200,8 @@
    "position": "Midfielder",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/8627.png",
-   "club": "Spartak Moscow"
+   "club": "Spartak Moscow",
+   "note": "The number ten, a winger who spent three seasons in Russia with Spartak Moscow after stops in Spain and Belgium. When he's on song he's a direct, unpredictable handful out wide."
   },
   {
    "id": 3033,
@@ -191,7 +210,8 @@
    "position": "Attacker",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/3033.png",
-   "club": "Real Betis"
+   "club": "Real Betis",
+   "note": "At 34 the veteran striker and one of the country's most prolific scorers, now back in Spain with Real Betis after years bouncing through China and the Gulf. He sits just shy of the national goal record and would dearly love to close that gap here."
   },
   {
    "id": 20674,
@@ -200,7 +220,8 @@
    "position": "Attacker",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/20674.png",
-   "club": "Al-Jazira"
+   "club": "Al-Jazira",
+   "note": "A striker who made his name banging in goals at Lens before moving on to Braga and then the UAE with Al-Jazira. He waited a while for his first DR Congo goals, then helped himself to two in a single friendly against Madagascar."
   },
   {
    "id": 279482,
@@ -209,7 +230,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/279482.png",
-   "club": "Castell\u00f3n"
+   "club": "Castell\u00f3n",
+   "note": "Born in Kinshasa and raised in Portugal's youth system, he's been one of the brighter sparks in Spain's second tier with Castell\u00f3n, chipping in goals and a stack of assists. The number nine who'd love to turn a breakout club season into a national-team moment."
   },
   {
    "id": 3034,
@@ -218,7 +240,8 @@
    "position": "Attacker",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/3034.png",
-   "club": "Alanyaspor"
+   "club": "Alanyaspor",
+   "note": "A forward who moved to Turkey's Alanyaspor in late 2025 and quickly found his shooting boots there. Pacy and willing to run the channels, he's a useful option off the bench or out wide."
   },
   {
    "id": 47545,
@@ -227,7 +250,8 @@
    "position": "Attacker",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/47545.png",
-   "club": "Sakaryaspor"
+   "club": "Sakaryaspor",
+   "note": "Once labelled the most gifted of his generation as a teenager and the youngest Chelsea player ever in the Champions League, the now-34-year-old's career took him all over Europe and into Turkey's second tier. The early hype never quite landed, but a World Cup at this age is a lovely late chapter."
   },
   {
    "id": 179699,
@@ -236,7 +260,8 @@
    "position": "Attacker",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/179699.png",
-   "club": "Pyramids FC"
+   "club": "Pyramids FC",
+   "note": "The CAF Champions League's top scorer as Egypt's Pyramids won their first continental crown, and the club's all-time leading marksman. A genuine penalty-box predator who arrives at the World Cup brimming with goals and form."
   },
   {
    "id": 20649,
@@ -245,7 +270,8 @@
    "position": "Attacker",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/20649.png",
-   "club": "Newcastle"
+   "club": "Newcastle",
+   "note": "The Leopards' headline attacker and the Guardian's pick of the squad, who earned a deadline-day move to Newcastle after becoming Brentford's record Premier League scorer. Quick, clever and dangerous in the final third, he's the man opponents will plan around."
   }
  ],
  "guardianStarPlayer": "Yoane Wissa",

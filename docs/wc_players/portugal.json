@@ -21,7 +21,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/369.png",
-   "club": "FC Porto"
+   "club": "FC Porto",
+   "note": "Porto's first-choice keeper and the man who inherited the captain's armband there once the veterans moved on, he piled up a stack of clean sheets on the way to a league title. He's the calm, reliable presence Portugal trust to start, the sort of goalkeeper who makes the hard saves look routine."
   },
   {
    "id": 1590,
@@ -30,7 +31,8 @@
    "position": "Goalkeeper",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/1590.png",
-   "club": "Wolves"
+   "club": "Wolves",
+   "note": "The backup keeper has spent the season at Wolves, where he lost his spot for a spell before clawing it back at a club scrapping near the bottom of the Premier League. He's here as cover rather than a starter, an experienced pair of hands to have on the bench."
   },
   {
    "id": 46672,
@@ -39,7 +41,8 @@
    "position": "Goalkeeper",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/46672.png",
-   "club": "Sporting CP"
+   "club": "Sporting CP",
+   "note": "At 31, the Sporting keeper is having arguably the best run of his career, helping his club push deep into Europe in a standout season. The third name in Portugal's goalkeeping queue, but one who's earned the trip on form."
   },
   {
    "id": 161939,
@@ -48,7 +51,8 @@
    "position": "Defender",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/161939.png",
-   "club": "Benfica"
+   "club": "Benfica",
+   "note": "A 23-year-old centre-back who has become a regular at Benfica, comfortable slotting in at right-back too, with a release clause big enough that the bigger clubs keep circling. He plays out from the back as readily as he defends, the modern sort of defender coaches build around."
   },
   {
    "id": 855,
@@ -57,7 +61,8 @@
    "position": "Defender",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/855.png",
-   "club": "Al-Hilal Saudi FC"
+   "club": "Al-Hilal Saudi FC",
+   "note": "A full-back who can play either flank and loves stepping into midfield to pick a pass, he's now on Al-Hilal's books in Saudi Arabia after years at the top of the European game. The kind of attacking defender who treats overlapping runs as the whole point of the job."
   },
   {
    "id": 886,
@@ -66,7 +71,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/886.png",
-   "club": "Manchester United"
+   "club": "Manchester United",
+   "note": "Manchester United's reliable right-back who'll happily fill in on the left, the type who quietly racks up appearances without much fuss. Steady, two-footed and rarely caught out, he's the dependable option Portugal can plug in either side of defence."
   },
   {
    "id": 567,
@@ -75,7 +81,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/567.png",
-   "club": "Manchester City"
+   "club": "Manchester City",
+   "note": "Manchester City's commanding centre-back and the man Portugal build their defence around, the sort who organises everyone in front of him and wins the ball without losing his shape. One of the squad's senior leaders, all calm authority at the back."
   },
   {
    "id": 265595,
@@ -84,7 +91,8 @@
    "position": "Defender",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/265595.png",
-   "club": "Sporting CP"
+   "club": "Sporting CP",
+   "note": "A left-footed centre-back at Sporting whose passing range turns defending into the start of an attack, the kind of ball-player Europe's big clubs have been eyeing for a while. Good on the deck, dangerous from set-pieces, and still only 24."
   },
   {
    "id": 263482,
@@ -93,7 +101,8 @@
    "position": "Defender",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/263482.png",
-   "club": "Paris Saint Germain"
+   "club": "Paris Saint Germain",
+   "note": "PSG's flying left-back, widely rated among the best in the world in his position, and named the standout player when Portugal won the Nations League final. He overlaps like a winger and recovers like a sprinter, all of 23 and only getting better."
   },
   {
    "id": 130,
@@ -102,7 +111,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/130.png",
-   "club": "Fenerbah\u00e7e"
+   "club": "Fenerbah\u00e7e",
+   "note": "A quick, experienced right-back now playing in Turkey for Fenerbah\u00e7e after a long stint in the Premier League and Spain. At 32 he's the elder option on the right, all pace and tackling, the seasoned head behind the younger full-backs."
   },
   {
    "id": 336671,
@@ -111,7 +121,8 @@
    "position": "Defender",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/336671.png",
-   "club": "Villarreal"
+   "club": "Villarreal",
+   "note": "At 22 he's the squad's Swiss army knife in defence, a natural centre-back who can just as easily play left-back or sit in midfield, which is exactly why Villarreal made him a club-record signing. Wherever there's a gap, he's the one who fills it."
   },
   {
    "id": 190485,
@@ -120,7 +131,8 @@
    "position": "Defender",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/190485.png",
-   "club": "Mallorca"
+   "club": "Mallorca",
+   "note": "Listed here as a defender but really a holding midfielder by trade, the Mallorca man is the squad's under-the-radar pick, the kind of name casual fans won't know yet. He does the unglamorous shielding-the-back-four work that lets the stars in front of him shine."
   },
   {
    "id": 1485,
@@ -129,7 +141,8 @@
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/1485.png",
-   "club": "Manchester United"
+   "club": "Manchester United",
+   "note": "Manchester United's captain and Portugal's midfield engine, the man who takes the free-kicks, the penalties and the responsibility, then runs himself into the ground for ninety minutes. If you want one player to make something happen, he's usually the answer."
   },
   {
    "id": 335051,
@@ -138,7 +151,8 @@
    "position": "Midfielder",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/335051.png",
-   "club": "Paris Saint Germain"
+   "club": "Paris Saint Germain",
+   "note": "At 21 he's already a Champions League winner with PSG and the youngest Portuguese player to reach a milestone in that competition that even Ronaldo hit later, then he went and scored two bicycle kicks in one game for good measure. Tiny, tireless and absurdly composed for his age."
   },
   {
    "id": 2676,
@@ -147,7 +161,8 @@
    "position": "Midfielder",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/2676.png",
-   "club": "Al-Hilal Saudi FC"
+   "club": "Al-Hilal Saudi FC",
+   "note": "A deep midfielder famous for spraying long, raking passes across the pitch, now plying his trade at Al-Hilal in Saudi Arabia. He sits in front of the defence and acts as the launch pad, the man who turns defence into attack with one swing of his right boot."
   },
   {
    "id": 41621,
@@ -156,7 +171,8 @@
    "position": "Midfielder",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/41621.png",
-   "club": "Manchester City"
+   "club": "Manchester City",
+   "note": "A powerful, ground-covering midfielder at Manchester City who's increasingly been used at right-back, proof that managers will find a way to get a good athlete on the pitch. Strong on the ball and hard to knock off it, he gives Portugal a useful different option in the middle."
   },
   {
    "id": 636,
@@ -165,7 +181,8 @@
    "position": "Midfielder",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/636.png",
-   "club": "Manchester City"
+   "club": "Manchester City",
+   "note": "Manchester City's captain and one of the most two-footed, do-everything midfielders around, equally happy creating chances, tracking back, or filling in wherever the team needs a body. Endlessly clever and impossible to dispossess, the glue in Portugal's midfield."
   },
   {
    "id": 128384,
@@ -174,7 +191,8 @@
    "position": "Midfielder",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/128384.png",
-   "club": "Paris Saint Germain"
+   "club": "Paris Saint Germain",
+   "note": "The metronome at the heart of PSG's treble-winning side and a Ballon d'Or runner-up, he completes more passes than just about anyone and sets the tempo of every game he plays. Portugal build around him; give him the ball and the whole team starts to tick."
   },
   {
    "id": 161585,
@@ -183,7 +201,8 @@
    "position": "Attacker",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/161585.png",
-   "club": "Juventus"
+   "club": "Juventus",
+   "note": "A direct, dribbling winger at Juventus and the son of a former Portugal international, so the wing-play runs in the family. He's the kind of player who comes off the bench to beat his man and conjure something, all quick feet and fearless one-on-ones."
   },
   {
    "id": 925,
@@ -192,7 +211,8 @@
    "position": "Attacker",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/925.png",
-   "club": "Real Sociedad"
+   "club": "Real Sociedad",
+   "note": "A forward back in Spain with Real Sociedad after a spell in England, chipping in with a tidy run of league goals this season. He can play out wide or through the middle, a left-footed finisher with a knack for the spectacular when the mood takes him."
   },
   {
    "id": 583,
@@ -201,7 +221,8 @@
    "position": "Attacker",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/583.png",
-   "club": "Al-Nassr"
+   "club": "Al-Nassr",
+   "note": "Once hailed as Portugal's next great hope after a teenage breakout, the gifted forward has since bounced between big clubs and now lines up alongside Ronaldo at Al-Nassr in Saudi Arabia. Still capable of moments only a few players can produce, with the touch to unlock a tight game."
   },
   {
    "id": 22236,
@@ -210,7 +231,8 @@
    "position": "Attacker",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/22236.png",
-   "club": "AC Milan"
+   "club": "AC Milan",
+   "note": "AC Milan's powerhouse left winger, all raw pace and shoulders, the kind of player who can drift through a game and then win it in a single burst down the flank. When he gets running at a defender from wide, full-backs start checking the time until it's over."
   },
   {
    "id": 1864,
@@ -219,7 +241,8 @@
    "position": "Attacker",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/1864.png",
-   "club": "Chelsea"
+   "club": "Chelsea",
+   "note": "A quick, generous winger at Chelsea who picked up a Club World Cup winner's medal in his first season there and bagged his first senior hat-trick along the way. As likely to tee up a teammate as score himself, the unselfish kind of attacker every coach wants."
   },
   {
    "id": 41585,
@@ -228,7 +251,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/41585.png",
-   "club": "Paris Saint Germain"
+   "club": "Paris Saint Germain",
+   "note": "The PSG striker who announced himself to the world by scoring a hat-trick on his first World Cup start in 2022, the day Ronaldo was left on the bench. A natural number nine with a poacher's instinct, he's Portugal's option to lead the line when they want a proper centre-forward."
   },
   {
    "id": 874,
@@ -237,7 +261,8 @@
    "position": "Attacker",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/874.png",
-   "club": "Al-Nassr"
+   "club": "Al-Nassr",
+   "note": "At 40 and still the captain, he's heading to a record sixth World Cup, chasing the one big trophy that has always eluded him with Portugal. Whatever you make of the noise around him, he's the most prolific international goalscorer the game has ever seen, and he's not done yet."
   },
   {
    "id": 41112,
@@ -246,7 +271,8 @@
    "position": "Attacker",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/41112.png",
-   "club": "Sporting CP"
+   "club": "Sporting CP",
+   "note": "A creative winger at Sporting who has rediscovered his best form back in Portugal, racking up goals and assists in a busy season across every competition. He drifts inside off the right to thread passes, the kind of player who makes the final ball look easy."
   }
  ],
  "guardianStarPlayer": "Cristiano Ronaldo",

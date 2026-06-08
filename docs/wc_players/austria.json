@@ -20,7 +20,8 @@
    "position": "Goalkeeper",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/7598.png",
-   "club": "Brondby"
+   "club": "Brondby",
+   "note": "A keeper who once held down Austria's number one shirt and has since taken his trade to Denmark with Brondby. He's the experienced cover in this squad rather than the first name on the teamsheet."
   },
   {
    "id": 7525,
@@ -29,7 +30,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/7525.png",
-   "club": "Red Bull Salzburg"
+   "club": "Red Bull Salzburg",
+   "note": "The Salzburg goalkeeper who looks set to wear the number one shirt in North America, wearing it on his back here too. A steady, unfussy presence who has worked his way up to being Rangnick's trusted pick."
   },
   {
    "id": 221605,
@@ -38,7 +40,8 @@
    "position": "Goalkeeper",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/221605.png",
-   "club": "Plzen"
+   "club": "Plzen",
+   "note": "The youngest of the three keepers, now plying his trade in the Czech league with Plzen. He's third in the pecking order, so a tournament here is more about learning the ropes than expecting to play."
   },
   {
    "id": 126640,
@@ -47,7 +50,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/126640.png",
-   "club": "Elche"
+   "club": "Elche",
+   "note": "A centre-back who made his name at Sturm Graz before taking the leap to Spain with Elche. He's part of the newer crop in defence, the sort of player who has to earn his minutes around the established names."
   },
   {
    "id": 505,
@@ -56,7 +60,8 @@
    "position": "Defender",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/505.png",
-   "club": "Real Madrid"
+   "club": "Real Madrid",
+   "note": "The captain and by some distance the biggest name Austria has, a Real Madrid defender with four Champions League winner's medals split between Madrid and Bayern. At 33 this is almost certainly his one shot at a World Cup, and the whole team is built around getting him there."
   },
   {
    "id": 25287,
@@ -65,7 +70,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/25287.png",
-   "club": "Tottenham"
+   "club": "Tottenham",
+   "note": "Austria's Premier League centre-back, now at Tottenham, and the sort of strong, no-nonsense defender you want alongside the ageing captain. Quick across the ground and happy to do the unglamorous work that keeps a back line honest."
   },
   {
    "id": 25314,
@@ -74,7 +80,8 @@
    "position": "Defender",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/25314.png",
-   "club": "Werder Bremen"
+   "club": "Werder Bremen",
+   "note": "Captain of Werder Bremen and comfortable at either centre-back or left-back, which makes him exactly the kind of flexible body a coach loves to have. He carries the quiet authority of someone used to leading a Bundesliga dressing room."
   },
   {
    "id": 26240,
@@ -83,7 +90,8 @@
    "position": "Defender",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/26240.png",
-   "club": "SC Freiburg"
+   "club": "SC Freiburg",
+   "note": "A long-serving Freiburg centre-back who has spent years as one of the more reliable defenders in the Bundesliga without ever shouting about it. Dependable rather than flashy, which is its own kind of compliment for a defender."
   },
   {
    "id": 25915,
@@ -92,7 +100,8 @@
    "position": "Defender",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/25915.png",
-   "club": "FSV Mainz 05"
+   "club": "FSV Mainz 05",
+   "note": "A Vienna-born full-back at Mainz who took the long way to the national team, having once been eligible for Kenya through his father. The kind of steady wide defender who keeps his shirt by rarely putting a foot wrong."
   },
   {
    "id": 711,
@@ -101,7 +110,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/711.png",
-   "club": "FSV Mainz 05"
+   "club": "FSV Mainz 05",
+   "note": "A Mainz defender who can fill in at right-back or centre-back depending on what the day asks for, which is handy in a tournament squad. That versatility means he's rarely far from a game, even if he's not always the first pick."
   },
   {
    "id": 7090,
@@ -110,7 +120,8 @@
    "position": "Defender",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/7090.png",
-   "club": "Venezia"
+   "club": "Venezia",
+   "note": "A defender plying his trade in Italy with Venezia, and one of the less familiar faces in this back line. He's squad depth here, the sort of name that surprises a few fans when it's read out."
   },
   {
    "id": 715,
@@ -119,7 +130,8 @@
    "position": "Midfielder",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/715.png",
-   "club": "RB Leipzig"
+   "club": "RB Leipzig",
+   "note": "A Leipzig attacking midfielder who was Austrian Footballer of the Year in 2024 and chips in with goals from the space between the lines. He chimed in during qualifying too, including a share of the spoils in a 10-0 romp over San Marino."
   },
   {
    "id": 138935,
@@ -128,7 +140,8 @@
    "position": "Midfielder",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/138935.png",
-   "club": "Borussia Dortmund"
+   "club": "Borussia Dortmund",
+   "note": "Born in Vienna but raised in England, the Dortmund midfielder won youth titles in an England shirt before Rangnick talked him into switching to Austria early in 2026. He marked his decision in the best possible way, scoring on his debut against Ghana."
   },
   {
    "id": 719,
@@ -137,7 +150,8 @@
    "position": "Midfielder",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/719.png",
-   "club": "SC Braga"
+   "club": "SC Braga",
+   "note": "A deep-lying midfielder with more than fifty caps, now in Portugal with Braga after spells at Hoffenheim and a brief stop at Ajax. The calm one who breaks up play and starts moves from the back, the type you only notice when he's missing."
   },
   {
    "id": 1157,
@@ -146,7 +160,8 @@
    "position": "Midfielder",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/1157.png",
-   "club": "Bayern M\u00fcnchen"
+   "club": "Bayern M\u00fcnchen",
+   "note": "The Bayern Munich midfielder and reigning Austrian Footballer of the Year, the engine who covers every blade of grass so others don't have to. The Guardian's pick as the team's standout, and the kind of relentless runner Rangnick's pressing game is built on."
   },
   {
    "id": 7327,
@@ -155,7 +170,8 @@
    "position": "Midfielder",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/7327.png",
-   "club": "1899 Hoffenheim"
+   "club": "1899 Hoffenheim",
+   "note": "A wing-back who broke through at Sturm Graz before earning his Bundesliga move to Hoffenheim. He gives Austria energy and width down the flank, the legs to get up and down all afternoon."
   },
   {
    "id": 1159,
@@ -164,7 +180,8 @@
    "position": "Midfielder",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/1159.png",
-   "club": "Borussia Dortmund"
+   "club": "Borussia Dortmund",
+   "note": "A Dortmund midfielder with a CV that takes in Bayern, Leipzig and Manchester United, and one of the more experienced heads in the middle of the park. He carries a thumping shot and the kind of box-to-box engine that suits a high-pressing side."
   },
   {
    "id": 1095,
@@ -173,7 +190,8 @@
    "position": "Midfielder",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/1095.png",
-   "club": "RB Leipzig"
+   "club": "RB Leipzig",
+   "note": "A combative central midfielder at Leipzig who shares both a surname and a club with goalkeeper Alexander, though the two aren't related. He's the ball-winner of the side, all bite and tackles in front of the back four."
   },
   {
    "id": 7562,
@@ -182,7 +200,8 @@
    "position": "Midfielder",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/7562.png",
-   "club": "Werder Bremen"
+   "club": "Werder Bremen",
+   "note": "A creative midfielder at Werder Bremen, where he lines up alongside captain Marco Friedl for club and country alike. He's one of the lighter, more inventive options in the middle, good for a clever pass when the game needs unlocking."
   },
   {
    "id": 417,
@@ -191,7 +210,8 @@
    "position": "Midfielder",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/417.png",
-   "club": "Wolfsberger AC"
+   "club": "Wolfsberger AC",
+   "note": "A midfielder who spent his best years in the Bundesliga with Schalke before coming home to play for Wolfsberger in the Austrian top flight. A late call-up at 31, the experienced squad man rewarded for finding his form again back in his own league."
   },
   {
    "id": 7328,
@@ -200,7 +220,8 @@
    "position": "Midfielder",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/7328.png",
-   "club": "RB Leipzig"
+   "club": "RB Leipzig",
+   "note": "A Leipzig midfielder who followed the well-trodden Salzburg-to-Leipzig pipeline and is one of the squad's listed key players despite still being only 24. A tidy, hard-running passer who keeps the team ticking over without much fuss."
   },
   {
    "id": 327895,
@@ -209,7 +230,8 @@
    "position": "Midfielder",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/327895.png",
-   "club": "PSV Eindhoven"
+   "club": "PSV Eindhoven",
+   "note": "At 20, the baby of the squad, a Bayern Munich talent spending the season on loan at PSV to get regular minutes. He came through Germany's youth ranks but threw his lot in with Austria in 2025, and Rangnick fast-tracked him in."
   },
   {
    "id": 126642,
@@ -218,7 +240,8 @@
    "position": "Attacker",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/126642.png",
-   "club": "VfL Wolfsburg"
+   "club": "VfL Wolfsburg",
+   "note": "A tricky wide forward at Wolfsburg who likes to run at defenders and cut inside off the flank. He gives Rangnick a different kind of threat out wide, more dribble than muscle."
   },
   {
    "id": 18830,
@@ -227,7 +250,8 @@
    "position": "Attacker",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/18830.png",
-   "club": "FK Crvena Zvezda"
+   "club": "FK Crvena Zvezda",
+   "note": "At 36, Austria's most-capped player and all-time leading scorer, now playing at Red Star Belgrade after years in the Premier League and Serie A. He top-scored in qualifying with eight goals, proof the old gunslinger still fancies the big stage."
   },
   {
    "id": 25297,
@@ -236,7 +260,8 @@
    "position": "Attacker",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/25297.png",
-   "club": "FC Augsburg"
+   "club": "FC Augsburg",
+   "note": "The Augsburg striker who provided the moment that mattered most, a late equaliser against Bosnia that sealed top spot and the ticket to North America. Austria's second-top scorer in qualifying, the unsung foil to Arnautovic up front."
   },
   {
    "id": 7722,
@@ -245,7 +270,8 @@
    "position": "Attacker",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/7722.png",
-   "club": "Lask Linz"
+   "club": "Lask Linz",
+   "note": "A two-metre target man whose career was nearly ended by three separate cruciate ligament tears that cost him close to a thousand days. A loan to LASK to rebuild rescued him, and this call-up is the happy ending to a long, grim road back."
   }
  ],
  "guardianStarPlayer": "Konrad Laimer",

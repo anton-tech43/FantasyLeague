@@ -2,34 +2,36 @@
  "country": "cape_verde",
  "displayName": "Cape Verde Islands",
  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
- "manager": "Bubista (Pedro Leit\u00e3o Brito)",
+ "manager": "Bubista (Pedro Leitão Brito)",
  "captain": "Ryan Mendes",
  "keyPlayers": [
   "Ryan Mendes",
   "Logan Costa",
   "Jamiro Monteiro",
-  "V\u00f3zinha",
+  "Vózinha",
   "Jovane Cabral",
   "D. Livramento"
  ],
  "players": [
   {
    "id": 41764,
-   "name": "M\u00e1rcio Rosa",
+   "name": "Márcio Rosa",
    "age": 28,
    "position": "Goalkeeper",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/41764.png",
-   "club": "Montana"
+   "club": "Montana",
+   "note": "The Bulgarian-league keeper who's third in the goalkeeping queue here, which on a first-ever World Cup squad still means a front-row seat to history."
   },
   {
    "id": 15304,
-   "name": "V\u00f3zinha",
+   "name": "Vózinha",
    "age": 39,
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/15304.png",
-   "club": "Chaves"
+   "club": "Chaves",
+   "note": "At 39 he's the squad's elder statesman and vice-captain, the steady voice who waited his whole career for the islands to finally reach a World Cup."
   },
   {
    "id": 163200,
@@ -38,7 +40,8 @@
    "position": "Goalkeeper",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/163200.png",
-   "club": "San Diego"
+   "club": "San Diego",
+   "note": "Born in the US and once a youth international for the hosts, he switched to his father's Cape Verde and now gets a home World Cup with his MLS club San Diego on the doorstep."
   },
   {
    "id": 41608,
@@ -47,7 +50,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/41608.png",
-   "club": "Al Bataeh"
+   "club": "Al Bataeh",
+   "note": "A defender plying his trade in the UAE, one of those quietly-travelled names that make this the most well-stamped passport collection at the tournament."
   },
   {
    "id": 21997,
@@ -56,7 +60,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/21997.png",
-   "club": "Villarreal"
+   "club": "Villarreal",
+   "note": "Born near Paris and once in France's youth ranks, he chose Cape Verde and is now the squad's only man from Europe's top five leagues, anchoring the back line at Villarreal."
   },
   {
    "id": 308689,
@@ -65,7 +70,8 @@
    "position": "Defender",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/308689.png",
-   "club": "Benfica"
+   "club": "Benfica",
+   "note": "The Dutch-born right-back climbed from German lower divisions to a Benfica move in early 2026, the kind of fast rise that lands you at a debut World Cup at 23."
   },
   {
    "id": 69260,
@@ -74,7 +80,8 @@
    "position": "Defender",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/69260.png",
-   "club": "Shamrock Rovers"
+   "club": "Shamrock Rovers",
+   "note": "Dublin-born Roberto Lopes was tracked down through a message online and capped by descent, and now becomes the first active League of Ireland player to grace a World Cup."
   },
   {
    "id": 22139,
@@ -83,7 +90,8 @@
    "position": "Defender",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/22139.png",
-   "club": "Columbus Crew"
+   "club": "Columbus Crew",
+   "note": "Steven Moreira does his defending in MLS with Columbus, so unlike most of his teammates he won't need a map for the long American summer ahead."
   },
   {
    "id": 332056,
@@ -92,7 +100,8 @@
    "position": "Defender",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/332056.png",
-   "club": "Trabzonspor"
+   "club": "Trabzonspor",
+   "note": "A young full-back earning his keep in Turkey with Trabzonspor, part of the next generation Bubista is folding into this history-making group."
   },
   {
    "id": 268806,
@@ -101,7 +110,8 @@
    "position": "Defender",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/268806.png",
-   "club": "SJK"
+   "club": "SJK",
+   "note": "His football home is the Finnish league with SJK, about as far from a Group H showdown with Spain as a defender can travel and still get there."
   },
   {
    "id": 2331,
@@ -110,7 +120,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/2331.png",
-   "club": "Torreense"
+   "club": "Torreense",
+   "note": "At 37 he's one of the longest-serving Blue Sharks of all, the sort of loyal old hand who's seen every near-miss and finally gets the payoff."
   },
   {
    "id": 265556,
@@ -119,7 +130,8 @@
    "position": "Midfielder",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/265556.png",
-   "club": "Guimaraes"
+   "club": "Guimaraes",
+   "note": "A Vitória Guimarães midfielder who adds youthful legs to a side that leans heavily on its veterans, with plenty of room left to grow into the moment."
   },
   {
    "id": 37435,
@@ -128,7 +140,8 @@
    "position": "Midfielder",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/37435.png",
-   "club": "Ludogorets"
+   "club": "Ludogorets",
+   "note": "Rotterdam-raised and now at Bulgaria's Ludogorets, he's the younger of two Duarte brothers in this squad, which makes for one very proud household back home."
   },
   {
    "id": 37436,
@@ -137,16 +150,18 @@
    "position": "Midfielder",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/37436.png",
-   "club": "Puskas Academy"
+   "club": "Puskas Academy",
+   "note": "Laros is the elder Duarte, a former Sparta Rotterdam man now in Hungary, sharing a midfield and a debut World Cup with his little brother Deroy."
   },
   {
    "id": 142016,
-   "name": "Jo\u00e3o Paulo",
+   "name": "João Paulo",
    "age": 27,
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/142016.png",
-   "club": "O\u0163elul"
+   "club": "Oţelul",
+   "note": "He patrols the middle for Romania's Oțelul Galați, another of the under-the-radar names whose steady leagues quietly built this remarkable qualifying run."
   },
   {
    "id": 96512,
@@ -155,7 +170,8 @@
    "position": "Midfielder",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/96512.png",
-   "club": "FC Krasnodar"
+   "club": "FC Krasnodar",
+   "note": "Based in Russia with Krasnodar, he's one of the wide runners Bubista can call on to stretch defences that will mostly outrank Cape Verde on paper."
   },
   {
    "id": 50745,
@@ -164,7 +180,8 @@
    "position": "Midfielder",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/50745.png",
-   "club": "PEC Zwolle"
+   "club": "PEC Zwolle",
+   "note": "The Rotterdam-born playmaker spent years lighting up MLS with Philadelphia and San Jose before heading back to the Dutch top flight, and he's the engine in this midfield."
   },
   {
    "id": 128007,
@@ -173,7 +190,8 @@
    "position": "Midfielder",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/128007.png",
-   "club": "Farense"
+   "club": "Farense",
+   "note": "Born Jair Semedo Monteiro, this Farense midfielder is a relative latecomer to the cause who timed his arrival perfectly for the islands' big year."
   },
   {
    "id": 44612,
@@ -182,7 +200,8 @@
    "position": "Midfielder",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/44612.png",
-   "club": "Apollon Limassol"
+   "club": "Apollon Limassol",
+   "note": "A Rotterdam kid who picked his parents' islands over the Netherlands, he won a Turkish title at Galatasaray and at 35 brings the most glamour to the wing."
   },
   {
    "id": 22265,
@@ -191,7 +210,8 @@
    "position": "Midfielder",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/22265.png",
-   "club": "Ba\u015fak\u015fehir"
+   "club": "Başakşehir",
+   "note": "A French-cup winner with Strasbourg who later had a Nottingham Forest spell, the well-travelled forward now turns out in Istanbul for Başakşehir."
   },
   {
    "id": 1494,
@@ -200,7 +220,8 @@
    "position": "Midfielder",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/1494.png",
-   "club": "Estrela"
+   "club": "Estrela",
+   "note": "Raised in the Sporting academy and once loaned to Lazio, this island-born winger is the rare squad member who actually grew up in Cape Verde rather than the diaspora."
   },
   {
    "id": 113580,
@@ -209,16 +230,18 @@
    "position": "Midfielder",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/113580.png",
-   "club": "Omonia Nicosia"
+   "club": "Omonia Nicosia",
+   "note": "France-born and now a tidy finisher for Omonia in Cyprus, he's another diaspora pick-up who answered the call to wear the blue."
   },
   {
    "id": 291024,
-   "name": "H\u00e9lio Varela",
+   "name": "Hélio Varela",
    "age": 23,
    "position": "Midfielder",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/291024.png",
-   "club": "Maccabi Tel Aviv"
+   "club": "Maccabi Tel Aviv",
+   "note": "At 23 and playing for Maccabi Tel Aviv, he's one of the youngest of the bunch, wearing the symbolic No. 26 shirt for a 26-man trip into the unknown."
   },
   {
    "id": 50270,
@@ -227,7 +250,8 @@
    "position": "Attacker",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/50270.png",
-   "club": "I\u011fd\u0131r FK"
+   "club": "Iğdır FK",
+   "note": "The captain, 36, is Cape Verde's record scorer and most-capped player, a former Lille man who finally gets to lead the islands out at a World Cup."
   },
   {
    "id": 309182,
@@ -236,7 +260,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/309182.png",
-   "club": "Akron"
+   "club": "Akron",
+   "note": "A young forward making his way in the Russian league with Akron, handed the No. 9 shirt and the chance to chase the islands' first World Cup goals."
   },
   {
    "id": 343287,
@@ -245,7 +270,8 @@
    "position": "Attacker",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/343287.png",
-   "club": "Casa Pia"
+   "club": "Casa Pia",
+   "note": "The qualifying campaign's breakout striker, his winner against Cameroon and opener against Eswatini did as much as anyone to drag the islands to a first World Cup."
   }
  ],
  "guardianStarPlayer": "Dailon Livramento",
