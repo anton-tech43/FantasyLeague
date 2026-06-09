@@ -185,4 +185,21 @@ const TEMPLATES: Record<ConsequenceType, ConsequenceTemplate> = {
     everyone_talking_headline: ({ teamName }) =>
       `${teamName} eliminated from the World Championship group stage.`,
   },
+
+  // Informational rival result for a NON-playing team in the same group.
+  // Factual only — states what happened, never derives "what you need"
+  // (that depends on a refreshed table + tiebreakers and lives in-app).
+  WC_RIVAL_RESULT: {
+    push_title: ({ teamName }) => `${teamName}'s group`,
+    push_text: ({ teamName, trigger }) => `${trigger} in ${teamName}'s group.`,
+    headline: ({ trigger }) => `${trigger}.`,
+    body: [
+      ({ teamName, trigger }) =>
+        `${trigger}. A result in ${teamName}'s group. The table and what it means for them is on the team page.`,
+      ({ teamName, trigger }) =>
+        `${trigger}. That shifts things in ${teamName}'s group. Check the team page for where it leaves them.`,
+    ],
+    everyone_talking_headline: ({ teamName, trigger }) =>
+      `${trigger}, in ${teamName}'s group.`,
+  },
 };

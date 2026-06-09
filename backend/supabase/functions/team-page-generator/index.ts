@@ -17,6 +17,8 @@ import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 import { wrapExternalData } from "../_shared/input-sanitizer.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import type { Team } from "../_shared/types.ts";
+import { annotateFixtures, type GroupStanding } from "../_shared/stakes-engine.ts";
+import { renderNextFixturePreview, renderThisWeek } from "../_shared/stakes-templates.ts";
 
 // ============================================================
 // SYSTEM PROMPT
@@ -779,33 +781,16 @@ async function updateDynamicFields(
   supabase: ReturnType<typeof getSupabaseClient>,
   team: Team
 ) {
-  // V2.0: dynamic-only path is PL-shaped (single league table, fixed "Xth in
-  // the Premier League" labels). WC standings are 12 groups of 4 with a
-  // different concept of "position". Bypass dynamic for countries — they
-  // always go through the Claude full path which handles group stage
-  // semantics via league_context in the system prompt.
-  //
-  // Cost guard: data-fetcher triggers this function every 30 min during
-  // active hours. Without a TTL, every trigger fires a Claude call per
-  // country = up to ~1,440 calls/day × 48 countries during the WC window.
-  // Limit to a 12h freshness check — the scheduled 06:00 UTC cron still
-  // refreshes daily, so countries get one regen per day plus on-demand
-  // when standings move materially.
+  // WC countries get a fully DETERMINISTIC dynamic refresh (group table,
+  // stakes-annotated fixtures, next-fixture, this-week, group position) —
+  // zero Claude calls. This is the cheap path data-fetcher triggers every
+  // 2h, so WC pages stay fresh during the tournament. The expensive Claude
+  // "full" path (manager/players/season summaries) stays on the weekly
+  // team-page-refresh cron only. (Previously countries bailed out of this
+  // path and rode the paid weekly regen, which left fixtures/standings up
+  // to ~8 days stale — see WC_GROUP_STAGE_DESIGN.md.)
   if (team.entity_type === "country") {
-    const { data: existing } = await supabase
-      .from("team_pages")
-      .select("updated_at")
-      .eq("team_id", team.id)
-      .maybeSingle();
-    const updatedAt = existing?.updated_at as string | undefined;
-    if (updatedAt) {
-      const ageMs = Date.now() - new Date(updatedAt).getTime();
-      if (ageMs < 12 * 60 * 60_000) {
-        // Fresh enough — skip the Claude call.
-        return;
-      }
-    }
-    await generateFullPage(supabase, team, Date.now());
+    await updateWcDynamicFields(supabase, team);
     return;
   }
 
@@ -872,7 +857,7 @@ async function updateDynamicFields(
 
   // Parse next fixture
   if (fixturesLog?.data) {
-    const nextFixture = extractNextFixture(fixturesLog.data, team.api_football_id);
+    const nextFixture = extractNextFixture(fixturesLog.data, team.api_football_id, new Date());
     if (nextFixture) {
       cards.next_fixture = {
         updated_at: now,
@@ -893,9 +878,193 @@ async function updateDynamicFields(
   if (error) throw new Error(`Dynamic update failed for ${team.id}: ${error.message}`);
 }
 
+/**
+ * Deterministic dynamic refresh for a WC country — ZERO Claude calls.
+ * Rebuilds standings (group table), upcoming_fixtures (stakes-annotated),
+ * next_fixture (+ templated preview), this_week, and form (group position)
+ * from raw_fetch_logs. Preserves all LLM-generated cards (manager, players,
+ * season/form summaries). Falls back to existing cards on any missing data
+ * so a transient empty fetch never wipes good content (newest-good-wins).
+ */
+async function updateWcDynamicFields(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  team: Team,
+) {
+  const now = new Date();
+  const nowIso = now.toISOString();
+
+  // Recent standings + fixtures logs, newest-first (buildStandingsCard walks
+  // them to find the first populated standings payload).
+  const { data: logs } = await supabase
+    .from("raw_fetch_logs")
+    .select("source, data, fetched_at")
+    .eq("team_id", team.id)
+    .in("source", ["api_football_standings", "api_football_fixtures_next"])
+    .order("fetched_at", { ascending: false })
+    .limit(20);
+  const rawLogs = (logs ?? []) as Array<{ source: string; data: unknown }>;
+
+  const { data: existing } = await supabase
+    .from("team_pages")
+    .select("content")
+    .eq("team_id", team.id)
+    .single();
+  if (!existing) {
+    console.log(`No team page for ${team.id}, skipping WC dynamic_only`);
+    return;
+  }
+  const content = existing.content as Record<string, unknown>;
+  const cards = (content.cards ?? {}) as Record<string, unknown>;
+
+  // 1. Standings (group) table — deterministic, group-aware. Keep existing on null.
+  const standingsCard = buildStandingsCard(rawLogs, team, nowIso);
+  if (standingsCard) cards.standings = standingsCard;
+  const standings = (cards.standings ?? null) as Record<string, unknown> | null;
+
+  const entries =
+    (standings?.entries as Array<Record<string, unknown>> | undefined) ?? [];
+  const groupLabel = (standings?.competition_label as string) ?? "the group";
+
+  // 2. Stakes-annotated upcoming fixtures + next_fixture + this_week.
+  const group: GroupStanding[] = entries.map((e) => ({
+    teamApiId: e.team_id_api_football as number,
+    teamName: e.team_name as string,
+    points: (e.points as number) ?? 0,
+    played: (e.played as number) ?? 0,
+  }));
+  const fxLog = rawLogs.find((l) => l.source === "api_football_fixtures_next");
+  const upcoming = fxLog ? parseUpcomingFixtures(fxLog.data, team.api_football_id, now) : [];
+
+  if (group.length > 0 && upcoming.length > 0) {
+    const annotated = annotateFixtures(group, team.api_football_id, upcoming).slice(0, 8);
+
+    cards.upcoming_fixtures = annotated.map((s) => ({
+      date: s.date,
+      opponent: s.opponent,
+      venue: s.venue,
+      importance_dots: s.importance_dots,
+      importance_label: s.importance_label,
+    }));
+
+    const first = annotated[0];
+    cards.next_fixture = {
+      updated_at: nowIso,
+      opponent: first.opponent,
+      date: first.date,
+      venue: first.venue,
+      preview: renderNextFixturePreview({
+        teamName: team.display_name,
+        opponentName: first.opponent,
+        groupLabel,
+        stakes: first,
+      }),
+    };
+
+    cards.this_week = renderThisWeek({
+      teamName: team.display_name,
+      opponentName: first.opponent,
+      groupLabel,
+      stakes: first,
+    });
+  }
+
+  // 3. form: group position label + recent form (keep the Claude form_summary).
+  const myRow = entries.find(
+    (e) => (e.team_id_api_football as number) === team.api_football_id,
+  );
+  if (myRow) {
+    const rank = myRow.rank as number;
+    const standingsRaw = rawLogs.find((l) => l.source === "api_football_standings")?.data;
+    const recentForm = standingsRaw
+      ? extractWcRecentForm(standingsRaw, team.api_football_id)
+      : null;
+    cards.form = {
+      ...((cards.form as Record<string, unknown>) ?? {}),
+      updated_at: nowIso,
+      league_position: rank,
+      league_position_label: `${getOrdinal(rank)} in ${groupLabel}`,
+      recent_form: recentForm ?? (cards.form as Record<string, unknown>)?.recent_form,
+      form_summary: (cards.form as Record<string, unknown>)?.form_summary,
+    };
+  }
+
+  content.cards = cards;
+  const { error } = await supabase
+    .from("team_pages")
+    .update({ content, updated_at: nowIso })
+    .eq("team_id", team.id);
+  if (error) throw new Error(`WC dynamic update failed for ${team.id}: ${error.message}`);
+}
+
 // ============================================================
 // HELPERS — Parse API-Football responses
 // ============================================================
+
+interface ParsedFixture {
+  date: string;
+  opponentApiId: number;
+  opponentName: string;
+  venue: "home" | "away";
+}
+
+/// Parse api_football_fixtures_next into chronological FUTURE fixtures for
+/// this team (past fixtures dropped, with a 3h grace for in-progress games).
+function parseUpcomingFixtures(
+  data: unknown,
+  teamApiFootballId: number,
+  now: Date,
+): ParsedFixture[] {
+  try {
+    const response = (data as Record<string, unknown>).response as unknown[];
+    if (!Array.isArray(response)) return [];
+    const floor = now.getTime() - FIXTURE_PAST_GRACE_MS;
+    const out: ParsedFixture[] = [];
+    for (const item of response) {
+      const rec = item as Record<string, unknown>;
+      const fixtureInfo = rec.fixture as Record<string, unknown> | undefined;
+      const teams = rec.teams as Record<string, Record<string, unknown>> | undefined;
+      const home = teams?.home;
+      const away = teams?.away;
+      if (!home || !away || !fixtureInfo) continue;
+      const dateStr = fixtureInfo.date as string;
+      const t = Date.parse(dateStr ?? "");
+      if (!Number.isNaN(t) && t < floor) continue; // drop clearly-past fixtures
+      const isHome = (home.id as number | undefined) === teamApiFootballId;
+      out.push({
+        date: dateStr,
+        opponentApiId: (isHome ? away.id : home.id) as number,
+        opponentName: (isHome ? away.name : home.name) as string,
+        venue: isHome ? "home" : "away",
+      });
+    }
+    out.sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+    return out;
+  } catch {
+    return [];
+  }
+}
+
+/// WC recent form: find the team's row across ALL group arrays (the PL
+/// helper only checks standings[0]) and return its last-5 form string.
+function extractWcRecentForm(data: unknown, teamApiFootballId: number): string | null {
+  try {
+    const response = (data as Record<string, unknown>).response as unknown[];
+    const league = (response?.[0] as Record<string, unknown>)?.league as Record<string, unknown>;
+    const groups = league?.standings as unknown[][] | undefined;
+    for (const grp of groups ?? []) {
+      if (!Array.isArray(grp)) continue;
+      const row = grp.find((r) => {
+        const t = (r as Record<string, unknown>).team as Record<string, unknown> | undefined;
+        return (t?.id as number) === teamApiFootballId;
+      }) as Record<string, unknown> | undefined;
+      const form = row?.form as string | undefined;
+      if (form) return form.slice(-5);
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 /// Find this team's row in the full-league standings array. API-Football's
 /// /standings?league=39 returns ALL 20 teams' rows ordered by rank — the
@@ -940,14 +1109,33 @@ function extractRecentForm(
   return form ? form.slice(-5) : null; // Last 5 results
 }
 
+const FIXTURE_PAST_GRACE_MS = 3 * 60 * 60_000; // keep in-progress / just-finished games
+
 function extractNextFixture(
   data: unknown,
-  teamApiFootballId: number
+  teamApiFootballId: number,
+  skipPastBefore?: Date,
 ): { opponent: string; date: string; venue: string } | null {
   try {
     const response = (data as Record<string, unknown>).response as unknown[];
     if (!Array.isArray(response) || response.length === 0) return null;
-    const fixture = response[0] as Record<string, unknown>;
+    // Past-fixture guard: API-Football's ?next=10 is chronological, but the
+    // raw log can age up to 2h between fetches, so response[0] may already
+    // be in the past. Forward-walk to the first non-past fixture. If every
+    // fixture is past, return null so the caller keeps the existing card
+    // rather than stamping a stale "next up" (newest-good-wins).
+    let fixture: Record<string, unknown> | undefined;
+    if (skipPastBefore) {
+      const floor = skipPastBefore.getTime() - FIXTURE_PAST_GRACE_MS;
+      fixture = response.find((item) => {
+        const fi = (item as Record<string, unknown>).fixture as Record<string, unknown> | undefined;
+        const t = Date.parse((fi?.date as string) ?? "");
+        return Number.isNaN(t) || t >= floor;
+      }) as Record<string, unknown> | undefined;
+      if (!fixture) return null;
+    } else {
+      fixture = response[0] as Record<string, unknown>;
+    }
     const fixtureInfo = fixture.fixture as Record<string, unknown>;
     const teams = fixture.teams as Record<string, Record<string, unknown>>;
     const home = teams?.home;

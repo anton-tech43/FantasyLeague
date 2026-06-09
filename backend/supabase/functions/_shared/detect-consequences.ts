@@ -48,6 +48,7 @@
 // Lesson 74 (the May 19 Arsenal title incident that prompted this layer).
 
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import type { GroupStanding } from "./stakes-engine.ts";
 
 // PL = 39, WC = 1 per the teams.league_id values in our DB.
 export const PL_LEAGUE_ID = 39;
@@ -67,7 +68,14 @@ export type ConsequenceType =
   | "EUROPE_CLINCHED"
   | "WC_KNOCKOUT_QUALIFIED"
   | "WC_KNOCKOUT_ELIMINATED"
-  | "WC_GROUP_WON";
+  | "WC_GROUP_WON"
+  // Informational, NOT a math consequence: at the FT of a WC group game,
+  // the two NON-playing teams in that group get a factual "rival result"
+  // push ("Senegal beat Croatia in your group"). No derived "what you
+  // need" — that depends on a refreshed table + tiebreakers and lives
+  // in-app. Idempotent per (team_id, match_id) via unique_matchday_content
+  // (NOT the once-per-type index — see migration 060).
+  | "WC_RIVAL_RESULT";
 
 export interface Consequence {
   /** team_id (goaldigger slug, e.g. "arsenal") of the AFFECTED team — not the playing team. */
@@ -203,9 +211,75 @@ export async function detectConsequences(
     for (const type of detected) {
       consequences.push({ team_id: slug, consequence_type: type, trigger_summary });
     }
+
+    // WC: every non-playing team in the group also gets an informational
+    // rival-result push for this fixture (the round gate above already
+    // restricts this to the group stage). Factual only — no qualification
+    // math, which depends on a refreshed table.
+    if (args.leagueId === WC_LEAGUE_ID) {
+      consequences.push({ team_id: slug, consequence_type: "WC_RIVAL_RESULT", trigger_summary });
+    }
   }
 
   return consequences;
+}
+
+/**
+ * For a just-finished WC GROUP fixture, return the group standings with this
+ * result applied (same freshness-aware logic as detectConsequences), in the
+ * GroupStanding shape the stakes engine + post_match consume. Returns null
+ * for non-WC / non-group-stage / missing data. Lets match-watcher write a
+ * truthful deterministic post_match card without re-implementing the math.
+ */
+export async function loadPostResultWcGroup(
+  supabase: SupabaseClient,
+  args: {
+    leagueId: number;
+    homeTeamId: string; // slug, for the standings log lookup
+    homeApiId: number;
+    awayApiId: number;
+    homeGoals: number;
+    awayGoals: number;
+    round?: string;
+  },
+): Promise<GroupStanding[] | null> {
+  if (args.leagueId !== WC_LEAGUE_ID) return null;
+  const round = (args.round ?? "").toLowerCase();
+  if (round.length > 0 && !round.includes("group")) return null;
+
+  const { data: log } = await supabase
+    .from("raw_fetch_logs")
+    .select("data, fetched_at")
+    .eq("source", "api_football_standings")
+    .eq("team_id", args.homeTeamId)
+    .order("fetched_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!log?.data) return null;
+
+  const ageMs = Date.now() - new Date(log.fetched_at as string).getTime();
+  const alreadyIncludesResult = ageMs >= 0 && ageMs < STANDINGS_FRESHNESS_MS;
+
+  const data = log.data as Record<string, unknown>;
+  const response = (data.response as Array<Record<string, unknown>> | undefined) ?? [];
+  const leagueBlock = response[0]?.league as Record<string, unknown> | undefined;
+  const standings = leagueBlock?.standings as StandingsEntry[][] | undefined;
+  if (!Array.isArray(standings) || standings.length === 0) return null;
+
+  const group = standings.find((g) =>
+    Array.isArray(g) &&
+    g.some((t) => t.team?.id === args.homeApiId) &&
+    g.some((t) => t.team?.id === args.awayApiId)
+  );
+  if (!group || group.length === 0) return null;
+
+  const local = alreadyIncludesResult ? cloneGroup(group) : applyResult(group, args);
+  return local.map((t) => ({
+    teamApiId: t.team.id,
+    teamName: t.team.name,
+    points: t.points,
+    played: t.all.played,
+  }));
 }
 
 // ============================================================

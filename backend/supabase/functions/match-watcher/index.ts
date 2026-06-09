@@ -18,8 +18,10 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { seasonForLeague, FALLBACK_ACTIVE_LEAGUES } from "../_shared/league-helpers.ts";
-import { detectConsequences } from "../_shared/detect-consequences.ts";
+import { detectConsequences, loadPostResultWcGroup, WC_LEAGUE_ID } from "../_shared/detect-consequences.ts";
 import { renderConsequence } from "../_shared/consequence-templates.ts";
+import { groupSituation } from "../_shared/stakes-engine.ts";
+import { renderPostMatch, type PostMatchState } from "../_shared/stakes-templates.ts";
 
 const FINISHED_STATUSES = new Set(["FT", "AET", "PEN"]);
 // Live = match is in play (or in HT pause). Both halves + extra time
@@ -120,6 +122,35 @@ async function logFire(
   } catch (e) {
     // Logging is best-effort. Don't break the fire loop.
     console.error("logFire failed (non-fatal):", e);
+  }
+}
+
+/// Merge a deterministic post_match card into a team's team_pages.content.
+/// Best-effort: a missing page or write error never blocks the FT tick.
+async function writeWcPostMatch(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  teamSlug: string,
+  pm: { state: "win" | "loss" | "draw"; text: string; talking_point: string },
+): Promise<void> {
+  try {
+    const { data: existing } = await supabase
+      .from("team_pages")
+      .select("content")
+      .eq("team_id", teamSlug)
+      .maybeSingle();
+    if (!existing?.content) return;
+    const content = existing.content as Record<string, unknown>;
+    const cards = (content.cards ?? {}) as Record<string, unknown>;
+    cards.post_match = {
+      state: pm.state,
+      text: pm.text,
+      talking_point: pm.talking_point,
+      expires_at: new Date(Date.now() + 48 * 60 * 60_000).toISOString(),
+    };
+    content.cards = cards;
+    await supabase.from("team_pages").update({ content }).eq("team_id", teamSlug);
+  } catch (e) {
+    console.error(`writeWcPostMatch failed for ${teamSlug} (non-fatal):`, e);
   }
 }
 
@@ -460,6 +491,12 @@ async function handleRequest(req: Request): Promise<Response> {
               team_id: c.team_id,
               type: "news",
               consequence_type: c.consequence_type,
+              // Rival-result rows are idempotent per (team_id, match_id) via
+              // the existing unique_matchday_content constraint — one per
+              // affected team per triggering fixture. The once-per-type index
+              // excludes WC_RIVAL_RESULT (migration 060) so each matchday's
+              // rival result lands. Math consequences keep match_id null.
+              match_id: c.consequence_type === "WC_RIVAL_RESULT" ? String(fixtureId) : null,
               headline: rendered.headline,
               body: rendered.body,
               push_text: rendered.push_text,
@@ -495,6 +532,41 @@ async function handleRequest(req: Request): Promise<Response> {
               console.log(
                 `consequence_fire success: ${c.team_id} ${c.consequence_type} (triggered by fixture ${fixtureId})`,
               );
+            }
+          }
+
+          // Deterministic post_match card for the two PLAYING WC teams.
+          // Uses the live FT score (accurate immediately, unlike the
+          // standings table which lags the data-fetch). Tone follows the
+          // post-result group situation: through/won reads upbeat; top-two
+          // gone reads muted and respectful, never "enjoy it". Zero Claude.
+          if (fixtureLeagueId === WC_LEAGUE_ID) {
+            const wcGroup = await loadPostResultWcGroup(supabase, {
+              leagueId: fixtureLeagueId,
+              homeTeamId,
+              homeApiId: fx.teams.home.id,
+              awayApiId: fx.teams.away.id,
+              homeGoals: homeGoals ?? 0,
+              awayGoals: awayGoals ?? 0,
+              round: fx.league?.round,
+            });
+            if (wcGroup) {
+              const playing = [
+                { slug: homeTeamId, apiId: fx.teams.home.id, name: fx.teams.home.name, oppName: fx.teams.away.name, gf: homeGoals ?? 0, ga: awayGoals ?? 0 },
+                { slug: awayTeamId, apiId: fx.teams.away.id, name: fx.teams.away.name, oppName: fx.teams.home.name, gf: awayGoals ?? 0, ga: homeGoals ?? 0 },
+              ];
+              for (const p of playing) {
+                const state: PostMatchState = p.gf > p.ga ? "win" : p.gf < p.ga ? "loss" : "draw";
+                const pm = renderPostMatch({
+                  teamName: p.name,
+                  opponentName: p.oppName,
+                  teamScore: p.gf,
+                  oppScore: p.ga,
+                  state,
+                  situation: groupSituation(wcGroup, p.apiId),
+                });
+                await writeWcPostMatch(supabase, p.slug, pm);
+              }
             }
           }
         } catch (e) {
