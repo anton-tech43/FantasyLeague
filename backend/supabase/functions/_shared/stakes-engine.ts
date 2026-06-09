@@ -26,7 +26,16 @@
 // the engine is conservative in the direction that matters — it never
 // over-claims a guaranteed top-2.
 
+import type { ExactGroupState } from "./group-scenarios.ts";
+import type { BestThirdResult } from "./best-third.ts";
+
 export const WC_TOTAL_GROUP_GAMES = 3;
+
+/** Optional exact-math hint the caller computes (group-scenarios + best-third). */
+export interface ExactInfo {
+  state: ExactGroupState;
+  bestThird?: BestThirdResult;
+}
 
 /** Minimal per-team slice of a group table (one of the 4 teams). */
 export interface GroupStanding {
@@ -167,6 +176,46 @@ export function groupSituation(
   }
 }
 
+/**
+ * Build a sound ExactGroupState from POINTS reachability alone (no fixture
+ * pairings, no enumeration). Conservative: worstRank uses "any rival that
+ * COULD reach my floor counts against me" and bestRank uses "only rivals
+ * GUARANTEED above me". So `guaranteedTop2`/`guaranteedGroupWin`/`top2Closed`
+ * are never over-claimed. The full enumeration (group-scenarios.ts) gives
+ * tighter bounds (e.g. on the final matchday when two rivals play each other)
+ * and can be substituted when remaining pairings are available.
+ */
+export function classifyExactPointsOnly(
+  group: GroupStanding[],
+  focalApiId: number,
+  totalGames: number = WC_TOTAL_GROUP_GAMES,
+): ExactGroupState {
+  const me = group.find((t) => t.teamApiId === focalApiId);
+  if (!me) {
+    return {
+      worstRank: 4, bestRank: 4, guaranteedGroupWin: false, guaranteedTop2: false,
+      canFinishFirst: false, top2Closed: false, canFinishThird: false, guaranteedThird: false,
+    };
+  }
+  const fFloor = me.points;
+  const fCeil = me.points + 3 * Math.max(0, totalGames - me.played);
+  const others = group.filter((t) => t.teamApiId !== focalApiId);
+  const canReachMyFloor = others.filter(
+    (o) => o.points + 3 * Math.max(0, totalGames - o.played) >= fFloor,
+  ).length;
+  const guaranteedAbove = others.filter((o) => o.points > fCeil).length;
+  return {
+    worstRank: 1 + canReachMyFloor,
+    bestRank: 1 + guaranteedAbove,
+    guaranteedGroupWin: canReachMyFloor === 0,
+    guaranteedTop2: canReachMyFloor <= 1,
+    canFinishFirst: guaranteedAbove === 0,
+    top2Closed: guaranteedAbove >= 2,
+    canFinishThird: guaranteedAbove <= 2 && canReachMyFloor >= 2,
+    guaranteedThird: guaranteedAbove === 2 && canReachMyFloor === 2,
+  };
+}
+
 // ============================================================
 // Public: per-fixture stakes for the team's upcoming group games
 // ============================================================
@@ -186,6 +235,7 @@ export function annotateFixtures(
   teamApiId: number,
   fixtures: UpcomingGroupFixture[],
   totalGames: number = WC_TOTAL_GROUP_GAMES,
+  exact?: ExactInfo,
 ): FixtureStakes[] {
   const groupIds = new Set(group.map((t) => t.teamApiId));
   let nextGroupGameSeen = false;
@@ -207,7 +257,7 @@ export function annotateFixtures(
 
     if (!nextGroupGameSeen) {
       nextGroupGameSeen = true;
-      return { ...base, ...labelSoonestGroupGame(group, teamApiId, fx, totalGames) };
+      return { ...base, ...labelSoonestGroupGame(group, teamApiId, fx, totalGames, exact) };
     }
 
     // A later group game: honest generic by current state.
@@ -234,7 +284,36 @@ function labelSoonestGroupGame(
   teamApiId: number,
   fx: UpcomingGroupFixture,
   totalGames: number,
+  exact?: ExactInfo,
 ): StakesCore {
+  // Exact-math overrides: when the outcome is mathematically LOCKED we state
+  // it directly (no point saying "win and you're through" if already
+  // through). Falls through to the per-result simulation for live cases.
+  if (exact) {
+    const s = exact.state;
+    if (s.guaranteedGroupWin) {
+      return mk(2, "Won the group", "qualified_already", "group_won_dead_rubber", "certain");
+    }
+    if (s.guaranteedTop2) {
+      return s.canFinishFirst
+        ? mk(3, "At worst 2nd", "can_improve_seeding", "at_worst_second", "certain")
+        : mk(2, "Through, 2nd locked in", "qualified_already", "at_worst_second", "certain");
+    }
+    if (s.top2Closed) {
+      const bt = exact.bestThird?.status;
+      if (bt === "guaranteed_in") {
+        return mk(2, "Through as a best third", "qualified_already", "third_place_through", "certain");
+      }
+      if (bt === "out") {
+        // IN-APP only; never pushed (handled in the push path).
+        return mk(1, "Out of the tournament", "eliminated", "third_place_out", "certain");
+      }
+      // best-third undecided → genuinely a long shot.
+      return mk(4, "Win to keep hopes alive", "decisive", "third_place_longshot", "soft");
+    }
+    // contention → fall through to the per-result simulation below.
+  }
+
   const current = classifyTopTwo(group, teamApiId, totalGames);
 
   // Pre-tournament (no games played by anyone in the group): nothing is

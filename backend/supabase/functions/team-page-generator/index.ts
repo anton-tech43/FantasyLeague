@@ -17,8 +17,11 @@ import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 import { wrapExternalData } from "../_shared/input-sanitizer.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import type { Team } from "../_shared/types.ts";
-import { annotateFixtures, type GroupStanding } from "../_shared/stakes-engine.ts";
+import { annotateFixtures, classifyExactPointsOnly, type ExactInfo, type GroupStanding } from "../_shared/stakes-engine.ts";
 import { renderNextFixturePreview, renderThisWeek } from "../_shared/stakes-templates.ts";
+import { classifyBestThird, type GroupThirdBounds } from "../_shared/best-third.ts";
+import { coarseThirdPointsBounds } from "../_shared/group-scenarios.ts";
+import { guaranteedExactlyThird } from "../_shared/detect-consequences.ts";
 
 // ============================================================
 // SYSTEM PROMPT
@@ -935,8 +938,20 @@ async function updateWcDynamicFields(
   const fxLog = rawLogs.find((l) => l.source === "api_football_fixtures_next");
   const upcoming = fxLog ? parseUpcomingFixtures(fxLog.data, team.api_football_id, now) : [];
 
+  // Exact-math labels: sound points-only within-group state ("Won the group" /
+  // "At worst 2nd") + a cross-group best-third verdict ("Through as a best
+  // third" / in-app "Out of the tournament"). Never over-claims; GD bubbles
+  // stay soft. Uses the full standings (all 12 groups) already in rawLogs.
+  const exactInfo: ExactInfo | undefined = group.length > 0
+    ? computeWcExactInfo(
+      group,
+      team.api_football_id,
+      rawLogs.find((l) => l.source === "api_football_standings")?.data,
+    )
+    : undefined;
+
   if (group.length > 0 && upcoming.length > 0) {
-    const annotated = annotateFixtures(group, team.api_football_id, upcoming).slice(0, 8);
+    const annotated = annotateFixtures(group, team.api_football_id, upcoming, undefined, exactInfo).slice(0, 8);
 
     cards.upcoming_fixtures = annotated.map((s) => ({
       date: s.date,
@@ -994,6 +1009,69 @@ async function updateWcDynamicFields(
     .update({ content, updated_at: nowIso })
     .eq("team_id", team.id);
   if (error) throw new Error(`WC dynamic update failed for ${team.id}: ${error.message}`);
+}
+
+/// Build the exact-math hint for a WC team page: sound points-only within-
+/// group state + (when top-2 is closed) a cross-group best-third verdict.
+/// All conservative — never asserts a qualification/elimination that GD,
+/// head-to-head, conduct or FIFA-ranking could overturn.
+function computeWcExactInfo(
+  group: GroupStanding[],
+  focalApiId: number,
+  standingsData: unknown,
+): ExactInfo {
+  const state = classifyExactPointsOnly(group, focalApiId);
+  if (!state.top2Closed) return { state };
+
+  // Top-2 closed → consult the best-third comparator across the other groups.
+  const me = group.find((t) => t.teamApiId === focalApiId);
+  if (!me) return { state };
+  const others = group
+    .filter((t) => t.teamApiId !== focalApiId)
+    .map((o) => ({ points: o.points, played: o.played }));
+  const fFloor = me.points;
+  const fCeil = me.points + 3 * Math.max(0, 3 - me.played);
+  const bestThird = classifyBestThird({
+    focalGroup: "focal",
+    focalGuaranteedThird: guaranteedExactlyThird(me.points, me.played, others),
+    focalCanBeThird: state.canFinishThird,
+    focalFloorPts: fFloor,
+    focalCeilPts: fCeil,
+    otherGroups: parseOtherGroupsCoarse(standingsData, focalApiId),
+  });
+  return { state, bestThird };
+}
+
+/// Coarse 3rd-place points bounds for every REAL group (4 teams) other than
+/// the focal team's, parsed from the full standings payload. Excludes the
+/// 12-team "Ranking of third-placed teams" array (length != 4).
+function parseOtherGroupsCoarse(standingsData: unknown, focalApiId: number): GroupThirdBounds[] {
+  try {
+    const response = (standingsData as Record<string, unknown>)?.response as unknown[] | undefined;
+    const league = (response?.[0] as Record<string, unknown>)?.league as Record<string, unknown> | undefined;
+    const allGroups = league?.standings as Array<Array<Record<string, unknown>>> | undefined;
+    if (!Array.isArray(allGroups)) return [];
+    const out: GroupThirdBounds[] = [];
+    allGroups.forEach((g, i) => {
+      if (!Array.isArray(g) || g.length !== 4) return;
+      if (g.some((row) => ((row.team as Record<string, unknown>)?.id as number) === focalApiId)) return;
+      const teams = g.map((row) => {
+        const all = row.all as Record<string, unknown> | undefined;
+        return {
+          teamApiId: ((row.team as Record<string, unknown>)?.id as number) ?? 0,
+          teamName: "",
+          points: (row.points as number) ?? 0,
+          played: (all?.played as number) ?? 0,
+          goalsDiff: 0,
+          goalsFor: 0,
+        };
+      });
+      out.push({ group: `g${i}`, ...coarseThirdPointsBounds(teams) });
+    });
+    return out;
+  } catch {
+    return [];
+  }
 }
 
 // ============================================================

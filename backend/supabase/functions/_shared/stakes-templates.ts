@@ -48,6 +48,12 @@ export function renderNextFixturePreview(ctx: NextFixtureContext): string {
       return `${teamName} need a win over ${opp} to keep their last-16 hopes in their own hands.`;
     case "third_place_longshot":
       return `The top-two route has gone, but beating ${opp} keeps a best-third place alive for ${teamName}.`;
+    case "at_worst_second":
+      return `${teamName} are guaranteed at least 2nd in ${grp} and through to the last 16; the ${opp} game is about finishing top.`;
+    case "third_place_through":
+      return `${teamName} have done enough to go through as one of the best third-placed teams.`;
+    case "third_place_out":
+      return `${teamName} cannot reach the knockouts; their tournament ends in the group.`;
     case "group_opener":
       return `${teamName} open ${grp} against ${opp}.`;
     case "contention_generic":
@@ -97,6 +103,12 @@ function stakeClauseFor(stakes: FixtureStakes, teamName: string): string {
       return `They cannot afford to lose this one.`;
     case "third_place_longshot":
       return `It is a long shot now, but not over.`;
+    case "at_worst_second":
+      return `Already through; this one decides whether they finish top.`;
+    case "third_place_through":
+      return `Through as one of the best third-placed teams.`;
+    case "third_place_out":
+      return `Out of the tournament.`;
     case "group_opener":
       return `First game, everything still to play for.`;
     default:
@@ -111,6 +123,11 @@ function talkingPointFor(stakes: FixtureStakes, teamName: string, opp: string): 
       return `Tell him the hard work is done and he can watch this one with his feet up.`;
     case "third_place_longshot":
       return `Worth a gentle "they need a big one and a favour elsewhere" rather than false hope.`;
+    case "at_worst_second":
+    case "third_place_through":
+      return `They're safe. Ask him who he wants to avoid in the next round.`;
+    case "third_place_out":
+      return `Keep it kind, their tournament is over.`;
     case "avoid_defeat_through":
     case "win_through":
       return `Ask him what a result here would mean for who they meet next.`;

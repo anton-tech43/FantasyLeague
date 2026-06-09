@@ -206,4 +206,22 @@ const TEMPLATES: Record<ConsequenceType, ConsequenceTemplate> = {
     everyone_talking_headline: ({ teamName, trigger }) =>
       `${trigger}, in ${teamName}'s group.`,
   },
+
+  // Good news: through as one of the 8 best third-placed teams.
+  WC_BEST_THIRD_QUALIFIED: {
+    push_title: ({ teamName }) => `✅ ${teamName} sneak through`,
+    push_text: ({ teamName, trigger }) => {
+      const full = `${teamName} are through as one of the best third-placed teams. ${trigger}.`;
+      return full.length <= 90 ? full : `${teamName} are through as one of the best third-placed teams.`;
+    },
+    headline: ({ teamName }) => `${teamName} are through as a best third-placed team.`,
+    body: [
+      ({ teamName, trigger }) =>
+        `${teamName} have done just enough. ${trigger}, and the maths across the other groups confirms they are one of the eight best third-placed teams. The back door to the Round of 32, but a place is a place.`,
+      ({ teamName, trigger }) =>
+        `Through the side door. After ${trigger}, ${teamName} are mathematically safe as one of the best third-placed sides. Knockout football, just about.`,
+    ],
+    everyone_talking_headline: ({ teamName }) =>
+      `${teamName} qualify as one of the best third-placed teams.`,
+  },
 };

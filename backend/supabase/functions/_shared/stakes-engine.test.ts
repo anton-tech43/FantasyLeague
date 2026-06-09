@@ -175,3 +175,48 @@ Deno.test("groupSituation: top2_gone is soft, through is certain", () => {
   eq(groupSituation(g([[A, 0], [B, 6], [C, 4], [D, 4]]), A).certainty, "soft", "gone is soft");
   eq(groupSituation(g([[A, 6], [B, 4], [C, 1], [D, 1]]), A).stakes_level, "qualified_already", "through level");
 });
+
+// ---- exact-math override path ----
+
+function exactState(p: Partial<import("./stakes-engine.ts").ExactInfo["state"]>) {
+  return {
+    worstRank: 4, bestRank: 4, guaranteedGroupWin: false, guaranteedTop2: false,
+    canFinishFirst: false, top2Closed: false, canFinishThird: false, guaranteedThird: false,
+    ...p,
+  };
+}
+
+Deno.test("exact: guaranteed top-2 → certain 'At worst 2nd'", () => {
+  const [s] = annotateFixtures(g([[A, 6], [B, 4], [C, 1], [D, 1]]), A, [fx(B)], 3, {
+    state: exactState({ worstRank: 2, bestRank: 1, guaranteedTop2: true, canFinishFirst: true }),
+  });
+  eq(s.reason, "at_worst_second", "reason");
+  eq(s.certainty, "certain", "certain");
+});
+
+Deno.test("exact: best-third guaranteed_in → certain 'through as a best third'", () => {
+  const [s] = annotateFixtures(g([[A, 3], [B, 6], [C, 6], [D, 0]]), A, [fx(B)], 3, {
+    state: exactState({ worstRank: 3, bestRank: 3, top2Closed: true, canFinishThird: true, guaranteedThird: true }),
+    bestThird: { status: "guaranteed_in", reason: "points_locked_in" },
+  });
+  eq(s.reason, "third_place_through", "reason");
+  eq(s.certainty, "certain", "certain");
+});
+
+Deno.test("exact: best-third out → in-app 'out of the tournament' (muted, eliminated level)", () => {
+  const [s] = annotateFixtures(g([[A, 0], [B, 6], [C, 4], [D, 4]]), A, [fx(B)], 3, {
+    state: exactState({ worstRank: 4, bestRank: 3, top2Closed: true, canFinishThird: true }),
+    bestThird: { status: "out", reason: "points_locked_out" },
+  });
+  eq(s.reason, "third_place_out", "reason");
+  eq(s.stakes_level, "eliminated", "level");
+});
+
+Deno.test("exact: best-third soft → falls back to soft longshot", () => {
+  const [s] = annotateFixtures(g([[A, 0], [B, 6], [C, 4], [D, 4]]), A, [fx(B)], 3, {
+    state: exactState({ worstRank: 4, bestRank: 3, top2Closed: true, canFinishThird: true }),
+    bestThird: { status: "soft", reason: "gd_bubble" },
+  });
+  eq(s.certainty, "soft", "soft");
+  eq(s.reason, "third_place_longshot", "reason");
+});

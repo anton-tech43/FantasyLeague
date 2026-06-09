@@ -49,6 +49,8 @@
 
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import type { GroupStanding } from "./stakes-engine.ts";
+import { classifyBestThird } from "./best-third.ts";
+import { coarseThirdPointsBounds, GROUP_GAMES_PER_TEAM, type GroupTeam } from "./group-scenarios.ts";
 
 // PL = 39, WC = 1 per the teams.league_id values in our DB.
 export const PL_LEAGUE_ID = 39;
@@ -69,6 +71,11 @@ export type ConsequenceType =
   | "WC_KNOCKOUT_QUALIFIED"
   | "WC_KNOCKOUT_ELIMINATED"
   | "WC_GROUP_WON"
+  // Good news (pushes): a 3rd-placed team is mathematically guaranteed one
+  // of the 8 best-third spots → through to the Round of 32. Points-locked +
+  // cross-group; never asserted on a goal-difference bubble. Elimination
+  // ("out") is detected for IN-APP surfaces only and NEVER pushed.
+  | "WC_BEST_THIRD_QUALIFIED"
   // Informational, NOT a math consequence: at the FT of a WC group game,
   // the two NON-playing teams in that group get a factual "rival result"
   // push ("Senegal beat Croatia in your group"). No derived "what you
@@ -198,6 +205,16 @@ export async function detectConsequences(
   // teams × 3 sort calls = ~60 redundant array copies per FT.
   const byRank = [...localGroup].sort((a, b) => a.rank - b.rank);
 
+  // Freshness/completeness gate for HARD WC qualification pushes. On the
+  // simultaneous final matchday the snapshot may predate the OTHER group
+  // game, so the table is incomplete and a "qualified/won/best-third" push
+  // could be wrong. Require every team in the (result-applied) group to have
+  // played the current matchday; otherwise defer the hard pushes and let
+  // them re-fire (idempotently) once data-fetcher refreshes the table. The
+  // factual WC_RIVAL_RESULT push is unaffected (it states a known score).
+  const hardPushesAllowed = args.leagueId !== WC_LEAGUE_ID ||
+    wcSnapshotComplete(localGroup.map((t) => t.all.played), args.round);
+
   const consequences: Consequence[] = [];
   for (const team of localGroup) {
     // Playing teams are covered by gd-matchday; consequences are about
@@ -207,21 +224,111 @@ export async function detectConsequences(
     const slug = apiIdToSlug.get(team.team.id);
     if (!slug) continue;
 
-    const detected = consequencesForTeam(team, localGroup, byRank, totalGames, args.leagueId);
+    let detected = consequencesForTeam(team, localGroup, byRank, totalGames, args.leagueId);
+    if (!hardPushesAllowed) {
+      detected = detected.filter((t) => t !== "WC_GROUP_WON" && t !== "WC_KNOCKOUT_QUALIFIED");
+    }
     for (const type of detected) {
       consequences.push({ team_id: slug, consequence_type: type, trigger_summary });
     }
 
-    // WC: every non-playing team in the group also gets an informational
-    // rival-result push for this fixture (the round gate above already
-    // restricts this to the group stage). Factual only — no qualification
-    // math, which depends on a refreshed table.
     if (args.leagueId === WC_LEAGUE_ID) {
+      // Best-third qualification (good news → pushes). Gated on a complete
+      // snapshot; points-locked + cross-group only. Never fires "out".
+      if (hardPushesAllowed && qualifiesAsBestThird(team, localGroup, standings)) {
+        consequences.push({ team_id: slug, consequence_type: "WC_BEST_THIRD_QUALIFIED", trigger_summary });
+      }
+      // Informational rival-result push (the other game's score). Factual
+      // only — no qualification math — so it is NOT gated.
       consequences.push({ team_id: slug, consequence_type: "WC_RIVAL_RESULT", trigger_summary });
     }
   }
 
   return consequences;
+}
+
+// ── WC group-stage qualification helpers (pure; exported for tests) ──────────
+
+/** Parse the matchday number from API-Football's round, e.g. "Group Stage - 3" → 3. */
+export function matchdayFromRound(round?: string): number | null {
+  const m = (round ?? "").match(/group stage\s*-\s*(\d+)/i);
+  return m ? Number(m[1]) : null;
+}
+
+/**
+ * True if the standings snapshot reflects every game of the current matchday
+ * (every team has played at least `md`). On the simultaneous final matchday
+ * an incomplete snapshot returns false → hard pushes defer. Unknown round
+ * (no matchday) → true (fall back to prior behaviour).
+ */
+export function wcSnapshotComplete(playedCounts: number[], round?: string): boolean {
+  const md = matchdayFromRound(round);
+  if (md === null) return true;
+  return playedCounts.every((p) => p >= md);
+}
+
+/**
+ * Points-only check that the focal team is GUARANTEED to finish exactly 3rd
+ * in its group (conservative — may under-fire, never over-fires). Requires
+ * exactly two group rivals guaranteed above (their floor beats focal's
+ * ceiling) and at least one guaranteed below (focal's floor beats theirs).
+ */
+export function guaranteedExactlyThird(
+  focalPoints: number,
+  focalPlayed: number,
+  others: Array<{ points: number; played: number }>,
+): boolean {
+  const fFloor = focalPoints;
+  const fCeil = focalPoints + 3 * Math.max(0, GROUP_GAMES_PER_TEAM - focalPlayed);
+  const aboveGuaranteed = others.filter((o) => o.points > fCeil).length; // o.floor > F.ceil
+  const belowGuaranteed = others.filter(
+    (o) => fFloor > o.points + 3 * Math.max(0, GROUP_GAMES_PER_TEAM - o.played),
+  ).length; // F.floor > o.ceil
+  return aboveGuaranteed === 2 && belowGuaranteed >= 1;
+}
+
+function toGroupTeams(rows: StandingsEntry[]): GroupTeam[] {
+  return rows.map((t) => ({
+    teamApiId: t.team.id,
+    teamName: t.team.name,
+    points: t.points,
+    played: t.all.played,
+    goalsDiff: t.goalsDiff ?? 0,
+    goalsFor: t.all.goals?.for ?? 0,
+  }));
+}
+
+/**
+ * Whether the focal team is mathematically through as one of the 8 best
+ * third-placed teams. Points-locked guaranteed-3rd in its own group AND
+ * classifyBestThird === guaranteed_in across the other 11 groups (coarse,
+ * stale-safe bounds). The completeness guard in classifyBestThird means a
+ * snapshot missing groups stays soft (no push).
+ */
+function qualifiesAsBestThird(
+  focal: StandingsEntry,
+  focalGroup: StandingsEntry[], // result-applied
+  allStandings: StandingsEntry[][], // all 12 groups (+ the 13-team "Ranking of third-placed teams")
+): boolean {
+  const others = focalGroup.filter((t) => t.team.id !== focal.team.id);
+  if (!guaranteedExactlyThird(focal.points, focal.all.played, others.map((o) => ({ points: o.points, played: o.all.played })))) {
+    return false;
+  }
+  const fFloor = focal.points;
+  const fCeil = focal.points + 3 * Math.max(0, GROUP_GAMES_PER_TEAM - focal.all.played);
+  // Other real groups only: exactly 4 teams and not containing the focal team
+  // (this also excludes the 12-team "Ranking of third-placed teams" array).
+  const otherGroups = allStandings
+    .filter((g) => Array.isArray(g) && g.length === 4 && !g.some((t) => t.team?.id === focal.team.id))
+    .map((g, i) => ({ group: `g${i}`, ...coarseThirdPointsBounds(toGroupTeams(g)) }));
+  return classifyBestThird({
+    focalGroup: focal.group ?? "focal",
+    focalGuaranteedThird: true,
+    focalCanBeThird: true,
+    focalFloorPts: fFloor,
+    focalCeilPts: fCeil,
+    otherGroups,
+  }).status === "guaranteed_in";
 }
 
 /**
