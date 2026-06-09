@@ -49,7 +49,7 @@
 
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import type { GroupStanding } from "./stakes-engine.ts";
-import { classifyBestThird } from "./best-third.ts";
+import { classifyBestThird, type BestThirdResult } from "./best-third.ts";
 import { coarseThirdPointsBounds, GROUP_GAMES_PER_TEAM, type GroupTeam } from "./group-scenarios.ts";
 
 // PL = 39, WC = 1 per the teams.league_id values in our DB.
@@ -305,17 +305,23 @@ function toGroupTeams(rows: StandingsEntry[]): GroupTeam[] {
  * stale-safe bounds). The completeness guard in classifyBestThird means a
  * snapshot missing groups stays soft (no push).
  */
-function qualifiesAsBestThird(
+/**
+ * The cross-group best-third verdict for the focal team, or undefined when
+ * top-2 is not yet closed (best-third doesn't apply). Points-only + coarse,
+ * stale-safe; classifyBestThird's completeness guard keeps an incomplete
+ * snapshot soft. Used by both the push path and the post_match card.
+ */
+export function bestThirdResultFor(
   focal: StandingsEntry,
   focalGroup: StandingsEntry[], // result-applied
   allStandings: StandingsEntry[][], // all 12 groups (+ the 13-team "Ranking of third-placed teams")
-): boolean {
+): BestThirdResult | undefined {
   const others = focalGroup.filter((t) => t.team.id !== focal.team.id);
-  if (!guaranteedExactlyThird(focal.points, focal.all.played, others.map((o) => ({ points: o.points, played: o.all.played })))) {
-    return false;
-  }
   const fFloor = focal.points;
   const fCeil = focal.points + 3 * Math.max(0, GROUP_GAMES_PER_TEAM - focal.all.played);
+  // Best-third only applies once top-2 is closed (>=2 rivals guaranteed above).
+  const guaranteedAbove = others.filter((o) => o.points > fCeil).length;
+  if (guaranteedAbove < 2) return undefined;
   // Other real groups only: exactly 4 teams and not containing the focal team
   // (this also excludes the 12-team "Ranking of third-placed teams" array).
   const otherGroups = allStandings
@@ -323,22 +329,43 @@ function qualifiesAsBestThird(
     .map((g, i) => ({ group: `g${i}`, ...coarseThirdPointsBounds(toGroupTeams(g)) }));
   return classifyBestThird({
     focalGroup: focal.group ?? "focal",
-    focalGuaranteedThird: true,
-    focalCanBeThird: true,
+    focalGuaranteedThird: guaranteedExactlyThird(
+      focal.points,
+      focal.all.played,
+      others.map((o) => ({ points: o.points, played: o.all.played })),
+    ),
+    focalCanBeThird: guaranteedAbove <= 2, // not locked 4th
     focalFloorPts: fFloor,
     focalCeilPts: fCeil,
     otherGroups,
-  }).status === "guaranteed_in";
+  });
+}
+
+/** Push gate: only the unambiguous "through as a best third" case. */
+function qualifiesAsBestThird(
+  focal: StandingsEntry,
+  focalGroup: StandingsEntry[],
+  allStandings: StandingsEntry[][],
+): boolean {
+  return bestThirdResultFor(focal, focalGroup, allStandings)?.status === "guaranteed_in";
+}
+
+export interface PostResultWcContext {
+  /** The focal group with this result applied, in GroupStanding shape. */
+  group: GroupStanding[];
+  /** Cross-group best-third verdict per team api id (only where top-2 is closed). */
+  bestThirdByApiId: Map<number, BestThirdResult>;
 }
 
 /**
- * For a just-finished WC GROUP fixture, return the group standings with this
- * result applied (same freshness-aware logic as detectConsequences), in the
- * GroupStanding shape the stakes engine + post_match consume. Returns null
- * for non-WC / non-group-stage / missing data. Lets match-watcher write a
- * truthful deterministic post_match card without re-implementing the math.
+ * For a just-finished WC GROUP fixture, return the focal group (result
+ * applied, same freshness-aware logic as detectConsequences) PLUS the
+ * cross-group best-third verdict per team — so match-watcher can write a
+ * truthful post_match card (upbeat when through as a best third, definitive
+ * when out, honest "out of their hands" while pending). Returns null for
+ * non-WC / non-group-stage / missing data.
  */
-export async function loadPostResultWcGroup(
+export async function loadPostResultWcContext(
   supabase: SupabaseClient,
   args: {
     leagueId: number;
@@ -349,7 +376,7 @@ export async function loadPostResultWcGroup(
     awayGoals: number;
     round?: string;
   },
-): Promise<GroupStanding[] | null> {
+): Promise<PostResultWcContext | null> {
   if (args.leagueId !== WC_LEAGUE_ID) return null;
   const round = (args.round ?? "").toLowerCase();
   if (round.length > 0 && !round.includes("group")) return null;
@@ -381,12 +408,20 @@ export async function loadPostResultWcGroup(
   if (!group || group.length === 0) return null;
 
   const local = alreadyIncludesResult ? cloneGroup(group) : applyResult(group, args);
-  return local.map((t) => ({
-    teamApiId: t.team.id,
-    teamName: t.team.name,
-    points: t.points,
-    played: t.all.played,
-  }));
+  const bestThirdByApiId = new Map<number, BestThirdResult>();
+  for (const t of local) {
+    const verdict = bestThirdResultFor(t, local, standings);
+    if (verdict) bestThirdByApiId.set(t.team.id, verdict);
+  }
+  return {
+    group: local.map((t) => ({
+      teamApiId: t.team.id,
+      teamName: t.team.name,
+      points: t.points,
+      played: t.all.played,
+    })),
+    bestThirdByApiId,
+  };
 }
 
 // ============================================================

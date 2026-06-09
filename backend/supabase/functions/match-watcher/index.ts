@@ -18,7 +18,7 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { seasonForLeague, FALLBACK_ACTIVE_LEAGUES } from "../_shared/league-helpers.ts";
-import { detectConsequences, loadPostResultWcGroup, WC_LEAGUE_ID } from "../_shared/detect-consequences.ts";
+import { detectConsequences, loadPostResultWcContext, WC_LEAGUE_ID } from "../_shared/detect-consequences.ts";
 import { renderConsequence } from "../_shared/consequence-templates.ts";
 import { groupSituation } from "../_shared/stakes-engine.ts";
 import { renderPostMatch, type PostMatchState } from "../_shared/stakes-templates.ts";
@@ -541,7 +541,7 @@ async function handleRequest(req: Request): Promise<Response> {
           // post-result group situation: through/won reads upbeat; top-two
           // gone reads muted and respectful, never "enjoy it". Zero Claude.
           if (fixtureLeagueId === WC_LEAGUE_ID) {
-            const wcGroup = await loadPostResultWcGroup(supabase, {
+            const wcCtx = await loadPostResultWcContext(supabase, {
               leagueId: fixtureLeagueId,
               homeTeamId,
               homeApiId: fx.teams.home.id,
@@ -550,7 +550,7 @@ async function handleRequest(req: Request): Promise<Response> {
               awayGoals: awayGoals ?? 0,
               round: fx.league?.round,
             });
-            if (wcGroup) {
+            if (wcCtx) {
               const playing = [
                 { slug: homeTeamId, apiId: fx.teams.home.id, name: fx.teams.home.name, oppName: fx.teams.away.name, gf: homeGoals ?? 0, ga: awayGoals ?? 0 },
                 { slug: awayTeamId, apiId: fx.teams.away.id, name: fx.teams.away.name, oppName: fx.teams.home.name, gf: awayGoals ?? 0, ga: homeGoals ?? 0 },
@@ -563,7 +563,8 @@ async function handleRequest(req: Request): Promise<Response> {
                   teamScore: p.gf,
                   oppScore: p.ga,
                   state,
-                  situation: groupSituation(wcGroup, p.apiId),
+                  situation: groupSituation(wcCtx.group, p.apiId),
+                  bestThird: wcCtx.bestThirdByApiId.get(p.apiId),
                 });
                 await writeWcPostMatch(supabase, p.slug, pm);
               }

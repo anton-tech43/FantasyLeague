@@ -19,6 +19,7 @@
 // tournament", never "World Cup". No em-dashes (campaign-copy rule).
 
 import type { FixtureStakes, GroupSituation } from "./stakes-engine.ts";
+import type { BestThirdResult } from "./best-third.ts";
 
 // ============================================================
 // next_fixture.preview — one factual sentence, tone by reason
@@ -150,6 +151,8 @@ export interface PostMatchContext {
   state: PostMatchState;
   /** The team's group situation AFTER this result. */
   situation: GroupSituation;
+  /** Cross-group best-third verdict, when top-2 is closed (else undefined). */
+  bestThird?: BestThirdResult;
 }
 
 export function renderPostMatch(
@@ -177,14 +180,31 @@ export function renderPostMatch(
         text: `${teamName} ${resultPhrase} and are through to the last 16.`,
         talking_point: `Knockout football next. Worth asking him how far he thinks they can go.`,
       };
-    case "top2_gone":
-      // MUTED and respectful. They have likely just been knocked out of the
-      // top two. Do NOT say "enjoy it".
+    case "top2_gone": {
+      // Top-2 is gone. The best-third verdict (across the other groups)
+      // decides the tone: in = upbeat; out = definitive but kind; pending =
+      // honest "out of their hands". Never "enjoy it".
+      const bt = ctx.bestThird?.status;
+      if (bt === "guaranteed_in") {
+        return {
+          state,
+          text: `${teamName} ${resultPhrase}, but they are through as one of the best third-placed teams.`,
+          talking_point: `Through the side door. Worth asking him who they might meet next.`,
+        };
+      }
+      if (bt === "out") {
+        return {
+          state,
+          text: `${teamName} ${resultPhrase} and are out of the tournament.`,
+          talking_point: `Keep it kind, their World Championship is over.`,
+        };
+      }
       return {
         state,
-        text: `${teamName} ${resultPhrase}. The top-two route has gone; only a best-third place could still rescue it, and that is out of their hands.`,
-        talking_point: `Keep it gentle. He will not want the hard sell on "there's still a chance".`,
+        text: `${teamName} ${resultPhrase}. The top-two route has gone; a best-third place is still in play, decided by the other groups.`,
+        talking_point: `Keep it gentle. It is out of their hands now.`,
       };
+    }
     default:
       return {
         state,

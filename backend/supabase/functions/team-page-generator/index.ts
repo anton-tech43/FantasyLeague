@@ -20,7 +20,7 @@ import type { Team } from "../_shared/types.ts";
 import { annotateFixtures, classifyExactPointsOnly, type ExactInfo, type GroupStanding } from "../_shared/stakes-engine.ts";
 import { renderNextFixturePreview, renderThisWeek } from "../_shared/stakes-templates.ts";
 import { classifyBestThird, type GroupThirdBounds } from "../_shared/best-third.ts";
-import { coarseThirdPointsBounds } from "../_shared/group-scenarios.ts";
+import { classifyExactForTeam, coarseThirdPointsBounds, type GroupTeam, type RemainingGame } from "../_shared/group-scenarios.ts";
 import { guaranteedExactlyThird } from "../_shared/detect-consequences.ts";
 
 // ============================================================
@@ -942,11 +942,16 @@ async function updateWcDynamicFields(
   // "At worst 2nd") + a cross-group best-third verdict ("Through as a best
   // third" / in-app "Out of the tournament"). Never over-claims; GD bubbles
   // stay soft. Uses the full standings (all 12 groups) already in rawLogs.
+  const groupApiIds = new Set(group.map((t) => t.teamApiId));
+  const focalRemainingOpp = [...new Set(
+    upcoming.filter((f) => groupApiIds.has(f.opponentApiId)).map((f) => f.opponentApiId),
+  )];
   const exactInfo: ExactInfo | undefined = group.length > 0
     ? computeWcExactInfo(
       group,
       team.api_football_id,
       rawLogs.find((l) => l.source === "api_football_standings")?.data,
+      focalRemainingOpp,
     )
     : undefined;
 
@@ -1019,8 +1024,32 @@ function computeWcExactInfo(
   group: GroupStanding[],
   focalApiId: number,
   standingsData: unknown,
+  focalRemainingOpp: number[],
 ): ExactInfo {
-  const state = classifyExactPointsOnly(group, focalApiId);
+  // Baseline: sound points-only reachability.
+  let state = classifyExactPointsOnly(group, focalApiId);
+
+  // Final-matchday tightening. When every team has played 2 (one game left
+  // each) and the focal team has exactly one remaining group opponent, the
+  // remaining pairings are fully determined — focal vs its opponent, and the
+  // OTHER two teams vs each other. Enumerating that catches "at worst 2nd
+  // because the two rivals play each other" that points-reachability misses.
+  // Still sound; just tighter.
+  if (group.length === 4 && focalRemainingOpp.length === 1 && group.every((t) => t.played === 2)) {
+    const opp = focalRemainingOpp[0];
+    const otherTwo = group.map((t) => t.teamApiId).filter((id) => id !== focalApiId && id !== opp);
+    if (otherTwo.length === 2) {
+      const remaining: RemainingGame[] = [
+        { homeApiId: focalApiId, awayApiId: opp },
+        { homeApiId: otherTwo[0], awayApiId: otherTwo[1] },
+      ];
+      const groupTeams: GroupTeam[] = group.map((t) => ({
+        teamApiId: t.teamApiId, teamName: t.teamName, points: t.points, played: t.played, goalsDiff: 0, goalsFor: 0,
+      }));
+      state = classifyExactForTeam(groupTeams, remaining, focalApiId);
+    }
+  }
+
   if (!state.top2Closed) return { state };
 
   // Top-2 closed → consult the best-third comparator across the other groups.

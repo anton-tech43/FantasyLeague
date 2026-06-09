@@ -7,6 +7,7 @@ import {
   type GroupTeam,
   type RemainingGame,
 } from "./group-scenarios.ts";
+import { classifyExactPointsOnly } from "./stakes-engine.ts";
 
 function assert(c: boolean, m: string): void {
   if (!c) throw new Error("assertion failed: " + m);
@@ -53,6 +54,20 @@ Deno.test("level on 4 with a rival able to overtake → NOT guaranteed top-2 (ti
   eq(s.worstRank, 3, "worstRank (can be 3rd)");
   assert(s.canFinishThird, "can be 3rd");
   assert(s.canFinishFirst, "can still win it");
+});
+
+Deno.test("enumeration is TIGHTER than points-only when the two rivals play each other", () => {
+  // A=6, the only two teams that could catch A (B,C on 4) play EACH OTHER on
+  // the final matchday, so at most one can reach 7 → A is at worst 2nd.
+  const teams = g({ [A]: [6, 2], [B]: [4, 2], [C]: [4, 2], [D]: [1, 2] });
+  const remaining = [rg(A, D), rg(B, C)]; // A v D, and the rivals B v C
+  const exact = classifyExactForTeam(teams, remaining, A);
+  const pointsOnly = classifyExactPointsOnly(
+    teams.map((t) => ({ teamApiId: t.teamApiId, teamName: t.teamName, points: t.points, played: t.played })),
+    A,
+  );
+  assert(exact.guaranteedTop2, "enumeration: at worst 2nd (rivals play each other)");
+  assert(!pointsOnly.guaranteedTop2, "points-only: cannot prove it (both rivals could reach 7 independently)");
 });
 
 Deno.test("coarseThirdPointsBounds: 3rd-highest of maxes (upper) and of floors (lower)", () => {
