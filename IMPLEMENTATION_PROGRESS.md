@@ -3276,3 +3276,48 @@ Fix: an `activeEntityId` computed property resolving club/country from `activeCo
 2. **A rename can silently disable a guard.** The int'l-duty downgrade broke the moment "World Cup" → "World Championship" shipped, because the regex hard-coded the old term. When you rename a domain term, grep every guard/pattern that matches on it.
 3. **The model's "fact-checks" are stale; trust the data.** Agents flagged "Semenyo plays for Bournemouth" as a content error — but he'd transferred to Man City, so the app was right and the agents (and I) were wrong. A "fix" applied on that basis was reverted. For roster/transfer facts, the live squad data is the source of truth, not the LLM. Reliable truth signals = deterministic standings checks + internal self-contradictions only.
 4. **Verify "spam" before reporting it.** The scariest-looking findings (23-push bursts, null-title pushes, 1:37am sends) were largely BACKFILL artifacts (bulk-stamped `pushed_at` over many hours), not real user notifications. Check `created_at` vs `pushed_at` spread before claiming users were spammed.
+
+### 90. "Removed from the App Store" was EU DSA trader status, not a rejection
+
+**What prompted this (2026-06-09):** The user reported the app showed as removed from the App Store. It was NOT a review rejection — V2.0 (build 1.0(3)) had in fact **passed review** ("eligible for distribution"). Two account/availability-level causes, both separate from App Review:
+1. **App Availability was empty** — Apple's redesigned Pricing & Availability split "Prices" (175 regions of price tiers) from "App Availability" (where it actually sells); the availability list had cleared, so the app was live in **zero** regions. Fix: *Set Up Availability* → all regions → Save.
+2. **EU DSA trader status** — since Feb 2025 Apple requires verified trader status (a publicly-displayed business contact) to distribute in the **27 EU states**; without it those regions stay blocked. Submitted; now "under review" by Apple.
+
+**The unlock:** the **UK is not in the EU (Brexit)**, so the primary market is unaffected. Availability was set for the **148 non-EU regions** (incl. UK + US) → app live immediately for kickoff; the EU-27 join automatically once trader status verifies.
+
+**Rules:**
+1. **App Store Connect has two independent statuses.** Version status (review verdict) ≠ app availability (where it sells). "Removed" is the availability layer; a passed review can still be invisible.
+2. **EU DSA trader status only gates the EU-27.** Don't let it block a global launch — set availability for everything else and let the EU follow.
+3. **I can't (and won't) operate App Store Connect** — login + legal attestations are the user's; my job is to diagnose against the live notice and tell them exactly where to click.
+
+### 91. WC team pages went 8 days stale — the cheap refresh path bailed out for countries
+
+**What prompted this (2026-06-09):** 2 days before kickoff, Sweden's page showed "next up: Norway, 1 June" — an 8-day-old friendly. Root cause: `data-fetcher` *was* pulling fresh fixtures+standings for all 48 countries every 2h (raw data fresh in `raw_fetch_logs`), but `team-page-generator.updateDynamicFields` **bailed out for `entity_type==="country"`** and routed them to the *paid weekly Claude regen* — so the dynamic cards (next_fixture/standings/calendar) only refreshed ~weekly. Confirmed in prod: `next_fixture.updated_at` = May 18 while standings raw log = fetched 1h ago.
+
+**What shipped (Phase A, server-side, zero Claude):**
+- `updateWcDynamicFields` — a deterministic WC branch (removed the bail-out): rebuilds standings (reuse `buildStandingsCard`), stakes-annotated `upcoming_fixtures`, `next_fixture` (+ templated preview), `this_week`, and `form` ("Xst in Group Y") from raw logs. Past-fixture forward-walk guard on `extractNextFixture` (no more stale "next up"). Verified: all **48/48 countries fresh, 0 stale fixtures, 1-2s refreshes (no Claude)**, PL unchanged.
+- `_shared/stakes-engine.ts` + `stakes-templates.ts` — per-fixture stakes (importance dots + "what they need" label), tone keyed on reason.
+- `match-watcher` — factual **WC_RIVAL_RESULT** push to the non-playing same-group teams at FT (score only, no derived math) + a deterministic `post_match` card. `notification-sender` unchanged (routes by team_id/country_id, honours `push_eligible`). Migration 060: rival-result idempotent per `(team_id, match_id)` via `unique_matchday_content`, excluded from the once-per-type index.
+- **PL → feed-only for the WC window** — date-gated block in `post_news.sh` (routines repo, pushed `4141fbd`) sets `push_eligible:false` for `$pl_clubs` from 2026-06-09→07-20. WC feeds unaffected; auto-resumes.
+
+**Rules:**
+1. **Fresh DB data ≠ fresh app.** A page can be stale even when its inputs are current — find the regeneration step, not just the fetch.
+2. **A cost guard can become a staleness bug.** The country bail-out existed to avoid 48 paid Claude calls every 2h; the right answer was a *deterministic* refresh on the cheap path, not skipping the refresh.
+3. **Rival-result pushes state the FACT, not the consequence.** The score is known at FT; "what you now need" depends on a refreshed table + tiebreakers, so it lives in-app. Never push a derived claim you can't yet back.
+
+### 92. Exact WC group-stage qualification math — assert only what is mathematically locked
+
+**What prompted this (2026-06-09/10):** The user wanted the group-stage math made *exact* — "England will at worst be 2nd" — and the cross-group **best-third** qualification computed ("8 of the 12 thirds go through; we can count it out"). Goal: **no push is ever wrong.**
+
+**Format verified vs FIFA/ESPN (don't trust training):** 48 teams → 12 groups of 4 → top 2 + **8 best of 12 thirds** = 32 → Round of 32. The 2026 within-group tiebreaker changed to **head-to-head FIRST** (then overall GD → goals → conduct → FIFA ranking); best-third ranking is points → GD → goals → conduct → FIFA ranking (no H2H). API-Football returns all 12 groups + a "Ranking of third-placed teams" array in one standings payload; no head-to-head data.
+
+**What shipped (zero Claude, deterministic, 45 Deno tests):**
+- `_shared/group-scenarios.ts` — brute-force ≤3^6 remaining results → exact within-group position bounds (worst/best rank with **pessimistic/optimistic tie handling**, so claims are **tiebreaker-agnostic** → correct under the new H2H rule without implementing H2H). `coarseThirdPointsBounds`: provably-valid upper/lower 3rd-place bounds (order-statistic domination).
+- `_shared/best-third.ts` — cross-group 8-of-12 comparator → `guaranteed_in / out / soft`, points-only strict separation, + a **completeness guard** (snapshot missing groups → soft, never a false "in").
+- Labels: "Won the group" / **"At worst 2nd"** / "Through as a best third" / in-app **"Out of the tournament"**; the **freshness/completeness gate** defers hard pushes on an incomplete simultaneous-final-matchday snapshot (re-fires idempotently). **WC_BEST_THIRD_QUALIFIED** pushes (good news); **elimination is in-app only, never pushed** (user decision). post_match tone is best-third-aware (through = upbeat, out = definitive, pending = "still in play, decided by other groups"). Final-matchday tightening: when pairings are fully determined, enumerate to catch "at worst 2nd because the two rivals play each other" (which points-only can't prove).
+
+**Rules:**
+1. **Make the conservative direction the only direction.** Every claim asserts only what's locked on POINTS; ties are resolved pessimistically. So the engine can *under-claim* (stay soft) but can never be wrong — which is the entire requirement.
+2. **The format's tiebreakers can change between cycles — verify, then design around them.** We dodged implementing H2H entirely by being tiebreaker-agnostic, but only because we checked the 2026 rules first.
+3. **Good news pushes; bad news is discovered.** A "you're out" notification is harsh and redundant (the result push already landed) — surface elimination in-app, push only qualification.
+4. **Loose-but-sound bounds are fine for the cross-group comparison.** Coarse per-group bounds (3rd-highest of maxes / of floors) over the other 11 groups are stale-safe and only ever make us more conservative — no need for every group's exact pairings.
