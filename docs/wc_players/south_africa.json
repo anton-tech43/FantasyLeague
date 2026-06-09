@@ -19,7 +19,8 @@
    "position": "Goalkeeper",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/46417.png",
-   "club": "Orlando Pirates"
+   "club": "Orlando Pirates",
+   "note": "A goalkeeper who just had the season of his life, keeping 21 clean sheets to set a new South African league record as Orlando Pirates won the title. He's behind captain Williams in the national pecking order, so think of him as a very capable understudy rather than the man between the posts."
   },
   {
    "id": 46245,
@@ -28,7 +29,8 @@
    "position": "Goalkeeper",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/46245.png",
-   "club": "Siwelele"
+   "club": "Siwelele",
+   "note": "A 31-year-old keeper who finally found a regular home and became a fan favourite at his Bloemfontein club after years as a squad option. Coach Hugo Broos rates his attitude and work ethic, but here he's third in line and most likely to spend the tournament watching and training."
   },
   {
    "id": 3275,
@@ -37,7 +39,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/3275.png",
-   "club": "Mamelodi Sundowns"
+   "club": "Mamelodi Sundowns",
+   "note": "The captain and undisputed number one, a 33-year-old who became a national hero by saving four penalties in a shootout at the 2023 Africa Cup of Nations. He plays for Mamelodi Sundowns, was once ranked among the world's top ten keepers, and is the calm, vocal leader Broos builds the team around."
   },
   {
    "id": 163041,
@@ -46,7 +49,8 @@
    "position": "Defender",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/163041.png",
-   "club": "Kaizer Chiefs"
+   "club": "Kaizer Chiefs",
+   "note": "A 24-year-old Kaizer Chiefs left-back and the squad's biggest surprise pick, called up uncapped largely as cover after first-choice Modiba's fitness worries. He spent his teens in the youth setups at Schalke and Newcastle before coming home, and he can fill in across the back line if needed."
   },
   {
    "id": 430078,
@@ -55,7 +59,8 @@
    "position": "Defender",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/430078.png",
-   "club": "Molde"
+   "club": "Molde",
+   "note": "A 21-year-old left-back who has built a name for himself in Norway with Molde after moving up through South African football. He'll compete with the more experienced Modiba for minutes on the left, so expect him to feature mainly as backup unless injuries open a door."
   },
   {
    "id": 392387,
@@ -64,7 +69,8 @@
    "position": "Defender",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/392387.png",
-   "club": "Philadelphia Union"
+   "club": "Philadelphia Union",
+   "note": "A 21-year-old centre-back who has impressed in Major League Soccer with Philadelphia Union, anchoring one of the meanest defences in the league. Still very new to the senior national side, he's one for the future who could grab a real opportunity if the World Cup goes well."
   },
   {
    "id": 510799,
@@ -73,7 +79,8 @@
    "position": "Defender",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/510799.png",
-   "club": "Orlando Pirates"
+   "club": "Orlando Pirates",
+   "note": "At 20, the youngest player in the squad and one of its brightest stories, a centre-back nicknamed TLB who broke through fearlessly and already won a man-of-the-match award in a Soweto derby. Composed beyond his years, he's pushing hard to start despite his age."
   },
   {
    "id": 46334,
@@ -82,7 +89,8 @@
    "position": "Defender",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/46334.png",
-   "club": "Mamelodi Sundowns"
+   "club": "Mamelodi Sundowns",
+   "note": "The first-choice left-back, a 30-year-old Sundowns mainstay nicknamed Postman who gets forward constantly and chipped in with goals all season. A late-season hamstring injury briefly threatened his place, but he made the squad and should start once fully fit."
   },
   {
    "id": 46601,
@@ -91,7 +99,8 @@
    "position": "Defender",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/46601.png",
-   "club": "Mamelodi Sundowns"
+   "club": "Mamelodi Sundowns",
+   "note": "The first-choice right-back, a 30-year-old known as Sailor who has been a fixture in Sundowns' run of league titles and is rated among the best in his position on the continent. Reliable and tireless, he's one of the quiet certainties in the starting eleven."
   },
   {
    "id": 474630,
@@ -100,7 +109,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/474630.png",
-   "club": "Mamelodi Sundowns"
+   "club": "Mamelodi Sundowns",
+   "note": "A 21-year-old defender who earned his first senior call-up in 2025 and quickly became part of the picture, now on the books at champions Sundowns. He's young squad depth at centre-back here, in the camp to learn from the established names and grab any chance he gets."
   },
   {
    "id": 406752,
@@ -109,7 +119,8 @@
    "position": "Defender",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/406752.png",
-   "club": "Hannover 96"
+   "club": "Hannover 96",
+   "note": "A 21-year-old centre-back playing in Germany with Hannover 96 who chose South Africa despite his Nigerian heritage and interest from the Super Eagles. Broos clearly trusts him, picking him for the World Cup even after he missed AFCON, so he's genuine competition for a defensive spot."
   },
   {
    "id": 46458,
@@ -118,7 +129,8 @@
    "position": "Defender",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/46458.png",
-   "club": "Orlando Pirates"
+   "club": "Orlando Pirates",
+   "note": "The 30-year-old Orlando Pirates captain who led from the back as his club won the league, and a centre-back Broos has publicly backed against his critics. Experienced and composed, he's firmly in the mix to start at the heart of the defence."
   },
   {
    "id": 330174,
@@ -127,7 +139,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/330174.png",
-   "club": "Polokwane City"
+   "club": "Polokwane City",
+   "note": "A 26-year-old right-back from Polokwane City who has been a regular face in Broos' squads and quietly drawn interest from the country's biggest clubs. With Mudau ahead of him at right-back, he's most likely backup, but he's dependable cover."
   },
   {
    "id": 268710,
@@ -136,7 +149,8 @@
    "position": "Midfielder",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/268710.png",
-   "club": "Mamelodi Sundowns"
+   "club": "Mamelodi Sundowns",
+   "note": "A 24-year-old box-to-box midfielder for Sundowns who fought his way back into the national setup after a year in the wilderness, rediscovering his best form in the second half of the season. He gives Broos energy and legs in the middle as a rotation option."
   },
   {
    "id": 194430,
@@ -145,7 +159,8 @@
    "position": "Midfielder",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/194430.png",
-   "club": "Orlando Pirates"
+   "club": "Orlando Pirates",
+   "note": "A 25-year-old defensive midfielder for Orlando Pirates who has a knack for the dramatic, scoring on his international debut and again soon after. He sits in front of the back four breaking up play, and is one of the options to do the unglamorous work in central midfield."
   },
   {
    "id": 3287,
@@ -154,7 +169,8 @@
    "position": "Midfielder",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/3287.png",
-   "club": "Mamelodi Sundowns"
+   "club": "Mamelodi Sundowns",
+   "note": "The Guardian's pick as South Africa's player to watch, and the midfield engine for both Sundowns and the national team at 28. He scored in his club's CAF Champions League final win and brings goals, range of passing and set-piece danger, making him central to how Bafana play."
   },
   {
    "id": 158433,
@@ -163,7 +179,8 @@
    "position": "Midfielder",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/158433.png",
-   "club": "Tondela"
+   "club": "Tondela",
+   "note": "A 26-year-old central midfielder known as Yaya who plies his trade in Portugal's top flight with Tondela, even through a tough relegation scrap. One of the squad's Europe-based players, he offers experience of week-in, week-out football abroad as a midfield option."
   },
   {
    "id": 3289,
@@ -172,7 +189,8 @@
    "position": "Midfielder",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/3289.png",
-   "club": "Mamelodi Sundowns"
+   "club": "Mamelodi Sundowns",
+   "note": "At 36, the elder statesman of the squad and a Sundowns legend whose clever passing has shaped a decade of dominance. He's coming back from a long injury layoff, so Broos has been honest that he may not be ready for 90 minutes, but his guile off the bench could unlock a tight game."
   },
   {
    "id": 179893,
@@ -181,7 +199,8 @@
    "position": "Attacker",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/179893.png",
-   "club": "Orlando Pirates"
+   "club": "Orlando Pirates",
+   "note": "A 24-year-old left winger whose career nearly stalled amid rejections before he turned into one of the most exciting attackers in the country, shining in his first season at Orlando Pirates. Direct and full of tricks, he's a likely starter and a real threat to take defenders on."
   },
   {
    "id": 98936,
@@ -190,7 +209,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/98936.png",
-   "club": "Burnley"
+   "club": "Burnley",
+   "note": "The main striker, a 25-year-old at Premier League side Burnley who lit up AFCON earlier this year with goals and assists in every match South Africa scored. Strong, quick and good with his back to goal, he carries the team's main hope of finding the net at the World Cup."
   },
   {
    "id": 201354,
@@ -199,7 +219,8 @@
    "position": "Attacker",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/201354.png",
-   "club": "Orlando Pirates"
+   "club": "Orlando Pirates",
+   "note": "A 25-year-old hard-running Orlando Pirates striker whom Broos has loyally backed even when club minutes dried up. He offers a willing, physical alternative up front, and is the kind of forward Broos likes to bring on to chase a game late."
   },
   {
    "id": 354831,
@@ -208,7 +229,8 @@
    "position": "Attacker",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/354831.png",
-   "club": "AEL"
+   "club": "AEL",
+   "note": "A 22-year-old winger on loan in Cyprus with AEL Limassol, where a run of regular games restored the confidence and sharpness Broos wants from him. His pace and directness make him a useful impact option off the bench in Group A."
   },
   {
    "id": 414149,
@@ -217,7 +239,8 @@
    "position": "Attacker",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/414149.png",
-   "club": "Orlando Pirates"
+   "club": "Orlando Pirates",
+   "note": "At 21, the wonderkid everyone in South African football is talking about, an Orlando Pirates playmaker who racked up goals and assists and was named league player of the month. Wearing the number 10, he's the creative spark Broos hopes can light up the tournament."
   },
   {
    "id": 295977,
@@ -226,7 +249,8 @@
    "position": "Attacker",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/295977.png",
-   "club": "Orlando Pirates"
+   "club": "Orlando Pirates",
+   "note": "A 25-year-old winger who earned a move to Orlando Pirates after standing out at AmaZulu and quickly became one of their key attacking threats. He gives Broos width and another option on the flanks, competing for game time in a crowded forward line."
   },
   {
    "id": 127429,
@@ -235,7 +259,8 @@
    "position": "Attacker",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/127429.png",
-   "club": "Mamelodi Sundowns"
+   "club": "Mamelodi Sundowns",
+   "note": "A 30-year-old Sundowns striker recalled for the World Cup after missing AFCON, with Broos valuing him as a different kind of forward to his other strikers. He had a productive scoring season for his club and gives the attack an extra tactical option."
   },
   {
    "id": 359561,
@@ -244,7 +269,8 @@
    "position": "Attacker",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/359561.png",
-   "club": "Orlando Pirates"
+   "club": "Orlando Pirates",
+   "note": "A 23-year-old Orlando Pirates winger who missed out on AFCON but worked his way into the World Cup squad, described as an explosive presence down the right. He's a high-energy option from the bench who can stretch tiring defences late in games."
   }
  ],
  "guardianStarPlayer": "Teboho Mokoena",

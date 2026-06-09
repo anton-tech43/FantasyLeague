@@ -19,7 +19,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/193288.png",
-   "club": "Al-Nassr"
+   "club": "Al-Nassr",
+   "note": "The Al-Nassr keeper goes into the tournament as Saudi Arabia's first choice between the posts, having edged ahead of more experienced rivals during qualifying. At 25 he is young for the role and this is his chance to make the No. 1 shirt his own."
   },
   {
    "id": 44449,
@@ -28,7 +29,8 @@
    "position": "Goalkeeper",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/44449.png",
-   "club": "Al-Qadisiyah FC"
+   "club": "Al-Qadisiyah FC",
+   "note": "A 34-year-old keeper at Al-Qadisiyah, Al Kassar is here as a backup option rather than a starter, with only a handful of senior caps to his name. He once made the rare list of Saudi league goalkeepers credited with an assist, a quirky footnote to a long domestic career."
   },
   {
    "id": 44411,
@@ -37,7 +39,8 @@
    "position": "Goalkeeper",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/44411.png",
-   "club": "Al-Ula"
+   "club": "Al-Ula",
+   "note": "If the name rings a bell, it should: this is the keeper whose heroics helped Saudi Arabia stun Argentina at the 2022 World Cup. Now 34 and playing his football in the second tier, he is the experienced head among the goalkeepers rather than the certain starter."
   },
   {
    "id": 44594,
@@ -46,7 +49,8 @@
    "position": "Defender",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/44594.png",
-   "club": "Lens"
+   "club": "Lens",
+   "note": "The right-back is the only member of the squad playing his club football in Europe, on loan at Ligue 1's Lens after a spell in Italy with Roma. An attacking full-back who chips in with goals and assists, he is one of the team's most important defenders and a near-certain starter."
   },
   {
    "id": 403087,
@@ -55,7 +59,8 @@
    "position": "Defender",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/403087.png",
-   "club": "Al-Qadisiyah FC"
+   "club": "Al-Qadisiyah FC",
+   "note": "A 23-year-old right-back at Al-Qadisiyah who came up through the youth ranks there, he has grown into a regular for his club and racked up a healthy pile of assists from the flank. He is one of the squad's younger defenders, more likely to provide cover than to start."
   },
   {
    "id": 134995,
@@ -64,7 +69,8 @@
    "position": "Defender",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/134995.png",
-   "club": "Al-Nassr"
+   "club": "Al-Nassr",
+   "note": "A right-back at Al-Nassr known for his energy getting up and down the flank, Boushal offers cover at full-back in this squad. He was a promising youngster a few years back and now provides squad depth alongside the more established defenders."
   },
   {
    "id": 44475,
@@ -73,7 +79,8 @@
    "position": "Defender",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/44475.png",
-   "club": "Al-Nassr"
+   "club": "Al-Nassr",
+   "note": "A centre-back at Al-Nassr and a regular through the World Cup qualifying campaign, the 28-year-old is one of the senior defensive options Saudi Arabia will lean on. He even chips in with the odd goal from set pieces, unusual for a player whose main job is at the back."
   },
   {
    "id": 202381,
@@ -82,7 +89,8 @@
    "position": "Defender",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/202381.png",
-   "club": "Al-Hilal Saudi FC"
+   "club": "Al-Hilal Saudi FC",
+   "note": "A left-back at Al-Hilal who joined the Saudi champions in 2024, the 25-year-old offers cover down the left flank and contributes the occasional goal and assist. He is part of the squad's defensive depth rather than a guaranteed starter."
   },
   {
    "id": 44335,
@@ -91,7 +99,8 @@
    "position": "Defender",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/44335.png",
-   "club": "Al-Ittihad FC"
+   "club": "Al-Ittihad FC",
+   "note": "An experienced 33-year-old centre-back at Al-Ittihad, Kadesh has been around the Saudi game for well over a decade and once captained the country's youth sides. His leadership and know-how make him a useful presence in the squad's defensive ranks."
   },
   {
    "id": 44507,
@@ -100,7 +109,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/44507.png",
-   "club": "Al-Hilal Saudi FC"
+   "club": "Al-Hilal Saudi FC",
+   "note": "A versatile defender who joined Al-Hilal on a free transfer after five years at rivals Al-Nassr, Lajami gives the squad a dependable option at the back. He has a twin brother, Qassem, who is also a defender in the Saudi league, a neat family footnote."
   },
   {
    "id": 44367,
@@ -109,7 +119,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/44367.png",
-   "club": "Al-Ahli Jeddah"
+   "club": "Al-Ahli Jeddah",
+   "note": "A right-back at Al-Ahli, Majrashi was one of the standout defenders in the club's run to Asian club glory, winning duels and putting in tackles by the bucketload. That form earned him national-team recognition and a place among Saudi Arabia's full-back options."
   },
   {
    "id": 44362,
@@ -118,7 +129,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/44362.png",
-   "club": "Al-Hilal Saudi FC"
+   "club": "Al-Hilal Saudi FC",
+   "note": "The Al-Hilal centre-back is the rock at the heart of Saudi Arabia's defence, a near-ever-present through qualifying who logged big minutes in the toughest matches. At 26 he is in his prime and one of the first names on the team sheet at the back."
   },
   {
    "id": 543059,
@@ -127,7 +139,8 @@
    "position": "Defender",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/543059.png",
-   "club": "Al-Qadisiyah FC"
+   "club": "Al-Qadisiyah FC",
+   "note": "A 24-year-old centre-back who came through the academy at Al-Qadisiyah, Jehad Thakri has only a handful of senior caps and is here largely to add depth in central defence. The World Cup is a step up in class and a learning experience for him."
   },
   {
    "id": 44339,
@@ -136,7 +149,8 @@
    "position": "Midfielder",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/44339.png",
-   "club": "Al-Hilal Saudi FC"
+   "club": "Al-Hilal Saudi FC",
+   "note": "A 27-year-old midfielder at Al-Hilal, he holds a curious record: the fastest goal in AFC Champions League history, struck just 16 seconds into a final. A box-to-box presence, he offers Saudi Arabia useful legs and steel in the centre of the pitch."
   },
   {
    "id": 44349,
@@ -145,7 +159,8 @@
    "position": "Midfielder",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/44349.png",
-   "club": "Al-Hilal Saudi FC"
+   "club": "Al-Hilal Saudi FC",
+   "note": "A long-serving midfield anchor at Al-Hilal where he has collected a cabinet's worth of trophies, Kanno is one of the most capped and experienced players in the squad. He shields the defence and breaks up play, the kind of unglamorous job a good team needs done well."
   },
   {
    "id": 269172,
@@ -154,7 +169,8 @@
    "position": "Midfielder",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/269172.png",
-   "club": "Al-Ahli Jeddah"
+   "club": "Al-Ahli Jeddah",
+   "note": "A defensive midfielder at Al-Ahli who featured in the club's Asian-title-winning campaign, including the final, the 24-year-old is a tidy ball-winner in the middle. He offers Saudi Arabia rotation and cover in central midfield."
   },
   {
    "id": 306380,
@@ -163,7 +179,8 @@
    "position": "Midfielder",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/306380.png",
-   "club": "Al-Qadisiyah FC"
+   "club": "Al-Qadisiyah FC",
+   "note": "At 22 the playmaker is the one to watch, voted Saudi Arabia's player of the season at Al-Qadisiyah after a campaign of double-figure assists and goals. He carries much of the team's creative hope at this tournament, the rare young Saudi talent who makes things happen."
   },
   {
    "id": 44315,
@@ -172,7 +189,8 @@
    "position": "Midfielder",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/44315.png",
-   "club": "Al-Nassr"
+   "club": "Al-Nassr",
+   "note": "A defensive midfielder at Al-Nassr valued for his reading of the game and his interceptions, Al Khaibari saw his minutes grow during the World Cup qualifiers as Saudi Arabia booked their place. He is a sensible, defensively minded option in the engine room."
   },
   {
    "id": 593759,
@@ -181,7 +199,8 @@
    "position": "Midfielder",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/593759.png",
-   "club": "Neom SC"
+   "club": "Neom SC",
+   "note": "A 29-year-old central midfielder at newly promoted Neom SC, Al Haji is one of the less heralded names in the squad and offers depth rather than a starting spot. After a career across several Saudi clubs, this call-up is a deserved reward for his consistency."
   },
   {
    "id": 44701,
@@ -190,7 +209,8 @@
    "position": "Attacker",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/44701.png",
-   "club": "Al-Ettifaq"
+   "club": "Al-Ettifaq",
+   "note": "The Al-Ettifaq winger arrives in form, finishing the league season as the top-scoring Saudi player with double figures in goals. Quick and direct, he gives the attack a genuine threat from wide and is one of the team's brighter creative sparks."
   },
   {
    "id": 2639,
@@ -199,7 +219,8 @@
    "position": "Attacker",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/2639.png",
-   "club": "Al-Hilal Saudi FC"
+   "club": "Al-Hilal Saudi FC",
+   "note": "A winger whose strong form earned him a January move to Al-Hilal, Mandash has carried that confidence into the national team, scoring in a pre-tournament friendly. At 31 he is a late bloomer enjoying the best spell of his career at just the right time."
   },
   {
    "id": 147812,
@@ -208,7 +229,8 @@
    "position": "Attacker",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/147812.png",
-   "club": "Al-Nassr"
+   "club": "Al-Nassr",
+   "note": "A small, quick winger at Al-Nassr who can also fill in at full-back, Yahya was the standout player when Saudi Arabia's under-23s won the Asian title a few years ago. He gives the squad pace and versatility off the bench or out wide."
   },
   {
    "id": 44324,
@@ -217,7 +239,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/44324.png",
-   "club": "Al-Ahli Jeddah"
+   "club": "Al-Ahli Jeddah",
+   "note": "The Al-Ahli striker leads the line for Saudi Arabia and arrives off the back of a memorable moment: the extra-time winner that retained his club's Asian crown. Tall and capable of dropping into wide areas, he is the team's main reference point up front."
   },
   {
    "id": 44382,
@@ -226,7 +249,8 @@
    "position": "Attacker",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/44382.png",
-   "club": "Al-Hilal Saudi FC"
+   "club": "Al-Hilal Saudi FC",
+   "note": "A striker who has won a stack of titles in the Saudi league, Al Hamdan offers a proven alternative or partner to the first-choice forward. He found the net for the national team in pre-tournament friendlies, useful timing ahead of the World Cup."
   },
   {
    "id": 44551,
@@ -235,7 +259,8 @@
    "position": "Attacker",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/44551.png",
-   "club": "Al-Ittihad FC"
+   "club": "Al-Ittihad FC",
+   "note": "A 32-year-old striker at Al-Ittihad with a long international scoring record, Al Shehri remains a reliable finisher for the national team, recently converting from the spot at the Gold Cup. Experienced and cool in front of goal, he is a valuable option up top."
   },
   {
    "id": 44340,
@@ -244,7 +269,8 @@
    "position": "Attacker",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/44340.png",
-   "club": "Al-Hilal Saudi FC"
+   "club": "Al-Hilal Saudi FC",
+   "note": "The captain, talisman and the man who scored the winner against Argentina in 2022, Al Dawsari is the heartbeat of this team at his third World Cup. At 34 he is the most-capped player in the squad and a two-time Asian Player of the Year, the left winger everyone else plays around."
   }
  ],
  "guardianStarPlayer": "Salem Al-Dawsari",

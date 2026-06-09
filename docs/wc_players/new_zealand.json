@@ -20,7 +20,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/18110.png",
-   "club": "Millwall"
+   "club": "Millwall",
+   "note": "At 32, the Millwall keeper looks set to be New Zealand's number one in goal at the World Cup. He arrived in south London as a backup, then seized the gloves when the first-choice got injured and refused to let go, putting together a long run of starts and clean sheets."
   },
   {
    "id": 94360,
@@ -29,7 +30,8 @@
    "position": "Goalkeeper",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/94360.png",
-   "club": "Lechia Gdansk"
+   "club": "Lechia Gdansk",
+   "note": "A 23-year-old goalkeeper owned by Bournemouth but spending the season on loan in Poland with Lechia Gdansk to get regular games. He is highly rated for his age and pushes Crocombe hard for the starting spot, so the gloves could yet be his."
   },
   {
    "id": 36777,
@@ -38,7 +40,8 @@
    "position": "Goalkeeper",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/36777.png",
-   "club": "Auckland"
+   "club": "Auckland",
+   "note": "The third-choice keeper, here to train and provide cover rather than expecting minutes. He had a fine season at home, keeping a clean sheet as Auckland FC won the A-League title in their second-ever year, so he arrives in form even if the pecking order is against him."
   },
   {
    "id": 430835,
@@ -47,7 +50,8 @@
    "position": "Defender",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/430835.png",
-   "club": "Sheffield Utd"
+   "club": "Sheffield Utd",
+   "note": "At just 20, he is one of the brightest young centre-backs in the squad and a likely starter at the back. He is owned by Premier League Nottingham Forest and spent this season out on loan in the Championship, where he showed he is comfortable defending against grown men and even chipped in with a goal."
   },
   {
    "id": 51149,
@@ -56,7 +60,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/51149.png",
-   "club": "Minnesota United FC"
+   "club": "Minnesota United FC",
+   "note": "The 37-year-old elder statesman of the defence and the captain of Minnesota United, where he is the club's all-time leader in appearances. He scored the goal that clinched New Zealand's World Cup place, so expect a calm, vocal organiser marshalling the younger players around him."
   },
   {
    "id": 6931,
@@ -65,7 +70,8 @@
    "position": "Defender",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/6931.png",
-   "club": "Wrexham"
+   "club": "Wrexham",
+   "note": "An attacking left-back and one of the team's key men, he joined Wrexham last summer for a club-record fee after years in Italy's Serie A. Calf and hamstring trouble wrecked his first season in Wales, so getting fully fit before the tournament is the big question over him."
   },
   {
    "id": 94405,
@@ -74,7 +80,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/94405.png",
-   "club": "Auckland"
+   "club": "Auckland",
+   "note": "A 31-year-old left-back who was one of the standout creators in the A-League this season, racking up assists from the flank for champions Auckland FC. A calf strain picked up on international duty cut his club campaign short, so his fitness and form heading into the tournament are worth watching."
   },
   {
    "id": 6932,
@@ -83,7 +90,8 @@
    "position": "Defender",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/6932.png",
-   "club": "Auckland"
+   "club": "Auckland",
+   "note": "A versatile defender for champions Auckland FC who filled in at right-back, left-back and even midfield this season as injuries piled up. Born in Scotland and raised in New Zealand from age seven, he fought his way back from a spell without a club to reach a World Cup, which makes him a useful squad option rather than a guaranteed starter."
   },
   {
    "id": 94346,
@@ -92,7 +100,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/94346.png",
-   "club": "Wellington Phoenix"
+   "club": "Wellington Phoenix",
+   "note": "An experienced Wellington Phoenix full-back with more than 50 caps who can cover right-back or centre-back, exactly the kind of versatility a coach loves. He briefly went viral online before the tournament as the squad's supposed 'least known' player, and a broken collarbone in October interrupted his season."
   },
   {
    "id": 94344,
@@ -101,7 +110,8 @@
    "position": "Defender",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/94344.png",
-   "club": "Auckland"
+   "club": "Auckland",
+   "note": "A 26-year-old centre-back, born in the Netherlands, who was part of the Auckland FC side that won the A-League title this season. He is comfortable on the ball and has a habit of popping up with dramatic late goals, giving the squad a reliable option in central defence."
   },
   {
    "id": 51307,
@@ -110,7 +120,8 @@
    "position": "Defender",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/51307.png",
-   "club": "Braintree"
+   "club": "Braintree",
+   "note": "At 35, a remarkable story: he started all three games at the 2010 World Cup and spent more than a decade in England's top divisions with Ipswich, yet now plays for Braintree in the fifth tier. His recall makes him perhaps the lowest-division player at the whole tournament, brought in for big-stage experience as squad depth."
   },
   {
    "id": 210165,
@@ -119,7 +130,8 @@
    "position": "Defender",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/210165.png",
-   "club": "Portland Timbers"
+   "club": "Portland Timbers",
+   "note": "A tall, 22-year-old centre-back who broke out for Portland Timbers in Major League Soccer this season, starting most weeks and winning his club's supporters' player of the year. Quick and composed for his size, he is one of the country's most promising young defenders and pushing hard for a starting role."
   },
   {
    "id": 405957,
@@ -128,7 +140,8 @@
    "position": "Midfielder",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/405957.png",
-   "club": "Newcastle Jets"
+   "club": "Newcastle Jets",
+   "note": "A 23-year-old central midfielder who was born and raised in Australia but chose to play for New Zealand, earning his first cap only a few months before the squad was named. A bright A-League season with Newcastle Jets put him on the radar, so he arrives as an exciting, lightly capped newcomer rather than a regular."
   },
   {
    "id": 94541,
@@ -137,7 +150,8 @@
    "position": "Midfielder",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/94541.png",
-   "club": "Viking"
+   "club": "Viking",
+   "note": "A defensive midfielder and one of the engine-room regulars, he just helped Norwegian club Viking win their first league title in 34 years and was named in the division's team of the season. Expect him to sit in front of the back four, break up play and keep things ticking over."
   },
   {
    "id": 180455,
@@ -146,7 +160,8 @@
    "position": "Midfielder",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/180455.png",
-   "club": "Peterborough"
+   "club": "Peterborough",
+   "note": "A 23-year-old midfielder who can play anywhere across the middle, from a holding role to the number ten. He moved to England's League One with Peterborough last summer after a spell in the Dutch top flight and chipped in with goals, though an injury during the season is something to keep an eye on."
   },
   {
    "id": 94322,
@@ -155,7 +170,8 @@
    "position": "Midfielder",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/94322.png",
-   "club": "Silkeborg"
+   "club": "Silkeborg",
+   "note": "Listed here as a midfielder, he is really an attacking left winger and one of the squad's in-form players, scoring double figures in the Danish top flight including a hat-trick away at Copenhagen, and named his club's player of the year. He gives New Zealand a genuine goal threat from wide areas."
   },
   {
    "id": 6934,
@@ -164,7 +180,8 @@
    "position": "Midfielder",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/6934.png",
-   "club": "Wellington Phoenix"
+   "club": "Wellington Phoenix",
+   "note": "A combative midfielder from New Zealand football royalty: his uncle Wynton Rufer was named Oceania's player of the century and his father also played for the national team. He is the longest-serving player and first homegrown captain at Wellington Phoenix, giving the squad a tireless, experienced option in central midfield."
   },
   {
    "id": 6935,
@@ -173,7 +190,8 @@
    "position": "Midfielder",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/6935.png",
-   "club": "TSC Backa Topola"
+   "club": "TSC Backa Topola",
+   "note": "An attacking playmaker who carries the number ten and was once a teenage signing for Bayern Munich, though he never quite cracked their first team. Now at Serbian club TSC, he is of Indian Punjabi heritage and would be a rare and notable presence at a World Cup, bringing creativity if he can find his best form."
   },
   {
    "id": 179862,
@@ -182,7 +200,8 @@
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/179862.png",
-   "club": "Swansea"
+   "club": "Swansea",
+   "note": "A 23-year-old central midfielder and one of the team's key men, he joined Championship side Swansea last summer after time on the books at Nottingham Forest. He has settled into English football well, weighing in with goals and assists, and is expected to be a starter in the middle of the park."
   },
   {
    "id": 242,
@@ -191,7 +210,8 @@
    "position": "Midfielder",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/242.png",
-   "club": "PEC Zwolle"
+   "club": "PEC Zwolle",
+   "note": "An experienced midfielder who has spent most of his career in the Dutch top flight and is now a regular for PEC Zwolle, recently signing a contract extension there. After a long spell away from the national team he forced his way back into the picture, so he brings hard-earned European know-how to the group."
   },
   {
    "id": 94333,
@@ -200,7 +220,8 @@
    "position": "Midfielder",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/94333.png",
-   "club": "Motherwell"
+   "club": "Motherwell",
+   "note": "A winger who had the best season of his career in the Scottish Premiership with Motherwell, scoring regularly and earning a place in the league's team of the year. That form has reportedly drawn interest from bigger clubs, and it makes him a real attacking weapon off either flank for New Zealand."
   },
   {
    "id": 179856,
@@ -209,7 +230,8 @@
    "position": "Midfielder",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/179856.png",
-   "club": "Saint Etienne"
+   "club": "Saint Etienne",
+   "note": "A 23-year-old attacking midfielder who made history as one of the first New Zealanders to play in France's top division with Saint-Etienne. After falling out of favour earlier in the season he battled back into the side and strung together a long run of starts, so he is a player on the rise heading into the tournament."
   },
   {
    "id": 6865,
@@ -218,7 +240,8 @@
    "position": "Attacker",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/6865.png",
-   "club": "Western Sydney Wanderers"
+   "club": "Western Sydney Wanderers",
+   "note": "A 35-year-old winger and the most experienced active player in the A-League, having made more appearances than anyone and won four league titles across his long career. He moved to Western Sydney Wanderers this season and gives the squad a wily, well-travelled attacking option from the bench."
   },
   {
    "id": 158688,
@@ -227,7 +250,8 @@
    "position": "Attacker",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/158688.png",
-   "club": "Auckland"
+   "club": "Auckland",
+   "note": "A 23-year-old forward who enjoyed a breakout season for champions Auckland FC, scoring nine goals and laying on plenty more while starting every game of their title-winning campaign. He has already lined up a move to Scotland and arrives as a young, in-form attacker pushing for minutes."
   },
   {
    "id": 6938,
@@ -236,7 +260,8 @@
    "position": "Attacker",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/6938.png",
-   "club": "Port Vale"
+   "club": "Port Vale",
+   "note": "A 24-year-old striker who finished as joint top scorer for English club Port Vale this season and built a reputation for big cup goals, including a winner against Premier League opposition. He gives New Zealand a hard-working, willing-runner alternative to lead the line behind Chris Wood."
   },
   {
    "id": 18931,
@@ -245,7 +270,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/18931.png",
-   "club": "Nottingham Forest"
+   "club": "Nottingham Forest",
+   "note": "The captain, the talisman and the country's all-time leading appearance maker, this 34-year-old Premier League striker is the man New Zealand will lean on for goals. He missed several months of the season after knee surgery, so how sharp he is after that long lay-off may decide how far the team goes."
   }
  ],
  "guardianStarPlayer": "Chris Wood",

@@ -20,7 +20,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/64190.png",
-   "club": "Rizespor"
+   "club": "Rizespor",
+   "note": "The number one shirt belongs to this Paris-born keeper, who moved to Turkish football in 2025 and was a regular in the Super Lig. He was already trusted in goal during Ivory Coast's title defence, so expect him between the posts here too."
   },
   {
    "id": 277046,
@@ -29,7 +30,8 @@
    "position": "Goalkeeper",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/277046.png",
-   "club": "Charleroi"
+   "club": "Charleroi",
+   "note": "A 23-year-old keeper born in Abidjan who came up through French youth football before settling at his Belgian club. He is the backup here, most likely watching from the bench unless the first choice gets hurt."
   },
   {
    "id": 30393,
@@ -38,7 +40,8 @@
    "position": "Goalkeeper",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/30393.png",
-   "club": "Panathinaikos"
+   "club": "Panathinaikos",
+   "note": "An experienced keeper who spent years in French football before moving to Greece, he only switched his international allegiance to Ivory Coast in late 2025 and kept a clean sheet on debut in a qualifier rout. He adds depth and a calm head to the goalkeeping group."
   },
   {
    "id": 135068,
@@ -47,7 +50,8 @@
    "position": "Defender",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/135068.png",
-   "club": "Wolves"
+   "club": "Wolves",
+   "note": "A 28-year-old centre-back who spent a season in the Premier League's relegation scrap, where he played most games and was rated a solid, no-nonsense defender. The World Cup is part of the same chapter as his first Africa Cup of Nations, so this is a relatively late international bloom for him."
   },
   {
    "id": 354753,
@@ -56,7 +60,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/354753.png",
-   "club": "Sporting CP"
+   "club": "Sporting CP",
+   "note": "At 22 he is already one of the most valuable Ivorian players around, a composed centre-back for the Portuguese champions who recently signed a long contract extension. He started in the 2024 Africa Cup of Nations win and is a likely starter in this defence."
   },
   {
    "id": 161747,
@@ -65,7 +70,8 @@
    "position": "Defender",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/161747.png",
-   "club": "Strasbourg"
+   "club": "Strasbourg",
+   "note": "A French-born right-back who chose Ivory Coast while his younger brother Désiré plays for France, a family split that became headline material when he scored and set up the winner in a warm-up against France in June. Expect an attacking full-back who likes to get forward."
   },
   {
    "id": 22002,
@@ -74,7 +80,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/22002.png",
-   "club": "GIL Vicente"
+   "club": "GIL Vicente",
+   "note": "A well-travelled left-back at 30, with stops in France, Saudi Arabia and Portugal behind him, and a regular starter at his current club. He brings experience and cover down the left rather than a guaranteed starting spot."
   },
   {
    "id": 48119,
@@ -83,7 +90,8 @@
    "position": "Defender",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/48119.png",
-   "club": "Atalanta"
+   "club": "Atalanta",
+   "note": "A quick, athletic centre-back for his Italian club who can also cover at right-back, and a winner of the 2023 Africa Cup of Nations. A hamstring injury late in the club season had put his tournament in some doubt, so his fitness is worth keeping an eye on."
   },
   {
    "id": 1807,
@@ -92,7 +100,8 @@
    "position": "Defender",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/1807.png",
-   "club": "AS Roma"
+   "club": "AS Roma",
+   "note": "A dependable left-sided centre-back for his Italian club who, after collapsing on the pitch with a lung issue in 2024, recovered to play every single minute of the next league season. He is one of the first names on the team sheet at the back."
   },
   {
    "id": 20836,
@@ -101,7 +110,8 @@
    "position": "Defender",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/20836.png",
-   "club": "Ba\u015fak\u015fehir"
+   "club": "Ba\u015fak\u015fehir",
+   "note": "A 28-year-old left-back at his Istanbul club who came into the squad partly through injuries to others, having missed earlier internationals himself. He is squad depth on the left rather than a guaranteed starter."
   },
   {
    "id": 30504,
@@ -110,7 +120,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/30504.png",
-   "club": "Galatasaray"
+   "club": "Galatasaray",
+   "note": "One of the team's standout names, a powerful, pacy defender who moved to his Turkish club in a big-money deal in 2025 and is tracked by several Premier League sides. He can play centre-back but is at his best charging forward from right-back, and should be a key starter."
   },
   {
    "id": 30807,
@@ -119,7 +130,8 @@
    "position": "Midfielder",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/30807.png",
-   "club": "FC Porto"
+   "club": "FC Porto",
+   "note": "A box-to-box midfielder, born in France, who arrived at the Portuguese champions mid-season and quickly became one of their most influential players. At 30 he brings drive and goals from deep, and is a strong bet to start in central midfield."
   },
   {
    "id": 474591,
@@ -128,7 +140,8 @@
    "position": "Midfielder",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/474591.png",
-   "club": "Trabzonspor"
+   "club": "Trabzonspor",
+   "note": "At 19 he is the squad's brightest young midfield prospect, a tempo-setter at his Turkish club who caught the eye at the Africa Cup of Nations and has Premier League clubs circling. One to watch even if he starts the tournament as a rotation option."
   },
   {
    "id": 1642,
@@ -137,7 +150,8 @@
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/1642.png",
-   "club": "Al-Ahli Jeddah"
+   "club": "Al-Ahli Jeddah",
+   "note": "The captain and the spine of this team, a powerful all-action midfielder now playing in Saudi Arabia who passed 100 caps for his country in early 2026. He led the side to the 2023 Africa Cup of Nations title and will set the tone in midfield."
   },
   {
    "id": 22149,
@@ -146,7 +160,8 @@
    "position": "Midfielder",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/22149.png",
-   "club": "Nottingham Forest"
+   "club": "Nottingham Forest",
+   "note": "A tall, ball-winning defensive midfielder in the Premier League who shields the back four and breaks up play. He gives the captain a natural partner in the middle and is one of the team's most reliable starters."
   },
   {
    "id": 3243,
@@ -155,7 +170,8 @@
    "position": "Midfielder",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/3243.png",
-   "club": "Maribor"
+   "club": "Maribor",
+   "note": "At 34 he is the elder statesman of the midfield, a passer who once starred for Nice and Fulham and now plays in Slovenia after recovering from a serious injury. A 2023 Africa Cup of Nations winner, he is here for his experience and calm on the ball rather than to play every minute."
   },
   {
    "id": 263228,
@@ -164,7 +180,8 @@
    "position": "Midfielder",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/263228.png",
-   "club": "Charleroi"
+   "club": "Charleroi",
+   "note": "A small, versatile attacking midfielder and winger who has been chipping in with goals at his Belgian club. At 24 he is squad depth here, a useful option to change a game from the bench rather than a guaranteed starter."
   },
   {
    "id": 387643,
@@ -173,7 +190,8 @@
    "position": "Attacker",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/387643.png",
-   "club": "1899 Hoffenheim"
+   "club": "1899 Hoffenheim",
+   "note": "A 19-year-old winger who came through the famous ASEC Mimosas academy, spent time in Sweden, and has since become one of the most exciting young attackers in the Bundesliga, with several big clubs reportedly interested. Raw and electric, he is one for the future who could get minutes off the bench."
   },
   {
    "id": 301771,
@@ -182,7 +200,8 @@
    "position": "Attacker",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/301771.png",
-   "club": "Monaco"
+   "club": "Monaco",
+   "note": "A direct, tricky winger wearing the number 10, who was man of the match with two assists in the 2024 Africa Cup of Nations final and rediscovered his form on loan in Ligue 1. He is one of the team's main creative threats and a likely starter out wide."
   },
   {
    "id": 275651,
@@ -191,7 +210,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/275651.png",
-   "club": "Inter"
+   "club": "Inter",
+   "note": "A France-born forward who turned down France to commit to Ivory Coast just before the tournament, coming off a strong season helping his Italian club win the league title. Wearing the number 9, he is a fresh option up front who adds real quality to the attack."
   },
   {
    "id": 334429,
@@ -200,7 +220,8 @@
    "position": "Attacker",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/334429.png",
-   "club": "Cercle Brugge"
+   "club": "Cercle Brugge",
+   "note": "A 22-year-old forward who can lead the line or play just behind, on loan in Belgium where he has been among the better goalscorers in the league. A 2024 Africa Cup of Nations winner, he is attacking depth here rather than a nailed-on starter."
   },
   {
    "id": 157997,
@@ -209,7 +230,8 @@
    "position": "Attacker",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/157997.png",
-   "club": "Manchester United"
+   "club": "Manchester United",
+   "note": "One of the team's best-known names, a Premier League winger who scored the winner against France in a June warm-up. His club season was quieter than his breakout the year before, but his energy and eye for a big moment make him a key attacker for Ivory Coast."
   },
   {
    "id": 513776,
@@ -218,7 +240,8 @@
    "position": "Attacker",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/513776.png",
-   "club": "RB Leipzig"
+   "club": "RB Leipzig",
+   "note": "A lightning-quick 19-year-old winger with an unusual path through a US soccer academy and Spain before his Bundesliga club, where he had a hand in 20 goals and was named the league's best newcomer. He carries real pace and big-club interest into his first World Cup."
   },
   {
    "id": 137303,
@@ -227,7 +250,8 @@
    "position": "Attacker",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/137303.png",
-   "club": "Aston Villa"
+   "club": "Aston Villa",
+   "note": "A 24-year-old forward who came through the Nice academy before a big-money move to the Premier League, holding French and Ivorian nationality but committing to Ivory Coast. Strong and mobile up front, he gives the attack another physical, flexible option."
   },
   {
    "id": 3246,
@@ -236,7 +260,8 @@
    "position": "Attacker",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/3246.png",
-   "club": "Villarreal"
+   "club": "Villarreal",
+   "note": "The Guardian's pick as the team's player to watch, a once-record-breaking winger who rebuilt his career in La Liga and even won a league player-of-the-month award this season. Controversially left out of the Africa Cup of Nations, he is back in the fold to add pace and experience to the attack."
   },
   {
    "id": 162707,
@@ -245,7 +270,8 @@
    "position": "Attacker",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/162707.png",
-   "club": "Nice"
+   "club": "Nice",
+   "note": "A 22-year-old centre-forward who switched from France to Ivory Coast only in spring 2026, joining the squad late after staying at his club to help fight off relegation. He is expected to lead the line, a genuine number nine to give the attack a focal point."
   }
  ],
  "guardianStarPlayer": "Nicolas P\u00e9p\u00e9",

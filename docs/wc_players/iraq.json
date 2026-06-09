@@ -10,7 +10,8 @@
    "position": "Goalkeeper",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/197933.png",
-   "club": "Al Shorta"
+   "club": "Al Shorta",
+   "note": "A 29-year-old keeper who has been the last line for Al Shorta during their run of four straight Iraqi titles, so he is used to winning even if international caps came late. He travels to the World Cup as backup behind the captain, the kind of safe pair of hands a squad leans on without fuss."
   },
   {
    "id": 53886,
@@ -19,7 +20,8 @@
    "position": "Goalkeeper",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/53886.png",
-   "club": "Al Zawra'a"
+   "club": "Al Zawra'a",
+   "note": "Iraq's captain and first-choice goalkeeper, the 34-year-old has been the team's reliable presence for most of the past decade and passed 100 international appearances during qualifying. He also captains his club, Al Zawra'a, and is the steady, experienced head this young-ish squad is built around."
   },
   {
    "id": 123802,
@@ -28,7 +30,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/123802.png",
-   "club": "Al Talaba"
+   "club": "Al Talaba",
+   "note": "The third goalkeeper here at 31, though he has real pedigree: he was in goal for Al Quwa Al Jawiya when they became the first Iraqi club to win an Asian competition, and he kept goal for Iraq's bronze-medal U-23 side a decade ago. Wears number 1 but is most likely watching from the bench unless injuries strike."
   },
   {
    "id": 145465,
@@ -37,7 +40,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/145465.png",
-   "club": "Pogon Szczecin"
+   "club": "Pogon Szczecin",
+   "note": "A full-back born in Malmo to Iraqi roots, one of the squad's growing band of European-raised players who chose to represent Iraq. He moved to Poland's Pogon Szczecin in late 2025 and brings the kind of overlapping energy down the flank that suits a team happy to spring forward on the counter."
   },
   {
    "id": 271444,
@@ -46,7 +50,8 @@
    "position": "Defender",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/271444.png",
-   "club": "Plzen"
+   "club": "Plzen",
+   "note": "A left-sided defender born in Germany to Iraqi Kurdish parents, he plays his club football for Plzen in the Czech top flight, a step up in level from much of the squad. He marked his arrival in style by scoring on one of his first appearances for Iraq, in a friendly against Spain just before the tournament."
   },
   {
    "id": 15769,
@@ -55,7 +60,8 @@
    "position": "Defender",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/15769.png",
-   "club": "Persib Bandung"
+   "club": "Persib Bandung",
+   "note": "The squad's well-travelled centre-back, born in Denmark to an Assyrian-Iraqi family and a fixture in Iraq defences since the 2019 Asian Cup. After years in Scandinavia and Thailand he now plays in Indonesia for Persib Bandung, and at 32 he is the kind of calm, organising head a back line wants alongside its quicker, younger options."
   },
   {
    "id": 427187,
@@ -64,7 +70,8 @@
    "position": "Defender",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/427187.png",
-   "club": "Al Shorta"
+   "club": "Al Shorta",
+   "note": "A 24-year-old right-back at perennial champions Al Shorta who came up through Iraq's youth ranks, where he once scored a decisive goal at the U-23 Asian Cup. Squad depth on the flank for this World Cup, with his best years likely still ahead of him."
   },
   {
    "id": 42261,
@@ -73,7 +80,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/42261.png",
-   "club": "Port FC"
+   "club": "Port FC",
+   "note": "At 33 the elder statesman of the back line, a centre-back of Swedish-Iraqi background who started out in Swedish football and now plays in Thailand for Port FC. He offers experience and aerial steel as cover, the senior option a manager turns to when a game needs locking down."
   },
   {
    "id": 296373,
@@ -82,7 +90,8 @@
    "position": "Defender",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/296373.png",
-   "club": "Pakhtakor"
+   "club": "Pakhtakor",
+   "note": "A 24-year-old centre-back who earned a 2025 move to Uzbek heavyweights Pakhtakor after captaining Iraq's youth sides. He is one of the defenders pushing for game time rather than a guaranteed starter, part of a generation Iraq hope will anchor the team for years."
   },
   {
    "id": 542849,
@@ -91,7 +100,8 @@
    "position": "Defender",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/542849.png",
-   "club": "Al Shorta"
+   "club": "Al Shorta",
+   "note": "A tall left-back from Basra who has won back-to-back league titles with Al Shorta and become a regular in the national setup. At 30 he is in his prime and offers a dependable, locally-grown option down the left, the sort of player who quietly does the defensive job without drawing attention."
   },
   {
    "id": 295394,
@@ -100,7 +110,8 @@
    "position": "Defender",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/295394.png",
-   "club": "Al Shorta"
+   "club": "Al Shorta",
+   "note": "A centre-back for champions Al Shorta who is remembered fondly by Iraq fans for heading home the winner deep into extra time in the 2023 Gulf Cup final against Oman. At 29 he is an experienced, no-nonsense defender competing for a spot at the heart of the back four."
   },
   {
    "id": 453073,
@@ -109,7 +120,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/453073.png",
-   "club": "Al Zawra'a"
+   "club": "Al Zawra'a",
+   "note": "An Erbil-raised centre-back, now at Al Zawra'a, who broke into the national team during the 2023 Asian Cup and has become one of Iraq's more highly rated defenders over the past couple of seasons. Comfortable enough on the ball to step into midfield, he is firmly in the mix to start at 27."
   },
   {
    "id": 47792,
@@ -118,7 +130,8 @@
    "position": "Midfielder",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/47792.png",
-   "club": "Cracovia Krakow"
+   "club": "Cracovia Krakow",
+   "note": "A key midfielder for both club and country, born in Sweden to an Iraqi father and Palestinian mother before switching his international allegiance. At 28 he plays regularly in Poland's top flight for Cracovia and provides the engine and composure in the centre that lets Iraq's flashier attackers take risks ahead of him."
   },
   {
    "id": 282065,
@@ -127,7 +140,8 @@
    "position": "Midfielder",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/282065.png",
-   "club": "AEK Larnaca"
+   "club": "AEK Larnaca",
+   "note": "A 22-year-old winger raised in Germany, where he came through the Borussia Dortmund youth setup before his path took him via Saudi Arabia to Cyprus and AEK Larnaca. He scored on his Iraq debut as a teenager and gives the attack a direct, dribbling option off the bench or out wide."
   },
   {
    "id": 140747,
@@ -136,7 +150,8 @@
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/140747.png",
-   "club": "Al Riyadh"
+   "club": "Al Riyadh",
+   "note": "An attacking midfielder and playmaker who plays his club football in Saudi Arabia for Al Riyadh, and one of Iraq's genuine creative hubs. He was named the standout player of the 2023 Gulf Cup, which Iraq won, so when the team needs someone to unlock a defence he is often the answer."
   },
   {
    "id": 284295,
@@ -145,7 +160,8 @@
    "position": "Midfielder",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/284295.png",
-   "club": "Jong Utrecht"
+   "club": "Jong Utrecht",
+   "note": "The Manchester-born midfielder who came through Manchester United's academy and became the first British-born South Asian to play in the Champions League before leaving to find regular football in the Netherlands. Son of a Pakistani father and Iraqi mother, the 22-year-old chose Iraq, and his passing range makes him one of the squad's most watchable players."
   },
   {
    "id": 626479,
@@ -154,7 +170,8 @@
    "position": "Midfielder",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/626479.png",
-   "club": "Al Talaba"
+   "club": "Al Talaba",
+   "note": "A 23-year-old who plays his football at home in Iraq for Al Talaba and is one of the less-heralded names in the squad. He is here as midfield depth, a domestic-based player given the chance to learn on the biggest stage rather than someone expected to start."
   },
   {
    "id": 48129,
@@ -163,7 +180,8 @@
    "position": "Midfielder",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/48129.png",
-   "club": "Sarpsborg 08 FF"
+   "club": "Sarpsborg 08 FF",
+   "note": "A central midfielder born in Kirkuk but raised in Sweden, where he came through Hammarby and even played youth international football before formally becoming an Iraq player in 2025. Now at Norway's Sarpsborg, the 23-year-old is one of Arnold's newer recruits to the diaspora project, adding legs and bite in the middle."
   },
   {
    "id": 48025,
@@ -172,7 +190,8 @@
    "position": "Midfielder",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/48025.png",
-   "club": "Aarhus"
+   "club": "Aarhus",
+   "note": "A midfielder born in Gothenburg to an Assyrian family with roots in Basra, he has just enjoyed the season of his life: in May 2026 his Aarhus side won the Danish league for the first time in 40 years, with Yakob scoring in the title-clinching match. He arrives at the World Cup full of confidence at 25."
   },
   {
    "id": 542644,
@@ -181,7 +200,8 @@
    "position": "Attacker",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/542644.png",
-   "club": "Al Najma"
+   "club": "Al Najma",
+   "note": "At 21, one of Asia's brightest attacking prospects, a left winger who earned a move to Serie A side Como before being loaned out, currently with Al Najma in Saudi Arabia to get regular minutes. Quick and fearless in one-on-ones, he is exactly the kind of young talent a World Cup can turn into a star."
   },
   {
    "id": 299813,
@@ -190,7 +210,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/299813.png",
-   "club": "Luton"
+   "club": "Luton",
+   "note": "A 23-year-old striker who built his reputation in England's lower leagues with a prolific spell at AFC Wimbledon, then earned a move up the ladder. His 2025-26 loan at Luton was badly disrupted by injury, but at his sharpest he is a mobile front man and one of Iraq's most promising attacking options."
   },
   {
    "id": 265448,
@@ -199,7 +220,8 @@
    "position": "Attacker",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/265448.png",
-   "club": "Stromsgodset"
+   "club": "Stromsgodset",
+   "note": "A 21-year-old winger born in Norway to Kurdish parents, who lit up the Norwegian league with nine goals and earned a move to Italian football, where his old club had just won promotion. Direct and dangerous from the left, he is one of the exciting young attackers giving this Iraq side a different, faster edge."
   },
   {
    "id": 49451,
@@ -208,7 +230,8 @@
    "position": "Attacker",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/49451.png",
-   "club": "Al Karma"
+   "club": "Al Karma",
+   "note": "The Guardian's pick as Iraq's player to watch, and the man whose goal against Bolivia sent Iraq to their first World Cup since 1986. A powerful penalty-box striker nicknamed the Hatchet Man, he is one of the country's leading all-time scorers and the focal point of the attack at 29."
   },
   {
    "id": 542697,
@@ -217,7 +240,8 @@
    "position": "Attacker",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/542697.png",
-   "club": "Dibba Al Fujairah"
+   "club": "Dibba Al Fujairah",
+   "note": "Known simply as Meme, this Baghdad-born centre-forward wears the number 10 and was once tipped as the great hope of Iraqi attack after breaking through as a teenager. Now 25 and playing in the UAE for Dibba Al Fujairah, he offers a different striking profile to Hussein up top."
   },
   {
    "id": 229112,
@@ -226,7 +250,8 @@
    "position": "Attacker",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/229112.png",
-   "club": "Nashville SC"
+   "club": "Nashville SC",
+   "note": "A 22-year-old left winger born in Sweden who switched from the Swedish youth setup to Iraq just before the tournament. He plays in MLS for Nashville, where he helped win the club's first trophy in 2025, and gives Iraq pace and creativity on the wing in front of what will be a sympathetic American crowd."
   },
   {
    "id": 542842,
@@ -235,7 +260,8 @@
    "position": "Attacker",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/542842.png",
-   "club": "Al Talaba"
+   "club": "Al Talaba",
+   "note": "A 29-year-old forward playing at home for Al Talaba, where he chips in with goals as one of the side's attacking options. He is squad depth here rather than a frontline starter, a domestically based forward offering Arnold a different look late in games."
   }
  ],
  "manager": "Graham Arnold",

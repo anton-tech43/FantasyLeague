@@ -3,11 +3,11 @@
  "displayName": "Sweden",
  "source": "api_football_squad + api-football /players club enrichment (season 2025)",
  "manager": "Graham Potter",
- "captain": "V. Lindel\u00f6f",
+ "captain": "V. Lindelöf",
  "keyPlayers": [
-  "V. Lindel\u00f6f",
+  "V. Lindelöf",
   "A. Isak",
-  "V. Gy\u00f6keres",
+  "V. Gyökeres",
   "A. Elanga",
   "L. Bergvall",
   "I. Hien"
@@ -20,7 +20,8 @@
    "position": "Goalkeeper",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/158700.png",
-   "club": "Stoke City"
+   "club": "Stoke City",
+   "note": "A goalkeeper who was Stoke City's near ever-present in the Championship until he dislocated his shoulder in late December, and was statistically among the division's best shot-stoppers before the injury. He is one of three keepers Potter brought, all jostling for a starting role that isn't nailed down."
   },
   {
    "id": 2851,
@@ -29,16 +30,18 @@
    "position": "Goalkeeper",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/2851.png",
-   "club": "AIK Stockholm"
+   "club": "AIK Stockholm",
+   "note": "At 36, the elder statesman of the squad and the most experienced keeper here, now back home with AIK in the Swedish top flight. After years on the international fringes he started both nervy playoff matches that sent Sweden to the World Cup, so don't be surprised to see him between the posts."
   },
   {
    "id": 48033,
-   "name": "J. Widell Zetterstr\u00f6m",
+   "name": "J. Widell Zetterström",
    "age": 27,
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/48033.png",
-   "club": "Derby"
+   "club": "Derby",
+   "note": "A towering keeper, around 6ft 6in, who has been Derby County's first choice in the Championship and even picked up a monthly player-of-the-month nomination this season. He wears the number 1 shirt here, but the keeper pecking order is genuinely open."
   },
   {
    "id": 47903,
@@ -47,7 +50,8 @@
    "position": "Defender",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/47903.png",
-   "club": "Burnley"
+   "club": "Burnley",
+   "note": "A centre-back on Burnley's books who spent part of the past season out on loan in the Netherlands to get regular minutes. He is squad depth in a defence built around Lindelof and Hien, the kind of steady senior option Potter can call on if injuries bite."
   },
   {
    "id": 47969,
@@ -56,7 +60,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/47969.png",
-   "club": "Leeds"
+   "club": "Leeds",
+   "note": "Sweden's first-choice left-back, who featured in every qualifying match and had a solid debut Premier League season after joining Leeds from Lille. Energetic going forward, he chipped in his first goal and assist for Leeds in an FA Cup run this spring."
   },
   {
    "id": 137976,
@@ -65,7 +70,8 @@
    "position": "Defender",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/137976.png",
-   "club": "Atalanta"
+   "club": "Atalanta",
+   "note": "A quick, composed centre-back at Italy's Atalanta and one of the pillars of Sweden's defence, likely starting in a back three. He has Champions League experience at club level, though a thigh injury did keep him out of the decisive playoff against Poland."
   },
   {
    "id": 137721,
@@ -74,16 +80,18 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/137721.png",
-   "club": "SC Braga"
+   "club": "SC Braga",
+   "note": "A central defender who rebuilt his career in Portugal with Braga after a stop-start spell at Celtic, and has chipped in with goals from the back. He scored in the playoff final win over Poland, so he arrives knowing he can produce on the big night."
   },
   {
    "id": 889,
-   "name": "V. Lindel\u00f6f",
+   "name": "V. Lindelöf",
    "age": 31,
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/889.png",
-   "club": "Aston Villa"
+   "club": "Aston Villa",
+   "note": "Sweden's captain and most-capped player, a calm, reliable centre-back who spent eight years at Manchester United before moving to Aston Villa. He is the anchor of the defence and the leader Potter leans on, with well over 70 international appearances behind him."
   },
   {
    "id": 47988,
@@ -92,7 +100,8 @@
    "position": "Defender",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/47988.png",
-   "club": "Celta Vigo"
+   "club": "Celta Vigo",
+   "note": "A no-nonsense centre-back playing regularly for Celta Vigo in Spain, with a season's worth of La Liga and European minutes in his legs. He is firmly in the mix to start alongside Lindelof and Hien if Potter goes with a back three."
   },
   {
    "id": 161504,
@@ -101,7 +110,8 @@
    "position": "Defender",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/161504.png",
-   "club": "Mjallby AIF"
+   "club": "Mjallby AIF",
+   "note": "An attacking full-back who was part of the Mjallby side that pulled off a fairy tale, winning the club's first ever Swedish league title. That breakthrough campaign earned him a national-team call-up; here he is squad depth on the flank rather than a guaranteed starter."
   },
   {
    "id": 8486,
@@ -110,7 +120,8 @@
    "position": "Defender",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/8486.png",
-   "club": "FC St. Pauli"
+   "club": "FC St. Pauli",
+   "note": "A versatile defender who can also sit in front of the back line as a holding midfielder, playing his club football for St. Pauli in Germany's top flight. He is a relatively new face for Sweden, providing experienced cover across the spine of the team."
   },
   {
    "id": 226765,
@@ -119,7 +130,8 @@
    "position": "Defender",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/226765.png",
-   "club": "Mjallby AIF"
+   "club": "Mjallby AIF",
+   "note": "A left-sided defender who was named the Swedish league's defender of the year as little Mjallby stunned everyone to win the title. The recognition fast-tracked his first call-ups; this is a big leap up in level, and he is here mainly to add depth and learn."
   },
   {
    "id": 198654,
@@ -128,7 +140,8 @@
    "position": "Defender",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/198654.png",
-   "club": "Borussia Dortmund"
+   "club": "Borussia Dortmund",
+   "note": "A young left-back who earned a permanent move to Borussia Dortmund after impressing on loan, and he has racked up real Bundesliga minutes this season. Comfortable pushing forward, he gives Sweden a genuine alternative option down the left."
   },
   {
    "id": 47696,
@@ -137,7 +150,8 @@
    "position": "Defender",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/47696.png",
-   "club": "Holstein Kiel"
+   "club": "Holstein Kiel",
+   "note": "An attack-minded wide player by trade, now at Holstein Kiel in Germany after coming through with Elfsborg. He is a squad option who offers something different on the flank, more about energy and forward runs than defensive solidity."
   },
   {
    "id": 265820,
@@ -146,7 +160,8 @@
    "position": "Midfielder",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/265820.png",
-   "club": "Brighton"
+   "club": "Brighton",
+   "note": "A young, ball-winning central midfielder who broke through at Brighton with a full Premier League season under his belt. Combative and tidy in possession, he is part of a new generation Sweden is building its midfield around for the years ahead."
   },
   {
    "id": 347316,
@@ -155,7 +170,8 @@
    "position": "Midfielder",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/347316.png",
-   "club": "Tottenham"
+   "club": "Tottenham",
+   "note": "One of the brightest young midfielders in Europe and the baby of the squad, already a regular for Tottenham despite his age. He featured in both playoff wins that sent Sweden to the finals, and a tournament like this is the perfect stage for his graceful, press-resistant passing."
   },
   {
    "id": 48002,
@@ -164,16 +180,18 @@
    "position": "Midfielder",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/48002.png",
-   "club": "Celtic"
+   "club": "Celtic",
+   "note": "An attacking midfielder who had a standout season at Celtic, scoring freely in Scotland and chipping in goals and assists in Europe. He set up two of Sweden's goals on the road to qualification and arrives as one of the squad's in-form creators."
   },
   {
    "id": 48047,
-   "name": "J. Karlstr\u00f6m",
+   "name": "J. Karlström",
    "age": 30,
    "position": "Midfielder",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/48047.png",
-   "club": "Udinese"
+   "club": "Udinese",
+   "note": "A holding midfielder who captains Italian side Udinese, the kind of disciplined screen who lets the flair players ahead of him take risks. A serial winner of domestic trophies earlier in his career, he brings calm and structure to the centre of the pitch."
   },
   {
    "id": 2860,
@@ -182,7 +200,8 @@
    "position": "Midfielder",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/2860.png",
-   "club": "Pafos"
+   "club": "Pafos",
+   "note": "A hard-running left winger who can also drop in at wing-back, now plying his trade in Cyprus after a long stint at Watford. He won a league title with Pafos and played a part in their first Champions League win, and he even bagged a hat-trick in a Sweden friendly last summer."
   },
   {
    "id": 30484,
@@ -191,7 +210,8 @@
    "position": "Midfielder",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/30484.png",
-   "club": "VfL Wolfsburg"
+   "club": "VfL Wolfsburg",
+   "note": "A box-to-box midfielder who has been a regular for Wolfsburg in the Bundesliga and has chipped in with goals this season. Experienced and well-rounded, he offers Potter a dependable senior option in the engine room."
   },
   {
    "id": 350850,
@@ -200,7 +220,8 @@
    "position": "Midfielder",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/350850.png",
-   "club": "IF Elfsborg"
+   "club": "IF Elfsborg",
+   "note": "A young midfielder who broke through with Elfsborg, including European nights, before earning a move abroad in early 2026. He only switched his international allegiance to Sweden recently, so the World Cup is a rapid rise; expect him as squad depth here."
   },
   {
    "id": 160925,
@@ -209,7 +230,8 @@
    "position": "Attacker",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/160925.png",
-   "club": "Malmo FF"
+   "club": "Malmo FF",
+   "note": "A quick, tricky left winger known for his close control and dribbling, the standout creative force at Swedish champions Malmo. A late bloomer at international level, he is one of the squad's more unpredictable attacking options off the bench."
   },
   {
    "id": 153430,
@@ -218,16 +240,18 @@
    "position": "Attacker",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/153430.png",
-   "club": "Newcastle"
+   "club": "Newcastle",
+   "note": "A blisteringly fast right winger who earned a big-money move to Newcastle, the player Sweden look to for running in behind and stretching defences. His debut Premier League season was light on goals but heavy on threat, and his pace makes him a constant counter-attacking weapon."
   },
   {
    "id": 18979,
-   "name": "V. Gy\u00f6keres",
+   "name": "V. Gyökeres",
    "age": 27,
    "position": "Attacker",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/18979.png",
-   "club": "Arsenal"
+   "club": "Arsenal",
+   "note": "A powerful, relentless centre-forward who racked up astonishing numbers at Sporting before joining Arsenal and topping 20 goals in his debut league season. He was Sweden's playoff hero, scoring four times across the two ties including a hat-trick, and arrives as one of the tournament's most feared finishers."
   },
   {
    "id": 2864,
@@ -236,7 +260,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/2864.png",
-   "club": "Liverpool"
+   "club": "Liverpool",
+   "note": "Sweden's marquee striker and The Guardian's pick as their star player, an elegant, lethal finisher who joined Liverpool in a British-record deal. The puzzle for Potter is how to fit Isak and Gyokeres in the same team; together they give Sweden as fearsome a forward line as anyone at the World Cup."
   },
   {
    "id": 15683,
@@ -245,7 +270,8 @@
    "position": "Attacker",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/15683.png",
-   "club": "Club Brugge KV"
+   "club": "Club Brugge KV",
+   "note": "A tall, old-school target man at Club Brugge, standing nearly 1.96m and a real menace in the air. With Isak and Gyokeres ahead of him, he is a different kind of option off the bench, the man to throw on when Sweden need a focal point and crosses into the box."
   }
  ],
  "guardianStarPlayer": "Alexander Isak",

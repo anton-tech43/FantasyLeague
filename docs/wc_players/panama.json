@@ -20,7 +20,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/2967.png",
-   "club": "Club Nacional"
+   "club": "Club Nacional",
+   "note": "Panama's first-choice goalkeeper and, at 34, one of the calmer heads in the squad. He has spent the last couple of years at Uruguayan club Nacional, and he is the man expected to stand between the posts when Panama plays only its second World Cup."
   },
   {
    "id": 2968,
@@ -29,7 +30,8 @@
    "position": "Goalkeeper",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/2968.png",
-   "club": "Al-Fayha"
+   "club": "Al-Fayha",
+   "note": "A tall, 31-year-old goalkeeper who gets regular minutes in the Saudi Pro League with Al-Fayha. He is the experienced backup behind Mejía, the kind of keeper a manager trusts to step in without the team missing a beat."
   },
   {
    "id": 57861,
@@ -38,7 +40,8 @@
    "position": "Goalkeeper",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/57861.png",
-   "club": "CD Marathon"
+   "club": "CD Marathon",
+   "note": "The third goalkeeper, who plays his club football in Honduras with Marathón and was once named the standout player as he won the Panamanian league with CAI. He is unlikely to play here, but he gives the keeper group an extra body who knows how to win things."
   },
   {
    "id": 7197,
@@ -47,7 +50,8 @@
    "position": "Defender",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/7197.png",
-   "club": "Lask Linz"
+   "club": "Lask Linz",
+   "note": "A 27-year-old centre-back who has become a fixture, and vice-captain, at Austrian club LASK. He is one of the more reliable defenders in this squad and someone Panama will lean on to organise the back line."
   },
   {
    "id": 2975,
@@ -56,7 +60,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/2975.png",
-   "club": "Slovan Bratislava"
+   "club": "Slovan Bratislava",
+   "note": "An attack-minded right-back at Slovakia's Slovan Bratislava, where he has chipped in with goals and a healthy pile of assists this season. At 27 he offers Panama overlapping width down the right, the sort of full-back who likes getting forward as much as defending."
   },
   {
    "id": 57739,
@@ -65,7 +70,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/57739.png",
-   "club": "Norwich"
+   "club": "Norwich",
+   "note": "At 24, Panama's most valuable defender and a central pillar of the back line. A composed, left-footed centre-back, he moved to England's Norwich in 2024 and is comfortable bringing the ball out from the back; expect him to start every game."
   },
   {
    "id": 2970,
@@ -74,7 +80,8 @@
    "position": "Defender",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/2970.png",
-   "club": "Vila Nova"
+   "club": "Vila Nova",
+   "note": "A 34-year-old left-back and one of the squad's elder statesmen, who captained Panama through their run at the 2024 Copa América. He has played all over the place from Slovakia to MLS to Brazil, and his value here is as much about leadership as defending."
   },
   {
    "id": 2971,
@@ -83,7 +90,8 @@
    "position": "Defender",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/2971.png",
-   "club": "Deportivo Saprissa"
+   "club": "Deportivo Saprissa",
+   "note": "A 30-year-old centre-back at Costa Rican giants Saprissa and a dangerous header of the ball, including one in qualifying that helped push Panama through. He made the Gold Cup Best XI in 2023, so he is a defender who shows up in the big moments."
   },
   {
    "id": 328148,
@@ -92,7 +100,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/328148.png",
-   "club": "Nizhny Novgorod"
+   "club": "Nizhny Novgorod",
+   "note": "A towering 24-year-old defender who moved to Russia's Nizhny Novgorod in 2025 and has been getting steady minutes there. He is one of the younger options at the back, around to add height and develop into a longer-term starter."
   },
   {
    "id": 57803,
@@ -101,7 +110,8 @@
    "position": "Defender",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/57803.png",
-   "club": "Deportivo La Guaira"
+   "club": "Deportivo La Guaira",
+   "note": "A 27-year-old left-back who has built his career in Venezuela with Deportivo La Guaira and broke into the national team during qualifying. He is one of two players the Venezuelan league sent to this squad, useful cover and competition down the left."
   },
   {
    "id": 71230,
@@ -110,7 +120,8 @@
    "position": "Defender",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/71230.png",
-   "club": "Minnesota United FC"
+   "club": "Minnesota United FC",
+   "note": "A 25-year-old who can fill in across defence and midfield, which makes him a handy utility option. He has become a regular at MLS side Minnesota United and was part of Panama's run to the 2025 Nations League final."
   },
   {
    "id": 81659,
@@ -119,7 +130,8 @@
    "position": "Defender",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/81659.png",
-   "club": "Turan Tovuz"
+   "club": "Turan Tovuz",
+   "note": "A well-travelled 33-year-old centre-back whose career has taken him from Iraq to Kazakhstan to Portugal and now Azerbaijan's Turan Tovuz. He is squad depth at the back, the experienced spare option a tournament squad always needs."
   },
   {
    "id": 2973,
@@ -128,7 +140,8 @@
    "position": "Defender",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/2973.png",
-   "club": "Marseille"
+   "club": "Marseille",
+   "note": "Panama's marquee name and the Guardian's pick as their player to watch, a 29-year-old right-back playing his club football at France's Marseille. Quick, aggressive and good going forward, he is the most recognisable face in the team and a near-certain starter."
   },
   {
    "id": 57667,
@@ -137,7 +150,8 @@
    "position": "Defender",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/57667.png",
-   "club": "Independiente de La Chorrera"
+   "club": "Independiente de La Chorrera",
+   "note": "A 28-year-old centre-back known for his strength and aerial presence, who has played across South America before this spell at home club Independiente de La Chorrera. He is depth in central defence, a reliable body to rotate in."
   },
   {
    "id": 57807,
@@ -146,7 +160,8 @@
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/57807.png",
-   "club": "U.N.A.M. - Pumas"
+   "club": "U.N.A.M. - Pumas",
+   "note": "Panama's creative engine in midfield, a 27-year-old playmaker at Mexico's Pumas who dictates the team's tempo. He picked up an injury in the Liga MX final shortly before the tournament, so his fitness is something to keep an eye on, because Panama is a different side with him pulling the strings."
   },
   {
    "id": 2977,
@@ -155,7 +170,8 @@
    "position": "Midfielder",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/2977.png",
-   "club": "San Diego"
+   "club": "San Diego",
+   "note": "The captain and the most-capped player in Panama's history, with more than 150 appearances since 2010. At 35 he is a defensive midfielder who screens the back four, now plying his trade at MLS newcomers San Diego FC and leading a team chasing a first-ever World Cup win."
   },
   {
    "id": 554208,
@@ -164,7 +180,8 @@
    "position": "Midfielder",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/554208.png",
-   "club": "Ironi Kiryat Shmona"
+   "club": "Ironi Kiryat Shmona",
+   "note": "A 28-year-old defensive midfielder who moved to Israel's Ironi Kiryat Shmona in 2025 and has weighed in with a few goals from deep. He gives the manager a sturdier, more defensive option in the centre of the park."
   },
   {
    "id": 2979,
@@ -173,7 +190,8 @@
    "position": "Midfielder",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/2979.png",
-   "club": "FC Juarez"
+   "club": "FC Juarez",
+   "note": "A 27-year-old left winger nicknamed 'El Puma', a direct, left-footed dribbler now at Mexico's FC Juárez after a spell in Serbia. He gives Panama pace and a one-on-one threat out wide, the kind of player who can change a game off the bench or from the start."
   },
   {
    "id": 46855,
@@ -182,7 +200,8 @@
    "position": "Midfielder",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/46855.png",
-   "club": "Mazatl\u00e1n"
+   "club": "Mazatl\u00e1n",
+   "note": "A 32-year-old winger at Mexico's Mazatl\u00e1n with more than 100 caps for Panama, prized for his speed and dribbling down the flanks. He tore a knee ligament in early 2025, so this tournament is a reward for fighting his way back to fitness."
   },
   {
    "id": 96615,
@@ -191,7 +210,8 @@
    "position": "Midfielder",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/96615.png",
-   "club": "Leon"
+   "club": "Leon",
+   "note": "Panama's main attacking spark, a 28-year-old who hits double figures for goals and assists at Mexico's León. He wears the number 10 and operates as a winger or second striker; if Panama is going to score at this World Cup, he is likely to be involved."
   },
   {
    "id": 2978,
@@ -200,7 +220,8 @@
    "position": "Midfielder",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/2978.png",
-   "club": "Plaza Amador"
+   "club": "Plaza Amador",
+   "note": "At 38 the oldest player in the squad and the owner of its best story: a veteran winger who was named for the 2018 World Cup but lost his place to injury before a ball was kicked. Now at home club Plaza Amador, he finally gets the tournament that was taken from him."
   },
   {
    "id": 57875,
@@ -209,7 +230,8 @@
    "position": "Midfielder",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/57875.png",
-   "club": "Cobresal"
+   "club": "Cobresal",
+   "note": "A 29-year-old central midfielder who moved to Chile's Cobresal and earned a contract renewal there. With more than 50 caps to his name, he is a squad option in the engine room rather than a guaranteed starter."
   },
   {
    "id": 2983,
@@ -218,7 +240,8 @@
    "position": "Attacker",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/2983.png",
-   "club": "Universidad Catolica"
+   "club": "Universidad Catolica",
+   "note": "A 32-year-old centre-forward who scored at a steady clip for Universidad Católica through 2025. As one of the squad's recognised goalscorers, he is in the mix to lead the line and give Panama a genuine focal point up top."
   },
   {
    "id": 292396,
@@ -227,7 +250,8 @@
    "position": "Attacker",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/292396.png",
-   "club": "Universidad Catolica"
+   "club": "Universidad Catolica",
+   "note": "At 24, one of the youngest forwards in the squad, on loan at Universidad Católica where he got a full season of senior minutes. He is a project striker here to gain experience, more likely to feature from the bench than start."
   },
   {
    "id": 57910,
@@ -236,7 +260,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/57910.png",
-   "club": "Monagas SC"
+   "club": "Monagas SC",
+   "note": "A 26-year-old forward who had a breakout 2025, becoming the first Panamanian to score in each of his first three Gold Cup appearances and piling up goals for Venezuela's Monagas. He is in-form depth up front, the kind of impact option a manager likes to have ready."
   },
   {
    "id": 51648,
@@ -245,7 +270,8 @@
    "position": "Attacker",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/51648.png",
-   "club": "Coquimbo Unido"
+   "club": "Coquimbo Unido",
+   "note": "The 34-year-old striker who wrote himself into Panamanian folklore with a late winner against the United States that sent the country to its first Nations League final. He won a Chilean league title with Coquimbo Unido in 2025, so he arrives a proven big-moment finisher."
   }
  ],
  "guardianStarPlayer": "Michael Murillo",

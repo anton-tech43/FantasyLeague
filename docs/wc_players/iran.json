@@ -19,7 +19,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/2682.png",
-   "club": "Tractor Sazi"
+   "club": "Tractor Sazi",
+   "note": "Iran's long-serving number one and the man who saved a Cristiano Ronaldo penalty at the 2018 World Cup. Now 33 and playing at home with Tractor, he heads to his third finals as the experienced safe pair of hands behind this defence."
   },
   {
    "id": 29755,
@@ -28,7 +29,8 @@
    "position": "Goalkeeper",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/29755.png",
-   "club": "Sepahan FC"
+   "club": "Sepahan FC",
+   "note": "A 33-year-old keeper who left Esteghlal for Sepahan in 2025, he comes to the tournament as the backup option behind Beiranvand. Reliable domestic form keeps him in the picture if the first-choice gloves ever falter."
   },
   {
    "id": 2681,
@@ -37,7 +39,8 @@
    "position": "Goalkeeper",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/2681.png",
-   "club": "Persepolis FC"
+   "club": "Persepolis FC",
+   "note": "The Persepolis goalkeeper who once set an Iranian record by going 940 minutes without conceding. At 30 he is the third keeper in this squad, here to push the senior pair in training rather than expecting to start."
   },
   {
    "id": 532950,
@@ -46,7 +49,8 @@
    "position": "Defender",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/532950.png",
-   "club": "Malavan FC"
+   "club": "Malavan FC",
+   "note": "At 21 the youngest defender in the squad, he came up through Iran's youth sides and earned this call-up with steady form on loan at Malavan. He is the bright young option in a back line otherwise stacked with veterans."
   },
   {
    "id": 2691,
@@ -55,7 +59,8 @@
    "position": "Defender",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/2691.png",
-   "club": "Esteghlal FC"
+   "club": "Esteghlal FC",
+   "note": "A 35-year-old right-back who attacks like a winger, with an unusually heavy goal tally for a defender. A veteran of the 2018 and 2022 finals, his deliveries from the right give Iran a direct outlet going forward."
   },
   {
    "id": 2685,
@@ -64,7 +69,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/2685.png",
-   "club": "Sepahan FC"
+   "club": "Sepahan FC",
+   "note": "Iran's most experienced World Cup player and a former captain, heading to a fourth finals at 35. A left-sided defender who can also fill in across midfield, he is the calm elder statesman of this group."
   },
   {
    "id": 136880,
@@ -73,7 +79,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/136880.png",
-   "club": "Esteghlal FC"
+   "club": "Esteghlal FC",
+   "note": "A 27-year-old right-back at Esteghlal who is the younger challenger to Rezaeian on that flank. He has been in and out of the recent national side, so expect him as cover and competition rather than a guaranteed starter."
   },
   {
    "id": 2687,
@@ -82,7 +89,8 @@
    "position": "Defender",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/2687.png",
-   "club": "Persepolis FC"
+   "club": "Persepolis FC",
+   "note": "A tall, physical Persepolis centre-back, full name Kanaanizadegan, who anchored Iran's defence at two Asian Cup semi-finals. At 31 he brings height and aerial dominance to the heart of the back line."
   },
   {
    "id": 29704,
@@ -91,7 +99,8 @@
    "position": "Defender",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/29704.png",
-   "club": "Tractor Sazi"
+   "club": "Tractor Sazi",
+   "note": "At 36 the oldest outfield player here, a battle-hardened centre-back who helped Tractor win the 2024-25 league title. Experience and positional sense are what he offers; pace, less so at this stage of his career."
   },
   {
    "id": 2688,
@@ -100,7 +109,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/2688.png",
-   "club": "Persepolis FC"
+   "club": "Persepolis FC",
+   "note": "A well-travelled left-back with spells in Russia, Belgium, Greece and Turkey before returning home to Persepolis. At 32 and past 70 caps, his speed and reliability make him a likely starter on the left of defence."
   },
   {
    "id": 533035,
@@ -109,7 +119,8 @@
    "position": "Defender",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/533035.png",
-   "club": "Foolad FC"
+   "club": "Foolad FC",
+   "note": "A 29-year-old centre-back now at Foolad, who won back-to-back league titles during his Persepolis years. He can cover at left-back too, giving Ghalenoei a versatile depth option across the back line."
   },
   {
    "id": 343405,
@@ -118,7 +129,8 @@
    "position": "Defender",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/343405.png",
-   "club": "Sepahan FC"
+   "club": "Sepahan FC",
+   "note": "One of Iran's emerging defenders at 23, a Sepahan academy product who can fill in across the back line. He earned this call-up with composed club form and arrives as a versatile, developing squad option."
   },
   {
    "id": 2700,
@@ -127,7 +139,8 @@
    "position": "Midfielder",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/2700.png",
-   "club": "Dender"
+   "club": "Dender",
+   "note": "The captain and a former Premier League winger with Brighton, heading to his fourth World Cup at 32. He once became the first Asian player to finish top scorer in a major European league, and still carries Iran's creative load from wide."
   },
   {
    "id": 2683,
@@ -136,7 +149,8 @@
    "position": "Midfielder",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/2683.png",
-   "club": "Esteghlal FC"
+   "club": "Esteghlal FC",
+   "note": "The Esteghlal captain, a 32-year-old who can sit in front of the defence or drop into central defence itself. He started Iran's opening win over Morocco at the 2022 finals and brings tactical flexibility to midfield."
   },
   {
    "id": 19614,
@@ -145,7 +159,8 @@
    "position": "Midfielder",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/19614.png",
-   "club": "Shabab Al Ahli Dubai"
+   "club": "Shabab Al Ahli Dubai",
+   "note": "Iran's defensive midfield shield, a holding player with 80-plus caps now winning titles in the UAE with Shabab Al Ahli. At 29 he is the screen who lets the attackers go forward, doing the unglamorous work in front of the back four."
   },
   {
    "id": 2699,
@@ -154,7 +169,8 @@
    "position": "Midfielder",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/2699.png",
-   "club": "Al-Ittihad Kalba"
+   "club": "Al-Ittihad Kalba",
+   "note": "A clever, two-footed midfielder who spent years in the Premier League with Brentford before moving to the UAE. At 32 his vision and ability to link play make him an important creative presence in the middle of the park."
   },
   {
    "id": 423753,
@@ -163,7 +179,8 @@
    "position": "Midfielder",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/423753.png",
-   "club": "Esteghlal FC"
+   "club": "Esteghlal FC",
+   "note": "The youngest player in the squad, a tall teenage central midfielder who broke into the Esteghlal side after coming up through Iran's youth ranks. He is here for the experience and the future, not to start."
   },
   {
    "id": 341844,
@@ -172,7 +189,8 @@
    "position": "Midfielder",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/341844.png",
-   "club": "Al Wahda FC"
+   "club": "Al Wahda FC",
+   "note": "A 24-year-old central midfielder now playing in the UAE with Al Wahda after a spell in Russia. Still building his international experience, he offers fresh legs and energy as a younger option in the middle."
   },
   {
    "id": 134217,
@@ -181,7 +199,8 @@
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/134217.png",
-   "club": "FC Rostov"
+   "club": "FC Rostov",
+   "note": "A direct, hard-running winger based in Russia with Rostov, where he has chipped in with regular goals and assists. At 27 his pace makes him a useful counter-attacking weapon off the flank for Iran."
   },
   {
    "id": 2697,
@@ -190,7 +209,8 @@
    "position": "Midfielder",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/2697.png",
-   "club": "Tractor Sazi"
+   "club": "Tractor Sazi",
+   "note": "A 31-year-old winger and Tractor fan favourite, capable on either flank or in an attacking-midfield role. A veteran of both the 2018 and 2022 finals, he adds wide depth and a willingness to shoot from distance."
   },
   {
    "id": 643918,
@@ -199,7 +219,8 @@
    "position": "Attacker",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/643918.png",
-   "club": "Al-Nasr SC"
+   "club": "Al-Nasr SC",
+   "note": "A skilful, close-control winger who racked up goals in the UAE before joining Al-Nasr, and wears Iran's number 10. At 27 his dribbling in tight spaces is one of the team's main sources of unpredictability in attack."
   },
   {
    "id": 29937,
@@ -208,7 +229,8 @@
    "position": "Attacker",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/29937.png",
-   "club": "Tractor Sazi"
+   "club": "Tractor Sazi",
+   "note": "The 2024-25 Iranian league top scorer with Tractor, a quick forward equally happy out wide or through the middle. At 25 his pace on the counter has made him an increasingly important attacking option."
   },
   {
    "id": 29720,
@@ -217,7 +239,8 @@
    "position": "Attacker",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/29720.png",
-   "club": "Persepolis FC"
+   "club": "Persepolis FC",
+   "note": "A proven domestic goalscorer who once won the league's Golden Boot and remains central to the Persepolis attack. At 30 he provides Iran with a reliable penalty-box striker option behind Taremi."
   },
   {
    "id": 89982,
@@ -226,7 +249,8 @@
    "position": "Attacker",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/89982.png",
-   "club": "Al-Ittihad Kalba"
+   "club": "Al-Ittihad Kalba",
+   "note": "A 31-year-old centre-forward scoring steadily in the UAE with Kalba after a well-travelled career across Iran and Portugal. A relatively late bloomer internationally, he offers extra height and finishing as a backup striker."
   },
   {
    "id": 37892,
@@ -235,7 +259,8 @@
    "position": "Attacker",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/37892.png",
-   "club": "Standard Liege"
+   "club": "Standard Liege",
+   "note": "A Germany-born striker of Iranian descent who switched allegiance to Team Melli only in 2026, his Iranian passport arriving just before the finals. A newcomer to the group playing in Belgium with Standard, he is the wildcard forward in this squad."
   },
   {
    "id": 42315,
@@ -244,7 +269,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/42315.png",
-   "club": "Olympiakos Piraeus"
+   "club": "Olympiakos Piraeus",
+   "note": "Iran's talisman and main goal threat, scoring freely for Olympiakos and netting ten times in qualifying as Iran topped their group. With more than 100 caps and 50-plus goals, this 33-year-old is the player opponents must plan around."
   }
  ],
  "guardianStarPlayer": "Mehdi Taremi",

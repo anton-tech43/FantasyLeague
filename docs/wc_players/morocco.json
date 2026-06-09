@@ -20,7 +20,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/2701.png",
-   "club": "Al-Hilal Saudi FC"
+   "club": "Al-Hilal Saudi FC",
+   "note": "Morocco's undisputed number one and one of the calmest keepers around, he won the 2025 CAF Goalkeeper of the Year award and made a string of famous saves for Al-Hilal at the 2025 Club World Cup. At 34 he is at his third World Cup and remains the spine of this defence."
   },
   {
    "id": 2702,
@@ -29,7 +30,8 @@
    "position": "Goalkeeper",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/2702.png",
-   "club": "Renaissance Berkane"
+   "club": "Renaissance Berkane",
+   "note": "A vastly experienced backup keeper who captains Renaissance Berkane in the Moroccan league and helped them to a domestic title and a continental cup. At 36 he is the squad's elder statesman in goal, here for his know-how rather than to start ahead of Bounou."
   },
   {
    "id": 2703,
@@ -38,7 +40,8 @@
    "position": "Goalkeeper",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/2703.png",
-   "club": "FAR Rabat"
+   "club": "FAR Rabat",
+   "note": "The home-based third-choice keeper, he plays for FAR Rabat and was also part of the squad that reached the 2022 World Cup semi-final. At 29 he is unlikely to feature here unless injuries strike, but he adds depth and a familiar voice in the goalkeeping group."
   },
   {
    "id": 21694,
@@ -47,7 +50,8 @@
    "position": "Defender",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/21694.png",
-   "club": "Marseille"
+   "club": "Marseille",
+   "note": "A composed, ball-playing centre-back who left West Ham for Marseille last summer, he is one of the first names on the team sheet at the heart of Morocco's defence. At 29 he brings the calm head Morocco leaned on during their run to the 2022 semi-finals."
   },
   {
    "id": 18814,
@@ -56,7 +60,8 @@
    "position": "Defender",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/18814.png",
-   "club": "Fulham"
+   "club": "Fulham",
+   "note": "A big, physical centre-back at Fulham who came up through France's youth ranks before switching to Morocco through his mother, only making his senior debut in March. At 28 he is a recent addition to the squad and provides extra height and cover at the back rather than a guaranteed start."
   },
   {
    "id": 283252,
@@ -65,7 +70,8 @@
    "position": "Defender",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/283252.png",
-   "club": "Genk"
+   "club": "Genk",
+   "note": "An attacking right-back at Belgian side Genk who has had a remarkable goalscoring season, chipping in with double figures and earning recognition as the league's standout Maghreb player. At 24 he is the long-term understudy to Hakimi, here to learn and to cover that demanding flank."
   },
   {
    "id": 9,
@@ -74,7 +80,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/9.png",
-   "club": "Paris Saint Germain"
+   "club": "Paris Saint Germain",
+   "note": "The captain and the team's biggest star, a flying right-back for PSG who won the Champions League and Ligue 1 last season and finished sixth in the 2025 Ballon d'Or, the highest ever by a Moroccan. At 27 and on his third World Cup, he is the engine down the right and the player opponents fear most."
   },
   {
    "id": 326183,
@@ -83,7 +90,8 @@
    "position": "Defender",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/326183.png",
-   "club": "KV Mechelen"
+   "club": "KV Mechelen",
+   "note": "A defender who earned his first Morocco call-up off the back of a solid breakthrough season at Belgium's KV Mechelen, having come through the French system. At 22 this is a reward for that form and a chance to settle into the senior set-up rather than a likely starting role."
   },
   {
    "id": 545,
@@ -92,7 +100,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/545.png",
-   "club": "Manchester United"
+   "club": "Manchester United",
+   "note": "A versatile, technically tidy full-back at Manchester United who can play either flank, often shifting to the left to accommodate Hakimi on the right. At 28 he is a regular starter, though a shoulder injury picked up in a pre-tournament friendly is a fitness worry going into the opener."
   },
   {
    "id": 278898,
@@ -101,7 +110,8 @@
    "position": "Defender",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/278898.png",
-   "club": "Crystal Palace"
+   "club": "Crystal Palace",
+   "note": "A La Masia-schooled centre-back at Crystal Palace whose early years in England were wrecked by knee injuries, before he came back to start the 2026 Conference League final win. At 22 he is finally healthy and offers Morocco a calm, modern centre-half who is comfortable on the ball."
   },
   {
    "id": 162451,
@@ -110,7 +120,8 @@
    "position": "Defender",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/162451.png",
-   "club": "PSV Eindhoven"
+   "club": "PSV Eindhoven",
+   "note": "An Ajax-trained left-back, owned by Roma and spending this season on loan at Dutch champions PSV, where he won the title. At 24 he switched his allegiance to Morocco in late 2025 and gives the squad a genuine specialist option on the left side of defence."
   },
   {
    "id": 146772,
@@ -119,7 +130,8 @@
    "position": "Defender",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/146772.png",
-   "club": "Al Ahly"
+   "club": "Al Ahly",
+   "note": "A left-sided defender who moved to Egyptian giants Al Ahly in early 2026 and quickly became a first-choice pick there. At 27 he was part of the squad that reached the AFCON final on home soil, and after recovering from a muscle injury he offers added cover across the back line."
   },
   {
    "id": 74,
@@ -128,7 +140,8 @@
    "position": "Midfielder",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/74.png",
-   "club": "Real Betis"
+   "club": "Real Betis",
+   "note": "The tireless defensive midfielder who shielded the back four during Morocco's 2022 semi-final run, now on loan at Real Betis from Fenerbahce. At 29 his all-action engine remains the team's anchor, though a knee knock late in 2025 means his sharpness will be worth watching."
   },
   {
    "id": 438688,
@@ -137,7 +150,8 @@
    "position": "Midfielder",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/438688.png",
-   "club": "Lille"
+   "club": "Lille",
+   "note": "At 18 the youngest player in the squad, a deep-lying midfielder already a regular at Lille and one of Ligue 1's most coveted teenagers, with big clubs circling. He only committed to Morocco over France in May, so this tournament is an exciting glimpse of a future cornerstone rather than a settled starter."
   },
   {
    "id": 277003,
@@ -146,7 +160,8 @@
    "position": "Midfielder",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/277003.png",
-   "club": "AS Roma"
+   "club": "AS Roma",
+   "note": "A box-to-box midfielder who earned a big move from Lens to Roma last summer, son of former tennis pro Younes El Aynaoui and a dual French-Moroccan who chose the Atlas Lions. At 24 his minutes in Italy have been limited, so he is squad depth in a crowded midfield rather than a guaranteed starter."
   },
   {
    "id": 340573,
@@ -155,7 +170,8 @@
    "position": "Midfielder",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/340573.png",
-   "club": "VfB Stuttgart"
+   "club": "VfB Stuttgart",
+   "note": "A creative, left-footed attacking midfielder enjoying a productive season at Stuttgart, chipping in with goals and assists in the Bundesliga. At 21 he is one of the brightest young talents in this squad and the kind of player who can unlock a stubborn defence with a single pass or carry."
   },
   {
    "id": 415431,
@@ -164,7 +180,8 @@
    "position": "Midfielder",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/415431.png",
-   "club": "Strasbourg"
+   "club": "Strasbourg",
+   "note": "A young central midfielder who has quietly become one of Strasbourg's most-used players this season despite his age. At 20 he is squad depth here, called up on the back of consistent Ligue 1 minutes, with plenty of room still to grow."
   },
   {
    "id": 129678,
@@ -173,7 +190,8 @@
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/129678.png",
-   "club": "Girona"
+   "club": "Girona",
+   "note": "The elegant midfielder whose dazzling 2022 World Cup made his name, now reborn at Girona after a quiet spell at Marseille and named their player of the month early this season. At 25 his graceful dribbling and passing add a touch of magic, though a foot injury kept him out of the AFCON knockouts, so his fitness is one to track."
   },
   {
    "id": 161897,
@@ -182,7 +200,8 @@
    "position": "Midfielder",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/161897.png",
-   "club": "PSV Eindhoven"
+   "club": "PSV Eindhoven",
+   "note": "An attacking midfielder who was named PSV's player of the year after a brilliant season with 15 goals and 8 assists as the club retained the Dutch title. At 24 he is one of Morocco's most dangerous creative options, with his fitness after a late-season rehab spell the only question mark."
   },
   {
    "id": 336659,
@@ -191,7 +210,8 @@
    "position": "Midfielder",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/336659.png",
-   "club": "Sunderland"
+   "club": "Sunderland",
+   "note": "A direct, exciting winger who moved from Club Brugge to Sunderland and became a fan favourite, scoring against the likes of Chelsea, Liverpool and Newcastle in his debut Premier League season. At 20 he chose Morocco over Belgium and gives the attack a fearless one-on-one threat off the bench or out wide."
   },
   {
    "id": 369544,
@@ -200,7 +220,8 @@
    "position": "Midfielder",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/369544.png",
-   "club": "Strasbourg"
+   "club": "Strasbourg",
+   "note": "An instinctive, quick-footed winger who joined Strasbourg in early 2026 and was a key figure in Morocco's run to the 2025 Under-20 World Cup title. At 20 this senior call-up is recognition of that promise; he is squad depth for now, learning alongside the seniors."
   },
   {
    "id": 744,
@@ -209,7 +230,8 @@
    "position": "Attacker",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/744.png",
-   "club": "Real Madrid"
+   "club": "Real Madrid",
+   "note": "The Real Madrid forward and Morocco's chief creator, who lit up AFCON 2025 by scoring in every group game and taking the Golden Boot, even if the final ended in heartbreak. At 26 the Spanish-born attacker is a starter and the team's most likely source of a moment of brilliance."
   },
   {
    "id": 535046,
@@ -218,7 +240,8 @@
    "position": "Attacker",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/535046.png",
-   "club": "Hoffenheim II"
+   "club": "Hoffenheim II",
+   "note": "A left-footed winger who racked up goals in Germany's lower divisions and earned a move up, a Spanish-born talent who has chosen to push for Morocco. At 20 he is a developmental pick in this attack, here to gain experience rather than to start, with a high ceiling on the wing."
   },
   {
    "id": 2722,
@@ -227,7 +250,8 @@
    "position": "Attacker",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/2722.png",
-   "club": "Olympiakos Piraeus"
+   "club": "Olympiakos Piraeus",
+   "note": "A prolific poacher who has been banging in goals for Olympiakos, including a string of European competition top-scorer finishes, and weighed in heavily at AFCON 2025 with some spectacular overhead kicks. At 32 he is Morocco's most natural number nine and a strong candidate to lead the line."
   },
   {
    "id": 181421,
@@ -236,7 +260,8 @@
    "position": "Attacker",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/181421.png",
-   "club": "Real Betis"
+   "club": "Real Betis",
+   "note": "A tricky left winger at Real Betis who has hit double figures for goals this season and drawn interest from several Premier League clubs. At 24 his pace and dribbling give Morocco a real cutting edge wide on the left, and he is firmly in the mix to start."
   },
   {
    "id": 36579,
@@ -245,7 +270,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/36579.png",
-   "club": "Al Ain"
+   "club": "Al Ain",
+   "note": "A clinical forward at Al Ain who top-scored as they won the 2024 AFC Champions League and was once named the world's best international goalscorer in a calendar year. At 29 he offers Morocco a proven finisher, an option to start or to change a game from the bench."
   }
  ],
  "guardianStarPlayer": "Achraf Hakimi",

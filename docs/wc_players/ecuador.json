@@ -20,7 +20,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/16380.png",
-   "club": "Huracan"
+   "club": "Huracan",
+   "note": "At 38 the elder statesman of the squad, the Argentine-born keeper has been a steady presence in goal for Argentina's Huracan and is Ecuador's most experienced option. He is here as much for his calm and leadership as for game time."
   },
   {
    "id": 81224,
@@ -29,7 +30,8 @@
    "position": "Goalkeeper",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/81224.png",
-   "club": "Kifisia"
+   "club": "Kifisia",
+   "note": "The 25-year-old moved to Greek side Kifisia in 2025 and is in line to back up the senior goalkeepers. He was an unused squad member at the 2022 World Cup, so he knows the tournament rhythm without yet having played a minute on the big stage."
   },
   {
    "id": 16642,
@@ -38,7 +40,8 @@
    "position": "Goalkeeper",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/16642.png",
-   "club": "LDU de Quito"
+   "club": "LDU de Quito",
+   "note": "Gonzalo Valle made his name in 2025 dragging LDU Quito to the Copa Libertadores semis with a string of standout shot-stopping displays. The 29-year-old gives Ecuador a genuine in-form alternative between the posts."
   },
   {
    "id": 46731,
@@ -47,7 +50,8 @@
    "position": "Defender",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/46731.png",
-   "club": "AC Milan"
+   "club": "AC Milan",
+   "note": "Ecuador's first-choice left-back and a real attacking weapon down that flank, the 27-year-old joined AC Milan in 2025 after several seasons in the Premier League with Brighton. His overlapping runs and crossing are a key part of how this team builds."
   },
   {
    "id": 127817,
@@ -56,7 +60,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/127817.png",
-   "club": "Arsenal"
+   "club": "Arsenal",
+   "note": "One of the best young defenders in the world, the 23-year-old centre-back is on loan at Arsenal and won the Premier League title in his first season there. Comfortable on the left of a back line and aggressive in the duel, he is central to Ecuador's defence."
   },
   {
    "id": 306940,
@@ -65,7 +70,8 @@
    "position": "Defender",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/306940.png",
-   "club": "Genk"
+   "club": "Genk",
+   "note": "A 21-year-old who joined Belgian side Genk in early 2025, Medina is a versatile, energetic defender still establishing himself at international level. He came up through the same Independiente del Valle academy that has fed much of this squad."
   },
   {
    "id": 354027,
@@ -74,7 +80,8 @@
    "position": "Defender",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/354027.png",
-   "club": "Club Brugge KV"
+   "club": "Club Brugge KV",
+   "note": "A composed, front-foot centre-back of just 21, Ordonez has become a regular for Club Brugge in Belgium and the Champions League, with several big clubs circling. He represents the next wave of Ecuador's defensive talent."
   },
   {
    "id": 16367,
@@ -83,7 +90,8 @@
    "position": "Defender",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/16367.png",
-   "club": "Paris Saint Germain"
+   "club": "Paris Saint Germain",
+   "note": "At 24 the cornerstone of Ecuador's defence, Pacho made history in 2025 as the first Ecuadorian to win the Champions League, starting in PSG's final win over Inter. Calm, quick and rarely flustered, he anchors the back line."
   },
   {
    "id": 2575,
@@ -92,7 +100,8 @@
    "position": "Defender",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/2575.png",
-   "club": "Club Tijuana"
+   "club": "Club Tijuana",
+   "note": "A 25-year-old centre-back who joined Mexico's Club Tijuana in 2025, Porozo is squad depth rather than a guaranteed starter. He brings size and Liga MX game time, having played regularly through the 2025-26 season."
   },
   {
    "id": 2583,
@@ -101,7 +110,8 @@
    "position": "Defender",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/2583.png",
-   "club": "Sparta Praha"
+   "club": "Sparta Praha",
+   "note": "An attacking right-back who has spent recent seasons in the Czech league with Sparta Prague, the 27-year-old is one of Ecuador's options on the right flank. He likes to push high and join the attack."
   },
   {
    "id": 63964,
@@ -110,7 +120,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/63964.png",
-   "club": "Corinthians"
+   "club": "Corinthians",
+   "note": "A 28-year-old centre-back at Brazilian giants Corinthians, Torres is an experienced and reliable squad option who has been a regular call-up for years. He offers height and aerial presence as backup in central defence."
   },
   {
    "id": 16470,
@@ -119,7 +130,8 @@
    "position": "Midfielder",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/16470.png",
-   "club": "Independiente del Valle"
+   "club": "Independiente del Valle",
+   "note": "Jhegson Mendez is a hard-working defensive midfielder who returned home to Independiente del Valle in 2025 after six years abroad, including spells in MLS. The 26-year-old shields the back four and played at the 2022 World Cup."
   },
   {
    "id": 116117,
@@ -128,7 +140,8 @@
    "position": "Midfielder",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/116117.png",
-   "club": "Chelsea"
+   "club": "Chelsea",
+   "note": "The engine of this team and one of the finest holding midfielders in the world, the 24-year-old has been a near ever-present for Chelsea, who named him their Player of the Season. He breaks up play and starts attacks, and is the player Ecuador are built around."
   },
   {
    "id": 338045,
@@ -137,7 +150,8 @@
    "position": "Midfielder",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/338045.png",
-   "club": "FC Midtjylland"
+   "club": "FC Midtjylland",
+   "note": "A box-to-box midfielder of 21 enjoying a strong run at Denmark's Midtjylland, where he has chipped in with goals and assists. He gives the midfield legs and energy and is part of Ecuador's young core."
   },
   {
    "id": 16360,
@@ -146,7 +160,8 @@
    "position": "Midfielder",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/16360.png",
-   "club": "Atletico-MG"
+   "club": "Atletico-MG",
+   "note": "A 27-year-old defensive midfielder who has spent years at Brazil's Atletico Mineiro, winning a string of titles. With nearly 60 caps, Franco is a dependable, experienced option to sit in front of the defence."
   },
   {
    "id": 406303,
@@ -155,7 +170,8 @@
    "position": "Midfielder",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/406303.png",
-   "club": "Strasbourg"
+   "club": "Strasbourg",
+   "note": "The teenage jewel of Ecuadorian football, this 18-year-old attacking midfielder is owned by Chelsea and spent the season on loan at Strasbourg in France, where he was even named a Ligue 1 young player of the month. Hugely gifted with the ball, he is one to watch even if minutes may come off the bench."
   },
   {
    "id": 280695,
@@ -164,7 +180,8 @@
    "position": "Midfielder",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/280695.png",
-   "club": "Cercle Brugge"
+   "club": "Cercle Brugge",
+   "note": "A 22-year-old winger listed here in midfield, Minda spent recent seasons in Belgium with Cercle Brugge and has been working his way into Ecuador's setup. He offers pace and directness from wide areas as a squad option."
   },
   {
    "id": 198347,
@@ -173,7 +190,8 @@
    "position": "Midfielder",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/198347.png",
-   "club": "Antwerp"
+   "club": "Antwerp",
+   "note": "An attacking midfielder of 22 who has had his most productive season yet at Belgium's Royal Antwerp, scoring regularly. Left-footed and creative, Anthony Valencia adds an extra spark in the final third."
   },
   {
    "id": 237078,
@@ -182,7 +200,8 @@
    "position": "Midfielder",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/237078.png",
-   "club": "U.N.A.M. - Pumas"
+   "club": "U.N.A.M. - Pumas",
+   "note": "Pedro Vite is a creative attacking midfielder who moved from Vancouver to Mexico's Pumas UNAM in 2025. The 23-year-old brings vision and passing range and is a useful option to unlock defences off the bench."
   },
   {
    "id": 361966,
@@ -191,7 +210,8 @@
    "position": "Attacker",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/361966.png",
-   "club": "Union St. Gilloise"
+   "club": "Union St. Gilloise",
+   "note": "A 25-year-old centre-forward enjoying a breakout season at Belgium's Union Saint-Gilloise, where his goals have flowed after a quieter start to his time there. Strong and direct, Rodriguez is a real alternative to lead the line."
   },
   {
    "id": 25414,
@@ -200,7 +220,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/25414.png",
-   "club": "Venezia"
+   "club": "Venezia",
+   "note": "Born in Germany but playing for Ecuador, the 25-year-old winger has been one of Serie B's standout creators at Venezia, racking up goals and assists. Quick and tricky, Yeboah offers width and end product from the flank."
   },
   {
    "id": 311543,
@@ -209,7 +230,8 @@
    "position": "Attacker",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/311543.png",
-   "club": "Anderlecht"
+   "club": "Anderlecht",
+   "note": "A 22-year-old winger who became a key contributor at Anderlecht in Belgium, chipping in with goals and plenty of assists. Angulo's pace and crossing make him a lively option out wide for La Tri."
   },
   {
    "id": 16590,
@@ -218,7 +240,8 @@
    "position": "Attacker",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/16590.png",
-   "club": "Sporting Gijon"
+   "club": "Sporting Gijon",
+   "note": "Jordy Caicedo is a 28-year-old striker who spent 2025 on loan in Spain's second tier with Sporting Gijon. A traditional target man, he is squad depth at centre-forward rather than a first-choice pick."
   },
   {
    "id": 350799,
@@ -227,7 +250,8 @@
    "position": "Attacker",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/350799.png",
-   "club": "Racing Santander"
+   "club": "Racing Santander",
+   "note": "A 20-year-old striker born in Spain to Ecuadorian parents, Arevalo chose to represent Ecuador and earned his first caps in late 2025 after a prolific spell with Racing Santander. Raw but sharp in front of goal, he is one for the future."
   },
   {
    "id": 16369,
@@ -236,7 +260,8 @@
    "position": "Attacker",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/16369.png",
-   "club": "Flamengo"
+   "club": "Flamengo",
+   "note": "A 25-year-old left-footed winger who won the 2025 Copa Libertadores with Flamengo, Plata is one of Ecuador's most exciting attackers. Direct and unpredictable in one-on-ones, he is expected to be a starter out wide."
   },
   {
    "id": 35533,
@@ -245,7 +270,8 @@
    "position": "Attacker",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/35533.png",
-   "club": "Internacional"
+   "club": "Internacional",
+   "note": "Ecuador's captain and all-time top scorer with 49 goals, the 36-year-old has also scored a record six World Cup goals for his country. Still leading the line for Brazil's Internacional, the veteran striker is the emotional heart of this squad."
   }
  ],
  "guardianStarPlayer": "Mois\u00e9s Caicedo",

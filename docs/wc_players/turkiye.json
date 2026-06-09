@@ -20,7 +20,8 @@
    "position": "Goalkeeper",
    "number": 12,
    "photo": "https://media.api-sports.io/football/players/50132.png",
-   "club": "Manchester United"
+   "club": "Manchester United",
+   "note": "Bayindir spent the season as a backup at Manchester United and goes into the tournament as Turkiye's likely second-choice keeper. He brings top-flight experience even if regular minutes have been hard to come by at club level."
   },
   {
    "id": 49866,
@@ -29,7 +30,8 @@
    "position": "Goalkeeper",
    "number": 23,
    "photo": "https://media.api-sports.io/football/players/49866.png",
-   "club": "Galatasaray"
+   "club": "Galatasaray",
+   "note": "Cakir is expected to be Turkiye's number one between the posts, having become the country's most expensive transfer when Galatasaray signed him. He was the regular keeper during the run to the Euro 2024 quarter-finals, so he arrives as the settled choice."
   },
   {
    "id": 49837,
@@ -38,7 +40,8 @@
    "position": "Goalkeeper",
    "number": 1,
    "photo": "https://media.api-sports.io/football/players/49837.png",
-   "club": "Be\u015fikta\u015f"
+   "club": "Be\u015fikta\u015f",
+   "note": "At 36, Gunok is the elder statesman of the goalkeeping group and a likely back-up here, but he is the man who pulled off that astonishing last-gasp save against Austria to send Turkiye into the Euro 2024 quarter-finals. His experience and calm are worth having on the bench."
   },
   {
    "id": 62490,
@@ -47,7 +50,8 @@
    "position": "Defender",
    "number": 25,
    "photo": "https://media.api-sports.io/football/players/62490.png",
-   "club": "Rizespor"
+   "club": "Rizespor",
+   "note": "Akaydin is a centre-back who plays his club football at Rizespor and offers squad depth at the back. He scored against the Netherlands in Turkiye's Euro 2024 quarter-final, so he has form for popping up with a goal on the big stage."
   },
   {
    "id": 61837,
@@ -56,7 +60,8 @@
    "position": "Defender",
    "number": 14,
    "photo": "https://media.api-sports.io/football/players/61837.png",
-   "club": "Galatasaray"
+   "club": "Galatasaray",
+   "note": "Bardakci is a left-footed centre-back who has been a steady presence in Galatasaray's title-winning defence. He gives Turkiye a calm, ball-playing option in the middle of the back line."
   },
   {
    "id": 22222,
@@ -65,7 +70,8 @@
    "position": "Defender",
    "number": 2,
    "photo": "https://media.api-sports.io/football/players/22222.png",
-   "club": "AS Roma"
+   "club": "AS Roma",
+   "note": "Celik is a right-back who has clocked up well over 100 games for Roma in Serie A and is Turkiye's experienced option on that flank. He defends solidly and can shuffle inside to centre-back when needed."
   },
   {
    "id": 30521,
@@ -74,7 +80,8 @@
    "position": "Defender",
    "number": 3,
    "photo": "https://media.api-sports.io/football/players/30521.png",
-   "club": "Al-Ahli Jeddah"
+   "club": "Al-Ahli Jeddah",
+   "note": "Demiral is the leader of Turkiye's defence, a physical centre-back who now plays in Saudi Arabia for Al-Ahli after spells with Juventus and Atalanta. He scored both goals against Austria at Euro 2024 and is dangerous from set pieces at either end."
   },
   {
    "id": 50057,
@@ -83,7 +90,8 @@
    "position": "Defender",
    "number": 13,
    "photo": "https://media.api-sports.io/football/players/50057.png",
-   "club": "Galatasaray"
+   "club": "Galatasaray",
+   "note": "Elmali is an attacking left-back who chipped in with goals from defence during Galatasaray's title campaign. He competes for the left-back slot and offers an outlet getting forward down that side."
   },
   {
    "id": 26300,
@@ -92,7 +100,8 @@
    "position": "Defender",
    "number": 15,
    "photo": "https://media.api-sports.io/football/players/26300.png",
-   "club": "1899 Hoffenheim"
+   "club": "1899 Hoffenheim",
+   "note": "Kabak is a centre-back who rebuilt his career at Hoffenheim after a frustrating spell on the sidelines, working his way back into the Bundesliga side and the national team. He even adds the odd goal, having found the net a few times in the German top flight this season."
   },
   {
    "id": 1361,
@@ -101,7 +110,8 @@
    "position": "Defender",
    "number": 20,
    "photo": "https://media.api-sports.io/football/players/1361.png",
-   "club": "Brighton"
+   "club": "Brighton",
+   "note": "Kadioglu is a versatile full-back who was voted Brighton's player of the season after shaking off an earlier injury, and he played every minute of Turkiye's run to the Euro 2024 last eight. Dutch-born, he chose Turkiye and is now a first-choice down the left."
   },
   {
    "id": 1719,
@@ -110,7 +120,8 @@
    "position": "Defender",
    "number": 18,
    "photo": "https://media.api-sports.io/football/players/1719.png",
-   "club": "Fenerbah\u00e7e"
+   "club": "Fenerbah\u00e7e",
+   "note": "Muldur is a right-back at Fenerbahce, born and raised in Vienna before choosing Turkiye. His thumping volley against Georgia was voted the goal of Euro 2024, so he is a full-back who can produce a moment out of nothing."
   },
   {
    "id": 18776,
@@ -119,7 +130,8 @@
    "position": "Defender",
    "number": 4,
    "photo": "https://media.api-sports.io/football/players/18776.png",
-   "club": "Fenerbah\u00e7e"
+   "club": "Fenerbah\u00e7e",
+   "note": "Soyuncu is an experienced centre-back who made his name in the Premier League with Leicester before returning home to Fenerbahce. With more than 50 caps, he is a senior figure competing for a starting spot alongside Demiral."
   },
   {
    "id": 1640,
@@ -128,7 +140,8 @@
    "position": "Midfielder",
    "number": 10,
    "photo": "https://media.api-sports.io/football/players/1640.png",
-   "club": "Inter"
+   "club": "Inter",
+   "note": "Calhanoglu is the captain and the heartbeat of this team, a deep-lying midfielder at Inter who controls the tempo, takes the set pieces and rarely misses from the penalty spot. With more than 100 caps, he is the most experienced player in the squad and the one who pulls the strings."
   },
   {
    "id": 25448,
@@ -137,7 +150,8 @@
    "position": "Midfielder",
    "number": 22,
    "photo": "https://media.api-sports.io/football/players/25448.png",
-   "club": "Galatasaray"
+   "club": "Galatasaray",
+   "note": "Ayhan is a useful utility man for Galatasaray who can fill in at centre-back or sit in midfield, which makes him handy depth for Montella. Germany-born, he has been a regular squad member for years and gives the coach tactical flexibility."
   },
   {
    "id": 37155,
@@ -146,7 +160,8 @@
    "position": "Midfielder",
    "number": 6,
    "photo": "https://media.api-sports.io/football/players/37155.png",
-   "club": "Be\u015fikta\u015f"
+   "club": "Be\u015fikta\u015f",
+   "note": "Kokcu is a technical central midfielder who captains Besiktas, the club he supported as a boy, after turning down bigger offers to join them. Dutch-born and developed at Feyenoord, he passes well and arrives late into the box, giving Turkiye creativity in the middle."
   },
   {
    "id": 24807,
@@ -155,7 +170,8 @@
    "position": "Midfielder",
    "number": 5,
    "photo": "https://media.api-sports.io/football/players/24807.png",
-   "club": "Borussia Dortmund"
+   "club": "Borussia Dortmund",
+   "note": "Ozcan is a defensive midfielder at Borussia Dortmund, the kind of player who shields the back four and keeps things simple. Germany-born, he scored his first international goal against Spain in qualifying, a memorable moment in an otherwise low-key role."
   },
   {
    "id": 214463,
@@ -164,7 +180,8 @@
    "position": "Midfielder",
    "number": 16,
    "photo": "https://media.api-sports.io/football/players/214463.png",
-   "club": "Fenerbah\u00e7e"
+   "club": "Fenerbah\u00e7e",
+   "note": "Yuksek is a powerful, hard-running central midfielder at Fenerbahce who does the unglamorous work of breaking up play and carrying the ball forward. He scored in a derby win over Besiktas this season and offers energy in the engine room."
   },
   {
    "id": 339887,
@@ -173,7 +190,8 @@
    "position": "Attacker",
    "number": 26,
    "photo": "https://media.api-sports.io/football/players/339887.png",
-   "club": "Eintracht Frankfurt"
+   "club": "Eintracht Frankfurt",
+   "note": "Uzun is a 20-year-old attacking talent who has caught the eye at Eintracht Frankfurt, chipping in with goals and assists in the Bundesliga and Champions League. Germany-born, he chose Turkiye and is one of the bright young pieces of this golden generation."
   },
   {
    "id": 134590,
@@ -182,7 +200,8 @@
    "position": "Attacker",
    "number": 24,
    "photo": "https://media.api-sports.io/football/players/134590.png",
-   "club": "Fenerbah\u00e7e"
+   "club": "Fenerbah\u00e7e",
+   "note": "Aydin is a direct, pacey winger at Fenerbahce who made a splash early on by scoring twice within minutes of an early start for the club. He is a squad option out wide, the type to change a game off the bench with his running."
   },
   {
    "id": 291964,
@@ -191,7 +210,8 @@
    "position": "Attacker",
    "number": 8,
    "photo": "https://media.api-sports.io/football/players/291964.png",
-   "club": "Real Madrid"
+   "club": "Real Madrid",
+   "note": "Guler is the jewel of this side, a 20-year-old playmaker who finally broke through at Real Madrid this season as their creative number 10 under Xabi Alonso and was named the Champions League's breakthrough player. The Guardian's pick as Turkiye's star man, he is the one to watch with the ball at his feet."
   },
   {
    "id": 454,
@@ -200,7 +220,8 @@
    "position": "Attacker",
    "number": 19,
    "photo": "https://media.api-sports.io/football/players/454.png",
-   "club": "Galatasaray"
+   "club": "Galatasaray",
+   "note": "Akgun is a Galatasaray academy product who plays as an attacking midfielder or right winger and has grown into a key man at the club. Quick and tricky, he gives Turkiye another option to unlock defences from wide areas."
   },
   {
    "id": 142959,
@@ -209,7 +230,8 @@
    "position": "Attacker",
    "number": 7,
    "photo": "https://media.api-sports.io/football/players/142959.png",
-   "club": "Fenerbah\u00e7e"
+   "club": "Fenerbah\u00e7e",
+   "note": "Akturkoglu is a direct left-sided winger who returned to Turkiye with Fenerbahce after a spell at Benfica and has been among the goals since. A regular for the national team, he stretches play and cuts inside to shoot, making him one of Montella's main attacking threats."
   },
   {
    "id": 388570,
@@ -218,7 +240,8 @@
    "position": "Attacker",
    "number": 9,
    "photo": "https://media.api-sports.io/football/players/388570.png",
-   "club": "FC Porto"
+   "club": "FC Porto",
+   "note": "Gul is a 21-year-old centre-forward at Porto, born in Stockholm to a Turkish father and Swedish mother, who switched his allegiance to Turkiye and marked his debut by scoring against Spain in qualifying. He is a developing striking option rather than a guaranteed starter."
   },
   {
    "id": 49857,
@@ -227,7 +250,8 @@
    "position": "Attacker",
    "number": 17,
    "photo": "https://media.api-sports.io/football/players/49857.png",
-   "club": "Kas\u0131mpa\u015fa"
+   "club": "Kas\u0131mpa\u015fa",
+   "note": "Kahveci is an experienced attacking midfielder with an eye for a spectacular goal, playing his football at Kasimpasa this season. At 30 he brings know-how and a long-range threat as a squad option in the final third."
   },
   {
    "id": 339883,
@@ -236,7 +260,8 @@
    "position": "Attacker",
    "number": 11,
    "photo": "https://media.api-sports.io/football/players/339883.png",
-   "club": "Juventus"
+   "club": "Juventus",
+   "note": "Yildiz is a 20-year-old forward who wears Juventus's famous number 10 and was named Serie A's best under-23 player this season. Germany-born but committed to Turkiye, he scores and creates from the left and forms the spearhead of the attack alongside Guler."
   },
   {
    "id": 63274,
@@ -245,7 +270,8 @@
    "position": "Attacker",
    "number": 21,
    "photo": "https://media.api-sports.io/football/players/63274.png",
-   "club": "Galatasaray"
+   "club": "Galatasaray",
+   "note": "Baris Alper Yilmaz is a strong, quick wide forward who has been a key part of Galatasaray's run of league titles, weighing in with goals and a healthy number of assists this season. His physicality and pace make him a handful down either flank for Turkiye."
   }
  ],
  "guardianStarPlayer": "Arda Guler",
