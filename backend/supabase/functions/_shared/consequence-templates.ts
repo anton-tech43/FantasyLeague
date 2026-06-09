@@ -87,7 +87,7 @@ const TEMPLATES: Record<ConsequenceType, ConsequenceTemplate> = {
         `${teamName} have won the Premier League. ${trigger}, and the maths now says no one else can reach them. Expect a quiet kind of happy from him this week — the kind that's earned.`,
     ],
     everyone_talking_headline: ({ teamName, trigger }) =>
-      `${teamName} crowned Premier League champions after ${trigger.toLowerCase()}.`,
+      `${teamName} crowned Premier League champions after ${trigger}.`,
   },
 
   UCL_CLINCHED: {
@@ -100,7 +100,7 @@ const TEMPLATES: Record<ConsequenceType, ConsequenceTemplate> = {
       ({ teamName, trigger }) =>
         `Top-4 sewn up. ${trigger} pushed ${teamName} into a position no one below them can reach. European nights at the stadium next season — and a budget to match.`,
       ({ teamName, trigger }) =>
-        `${teamName} have clinched a Champions League spot. After ${trigger.toLowerCase()}, the maths is settled — they can't drop out of the top four. Big midweek nights are back.`,
+        `${teamName} have clinched a Champions League spot. After ${trigger}, the maths is settled — they can't drop out of the top four. Big midweek nights are back.`,
     ],
     everyone_talking_headline: ({ teamName }) =>
       `${teamName} clinch top-4 and a Champions League return.`,
@@ -116,7 +116,7 @@ const TEMPLATES: Record<ConsequenceType, ConsequenceTemplate> = {
       ({ teamName, trigger }) =>
         `${trigger}. ${teamName} are now mathematically in the European places — could be Champions League, Europa, or Conference, depending on where they finish. Either way, Thursday or Tuesday nights are about to get more interesting.`,
       ({ teamName, trigger }) =>
-        `Europe confirmed for ${teamName}. After ${trigger.toLowerCase()}, no one in the bottom half can catch them. The exact competition gets decided in the final round, but the trip itself is booked.`,
+        `Europe confirmed for ${teamName}. After ${trigger}, no one in the bottom half can catch them. The exact competition gets decided in the final round, but the trip itself is booked.`,
     ],
     everyone_talking_headline: ({ teamName }) =>
       `${teamName} secure European football for next season.`,
@@ -130,7 +130,7 @@ const TEMPLATES: Record<ConsequenceType, ConsequenceTemplate> = {
       ({ teamName, trigger }) =>
         `${trigger} confirmed it — ${teamName} can't escape the bottom three even if they win every remaining game. Next stop: the Championship, where his Saturdays get a lot less prime-time. Be gentle this week.`,
       ({ teamName, trigger }) =>
-        `${teamName} have been relegated. After ${trigger.toLowerCase()}, the maths is final. A season of struggle ends with a drop to the second tier — and a summer of rebuilding. He'll want to talk about it, eventually.`,
+        `${teamName} have been relegated. After ${trigger}, the maths is final. A season of struggle ends with a drop to the second tier — and a summer of rebuilding. He'll want to talk about it, eventually.`,
     ],
     everyone_talking_headline: ({ teamName }) =>
       `${teamName} relegated from the Premier League.`,
@@ -140,15 +140,17 @@ const TEMPLATES: Record<ConsequenceType, ConsequenceTemplate> = {
 
   WC_GROUP_WON: {
     push_title: ({ teamName }) => `🥇 ${teamName} win the group`,
-    push_text: ({ teamName, trigger }) =>
-      `${teamName} have topped their World Championship group. ${trigger}.`,
+    push_text: ({ teamName, trigger }) => {
+      const full = `${teamName} have topped their group. ${trigger}.`;
+      return full.length <= 90 ? full : `${teamName} have topped their group.`;
+    },
     headline: ({ teamName }) =>
       `${teamName} finish top of their World Championship group.`,
     body: [
       ({ teamName, trigger }) =>
         `${teamName} are through as group winners. ${trigger}, and that puts them mathematically clear of second place. Top of the group usually means a slightly kinder knockout bracket — small advantages stack up at a World Championship.`,
       ({ teamName, trigger }) =>
-        `Group topped. After ${trigger.toLowerCase()}, ${teamName} can't be overtaken in their group. They go into the knockouts as a top seed, which is exactly where you want to be.`,
+        `Group topped. After ${trigger}, ${teamName} can't be overtaken in their group. They go into the knockouts as a top seed, which is exactly where you want to be.`,
     ],
     everyone_talking_headline: ({ teamName }) =>
       `${teamName} clinch top spot in their World Championship group.`,
@@ -156,15 +158,17 @@ const TEMPLATES: Record<ConsequenceType, ConsequenceTemplate> = {
 
   WC_KNOCKOUT_QUALIFIED: {
     push_title: ({ teamName }) => `✅ ${teamName} into the knockouts`,
-    push_text: ({ teamName, trigger }) =>
-      `${teamName} have qualified for the World Championship knockouts. ${trigger}.`,
+    push_text: ({ teamName, trigger }) => {
+      const full = `${teamName} are into the knockouts. ${trigger}.`;
+      return full.length <= 90 ? full : `${teamName} are into the knockouts.`;
+    },
     headline: ({ teamName }) =>
       `${teamName} are through to the knockout stage.`,
     body: [
       ({ teamName, trigger }) =>
         `${trigger} sealed it. ${teamName} are guaranteed a knockout spot. Group placement might still move, but the round-of-32 trip is locked in. From here it's win or go home.`,
       ({ teamName, trigger }) =>
-        `${teamName} into the knockouts. After ${trigger.toLowerCase()}, the maths confirms they can't be caught for at least second in their group. Knockout football arrives next week.`,
+        `${teamName} into the knockouts. After ${trigger}, the maths confirms they can't be caught for at least second in their group. Knockout football arrives next week.`,
     ],
     everyone_talking_headline: ({ teamName }) =>
       `${teamName} reach the World Championship knockout stage.`,
@@ -180,7 +184,7 @@ const TEMPLATES: Record<ConsequenceType, ConsequenceTemplate> = {
       ({ teamName, trigger }) =>
         `${trigger} ended it. ${teamName} can no longer reach the knockout stage. One game left, but the tournament is effectively over for them — and for him, the focus shifts to whoever's still in.`,
       ({ teamName, trigger }) =>
-        `World Championship over for ${teamName}. After ${trigger.toLowerCase()}, the qualification maths is closed — they can't reach the top two. He'll need a new team to root for in the knockouts.`,
+        `World Championship over for ${teamName}. After ${trigger}, the qualification maths is closed — they can't reach the top two. He'll need a new team to root for in the knockouts.`,
     ],
     everyone_talking_headline: ({ teamName }) =>
       `${teamName} eliminated from the World Championship group stage.`,
