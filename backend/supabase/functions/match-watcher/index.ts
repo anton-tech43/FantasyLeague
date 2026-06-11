@@ -155,6 +155,10 @@ async function sendWcPlayingTeamPush(
     category: string;
     fixtureId: number;
     label: string; // "goal" | "ht" | "ft" — content_id discriminator + logs
+    // Optional country_id → content_item UUID. When present for a follower's
+    // country, the push deep-links to that article (FT result); otherwise the
+    // content_id is a non-UUID sentinel and the tap just opens the app.
+    contentIdByCountry?: Record<string, string>;
   },
 ): Promise<number> {
   try {
@@ -166,12 +170,14 @@ async function sendWcPlayingTeamPush(
 
     let sent = 0;
     for (const t of tokens ?? []) {
-      const body = args.copy.bodies[t.country_id as string];
+      const country = t.country_id as string;
+      const body = args.copy.bodies[country];
       if (!body) continue; // follower of a team not in this match — shouldn't happen
+      const contentId = args.contentIdByCountry?.[country] ?? `wc-${args.label}-${args.fixtureId}`;
       const payload = buildAPNsPayload(
         "", // teamShortName fallback unused — we pass pushTitle below
         body, // headline fallback
-        `wc-${args.label}-${args.fixtureId}`, // non-UUID content_id → no deep link
+        contentId, // UUID (deep-links to the article) or non-UUID sentinel (just opens)
         args.category,
         false,
         body, // push_text (lock-screen body)
@@ -448,6 +454,10 @@ async function handleRequest(req: Request): Promise<Response> {
     // loop below, so polluting it would fire a spurious (billed) routine. These
     // markers only ever land in briefs_fired for the once-per-window guard.
     const pushMarkers: string[] = [];
+    // country_id → the just-written FT result article id, so the FT push can
+    // deep-link straight to it (the post_match block below populates this a few
+    // steps before the push fires, same tick).
+    const wcResultItemIds: Record<string, string> = {};
 
     if (isLive && prior !== null && liveBriefConfigured) {
       // HT trigger: status == "HT" (the literal break) OR status == "2H"
@@ -484,6 +494,17 @@ async function handleRequest(req: Request): Promise<Response> {
         [homeTeamId, awayTeamId, true],
         [awayTeamId, homeTeamId, false],
       ] as const) {
+        // WC matchday content is now deterministic (the post_match block below
+        // writes the result article + talking points). gd-matchday produces
+        // nothing for country entities, so firing it for WC is pure wasted
+        // routine quota (which busy WC days need for gd-live-brief). Skip the
+        // fire and just mark this perspective OK so the deterministic
+        // consequence + post_match block still runs and fired_finished_at sets.
+        if (fixtureLeagueId === WC_LEAGUE_ID) {
+          if (isHome) homeFireOk = true;
+          else awayFireOk = true;
+          continue;
+        }
         const score = isHome
           ? `${homeGoals}-${awayGoals}`
           : `${awayGoals}-${homeGoals}`;
@@ -598,7 +619,14 @@ async function handleRequest(req: Request): Promise<Response> {
               body: rendered.body,
               push_text: rendered.push_text,
               push_title: rendered.push_title,
-              everyone_talking: true,
+              // WC_RIVAL_RESULT is scoped to the rival's OWN feed only: a Czech
+              // fan sees "a result in your group" on the Czech feed, but it must
+              // NOT enter the shared "Football" (everyone_talking) feed — there
+              // it read as a confusing near-duplicate ("...in Czech's group" /
+              // "...in Korea's group") with no group context. The single neutral
+              // result for the Football feed comes from the playing-team article
+              // below. Math consequences (TITLE_WON etc.) stay everyone-worthy.
+              everyone_talking: c.consequence_type !== "WC_RIVAL_RESULT",
               everyone_talking_headline: rendered.everyone_talking_headline,
               status: "published",
               published_at: new Date().toISOString(),
@@ -648,9 +676,19 @@ async function handleRequest(req: Request): Promise<Response> {
               round: fx.league?.round,
             });
             if (wcCtx) {
+              const hg = homeGoals ?? 0;
+              const ag = awayGoals ?? 0;
+              // Neutral, winner-first result for the shared "Football" feed
+              // (the single item everyone sees), carried by the home row below.
+              const neutralResult = hg === ag
+                ? `${fx.teams.home.name} and ${fx.teams.away.name} drew ${hg}-${ag}`
+                : hg > ag
+                  ? `${fx.teams.home.name} beat ${fx.teams.away.name} ${hg}-${ag}`
+                  : `${fx.teams.away.name} beat ${fx.teams.home.name} ${ag}-${hg}`;
+
               const playing = [
-                { slug: homeTeamId, apiId: fx.teams.home.id, name: fx.teams.home.name, oppName: fx.teams.away.name, gf: homeGoals ?? 0, ga: awayGoals ?? 0 },
-                { slug: awayTeamId, apiId: fx.teams.away.id, name: fx.teams.away.name, oppName: fx.teams.home.name, gf: awayGoals ?? 0, ga: homeGoals ?? 0 },
+                { slug: homeTeamId, apiId: fx.teams.home.id, name: fx.teams.home.name, oppName: fx.teams.away.name, gf: hg, ga: ag },
+                { slug: awayTeamId, apiId: fx.teams.away.id, name: fx.teams.away.name, oppName: fx.teams.home.name, gf: ag, ga: hg },
               ];
               for (const p of playing) {
                 const state: PostMatchState = p.gf > p.ga ? "win" : p.gf < p.ga ? "loss" : "draw";
@@ -664,6 +702,48 @@ async function handleRequest(req: Request): Promise<Response> {
                   bestThird: wcCtx.bestThirdByApiId.get(p.apiId),
                 });
                 await writeWcPostMatch(supabase, p.slug, pm);
+
+                // The feed article the user was missing: a real result item on
+                // the PLAYING team's own feed, perspective-framed, WITH a talking
+                // point (renderPostMatch's situation-aware prose). gd-matchday
+                // produces nothing for WC, so this deterministic floor is what
+                // guarantees the playing teams are never newsless again. Only
+                // the HOME row carries everyone_talking → the Football feed shows
+                // exactly ONE neutral result (no perspective duplicate).
+                const isHome = p.slug === homeTeamId;
+                const perspectiveHeadline = state === "win"
+                  ? `${p.name} beat ${p.oppName} ${p.gf}-${p.ga}`
+                  : state === "loss"
+                    ? `${p.name} lost ${p.gf}-${p.ga} to ${p.oppName}`
+                    : `${p.name} drew ${p.gf}-${p.ga} with ${p.oppName}`;
+                const { data: inserted, error: itemErr } = await supabase
+                  .from("content_items")
+                  .insert({
+                    team_id: p.slug,
+                    type: "matchday",
+                    match_id: String(fixtureId),
+                    match_result: perspectiveHeadline,
+                    headline: perspectiveHeadline,
+                    body: pm.text,
+                    talking_points: [pm.talking_point],
+                    // The lock-screen alert is sent directly by the FT push
+                    // below; this feed article must NOT be re-pushed by
+                    // notification-sender's sweep (double-ping). Feed-only.
+                    push_eligible: false,
+                    everyone_talking: isHome,
+                    everyone_talking_headline: isHome ? neutralResult : null,
+                    everyone_talking_body: isHome ? `${neutralResult}. Full-time in their World Championship group.` : null,
+                    status: "published",
+                    published_at: new Date().toISOString(),
+                  })
+                  .select("id")
+                  .maybeSingle();
+                if (!itemErr && inserted?.id) {
+                  wcResultItemIds[p.slug] = inserted.id as string;
+                } else if (itemErr && itemErr.code !== "23505") {
+                  // 23505 = already written this match (idempotent no-op).
+                  console.error(`wc result item insert failed for ${p.slug}/${fixtureId} (non-fatal):`, itemErr.message);
+                }
               }
             }
           }
@@ -929,6 +1009,9 @@ async function handleRequest(req: Request): Promise<Response> {
             category: "WC_RESULT",
             fixtureId,
             label: "ft",
+            // Deep-link each follower to their team's just-written result
+            // article (populated in the post_match block above, same tick).
+            contentIdByCountry: wcResultItemIds,
           });
           pushMarkers.push("FT_PUSH");
         }

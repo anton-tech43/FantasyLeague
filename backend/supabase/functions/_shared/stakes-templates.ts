@@ -253,7 +253,7 @@ export function renderPostMatch(
       return {
         state,
         text: `${teamName} ${resultPhrase}. It is still all to play for in the group.`,
-        talking_point: `Ask him what they need from the last round of games.`,
+        talking_point: `Ask him what they need from their next game.`,
       };
   }
 }
