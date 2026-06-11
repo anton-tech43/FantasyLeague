@@ -92,18 +92,22 @@ export interface OpponentDetail {
 export function renderOpponentDetail(opponentName: string, info: OpponentDetail | null): string {
   if (!info) return "";
   const players = info.players.filter((p) => p.name && p.name.trim().length > 0);
-  const lines: string[] = [];
-  if (info.manager) lines.push(`${opponentName} are managed by ${info.manager}.`);
+  // Sections separated by a blank line for breathing room; players within the
+  // ones-to-watch list also get a blank line between each (the user's "row
+  // skip"). PLAIN text only — the current build renders the preview as a
+  // verbatim Text, so bold (markdown) would show literal asterisks; bolding
+  // is done natively by the structured Coming-up rendering in the 2.0.1 build.
+  const sections: string[] = [];
+  if (info.manager) sections.push(`${opponentName} are managed by ${info.manager}.`);
   if (players.length > 0) {
-    if (lines.length > 0) lines.push("");
-    lines.push("Their ones to watch:");
-    for (const p of players) {
+    const rows = players.map((p) => {
       const pos = p.position ? ` (${p.position})` : "";
       const desc = p.oneLiner ? `: ${p.oneLiner}` : "";
-      lines.push(`${p.name}${pos}${desc}`);
-    }
+      return `${p.name}${pos}${desc}`;
+    });
+    sections.push(`Their ones to watch:\n\n${rows.join("\n\n")}`);
   }
-  return lines.join("\n");
+  return sections.join("\n\n");
 }
 
 // ============================================================

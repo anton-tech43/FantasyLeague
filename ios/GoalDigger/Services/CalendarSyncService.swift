@@ -34,6 +34,12 @@ final class CalendarSyncService {
     /// removes any other "GoalDigger - <other team>" calendars so a team
     /// change leaves no orphan events behind.
     func sync(teamShortName: String, fixtures: [GDFixture]) async throws {
+        // Refresh the store's view of the user's calendars first. This
+        // long-lived EKEventStore otherwise holds a STALE view after the user
+        // deletes the GoalDigger calendar/events outside the app, so
+        // findOrCreateCalendar returns a dead reference and saves silently
+        // no-op — the "added once, deleted, won't re-add" bug.
+        store.reset()
         try removeOtherGoalDiggerCalendars(keeping: teamShortName)
 
         let title = "GoalDigger - \(teamShortName)"
@@ -69,13 +75,17 @@ final class CalendarSyncService {
             event.startDate = fixture.kickoffTime
             event.endDate = fixture.kickoffTime.addingTimeInterval(2 * 60 * 60)
             event.notes = "Match day. Open GoalDigger for prep."
-            try? store.save(event, span: .thisEvent, commit: false)
+            // Propagate save failures (was `try?`): a silent failure here is
+            // exactly the "it doesn't add" symptom. A thrown error reverts the
+            // Settings toggle and surfaces the error message instead.
+            try store.save(event, span: .thisEvent, commit: false)
         }
         try store.commit()
     }
 
     /// Remove every "GoalDigger - *" calendar from the store.
     func removeAllGoalDiggerCalendars() throws {
+        store.reset() // fresh view, so we see (and remove) the real current set
         for c in store.calendars(for: .event) where c.title.hasPrefix("GoalDigger - ") {
             try store.removeCalendar(c, commit: false)
         }
@@ -95,7 +105,7 @@ final class CalendarSyncService {
         if let existing = store.calendars(for: .event).first(where: { $0.title == title }) {
             return existing
         }
-        guard let source = store.defaultCalendarForNewEvents?.source else {
+        guard let source = writableSource() else {
             throw SyncError.noWritableSource
         }
         let cal = EKCalendar(for: .event, eventStore: store)
@@ -103,6 +113,24 @@ final class CalendarSyncService {
         cal.source = source
         try store.saveCalendar(cal, commit: true)
         return cal
+    }
+
+    /// Pick a source we can actually create a calendar in. `defaultCalendar
+    /// ForNewEvents?.source` is nil on devices with no default calendar (and
+    /// can point at a read-only subscribed source), which made the very first
+    /// "add" fail with noWritableSource. Fall back to iCloud (CalDAV), then the
+    /// on-device Local source, then any source that already holds a writable
+    /// event calendar.
+    private func writableSource() -> EKSource? {
+        if let s = store.defaultCalendarForNewEvents?.source { return s }
+        if let icloud = store.sources.first(where: { $0.sourceType == .calDAV && $0.title == "iCloud" }) {
+            return icloud
+        }
+        if let local = store.sources.first(where: { $0.sourceType == .local }) { return local }
+        if let anyCalDAV = store.sources.first(where: { $0.sourceType == .calDAV }) { return anyCalDAV }
+        return store.sources.first { src in
+            src.calendars(for: .event).contains { $0.allowsContentModifications }
+        }
     }
 }
 

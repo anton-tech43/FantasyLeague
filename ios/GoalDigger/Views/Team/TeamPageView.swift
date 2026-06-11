@@ -293,13 +293,6 @@ struct TeamPageView: View {
                             }
                             .buttonStyle(.plain)
                         }
-
-                        // The away side, in the same card — clearly labelled
-                        // so it never reads as his team. Data is the opponent's
-                        // own ones_to_know, copied server-side per fixture.
-                        if let opp = onesToKnow.opponent, !opp.players.isEmpty {
-                            opponentSection(opp)
-                        }
                     }
                 }
             )
@@ -438,11 +431,25 @@ struct TeamPageView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     TeamPageCountdown(targetDate: fixture.date)
 
-                    if !fixture.preview.isEmpty {
-                        Text(appState.personalise(fixture.preview))
+                    // When we can render the opponent's ones-to-know
+                    // structurally below (bold names, positions, photos), show
+                    // only the stakes line from the preview (its first
+                    // paragraph). Otherwise show the full preview text, which
+                    // already includes the opponent detail (older content / no
+                    // opponent block).
+                    let opponent = content?.cards.onesToKnow?.opponent
+                    let hasStructuredOpponent = !(opponent?.players.isEmpty ?? true)
+                    let previewText = hasStructuredOpponent
+                        ? (fixture.preview.components(separatedBy: "\n\n").first ?? fixture.preview)
+                        : fixture.preview
+                    if !previewText.isEmpty {
+                        Text(appState.personalise(previewText))
                             .font(.jakarta(14, weight: .regular))
                             .foregroundColor(.warmWhite.opacity(0.9))
                             .padding(.top, 2)
+                    }
+                    if let opponent, !opponent.players.isEmpty {
+                        opponentSection(opponent)
                     }
                 }
             }
@@ -779,22 +786,19 @@ struct TeamPageView: View {
         }
     }
 
-    /// The upcoming opponent's key players, rendered inside the focal team's
-    /// "Ones to know" card under a hot-rose header so it's unmistakably the
-    /// AWAY side. Rows are non-tappable (no dossier lookup for opponents).
+    /// The upcoming opponent's key players, rendered inside the "Coming up"
+    /// card (which already names the opponent) under a bold hot-rose header.
+    /// Bold names + positions + photos, with a row gap between players for
+    /// breathing room. Rows are non-tappable (no dossier lookup for the away
+    /// side). This is the structured counterpart to the plain-text opponent
+    /// detail in next_fixture.preview.
     @ViewBuilder
     private func opponentSection(_ opp: OpponentSide) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Divider()
-                .overlay(Color.warmWhite.opacity(0.12))
-                .padding(.vertical, 8)
-            Text("Up next: \(opp.teamName)")
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Their ones to watch")
                 .font(.jakarta(13, weight: .bold))
                 .foregroundColor(.hotRose)
-            Text("Their ones to watch")
-                .font(.jakarta(11, weight: .regular))
-                .foregroundColor(.warmWhite.opacity(0.5))
-                .padding(.bottom, 2)
+                .padding(.top, 6)
             ForEach(Array(opp.players.prefix(3))) { player in
                 playerRow(player: player, tappable: false)
             }

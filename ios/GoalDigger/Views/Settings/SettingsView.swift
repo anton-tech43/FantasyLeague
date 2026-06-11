@@ -313,6 +313,15 @@ struct SettingsView: View {
                     Text(appState.calendarSyncEnabled ? "On" : "Off")
                         .font(.feedHeadline)
                         .foregroundColor(.textPrimaryOnCard)
+                    // Explicit re-add for when the events were removed outside
+                    // the app (the toggle stays On, so there's otherwise no way
+                    // to put them back). Forces a fresh full re-sync.
+                    if appState.calendarSyncEnabled && !isSyncingCalendar {
+                        Button("Re-add fixtures") { Task { await enableCalendarSync() } }
+                            .font(.feedTimestamp)
+                            .foregroundColor(.hotRose)
+                            .padding(.top, 2)
+                    }
                 }
                 Spacer()
                 if isSyncingCalendar {
@@ -477,15 +486,26 @@ struct SettingsView: View {
             } else {
                 teamPage = try? await APIClient.shared.fetchTeamPage(teamId: teamId)
             }
-            guard let nextFixture = teamPage?.cards.nextFixture,
-                  let kickoff = Self.fixtureDateFormatter.date(from: nextFixture.date) else {
-                // Permission granted but no fixture to add yet. Mark on so we
+            // Sync the FULL upcoming schedule (the user wants their games,
+            // plural), parsing every future fixture from the Calendar-tab
+            // card; fall back to the single next_fixture for older content.
+            let now = Date()
+            var gdFixtures: [GDFixture] = (teamPage?.cards.upcomingFixtures ?? []).compactMap { f in
+                guard let kickoff = Self.fixtureDateFormatter.date(from: f.date), kickoff >= now else { return nil }
+                return GDFixture(opponent: f.opponent, kickoffTime: kickoff, venue: f.venue)
+            }
+            if gdFixtures.isEmpty,
+               let nextFixture = teamPage?.cards.nextFixture,
+               let kickoff = Self.fixtureDateFormatter.date(from: nextFixture.date) {
+                gdFixtures = [GDFixture(opponent: nextFixture.opponent, kickoffTime: kickoff, venue: nextFixture.venue)]
+            }
+            guard !gdFixtures.isEmpty else {
+                // Permission granted but no fixtures to add yet. Mark on so we
                 // sync the next time fixtures land.
                 appState.calendarSyncEnabled = true
                 return
             }
-            let fixture = GDFixture(opponent: nextFixture.opponent, kickoffTime: kickoff, venue: nextFixture.venue)
-            try await CalendarSyncService.shared.sync(teamShortName: team.shortName, fixtures: [fixture])
+            try await CalendarSyncService.shared.sync(teamShortName: team.shortName, fixtures: gdFixtures)
             appState.calendarSyncEnabled = true
         } catch {
             calendarErrorMessage = "Something went wrong adding the events. Try again in a sec."
