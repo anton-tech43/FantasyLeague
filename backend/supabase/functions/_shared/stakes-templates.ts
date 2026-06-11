@@ -67,34 +67,43 @@ export function renderNextFixturePreview(ctx: NextFixtureContext): string {
 }
 
 // ============================================================
-// Opponent aside — appended to next_fixture.preview so the
-// "Coming up" card says a little about the team they are about
-// to play. ALWAYS names the opponent (never "your"/"his") so it
-// reads unmistakably as the away side. No em-dashes; de-FIFA.
+// Opponent detail — appended to next_fixture.preview so the
+// "Coming up" card, when expanded, shows the upcoming OPPONENT's
+// full ones-to-know (manager + each player's position + the
+// opponent's own descriptive text). ALWAYS names the opponent
+// (never "your"/"his") so it reads unmistakably as the away side.
+// Text only (no-build); the pictured version is the 2.0.1 in-card
+// block. No em-dashes; de-FIFA.
 // ============================================================
 
-export interface OpponentInfo {
+export interface OpponentDetail {
   manager?: string;
-  dangerMen: string[]; // 0-2 player names, in the opponent's own ranking
+  players: Array<{ name: string; position?: string; oneLiner?: string }>;
 }
 
 /**
- * One factual sentence about the upcoming OPPONENT (their manager + key
- * players), pulled from the opponent's own curated card. Returns "" when
- * we have nothing to say (e.g. a non-WC friendly opponent with no page),
- * so the caller can append unconditionally.
+ * Multi-line summary of the upcoming OPPONENT (their manager + each key
+ * player's position and the opponent's own one-liner), copied from the
+ * opponent's curated ones-to-know. Returns "" when there is nothing to say
+ * (e.g. a non-WC friendly opponent with no page), so the caller can append
+ * unconditionally. One-liners are already token-stripped upstream, so they
+ * never read in the opponent's-own-fan voice here.
  */
-export function renderOpponentBlurb(opponentName: string, info: OpponentInfo | null): string {
+export function renderOpponentDetail(opponentName: string, info: OpponentDetail | null): string {
   if (!info) return "";
-  const men = info.dangerMen.filter((n) => n && n.trim().length > 0).slice(0, 2);
-  const menPhrase = men.length === 2 ? `${men[0]} and ${men[1]}` : men[0] ?? "";
-  const watch = men.length === 1 ? "the one to watch" : "the ones to watch";
-  if (info.manager && menPhrase) {
-    return `${opponentName} are managed by ${info.manager}, with ${menPhrase} ${watch}.`;
+  const players = info.players.filter((p) => p.name && p.name.trim().length > 0);
+  const lines: string[] = [];
+  if (info.manager) lines.push(`${opponentName} are managed by ${info.manager}.`);
+  if (players.length > 0) {
+    if (lines.length > 0) lines.push("");
+    lines.push("Their ones to watch:");
+    for (const p of players) {
+      const pos = p.position ? ` (${p.position})` : "";
+      const desc = p.oneLiner ? `: ${p.oneLiner}` : "";
+      lines.push(`${p.name}${pos}${desc}`);
+    }
   }
-  if (info.manager) return `${opponentName} are managed by ${info.manager}.`;
-  if (menPhrase) return `Keep an eye on ${menPhrase} for ${opponentName}.`;
-  return "";
+  return lines.join("\n");
 }
 
 // ============================================================

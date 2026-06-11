@@ -1,7 +1,7 @@
 // Deno tests for post_match best-third tone branches.
 //   deno test backend/supabase/functions/_shared/stakes-templates.test.ts
 
-import { renderOpponentBlurb, renderPostMatch } from "./stakes-templates.ts";
+import { renderOpponentDetail, renderPostMatch } from "./stakes-templates.ts";
 import { groupSituation, type GroupStanding } from "./stakes-engine.ts";
 
 function assert(c: boolean, m: string): void {
@@ -44,20 +44,30 @@ Deno.test("post_match: best-third pending (soft/undefined) → honest 'still in 
   assert(!/enjoy/i.test(none.text + none.talking_point), "never says 'enjoy it'");
 });
 
-Deno.test("opponent blurb: manager + two danger men, names the away side", () => {
-  const r = renderOpponentBlurb("Tunisia", { manager: "Sami Trabelsi", dangerMen: ["Hannibal Mejbri", "Ellyes Skhiri"] });
-  assert(/Tunisia are managed by Sami Trabelsi/.test(r), "names opponent + manager");
-  assert(/Hannibal Mejbri and Ellyes Skhiri the ones to watch/.test(r), "both danger men");
+Deno.test("opponent detail: manager + players with positions + descriptions, names the away side", () => {
+  const r = renderOpponentDetail("Tunisia", {
+    manager: "Sabri Lamouchi",
+    players: [
+      { name: "Hannibal Mejbri", position: "midfielder", oneLiner: "Man Utd academy playmaker." },
+      { name: "Ellyes Skhiri", position: "midfielder", oneLiner: "Captain and engine room." },
+    ],
+  });
+  assert(/Tunisia are managed by Sabri Lamouchi\./.test(r), "names opponent + manager");
+  assert(/Their ones to watch:/.test(r), "ones-to-watch header");
+  assert(/Hannibal Mejbri \(midfielder\): Man Utd academy playmaker\./.test(r), "player has position + description");
+  assert(/Ellyes Skhiri \(midfielder\): Captain and engine room\./.test(r), "second player too");
   assert(!/—|–/.test(r), "no em/en dashes");
 });
 
-Deno.test("opponent blurb: degrades (one man, manager-only, players-only, none)", () => {
-  assert(/Arda Güler the one to watch/.test(
-    renderOpponentBlurb("Türkiye", { manager: "V. Montella", dangerMen: ["Arda Güler"] }),
-  ), "singular 'one to watch'");
-  assert(renderOpponentBlurb("Panama", { dangerMen: [] }) === "", "manager+players empty → empty string");
-  assert(/Keep an eye on Pulisic for USA\./.test(
-    renderOpponentBlurb("USA", { dangerMen: ["Pulisic"] }),
-  ), "players-only branch");
-  assert(renderOpponentBlurb("X", null) === "", "null info → empty string (caller appends unconditionally)");
+Deno.test("opponent detail: degrades (no description, no position, no manager, none)", () => {
+  // No one-liner (token-stripped upstream) → name + position only.
+  assert(/Arda Güler \(midfielder\)$/m.test(
+    renderOpponentDetail("Türkiye", { manager: "V. Montella", players: [{ name: "Arda Güler", position: "midfielder" }] }),
+  ), "player line is name + position when no description");
+  // No position → bare name.
+  assert(/^Kane$/m.test(
+    renderOpponentDetail("England", { players: [{ name: "Kane" }] }),
+  ), "bare name when no position/description/manager");
+  assert(renderOpponentDetail("X", null) === "", "null info → empty string (caller appends unconditionally)");
+  assert(renderOpponentDetail("Y", { players: [] }) === "", "no manager + no players → empty string");
 });

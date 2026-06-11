@@ -18,7 +18,7 @@ import { wrapExternalData } from "../_shared/input-sanitizer.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import type { Team } from "../_shared/types.ts";
 import { annotateFixtures, classifyExactPointsOnly, type ExactInfo, type GroupStanding } from "../_shared/stakes-engine.ts";
-import { renderNextFixturePreview, renderOpponentBlurb, renderThisWeek } from "../_shared/stakes-templates.ts";
+import { renderNextFixturePreview, renderOpponentDetail, renderThisWeek } from "../_shared/stakes-templates.ts";
 import { collectFinishedFixtureIds, dropFinished } from "../_shared/fixture-rollover.ts";
 import { classifyBestThird, type GroupThirdBounds } from "../_shared/best-third.ts";
 import { classifyExactForTeam, coarseThirdPointsBounds, type GroupTeam, type RemainingGame } from "../_shared/group-scenarios.ts";
@@ -1103,10 +1103,21 @@ async function updateWcDynamicFields(
       groupLabel,
       stakes: first,
     });
-    const opponentBlurb = renderOpponentBlurb(
+    // Full opponent ones-to-know (manager + each player's position + the
+    // opponent's own description) so the expanded "Coming up" card carries
+    // the same depth as the team's own ones-to-know, minus photos (those
+    // are the 2.0.1 in-card block). Text only → no build.
+    const opponentDetail = renderOpponentDetail(
       first.opponent,
       opponentInfo
-        ? { manager: opponentInfo.manager, dangerMen: opponentInfo.players.map((p) => p.name) }
+        ? {
+          manager: opponentInfo.manager,
+          players: opponentInfo.players.map((p) => ({
+            name: p.name,
+            position: p.position,
+            oneLiner: p.one_liner,
+          })),
+        }
         : null,
     );
     cards.next_fixture = {
@@ -1114,7 +1125,7 @@ async function updateWcDynamicFields(
       opponent: first.opponent,
       date: first.date,
       venue: first.venue,
-      preview: opponentBlurb ? `${stakesPreview} ${opponentBlurb}` : stakesPreview,
+      preview: opponentDetail ? `${stakesPreview}\n\n${opponentDetail}` : stakesPreview,
     };
 
     // Opponent danger men in the SAME ones_to_know card, clearly the away
