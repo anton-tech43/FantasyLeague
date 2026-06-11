@@ -34,6 +34,12 @@ struct GoalDiggerApp: App {
                         // otherwise drop unflushed writes. See AppState.persistNow.
                         appState.persistNow()
                     }
+                    if newPhase == .active {
+                        // Foreground fallback: re-assert the push-to-start
+                        // registration and, if the followed country has a live
+                        // match with no running activity, start one locally.
+                        LiveActivityManager.shared.syncForegroundActivity()
+                    }
                 }
         }
     }

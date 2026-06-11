@@ -231,6 +231,34 @@ class APIClient {
         try validateResponse(response)
     }
 
+    /// Register a Live Activity push token. `kind` is "push_to_start" (per
+    /// install — backend starts the activity at kickoff; fixtureId nil) or
+    /// "update" (per running activity — backend updates/ends it; fixtureId
+    /// set). Mirrors registerToken: direct upsert into live_activity_tokens,
+    /// merge-duplicates on the token.
+    func registerLiveActivityToken(_ token: String,
+                                   kind: String,
+                                   fixtureId: Int?,
+                                   countryId: String?) async throws {
+        let url = try requireBaseURL().appendingPathComponent("live_activity_tokens")
+        var body: [String: Any] = [
+            "token": token,
+            "kind": kind,
+            "apns_environment": APIClient.apnsEnvironment,
+        ]
+        if let fixtureId { body["fixture_id"] = fixtureId }
+        if let countryId { body["country_id"] = countryId }
+        let bodyData = try JSONSerialization.data(withJSONObject: body)
+        let request = makeRequest(
+            url: url,
+            method: "POST",
+            body: bodyData,
+            extraHeaders: ["Prefer": "resolution=merge-duplicates"]
+        )
+        let (_, response) = try await URLSession.shared.data(for: request)
+        try validateResponse(response)
+    }
+
     func updateTokenTeam(_ token: String, newTeamId: String) async throws {
         let url = try buildURL(path: "device_tokens", queryItems: [
             URLQueryItem(name: "apns_token", value: "eq.\(token)")
@@ -433,6 +461,27 @@ class APIClient {
             throw APIError.httpError(httpResponse.statusCode)
         }
         return try decoder.decode(LiveMatchBrief.self, from: data)
+    }
+
+    /// Current live match for the user's country (from match_status_state),
+    /// for the Live Activity foreground-start fallback. Returns nil on 204
+    /// (no live match). Mirrors fetchCurrentLiveBrief's envelope.
+    func fetchCurrentLiveMatch(countryId: String) async throws -> LiveMatchSnapshot? {
+        let base = try requireFunctionsBaseURL()
+        guard var components = URLComponents(url: base.appendingPathComponent("live-match-current"), resolvingAgainstBaseURL: false) else {
+            throw APIError.invalidResponse
+        }
+        components.queryItems = [URLQueryItem(name: "country_id", value: countryId)]
+        guard let url = components.url else { throw APIError.invalidResponse }
+        var request = makeRequest(url: url)
+        request.timeoutInterval = 8
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else { throw APIError.invalidResponse }
+        if httpResponse.statusCode == 204 { return nil }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.httpError(httpResponse.statusCode)
+        }
+        return try decoder.decode(LiveMatchSnapshot.self, from: data)
     }
 
     // MARK: - Saturday Quiz (V1.1 task C3)

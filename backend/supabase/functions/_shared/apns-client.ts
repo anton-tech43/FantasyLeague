@@ -134,6 +134,100 @@ export async function sendPushNotification(
   }
 }
 
+// ── Live Activity (ActivityKit) push ──────────────────────────────────────
+// Keys MUST match the Swift Codable property names exactly (no custom
+// CodingKeys on MatchActivityAttributes / ContentState).
+
+interface LiveActivityContentState {
+  homeScore: number;
+  awayScore: number;
+  statusLabel: string;
+  note?: string;
+}
+
+interface LiveActivityAttributesPayload {
+  fixtureId: number;
+  homeName: string;
+  awayName: string;
+  homeFlag: string;
+  awayFlag: string;
+  groupLabel?: string;
+}
+
+interface LiveActivityPushOptions {
+  event: "start" | "update" | "end";
+  contentState: LiveActivityContentState;
+  /// Required for event="start" (push-to-start). The widget's ActivityAttributes type.
+  attributes?: LiveActivityAttributesPayload;
+  /// stale-date = now + this many seconds (the system dims the activity after).
+  staleSeconds?: number;
+  /// end only: dismissal-date = now + this many seconds (auto-removes the activity).
+  dismissalSeconds?: number;
+  /// Optional banner shown when a push-to-start activity appears.
+  alert?: { title: string; body: string };
+  environment?: APNsEnvironment;
+  priority?: number;
+}
+
+/// Send an ActivityKit Live Activity push (start / update / end). Reuses the
+/// same ES256 JWT + host selection as the alert path; differs only in the
+/// `apns-push-type: liveactivity` header, the `.push-type.liveactivity` topic
+/// suffix, and the `aps` payload shape. The token is a per-device
+/// push-to-start token (event="start") or a per-activity update token
+/// (event="update"/"end").
+export async function sendLiveActivityPush(
+  token: string,
+  opts: LiveActivityPushOptions,
+): Promise<APNsSendResult> {
+  const bundleId = Deno.env.get("APNS_BUNDLE_ID") ?? "com.goaldigger.app";
+  const env = opts.environment ?? defaultAPNsEnvironment();
+
+  try {
+    const jwt = await generateJWT();
+    const host = getAPNsHost(env);
+    const now = Math.floor(Date.now() / 1000);
+
+    const aps: Record<string, unknown> = {
+      timestamp: now,
+      event: opts.event,
+      "content-state": opts.contentState,
+    };
+    if (opts.event === "start") {
+      // ActivityAttributes type name (must match the Swift struct name).
+      aps["attributes-type"] = "MatchActivityAttributes";
+      aps["attributes"] = opts.attributes;
+    }
+    if (opts.alert) aps["alert"] = opts.alert;
+    if (opts.staleSeconds) aps["stale-date"] = now + opts.staleSeconds;
+    if (opts.event === "end" && opts.dismissalSeconds) {
+      aps["dismissal-date"] = now + opts.dismissalSeconds;
+    }
+
+    const response = await fetch(`${host}/3/device/${token}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `bearer ${jwt}`,
+        "apns-topic": `${bundleId}.push-type.liveactivity`,
+        "apns-push-type": "liveactivity",
+        "apns-priority": String(opts.priority ?? 10),
+      },
+      body: JSON.stringify({ aps }),
+    });
+
+    if (response.ok) return { token, success: true, status: 200 };
+    const body = await response.json().catch(() => ({}));
+    return {
+      token,
+      success: false,
+      status: response.status,
+      reason: (body as Record<string, string>).reason ?? `HTTP ${response.status}`,
+    };
+  } catch (e) {
+    return { token, success: false, reason: e instanceof Error ? e.message : String(e) };
+  }
+}
+
 export function buildAPNsPayload(
   teamShortName: string,
   headline: string,
@@ -176,4 +270,10 @@ export function buildAPNsPayload(
   };
 }
 
-export type { APNsPayload, APNsSendResult, APNsEnvironment };
+export type {
+  APNsPayload,
+  APNsSendResult,
+  APNsEnvironment,
+  LiveActivityContentState,
+  LiveActivityAttributesPayload,
+};

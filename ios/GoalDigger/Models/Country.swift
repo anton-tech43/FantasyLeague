@@ -131,6 +131,69 @@ enum Country: String, CaseIterable, Identifiable, Codable {
         }
     }
 
+    /// Unicode flag emoji. Used by the Live Activity (Lock Screen + Dynamic
+    /// Island), which runs in the widget process and cannot reliably load the
+    /// remote crest CDN — an emoji renders instantly with no asset bundling.
+    /// England/Scotland use the subdivision tag-sequence flags.
+    var flagEmoji: String {
+        switch self {
+        case .algeria:           return "🇩🇿"
+        case .argentina:         return "🇦🇷"
+        case .australia:         return "🇦🇺"
+        case .austria:           return "🇦🇹"
+        case .belgium:           return "🇧🇪"
+        case .bosniaHerzegovina: return "🇧🇦"
+        case .brazil:            return "🇧🇷"
+        case .canada:            return "🇨🇦"
+        case .capeVerde:         return "🇨🇻"
+        case .colombia:          return "🇨🇴"
+        case .congoDR:           return "🇨🇩"
+        case .croatia:           return "🇭🇷"
+        case .curacao:           return "🇨🇼"
+        case .czechRepublic:     return "🇨🇿"
+        case .ecuador:           return "🇪🇨"
+        case .egypt:             return "🇪🇬"
+        case .england:           return "🏴󠁧󠁢󠁥󠁮󠁧󠁿"
+        case .france:            return "🇫🇷"
+        case .germany:           return "🇩🇪"
+        case .ghana:             return "🇬🇭"
+        case .haiti:             return "🇭🇹"
+        case .iran:              return "🇮🇷"
+        case .iraq:              return "🇮🇶"
+        case .ivoryCoast:        return "🇨🇮"
+        case .japan:             return "🇯🇵"
+        case .jordan:            return "🇯🇴"
+        case .mexico:            return "🇲🇽"
+        case .morocco:           return "🇲🇦"
+        case .netherlands:       return "🇳🇱"
+        case .newZealand:        return "🇳🇿"
+        case .norway:            return "🇳🇴"
+        case .panama:            return "🇵🇦"
+        case .paraguay:          return "🇵🇾"
+        case .portugal:          return "🇵🇹"
+        case .qatar:             return "🇶🇦"
+        case .saudiArabia:       return "🇸🇦"
+        case .scotland:          return "🏴󠁧󠁢󠁳󠁣󠁴󠁿"
+        case .senegal:           return "🇸🇳"
+        case .southAfrica:       return "🇿🇦"
+        case .southKorea:        return "🇰🇷"
+        case .spain:             return "🇪🇸"
+        case .sweden:            return "🇸🇪"
+        case .switzerland:       return "🇨🇭"
+        case .tunisia:           return "🇹🇳"
+        case .turkiye:           return "🇹🇷"
+        case .uruguay:           return "🇺🇾"
+        case .usa:               return "🇺🇸"
+        case .uzbekistan:        return "🇺🇿"
+        }
+    }
+
+    /// Resolve a Country from its api_football_id (match-watcher / backend
+    /// fixtures key on this). Returns nil for a non-WC team id.
+    static func from(apiFootballId: Int) -> Country? {
+        Country.allCases.first { $0.apiFootballId == apiFootballId }
+    }
+
     /// API-Football team_id. Used to build the flag URL from the team CDN
     /// (same pattern as Team.crestURL).
     var apiFootballId: Int {

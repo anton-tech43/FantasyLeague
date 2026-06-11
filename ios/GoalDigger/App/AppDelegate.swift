@@ -59,6 +59,11 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
             }
         }
 
+        // Observe Live Activity tokens (push-to-start + per-activity update
+        // tokens) so the backend can start/update live WC match activities on
+        // the Lock Screen + Dynamic Island. Idempotent; safe at every launch.
+        LiveActivityManager.shared.start()
+
         return true
     }
 
