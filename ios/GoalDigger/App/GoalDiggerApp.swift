@@ -27,6 +27,13 @@ struct GoalDiggerApp: App {
                         }
                         appState.isContextSwitcherOpen = false
                     }
+                    if newPhase == .inactive || newPhase == .background {
+                        // Flush pending UserDefaults writes before the app can be
+                        // suspended or killed. Defends onboarding state (and the
+                        // persisted toggles) against a force-quit that would
+                        // otherwise drop unflushed writes. See AppState.persistNow.
+                        appState.persistNow()
+                    }
                 }
         }
     }
@@ -69,6 +76,15 @@ struct RootView: View {
         Group {
             if !appState.hasCompletedOnboarding {
                 OnboardingFlow()
+                    .onAppear {
+                        #if DEBUG
+                        // Confirms (in TestFlight) whether a re-onboarding user
+                        // lost state entirely (write-flush bug — all <empty>) vs
+                        // a partial/inconsistent state. Logs presence only, not
+                        // the names (local-only PII).
+                        print("🔄 ONBOARDING shown — herName:\(appState.herName.isEmpty ? "<empty>" : "set") hisName:\(appState.hisName.isEmpty ? "<empty>" : "set") team:\(appState.selectedTeam?.rawValue ?? "nil") country:\(appState.selectedCountry?.rawValue ?? "nil")")
+                        #endif
+                    }
             } else if !appState.hasSeenSeasonPrimer {
                 // One-time Season Primer screen (V1.1 task A1). Shows where
                 // his team is in the season + 3 text-message-style openers

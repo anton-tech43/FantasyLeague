@@ -18,6 +18,11 @@ class AppState {
         didSet {
             if let team = selectedTeam {
                 UserDefaults.standard.set(team.rawValue, forKey: "selectedTeam")
+            } else {
+                // Symmetry with selectedCountry: clear the key when unset, so
+                // skipping the optional PL team doesn't leave a stale club
+                // behind for a country-only (WC) user.
+                UserDefaults.standard.removeObject(forKey: "selectedTeam")
             }
         }
     }
@@ -154,6 +159,21 @@ class AppState {
         result = result.replacingOccurrences(of: "\u{2013}", with: ", ")
 
         return result
+    }
+
+    /// Force pending UserDefaults writes to disk NOW.
+    ///
+    /// UserDefaults persists asynchronously — `set(_:forKey:)` updates an
+    /// in-memory cache and cfprefsd flushes to disk on a timer and on app
+    /// suspension. So onboarding state written moments before the user
+    /// force-quits (swipes the app away) or a crash/jetsam kill can be lost,
+    /// and the user re-enters EVERYTHING on next launch. Calling this at the
+    /// load-bearing moments (onboarding complete; resign-active) flushes the
+    /// whole suite at once and closes that window. `synchronize()` is the only
+    /// public API to force the write; Apple's "usually unnecessary" note
+    /// assumes the process isn't killed first — which is exactly this bug.
+    func persistNow() {
+        UserDefaults.standard.synchronize()
     }
 
     /// Clear all local data (for "Delete My Data" flow)

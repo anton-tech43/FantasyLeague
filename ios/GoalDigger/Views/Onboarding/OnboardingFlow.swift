@@ -180,5 +180,10 @@ struct OnboardingFlow: View {
         }
 
         appState.hasCompletedOnboarding = true
+        // Force-flush the whole onboarding set (names + team + country + tier
+        // + flag) to disk NOW. UserDefaults writes are async; without this, a
+        // user who finishes onboarding and immediately force-quits before
+        // cfprefsd flushes loses every field and re-onboards next launch.
+        appState.persistNow()
     }
 }
