@@ -48,6 +48,23 @@ export function collectFinishedFixtureIds(payloads: unknown[]): Set<number> {
 }
 
 /**
+ * Keep only the api_football_fixtures_next response items belonging to one
+ * competition (API-Football `league.id`). During the World Cup a country's
+ * fixtures_next payload also carries its post-tournament games — Nations
+ * League, Euro/qualifier ties (different league ids) — which must NOT surface
+ * as WC "upcoming". Filtering to the WC league id (1) leaves only the group
+ * games now, and future-proofs the knockout rounds (also league id 1).
+ * Tolerant of malformed items (a missing league object drops the item).
+ */
+export function filterFixturesByLeague(response: unknown[], leagueId: number): unknown[] {
+  if (!Array.isArray(response)) return [];
+  return response.filter((item) => {
+    const league = (item as Record<string, unknown>)?.league as Record<string, unknown> | undefined;
+    return (league?.id as number | undefined) === leagueId;
+  });
+}
+
+/**
  * Drop fixtures that are already played. The caller has already applied the
  * kickoff date-grace; this additionally removes games that are finished even
  * when their kickoff is recent (just-finished) or a stale fixtures_next

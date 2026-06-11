@@ -19,7 +19,7 @@ import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import type { Team } from "../_shared/types.ts";
 import { annotateFixtures, classifyExactPointsOnly, type ExactInfo, type GroupStanding } from "../_shared/stakes-engine.ts";
 import { renderNextFixturePreview, renderOpponentDetail, renderThisWeek } from "../_shared/stakes-templates.ts";
-import { collectFinishedFixtureIds, dropFinished } from "../_shared/fixture-rollover.ts";
+import { collectFinishedFixtureIds, dropFinished, filterFixturesByLeague } from "../_shared/fixture-rollover.ts";
 import { classifyBestThird, type GroupThirdBounds } from "../_shared/best-third.ts";
 import { classifyExactForTeam, coarseThirdPointsBounds, type GroupTeam, type RemainingGame } from "../_shared/group-scenarios.ts";
 import { guaranteedExactlyThird } from "../_shared/detect-consequences.ts";
@@ -1048,7 +1048,11 @@ async function updateWcDynamicFields(
   let upcoming: ParsedFixture[] = [];
   for (const fx of fxLogs) {
     const parsed = dropFinished(
-      parseUpcomingFixtures(fx.data, team.api_football_id, now),
+      // WC league only: drop the post-tournament Nations League / qualifier
+      // ties API-Football returns alongside the group games, so they can't
+      // surface as "upcoming" (and can't be mislabeled "Group stage game"
+      // when an opponent name happens to match a group rival).
+      parseUpcomingFixtures(fx.data, team.api_football_id, now, WC_LEAGUE_ID),
       finishedIds,
     );
     if (parsed.length > 0) {
@@ -1354,14 +1358,20 @@ interface ParsedFixture {
 
 /// Parse api_football_fixtures_next into chronological FUTURE fixtures for
 /// this team (past fixtures dropped, with a 3h grace for in-progress games).
+/// When `leagueId` is given, keep only that competition's fixtures — during
+/// the WC a country's fixtures_next payload also carries post-tournament
+/// Nations League / qualifier ties (different league id), which must not
+/// surface as WC "upcoming".
 function parseUpcomingFixtures(
   data: unknown,
   teamApiFootballId: number,
   now: Date,
+  leagueId?: number,
 ): ParsedFixture[] {
   try {
-    const response = (data as Record<string, unknown>).response as unknown[];
+    let response = (data as Record<string, unknown>).response as unknown[];
     if (!Array.isArray(response)) return [];
+    if (leagueId != null) response = filterFixturesByLeague(response, leagueId);
     const floor = now.getTime() - FIXTURE_PAST_GRACE_MS;
     const out: ParsedFixture[] = [];
     for (const item of response) {
@@ -1456,6 +1466,11 @@ function extractRecentForm(
 }
 
 const FIXTURE_PAST_GRACE_MS = 3 * 60 * 60_000; // keep in-progress / just-finished games
+
+/// API-Football league id for the FIFA World Cup. Used to filter a country's
+/// fixtures_next payload down to WC games only (it also carries that nation's
+/// post-tournament Nations League / qualifier fixtures).
+const WC_LEAGUE_ID = 1;
 
 function extractNextFixture(
   data: unknown,

@@ -1,7 +1,7 @@
 // Deno tests for the WC next-fixture rollover helpers.
 //   deno test backend/supabase/functions/_shared/fixture-rollover.test.ts
 
-import { collectFinishedFixtureIds, dropFinished } from "./fixture-rollover.ts";
+import { collectFinishedFixtureIds, dropFinished, filterFixturesByLeague } from "./fixture-rollover.ts";
 
 function assert(c: boolean, m: string): void {
   if (!c) throw new Error("assertion failed: " + m);
@@ -50,6 +50,27 @@ Deno.test("dropFinished: removes played fixtures, keeps unplayed + id-less", () 
 Deno.test("dropFinished: empty finished-set is a no-op (today's pre-tournament state)", () => {
   const fx = [{ fixtureId: 1 }, { fixtureId: 2 }];
   eq(dropFinished(fx, new Set<number>()).length, 2, "nothing dropped when nothing played");
+});
+
+Deno.test("filterFixturesByLeague: keeps WC (league 1) games, drops Nations League / quals", () => {
+  // The real shape: England's fixtures_next carries 3 WC games (league 1) plus
+  // 6 UEFA Nations League games (league 5) dated Sep-Nov 2026.
+  const response = [
+    { league: { id: 1, name: "World Cup" }, fixture: { id: 1 }, teams: {} },
+    { league: { id: 5, name: "UEFA Nations League" }, fixture: { id: 2 }, teams: {} },
+    { league: { id: 1, name: "World Cup" }, fixture: { id: 3 }, teams: {} },
+    { league: { id: 5, name: "UEFA Nations League" }, fixture: { id: 4 }, teams: {} },
+    { fixture: { id: 5 } }, // malformed (no league) → dropped
+  ];
+  const wc = filterFixturesByLeague(response, 1);
+  eq(wc.length, 2, "only the two WC games survive");
+  assert(
+    wc.every((i) => ((i as Record<string, unknown>).league as Record<string, unknown>).id === 1),
+    "every surviving item is league 1",
+  );
+  eq(filterFixturesByLeague([], 1).length, 0, "empty in, empty out");
+  // deno-lint-ignore no-explicit-any
+  eq(filterFixturesByLeague(null as any, 1).length, 0, "non-array in, empty out");
 });
 
 Deno.test("rollover: a stale fixtures_next still listing a played opener rolls to game 2", () => {
