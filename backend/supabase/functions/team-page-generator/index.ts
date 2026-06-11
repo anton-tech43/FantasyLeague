@@ -18,7 +18,8 @@ import { wrapExternalData } from "../_shared/input-sanitizer.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import type { Team } from "../_shared/types.ts";
 import { annotateFixtures, classifyExactPointsOnly, type ExactInfo, type GroupStanding } from "../_shared/stakes-engine.ts";
-import { renderNextFixturePreview, renderThisWeek } from "../_shared/stakes-templates.ts";
+import { renderNextFixturePreview, renderOpponentBlurb, renderThisWeek } from "../_shared/stakes-templates.ts";
+import { collectFinishedFixtureIds, dropFinished } from "../_shared/fixture-rollover.ts";
 import { classifyBestThird, type GroupThirdBounds } from "../_shared/best-third.ts";
 import { classifyExactForTeam, coarseThirdPointsBounds, type GroupTeam, type RemainingGame } from "../_shared/group-scenarios.ts";
 import { guaranteedExactlyThird } from "../_shared/detect-consequences.ts";
@@ -889,6 +890,96 @@ async function updateDynamicFields(
  * season/form summaries). Falls back to existing cards on any missing data
  * so a transient empty fetch never wipes good content (newest-good-wins).
  */
+// Web-verified national-team coach overrides for cases where API-Football's
+// /coachs data is stale or unusable. API-Football does not reliably backdate
+// a sacked coach's stint or open the new appointee's, so the "most recent
+// open stint" matcher can return a coach who has left (Sweden still resolves
+// to Tomasson — sacked Oct 2025 — instead of Potter, whose record still lists
+// West Ham). The three <UNKNOWN> cases had no open stint at all. These are
+// applied deterministically on every dynamic refresh, so they survive the
+// weekly full regen. Verified against Wikipedia / ESPN / Sky / club sources
+// on 2026-06-11. REMOVE an entry once API-Football reflects reality (Sweden)
+// or once a full regen is confirmed to populate it from the now-present data
+// (France / Scotland / Uruguay). Photo ids are real API-Football coach ids.
+const COACH_OVERRIDES: Record<
+  string,
+  { name: string; photoUrl: string; summary: string }
+> = {
+  sweden: {
+    name: "Graham Potter",
+    photoUrl: "https://media.api-sports.io/football/coachs/12.png",
+    summary:
+      "Graham Potter took over Sweden in October 2025 and guided them through the playoffs to the World Championship. The English coach, formerly of Brighton and Chelsea, favours a calm, possession-based style.",
+  },
+  france: {
+    name: "Didier Deschamps",
+    photoUrl: "https://media.api-sports.io/football/coachs/180.png",
+    summary:
+      "Didier Deschamps has managed France since 2012 and won the 2018 World Championship. This is his last tournament in charge before he steps down afterwards.",
+  },
+  scotland: {
+    name: "Steve Clarke",
+    photoUrl: "https://media.api-sports.io/football/coachs/76.png",
+    summary:
+      "Steve Clarke has led Scotland since 2019 and signed a new deal through 2030. He has built a resilient side and taken them back to the game's biggest stage.",
+  },
+  uruguay: {
+    name: "Marcelo Bielsa",
+    photoUrl: "https://media.api-sports.io/football/coachs/105.png",
+    summary:
+      "Marcelo Bielsa, the Argentine tactician nicknamed 'El Loco', has coached Uruguay since 2023. His relentless, high-pressing football is among the most distinctive in the game.",
+  },
+  // Found wrong in the 2026-06-11 full coach audit (API-Football data stale):
+  spain: {
+    name: "Luis de la Fuente",
+    photoUrl: "https://media.api-sports.io/football/coachs/5832.png",
+    summary:
+      "Luis de la Fuente has coached Spain since 2022 and won Euro 2024. He came up through the Spanish youth setup before taking the senior job.",
+  },
+  ghana: {
+    name: "Carlos Queiroz",
+    photoUrl: "https://media.api-sports.io/football/coachs/324.png",
+    summary:
+      "Carlos Queiroz, the well-travelled Portuguese coach, took charge of Ghana shortly before the World Championship. He has previously led Portugal, Iran, Colombia and Egypt.",
+  },
+  tunisia: {
+    name: "Sabri Lamouchi",
+    photoUrl: "https://media.api-sports.io/football/coachs/102.png",
+    summary:
+      "Sabri Lamouchi, the French-Tunisian coach with Premier League experience at Nottingham Forest, leads Tunisia at the World Championship.",
+  },
+  south_africa: {
+    name: "Hugo Broos",
+    photoUrl: "https://media.api-sports.io/football/coachs/2883.png",
+    summary:
+      "Hugo Broos, the Belgian coach who won the Africa Cup of Nations with Cameroon, has led South Africa since 2021 and back to the World Championship.",
+  },
+  senegal: {
+    name: "Pape Thiaw",
+    photoUrl: "https://media.api-sports.io/football/coachs/17636.png",
+    summary:
+      "Pape Thiaw, a former Senegal international, stepped up from within the setup and guided the Lions of Teranga to the World Championship.",
+  },
+  saudi_arabia: {
+    name: "Georgios Donis",
+    photoUrl: "https://media.api-sports.io/football/coachs/1106.png",
+    summary:
+      "Georgios Donis, the experienced Greek coach, leads Saudi Arabia at the World Championship.",
+  },
+  czech_republic: {
+    name: "Miroslav Koubek",
+    photoUrl: "https://media.api-sports.io/football/coachs/15041.png",
+    summary:
+      "Miroslav Koubek is a vastly experienced Czech coach who leads the national team at the World Championship.",
+  },
+  new_zealand: {
+    name: "Darren Bazeley",
+    photoUrl: "https://media.api-sports.io/football/coachs/8214.png",
+    summary:
+      "Darren Bazeley leads New Zealand, guiding the All Whites at the World Championship.",
+  },
+};
+
 async function updateWcDynamicFields(
   supabase: ReturnType<typeof getSupabaseClient>,
   team: Team,
@@ -902,9 +993,13 @@ async function updateWcDynamicFields(
     .from("raw_fetch_logs")
     .select("source, data, fetched_at")
     .eq("team_id", team.id)
-    .in("source", ["api_football_standings", "api_football_fixtures_next"])
+    .in("source", [
+      "api_football_standings",
+      "api_football_fixtures_next",
+      "api_football_fixtures_last",
+    ])
     .order("fetched_at", { ascending: false })
-    .limit(20);
+    .limit(30);
   const rawLogs = (logs ?? []) as Array<{ source: string; data: unknown }>;
 
   const { data: existing } = await supabase
@@ -935,8 +1030,32 @@ async function updateWcDynamicFields(
     points: (e.points as number) ?? 0,
     played: (e.played as number) ?? 0,
   }));
-  const fxLog = rawLogs.find((l) => l.source === "api_football_fixtures_next");
-  const upcoming = fxLog ? parseUpcomingFixtures(fxLog.data, team.api_football_id, now) : [];
+  // Authoritative "already played" set from fixtures_last (fixture id +
+  // FT/AET/PEN status), unioned across recent logs — once played, always
+  // played. This is what makes the next-fixture rollover correct rather
+  // than date-guessed.
+  const finishedIds = collectFinishedFixtureIds(
+    rawLogs.filter((l) => l.source === "api_football_fixtures_last").map((l) => l.data),
+  );
+
+  // Newest-good-wins (mirrors buildStandingsCard): a transient empty fetch
+  // shouldn't blank the whole next_fixture/upcoming refresh. Walk the
+  // fixtures_next logs newest-first, drop the date-past (parser) AND the
+  // authoritatively-finished (dropFinished) games, and take the first log
+  // that still yields a genuinely upcoming fixture. So a stale snapshot that
+  // still lists a played game can't surface it as "next".
+  const fxLogs = rawLogs.filter((l) => l.source === "api_football_fixtures_next");
+  let upcoming: ParsedFixture[] = [];
+  for (const fx of fxLogs) {
+    const parsed = dropFinished(
+      parseUpcomingFixtures(fx.data, team.api_football_id, now),
+      finishedIds,
+    );
+    if (parsed.length > 0) {
+      upcoming = parsed;
+      break;
+    }
+  }
 
   // Exact-math labels: sound points-only within-group state ("Won the group" /
   // "At worst 2nd") + a cross-group best-third verdict ("Through as a best
@@ -967,18 +1086,54 @@ async function updateWcDynamicFields(
     }));
 
     const first = annotated[0];
+
+    // Opponent context for the "Coming up" card + the ones_to_know card.
+    // Reuses the OPPONENT's own curated card (manager + key players, with
+    // photos), so it costs zero Claude and stays accurate. Keyed on the
+    // opponent's API id (robust to name spelling), null for a non-WC
+    // friendly opponent.
+    const firstUpcoming = upcoming.find((f) => f.date === first.date) ?? upcoming[0];
+    const opponentInfo = firstUpcoming?.opponentApiId
+      ? await loadOpponentCardInfo(supabase, firstUpcoming.opponentApiId)
+      : null;
+
+    const stakesPreview = renderNextFixturePreview({
+      teamName: team.display_name,
+      opponentName: first.opponent,
+      groupLabel,
+      stakes: first,
+    });
+    const opponentBlurb = renderOpponentBlurb(
+      first.opponent,
+      opponentInfo
+        ? { manager: opponentInfo.manager, dangerMen: opponentInfo.players.map((p) => p.name) }
+        : null,
+    );
     cards.next_fixture = {
       updated_at: nowIso,
       opponent: first.opponent,
       date: first.date,
       venue: first.venue,
-      preview: renderNextFixturePreview({
-        teamName: team.display_name,
-        opponentName: first.opponent,
-        groupLabel,
-        stakes: first,
-      }),
+      preview: opponentBlurb ? `${stakesPreview} ${opponentBlurb}` : stakesPreview,
     };
+
+    // Opponent danger men in the SAME ones_to_know card, clearly the away
+    // side. Forward-compatible: current clients ignore the `opponent` key
+    // (Codable drops unknown fields); the 2.0.1 build renders it labeled.
+    // Rebuilt every refresh, so it follows the schedule; cleared when the
+    // next opponent has no page (avoids a stale block lingering).
+    if (cards.ones_to_know) {
+      const otk = cards.ones_to_know as Record<string, unknown>;
+      if (opponentInfo && opponentInfo.players.length > 0) {
+        otk.opponent = {
+          team_name: opponentInfo.teamName,
+          venue: first.venue,
+          players: opponentInfo.players,
+        };
+      } else {
+        delete otk.opponent;
+      }
+    }
 
     cards.this_week = renderThisWeek({
       teamName: team.display_name,
@@ -1008,12 +1163,83 @@ async function updateWcDynamicFields(
     };
   }
 
+  // Verified coach override (API-Football coach data is stale/unusable for
+  // these). Replaces name + photo + summary outright, because the existing
+  // card is either the wrong coach (Sweden → Tomasson) or the <UNKNOWN>
+  // placeholder. Applied every refresh so it outlives the weekly full regen.
+  const coachOverride = COACH_OVERRIDES[team.id];
+  if (coachOverride) {
+    cards.manager = {
+      ...((cards.manager as Record<string, unknown>) ?? {}),
+      name: coachOverride.name,
+      photo_url: coachOverride.photoUrl,
+      summary: coachOverride.summary,
+      updated_at: nowIso,
+    };
+  }
+
   content.cards = cards;
   const { error } = await supabase
     .from("team_pages")
     .update({ content, updated_at: nowIso })
     .eq("team_id", team.id);
   if (error) throw new Error(`WC dynamic update failed for ${team.id}: ${error.message}`);
+}
+
+/// Load the upcoming OPPONENT's curated card data (manager + top players,
+/// with photos) so the focal team's "Coming up" + ones_to_know cards can
+/// say something about who they're playing. Keyed on the opponent's
+/// API-Football id → teams.id → that team's own team_page. Returns null for
+/// a non-WC friendly opponent (no row), so callers degrade gracefully.
+/// Zero Claude — pure reads of data the opponent's own page already holds.
+async function loadOpponentCardInfo(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  opponentApiId: number,
+): Promise<
+  | {
+    teamName: string;
+    manager?: string;
+    players: Array<{ name: string; position?: string; one_liner?: string; photo_url?: string }>;
+  }
+  | null
+> {
+  const { data: oppTeam } = await supabase
+    .from("teams")
+    .select("id, display_name")
+    .eq("api_football_id", opponentApiId)
+    .maybeSingle();
+  if (!oppTeam) return null;
+
+  const { data: oppPage } = await supabase
+    .from("team_pages")
+    .select("content")
+    .eq("team_id", oppTeam.id as string)
+    .maybeSingle();
+  if (!oppPage) return null;
+
+  const cards = ((oppPage.content as Record<string, unknown> | null)?.cards ?? {}) as Record<
+    string,
+    Record<string, unknown>
+  >;
+  const manager = (cards.manager?.name as string | undefined) ?? undefined;
+  const rawPlayers = (cards.ones_to_know?.players as Array<Record<string, unknown>> | undefined) ?? [];
+  const players = rawPlayers.slice(0, 3).map((p) => {
+    // Drop one-liners written in the player's-OWN-fan voice (they carry a
+    // "[his name]" / "[her name]" personalisation token, e.g. "[his name]
+    // will be buzzing if he starts"). On the OPPONENT's page that token
+    // resolves to the reader's partner and reads backwards — a USA fan is
+    // not buzzing about a Türkiye player. Neutral, factual descriptors (no
+    // token) are kept; they read fine as opponent context.
+    const oneLiner = p.one_liner as string | undefined;
+    return {
+      name: p.name as string,
+      position: (p.position as string | undefined) ?? "",
+      one_liner: oneLiner && !oneLiner.includes("[") ? oneLiner : undefined,
+      photo_url: p.photo_url as string | undefined,
+    };
+  });
+
+  return { teamName: oppTeam.display_name as string, manager, players };
 }
 
 /// Build the exact-math hint for a WC team page: sound points-only within-
@@ -1108,6 +1334,7 @@ function parseOtherGroupsCoarse(standingsData: unknown, focalApiId: number): Gro
 // ============================================================
 
 interface ParsedFixture {
+  fixtureId?: number;
   date: string;
   opponentApiId: number;
   opponentName: string;
@@ -1138,6 +1365,7 @@ function parseUpcomingFixtures(
       if (!Number.isNaN(t) && t < floor) continue; // drop clearly-past fixtures
       const isHome = (home.id as number | undefined) === teamApiFootballId;
       out.push({
+        fixtureId: fixtureInfo.id as number | undefined,
         date: dateStr,
         opponentApiId: (isHome ? away.id : home.id) as number,
         opponentName: (isHome ? away.name : home.name) as string,

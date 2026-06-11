@@ -67,6 +67,37 @@ export function renderNextFixturePreview(ctx: NextFixtureContext): string {
 }
 
 // ============================================================
+// Opponent aside — appended to next_fixture.preview so the
+// "Coming up" card says a little about the team they are about
+// to play. ALWAYS names the opponent (never "your"/"his") so it
+// reads unmistakably as the away side. No em-dashes; de-FIFA.
+// ============================================================
+
+export interface OpponentInfo {
+  manager?: string;
+  dangerMen: string[]; // 0-2 player names, in the opponent's own ranking
+}
+
+/**
+ * One factual sentence about the upcoming OPPONENT (their manager + key
+ * players), pulled from the opponent's own curated card. Returns "" when
+ * we have nothing to say (e.g. a non-WC friendly opponent with no page),
+ * so the caller can append unconditionally.
+ */
+export function renderOpponentBlurb(opponentName: string, info: OpponentInfo | null): string {
+  if (!info) return "";
+  const men = info.dangerMen.filter((n) => n && n.trim().length > 0).slice(0, 2);
+  const menPhrase = men.length === 2 ? `${men[0]} and ${men[1]}` : men[0] ?? "";
+  const watch = men.length === 1 ? "the one to watch" : "the ones to watch";
+  if (info.manager && menPhrase) {
+    return `${opponentName} are managed by ${info.manager}, with ${menPhrase} ${watch}.`;
+  }
+  if (info.manager) return `${opponentName} are managed by ${info.manager}.`;
+  if (menPhrase) return `Keep an eye on ${menPhrase} for ${opponentName}.`;
+  return "";
+}
+
+// ============================================================
 // this_week card — group context + a light aside
 // ============================================================
 

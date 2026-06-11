@@ -1,7 +1,7 @@
 // Deno tests for post_match best-third tone branches.
 //   deno test backend/supabase/functions/_shared/stakes-templates.test.ts
 
-import { renderPostMatch } from "./stakes-templates.ts";
+import { renderOpponentBlurb, renderPostMatch } from "./stakes-templates.ts";
 import { groupSituation, type GroupStanding } from "./stakes-engine.ts";
 
 function assert(c: boolean, m: string): void {
@@ -42,4 +42,22 @@ Deno.test("post_match: best-third pending (soft/undefined) → honest 'still in 
   const none = pm(undefined);
   assert(/still in play/i.test(none.text), "undefined → still in play");
   assert(!/enjoy/i.test(none.text + none.talking_point), "never says 'enjoy it'");
+});
+
+Deno.test("opponent blurb: manager + two danger men, names the away side", () => {
+  const r = renderOpponentBlurb("Tunisia", { manager: "Sami Trabelsi", dangerMen: ["Hannibal Mejbri", "Ellyes Skhiri"] });
+  assert(/Tunisia are managed by Sami Trabelsi/.test(r), "names opponent + manager");
+  assert(/Hannibal Mejbri and Ellyes Skhiri the ones to watch/.test(r), "both danger men");
+  assert(!/—|–/.test(r), "no em/en dashes");
+});
+
+Deno.test("opponent blurb: degrades (one man, manager-only, players-only, none)", () => {
+  assert(/Arda Güler the one to watch/.test(
+    renderOpponentBlurb("Türkiye", { manager: "V. Montella", dangerMen: ["Arda Güler"] }),
+  ), "singular 'one to watch'");
+  assert(renderOpponentBlurb("Panama", { dangerMen: [] }) === "", "manager+players empty → empty string");
+  assert(/Keep an eye on Pulisic for USA\./.test(
+    renderOpponentBlurb("USA", { dangerMen: ["Pulisic"] }),
+  ), "players-only branch");
+  assert(renderOpponentBlurb("X", null) === "", "null info → empty string (caller appends unconditionally)");
 });

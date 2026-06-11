@@ -364,11 +364,30 @@ struct OnesToKnowCard: Codable {
     let updatedAt: String?
     let players: [TopPlayer]
     let talkingPoint: String?
+    /// The UPCOMING opponent's own key players (copied from their team page
+    /// server-side, refreshed per fixture). Rendered in the same card under
+    /// a clear "their side" header so it's unmistakably the away team, not
+    /// his. Nil for non-WC teams / when the next opponent has no page.
+    let opponent: OpponentSide?
 
     enum CodingKeys: String, CodingKey {
         case updatedAt = "updated_at"
         case players
         case talkingPoint = "talking_point"
+        case opponent
+    }
+}
+
+/// The away side shown inside the focal team's "Ones to know" card.
+struct OpponentSide: Codable {
+    let teamName: String
+    let venue: String?
+    let players: [TopPlayer]
+
+    enum CodingKeys: String, CodingKey {
+        case teamName = "team_name"
+        case venue
+        case players
     }
 }
 

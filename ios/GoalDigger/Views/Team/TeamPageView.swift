@@ -293,6 +293,13 @@ struct TeamPageView: View {
                             }
                             .buttonStyle(.plain)
                         }
+
+                        // The away side, in the same card — clearly labelled
+                        // so it never reads as his team. Data is the opponent's
+                        // own ones_to_know, copied server-side per fixture.
+                        if let opp = onesToKnow.opponent, !opp.players.isEmpty {
+                            opponentSection(opp)
+                        }
                     }
                 }
             )
@@ -772,7 +779,28 @@ struct TeamPageView: View {
         }
     }
 
+    /// The upcoming opponent's key players, rendered inside the focal team's
+    /// "Ones to know" card under a hot-rose header so it's unmistakably the
+    /// AWAY side. Rows are non-tappable (no dossier lookup for opponents).
     @ViewBuilder
+    private func opponentSection(_ opp: OpponentSide) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Divider()
+                .overlay(Color.warmWhite.opacity(0.12))
+                .padding(.vertical, 8)
+            Text("Up next: \(opp.teamName)")
+                .font(.jakarta(13, weight: .bold))
+                .foregroundColor(.hotRose)
+            Text("Their ones to watch")
+                .font(.jakarta(11, weight: .regular))
+                .foregroundColor(.warmWhite.opacity(0.5))
+                .padding(.bottom, 2)
+            ForEach(Array(opp.players.prefix(3))) { player in
+                playerRow(player: player, tappable: false)
+            }
+        }
+    }
+
     private func playerRow(player: TopPlayer, tappable: Bool) -> some View {
         HStack(alignment: .top, spacing: 12) {
             playerAvatar(player: player, size: 36)
