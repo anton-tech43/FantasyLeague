@@ -4,6 +4,25 @@
 // match_status_state; when a goal lands, followers of BOTH countries get an
 // APNs alert within ~a minute, with perspective-aware copy (his team scored
 // vs conceded). Pure functions, unit-tested.
+//
+// Copy variety: each event-and-perspective bucket draws from a 40-deep pool in
+// goal-push-copy.ts, picked at fire-time, so the same goal/win/draw line never
+// repeats across a long tournament. Perspective stays correct by construction:
+// the scorer pool is only ever keyed to the scoring country's slug (see
+// renderGoalPush), and match-watcher delivers bodies[token.country_id] per
+// device. No em-dashes (campaign rule).
+
+import {
+  FT_DRAW,
+  FT_LOSS,
+  FT_WIN,
+  GOAL_BOTH,
+  GOAL_CONCEDED,
+  GOAL_SCORED,
+  HT_AHEAD,
+  HT_BEHIND,
+  HT_LEVEL,
+} from "./goal-push-copy.ts";
 
 export type GoalSide = "home" | "away" | "both";
 
@@ -41,88 +60,109 @@ export interface GoalPushCopy {
   bodies: Record<string, string>;
 }
 
-/// Sister-voice, fact-first copy. No em-dashes (campaign rule). Title is
-/// shared (≤35 chars with the META short names); the body flips perspective
-/// for the scoring vs conceding side's followers.
+/// Pick a pool entry. rng defaults to Math.random (Deno-safe in the edge
+/// runtime); tests inject a deterministic rng (e.g. () => 0) to assert which
+/// variant is chosen.
+export function pick<T>(pool: readonly T[], rng: () => number = Math.random): T {
+  return pool[Math.floor(rng() * pool.length)];
+}
+
+/// Fill {flag} {team} {score} {home} {away} placeholders, drop any the template
+/// does not use, and tidy the spacing left behind.
+export function interpolate(template: string, vars: Record<string, string>): string {
+  return template
+    .replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? "")
+    .replace(/ {2,}/g, " ")
+    .trim();
+}
+
+/// Goal push for the two PLAYING countries' followers. Title carries the
+/// home-away scoreline; the body flips perspective by routing the scorer pool
+/// to the scoring country's slug and the conceder pool to the other. {flag} and
+/// {team} both refer to the SCORER (so the conceding side's body reads "Mexico
+/// score, he's not loving this"). No em-dashes (campaign rule).
 export function renderGoalPush(args: {
   home: GoalPushTeam;
   away: GoalPushTeam;
   homeGoals: number;
   awayGoals: number;
   side: GoalSide;
+  rng?: () => number;
 }): GoalPushCopy {
-  const { home, away, homeGoals, awayGoals, side } = args;
+  const { home, away, homeGoals, awayGoals, side, rng = Math.random } = args;
   const score = `${homeGoals}-${awayGoals}`;
   const title = `GOAL: ${home.name} ${score} ${away.name}`;
 
   if (side === "both") {
-    const body = `It's ${score} between ${home.name} and ${away.name}. Goals flying in.`;
+    const body = interpolate(pick(GOAL_BOTH, rng), { home: home.name, away: away.name, score });
     return { title, bodies: { [home.id]: body, [away.id]: body } };
   }
 
   const scorer = side === "home" ? home : away;
   const conceder = side === "home" ? away : home;
+  const vars = { flag: scorer.flag, team: scorer.name, score };
   return {
     title,
     bodies: {
-      [scorer.id]:
-        `${scorer.flag} ${scorer.name} score! ${score}. He's celebrating, good moment to text him.`,
-      [conceder.id]:
-        `${scorer.flag} ${scorer.name} just scored. ${score}. He's not loving this one.`,
+      [scorer.id]: interpolate(pick(GOAL_SCORED, rng), vars),
+      [conceder.id]: interpolate(pick(GOAL_CONCEDED, rng), vars),
     },
   };
 }
 
-/// Deterministic half-time push for the two PLAYING countries' followers. The
-/// title carries the scoreline (home-away order, names attached so it reads
-/// unambiguously); the body flips to the follower's own perspective (leading /
-/// trailing / level), score shown their-team-first. No em-dashes (campaign rule).
+/// Half-time push for the two PLAYING countries' followers. Title carries the
+/// home-away scoreline; each side's body is drawn from the ahead / behind /
+/// level pool by its own perspective, score shown their-team-first.
 export function renderHalfTimePush(args: {
   home: GoalPushTeam;
   away: GoalPushTeam;
   homeGoals: number;
   awayGoals: number;
+  rng?: () => number;
 }): GoalPushCopy {
-  const { home, away, homeGoals, awayGoals } = args;
+  const { home, away, homeGoals, awayGoals, rng = Math.random } = args;
   return {
     title: `Half-time: ${home.name} ${homeGoals}-${awayGoals} ${away.name}`,
     bodies: {
-      [home.id]: halfTimeBody(homeGoals, awayGoals),
-      [away.id]: halfTimeBody(awayGoals, homeGoals),
+      [home.id]: periodBody(HT_AHEAD, HT_BEHIND, HT_LEVEL, homeGoals, awayGoals, home.name, rng),
+      [away.id]: periodBody(HT_AHEAD, HT_BEHIND, HT_LEVEL, awayGoals, homeGoals, away.name, rng),
     },
   };
 }
 
-function halfTimeBody(mine: number, theirs: number): string {
-  const score = `${mine}-${theirs}`;
-  if (mine > theirs) return `Up ${score} at the break. He's enjoying this one.`;
-  if (mine < theirs) return `Down ${score} at the break. Plenty of time left.`;
-  return `Level ${score} at the break. All to play for.`;
-}
-
-/// Deterministic full-time own-result push for the two PLAYING countries'
-/// followers, the gap that left tonight silent. Title carries the scoreline;
-/// body flips to win / loss / draw from the follower's perspective. No
-/// em-dashes (campaign rule).
+/// Full-time own-result push for the two PLAYING countries' followers. Title
+/// carries the scoreline; each side's body is drawn from the win / loss / draw
+/// pool by its own perspective.
 export function renderFullTimePush(args: {
   home: GoalPushTeam;
   away: GoalPushTeam;
   homeGoals: number;
   awayGoals: number;
+  rng?: () => number;
 }): GoalPushCopy {
-  const { home, away, homeGoals, awayGoals } = args;
+  const { home, away, homeGoals, awayGoals, rng = Math.random } = args;
   return {
     title: `Full-time: ${home.name} ${homeGoals}-${awayGoals} ${away.name}`,
     bodies: {
-      [home.id]: fullTimeBody(homeGoals, awayGoals),
-      [away.id]: fullTimeBody(awayGoals, homeGoals),
+      [home.id]: periodBody(FT_WIN, FT_LOSS, FT_DRAW, homeGoals, awayGoals, home.name, rng),
+      [away.id]: periodBody(FT_WIN, FT_LOSS, FT_DRAW, awayGoals, homeGoals, away.name, rng),
     },
   };
 }
 
-function fullTimeBody(mine: number, theirs: number): string {
+/// Shared body builder for the HT and FT pushes: picks from the leading /
+/// trailing / level pool (or win / loss / draw) by the follower's own
+/// perspective, score rendered their-team-first.
+function periodBody(
+  leadPool: readonly string[],
+  trailPool: readonly string[],
+  levelPool: readonly string[],
+  mine: number,
+  theirs: number,
+  team: string,
+  rng: () => number,
+): string {
   const score = `${mine}-${theirs}`;
-  if (mine > theirs) return `Win! ${score} at full-time. He'll be buzzing, good time to text him.`;
-  if (mine < theirs) return `Full-time, lost ${score}. He'll need a minute on this one.`;
-  return `Full-time, ${score} draw. Honours even.`;
+  const pool = mine > theirs ? leadPool : mine < theirs ? trailPool : levelPool;
+  return interpolate(pick(pool, rng), { score, team });
 }
