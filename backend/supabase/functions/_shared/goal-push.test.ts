@@ -7,6 +7,7 @@ import {
   renderFullTimePush,
   renderGoalPush,
   renderHalfTimePush,
+  renderKickoffSoonPush,
 } from "./goal-push.ts";
 import {
   FT_DRAW,
@@ -18,6 +19,7 @@ import {
   HT_AHEAD,
   HT_BEHIND,
   HT_LEVEL,
+  KICKOFF_SOON,
 } from "./goal-push-copy.ts";
 import { WC_COUNTRY_META } from "./wc-countries.ts";
 
@@ -130,6 +132,29 @@ Deno.test("renderFullTimePush: draw draws both sides from FT_DRAW", () => {
   const copy = renderFullTimePush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 1, rng: zero });
   eq(copy.bodies.mexico, interpolate(FT_DRAW[0], { score: "1-1", team: "Mexico" }), "home from FT_DRAW");
   eq(copy.bodies.south_africa, interpolate(FT_DRAW[0], { score: "1-1", team: "S. Africa" }), "away from FT_DRAW");
+});
+
+// ============================================================
+// renderKickoffSoonPush (30-min nudge) — names each follower's own team
+// ============================================================
+
+Deno.test("renderKickoffSoonPush: each side's body names its own team + opponent", () => {
+  const copy = renderKickoffSoonPush({ home: MEX, away: RSA, rng: zero });
+  eq(copy.title, "Kickoff soon: Mexico v S. Africa", "title is the factual fixture");
+  eq(copy.bodies.mexico, interpolate(KICKOFF_SOON[0], { team: "Mexico", opp: "S. Africa" }), "home names Mexico");
+  eq(copy.bodies.south_africa, interpolate(KICKOFF_SOON[0], { team: "S. Africa", opp: "Mexico" }), "away names S. Africa");
+});
+
+Deno.test("KICKOFF_SOON pool: unique, <=90 chars, no em/en dashes, names team + opp", () => {
+  assert(new Set(KICKOFF_SOON).size === KICKOFF_SOON.length, "no duplicate lines");
+  const names = Object.values(WC_COUNTRY_META).map((m) => m.name);
+  const longest = [...names].sort((a, b) => b.length - a.length)[0];
+  for (const template of KICKOFF_SOON) {
+    const body = interpolate(template, { team: longest, opp: longest });
+    assert(body.length > 0, `non-empty: ${template}`);
+    assert(body.length <= 90, `<=90 chars (got ${body.length}): ${body}`);
+    assert(!body.includes("—") && !body.includes("–"), `no em/en dash: ${body}`);
+  }
 });
 
 // ============================================================

@@ -22,6 +22,7 @@ import {
   HT_AHEAD,
   HT_BEHIND,
   HT_LEVEL,
+  KICKOFF_SOON,
 } from "./goal-push-copy.ts";
 
 export type GoalSide = "home" | "away" | "both";
@@ -106,6 +107,24 @@ export function renderGoalPush(args: {
     bodies: {
       [scorer.id]: interpolate(pick(GOAL_SCORED, rng), vars),
       [conceder.id]: interpolate(pick(GOAL_CONCEDED, rng), vars),
+    },
+  };
+}
+
+/// 30-minutes-to-kickoff push for the two PLAYING countries' followers. The
+/// "it's about to start" nudge. No score (not started); each side's body names
+/// the follower's own team. Title is the shared factual fixture.
+export function renderKickoffSoonPush(args: {
+  home: GoalPushTeam;
+  away: GoalPushTeam;
+  rng?: () => number;
+}): GoalPushCopy {
+  const { home, away, rng = Math.random } = args;
+  return {
+    title: `Kickoff soon: ${home.name} v ${away.name}`,
+    bodies: {
+      [home.id]: interpolate(pick(KICKOFF_SOON, rng), { team: home.name, opp: away.name }),
+      [away.id]: interpolate(pick(KICKOFF_SOON, rng), { team: away.name, opp: home.name }),
     },
   };
 }

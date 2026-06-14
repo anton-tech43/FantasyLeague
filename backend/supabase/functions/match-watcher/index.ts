@@ -31,6 +31,7 @@ import {
   renderFullTimePush,
   renderGoalPush,
   renderHalfTimePush,
+  renderKickoffSoonPush,
 } from "../_shared/goal-push.ts";
 
 const FINISHED_STATUSES = new Set(["FT", "AET", "PEN"]);
@@ -628,6 +629,10 @@ async function handleRequest(req: Request): Promise<Response> {
               // below. Math consequences (TITLE_WON etc.) stay everyone-worthy.
               everyone_talking: c.consequence_type !== "WC_RIVAL_RESULT",
               everyone_talking_headline: rendered.everyone_talking_headline,
+              // "Your move" prompts. WC_RIVAL_RESULT now ships a safe open
+              // talking point so the section is never empty (was []); other
+              // consequence types still render none.
+              talking_points: rendered.talking_points,
               status: "published",
               published_at: new Date().toISOString(),
             });
@@ -931,6 +936,29 @@ async function handleRequest(req: Request): Promise<Response> {
       if (homeMeta && awayMeta) {
         const homeTeam = { id: homeTeamId, name: homeMeta.name, flag: homeMeta.flag };
         const awayTeam = { id: awayTeamId, name: awayMeta.name, flag: awayMeta.flag };
+
+        // 30-MINUTES-TO-KICKOFF — the "it's about to start" nudge. Fire once
+        // when the fixture is still NS and kickoff is within the next 30 min.
+        // Future-only (minsToKickoff > 0) so a delayed game already past its
+        // listed time can't fire it; marker-gated so a deploy inside the window
+        // fires at most once. The fixture is in match_status_state ~2h before
+        // kickoff (date roll), so the 30-min mark is always observed.
+        const minsToKickoff = (new Date(kickoffTime).getTime() - Date.now()) / 60000;
+        if (
+          status === "NS" && minsToKickoff > 0 && minsToKickoff <= 30 &&
+          !briefsFired.includes("PREKICK_PUSH")
+        ) {
+          const copy = renderKickoffSoonPush({ home: homeTeam, away: awayTeam });
+          await sendWcPlayingTeamPush(supabase, {
+            homeTeamId,
+            awayTeamId,
+            copy,
+            category: "WC_KICKOFF_SOON",
+            fixtureId,
+            label: "kickoff",
+          });
+          pushMarkers.push("PREKICK_PUSH");
+        }
 
         // GOAL — the score rose since the last observed tick. `prior !== null`
         // avoids a phantom goal when we first observe an in-progress game

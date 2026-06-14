@@ -421,3 +421,23 @@ export const FT_DRAW: readonly string[] = [
   "Full-time {score}, all square. Honours shared. He'll have a take.",
   "Draw, {score} at the whistle. A point each. Ask him his verdict.",
 ];
+
+// ============================================================
+// 30-MINUTES-TO-KICKOFF pool. {team} = follower's team, {opp} = opponent.
+// No score (the game hasn't started). The "it's about to start" nudge.
+// ============================================================
+
+export const KICKOFF_SOON: readonly string[] = [
+  "{team} vs {opp} kicks off in 30 minutes. Time to get comfy.",
+  "Almost time. {team} take on {opp} in half an hour.",
+  "{team} kick off against {opp} in 30. He'll be settling in.",
+  "30 minutes until {team} vs {opp}. Last call for snacks.",
+  "{team} vs {opp} starts in half an hour. He's on the sofa already.",
+  "Nearly kickoff. {team} face {opp} in 30 minutes.",
+  "{team} are about to start against {opp}. 30 minutes to go.",
+  "Half an hour till {team} vs {opp}. Wish him luck.",
+  "{team} vs {opp} in 30. He'll have the telly on already.",
+  "Kickoff in 30: {team} vs {opp}. Settle in with him.",
+  "{team} play {opp} in half an hour. Game face on.",
+  "Not long now. {team} vs {opp} kicks off in 30 minutes.",
+];

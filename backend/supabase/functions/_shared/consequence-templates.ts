@@ -24,6 +24,9 @@ export interface ConsequenceContent {
   headline: string;
   body: string;
   everyone_talking_headline: string;
+  /// Prompts for the feed item's "Your move" section. Empty for consequence
+  /// types that define none (only WC_RIVAL_RESULT does today).
+  talking_points: string[];
 }
 
 export function renderConsequence(
@@ -40,6 +43,9 @@ export function renderConsequence(
   };
 
   const variantIdx = pickVariant(tmpl.body.length);
+  const talkingPoints = tmpl.talking_points && tmpl.talking_points.length > 0
+    ? [tmpl.talking_points[pickVariant(tmpl.talking_points.length)](ctx)]
+    : [];
 
   return {
     push_title: tmpl.push_title(ctx),
@@ -47,6 +53,7 @@ export function renderConsequence(
     headline: tmpl.headline(ctx),
     body: tmpl.body[variantIdx](ctx),
     everyone_talking_headline: tmpl.everyone_talking_headline(ctx),
+    talking_points: talkingPoints,
   };
 }
 
@@ -69,6 +76,10 @@ interface ConsequenceTemplate {
   // copy from feeling robotic across the season.
   body: Render[];
   everyone_talking_headline: Render;
+  // Optional rotating "Your move" prompts. Safe, open conversation openers
+  // only — never a qualification claim (the live table + tiebreakers live
+  // in-app; this layer has no fresh standings).
+  talking_points?: Render[];
 }
 
 function pickVariant(n: number): number {
@@ -205,6 +216,15 @@ const TEMPLATES: Record<ConsequenceType, ConsequenceTemplate> = {
     ],
     everyone_talking_headline: ({ teamName, trigger }) =>
       `${trigger}, in ${teamName}'s group.`,
+    // Safe open prompts only — they never assert what the result MEANS for
+    // qualification (that needs the live table, which is on the team page).
+    talking_points: [
+      ({ teamName }) => `Ask him what that result does to ${teamName}'s group.`,
+      ({ teamName }) => `Worth asking him how that shifts things for ${teamName}.`,
+      ({ teamName }) => `Ask him if that one helps or hurts ${teamName}.`,
+      ({ teamName }) => `Good moment to ask him where that leaves ${teamName}.`,
+      ({ teamName }) => `Ask him what ${teamName} need from their own game now.`,
+    ],
   },
 
   // Good news: through as one of the 8 best third-placed teams.
