@@ -515,18 +515,19 @@ struct FeedView: View {
 
     @ViewBuilder
     private var emptyView: some View {
-        // V2.0: WC country context gets a specific empty state explaining
-        // that routines haven't started producing WC content yet. This is
-        // honest about pre-tournament state (May-June 2026 window between
-        // V2.0 launch and June 11 kickoff when WC routines start firing).
+        // V2.0: WC country context gets a specific empty state. Evergreen copy
+        // (no hardcoded date — the old "starts June 11" line read as broken once
+        // the tournament was live): there's simply no fresh article this moment,
+        // so point her at his team page where the next match + stakes always
+        // render deterministically.
         if case .country(let country) = appState.activeContext {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("WORLD CHAMPIONSHIP STARTS JUNE 11")
+                    Text("NOTHING NEW RIGHT NOW")
                         .font(.sectionHeader)
                         .tracking(1)
                         .foregroundColor(.mutedText)
-                    Text("We're warming up his \(country.shortName) coverage.\nCheck back tomorrow morning.")
+                    Text("We'll post his \(country.shortName) updates around each match. Open the \(country.shortName) tab to see what's coming up next.")
                         .font(.onboardingBody)
                         .foregroundColor(.textOnDark.opacity(0.8))
                         .fixedSize(horizontal: false, vertical: true)

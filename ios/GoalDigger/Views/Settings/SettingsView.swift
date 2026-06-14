@@ -467,45 +467,13 @@ struct SettingsView: View {
                 calendarErrorMessage = "Calendar access was denied. You can enable it in iOS Settings."
                 return
             }
-
-            // Fixtures: today's source is the team page's next-fixture card.
-            // Full-season sync needs a dedicated backend endpoint (see
-            // V1.1_FEATURE_BUNDLE.md, F1 notes). Until then, sync only the
-            // next fixture we know about.
-            guard let team = appState.selectedTeam else {
-                appState.calendarSyncEnabled = true
-                return
-            }
-            let teamId = team.rawValue
-            let cached = TeamPageCache.load(teamId: teamId)?.content
-            // Avoid `??` here: the operator's right-hand side is an
-            // `@autoclosure () throws -> T` and does not support `await`.
-            let teamPage: TeamPageContent?
-            if let cached {
-                teamPage = cached
-            } else {
-                teamPage = try? await APIClient.shared.fetchTeamPage(teamId: teamId)
-            }
-            // Sync the FULL upcoming schedule (the user wants their games,
-            // plural), parsing every future fixture from the Calendar-tab
-            // card; fall back to the single next_fixture for older content.
-            let now = Date()
-            var gdFixtures: [GDFixture] = (teamPage?.cards.upcomingFixtures ?? []).compactMap { f in
-                guard let kickoff = Self.fixtureDateFormatter.date(from: f.date), kickoff >= now else { return nil }
-                return GDFixture(opponent: f.opponent, kickoffTime: kickoff, venue: f.venue)
-            }
-            if gdFixtures.isEmpty,
-               let nextFixture = teamPage?.cards.nextFixture,
-               let kickoff = Self.fixtureDateFormatter.date(from: nextFixture.date) {
-                gdFixtures = [GDFixture(opponent: nextFixture.opponent, kickoffTime: kickoff, venue: nextFixture.venue)]
-            }
-            guard !gdFixtures.isEmpty else {
-                // Permission granted but no fixtures to add yet. Mark on so we
-                // sync the next time fixtures land.
-                appState.calendarSyncEnabled = true
-                return
-            }
-            try await CalendarSyncService.shared.sync(teamShortName: team.shortName, fixtures: gdFixtures)
+            // Sync BOTH followed entities (his WC country AND his PL club).
+            // resync pulls each one's full upcoming slate, wipes stale/finished
+            // games, and removes calendars for entities no longer followed.
+            try await CalendarSyncService.shared.resync(
+                team: appState.selectedTeam,
+                country: appState.selectedCountry
+            )
             appState.calendarSyncEnabled = true
         } catch {
             calendarErrorMessage = "Something went wrong adding the events. Try again in a sec."
@@ -526,12 +494,6 @@ struct SettingsView: View {
         }
         appState.calendarSyncEnabled = false
     }
-
-    private static let fixtureDateFormatter: ISO8601DateFormatter = {
-        let f = ISO8601DateFormatter()
-        f.formatOptions = [.withInternetDateTime]
-        return f
-    }()
 
     private func deleteData() async {
         isDeleting = true

@@ -39,6 +39,16 @@ struct GoalDiggerApp: App {
                         // registration and, if the followed country has a live
                         // match with no running activity, start one locally.
                         LiveActivityManager.shared.syncForegroundActivity()
+                        // Keep his fixtures calendar current on every return to
+                        // the app: add new games, drop finished ones. Throttled
+                        // + no-op unless sync is on and access is granted.
+                        Task {
+                            await CalendarSyncService.shared.autoResync(
+                                team: appState.selectedTeam,
+                                country: appState.selectedCountry,
+                                enabled: appState.calendarSyncEnabled
+                            )
+                        }
                     }
                 }
         }
@@ -133,6 +143,16 @@ struct RootView: View {
             // the ContentItem schema changes between releases. Cheap on every
             // launch — no-op if the cache is already on the current version.
             CacheService.shared.purgeStaleVersionItems(in: modelContext)
+        }
+        .task(id: "calendar-autoresync") {
+            // Cold-launch fixtures-calendar refresh, so his games stay current
+            // even if the app is launched fresh rather than resumed. No-op
+            // unless sync is enabled and calendar access is already granted.
+            await CalendarSyncService.shared.autoResync(
+                team: appState.selectedTeam,
+                country: appState.selectedCountry,
+                enabled: appState.calendarSyncEnabled
+            )
         }
     }
 }

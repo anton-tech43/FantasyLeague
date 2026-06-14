@@ -197,24 +197,14 @@ struct CalendarOptInView: View {
                 return
             }
 
-            guard let team = appState.selectedTeam else {
-                appState.calendarSyncEnabled = true
-                onComplete()
-                return
-            }
-
-            // Map TeamSeasonState.NextFixture → GDFixture. If the list is
-            // empty (e.g., pre-season / off-season), mark enabled anyway so
-            // the next daily routine run picks up and syncs new fixtures.
-            let gdFixtures: [GDFixture] = fixtures.map { f in
-                GDFixture(opponent: f.opponent, kickoffTime: f.kickoffTime, venue: f.venue)
-            }
-            if !gdFixtures.isEmpty {
-                try await CalendarSyncService.shared.sync(
-                    teamShortName: team.shortName,
-                    fixtures: gdFixtures
-                )
-            }
+            // Sync BOTH followed entities (his WC country AND his PL club).
+            // resync fetches each one's upcoming slate itself, so a missing
+            // local `fixtures` preview (e.g. country picked but club fixtures
+            // not loaded) no longer means his games get skipped.
+            try await CalendarSyncService.shared.resync(
+                team: appState.selectedTeam,
+                country: appState.selectedCountry
+            )
             appState.calendarSyncEnabled = true
             UINotificationFeedbackGenerator().notificationOccurred(.success)
             onComplete()
