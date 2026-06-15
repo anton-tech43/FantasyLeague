@@ -4,6 +4,8 @@
 // Note: Deno doesn't natively support HTTP/2. We use HTTP/1.1 to APNs which
 // Apple also accepts. For production volume, consider a native HTTP/2 library.
 
+import { getSupabaseClient } from "./supabase-client.ts";
+
 interface APNsPayload {
   aps: {
     alert: {
@@ -75,6 +77,53 @@ async function generateJWT(): Promise<string> {
   return `${signingInput}.${encodedSignature}`;
 }
 
+// APNs rejects providers that mint a new ES256 token too often with
+// 429 TooManyProviderTokenUpdates: one token must be REUSED for up to an hour.
+// Minting per-send (the old behavior) meant a burst of N sends generated N
+// tokens in seconds, so all but the first ~2 failed. We reuse one token for
+// ~50 min, shared across Edge Function invocations via the apns_jwt_cache
+// single-row table, with an in-memory memo so a single invocation's burst hits
+// the DB at most once.
+const JWT_TTL_MS = 50 * 60 * 1000; // refresh well inside APNs's 60-min validity
+let memoJwt: { jwt: string; generatedAtMs: number } | null = null;
+
+async function getProviderJWT(): Promise<string> {
+  const nowMs = Date.now();
+  if (memoJwt && nowMs - memoJwt.generatedAtMs < JWT_TTL_MS) return memoJwt.jwt;
+
+  try {
+    const supabase = getSupabaseClient();
+    const { data } = await supabase
+      .from("apns_jwt_cache")
+      .select("jwt, generated_at")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (data?.jwt && data.generated_at) {
+      const ageMs = nowMs - new Date(data.generated_at as string).getTime();
+      if (ageMs >= 0 && ageMs < JWT_TTL_MS) {
+        memoJwt = { jwt: data.jwt as string, generatedAtMs: nowMs - ageMs };
+        return memoJwt.jwt;
+      }
+    }
+
+    // Missing or stale → mint one fresh token and persist it for everyone else.
+    const jwt = await generateJWT();
+    memoJwt = { jwt, generatedAtMs: nowMs };
+    await supabase
+      .from("apns_jwt_cache")
+      .upsert({ id: 1, jwt, generated_at: new Date(nowMs).toISOString() });
+    return jwt;
+  } catch (_e) {
+    // Cache table unreachable — never block a push on it. Fall back to a
+    // process-local token (still far better than minting per-send).
+    if (memoJwt) return memoJwt.jwt;
+    const jwt = await generateJWT();
+    memoJwt = { jwt, generatedAtMs: nowMs };
+    return jwt;
+  }
+}
+
 type APNsEnvironment = "development" | "production";
 
 function getAPNsHost(env: APNsEnvironment): string {
@@ -99,7 +148,7 @@ export async function sendPushNotification(
   const env = environment ?? defaultAPNsEnvironment();
 
   try {
-    const jwt = await generateJWT();
+    const jwt = await getProviderJWT();
     const host = getAPNsHost(env);
 
     const response = await fetch(`${host}/3/device/${token}`, {
@@ -183,7 +232,7 @@ export async function sendLiveActivityPush(
   const env = opts.environment ?? defaultAPNsEnvironment();
 
   try {
-    const jwt = await generateJWT();
+    const jwt = await getProviderJWT();
     const host = getAPNsHost(env);
     const now = Math.floor(Date.now() / 1000);
 
