@@ -111,18 +111,49 @@ serve(async (req) => {
     "Cache-Control": "no-store",
   };
 
-  // Routine brief present → return it (the richer half-time analysis).
+  const state = stateRows[0] as MatchState;
+  // The headline is ALWAYS the live score (deterministic, from match state),
+  // so the feed mirrors the Live Activity and never shows a stale "0-0 at the
+  // break" once the score moves in the second half.
+  const liveHeadline = await buildLiveHeadline(supabase, teamId, state);
+  const liveLabel = state.status === "HT" ? "HT" : null; // null → "LIVE" badge
+
+  // Routine brief present → keep its richer analysis as the body, but show the
+  // live score in the headline (and a live label, no stale minute outside HT).
   if (briefs && briefs.length > 0) {
-    return new Response(JSON.stringify(briefs[0]), { headers });
+    const brief = briefs[0] as Record<string, unknown>;
+    return new Response(
+      JSON.stringify({
+        ...brief,
+        headline: liveHeadline,
+        trigger_label: state.status === "HT" ? (brief.trigger_label ?? "HT") : liveLabel,
+        minute: state.status === "HT" ? (brief.minute ?? null) : null,
+      }),
+      { headers },
+    );
   }
 
   // No routine brief yet — match just kicked off and HT hasn't landed, or the
-  // gd-live-brief routine is late / rate-limited. Synthesize a DETERMINISTIC
-  // live-score card from match_status_state so the feed shows a live card from
-  // kickoff, independent of the claude.ai routine (same deterministic-floor
-  // principle as the pushes). The richer brief replaces this the moment it lands.
-  const synth = await synthesizeLiveCard(supabase, teamId, stateRows[0] as MatchState, now);
-  return new Response(JSON.stringify(synth), { headers });
+  // gd-live-brief routine is late / rate-limited. Return a fully DETERMINISTIC
+  // live-score card so the feed shows a live card from kickoff, independent of
+  // the claude.ai routine (same deterministic-floor principle as the pushes).
+  // The id is STABLE per (fixture, score, status) so it re-animates only when
+  // something actually changes, not on every 60s poll.
+  return new Response(
+    JSON.stringify({
+      id: await stableUuid(
+        `${state.fixture_id}-${state.home_goals ?? 0}-${state.away_goals ?? 0}-${state.status}`,
+      ),
+      team_id: teamId,
+      match_id: String(state.fixture_id),
+      headline: liveHeadline,
+      body: periodLine(state.status),
+      minute: null,
+      trigger_label: liveLabel,
+      generated_at: new Date(now).toISOString(),
+    }),
+    { headers },
+  );
 });
 
 interface MatchState {
@@ -134,16 +165,13 @@ interface MatchState {
   away_goals: number | null;
 }
 
-/// Build a LiveMatchBrief-shaped object from the live score alone (no Claude).
-/// Headline is the follower-first scoreline; body is a short period line. The
-/// id is STABLE per (fixture, score, status) so the card only re-animates when
-/// something actually changes, not on every 60s poll.
-async function synthesizeLiveCard(
+/// Follower-first live scoreline, e.g. "Spain 1-0 Cape Verde". Pure read from
+/// match_status_state + team names; no Claude.
+async function buildLiveHeadline(
   supabase: ReturnType<typeof getSupabaseClient>,
   teamId: string,
   state: MatchState,
-  nowMs: number,
-): Promise<Record<string, unknown>> {
+): Promise<string> {
   const { data: teamRows } = await supabase
     .from("teams")
     .select("id, short_name, display_name")
@@ -154,7 +182,6 @@ async function synthesizeLiveCard(
       | undefined;
     return (r?.short_name && r.short_name.length > 0 ? r.short_name : r?.display_name) || id;
   };
-
   const hg = state.home_goals ?? 0;
   const ag = state.away_goals ?? 0;
   const isHome = state.home_team_id === teamId;
@@ -162,18 +189,7 @@ async function synthesizeLiveCard(
   const oppName = nameOf(isHome ? state.away_team_id : state.home_team_id);
   const myGoals = isHome ? hg : ag;
   const oppGoals = isHome ? ag : hg;
-
-  return {
-    id: await stableUuid(`${state.fixture_id}-${hg}-${ag}-${state.status}`),
-    team_id: teamId,
-    match_id: String(state.fixture_id),
-    headline: `${myName} ${myGoals}-${oppGoals} ${oppName}`,
-    body: periodLine(state.status),
-    minute: null,
-    // null → the card shows a "LIVE" badge; "HT" → "HALF TIME".
-    trigger_label: state.status === "HT" ? "HT" : null,
-    generated_at: new Date(nowMs).toISOString(),
-  };
+  return `${myName} ${myGoals}-${oppGoals} ${oppName}`;
 }
 
 function periodLine(status: string): string {
