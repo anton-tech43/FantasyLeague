@@ -169,6 +169,12 @@ async function sendWcPlayingTeamPush(
       .in("country_id", [args.homeTeamId, args.awayTeamId])
       .eq("is_active", true);
 
+    // Per-country tallies so we can write one apns_send pipeline_health row per
+    // playing team — the live goal/HT/FT/kickoff pushes were previously invisible
+    // to audits (only the briefs_fired markers proved a push was attempted, never
+    // whether APNs accepted it). This is how the 429 was caught for the sweep
+    // pushes; now the live pushes get the same visibility.
+    const stats = new Map<string, { sent: number; failed: number; reason?: string; status?: number }>();
     let sent = 0;
     for (const t of tokens ?? []) {
       const country = t.country_id as string;
@@ -186,8 +192,38 @@ async function sendWcPlayingTeamPush(
       );
       const env = t.apns_environment === "production" ? "production" : "development";
       const res = await sendPushNotification(t.apns_token as string, payload, env);
-      if (res.success) sent++;
+      const s = stats.get(country) ?? { sent: 0, failed: 0 };
+      if (res.success) {
+        s.sent++;
+        sent++;
+      } else {
+        s.failed++;
+        s.reason = res.reason;
+        s.status = res.status;
+      }
+      stats.set(country, s);
     }
+
+    // Best-effort observability: never let a logging error break the send.
+    try {
+      for (const [country, s] of stats) {
+        const total = s.sent + s.failed;
+        const status = s.failed === 0 ? "success" : s.sent === 0 ? "failure" : "partial";
+        await supabase.from("pipeline_health").insert({
+          team_id: country,
+          stage: "apns_send",
+          status,
+          target: `wc_${args.label}:${country}:${args.fixtureId}`,
+          http_status: s.status ?? null,
+          response_excerpt: s.failed > 0 ? (s.reason ?? "unknown").slice(0, 200) : null,
+          error_class: status === "success" ? "success" : "apns_send_failed",
+          message: `WC ${args.label}: ${s.sent} sent, ${s.failed} failed of ${total}`,
+        });
+      }
+    } catch (logErr) {
+      console.error("sendWcPlayingTeamPush logging failed (non-fatal):", logErr);
+    }
+
     return sent;
   } catch (e) {
     console.error(`sendWcPlayingTeamPush failed for fixture ${args.fixtureId} [${args.label}] (non-fatal):`, e);
