@@ -64,7 +64,7 @@ serve(async (req) => {
 
   const { data: stateRows, error: stateErr } = await supabase
     .from("match_status_state")
-    .select("fixture_id, status")
+    .select("fixture_id, status, home_team_id, away_team_id, home_goals, away_goals")
     .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
     .gte("kickoff_time", windowStartIso)
     .lte("kickoff_time", windowEndIso)
@@ -105,20 +105,95 @@ serve(async (req) => {
     });
   }
 
-  if (!briefs || briefs.length === 0) {
-    // We're inside the live window but no brief has been generated yet
-    // (e.g., the match just kicked off and HT hasn't been reached). 204
-    // again — iOS continues polling.
-    return new Response(null, { status: 204 });
+  const headers = {
+    "Content-Type": "application/json",
+    // No CDN caching: polled endpoint, want fresh values every 60s.
+    "Cache-Control": "no-store",
+  };
+
+  // Routine brief present → return it (the richer half-time analysis).
+  if (briefs && briefs.length > 0) {
+    return new Response(JSON.stringify(briefs[0]), { headers });
   }
 
-  return new Response(JSON.stringify(briefs[0]), {
-    headers: {
-      "Content-Type": "application/json",
-      // No Cache-Control: this is a polled endpoint, want fresh values
-      // every 60s. URL is stable per team so a CDN would still cache;
-      // explicit no-store keeps the polling honest.
-      "Cache-Control": "no-store",
-    },
-  });
+  // No routine brief yet — match just kicked off and HT hasn't landed, or the
+  // gd-live-brief routine is late / rate-limited. Synthesize a DETERMINISTIC
+  // live-score card from match_status_state so the feed shows a live card from
+  // kickoff, independent of the claude.ai routine (same deterministic-floor
+  // principle as the pushes). The richer brief replaces this the moment it lands.
+  const synth = await synthesizeLiveCard(supabase, teamId, stateRows[0] as MatchState, now);
+  return new Response(JSON.stringify(synth), { headers });
 });
+
+interface MatchState {
+  fixture_id: number;
+  status: string;
+  home_team_id: string;
+  away_team_id: string;
+  home_goals: number | null;
+  away_goals: number | null;
+}
+
+/// Build a LiveMatchBrief-shaped object from the live score alone (no Claude).
+/// Headline is the follower-first scoreline; body is a short period line. The
+/// id is STABLE per (fixture, score, status) so the card only re-animates when
+/// something actually changes, not on every 60s poll.
+async function synthesizeLiveCard(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  teamId: string,
+  state: MatchState,
+  nowMs: number,
+): Promise<Record<string, unknown>> {
+  const { data: teamRows } = await supabase
+    .from("teams")
+    .select("id, short_name, display_name")
+    .in("id", [state.home_team_id, state.away_team_id]);
+  const nameOf = (id: string): string => {
+    const r = (teamRows ?? []).find((t) => t.id === id) as
+      | { short_name?: string; display_name?: string }
+      | undefined;
+    return (r?.short_name && r.short_name.length > 0 ? r.short_name : r?.display_name) || id;
+  };
+
+  const hg = state.home_goals ?? 0;
+  const ag = state.away_goals ?? 0;
+  const isHome = state.home_team_id === teamId;
+  const myName = nameOf(teamId);
+  const oppName = nameOf(isHome ? state.away_team_id : state.home_team_id);
+  const myGoals = isHome ? hg : ag;
+  const oppGoals = isHome ? ag : hg;
+
+  return {
+    id: await stableUuid(`${state.fixture_id}-${hg}-${ag}-${state.status}`),
+    team_id: teamId,
+    match_id: String(state.fixture_id),
+    headline: `${myName} ${myGoals}-${oppGoals} ${oppName}`,
+    body: periodLine(state.status),
+    minute: null,
+    // null → the card shows a "LIVE" badge; "HT" → "HALF TIME".
+    trigger_label: state.status === "HT" ? "HT" : null,
+    generated_at: new Date(nowMs).toISOString(),
+  };
+}
+
+function periodLine(status: string): string {
+  switch (status) {
+    case "1H": return "First half under way.";
+    case "HT": return "Half-time.";
+    case "2H": return "Second half under way.";
+    case "ET": return "Extra time.";
+    case "P": return "Penalty shootout.";
+    case "BT": return "Break before extra time.";
+    default: return "Live now.";
+  }
+}
+
+/// Deterministic UUID (SHA-256 of the key, first 16 bytes in UUID format).
+/// Swift's UUID parser accepts it; it does not validate version/variant bits.
+async function stableUuid(key: string): Promise<string> {
+  const digest = new Uint8Array(
+    await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key)),
+  );
+  const h = [...digest.slice(0, 16)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20, 32)}`;
+}
