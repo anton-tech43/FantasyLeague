@@ -103,7 +103,7 @@ struct OnboardingFlow: View {
                 case .hisName:
                     HisNameView { step = .countrySelection }
                 case .countrySelection:
-                    CountrySelectionView { step = .plTeamOptional }
+                    CountrySelectionView(allowsSecond: true) { step = .plTeamOptional }
                 case .plTeamOptional:
                     OptionalPLTeamView { step = .footballKnowledge }
                 case .footballKnowledge:
@@ -150,39 +150,14 @@ struct OnboardingFlow: View {
         // straight to MainTabView.
         appState.hasSeenSeasonPrimer = true
 
-        // V2.0: register the token with whichever combination of entity IDs
-        // the user has. Both can be present (PL + WC), country-only (WC-only
-        // audience), or team-only (shouldn't happen in V2.0 flow but kept
-        // as defensive fallback).
-        if let token = UserDefaults.standard.string(forKey: "apnsToken") {
-            let teamId = appState.selectedTeam?.rawValue
-            let countryId = appState.selectedCountry?.rawValue
-            let tier = appState.selectedTier
-            if teamId != nil || countryId != nil {
-                Task {
-                    do {
-                        try await APIClient.shared.registerToken(
-                            token,
-                            teamId: teamId,
-                            countryId: countryId,
-                            tier: tier
-                        )
-                        await MainActor.run {
-                            UserDefaults.standard.set(true, forKey: "apnsTokenRegistered")
-                        }
-                    } catch {
-                        // Leave apnsTokenRegistered unset;
-                        // NotificationService.handleTokenRegistration will
-                        // retry on next launch via the AppDelegate hook.
-                        #if DEBUG
-                        print("⚠️ completeOnboarding registerToken failed: \(error)")
-                        #endif
-                    }
-                }
-            }
-        }
-
+        // The canonical token POST lives in NotificationService
+        // .handleTokenRegistration, which guards on hasCompletedOnboarding (APNs
+        // may deliver the token mid-onboarding, before tier/team/country are
+        // final). Set the flag first, then let NotificationService own the
+        // registration — one code path for the full follow-set (arrays + scope),
+        // no duplicated body here.
         appState.hasCompletedOnboarding = true
+        NotificationService.shared.reregisterForFollowChange()
         // Force-flush the whole onboarding set (names + team + country + tier
         // + flag) to disk NOW. UserDefaults writes are async; without this, a
         // user who finishes onboarding and immediately force-quits before

@@ -139,13 +139,16 @@ serve(async (req) => {
       }
 
       // Tokens subscribed to EITHER team (PL via team_id, WC via country_id).
-      // Same .or() filter as notification-sender — see comment there.
+      // Same .or() filter as notification-sender — legacy scalar OR the V2.2
+      // multi-follow arrays. One row per device → one push.
+      const teams = `${fix.home_team_id},${fix.away_team_id}`;
       const { data: tokens } = await supabase
         .from("device_tokens")
-        .select("apns_token, apns_environment, team_id, country_id")
+        .select("apns_token, apns_environment, team_id, country_id, team_ids, country_ids")
         .or(
           `team_id.eq.${fix.home_team_id},country_id.eq.${fix.home_team_id},` +
-          `team_id.eq.${fix.away_team_id},country_id.eq.${fix.away_team_id}`,
+          `team_id.eq.${fix.away_team_id},country_id.eq.${fix.away_team_id},` +
+          `team_ids.ov.{${teams}},country_ids.ov.{${teams}}`,
         )
         .eq("is_active", true);
 
@@ -157,10 +160,14 @@ serve(async (req) => {
         // Pick which team this user follows so the title says "Game day
         // at Arsenal" (not "Game day at Burnley") when the user is an
         // Arsenal subscriber. Falls back to home team if both match.
-        const followsHome =
-          tk.team_id === fix.home_team_id || tk.country_id === fix.home_team_id;
-        const followsAway =
-          tk.team_id === fix.away_team_id || tk.country_id === fix.away_team_id;
+        // V2.2: check the legacy scalars AND the multi-follow arrays.
+        const follows = new Set<string>([
+          ...((tk.team_ids as string[] | null) ?? (tk.team_id ? [tk.team_id as string] : [])),
+          ...((tk.country_ids as string[] | null) ??
+            (tk.country_id ? [tk.country_id as string] : [])),
+        ]);
+        const followsHome = follows.has(fix.home_team_id);
+        const followsAway = follows.has(fix.away_team_id);
         const subject = followsHome ? home : (followsAway ? away : home);
         const opponent = subject === home ? away : home;
 

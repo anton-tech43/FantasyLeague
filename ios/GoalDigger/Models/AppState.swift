@@ -22,30 +22,40 @@ class AppState {
     var relationshipType: RelationshipType {
         didSet { UserDefaults.standard.set(relationshipType.rawValue, forKey: "relationshipType") }
     }
-    var selectedTeam: Team? {
+    /// V2.2 — a user may follow up to 2 PL clubs and up to 2 WC countries, all
+    /// equal. These ARRAYS are the source of truth. `selectedTeam` /
+    /// `selectedCountry` below are convenience accessors over `.first`, so the
+    /// many single-entity call sites are unchanged. Persisted as rawValue
+    /// string arrays; capped at 2 defensively in didSet.
+    var selectedTeams: [Team] {
         didSet {
-            if let team = selectedTeam {
-                UserDefaults.standard.set(team.rawValue, forKey: "selectedTeam")
-            } else {
-                // Symmetry with selectedCountry: clear the key when unset, so
-                // skipping the optional PL team doesn't leave a stale club
-                // behind for a country-only (WC) user.
-                UserDefaults.standard.removeObject(forKey: "selectedTeam")
-            }
+            let capped = Array(selectedTeams.prefix(2))
+            if capped.count != selectedTeams.count { selectedTeams = capped; return }
+            UserDefaults.standard.set(selectedTeams.map(\.rawValue), forKey: "selectedTeams")
         }
     }
-    /// V2.0 World Cup support — the country he supports at WC 2026. New
-    /// users land on this picker first (WC is the primary onboarding
-    /// context); selectedTeam (PL club) is then offered as optional.
-    /// Both can be set simultaneously for fans who follow both.
-    var selectedCountry: Country? {
+    /// V2.0 World Cup support — the country/countries he (and optionally she)
+    /// supports at WC 2026. New users land on the country picker first (WC is
+    /// the primary onboarding context); clubs are then offered as optional.
+    var selectedCountries: [Country] {
         didSet {
-            if let country = selectedCountry {
-                UserDefaults.standard.set(country.rawValue, forKey: "selectedCountry")
-            } else {
-                UserDefaults.standard.removeObject(forKey: "selectedCountry")
-            }
+            let capped = Array(selectedCountries.prefix(2))
+            if capped.count != selectedCountries.count { selectedCountries = capped; return }
+            UserDefaults.standard.set(selectedCountries.map(\.rawValue), forKey: "selectedCountries")
         }
+    }
+    /// Primary PL club (first followed). SETTING it replaces the whole follow
+    /// list with the single value — legacy single-select flows keep working;
+    /// multi-select flows assign `selectedTeams` directly. Nil clears the list.
+    var selectedTeam: Team? {
+        get { selectedTeams.first }
+        set { selectedTeams = newValue.map { [$0] } ?? [] }
+    }
+    /// Primary WC country (first followed). Same single-set semantics as
+    /// `selectedTeam`.
+    var selectedCountry: Country? {
+        get { selectedCountries.first }
+        set { selectedCountries = newValue.map { [$0] } ?? [] }
     }
     var selectedTier: Int {
         didSet { UserDefaults.standard.set(selectedTier, forKey: "selectedTier") }
@@ -122,10 +132,21 @@ class AppState {
         self.herName = UserDefaults.standard.string(forKey: "herName") ?? ""
         self.hisName = UserDefaults.standard.string(forKey: "hisName") ?? ""
         self.relationshipType = RelationshipType(rawValue: UserDefaults.standard.string(forKey: "relationshipType") ?? "") ?? .partner
-        let teamRaw = UserDefaults.standard.string(forKey: "selectedTeam")
-        self.selectedTeam = teamRaw.flatMap { Team(rawValue: $0) }
-        let countryRaw = UserDefaults.standard.string(forKey: "selectedCountry")
-        self.selectedCountry = countryRaw.flatMap { Country(rawValue: $0) }
+        // V2.2 multi-follow: arrays are the source of truth. Migrate the legacy
+        // single keys (selectedTeam/selectedCountry) into the arrays on first
+        // launch after the update so existing users keep their team + country.
+        if let raw = UserDefaults.standard.stringArray(forKey: "selectedTeams") {
+            self.selectedTeams = raw.compactMap { Team(rawValue: $0) }
+        } else {
+            self.selectedTeams = UserDefaults.standard.string(forKey: "selectedTeam")
+                .flatMap { Team(rawValue: $0) }.map { [$0] } ?? []
+        }
+        if let raw = UserDefaults.standard.stringArray(forKey: "selectedCountries") {
+            self.selectedCountries = raw.compactMap { Country(rawValue: $0) }
+        } else {
+            self.selectedCountries = UserDefaults.standard.string(forKey: "selectedCountry")
+                .flatMap { Country(rawValue: $0) }.map { [$0] } ?? []
+        }
         self.selectedTier = UserDefaults.standard.integer(forKey: "selectedTier").clamped(to: 1...3, default: 2)
         self.footballKnowledgeLevel = UserDefaults.standard.integer(forKey: "footballKnowledgeLevel")
         self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
@@ -207,15 +228,15 @@ class AppState {
 
     /// Clear all local data (for "Delete My Data" flow)
     func clearAllData() {
-        // Clear team page cache before resetting team
-        if let team = selectedTeam {
+        // Clear team page cache before resetting teams
+        for team in selectedTeams {
             TeamPageCache.clear(teamId: team.rawValue)
         }
         herName = ""
         hisName = ""
         relationshipType = .partner
-        selectedTeam = nil
-        selectedCountry = nil
+        selectedTeams = []
+        selectedCountries = []
         selectedTier = 2
         footballKnowledgeLevel = 0
         hasCompletedOnboarding = false
@@ -228,7 +249,8 @@ class AppState {
         activeContext = .everyoneTalking
         isContextSwitcherOpen = false
         feedStyle = .immersive
-        let keys = ["herName", "hisName", "relationshipType", "selectedTeam", "selectedCountry",
+        let keys = ["herName", "hisName", "relationshipType",
+                     "selectedTeam", "selectedCountry", "selectedTeams", "selectedCountries",
                      "selectedTier", "footballKnowledgeLevel",
                      "hasCompletedOnboarding", "notificationPermissionRequested", "apnsToken",
                      "apnsTokenRegistered", "lastRegisteredScope",

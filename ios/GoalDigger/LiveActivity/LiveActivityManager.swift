@@ -40,13 +40,16 @@ final class LiveActivityManager {
     }
 
     /// Re-assert the push-to-start registration once we know the user's
-    /// country (the token may be vended during onboarding, before a country is
-    /// picked). Safe to call repeatedly — the backend upserts on the token.
+    /// countries (the token may be vended during onboarding, before any country
+    /// is picked). V2.2: the single PTS token carries ALL followed countries, so
+    /// it triggers for whichever plays. Safe to call repeatedly — backend
+    /// upserts on the token.
     func registerPushToStartIfPossible() async {
-        guard let token = UserDefaults.standard.string(forKey: Self.ptsTokenKey),
-              let countryId = AppState.shared.selectedCountry?.rawValue else { return }
+        guard let token = UserDefaults.standard.string(forKey: Self.ptsTokenKey) else { return }
+        let countryIds = AppState.shared.selectedCountries.map(\.rawValue)
+        guard !countryIds.isEmpty else { return }
         try? await APIClient.shared.registerLiveActivityToken(
-            token, kind: "push_to_start", fixtureId: nil, countryId: countryId)
+            token, kind: "push_to_start", fixtureId: nil, countryIds: countryIds)
     }
 
     // MARK: Per-activity update tokens
@@ -65,7 +68,7 @@ final class LiveActivityManager {
                 try? await APIClient.shared.registerLiveActivityToken(
                     tokenData.gdHexString, kind: "update",
                     fixtureId: activity.attributes.fixtureId,
-                    countryId: AppState.shared.selectedCountry?.rawValue)
+                    countryIds: AppState.shared.selectedCountries.map(\.rawValue))
             }
         }
     }
@@ -78,11 +81,17 @@ final class LiveActivityManager {
     func syncForegroundActivity() {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
         Task { await registerPushToStartIfPossible() }
-        guard let countryId = AppState.shared.selectedCountry?.rawValue else { return }
+        let countryIds = AppState.shared.selectedCountries.map(\.rawValue)
+        guard !countryIds.isEmpty else { return }
         Task {
-            guard let snap = try? await APIClient.shared.fetchCurrentLiveMatch(countryId: countryId),
-                  snap.isLive else { return }
-            startOrUpdate(from: snap)
+            // Check each followed country — either could be live (e.g. his
+            // Norway and her Sweden). startOrUpdate is keyed by fixtureId so
+            // two live matches each get their own activity.
+            for countryId in countryIds {
+                guard let snap = try? await APIClient.shared.fetchCurrentLiveMatch(countryId: countryId),
+                      snap.isLive else { continue }
+                startOrUpdate(from: snap)
+            }
         }
     }
 

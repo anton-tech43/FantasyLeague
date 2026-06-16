@@ -45,16 +45,17 @@ final class CalendarSyncService {
     /// Safety: an entity whose fixtures can't be fetched (network failure) is
     /// LEFT UNTOUCHED this round, never wiped, so a flaky connection can't
     /// silently empty the user's calendar. Caller must already hold access.
-    func resync(team: Team?, country: Country?) async throws {
+    func resync(teams: [Team], countries: [Country]) async throws {
         // Fresh view of the store: this long-lived EKEventStore otherwise holds
         // a stale snapshot after the user edits/deletes calendars outside the
         // app (the old "added once, deleted, won't re-add" bug).
         store.reset()
 
-        let followed: [(shortName: String, teamId: String)] = [
-            country.map { (shortName: $0.shortName, teamId: $0.rawValue) },
-            team.map { (shortName: $0.shortName, teamId: $0.rawValue) },
-        ].compactMap { $0 }
+        // V2.2: sync the union of every followed country + club. Calendars for
+        // entities no longer followed are pruned in step 1 below.
+        let followed: [(shortName: String, teamId: String)] =
+            countries.map { (shortName: $0.shortName, teamId: $0.rawValue) } +
+            teams.map { (shortName: $0.shortName, teamId: $0.rawValue) }
         let followedTitles = Set(followed.map { calendarTitle($0.shortName) })
 
         // 1. Remove calendars for entities the user no longer follows (e.g. an
@@ -78,12 +79,12 @@ final class CalendarSyncService {
     /// Launch / foreground hook: best-effort, non-prompting, throttled. No-op
     /// unless the user enabled sync AND already granted full calendar access
     /// (we never trigger the permission prompt from a background-resume path).
-    func autoResync(team: Team?, country: Country?, enabled: Bool) async {
+    func autoResync(teams: [Team], countries: [Country], enabled: Bool) async {
         guard enabled else { return }
         guard EKEventStore.authorizationStatus(for: .event) == .fullAccess else { return }
         if let last = lastAutoResyncAt, Date().timeIntervalSince(last) < 30 * 60 { return }
         lastAutoResyncAt = Date() // set before awaiting so a rapid re-entry no-ops
-        try? await resync(team: team, country: country)
+        try? await resync(teams: teams, countries: countries)
     }
 
     /// Remove every "GoalDigger - *" calendar from the store (toggle-off).

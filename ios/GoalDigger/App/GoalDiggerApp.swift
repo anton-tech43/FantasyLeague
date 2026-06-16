@@ -44,8 +44,8 @@ struct GoalDiggerApp: App {
                         // + no-op unless sync is on and access is granted.
                         Task {
                             await CalendarSyncService.shared.autoResync(
-                                team: appState.selectedTeam,
-                                country: appState.selectedCountry,
+                                teams: appState.selectedTeams,
+                                countries: appState.selectedCountries,
                                 enabled: appState.calendarSyncEnabled
                             )
                         }
@@ -149,8 +149,8 @@ struct RootView: View {
             // even if the app is launched fresh rather than resumed. No-op
             // unless sync is enabled and calendar access is already granted.
             await CalendarSyncService.shared.autoResync(
-                team: appState.selectedTeam,
-                country: appState.selectedCountry,
+                teams: appState.selectedTeams,
+                countries: appState.selectedCountries,
                 enabled: appState.calendarSyncEnabled
             )
         }

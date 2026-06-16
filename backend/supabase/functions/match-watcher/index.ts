@@ -245,10 +245,15 @@ async function sendWcPlayingTeamPush(
   },
 ): Promise<number> {
   try {
+    // Match a device that follows either playing country via the legacy scalar
+    // (old apps) OR the multi-follow array (new apps). One row per device
+    // (UNIQUE apns_token) so a device that follows BOTH playing countries still
+    // appears once → one push.
+    const playing = `${args.homeTeamId},${args.awayTeamId}`;
     const { data: tokens } = await supabase
       .from("device_tokens")
-      .select("apns_token, country_id, apns_environment")
-      .in("country_id", [args.homeTeamId, args.awayTeamId])
+      .select("apns_token, country_id, country_ids, apns_environment")
+      .or(`country_id.in.(${playing}),country_ids.ov.{${playing}}`)
       .eq("is_active", true);
 
     // Per-country tallies so we can write one apns_send pipeline_health row per
@@ -259,7 +264,17 @@ async function sendWcPlayingTeamPush(
     const stats = new Map<string, { sent: number; failed: number; reason?: string; status?: number }>();
     let sent = 0;
     for (const t of tokens ?? []) {
-      const country = t.country_id as string;
+      // Which of THIS device's followed countries is in the match decides the
+      // perspective copy. Prefer home when a device follows both sides (they
+      // play each other) so the single push is deterministic.
+      const followed = (t.country_ids as string[] | null) ??
+        (t.country_id ? [t.country_id as string] : []);
+      const country = followed.includes(args.homeTeamId)
+        ? args.homeTeamId
+        : followed.includes(args.awayTeamId)
+        ? args.awayTeamId
+        : null;
+      if (!country) continue; // matched on stale scalar only — not actually following
       const body = args.copy.bodies[country];
       if (!body) continue; // follower of a team not in this match — shouldn't happen
       const contentId = args.contentIdByCountry?.[country] ?? `wc-${args.label}-${args.fixtureId}`;
@@ -1047,7 +1062,7 @@ async function handleRequest(req: Request): Promise<Response> {
             .from("live_activity_tokens")
             .select("token, apns_environment")
             .eq("kind", "push_to_start").eq("is_active", true)
-            .in("country_id", [homeTeamId, awayTeamId]);
+            .or(`country_id.in.(${homeTeamId},${awayTeamId}),country_ids.ov.{${homeTeamId},${awayTeamId}}`);
           await sendAll(ptsTokens, {
             event: "start",
             attributes: {

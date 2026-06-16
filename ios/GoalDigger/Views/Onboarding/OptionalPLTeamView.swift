@@ -12,9 +12,20 @@ import SwiftUI
 /// Either way the flow advances to tier selection.
 struct OptionalPLTeamView: View {
     @Environment(AppState.self) var appState
-    @State private var selected: Team?
+    @State private var picks: [Team] = []
+    @State private var wantsSecond = false
     @State private var searchText = ""
     let onContinue: () -> Void
+
+    /// Single-replace until the user opts into a second club, then toggle (cap 2).
+    private func tap(_ team: Team) {
+        guard wantsSecond else { picks = [team]; return }
+        if let i = picks.firstIndex(of: team) {
+            picks.remove(at: i)
+        } else if picks.count < 2 {
+            picks.append(team)
+        }
+    }
 
     private var filteredTeams: [Team] {
         if searchText.isEmpty {
@@ -71,9 +82,10 @@ struct OptionalPLTeamView: View {
             ScrollView {
                 LazyVStack(spacing: Layout.cardSpacing) {
                     ForEach(filteredTeams) { team in
+                        let isSelected = picks.contains(team)
                         Button {
                             withAnimation(.easeInOut(duration: 0.2)) {
-                                selected = team
+                                tap(team)
                             }
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         } label: {
@@ -91,7 +103,7 @@ struct OptionalPLTeamView: View {
 
                                 Spacer()
 
-                                if selected == team {
+                                if isSelected {
                                     Image(systemName: "checkmark.circle.fill")
                                         .foregroundColor(.hotRose)
                                 }
@@ -101,7 +113,7 @@ struct OptionalPLTeamView: View {
                             .cornerRadius(Layout.cardCornerRadius)
                             .overlay(
                                 RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
-                                    .stroke(selected == team ? Color.hotRose : Color.clear, lineWidth: 2)
+                                    .stroke(isSelected ? Color.hotRose : Color.clear, lineWidth: 2)
                             )
                             .shadow(color: Color.cardShadowColor, radius: Layout.cardShadowRadius, y: Layout.cardShadowY)
                         }
@@ -112,17 +124,20 @@ struct OptionalPLTeamView: View {
             }
 
             VStack(spacing: 12) {
-                Button(selected == nil ? "Pick a team" : "Add team") {
-                    if let team = selected {
-                        appState.selectedTeam = team
-                        onContinue()
-                    }
+                if !picks.isEmpty {
+                    addOwnToggle
                 }
-                .buttonStyle(PrimaryButtonStyle(isEnabled: selected != nil))
-                .disabled(selected == nil)
+
+                Button(picks.isEmpty ? "Pick a team" : (picks.count > 1 ? "Add both teams" : "Add team")) {
+                    guard !picks.isEmpty else { return }
+                    appState.selectedTeams = picks
+                    onContinue()
+                }
+                .buttonStyle(PrimaryButtonStyle(isEnabled: !picks.isEmpty))
+                .disabled(picks.isEmpty)
 
                 Button("Skip, just his country") {
-                    appState.selectedTeam = nil
+                    appState.selectedTeams = []
                     onContinue()
                 }
                 .font(.onboardingBody)
@@ -132,6 +147,38 @@ struct OptionalPLTeamView: View {
 
             Spacer().frame(height: 16)
         }
-        .animation(.easeOut(duration: 0.2), value: selected)
+        .animation(.easeOut(duration: 0.2), value: picks)
+        .animation(.easeOut(duration: 0.2), value: wantsSecond)
+        .onAppear {
+            picks = appState.selectedTeams
+            wantsSecond = appState.selectedTeams.count > 1
+        }
+        .onChange(of: wantsSecond) { _, on in
+            if !on { picks = Array(picks.prefix(1)) }
+        }
+    }
+
+    /// Opt-in box: "I want to add my own club too." Revealed once a first club
+    /// is picked; toggling it on lets the user select a second.
+    @ViewBuilder
+    private var addOwnToggle: some View {
+        Toggle(isOn: $wantsSecond) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("I want to add my own club too")
+                    .font(.feedHeadline)
+                    .foregroundColor(.textPrimaryOnCard)
+                Text(wantsSecond ? "Pick a second club (up to 2)." : "Follow two clubs, not just his.")
+                    .font(.feedTimestamp)
+                    .foregroundColor(.textSecondaryOnCard)
+            }
+        }
+        .tint(.hotRose)
+        .padding(Layout.cardPadding)
+        .background(Color.cardBackground)
+        .cornerRadius(Layout.cardCornerRadius)
+        .overlay(
+            RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
+                .stroke(Color.hotRose.opacity(0.3), lineWidth: 1)
+        )
     }
 }

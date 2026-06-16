@@ -65,13 +65,19 @@ serve(async (req) => {
   // claiming markers or rendering copy for the other ~40 teams nobody follows.
   const { data: tokenRows } = await supabase
     .from("device_tokens")
-    .select("country_id")
-    .not("country_id", "is", null)
+    .select("country_id, country_ids")
+    .or("country_id.not.is.null,country_ids.not.is.null")
     .eq("is_active", true);
   // Used only to decide who gets the reminder PUSH. The build-up FEED item is
   // written for ALL countries with a fixture in window (below), independent of
   // followers, so the feed is populated for whatever country the user views.
-  const followedCountries = new Set((tokenRows ?? []).map((r) => r.country_id as string));
+  // V2.2: a device may follow up to 2 countries (country_ids array); union the
+  // legacy scalar with the array so multi-follow devices count too.
+  const followedCountries = new Set<string>();
+  for (const r of tokenRows ?? []) {
+    if (r.country_id) followedCountries.add(r.country_id as string);
+    for (const c of (r.country_ids as string[] | null) ?? []) followedCountries.add(c);
+  }
 
   const { data: states, error: sErr } = await supabase
     .from("team_season_state")
@@ -175,11 +181,11 @@ serve(async (req) => {
         continue;
       }
 
-      // Send to this country's followers.
+      // Send to this country's followers (legacy scalar OR V2.2 array).
       const { data: tokens } = await supabase
         .from("device_tokens")
         .select("apns_token, apns_environment")
-        .eq("country_id", teamId)
+        .or(`country_id.eq.${teamId},country_ids.cs.{${teamId}}`)
         .eq("is_active", true);
 
       let sent = 0;

@@ -198,18 +198,21 @@ class APIClient {
 
     // MARK: - Device Token
 
-    /// Register or update a device token. V2.0 supports two optional entity
-    /// IDs: `teamId` (PL club) and `countryId` (WC national team). At least
-    /// one must be non-nil — caller responsibility. The POST body only
-    /// includes the keys that are set, so the merge-duplicates upsert only
-    /// updates columns we explicitly send (a country-only re-registration
-    /// for a user who previously had a team doesn't blank out their team).
+    /// Register or update a device token. V2.2: a device may follow up to 2 PL
+    /// clubs (`teamIds`) and up to 2 WC countries (`countryIds`), all equal. At
+    /// least one entity must be present — caller responsibility.
+    ///
+    /// The FULL arrays are always sent, so a *removed* follow is dropped by the
+    /// merge-duplicates replace. The legacy scalar `team_id`/`country_id`
+    /// columns are mirrored to the first array element (or explicitly NULLed
+    /// when empty) so the scalar push-query clause stays consistent with the
+    /// arrays and a removal can't be defeated by a stale scalar.
     func registerToken(_ token: String,
-                       teamId: String?,
-                       countryId: String? = nil,
+                       teamIds: [String],
+                       countryIds: [String],
                        tier: Int = 2) async throws {
         let url = try requireBaseURL().appendingPathComponent("device_tokens")
-        var body: [String: Any] = [
+        let body: [String: Any] = [
             "apns_token": token,
             "tier": tier,
             // Tells the server which APNs endpoint to use for this token.
@@ -217,9 +220,12 @@ class APIClient {
             // App Store / TestFlight tokens get pushed to the sandbox endpoint
             // (which rejects them with 400, deactivating the token → no pushes).
             "apns_environment": APIClient.apnsEnvironment,
+            "team_ids": teamIds,
+            "country_ids": countryIds,
+            // NSNull → JSON null → column nulled (keeps scalar == array[0]).
+            "team_id": teamIds.first ?? NSNull(),
+            "country_id": countryIds.first ?? NSNull(),
         ]
-        if let teamId { body["team_id"] = teamId }
-        if let countryId { body["country_id"] = countryId }
         let bodyData = try JSONSerialization.data(withJSONObject: body)
         let request = makeRequest(
             url: url,
@@ -236,18 +242,22 @@ class APIClient {
     /// "update" (per running activity — backend updates/ends it; fixtureId
     /// set). Mirrors registerToken: direct upsert into live_activity_tokens,
     /// merge-duplicates on the token.
+    /// V2.2: `countryIds` carries every followed WC country so the single
+    /// push-to-start token triggers the Live Activity for any of them. The
+    /// scalar `country_id` is mirrored to the first for back-compat.
     func registerLiveActivityToken(_ token: String,
                                    kind: String,
                                    fixtureId: Int?,
-                                   countryId: String?) async throws {
+                                   countryIds: [String]) async throws {
         let url = try requireBaseURL().appendingPathComponent("live_activity_tokens")
         var body: [String: Any] = [
             "token": token,
             "kind": kind,
             "apns_environment": APIClient.apnsEnvironment,
+            "country_ids": countryIds,
+            "country_id": countryIds.first ?? NSNull(),
         ]
         if let fixtureId { body["fixture_id"] = fixtureId }
-        if let countryId { body["country_id"] = countryId }
         let bodyData = try JSONSerialization.data(withJSONObject: body)
         let request = makeRequest(
             url: url,
@@ -259,32 +269,10 @@ class APIClient {
         try validateResponse(response)
     }
 
-    func updateTokenTeam(_ token: String, newTeamId: String) async throws {
-        let url = try buildURL(path: "device_tokens", queryItems: [
-            URLQueryItem(name: "apns_token", value: "eq.\(token)")
-        ])
-        let body: [String: Any] = ["team_id": newTeamId, "updated_at": ISO8601DateFormatter().string(from: Date())]
-        let bodyData = try JSONSerialization.data(withJSONObject: body)
-        let request = makeRequest(url: url, method: "PATCH", body: bodyData)
-        let (_, response) = try await URLSession.shared.data(for: request)
-        try validateResponse(response)
-    }
-
-    /// V2.0: update the country_id on the device_tokens row. Mirrors
-    /// updateTokenTeam but for the WC country picker in Settings.
-    /// notification-sender's per-token routing already reads country_id
-    /// (the `or(...)` filter that supports dual-followers), so once this
-    /// PATCH lands the user's pushes for the new country flow.
-    func updateTokenCountry(_ token: String, newCountryId: String) async throws {
-        let url = try buildURL(path: "device_tokens", queryItems: [
-            URLQueryItem(name: "apns_token", value: "eq.\(token)")
-        ])
-        let body: [String: Any] = ["country_id": newCountryId, "updated_at": ISO8601DateFormatter().string(from: Date())]
-        let bodyData = try JSONSerialization.data(withJSONObject: body)
-        let request = makeRequest(url: url, method: "PATCH", body: bodyData)
-        let (_, response) = try await URLSession.shared.data(for: request)
-        try validateResponse(response)
-    }
+    // updateTokenTeam / updateTokenCountry were retired in V2.2: the partial
+    // PATCH couldn't express the multi-follow arrays or NULL a removed scalar.
+    // Settings now does a full re-register via
+    // NotificationService.reregisterForFollowChange (one write path).
 
     func updateTokenTier(_ token: String, tier: Int) async throws {
         let url = try buildURL(path: "device_tokens", queryItems: [

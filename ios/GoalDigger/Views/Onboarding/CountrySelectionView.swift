@@ -10,9 +10,25 @@ import SwiftUI
 /// via URLCache.shared (configured in AppDelegate).
 struct CountrySelectionView: View {
     @Environment(AppState.self) var appState
-    @State private var selected: Country?
+    @State private var picks: [Country] = []
+    @State private var wantsSecond = false
     @State private var searchText = ""
+    /// When true, offer an opt-in box to follow a SECOND country (cap 2) — e.g.
+    /// his Norway plus her Sweden. Onboarding's WC step and the Settings picker
+    /// pass true; WCMigration keeps the single-pick default.
+    var allowsSecond: Bool = false
     let onContinue: () -> Void
+
+    /// Tap behaviour: single-replace by default; when the user has opted into a
+    /// second country, tapping toggles membership (capped at 2).
+    private func tap(_ country: Country) {
+        guard allowsSecond, wantsSecond else { picks = [country]; return }
+        if let i = picks.firstIndex(of: country) {
+            picks.remove(at: i)
+        } else if picks.count < 2 {
+            picks.append(country)
+        }
+    }
 
     /// When search is empty: grouped by confederation.
     /// When searching: flat alphabetical list filtered by searchableText.
@@ -91,9 +107,15 @@ struct CountrySelectionView: View {
                 .padding(.bottom, 8)
             }
 
-            if let country = selected {
-                Button("Continue") {
-                    appState.selectedCountry = country
+            if allowsSecond, !picks.isEmpty {
+                addOwnToggle
+                    .padding(.horizontal, Layout.screenPadding)
+                    .transition(.opacity)
+            }
+
+            if !picks.isEmpty {
+                Button(picks.count > 1 ? "Continue with both" : "Continue") {
+                    appState.selectedCountries = picks
                     onContinue()
                 }
                 .buttonStyle(PrimaryButtonStyle())
@@ -103,7 +125,41 @@ struct CountrySelectionView: View {
 
             Spacer().frame(height: 16)
         }
-        .animation(.easeOut(duration: 0.2), value: selected)
+        .animation(.easeOut(duration: 0.2), value: picks)
+        .animation(.easeOut(duration: 0.2), value: wantsSecond)
+        .onAppear {
+            // Seed from current state so re-entering (Settings, or back-nav)
+            // shows the existing pick(s) instead of an empty selection.
+            picks = appState.selectedCountries
+            wantsSecond = appState.selectedCountries.count > 1
+        }
+        .onChange(of: wantsSecond) { _, on in
+            if !on { picks = Array(picks.prefix(1)) }
+        }
+    }
+
+    /// Opt-in box: "I want to add my own country too." Revealed once a first
+    /// country is picked; toggling it on lets the user select a second.
+    @ViewBuilder
+    private var addOwnToggle: some View {
+        Toggle(isOn: $wantsSecond) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("I want to add my own country too")
+                    .font(.feedHeadline)
+                    .foregroundColor(.textPrimaryOnCard)
+                Text(wantsSecond ? "Pick a second country (up to 2)." : "Follow two countries this World Championship.")
+                    .font(.feedTimestamp)
+                    .foregroundColor(.textSecondaryOnCard)
+            }
+        }
+        .tint(.hotRose)
+        .padding(Layout.cardPadding)
+        .background(Color.cardBackground)
+        .cornerRadius(Layout.cardCornerRadius)
+        .overlay(
+            RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
+                .stroke(Color.hotRose.opacity(0.3), lineWidth: 1)
+        )
     }
 
     @ViewBuilder
@@ -121,9 +177,10 @@ struct CountrySelectionView: View {
 
     @ViewBuilder
     private func countryRow(_ country: Country) -> some View {
-        Button {
+        let isSelected = picks.contains(country)
+        return Button {
             withAnimation(.easeInOut(duration: 0.2)) {
-                selected = country
+                tap(country)
             }
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
         } label: {
@@ -141,7 +198,7 @@ struct CountrySelectionView: View {
 
                 Spacer()
 
-                if selected == country {
+                if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.hotRose)
                 }
@@ -151,7 +208,7 @@ struct CountrySelectionView: View {
             .cornerRadius(Layout.cardCornerRadius)
             .overlay(
                 RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
-                    .stroke(selected == country ? Color.hotRose : Color.clear, lineWidth: 2)
+                    .stroke(isSelected ? Color.hotRose : Color.clear, lineWidth: 2)
             )
             .shadow(color: Color.cardShadowColor, radius: Layout.cardShadowRadius, y: Layout.cardShadowY)
         }

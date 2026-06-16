@@ -209,7 +209,9 @@ struct SettingsView: View {
                         Text("\(appState.hisName.isEmpty ? "His" : appState.hisName + "'s") Team")
                             .font(.feedTimestamp)
                             .foregroundColor(.textSecondaryOnCard)
-                        Text(appState.selectedTeam?.displayName ?? "None")
+                        Text(appState.selectedTeams.isEmpty
+                            ? "None"
+                            : appState.selectedTeams.map(\.displayName).joined(separator: ", "))
                             .font(.feedHeadline)
                             .foregroundColor(.textPrimaryOnCard)
                     }
@@ -230,7 +232,9 @@ struct SettingsView: View {
                         Text("\(appState.hisName.isEmpty ? "His" : appState.hisName + "'s") Country")
                             .font(.feedTimestamp)
                             .foregroundColor(.textSecondaryOnCard)
-                        Text(appState.selectedCountry?.displayName ?? "None — tap to choose")
+                        Text(appState.selectedCountries.isEmpty
+                            ? "None — tap to choose"
+                            : appState.selectedCountries.map(\.displayName).joined(separator: ", "))
                             .font(.feedHeadline)
                             .foregroundColor(.textPrimaryOnCard)
                     }
@@ -471,8 +475,8 @@ struct SettingsView: View {
             // resync pulls each one's full upcoming slate, wipes stale/finished
             // games, and removes calendars for entities no longer followed.
             try await CalendarSyncService.shared.resync(
-                team: appState.selectedTeam,
-                country: appState.selectedCountry
+                teams: appState.selectedTeams,
+                countries: appState.selectedCountries
             )
             appState.calendarSyncEnabled = true
         } catch {
@@ -528,8 +532,8 @@ struct TeamPickerSheet: View {
     @Environment(AppState.self) var appState
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-    @State private var selected: Team?
-    @State private var showConfirmation = false
+    /// Local working set so Cancel discards; applied to AppState on Done.
+    @State private var picks: [Team] = []
 
     var body: some View {
         NavigationStack {
@@ -538,16 +542,18 @@ struct TeamPickerSheet: View {
 
                 ScrollView {
                     VStack(spacing: Layout.cardSpacing) {
+                        Text("Follow up to 2 clubs.")
+                            .font(.feedTimestamp)
+                            .foregroundColor(.textSecondaryOnCard)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 4)
                         ForEach(Team.allCases.sorted { $0.displayName < $1.displayName }) { team in
-                            TeamPickerCard(
-                                team: team,
-                                isSelected: team == (selected ?? appState.selectedTeam)
-                            ) {
-                                if team != appState.selectedTeam {
-                                    selected = team
-                                    showConfirmation = true
-                                }
+                            let isSelected = picks.contains(team)
+                            let atCap = picks.count >= 2
+                            TeamPickerCard(team: team, isSelected: isSelected) {
+                                toggle(team, isSelected: isSelected, atCap: atCap)
                             }
+                            .opacity(!isSelected && atCap ? 0.4 : 1)
                         }
                     }
                     .padding(.horizontal, Layout.screenPadding)
@@ -555,7 +561,7 @@ struct TeamPickerSheet: View {
                     .padding(.bottom, 40)
                 }
             }
-            .navigationTitle("Change Team")
+            .navigationTitle("Your Clubs")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(Color.appBackground, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
@@ -564,26 +570,36 @@ struct TeamPickerSheet: View {
                     Button("Cancel") { dismiss() }
                         .foregroundColor(.hotRose)
                 }
-            }
-            .alert("Switch to \(selected?.displayName ?? "")?", isPresented: $showConfirmation) {
-                Button("Switch") {
-                    guard let team = selected else { return }
-                    appState.selectedTeam = team
-                    CacheService.shared.clearAll(in: modelContext)
-                    appState.activeContext = .team(team)
-                    appState.isContextSwitcherOpen = false
-                    if let token = UserDefaults.standard.string(forKey: "apnsToken") {
-                        Task {
-                            try? await APIClient.shared.updateTokenTeam(token, newTeamId: team.rawValue)
-                        }
-                    }
-                    dismiss()
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { apply() }
+                        .foregroundColor(.hotRose)
                 }
-                Button("Cancel", role: .cancel) { selected = nil }
-            } message: {
-                Text("Your feed will update to show content for the new team.")
             }
+            .onAppear { picks = appState.selectedTeams }
         }
+    }
+
+    private func toggle(_ team: Team, isSelected: Bool, atCap: Bool) {
+        if isSelected {
+            picks.removeAll { $0 == team }
+        } else if !atCap {
+            picks.append(team)
+        }
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    private func apply() {
+        appState.selectedTeams = picks
+        CacheService.shared.clearAll(in: modelContext)
+        // Keep the active feed context valid if its club was removed.
+        if case .team(let t) = appState.activeContext, !picks.contains(t) {
+            appState.activeContext = appState.selectedCountries.first.map { FeedContext.country($0) }
+                ?? picks.first.map { FeedContext.team($0) }
+                ?? .everyoneTalking
+        }
+        appState.isContextSwitcherOpen = false
+        NotificationService.shared.reregisterForFollowChange()
+        dismiss()
     }
 }
 
@@ -609,7 +625,7 @@ struct CountryPickerSheet: View {
                 // button. By the time this closure fires, the new
                 // country is already set — we just propagate the change
                 // to active context + cache + the device_tokens row.
-                CountrySelectionView {
+                CountrySelectionView(allowsSecond: true) {
                     guard let country = appState.selectedCountry else {
                         dismiss()
                         return

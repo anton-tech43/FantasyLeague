@@ -193,10 +193,16 @@ serve(async (req) => {
       //   - WC content reaches WC subscribers via country_id=team_id
       //   - A user who follows both their club and country (`device_tokens`
       //     row has BOTH columns set) gets both kinds of pushes
+      //
+      // V2.2: a device may follow up to 2 countries + 2 clubs, stored in the
+      // country_ids/team_ids arrays. Match the legacy scalar (old apps) OR the
+      // array containing this slug (new apps). One row per device → one push.
       const { data: tokens } = await supabase
         .from("device_tokens")
         .select("apns_token, tier, apns_environment")
-        .or(`team_id.eq.${teamId},country_id.eq.${teamId}`)
+        .or(
+          `team_id.eq.${teamId},country_id.eq.${teamId},team_ids.cs.{${teamId}},country_ids.cs.{${teamId}}`,
+        )
         .eq("is_active", true);
 
       if (!tokens || tokens.length === 0) {

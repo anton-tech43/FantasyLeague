@@ -10,16 +10,12 @@ struct ContextSwitcherView: View {
     let onDismiss: () -> Void
 
     private var contexts: [FeedContext] {
-        // V2.0 dual-fandom: include both country and team if set. Country
-        // comes first (V2.0 anchor) so the dropdown's first row matches
-        // AppState's default activeContext picker (country > team).
+        // V2.2 multi-fandom: one row per followed country, then per followed
+        // club, then Everyone. Countries come first (the WC anchor) so the
+        // first row matches AppState's default activeContext picker.
         var result: [FeedContext] = []
-        if let country = appState.selectedCountry {
-            result.append(.country(country))
-        }
-        if let team = appState.selectedTeam {
-            result.append(.team(team))
-        }
+        result.append(contentsOf: appState.selectedCountries.map { .country($0) })
+        result.append(contentsOf: appState.selectedTeams.map { .team($0) })
         result.append(.everyoneTalking)
         return result
     }

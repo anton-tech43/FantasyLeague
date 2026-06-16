@@ -202,8 +202,8 @@ struct CalendarOptInView: View {
             // local `fixtures` preview (e.g. country picked but club fixtures
             // not loaded) no longer means his games get skipped.
             try await CalendarSyncService.shared.resync(
-                team: appState.selectedTeam,
-                country: appState.selectedCountry
+                teams: appState.selectedTeams,
+                countries: appState.selectedCountries
             )
             appState.calendarSyncEnabled = true
             UINotificationFeedbackGenerator().notificationOccurred(.success)

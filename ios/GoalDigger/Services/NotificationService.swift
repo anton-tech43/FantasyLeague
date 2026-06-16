@@ -29,13 +29,11 @@ class NotificationService {
         let unchanged = previous == token
         UserDefaults.standard.set(token, forKey: "apnsToken")
 
-        // V2.0: either a team OR a country is sufficient. The flow can produce:
-        //   - team only (V1.x users who haven't done WC migration)
-        //   - country only (V2.0 WC-only audience)
-        //   - both (V2.0 fans of both)
-        let teamId = AppState.shared.selectedTeam?.rawValue
-        let countryId = AppState.shared.selectedCountry?.rawValue
-        guard teamId != nil || countryId != nil else { return }
+        // V2.2: a device may follow up to 2 clubs + 2 countries (all equal).
+        // At least one entity is sufficient to register.
+        let teamIds = AppState.shared.selectedTeams.map(\.rawValue)
+        let countryIds = AppState.shared.selectedCountries.map(\.rawValue)
+        guard !teamIds.isEmpty || !countryIds.isEmpty else { return }
 
         // During onboarding, OnboardingFlow.completeOnboarding() owns the
         // canonical registerToken POST — it has the final tier/team/country
@@ -48,19 +46,20 @@ class NotificationService {
         let tier = AppState.shared.selectedTier
 
         // Re-register when the APNs token changed OR the followed scope
-        // (country | team | tier) changed since the last successful POST.
-        // Without the scope check, switching the followed country never updated
-        // the backend device_tokens.country_id (the token value is unchanged),
-        // so pushes kept targeting the old country until a reinstall.
-        let scope = "\(countryId ?? "")|\(teamId ?? "")|\(tier)"
+        // (countries | teams | tier) changed since the last successful POST.
+        // Without the scope check, changing a follow never updated the backend
+        // (the token value is unchanged), so pushes kept targeting the old set
+        // until a reinstall. Sorted so order-only changes don't force a re-POST.
+        let scope = "\(countryIds.sorted().joined(separator: ","))" +
+            "|\(teamIds.sorted().joined(separator: ","))|\(tier)"
         let lastScope = UserDefaults.standard.string(forKey: "lastRegisteredScope")
         if unchanged && alreadyRegistered && scope == lastScope { return }
         Task {
             do {
                 try await APIClient.shared.registerToken(
                     token,
-                    teamId: teamId,
-                    countryId: countryId,
+                    teamIds: teamIds,
+                    countryIds: countryIds,
                     tier: tier
                 )
                 await MainActor.run {
