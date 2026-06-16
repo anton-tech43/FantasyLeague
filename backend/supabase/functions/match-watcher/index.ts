@@ -27,7 +27,10 @@ import { buildAPNsPayload, sendLiveActivityPush, sendPushNotification } from "..
 import { WC_COUNTRY_META, wcStatusLabel } from "../_shared/wc-countries.ts";
 import {
   detectGoal,
+  formatScorerLine,
+  type GoalEvent,
   type GoalPushCopy,
+  pickLatestGoalForTeam,
   renderFullTimePush,
   renderGoalPush,
   renderHalfTimePush,
@@ -50,6 +53,82 @@ interface ApiFixture {
   league: { id: number; name: string; season: number; round?: string };
   teams: { home: { id: number; name: string }; away: { id: number; name: string } };
   goals: { home: number | null; away: number | null };
+}
+
+// API-Football GET /fixtures/events?fixture={id} → { response: ApiEvent[] }.
+// Each timeline event (goals, cards, subs, VAR). We narrow to Goal events.
+// All fields are typed loosely + parsed defensively (parseGoalEvents) because
+// the live feed occasionally ships partial rows mid-match.
+interface ApiEvent {
+  time?: { elapsed?: number | null; extra?: number | null } | null;
+  team?: { id?: number | null; name?: string | null } | null;
+  player?: { id?: number | null; name?: string | null } | null;
+  type?: string | null; // "Goal" | "Card" | "subst" | "Var" | ...
+  detail?: string | null; // "Normal Goal" | "Penalty" | "Own Goal" | "Missed Penalty" | ...
+}
+
+/// Parse a raw /fixtures/events `response` array into our GoalEvent shape,
+/// keeping ONLY goals that actually changed the score. Excluded:
+///   - non-Goal types (cards, subs, VAR overturns)
+///   - detail === "Missed Penalty" (type is "Goal" but no goal was scored)
+/// Own goals are kept with isOwnGoal=true: API-Football credits the event's
+/// `team` to the BENEFITING side (the side whose score rose), so the teamApiId
+/// already matches detectGoal's side — but the named player belongs to the
+/// OTHER team, so formatScorerLine drops the name for own goals. Tolerant of a
+/// null / non-array payload (returns []). Never throws.
+export function parseGoalEvents(raw: unknown): GoalEvent[] {
+  if (!Array.isArray(raw)) return [];
+  const out: GoalEvent[] = [];
+  for (const item of raw as ApiEvent[]) {
+    if (!item || typeof item !== "object") continue;
+    if (item.type !== "Goal") continue;
+    const detail = typeof item.detail === "string" ? item.detail : "";
+    if (detail === "Missed Penalty") continue; // type "Goal" but no goal scored
+    const teamApiId = item.team?.id;
+    if (typeof teamApiId !== "number") continue; // can't attribute → useless
+    const rawMinute = item.time?.elapsed;
+    const rawExtra = item.time?.extra;
+    out.push({
+      teamApiId,
+      playerName: typeof item.player?.name === "string" ? item.player.name : null,
+      minute: typeof rawMinute === "number" ? rawMinute : null,
+      extra: typeof rawExtra === "number" ? rawExtra : null,
+      isOwnGoal: detail === "Own Goal",
+      isPenalty: detail === "Penalty",
+    });
+  }
+  return out;
+}
+
+/// Fetch the goal events for one fixture from API-Football. ONLY call this when
+/// a goal was actually detected this tick (quota matters — one extra request
+/// per goal, never per poll). Reuses the same base URL + x-apisports-key header
+/// as the fixtures poll. Returns [] on any error (network, non-array payload,
+/// API `errors` object) so the caller falls back cleanly to scorer-less copy.
+async function fetchGoalEvents(fixtureId: number, apiKey: string): Promise<GoalEvent[]> {
+  try {
+    const resp = await fetch(
+      `${API_FOOTBALL_BASE}/fixtures/events?fixture=${fixtureId}`,
+      { headers: { "x-apisports-key": apiKey } },
+    );
+    const json = await resp.json().catch(() => null);
+    if (
+      !json ||
+      !Array.isArray(json.response) ||
+      (json.errors && Object.keys(json.errors).length > 0)
+    ) {
+      console.warn(
+        `match-watcher: /fixtures/events fixture=${fixtureId} unusable ` +
+        `(status=${resp.status}, errors=${JSON.stringify(json?.errors ?? {})})`,
+      );
+      return [];
+    }
+    return parseGoalEvents(json.response);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.warn(`match-watcher: /fixtures/events fixture=${fixtureId} fetch failed:`, msg);
+    return [];
+  }
 }
 
 serve(async (req) => {
@@ -1012,12 +1091,27 @@ async function handleRequest(req: Request): Promise<Response> {
         if (isLive && prior !== null) {
           const side = detectGoal(prior.home_goals, prior.away_goals, homeGoals, awayGoals);
           if (side) {
+            // Scorer + minute enrichment (A2). Fetch the fixture's events ONLY
+            // now, on a real goal — never every poll (quota). When BOTH sides
+            // scored in one tick (side === "both") we can't honestly name a
+            // single scorer, so we skip the lookup and keep the rotating copy.
+            // The scoring side's API team id (home vs away) tells pickLatest...
+            // which goal to surface; the latest (highest minute) is the one
+            // that just landed. Anything missing → scorerLine null → clean
+            // fallback to the existing copy with no extra line.
+            let scorerLine: string | null = null;
+            if (side !== "both") {
+              const scoringApiId = side === "home" ? homeApiId : awayApiId;
+              const events = await fetchGoalEvents(fixtureId, apiFootballKey);
+              scorerLine = formatScorerLine(pickLatestGoalForTeam(events, scoringApiId));
+            }
             const copy = renderGoalPush({
               home: homeTeam,
               away: awayTeam,
               homeGoals: homeGoals ?? 0,
               awayGoals: awayGoals ?? 0,
               side,
+              scorerLine,
             });
             goalPushSends += await sendWcPlayingTeamPush(supabase, {
               homeTeamId,

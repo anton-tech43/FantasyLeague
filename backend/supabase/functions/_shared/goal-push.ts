@@ -55,6 +55,78 @@ export interface GoalPushTeam {
   flag: string; // emoji
 }
 
+/// One scoring event as returned by API-Football's /fixtures/events endpoint,
+/// already narrowed to the fields we surface. `teamApiId` is the API-Football
+/// team id the goal is CREDITED to (for own goals this is the BENEFITING team,
+/// not the scorer's own team — see formatScorerLine). `minute` is time.elapsed;
+/// `extra` is time.extra (stoppage time) when present. `isOwnGoal` flags an
+/// own goal so the line never misattributes the player to the wrong country.
+export interface GoalEvent {
+  teamApiId: number;
+  playerName: string | null;
+  minute: number | null;
+  extra: number | null;
+  isOwnGoal: boolean;
+  isPenalty: boolean;
+}
+
+/// Render the human minute string: "47'" or, in stoppage, "45+2'". Returns ""
+/// when the minute is unknown (events lagging / malformed) so callers can drop
+/// the segment cleanly rather than print a stray apostrophe.
+export function formatMinute(minute: number | null, extra: number | null): string {
+  if (minute == null || !Number.isFinite(minute)) return "";
+  const base = Math.trunc(minute);
+  const add = extra != null && Number.isFinite(extra) && extra > 0 ? `+${Math.trunc(extra)}` : "";
+  return `${base}${add}'`;
+}
+
+/// Factual scorer line for the goal that just landed, e.g. "⚽ Pedri 47'",
+/// "⚽ Kane 90+3' (pen)", or "⚽ Own goal 23'" (player omitted on purpose — the
+/// API names the OWN-goal scorer from the conceding side, so naming them would
+/// mislead the celebrating followers). Returns null when there is nothing
+/// trustworthy to show (no player AND no minute), letting the push fall back to
+/// the existing rotating copy with no extra line. Never throws.
+export function formatScorerLine(ev: GoalEvent | null | undefined): string | null {
+  if (!ev) return null;
+  const minute = formatMinute(ev.minute, ev.extra);
+  if (ev.isOwnGoal) {
+    // Player belongs to the OTHER team; omit the name, keep it honest.
+    return minute ? `⚽ Own goal ${minute}` : "⚽ Own goal";
+  }
+  const name = (ev.playerName ?? "").trim();
+  const suffix = ev.isPenalty ? " (pen)" : "";
+  if (name && minute) return `⚽ ${name} ${minute}${suffix}`;
+  if (name) return `⚽ ${name}${suffix}`;
+  if (minute) return `⚽ Goal ${minute}${suffix}`;
+  return null;
+}
+
+/// From a fixture's goal events, pick the one for the side that just scored,
+/// preferring the LATEST (highest minute, then highest extra) — that is the
+/// goal that triggered this tick's detectGoal. `scoringTeamApiId` is the
+/// API-Football id of the side detectGoal reported. Tolerant of an empty or
+/// malformed events array (returns null → caller surfaces no scorer line).
+export function pickLatestGoalForTeam(
+  events: readonly GoalEvent[] | null | undefined,
+  scoringTeamApiId: number,
+): GoalEvent | null {
+  if (!Array.isArray(events) || events.length === 0) return null;
+  let best: GoalEvent | null = null;
+  for (const ev of events) {
+    if (ev.teamApiId !== scoringTeamApiId) continue;
+    if (best === null) {
+      best = ev;
+      continue;
+    }
+    const bm = best.minute ?? -1;
+    const em = ev.minute ?? -1;
+    const bx = best.extra ?? 0;
+    const ex = ev.extra ?? 0;
+    if (em > bm || (em === bm && ex > bx)) best = ev;
+  }
+  return best;
+}
+
 export interface GoalPushCopy {
   title: string;
   /// Push body per follower country (keyed by country slug).
@@ -77,25 +149,45 @@ export function interpolate(template: string, vars: Record<string, string>): str
     .trim();
 }
 
+/// Append a factual scorer line (e.g. "⚽ Pedri 47'") to a rotating-copy body
+/// as a distinct trailing sentence. Additive and conservative: the existing
+/// pool line is untouched; a blank/absent line is a no-op. The scorer line is
+/// the SAME factual fact for both perspectives (who scored, when), so it is
+/// appended identically to the scorer's and conceder's bodies.
+function appendScorerLine(body: string, scorerLine: string | null | undefined): string {
+  const line = (scorerLine ?? "").trim();
+  if (!line) return body;
+  return `${body} ${line}`;
+}
+
 /// Goal push for the two PLAYING countries' followers. Title carries the
 /// home-away scoreline; the body flips perspective by routing the scorer pool
 /// to the scoring country's slug and the conceder pool to the other. {flag} and
 /// {team} both refer to the SCORER (so the conceding side's body reads "Mexico
 /// score, he's not loving this"). No em-dashes (campaign rule).
+///
+/// `scorerLine` (optional) is a pre-formatted factual line like "⚽ Pedri 47'"
+/// (see formatScorerLine). When present it is appended to BOTH bodies as a
+/// distinct trailing fact; when absent the copy is unchanged (clean fallback
+/// when the events endpoint is empty / lagging).
 export function renderGoalPush(args: {
   home: GoalPushTeam;
   away: GoalPushTeam;
   homeGoals: number;
   awayGoals: number;
   side: GoalSide;
+  scorerLine?: string | null;
   rng?: () => number;
 }): GoalPushCopy {
-  const { home, away, homeGoals, awayGoals, side, rng = Math.random } = args;
+  const { home, away, homeGoals, awayGoals, side, scorerLine, rng = Math.random } = args;
   const score = `${homeGoals}-${awayGoals}`;
   const title = `GOAL: ${home.name} ${score} ${away.name}`;
 
   if (side === "both") {
-    const body = interpolate(pick(GOAL_BOTH, rng), { home: home.name, away: away.name, score });
+    const body = appendScorerLine(
+      interpolate(pick(GOAL_BOTH, rng), { home: home.name, away: away.name, score }),
+      scorerLine,
+    );
     return { title, bodies: { [home.id]: body, [away.id]: body } };
   }
 
@@ -105,8 +197,8 @@ export function renderGoalPush(args: {
   return {
     title,
     bodies: {
-      [scorer.id]: interpolate(pick(GOAL_SCORED, rng), vars),
-      [conceder.id]: interpolate(pick(GOAL_CONCEDED, rng), vars),
+      [scorer.id]: appendScorerLine(interpolate(pick(GOAL_SCORED, rng), vars), scorerLine),
+      [conceder.id]: appendScorerLine(interpolate(pick(GOAL_CONCEDED, rng), vars), scorerLine),
     },
   };
 }

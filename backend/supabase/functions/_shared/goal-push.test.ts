@@ -3,7 +3,11 @@
 
 import {
   detectGoal,
+  formatMinute,
+  formatScorerLine,
+  type GoalEvent,
   interpolate,
+  pickLatestGoalForTeam,
   renderFullTimePush,
   renderGoalPush,
   renderHalfTimePush,
@@ -233,4 +237,92 @@ Deno.test("titles carry the scoreline, stay bounded, no em/en dashes", () => {
     assert(t.includes("10-10"), `title carries the score: ${t}`);
     assert(!t.includes("—") && !t.includes("–"), `no em/en dash: ${t}`);
   }
+});
+
+// ============================================================
+// A2: scorer + minute enrichment (formatMinute / formatScorerLine /
+// pickLatestGoalForTeam / renderGoalPush scorerLine weaving)
+// ============================================================
+
+function ev(p: Partial<GoalEvent>): GoalEvent {
+  return {
+    teamApiId: 1,
+    playerName: null,
+    minute: null,
+    extra: null,
+    isOwnGoal: false,
+    isPenalty: false,
+    ...p,
+  };
+}
+
+Deno.test("formatMinute: plain, stoppage, and unknown", () => {
+  eq(formatMinute(47, null), "47'", "plain minute");
+  eq(formatMinute(45, 2), "45+2'", "stoppage time");
+  eq(formatMinute(90, 0), "90'", "extra 0 is not shown");
+  eq(formatMinute(null, null), "", "unknown minute → empty");
+  eq(formatMinute(90, null), "90'", "no extra");
+});
+
+Deno.test("formatScorerLine: normal goal names player + minute", () => {
+  eq(formatScorerLine(ev({ playerName: "Pedri", minute: 47 })), "⚽ Pedri 47'", "normal goal");
+});
+
+Deno.test("formatScorerLine: penalty tagged (pen)", () => {
+  eq(
+    formatScorerLine(ev({ playerName: "H. Kane", minute: 90, extra: 3, isPenalty: true })),
+    "⚽ H. Kane 90+3' (pen)",
+    "penalty in stoppage",
+  );
+});
+
+Deno.test("formatScorerLine: own goal omits the (opposing-team) player name", () => {
+  // API names the own-goal scorer from the CONCEDING side; surfacing that name
+  // on the celebrating side's push would mislead. Label only.
+  eq(
+    formatScorerLine(ev({ playerName: "J. Stones", minute: 23, isOwnGoal: true })),
+    "⚽ Own goal 23'",
+    "own goal labelled, player dropped",
+  );
+  eq(formatScorerLine(ev({ minute: null, isOwnGoal: true })), "⚽ Own goal", "own goal, no minute");
+});
+
+Deno.test("formatScorerLine: graceful partials and null", () => {
+  eq(formatScorerLine(ev({ playerName: "Vinicius", minute: null })), "⚽ Vinicius", "name only");
+  eq(formatScorerLine(ev({ playerName: null, minute: 60 })), "⚽ Goal 60'", "minute only");
+  eq(formatScorerLine(ev({ playerName: "  ", minute: null })), null, "no fact → null");
+  eq(formatScorerLine(null), null, "null event → null");
+});
+
+Deno.test("pickLatestGoalForTeam: latest goal of the scoring side", () => {
+  const events: GoalEvent[] = [
+    ev({ teamApiId: 10, playerName: "Early", minute: 12 }),
+    ev({ teamApiId: 20, playerName: "OtherTeam", minute: 80 }),
+    ev({ teamApiId: 10, playerName: "Latest", minute: 67 }),
+    ev({ teamApiId: 10, playerName: "Stoppage", minute: 67, extra: 2 }),
+  ];
+  const picked = pickLatestGoalForTeam(events, 10);
+  eq(picked?.playerName, "Stoppage", "highest minute+extra for team 10");
+  eq(pickLatestGoalForTeam(events, 99)?.playerName ?? null, null, "no goal for absent team");
+  eq(pickLatestGoalForTeam([], 10), null, "empty array → null");
+  eq(pickLatestGoalForTeam(null, 10), null, "null events → null");
+});
+
+Deno.test("renderGoalPush: scorerLine appended to both bodies, additive", () => {
+  const withScorer = renderGoalPush({
+    home: MEX, away: RSA, homeGoals: 1, awayGoals: 0, side: "home", scorerLine: "⚽ Pedri 47'", rng: zero,
+  });
+  const without = renderGoalPush({
+    home: MEX, away: RSA, homeGoals: 1, awayGoals: 0, side: "home", rng: zero,
+  });
+  // The scorer line is appended after the unchanged rotating-copy body.
+  assert(withScorer.bodies.mexico.startsWith(without.bodies.mexico), "scorer body keeps rotating copy");
+  assert(withScorer.bodies.mexico.endsWith("⚽ Pedri 47'"), "scorer body ends with the fact");
+  assert(withScorer.bodies.south_africa.endsWith("⚽ Pedri 47'"), "conceder body also carries the fact");
+  // Null / empty scorerLine is a clean no-op (fallback path).
+  eq(
+    renderGoalPush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 0, side: "home", scorerLine: null, rng: zero }).bodies.mexico,
+    without.bodies.mexico,
+    "null scorerLine = unchanged copy",
+  );
 });
