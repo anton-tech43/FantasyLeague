@@ -20,7 +20,8 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { buildAPNsPayload, sendPushNotification } from "../_shared/apns-client.ts";
-import { renderMatchdayReminder } from "../_shared/matchday-reminder-copy.ts";
+import { renderMatchdayReminder, renderPreMatchBuildup } from "../_shared/matchday-reminder-copy.ts";
+import { preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
 
 const WINDOW_MS = 24 * 60 * 60 * 1000;
 
@@ -50,10 +51,13 @@ serve(async (req) => {
   // reminders (team_id-keyed recipients) can be added when the league resumes.
   const { data: countries, error: cErr } = await supabase
     .from("teams")
-    .select("id, display_name")
+    .select("id, display_name, strength_rank")
     .eq("entity_type", "country");
   if (cErr) return json({ error: `teams query: ${cErr.message}` }, 500);
   const nameById = new Map((countries ?? []).map((t) => [t.id as string, t.display_name as string]));
+  const rankById = new Map((countries ?? []).map((t) => [t.id as string, (t.strength_rank as number | null) ?? null]));
+  // display_name (lowercased) -> id, to resolve the opponent named in next_fixtures.
+  const idByName = new Map((countries ?? []).map((t) => [(t.display_name as string).toLowerCase(), t.id as string]));
   const countryIds = [...nameById.keys()];
   if (countryIds.length === 0) return json({ reminders_sent: 0, note: "no country entities" });
 
@@ -64,13 +68,15 @@ serve(async (req) => {
     .select("country_id")
     .not("country_id", "is", null)
     .eq("is_active", true);
+  // Used only to decide who gets the reminder PUSH. The build-up FEED item is
+  // written for ALL countries with a fixture in window (below), independent of
+  // followers, so the feed is populated for whatever country the user views.
   const followedCountries = new Set((tokenRows ?? []).map((r) => r.country_id as string));
-  if (followedCountries.size === 0) return json({ reminders_sent: 0, note: "no followed countries" });
 
   const { data: states, error: sErr } = await supabase
     .from("team_season_state")
     .select("team_id, next_fixtures")
-    .in("team_id", [...followedCountries].filter((id) => nameById.has(id)));
+    .in("team_id", countryIds);
   if (sErr) return json({ error: `season_state query: ${sErr.message}` }, 500);
 
   let remindersSent = 0;
@@ -87,6 +93,56 @@ serve(async (req) => {
       // Only fixtures kicking off within the next 24h (future-only).
       if (kickoff <= now || kickoff >= windowEnd) continue;
 
+      // ── A1: deterministic build-up FEED item (ALL countries) ──────────────
+      // So a country's feed is never empty in the ~24h before a match, even for
+      // RSS-starved nations the news routine skips. Idempotent via a stable
+      // match_id (buildup-<kickoff epoch>); feed-only (the reminder push below
+      // is the alert). Verdict comes from FIFA ranks when the opponent resolves.
+      const oppId = idByName.get((fx.opponent ?? "").toLowerCase()) ?? null;
+      const verdict = preMatchVerdict(
+        rankById.get(teamId) ?? null,
+        oppId ? (rankById.get(oppId) ?? null) : null,
+        WC_FAVORITE_GAP,
+      );
+      const buildup = renderPreMatchBuildup({
+        teamName,
+        opponent: fx.opponent,
+        kickoffUtc: kickoff,
+        now,
+        verdict: verdict?.tag ?? null,
+      });
+      const buildupMatchId = `buildup-${kickoff.getTime()}`;
+      let buildupWritten = false;
+      if (!dryRun) {
+        const { data: existing } = await supabase
+          .from("content_items")
+          .select("id")
+          .eq("team_id", teamId)
+          .eq("match_id", buildupMatchId)
+          .limit(1)
+          .maybeSingle();
+        if (!existing) {
+          const { error: insErr } = await supabase.from("content_items").insert({
+            team_id: teamId,
+            type: "news",
+            match_id: buildupMatchId,
+            headline: buildup.headline,
+            body: buildup.body,
+            talking_points: [buildup.talkingPoint],
+            push_eligible: false,
+            pipeline_source: "edge_function",
+            status: "published",
+            published_at: new Date().toISOString(),
+          });
+          if (!insErr) buildupWritten = true;
+          else if (insErr.code !== "23505") {
+            results.push({ team_id: teamId, kickoff: kickoff.toISOString(), buildup_error: insErr.message });
+          }
+        }
+      }
+
+      // ── Reminder PUSH — followed countries only ──────────────────────────
+      const isFollowed = followedCountries.has(teamId);
       const copy = renderMatchdayReminder({ teamName, opponent: fx.opponent, kickoffUtc: kickoff, now });
 
       if (dryRun) {
@@ -94,10 +150,16 @@ serve(async (req) => {
           team_id: teamId,
           opponent: fx.opponent,
           kickoff: kickoff.toISOString(),
-          title: copy.title,
-          body: copy.body,
-          would_fire: true,
+          buildup_headline: buildup.headline,
+          followed: isFollowed,
+          reminder_title: isFollowed ? copy.title : null,
+          would_push: isFollowed,
         });
+        continue;
+      }
+
+      if (!isFollowed) {
+        results.push({ team_id: teamId, kickoff: kickoff.toISOString(), buildup: buildupWritten, followed: false });
         continue;
       }
 
@@ -142,6 +204,7 @@ serve(async (req) => {
         opponent: fx.opponent,
         kickoff: kickoff.toISOString(),
         tokens_sent: sent,
+        buildup: buildupWritten,
       });
     }
   }

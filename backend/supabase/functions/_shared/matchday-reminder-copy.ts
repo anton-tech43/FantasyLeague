@@ -17,7 +17,7 @@ function ymd(d: Date): string {
 }
 
 /** Stockholm-local 24h clock time as "HH:MM". */
-function hhmm(d: Date): string {
+export function hhmm(d: Date): string {
   return new Intl.DateTimeFormat("en-GB", {
     timeZone: TZ,
     hour: "2-digit",
@@ -68,5 +68,49 @@ export function renderMatchdayReminder(args: {
   return {
     title: `${teamName} play ${when}`,
     body: pick(BODY_VARIANTS, rng)(teamName, opponent, whenAt),
+  };
+}
+
+// ── Pre-match build-up FEED item (A1: the "feed is never empty" floor) ──────
+// Deterministic content_item written ~24h before a WC match so a country's feed
+// is never empty in the run-up, even for RSS-starved nations. No em-dashes.
+
+const BUILDUP_TPS: Array<(team: string, opp: string) => string> = [
+  (_t, opp) => `Ask him how he's feeling about the ${opp} game.`,
+  (_t, _o) => `Text him "big one coming up?" and let him run with it.`,
+  (_t, opp) => `Ask him who he wants to see start against ${opp}.`,
+  (_t, opp) => `Ask him if he's quietly nervous about ${opp}.`,
+  (team, _o) => `Ask him what ${team} need to do to get a result here.`,
+];
+
+export interface PreMatchBuildup {
+  headline: string;
+  body: string;
+  talkingPoint: string;
+}
+
+/// Render the deterministic build-up feed item. `verdict` is the FIFA-rank
+/// favorite tag from preMatchVerdict (or null when either rank is unknown).
+export function renderPreMatchBuildup(args: {
+  teamName: string;
+  opponent: string;
+  kickoffUtc: Date;
+  now: Date;
+  verdict?: "likely_win" | "even" | "likely_loss" | null;
+  rng?: () => number;
+}): PreMatchBuildup {
+  const { teamName, opponent, kickoffUtc, now, verdict = null, rng = Math.random } = args;
+  const whenAt = `${dayWord(kickoffUtc, now)} at ${hhmm(kickoffUtc)}`;
+  const verdictLine = verdict === "likely_win"
+    ? `On the world rankings ${teamName} are the favourites, but tournament football writes its own scripts.`
+    : verdict === "likely_loss"
+    ? `${opponent} sit higher in the world rankings, so ${teamName} go in as underdogs. Upsets happen.`
+    : verdict === "even"
+    ? `The rankings call this one close, it could go either way.`
+    : `One to keep half an eye on.`;
+  return {
+    headline: `${teamName} face ${opponent} ${whenAt}`,
+    body: `${teamName} face ${opponent} ${whenAt}. ${verdictLine}`,
+    talkingPoint: pick(BUILDUP_TPS, rng)(teamName, opponent),
   };
 }
