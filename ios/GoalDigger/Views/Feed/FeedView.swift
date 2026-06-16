@@ -316,8 +316,8 @@ struct FeedView: View {
             teamItems: teamItems,
             countryItems: [],
             everyoneItems: everyoneItems,
-            selectedTeam: appState.selectedTeam,
-            selectedCountry: appState.selectedCountry
+            selectedTeams: appState.selectedTeams,
+            selectedCountries: appState.selectedCountries
         )
         if let text = badgeText {
             Text(text)

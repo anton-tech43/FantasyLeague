@@ -50,14 +50,15 @@ class UnreadTracker {
         teamItems: [ContentItem],
         countryItems: [ContentItem],
         everyoneItems: [ContentItem],
-        selectedTeam: Team?,
-        selectedCountry: Country?
+        selectedTeams: [Team],
+        selectedCountries: [Country]
     ) -> Int {
         var total = 0
-        if let team = selectedTeam, activeContext != .team(team) {
+        // V2.2: every followed entity contributes, not just the primary.
+        for team in selectedTeams where activeContext != .team(team) {
             total += unreadCount(for: .team(team), items: teamItems)
         }
-        if let country = selectedCountry, activeContext != .country(country) {
+        for country in selectedCountries where activeContext != .country(country) {
             total += unreadCount(for: .country(country), items: countryItems)
         }
         if activeContext != .everyoneTalking {
@@ -72,16 +73,16 @@ class UnreadTracker {
         teamItems: [ContentItem],
         countryItems: [ContentItem],
         everyoneItems: [ContentItem],
-        selectedTeam: Team?,
-        selectedCountry: Country?
+        selectedTeams: [Team],
+        selectedCountries: [Country]
     ) -> String? {
         let total = totalUnread(
             activeContext: activeContext,
             teamItems: teamItems,
             countryItems: countryItems,
             everyoneItems: everyoneItems,
-            selectedTeam: selectedTeam,
-            selectedCountry: selectedCountry
+            selectedTeams: selectedTeams,
+            selectedCountries: selectedCountries
         )
         guard total > 0 else { return nil }
         return total > 9 ? "9+" : "\(total)"
