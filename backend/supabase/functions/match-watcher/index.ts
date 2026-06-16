@@ -894,12 +894,20 @@ async function handleRequest(req: Request): Promise<Response> {
       const homeMeta = WC_COUNTRY_META[homeTeamId];
       const awayMeta = WC_COUNTRY_META[awayTeamId];
       if (homeMeta && awayMeta) {
+        // Live minute drives the "63' / 90" badge. Only meaningful during an
+        // active half (1H/2H/ET) — null at HT/BT/penalties/FT so the badge
+        // shows the period label there and the per-minute updates stop. Folded
+        // into `sig` so each new minute pushes one silent LA update.
+        const liveMinute = isLive && status !== "HT" && status !== "BT"
+          ? (elapsed ?? null)
+          : null;
         const contentState = {
           homeScore: homeGoals ?? 0,
           awayScore: awayGoals ?? 0,
           statusLabel: wcStatusLabel(status),
+          elapsed: liveMinute,
         };
-        const sig = `${contentState.homeScore}-${contentState.awayScore}-${contentState.statusLabel}`;
+        const sig = `${contentState.homeScore}-${contentState.awayScore}-${contentState.statusLabel}-${liveMinute ?? ""}`;
         const matchFinished = FINISHED_STATUSES.has(status);
 
         const sendAll = async (
@@ -1106,6 +1114,7 @@ async function handleRequest(req: Request): Promise<Response> {
           status,
           home_goals: homeGoals,
           away_goals: awayGoals,
+          elapsed: elapsed ?? null,
           kickoff_time: kickoffTime,
           last_checked: new Date().toISOString(),
           briefs_fired: updatedBriefsFired,

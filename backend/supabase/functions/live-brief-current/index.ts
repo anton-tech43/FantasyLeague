@@ -64,7 +64,7 @@ serve(async (req) => {
 
   const { data: stateRows, error: stateErr } = await supabase
     .from("match_status_state")
-    .select("fixture_id, status, home_team_id, away_team_id, home_goals, away_goals")
+    .select("fixture_id, status, home_team_id, away_team_id, home_goals, away_goals, elapsed")
     .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
     .gte("kickoff_time", windowStartIso)
     .lte("kickoff_time", windowEndIso)
@@ -127,7 +127,7 @@ serve(async (req) => {
         ...brief,
         headline: liveHeadline,
         trigger_label: state.status === "HT" ? (brief.trigger_label ?? "HT") : liveLabel,
-        minute: state.status === "HT" ? (brief.minute ?? null) : null,
+        minute: state.status === "HT" ? (brief.minute ?? null) : (state.elapsed ?? null),
       }),
       { headers },
     );
@@ -148,7 +148,7 @@ serve(async (req) => {
       match_id: String(state.fixture_id),
       headline: liveHeadline,
       body: periodLine(state.status),
-      minute: null,
+      minute: state.elapsed ?? null,
       trigger_label: liveLabel,
       generated_at: new Date(now).toISOString(),
     }),
@@ -163,6 +163,7 @@ interface MatchState {
   away_team_id: string;
   home_goals: number | null;
   away_goals: number | null;
+  elapsed: number | null;
 }
 
 /// Follower-first live scoreline, e.g. "Spain 1-0 Cape Verde". Pure read from
