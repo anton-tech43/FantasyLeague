@@ -21,14 +21,28 @@ struct LiveMatchBrief: Codable, Identifiable, Equatable {
     let generatedAt: Date
     /// Group standings table for the live box (WC group). Nil when unavailable.
     let standings: LiveStandings?
+    /// Who scored and when, chronological. Nil/empty when no goals yet.
+    let scorers: [Scorer]?
 
     enum CodingKeys: String, CodingKey {
-        case id, minute, standings
+        case id, minute, standings, scorers
         case teamId = "team_id"
         case matchId = "match_id"
         case headline, body
         case triggerLabel = "trigger_label"
         case generatedAt = "generated_at"
+    }
+
+    /// One goal in the live box. `minute` is the pre-formatted match minute
+    /// ("47'" / "45+2'"); `player` is the scorer name (or "Own goal"); `team`
+    /// is the scoring side's short name. `penalty` tags a spot-kick.
+    struct Scorer: Codable, Equatable, Identifiable {
+        let side: String
+        let team: String
+        let player: String
+        let minute: String
+        let penalty: Bool?
+        var id: String { "\(side)-\(player)-\(minute)" }
     }
 
     /// The group table rendered under the live score, sourced deterministically

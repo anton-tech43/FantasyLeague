@@ -12,6 +12,7 @@ import {
   renderGoalPush,
   renderHalfTimePush,
   renderKickoffSoonPush,
+  toStoredGoalEvents,
 } from "./goal-push.ts";
 import {
   FT_DRAW,
@@ -306,6 +307,35 @@ Deno.test("pickLatestGoalForTeam: latest goal of the scoring side", () => {
   eq(pickLatestGoalForTeam(events, 99)?.playerName ?? null, null, "no goal for absent team");
   eq(pickLatestGoalForTeam([], 10), null, "empty array → null");
   eq(pickLatestGoalForTeam(null, 10), null, "null events → null");
+});
+
+Deno.test("toStoredGoalEvents: tags side from API ids, sorts chronologically", () => {
+  const events: GoalEvent[] = [
+    ev({ teamApiId: 20, playerName: "Away2", minute: 80 }),
+    ev({ teamApiId: 10, playerName: "Home1", minute: 12, isPenalty: true }),
+    ev({ teamApiId: 10, playerName: "HomeStoppage", minute: 45, extra: 2 }),
+    ev({ teamApiId: 10, playerName: "HomeLevel", minute: 45 }),
+  ];
+  const stored = toStoredGoalEvents(events, 10, 20);
+  eq(stored.length, 4, "all events for the two sides kept");
+  eq(stored[0].player, "Home1", "min 12 first");
+  eq(stored[0].side, "home", "home id → home side");
+  eq(stored[0].isPenalty, true, "penalty preserved");
+  eq(stored[1].player, "HomeLevel", "min 45 (no stoppage) before 45+2");
+  eq(stored[2].player, "HomeStoppage", "45+2 after 45");
+  eq(stored[3].side, "away", "away id → away side");
+});
+
+Deno.test("toStoredGoalEvents: drops events for neither side; tolerant of empty", () => {
+  const events: GoalEvent[] = [
+    ev({ teamApiId: 99, playerName: "Ghost", minute: 10 }),
+    ev({ teamApiId: 10, playerName: "Real", minute: 20 }),
+  ];
+  const stored = toStoredGoalEvents(events, 10, 20);
+  eq(stored.length, 1, "event for an unrelated team id is dropped");
+  eq(stored[0].player, "Real", "only the matching-side event survives");
+  eq(toStoredGoalEvents([], 10, 20).length, 0, "empty array → []");
+  eq(toStoredGoalEvents(null, 10, 20).length, 0, "null → []");
 });
 
 Deno.test("renderGoalPush: scorerLine appended to both bodies, additive", () => {

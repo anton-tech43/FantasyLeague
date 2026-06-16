@@ -101,6 +101,52 @@ export function formatScorerLine(ev: GoalEvent | null | undefined): string | nul
   return null;
 }
 
+/// One goal as persisted on match_status_state.goal_events for the live box.
+/// `side` is which PLAYING side the goal counts for (home/away), resolved from
+/// the API team id at fetch time so the read path (live-brief-current) never
+/// needs the API ids. For own goals `side` is the BENEFITING side (matches how
+/// the API credits the goal); the player name is dropped on display, never here.
+export interface StoredGoalEvent {
+  side: "home" | "away";
+  player: string | null;
+  minute: number | null;
+  extra: number | null;
+  isOwnGoal: boolean;
+  isPenalty: boolean;
+}
+
+/// Project a fixture's parsed goal events into the live-box storage shape,
+/// tagging each with the playing side (home/away) from the API team ids and
+/// dropping any event that belongs to neither side (defensive). Sorted
+/// chronologically (minute, then stoppage) so the live box lists goals in
+/// the order they happened. Empty/malformed input → []. Never throws.
+export function toStoredGoalEvents(
+  events: readonly GoalEvent[] | null | undefined,
+  homeApiId: number,
+  awayApiId: number,
+): StoredGoalEvent[] {
+  if (!Array.isArray(events)) return [];
+  const out: StoredGoalEvent[] = [];
+  for (const ev of events) {
+    const side = ev.teamApiId === homeApiId
+      ? "home"
+      : ev.teamApiId === awayApiId
+      ? "away"
+      : null;
+    if (!side) continue;
+    out.push({
+      side,
+      player: ev.playerName,
+      minute: ev.minute,
+      extra: ev.extra,
+      isOwnGoal: ev.isOwnGoal,
+      isPenalty: ev.isPenalty,
+    });
+  }
+  out.sort((a, b) => (a.minute ?? 0) - (b.minute ?? 0) || (a.extra ?? 0) - (b.extra ?? 0));
+  return out;
+}
+
 /// From a fixture's goal events, pick the one for the side that just scored,
 /// preferring the LATEST (highest minute, then highest extra) — that is the
 /// goal that triggered this tick's detectGoal. `scoringTeamApiId` is the

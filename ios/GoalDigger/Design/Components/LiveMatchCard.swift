@@ -60,6 +60,32 @@ struct LiveMatchCard: View {
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
 
+            // Scorers — who scored and when, chronological. Sits right under the
+            // scoreline so the live box reads score → goals → context.
+            if let scorers = brief.scorers, !scorers.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(scorers) { scorer in
+                        HStack(spacing: 8) {
+                            Text(scorer.minute.isEmpty ? "·" : scorer.minute)
+                                .font(.jakarta(12, weight: .bold))
+                                .foregroundColor(.hotRose)
+                                .frame(width: 40, alignment: .leading)
+                            Text(scorer.player + (scorer.penalty == true ? " (pen)" : ""))
+                                .font(.jakarta(13, weight: .regular))
+                                .foregroundColor(.warmWhite)
+                                .lineLimit(1)
+                            Spacer(minLength: 8)
+                            Text(scorer.team.uppercased())
+                                .font(.jakarta(10, weight: .semiBold))
+                                .tracking(0.5)
+                                .foregroundColor(.warmWhite.opacity(0.5))
+                                .lineLimit(1)
+                        }
+                    }
+                }
+                .padding(.top, 2)
+            }
+
             // Body — the context, regular
             Text(brief.body)
                 .font(.jakarta(15, weight: .regular))

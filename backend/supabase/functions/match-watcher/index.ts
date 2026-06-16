@@ -36,6 +36,8 @@ import {
   renderGoalPush,
   renderHalfTimePush,
   renderKickoffSoonPush,
+  type StoredGoalEvent,
+  toStoredGoalEvents,
 } from "../_shared/goal-push.ts";
 
 const FINISHED_STATUSES = new Set(["FT", "AET", "PEN"]);
@@ -575,6 +577,10 @@ async function handleRequest(req: Request): Promise<Response> {
     // deep-link straight to it (the post_match block below populates this a few
     // steps before the push fires, same tick).
     const wcResultItemIds: Record<string, string> = {};
+    // Live-box scorers (068): set ONLY on a tick that fetched /fixtures/events
+    // (i.e. a detected goal). Stays null on quiet ticks so the upsert leaves
+    // match_status_state.goal_events untouched rather than clobbering it.
+    let goalEventsStored: StoredGoalEvent[] | null = null;
 
     if (isLive && prior !== null && liveBriefConfigured) {
       // HT trigger: status == "HT" (the literal break) OR status == "2H"
@@ -1116,17 +1122,21 @@ async function handleRequest(req: Request): Promise<Response> {
           const side = detectGoal(prior.home_goals, prior.away_goals, homeGoals, awayGoals);
           if (side) {
             // Scorer + minute enrichment (A2). Fetch the fixture's events ONLY
-            // now, on a real goal — never every poll (quota). When BOTH sides
-            // scored in one tick (side === "both") we can't honestly name a
-            // single scorer, so we skip the lookup and keep the rotating copy.
-            // The scoring side's API team id (home vs away) tells pickLatest...
-            // which goal to surface; the latest (highest minute) is the one
-            // that just landed. Anything missing → scorerLine null → clean
-            // fallback to the existing copy with no extra line.
+            // now, on a real goal — never every poll (quota). The full parsed
+            // list is also stored on the row (068) so the in-app live box can
+            // show who scored and when without re-hitting the API on its 60s
+            // read poll. When BOTH sides scored in one tick (side === "both")
+            // we can't honestly name a single scorer for the PUSH, so we skip
+            // the scorer line there and keep the rotating copy — but we still
+            // store the list. The scoring side's API team id (home vs away)
+            // tells pickLatest... which goal to surface; the latest (highest
+            // minute) is the one that just landed. Anything missing → scorerLine
+            // null → clean fallback to the existing copy with no extra line.
+            const events = await fetchGoalEvents(fixtureId, apiFootballKey);
+            goalEventsStored = toStoredGoalEvents(events, homeApiId, awayApiId);
             let scorerLine: string | null = null;
             if (side !== "both") {
               const scoringApiId = side === "home" ? homeApiId : awayApiId;
-              const events = await fetchGoalEvents(fixtureId, apiFootballKey);
               scorerLine = formatScorerLine(pickLatestGoalForTeam(events, scoringApiId));
             }
             const copy = renderGoalPush({
@@ -1236,6 +1246,10 @@ async function handleRequest(req: Request): Promise<Response> {
           kickoff_time: kickoffTime,
           last_checked: new Date().toISOString(),
           briefs_fired: updatedBriefsFired,
+          // Only write goal_events on a tick that fetched them (a detected
+          // goal). The conditional spread below leaves the column untouched on
+          // quiet ticks so a populated list is never clobbered with null.
+          ...(goalEventsStored ? { goal_events: goalEventsStored } : {}),
           la_started: laStarted,
           la_sig: laSig,
           la_ended: laEnded,

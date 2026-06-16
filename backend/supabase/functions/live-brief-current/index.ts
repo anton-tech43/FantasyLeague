@@ -15,6 +15,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
+import { formatMinute, type StoredGoalEvent } from "../_shared/goal-push.ts";
 
 const PRE_KICKOFF_BUFFER_MS = 10 * 60 * 1000;   // 10 min before kickoff
 const POST_KICKOFF_BUFFER_MS = 130 * 60 * 1000; // 130 min after kickoff
@@ -64,7 +65,9 @@ serve(async (req) => {
 
   const { data: stateRows, error: stateErr } = await supabase
     .from("match_status_state")
-    .select("fixture_id, status, home_team_id, away_team_id, home_goals, away_goals, elapsed")
+    .select(
+      "fixture_id, status, home_team_id, away_team_id, home_goals, away_goals, elapsed, goal_events",
+    )
     .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
     .gte("kickoff_time", windowStartIso)
     .lte("kickoff_time", windowEndIso)
@@ -112,11 +115,18 @@ serve(async (req) => {
   };
 
   const state = stateRows[0] as MatchState;
+  // Team short/display names for both playing sides — fetched once and reused
+  // for the live headline AND the scorers list, so the 60s poll does a single
+  // teams read rather than one per surface.
+  const nameOf = await buildNameLookup(supabase, state);
   // The headline is ALWAYS the live score (deterministic, from match state),
   // so the feed mirrors the Live Activity and never shows a stale "0-0 at the
   // break" once the score moves in the second half.
-  const liveHeadline = await buildLiveHeadline(supabase, teamId, state);
+  const liveHeadline = buildLiveHeadline(teamId, state, nameOf);
   const liveLabel = state.status === "HT" ? "HT" : null; // null → "LIVE" badge
+  // Live-box scorers: who scored and when, chronological. Best-effort off the
+  // stored goal_events (068); empty/missing → null (card omits the section).
+  const scorers = buildScorers(state, nameOf);
 
   // Group standings for the live box: read the already-computed group table off
   // the team page (no recompute), trimmed to what the card renders. Best-effort
@@ -165,6 +175,7 @@ serve(async (req) => {
         trigger_label: state.status === "HT" ? (brief.trigger_label ?? "HT") : liveLabel,
         minute: state.status === "HT" ? (brief.minute ?? null) : (state.elapsed ?? null),
         standings,
+        scorers,
       }),
       { headers },
     );
@@ -188,6 +199,7 @@ serve(async (req) => {
       minute: state.elapsed ?? null,
       trigger_label: liveLabel,
       standings,
+      scorers,
       generated_at: new Date(now).toISOString(),
     }),
     { headers },
@@ -202,25 +214,45 @@ interface MatchState {
   home_goals: number | null;
   away_goals: number | null;
   elapsed: number | null;
+  goal_events: StoredGoalEvent[] | null;
 }
 
-/// Follower-first live scoreline, e.g. "Spain 1-0 Cape Verde". Pure read from
-/// match_status_state + team names; no Claude.
-async function buildLiveHeadline(
+type NameLookup = (id: string) => string;
+
+/// One scorer as returned to the live card, e.g. { side, team, player, minute }.
+/// `minute` is the formatted string ("47'" / "45+2'"), `player` is the name or
+/// "Own goal" (the API credits OGs to the conceding player, so we never name
+/// them), `penalty` flags a spot-kick for a "(pen)" tag client-side.
+interface ScorerLine {
+  side: "home" | "away";
+  team: string;
+  player: string;
+  minute: string;
+  penalty: boolean;
+}
+
+/// Resolve both playing sides' display names in a single teams read, returning
+/// a lookup closure. Short name wins, display name is the fallback, id is the
+/// last resort.
+async function buildNameLookup(
   supabase: ReturnType<typeof getSupabaseClient>,
-  teamId: string,
   state: MatchState,
-): Promise<string> {
+): Promise<NameLookup> {
   const { data: teamRows } = await supabase
     .from("teams")
     .select("id, short_name, display_name")
     .in("id", [state.home_team_id, state.away_team_id]);
-  const nameOf = (id: string): string => {
+  return (id: string): string => {
     const r = (teamRows ?? []).find((t) => t.id === id) as
       | { short_name?: string; display_name?: string }
       | undefined;
     return (r?.short_name && r.short_name.length > 0 ? r.short_name : r?.display_name) || id;
   };
+}
+
+/// Follower-first live scoreline, e.g. "Spain 1-0 Cape Verde". Pure — names
+/// come from the shared lookup; no Claude.
+function buildLiveHeadline(teamId: string, state: MatchState, nameOf: NameLookup): string {
   const hg = state.home_goals ?? 0;
   const ag = state.away_goals ?? 0;
   const isHome = state.home_team_id === teamId;
@@ -229,6 +261,29 @@ async function buildLiveHeadline(
   const myGoals = isHome ? hg : ag;
   const oppGoals = isHome ? ag : hg;
   return `${myName} ${myGoals}-${oppGoals} ${oppName}`;
+}
+
+/// Project the stored goal_events into display-ready scorer lines for the live
+/// box, resolving each side's team name. Returns null when there's nothing to
+/// show so the card omits the section entirely. Already chronological (stored
+/// sorted by match-watcher); never throws.
+function buildScorers(state: MatchState, nameOf: NameLookup): ScorerLine[] | null {
+  const events = state.goal_events;
+  if (!Array.isArray(events) || events.length === 0) return null;
+  const lines: ScorerLine[] = [];
+  for (const ev of events) {
+    if (ev.side !== "home" && ev.side !== "away") continue;
+    const teamId = ev.side === "home" ? state.home_team_id : state.away_team_id;
+    const player = ev.isOwnGoal ? "Own goal" : ((ev.player ?? "").trim() || "Goal");
+    lines.push({
+      side: ev.side,
+      team: nameOf(teamId),
+      player,
+      minute: formatMinute(ev.minute, ev.extra),
+      penalty: ev.isPenalty && !ev.isOwnGoal,
+    });
+  }
+  return lines.length > 0 ? lines : null;
 }
 
 function periodLine(status: string): string {
