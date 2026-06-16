@@ -32,7 +32,6 @@
 		AA000009 /* BadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000009 /* BadgeView.swift */; };
 		AA000010 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000010 /* EmptyStateView.swift */; };
 		AA000011 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000011 /* WelcomeView.swift */; };
-		AA000012 /* TeamSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000012 /* TeamSelectionView.swift */; };
 		AA000013 /* NotificationPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000013 /* NotificationPromptView.swift */; };
 		AA000014 /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000014 /* FeedView.swift */; };
 		AA000015 /* ContentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000015 /* ContentDetailView.swift */; };
@@ -155,7 +154,6 @@
 		AB000009 /* BadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeView.swift; sourceTree = "<group>"; };
 		AB000010 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
 		AB000011 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
-		AB000012 /* TeamSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamSelectionView.swift; sourceTree = "<group>"; };
 		AB000013 /* NotificationPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPromptView.swift; sourceTree = "<group>"; };
 		AB000014 /* FeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedView.swift; sourceTree = "<group>"; };
 		AB000015 /* ContentDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentDetailView.swift; sourceTree = "<group>"; };
@@ -359,7 +357,6 @@
 				AB000011 /* WelcomeView.swift */,
 				AB000030 /* HerNameView.swift */,
 				AB000031 /* HisNameView.swift */,
-				AB000012 /* TeamSelectionView.swift */,
 				AB000306 /* CountrySelectionView.swift */,
 				AB000307 /* OptionalPLTeamView.swift */,
 				AB000308 /* WCMigrationSheetView.swift */,
@@ -657,7 +654,6 @@
 				AA000009 /* BadgeView.swift in Sources */,
 				AA000010 /* EmptyStateView.swift in Sources */,
 				AA000011 /* WelcomeView.swift in Sources */,
-				AA000012 /* TeamSelectionView.swift in Sources */,
 				AA000013 /* NotificationPromptView.swift in Sources */,
 				AA000014 /* FeedView.swift in Sources */,
 				AA000015 /* ContentDetailView.swift in Sources */,

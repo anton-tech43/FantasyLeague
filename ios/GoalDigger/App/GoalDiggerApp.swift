@@ -15,15 +15,28 @@ struct GoalDiggerApp: App {
                 .preferredColorScheme(.dark)
                 .onChange(of: scenePhase) { oldPhase, newPhase in
                     if oldPhase == .background && newPhase == .active {
-                        // Reset to the user's anchor entity on resume. V2.0:
-                        // country takes precedence over team (matches AppState.init
-                        // priority — WC is the primary anchor when both are set).
-                        // Without this, a V2.0 country-only user returning from
-                        // background lands on .team(nil) which renders nothing.
-                        if let country = appState.selectedCountry {
-                            appState.activeContext = .country(country)
-                        } else if let team = appState.selectedTeam {
-                            appState.activeContext = .team(team)
+                        // Only REPAIR an invalid active context on resume; never
+                        // override a still-valid one. V2.2: a user following two
+                        // entities who switched to their 2nd tab must stay there
+                        // after backgrounding (the old code snapped everyone back
+                        // to entity #1). We only reset when the current context no
+                        // longer points at a followed entity (e.g. a removed team,
+                        // or a country-only user left on .team(nil)).
+                        let stillValid: Bool = {
+                            switch appState.activeContext {
+                            case .country(let c): return appState.selectedCountries.contains(c)
+                            case .team(let t):    return appState.selectedTeams.contains(t)
+                            case .everyoneTalking: return true
+                            }
+                        }()
+                        if !stillValid {
+                            if let country = appState.selectedCountries.first {
+                                appState.activeContext = .country(country)
+                            } else if let team = appState.selectedTeams.first {
+                                appState.activeContext = .team(team)
+                            } else {
+                                appState.activeContext = .everyoneTalking
+                            }
                         }
                         appState.isContextSwitcherOpen = false
                     }

@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// V2.0 World Cup onboarding — picks which country he supports in the WC.
-/// Replaces TeamSelectionView as the primary entity picker. The PL club
-/// picker becomes optional (OptionalPLTeamView) after this step.
+/// The primary entity picker; the PL club picker is optional
+/// (OptionalPLTeamView) after this step.
 ///
 /// 48 countries grouped by FIFA confederation. Sections collapse to a flat
 /// alphabetical list when searching (Apple's standard pattern). Crests are

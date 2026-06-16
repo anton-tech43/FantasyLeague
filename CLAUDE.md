@@ -25,6 +25,12 @@ If you're the AI assistant reading this: when a user asks for a "backfill" or "r
 
 ## Other operational notes
 
+- **⭐ How the app ACTUALLY works**: read `ARCHITECTURE.md` FIRST — it's the authoritative,
+  current (V2.2, mid-WC-2026) source of truth and supersedes `PRD.md` / `AGENT_CONTRACTS.md`
+  / `PROMPTS.md` (those are stale V1). Known bugs/security/staleness: `AUDIT_FINDINGS.md`.
+  Two things every doc except those gets wrong: (1) live content is produced by **claude.ai
+  routines**, not the dormant Edge `content-generator`; (2) the app is **20 PL clubs + 48 WC
+  countries** (not "3 teams") and users can now follow up to 2 of each (arrays model).
 - **iOS sim**: `xcodebuild -project ios/GoalDigger.xcodeproj -scheme GoalDigger -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build`
 - **Edge Function deploy**: from `backend/` dir, `supabase functions deploy <name> --project-ref cwgpsmbunrocrofziqad --no-verify-jwt`
 - **DB access**: `set -a && source backend/.env && set +a && /opt/homebrew/opt/libpq/bin/psql "$SUPABASE_DB_URL"`
