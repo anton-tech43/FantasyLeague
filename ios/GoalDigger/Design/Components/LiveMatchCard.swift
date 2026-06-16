@@ -66,6 +66,38 @@ struct LiveMatchCard: View {
                 .foregroundColor(.warmWhite.opacity(0.85))
                 .lineSpacing(3)
                 .fixedSize(horizontal: false, vertical: true)
+
+            // Group standings — the live box doubles as group context during
+            // the match. Compact: position, team, played, points.
+            if let standings = brief.standings, !standings.entries.isEmpty {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(standings.competitionLabel.uppercased())
+                        .font(.jakarta(11, weight: .bold))
+                        .tracking(1)
+                        .foregroundColor(.hotRose)
+                        .padding(.top, 6)
+                    ForEach(standings.entries) { row in
+                        HStack(spacing: 10) {
+                            Text("\(row.rank)")
+                                .font(.jakarta(12, weight: .semiBold))
+                                .foregroundColor(.warmWhite.opacity(0.5))
+                                .frame(width: 12, alignment: .leading)
+                            Text(row.team)
+                                .font(.jakarta(13, weight: .regular))
+                                .foregroundColor(.warmWhite)
+                                .lineLimit(1)
+                            Spacer(minLength: 8)
+                            Text("\(row.played)")
+                                .font(.jakarta(12, weight: .regular))
+                                .foregroundColor(.warmWhite.opacity(0.55))
+                            Text("\(row.points)")
+                                .font(.jakarta(13, weight: .bold))
+                                .foregroundColor(.warmWhite)
+                                .frame(width: 22, alignment: .trailing)
+                        }
+                    }
+                }
+            }
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .topLeading)

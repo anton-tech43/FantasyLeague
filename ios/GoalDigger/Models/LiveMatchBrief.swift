@@ -19,14 +19,40 @@ struct LiveMatchBrief: Codable, Identifiable, Equatable {
     /// forward.
     let triggerLabel: String?
     let generatedAt: Date
+    /// Group standings table for the live box (WC group). Nil when unavailable.
+    let standings: LiveStandings?
 
     enum CodingKeys: String, CodingKey {
-        case id, minute
+        case id, minute, standings
         case teamId = "team_id"
         case matchId = "match_id"
         case headline, body
         case triggerLabel = "trigger_label"
         case generatedAt = "generated_at"
+    }
+
+    /// The group table rendered under the live score, sourced deterministically
+    /// from the team page's standings card by live-brief-current.
+    struct LiveStandings: Codable, Equatable {
+        let competitionLabel: String
+        let entries: [Row]
+
+        enum CodingKeys: String, CodingKey {
+            case competitionLabel = "competition_label"
+            case entries
+        }
+
+        struct Row: Codable, Equatable, Identifiable {
+            let rank: Int
+            let team: String
+            let played: Int
+            let won: Int
+            let drawn: Int
+            let lost: Int
+            let gd: Int
+            let points: Int
+            var id: Int { rank }
+        }
     }
 
     /// Display-friendly label for the card header.
