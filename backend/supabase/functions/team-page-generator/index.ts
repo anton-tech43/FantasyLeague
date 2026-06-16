@@ -20,6 +20,7 @@ import type { Team } from "../_shared/types.ts";
 import { annotateFixtures, classifyExactPointsOnly, type ExactInfo, type GroupStanding } from "../_shared/stakes-engine.ts";
 import { renderNextFixturePreview, renderOpponentDetail, renderThisWeek } from "../_shared/stakes-templates.ts";
 import { collectFinishedFixtureIds, dropFinished, filterFixturesByLeague } from "../_shared/fixture-rollover.ts";
+import { preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
 import { classifyBestThird, type GroupThirdBounds } from "../_shared/best-third.ts";
 import { classifyExactForTeam, coarseThirdPointsBounds, type GroupTeam, type RemainingGame } from "../_shared/group-scenarios.ts";
 import { guaranteedExactlyThird } from "../_shared/detect-consequences.ts";
@@ -1124,12 +1125,29 @@ async function updateWcDynamicFields(
         }
         : null,
     );
+    // B2: deterministic pre-game favorite tag from FIFA ranks (this team vs the
+    // upcoming opponent). Forward-compatible field — current iOS clients ignore
+    // unknown keys; the 2.0.x build renders the tag. Null (omitted) when either
+    // rank is unknown.
+    const vOrParts = [`id.eq.${team.id}`];
+    if (firstUpcoming?.opponentApiId) vOrParts.push(`api_football_id.eq.${firstUpcoming.opponentApiId}`);
+    const { data: vRows } = await supabase
+      .from("teams")
+      .select("id, api_football_id, strength_rank")
+      .or(vOrParts.join(","));
+    const myRank = (vRows?.find((r) => r.id === team.id)?.strength_rank as number | null) ?? null;
+    const oppRank = firstUpcoming?.opponentApiId
+      ? ((vRows?.find((r) => r.api_football_id === firstUpcoming.opponentApiId)?.strength_rank as number | null) ?? null)
+      : null;
+    const favorite = preMatchVerdict(myRank, oppRank, WC_FAVORITE_GAP);
+
     cards.next_fixture = {
       updated_at: nowIso,
       opponent: first.opponent,
       date: first.date,
       venue: first.venue,
       preview: opponentDetail ? `${stakesPreview}\n\n${opponentDetail}` : stakesPreview,
+      ...(favorite ? { favorite } : {}),
     };
 
     // Opponent danger men in the SAME ones_to_know card, clearly the away

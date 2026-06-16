@@ -23,6 +23,7 @@ import { renderConsequence } from "../_shared/consequence-templates.ts";
 import type { Team } from "../_shared/types.ts";
 import { groupSituation } from "../_shared/stakes-engine.ts";
 import { renderPostMatch, type PostMatchState } from "../_shared/stakes-templates.ts";
+import { resultFraming, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
 import { buildAPNsPayload, sendLiveActivityPush, sendPushNotification } from "../_shared/apns-client.ts";
 import { WC_COUNTRY_META, wcStatusLabel } from "../_shared/wc-countries.ts";
 import {
@@ -810,6 +811,18 @@ async function handleRequest(req: Request): Promise<Response> {
                 { slug: homeTeamId, apiId: fx.teams.home.id, name: fx.teams.home.name, oppName: fx.teams.away.name, gf: hg, ga: ag },
                 { slug: awayTeamId, apiId: fx.teams.away.id, name: fx.teams.away.name, oppName: fx.teams.home.name, gf: ag, ga: hg },
               ];
+              // B3: one lookup for both teams' strength_rank (FIFA for WC
+              // countries) → deterministic "as expected / upset / surprise"
+              // framing appended to each perspective's body. C1 may later
+              // enrich this same row.
+              const { data: rankRows } = await supabase
+                .from("teams")
+                .select("id, strength_rank")
+                .in("id", [homeTeamId, awayTeamId]);
+              const rankBySlug = new Map<string, number | null>();
+              for (const r of rankRows ?? []) {
+                rankBySlug.set(r.id as string, (r.strength_rank as number | null) ?? null);
+              }
               for (const p of playing) {
                 const state: PostMatchState = p.gf > p.ga ? "win" : p.gf < p.ga ? "loss" : "draw";
                 const pm = renderPostMatch({
@@ -822,6 +835,17 @@ async function handleRequest(req: Request): Promise<Response> {
                   bestThird: wcCtx.bestThirdByApiId.get(p.apiId),
                 });
                 await writeWcPostMatch(supabase, p.slug, pm);
+
+                // B3: append the ranking framing to this team's result body.
+                const oppSlug = p.slug === homeTeamId ? awayTeamId : homeTeamId;
+                const framing = resultFraming(
+                  rankBySlug.get(p.slug) ?? null,
+                  rankBySlug.get(oppSlug) ?? null,
+                  p.gf,
+                  p.ga,
+                  WC_FAVORITE_GAP,
+                );
+                const resultBody = framing ? `${pm.text} ${framing.note}` : pm.text;
 
                 // The feed article the user was missing: a real result item on
                 // the PLAYING team's own feed, perspective-framed, WITH a talking
@@ -844,7 +868,7 @@ async function handleRequest(req: Request): Promise<Response> {
                     match_id: String(fixtureId),
                     match_result: perspectiveHeadline,
                     headline: perspectiveHeadline,
-                    body: pm.text,
+                    body: resultBody,
                     talking_points: [pm.talking_point],
                     // The lock-screen alert is sent directly by the FT push
                     // below; this feed article must NOT be re-pushed by
