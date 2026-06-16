@@ -13,6 +13,9 @@ struct FeedView: View {
     // Per-context loading state
     @State private var isLoading = true
     @State private var hasError = false
+    /// The followed country's next fixture, fetched lazily when the country feed
+    /// is empty, so the empty state can show a countdown instead of generic copy.
+    @State private var countryNextFixture: TeamSeasonState.NextFixture?
     @State private var teamOffset = 0
     @State private var everyoneOffset = 0
     @State private var teamCanLoadMore = true
@@ -523,14 +526,32 @@ struct FeedView: View {
         if case .country(let country) = appState.activeContext {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("NOTHING NEW RIGHT NOW")
-                        .font(.sectionHeader)
-                        .tracking(1)
-                        .foregroundColor(.mutedText)
-                    Text("We'll post his \(country.shortName) updates around each match. Open the \(country.shortName) tab to see what's coming up next.")
-                        .font(.onboardingBody)
-                        .foregroundColor(.textOnDark.opacity(0.8))
-                        .fixedSize(horizontal: false, vertical: true)
+                    if let fixture = countryNextFixture {
+                        // Match-aware: show the countdown to the next match so the
+                        // feed is useful between fixtures (the build-up item lands
+                        // the day before; until then this is the floor).
+                        Text("UP NEXT")
+                            .font(.sectionHeader)
+                            .tracking(1)
+                            .foregroundColor(.mutedText)
+                        Text("\(country.shortName) face \(fixture.opponent)")
+                            .font(.feedHeadline)
+                            .foregroundColor(.warmWhite)
+                        TeamPageCountdown(targetDate: ISO8601DateFormatter().string(from: fixture.kickoffTime))
+                        Text("We'll have the build-up here the day before. Open the \(country.shortName) tab for the full preview.")
+                            .font(.onboardingBody)
+                            .foregroundColor(.textOnDark.opacity(0.7))
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        Text("NOTHING NEW RIGHT NOW")
+                            .font(.sectionHeader)
+                            .tracking(1)
+                            .foregroundColor(.mutedText)
+                        Text("We'll post his \(country.shortName) updates around each match. Open the \(country.shortName) tab to see what's coming up next.")
+                            .font(.onboardingBody)
+                            .foregroundColor(.textOnDark.opacity(0.8))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
                 .padding(.horizontal, Layout.screenPadding)
                 .padding(.top, 32)
@@ -630,9 +651,20 @@ struct FeedView: View {
         // feed, they'd see Arsenal again. Confirmed via plan investigation
         // 2026-05-18; see STATUS.md note.
 
-        // Show cached data immediately
+        // Show cached data immediately — for the ACTIVE context's entity, not
+        // always selectedTeam. Keying on selectedTeam flashed the old team's
+        // cached feed when the user had switched to a country (or vice versa)
+        // until the fresh fetch returned.
+        let cacheEntityId: String = {
+            switch appState.activeContext {
+            case .country(let c): return c.rawValue
+            case .team(let t): return t.rawValue
+            case .everyoneTalking:
+                return appState.selectedTeam?.rawValue ?? appState.selectedCountry?.rawValue ?? ""
+            }
+        }()
         let cached = CacheService.shared.fetchCachedFeed(
-            teamId: appState.selectedTeam?.rawValue ?? "",
+            teamId: cacheEntityId,
             in: modelContext
         )
         if !cached.isEmpty {
@@ -686,6 +718,14 @@ struct FeedView: View {
             teamCanLoadMore = fetched.count == pageSize
             hasError = false
             CacheService.shared.upsertItems(fetched, in: modelContext)
+            // A2: when a country feed comes back empty, fetch its next fixture so
+            // the empty state can show a countdown rather than generic copy.
+            if teamItems.isEmpty, case .country = appState.activeContext {
+                countryNextFixture = (try? await APIClient.shared.fetchTeamSeasonState(teamId: teamId))?
+                    .fixturesForSync.first(where: { $0.kickoffTime > Date() })
+            } else {
+                countryNextFixture = nil
+            }
         } catch {
             if teamItems.isEmpty {
                 #if DEBUG

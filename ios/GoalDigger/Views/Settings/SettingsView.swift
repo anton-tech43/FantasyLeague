@@ -617,11 +617,11 @@ struct CountryPickerSheet: View {
                     CacheService.shared.clearAll(in: modelContext)
                     appState.activeContext = .country(country)
                     appState.isContextSwitcherOpen = false
-                    if let token = UserDefaults.standard.string(forKey: "apnsToken") {
-                        Task {
-                            try? await APIClient.shared.updateTokenCountry(token, newCountryId: country.rawValue)
-                        }
-                    }
+                    // Full re-register (UPSERT with the new country/team/tier) so the
+                    // backend device_tokens row reflects the switch immediately.
+                    // updateTokenCountry only PATCHed an existing row, which left a
+                    // stale country when the row was keyed on an older APNs token.
+                    NotificationService.shared.reregisterForFollowChange()
                     dismiss()
                 }
             }

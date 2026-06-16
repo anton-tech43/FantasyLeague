@@ -28,7 +28,6 @@ class NotificationService {
         let alreadyRegistered = UserDefaults.standard.bool(forKey: "apnsTokenRegistered")
         let unchanged = previous == token
         UserDefaults.standard.set(token, forKey: "apnsToken")
-        if unchanged && alreadyRegistered { return }
 
         // V2.0: either a team OR a country is sufficient. The flow can produce:
         //   - team only (V1.x users who haven't done WC migration)
@@ -47,6 +46,15 @@ class NotificationService {
         // Re-issues AFTER onboarding flow through normally.
         guard AppState.shared.hasCompletedOnboarding else { return }
         let tier = AppState.shared.selectedTier
+
+        // Re-register when the APNs token changed OR the followed scope
+        // (country | team | tier) changed since the last successful POST.
+        // Without the scope check, switching the followed country never updated
+        // the backend device_tokens.country_id (the token value is unchanged),
+        // so pushes kept targeting the old country until a reinstall.
+        let scope = "\(countryId ?? "")|\(teamId ?? "")|\(tier)"
+        let lastScope = UserDefaults.standard.string(forKey: "lastRegisteredScope")
+        if unchanged && alreadyRegistered && scope == lastScope { return }
         Task {
             do {
                 try await APIClient.shared.registerToken(
@@ -57,6 +65,7 @@ class NotificationService {
                 )
                 await MainActor.run {
                     UserDefaults.standard.set(true, forKey: "apnsTokenRegistered")
+                    UserDefaults.standard.set(scope, forKey: "lastRegisteredScope")
                 }
             } catch {
                 // Leave apnsTokenRegistered false; next launch or token-changed
@@ -66,6 +75,14 @@ class NotificationService {
                 #endif
             }
         }
+    }
+
+    /// Re-register the stored APNs token after the followed country/team changes
+    /// (e.g. the Settings country picker), so device_tokens.country_id updates
+    /// immediately instead of waiting for the next launch. No-op if no token yet.
+    func reregisterForFollowChange() {
+        guard let token = UserDefaults.standard.string(forKey: "apnsToken"), !token.isEmpty else { return }
+        handleTokenRegistration(token)
     }
 
     func checkNotificationStatus() async -> UNAuthorizationStatus {

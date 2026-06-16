@@ -231,7 +231,7 @@ class AppState {
         let keys = ["herName", "hisName", "relationshipType", "selectedTeam", "selectedCountry",
                      "selectedTier", "footballKnowledgeLevel",
                      "hasCompletedOnboarding", "notificationPermissionRequested", "apnsToken",
-                     "apnsTokenRegistered",
+                     "apnsTokenRegistered", "lastRegisteredScope",
                      "hasAutoExpandedFirstItem", "feedStyle", "hasSeenImmersiveBanner",
                      "calendarSyncEnabled", "hasSeenSeasonPrimer", "hasSeenWCPrompt"]
         keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
