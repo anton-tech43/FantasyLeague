@@ -336,6 +336,12 @@ struct FeedView: View {
                                 .padding(.vertical, 8)
                                 .transition(.move(edge: .top).combined(with: .opacity))
                         }
+                        if shouldShowComingUp {
+                            comingUpFeedCard
+                                .padding(.horizontal, Layout.screenPadding)
+                                .padding(.vertical, 8)
+                                .transition(.move(edge: .top).combined(with: .opacity))
+                        }
                         // SaturdayQuizCard sits below the live card — live
                         // takes priority during matches, quiz is the
                         // Saturday-morning surface that lasts the weekend.
@@ -382,6 +388,41 @@ struct FeedView: View {
         appState.activeContext != .everyoneTalking
     }
 
+    /// Persistent "Coming up" card: the country feed always leads with the next
+    /// known WC match. Hidden only when a live match is on (the live card takes
+    /// priority) or in the Everyone Talking context.
+    private var shouldShowComingUp: Bool {
+        countryNextFixture != nil &&
+        !shouldShowLiveBrief &&
+        appState.activeContext != .everyoneTalking
+    }
+
+    @ViewBuilder
+    private var comingUpFeedCard: some View {
+        if let fixture = countryNextFixture, case .country(let country) = appState.activeContext {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("COMING UP")
+                    .font(.sectionHeader)
+                    .tracking(1)
+                    .foregroundColor(.hotRose)
+                Text("\(country.shortName) face \(fixture.opponent)")
+                    .font(.feedHeadline)
+                    .foregroundColor(.warmWhite)
+                TeamPageCountdown(targetDate: ISO8601DateFormatter().string(from: fixture.kickoffTime))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
+                    .fill(Color.warmWhite.opacity(0.06))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
+                    .stroke(Color.hotRose.opacity(0.25), lineWidth: 1)
+            )
+        }
+    }
+
     // MARK: - Immersive Feed
 
     private var immersiveFeed: some View {
@@ -396,6 +437,12 @@ struct FeedView: View {
                     // it in/out as the poll loop updates `liveBrief`.
                     if shouldShowLiveBrief, let brief = liveBrief {
                         LiveMatchCard(brief: brief)
+                            .padding(.horizontal, Layout.screenPadding)
+                            .padding(.vertical, 8)
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+                    if shouldShowComingUp {
+                        comingUpFeedCard
                             .padding(.horizontal, Layout.screenPadding)
                             .padding(.vertical, 8)
                             .transition(.move(edge: .top).combined(with: .opacity))
@@ -718,9 +765,11 @@ struct FeedView: View {
             teamCanLoadMore = fetched.count == pageSize
             hasError = false
             CacheService.shared.upsertItems(fetched, in: modelContext)
-            // A2: when a country feed comes back empty, fetch its next fixture so
-            // the empty state can show a countdown rather than generic copy.
-            if teamItems.isEmpty, case .country = appState.activeContext {
+            // Next WC fixture for the country, powering the persistent "Coming
+            // up" card at the top of the feed (and the countdown empty state).
+            // Always fetched in country context so the next match is shown
+            // whether or not there are news items.
+            if case .country = appState.activeContext {
                 countryNextFixture = (try? await APIClient.shared.fetchTeamSeasonState(teamId: teamId))?
                     .fixturesForSync.first(where: { $0.kickoffTime > Date() })
             } else {
