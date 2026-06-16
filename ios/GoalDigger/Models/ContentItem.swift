@@ -299,6 +299,9 @@ struct TeamPageCards: Codable {
 
     // Calendar tab + Table tab on TeamPageView (Info / Calendar / Table)
     let upcomingFixtures: [UpcomingFixture]?
+    /// Recent FINISHED fixtures with scores (E1) — powers the collapsible
+    /// "last games" section in the Calendar tab. Newest first.
+    let recentResults: [RecentResult]?
     let standings: StandingsCard?
 
     enum CodingKeys: String, CodingKey {
@@ -315,6 +318,7 @@ struct TeamPageCards: Codable {
         case postMatch = "post_match"
         case freshnessText = "freshness_text"
         case upcomingFixtures = "upcoming_fixtures"
+        case recentResults = "recent_results"
         case standings
     }
 }
@@ -477,6 +481,30 @@ struct NextFixtureCard: Codable {
 struct FavoriteVerdict: Codable {
     let tag: String    // "likely_win" | "even" | "likely_loss"
     let label: String  // "Likely win" | "Could go either way" | "Likely loss"
+}
+
+/// One recent FINISHED fixture with the score, from this team's perspective.
+/// Powers the collapsible "last games" section (E1).
+struct RecentResult: Codable, Identifiable {
+    var id: String { "\(date)-\(opponent)" }
+    let date: String
+    let opponent: String
+    let venue: String        // "home" | "away"
+    let teamScore: Int
+    let oppScore: Int
+
+    enum CodingKeys: String, CodingKey {
+        case date, opponent, venue
+        case teamScore = "team_score"
+        case oppScore = "opp_score"
+    }
+
+    /// W / D / L from this team's perspective.
+    var outcome: String {
+        if teamScore > oppScore { return "W" }
+        if teamScore < oppScore { return "L" }
+        return "D"
+    }
 }
 
 // MARK: - Team Page — Calendar tab (upcoming fixtures with importance)

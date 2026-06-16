@@ -19,6 +19,7 @@ struct TeamPageView: View {
     @State private var hasError = false
     @State private var presentedPlayer: PlayerCard?
     @State private var expandedCard: TeamCardType?
+    @State private var showLastGames = false
     @State private var activeTab: TeamTab = .info
 
     private enum TeamCardType: Hashable {
@@ -508,18 +509,80 @@ struct TeamPageView: View {
     @ViewBuilder
     private func calendarTab(_ cards: TeamPageCards) -> some View {
         let fixtures = cards.upcomingFixtures ?? []
-        if fixtures.isEmpty {
-            emptyState(
-                icon: "calendar",
-                text: "No upcoming fixtures yet. Check back closer to kickoff."
-            )
-        } else {
-            VStack(spacing: Layout.cardSpacing) {
+        let recent = cards.recentResults ?? []
+        return VStack(spacing: Layout.cardSpacing) {
+            if fixtures.isEmpty {
+                emptyState(
+                    icon: "calendar",
+                    text: "No upcoming fixtures yet. Check back closer to kickoff."
+                )
+            } else {
                 ForEach(fixtures) { fixture in
                     let preview = previewByFixtureId[previewKey(for: fixture)]
                     calendarRow(fixture, preview: preview)
                 }
             }
+            if !recent.isEmpty {
+                lastGamesSection(recent)
+            }
+        }
+    }
+
+    /// Collapsible "last games" list (E1): recent finished fixtures with the
+    /// result, marked played. Collapsed by default so it doesn't crowd the
+    /// upcoming list.
+    @ViewBuilder
+    private func lastGamesSection(_ recent: [RecentResult]) -> some View {
+        VStack(spacing: Layout.cardSpacing) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) { showLastGames.toggle() }
+            } label: {
+                HStack(spacing: 6) {
+                    Text(showLastGames ? "Hide last games" : "Show last games")
+                        .font(.sectionHeader).tracking(1)
+                        .foregroundColor(.hotRose)
+                    Image(systemName: showLastGames ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.hotRose)
+                    Spacer()
+                }
+            }
+            .buttonStyle(.plain)
+
+            if showLastGames {
+                ForEach(recent) { lastGameRow($0) }
+            }
+        }
+        .padding(.top, 4)
+    }
+
+    @ViewBuilder
+    private func lastGameRow(_ r: RecentResult) -> some View {
+        let parsed = Self.isoFormatter.date(from: r.date)
+        HStack(alignment: .center, spacing: 14) {
+            Text(r.outcome)
+                .font(.feedHeadline)
+                .foregroundColor(.warmWhite)
+                .frame(width: 28, height: 28)
+                .background(Circle().fill(resultColor(r.outcome)))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(r.opponent)
+                    .font(.feedHeadline).foregroundColor(.warmWhite)
+                Text("\(parsed.map { Self.dayMonth($0) } ?? r.date) · \(r.venue.capitalized) · FT")
+                    .font(.feedTimestamp).foregroundColor(.warmWhite.opacity(0.6))
+            }
+            Spacer(minLength: 0)
+            Text("\(r.teamScore)-\(r.oppScore)")
+                .font(.feedHeadline).foregroundColor(.warmWhite)
+        }
+        .opacity(0.85)
+    }
+
+    private func resultColor(_ outcome: String) -> Color {
+        switch outcome {
+        case "W": return Color.hotRose.opacity(0.7)
+        case "L": return Color.red.opacity(0.45)
+        default:  return Color.warmWhite.opacity(0.2)
         }
     }
 

@@ -19,7 +19,7 @@ import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import type { Team } from "../_shared/types.ts";
 import { annotateFixtures, classifyExactPointsOnly, type ExactInfo, type GroupStanding } from "../_shared/stakes-engine.ts";
 import { renderNextFixturePreview, renderOpponentDetail, renderThisWeek } from "../_shared/stakes-templates.ts";
-import { collectFinishedFixtureIds, dropFinished, filterFixturesByLeague } from "../_shared/fixture-rollover.ts";
+import { collectFinishedFixtureIds, dropFinished, FINISHED_STATUSES, filterFixturesByLeague } from "../_shared/fixture-rollover.ts";
 import { preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
 import { classifyBestThird, type GroupThirdBounds } from "../_shared/best-third.ts";
 import { classifyExactForTeam, coarseThirdPointsBounds, type GroupTeam, type RemainingGame } from "../_shared/group-scenarios.ts";
@@ -1062,6 +1062,23 @@ async function updateWcDynamicFields(
     }
   }
 
+  // E1: recent finished results (with scores) for the in-app "last games"
+  // collapsible. Same newest-good-wins walk over fixtures_last; WC league only.
+  const lastLogs = rawLogs.filter((l) => l.source === "api_football_fixtures_last");
+  for (const lg of lastLogs) {
+    const results = parseRecentResults(lg.data, team.api_football_id, WC_LEAGUE_ID);
+    if (results.length > 0) {
+      cards.recent_results = results.slice(0, 3).map((r) => ({
+        date: r.date,
+        opponent: r.opponentName,
+        venue: r.venue,
+        team_score: r.teamScore,
+        opp_score: r.oppScore,
+      }));
+      break;
+    }
+  }
+
   // Exact-math labels: sound points-only within-group state ("Won the group" /
   // "At worst 2nd") + a cross-group best-third verdict ("Through as a best
   // third" / in-app "Out of the tournament"). Never over-claims; GD bubbles
@@ -1412,6 +1429,56 @@ function parseUpcomingFixtures(
       });
     }
     out.sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+    return out;
+  } catch {
+    return [];
+  }
+}
+
+interface ParsedResult {
+  date: string;
+  opponentName: string;
+  venue: "home" | "away";
+  teamScore: number;
+  oppScore: number;
+}
+
+/// Parse api_football_fixtures_last into this team's recent FINISHED results
+/// (with scores), newest first. Mirrors parseUpcomingFixtures but for played
+/// games. leagueId filters to the WC competition (drops post-tournament ties).
+function parseRecentResults(
+  data: unknown,
+  teamApiFootballId: number,
+  leagueId?: number,
+): ParsedResult[] {
+  try {
+    let response = (data as Record<string, unknown>).response as unknown[];
+    if (!Array.isArray(response)) return [];
+    if (leagueId != null) response = filterFixturesByLeague(response, leagueId);
+    const out: ParsedResult[] = [];
+    for (const item of response) {
+      const rec = item as Record<string, unknown>;
+      const fixtureInfo = rec.fixture as Record<string, unknown> | undefined;
+      const teams = rec.teams as Record<string, Record<string, unknown>> | undefined;
+      const goals = rec.goals as Record<string, unknown> | undefined;
+      const status = (fixtureInfo?.status as Record<string, unknown> | undefined)?.short as string | undefined;
+      const home = teams?.home;
+      const away = teams?.away;
+      if (!fixtureInfo || !home || !away || !goals || !status) continue;
+      if (!FINISHED_STATUSES.has(status)) continue;
+      const hg = goals.home as number | null;
+      const ag = goals.away as number | null;
+      if (hg == null || ag == null) continue;
+      const isHome = (home.id as number | undefined) === teamApiFootballId;
+      out.push({
+        date: fixtureInfo.date as string,
+        opponentName: (isHome ? away.name : home.name) as string,
+        venue: isHome ? "home" : "away",
+        teamScore: isHome ? hg : ag,
+        oppScore: isHome ? ag : hg,
+      });
+    }
+    out.sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
     return out;
   } catch {
     return [];

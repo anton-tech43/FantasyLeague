@@ -178,6 +178,10 @@ final class CalendarSyncService {
     /// games (so callers clear out stale events). Future fixtures only.
     static func loadFixtures(teamId: String) async -> [GDFixture]? {
         let now = Date()
+        // Keep a game that has already kicked off (within a ~3h grace covering
+        // 90 mins + stoppage + extra time) so an in-progress match doesn't
+        // vanish from the calendar the instant it starts. Older games fall off.
+        let liveWindowStart = now.addingTimeInterval(-3 * 60 * 60)
         var reachedASource = false
 
         // 1. Season state (richer — up to ~10 fixtures).
@@ -185,7 +189,7 @@ final class CalendarSyncService {
             if let state = try await APIClient.shared.fetchTeamSeasonState(teamId: teamId) {
                 reachedASource = true
                 let fx = state.fixturesForSync
-                    .filter { $0.kickoffTime >= now }
+                    .filter { $0.kickoffTime >= liveWindowStart }
                     .map { GDFixture(opponent: $0.opponent, kickoffTime: $0.kickoffTime, venue: $0.venue) }
                 if !fx.isEmpty { return fx }
             } else {
@@ -200,12 +204,12 @@ final class CalendarSyncService {
             if let page = try await APIClient.shared.fetchTeamPage(teamId: teamId) {
                 reachedASource = true
                 let upcoming = (page.cards.upcomingFixtures ?? []).compactMap { f -> GDFixture? in
-                    guard let kickoff = isoFormatter.date(from: f.date), kickoff >= now else { return nil }
+                    guard let kickoff = isoFormatter.date(from: f.date), kickoff >= liveWindowStart else { return nil }
                     return GDFixture(opponent: f.opponent, kickoffTime: kickoff, venue: f.venue)
                 }
                 if !upcoming.isEmpty { return upcoming }
                 if let next = page.cards.nextFixture,
-                   let kickoff = isoFormatter.date(from: next.date), kickoff >= now {
+                   let kickoff = isoFormatter.date(from: next.date), kickoff >= liveWindowStart {
                     return [GDFixture(opponent: next.opponent, kickoffTime: kickoff, venue: next.venue)]
                 }
             } else {
