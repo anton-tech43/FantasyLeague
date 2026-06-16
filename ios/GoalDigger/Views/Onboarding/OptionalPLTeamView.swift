@@ -37,7 +37,7 @@ struct OptionalPLTeamView: View {
                 .foregroundColor(.hotRose.opacity(0.6))
                 .padding(.top, 8)
 
-            Text("Does \(appState.hisName.isEmpty ? "he" : appState.hisName) follow a Premier League team too?")
+            GlossaryText(raw: "Does \(appState.hisName.isEmpty ? "he" : appState.hisName) follow a Premier League team too?")
                 .font(.onboardingTitle)
                 .foregroundColor(.textOnDark)
                 .multilineTextAlignment(.center)

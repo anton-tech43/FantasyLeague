@@ -41,7 +41,7 @@ struct CountrySelectionView: View {
                 .foregroundColor(.hotRose.opacity(0.6))
                 .padding(.top, 8)
 
-            Text("Who is \(appState.hisName.isEmpty ? "he" : appState.hisName) backing at the World Championship?")
+            GlossaryText(raw: "Who is \(appState.hisName.isEmpty ? "he" : appState.hisName) backing at the World Championship?")
                 .font(.onboardingTitle)
                 .foregroundColor(.textOnDark)
                 .multilineTextAlignment(.center)

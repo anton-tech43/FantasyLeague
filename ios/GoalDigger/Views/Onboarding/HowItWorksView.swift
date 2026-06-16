@@ -1,13 +1,12 @@
 import SwiftUI
 
-/// Onboarding step 7 — three scenario cards explaining when and how the app
-/// shows up in real life. Written as moments, not features: "Sunday morning",
-/// "Match day", "Saturday at the pub". Personalised with `hisName` so the
-/// copy reads like advice from a friend, not a marketing page.
+/// Onboarding explainer — three plain-English cards on HOW THE APP WORKS:
+/// we watch his teams, we always hand her something to say, and anything she
+/// doesn't understand is tappable. Replaced the old "how this fits into your
+/// week" weekly-rhythm framing (which assumed he plays Sunday League).
+/// Personalised with `hisName` via AppState.personalise.
 ///
-/// No fetch. Pure static copy. Comes right after MeetTeamView (which gave
-/// her the team facts) and right before TierSelectionView (which chooses
-/// the frequency that controls these moments).
+/// No fetch. Pure static copy.
 struct HowItWorksView: View {
     @Environment(AppState.self) var appState
     let onContinue: () -> Void
@@ -26,19 +25,19 @@ struct HowItWorksView: View {
     private var scenarios: [Scenario] {
         [
             .init(
-                icon: "sun.max.fill",
-                title: appState.personalise("Sunday morning, before [his name's] Sunday League"),
-                body: "A 30-second brief so you've got something to ask him about over coffee."
+                icon: "dot.radiowaves.left.and.right",
+                title: "We watch his teams for you",
+                body: appState.personalise("Every match and every story about [his name's] teams, turned into plain English. No jargon, no homework.")
             ),
             .init(
-                icon: "soccerball.inverse",
-                title: "Match day",
-                body: appState.personalise("A heads-up before kickoff and a summary when it's done, so you know what to react to when [his name] texts.")
+                icon: "bubble.left.and.bubble.right.fill",
+                title: "You always have something to say",
+                body: "A heads-up before kickoff, the score while it's live, and the line that starts the chat once it's done."
             ),
             .init(
-                icon: "sparkles",
-                title: "Saturday at the pub",
-                body: "One fact you can drop into conversation. We'll send it Saturday lunchtime."
+                icon: "hand.tap.fill",
+                title: "Tap anything you don't get",
+                body: "See a word underlined, like clean sheet or World Championship? Tap it for a quick, human explanation."
             )
         ]
     }
@@ -48,10 +47,10 @@ struct HowItWorksView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("How this fits\ninto your week.")
+                        Text("Here's how\nit works.")
                             .font(.onboardingTitle)
                             .foregroundColor(.textOnDark)
-                        Text("Three moments where the app earns its keep. We tune the frequency on the next screen.")
+                        Text("We keep you in the loop on his football, in plain English, so you can jump in whenever.")
                             .font(.onboardingBody)
                             .foregroundColor(.textOnDark.opacity(0.8))
                     }

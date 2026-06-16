@@ -422,10 +422,20 @@ struct TeamPageView: View {
             isExpanded: expandedCard == .comingUp,
             onTap: { toggleCard(.comingUp) },
             zone1Collapsed: {
-                Text(formattedFixtureDate(fixture.date))
-                    .font(.jakarta(13, weight: .regular))
-                    .foregroundColor(.warmWhite.opacity(0.7))
-                    .lineLimit(1)
+                HStack(spacing: 8) {
+                    Text(formattedFixtureDate(fixture.date))
+                        .font(.jakarta(13, weight: .regular))
+                        .foregroundColor(.warmWhite.opacity(0.7))
+                        .lineLimit(1)
+                    if let favorite = fixture.favorite {
+                        Text(favorite.label)
+                            .font(.jakarta(11, weight: .bold))
+                            .foregroundColor(.hotRose)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Capsule().fill(Color.hotRose.opacity(0.12)))
+                    }
+                }
             },
             zone1Expanded: {
                 VStack(alignment: .leading, spacing: 6) {

@@ -1,4 +1,6 @@
 [
+  {"term": "Premier League", "aliases": [], "explanation": "England's top league. The one he'll happily cancel brunch plans for, every weekend from August to May."},
+  {"term": "World Championship", "aliases": [], "explanation": "The biggest tournament in the world. Once every four years it takes all the attention, from football and from him."},
   {"term": "clean sheet", "aliases": ["clean sheets"], "explanation": "When the team doesn't let in any goals. Boring word, big deal."},
   {"term": "brace", "aliases": [], "explanation": "Two goals in one match by the same player. A hat-trick is three."},
   {"term": "hat-trick", "aliases": ["hattrick", "hat trick"], "explanation": "Three goals in one match by the same player. Rare. He'll talk about it for weeks."},

@@ -458,6 +458,9 @@ struct NextFixtureCard: Codable {
     let venue: String
     let preview: String
     let talkingPoint: String?
+    /// Deterministic pre-game verdict from FIFA ranks (B2). nil when either
+    /// side's strength_rank is unknown — render nothing in that case.
+    let favorite: FavoriteVerdict?
 
     enum CodingKeys: String, CodingKey {
         case updatedAt = "updated_at"
@@ -466,7 +469,14 @@ struct NextFixtureCard: Codable {
         case venue
         case preview
         case talkingPoint = "talking_point"
+        case favorite
     }
+}
+
+/// Pre-game favorite verdict carried on the Coming-up card payload.
+struct FavoriteVerdict: Codable {
+    let tag: String    // "likely_win" | "even" | "likely_loss"
+    let label: String  // "Likely win" | "Could go either way" | "Likely loss"
 }
 
 // MARK: - Team Page — Calendar tab (upcoming fixtures with importance)
