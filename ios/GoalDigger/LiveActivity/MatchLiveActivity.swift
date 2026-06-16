@@ -33,7 +33,7 @@ struct MatchLiveActivity: Widget {
                         Text("\(context.state.homeScore) - \(context.state.awayScore)")
                             .font(.system(size: 26, weight: .bold, design: .rounded))
                             .foregroundStyle(LA.warmWhite)
-                        statusBadge(context.state.statusLabel)
+                        statusBadge(context.state.badgeText)
                     }
                 }
                 DynamicIslandExpandedRegion(.bottom) {
@@ -98,7 +98,7 @@ private struct LockScreenView: View {
                     Text("\(state.homeScore) - \(state.awayScore)")
                         .font(.system(size: 34, weight: .heavy, design: .rounded))
                         .foregroundStyle(LA.warmWhite)
-                    Text(state.statusLabel)
+                    Text(state.badgeText)
                         .font(.system(size: 12, weight: .bold))
                         .foregroundStyle(LA.hotRose)
                 }

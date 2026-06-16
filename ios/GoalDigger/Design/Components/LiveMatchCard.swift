@@ -45,7 +45,7 @@ struct LiveMatchCard: View {
                     Text("·")
                         .font(.jakarta(11, weight: .bold))
                         .foregroundColor(.warmWhite.opacity(0.5))
-                    Text("\(minute)'")
+                    Text(minute <= 90 ? "\(minute)' / 90" : "\(minute)'")
                         .font(.jakarta(11, weight: .semiBold))
                         .foregroundColor(.warmWhite.opacity(0.8))
                 }
