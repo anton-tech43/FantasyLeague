@@ -14,6 +14,14 @@ class AppState {
     var hisName: String {
         didSet { UserDefaults.standard.set(hisName, forKey: "hisName") }
     }
+    /// Who the followed person is to the user. Default `.partner` (the app's
+    /// primary framing); changeable in onboarding to parent / sibling / friend.
+    /// Only swaps the relationship NOUN in fallback copy — the person is always
+    /// referred to by their name wherever one is set, so the internal model
+    /// ("his team" / hisName) is unchanged.
+    var relationshipType: RelationshipType {
+        didSet { UserDefaults.standard.set(relationshipType.rawValue, forKey: "relationshipType") }
+    }
     var selectedTeam: Team? {
         didSet {
             if let team = selectedTeam {
@@ -41,6 +49,13 @@ class AppState {
     }
     var selectedTier: Int {
         didSet { UserDefaults.standard.set(selectedTier, forKey: "selectedTier") }
+    }
+    /// How much football the user already knows: 1 = nothing, 2 = basic rules
+    /// only, 3 = rules + his team + some players. 0 = not yet answered. Gathered
+    /// in onboarding; NOT wired to any behavior yet (depth/glossary tuning is a
+    /// later design).
+    var footballKnowledgeLevel: Int {
+        didSet { UserDefaults.standard.set(footballKnowledgeLevel, forKey: "footballKnowledgeLevel") }
     }
     var hasCompletedOnboarding: Bool {
         didSet { UserDefaults.standard.set(hasCompletedOnboarding, forKey: "hasCompletedOnboarding") }
@@ -91,14 +106,28 @@ class AppState {
         case immersive, classic
     }
 
+    /// Who the followed person is to the user. Partner is the default framing;
+    /// the others let someone following a parent / sibling / friend keep the
+    /// app's voice without it assuming a romantic partner.
+    enum RelationshipType: String, CaseIterable, Identifiable {
+        case partner, parent, sibling, friend
+        var id: String { rawValue }
+        /// Noun used in fallback copy when no name is set ("your partner").
+        var noun: String { rawValue }
+        /// Title-case label for the picker.
+        var label: String { rawValue.capitalized }
+    }
+
     init() {
         self.herName = UserDefaults.standard.string(forKey: "herName") ?? ""
         self.hisName = UserDefaults.standard.string(forKey: "hisName") ?? ""
+        self.relationshipType = RelationshipType(rawValue: UserDefaults.standard.string(forKey: "relationshipType") ?? "") ?? .partner
         let teamRaw = UserDefaults.standard.string(forKey: "selectedTeam")
         self.selectedTeam = teamRaw.flatMap { Team(rawValue: $0) }
         let countryRaw = UserDefaults.standard.string(forKey: "selectedCountry")
         self.selectedCountry = countryRaw.flatMap { Country(rawValue: $0) }
         self.selectedTier = UserDefaults.standard.integer(forKey: "selectedTier").clamped(to: 1...3, default: 2)
+        self.footballKnowledgeLevel = UserDefaults.standard.integer(forKey: "footballKnowledgeLevel")
         self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
         self.notificationPermissionRequested = UserDefaults.standard.bool(forKey: "notificationPermissionRequested")
         self.calendarSyncEnabled = UserDefaults.standard.bool(forKey: "calendarSyncEnabled")
@@ -135,8 +164,8 @@ class AppState {
     func personalise(_ text: String) -> String {
         var result = text
 
-        let hisDisplay = hisName.isEmpty ? "your partner" : hisName
-        let hisDisplayCapitalised = hisName.isEmpty ? "Your partner" : hisName
+        let hisDisplay = hisName.isEmpty ? "your \(relationshipType.noun)" : hisName
+        let hisDisplayCapitalised = hisName.isEmpty ? "Your \(relationshipType.noun)" : hisName
         let herDisplay = herName.isEmpty ? "you" : herName
         let herDisplayCapitalised = herName.isEmpty ? "You" : herName
 
@@ -184,9 +213,11 @@ class AppState {
         }
         herName = ""
         hisName = ""
+        relationshipType = .partner
         selectedTeam = nil
         selectedCountry = nil
         selectedTier = 2
+        footballKnowledgeLevel = 0
         hasCompletedOnboarding = false
         notificationPermissionRequested = false
         calendarSyncEnabled = false
@@ -197,7 +228,8 @@ class AppState {
         activeContext = .everyoneTalking
         isContextSwitcherOpen = false
         feedStyle = .immersive
-        let keys = ["herName", "hisName", "selectedTeam", "selectedCountry", "selectedTier",
+        let keys = ["herName", "hisName", "relationshipType", "selectedTeam", "selectedCountry",
+                     "selectedTier", "footballKnowledgeLevel",
                      "hasCompletedOnboarding", "notificationPermissionRequested", "apnsToken",
                      "apnsTokenRegistered",
                      "hasAutoExpandedFirstItem", "feedStyle", "hasSeenImmersiveBanner",
