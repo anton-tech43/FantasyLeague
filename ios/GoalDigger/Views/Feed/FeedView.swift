@@ -16,6 +16,10 @@ struct FeedView: View {
     /// The followed country's next fixture, fetched lazily when the country feed
     /// is empty, so the empty state can show a countdown instead of generic copy.
     @State private var countryNextFixture: TeamSeasonState.NextFixture?
+    /// Bumped when the app returns to the foreground, to re-fire the live-brief
+    /// poll task (which SwiftUI cancels on background and won't restart on its
+    /// own for the same context). Keeps the live box from going stale.
+    @State private var livePollGeneration = 0
     @State private var teamOffset = 0
     @State private var everyoneOffset = 0
     @State private var teamCanLoadMore = true
@@ -60,6 +64,13 @@ struct FeedView: View {
         case .everyoneTalking:
             return appState.selectedTeam?.rawValue ?? appState.selectedCountry?.rawValue
         }
+    }
+
+    /// Live-brief poll task id: the active entity plus a generation counter so a
+    /// foreground return (which bumps the counter) re-fires the poll task even
+    /// when the context is unchanged.
+    private var livePollTaskID: String {
+        "\(activeEntityId ?? "none")#\(livePollGeneration)"
     }
 
     /// Items for the active context
@@ -126,11 +137,12 @@ struct FeedView: View {
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(.hidden, for: .tabBar)
         .task { await loadInitial() }
-        .task(id: activeEntityId) {
-            // Live brief poll lifecycle. Kicks off on first appear and on
-            // entity change (team OR country context). The task body is the
-            // poll loop itself; it exits when SwiftUI cancels the task (view
-            // disappear, id change, app suspend). T1 users opt-out via TierGating.
+        .task(id: livePollTaskID) {
+            // Live brief poll lifecycle. Kicks off on first appear, on entity
+            // change (team OR country context), and on a foreground return (via
+            // livePollGeneration). The task body is the poll loop itself; it
+            // exits when SwiftUI cancels the task (view disappear, id change,
+            // app suspend). T1 users opt-out via TierGating.
             await runLiveBriefPoll()
         }
         .task(id: activeEntityId) {
@@ -154,7 +166,7 @@ struct FeedView: View {
             currentQuiz = nil // and stale quiz card for prior team
             Task { await loadTeamFeed() }
         }
-        .onChange(of: scenePhase) { _, newPhase in
+        .onChange(of: scenePhase) { oldPhase, newPhase in
             // SwiftUI's .task auto-cancels on scenePhase background on
             // some iOS versions but not others; explicitly cancel here so
             // the 60s poll doesn't keep burning battery in the background.
@@ -163,6 +175,13 @@ struct FeedView: View {
             if newPhase == .background {
                 liveBriefPollTask?.cancel()
                 liveBriefPollTask = nil
+            } else if newPhase == .active && oldPhase == .background {
+                // Returning to the app: re-fire the live-brief poll (it was
+                // cancelled on background and won't restart on its own for the
+                // same context) and re-fetch the feed, so a "stale empty during
+                // the match" view is replaced by the latest (e.g. the FT result).
+                livePollGeneration += 1
+                Task { await refresh() }
             }
         }
     }
