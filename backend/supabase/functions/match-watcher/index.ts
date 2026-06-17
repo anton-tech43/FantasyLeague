@@ -596,6 +596,15 @@ async function handleRequest(req: Request): Promise<Response> {
     // (i.e. a detected goal). Stays null on quiet ticks so the upsert leaves
     // match_status_state.goal_events untouched rather than clobbering it.
     let goalEventsStored: StoredGoalEvent[] | null = null;
+    // PUSH-2: WC alert pushes (goal/HT/FT/kickoff) are COLLECTED here and fired
+    // only AFTER the end-of-tick state upsert succeeds — so a failed upsert can
+    // never leave us having pushed without persisting the marker/score (which
+    // would re-fire duplicate alerts next tick). At-most-once by construction:
+    // a send failure after a good upsert is a missed push, never a duplicate.
+    const pendingAlertPushes: Array<{
+      args: Parameters<typeof sendWcPlayingTeamPush>[1];
+      isGoal: boolean;
+    }> = [];
 
     if (isLive && prior !== null && liveBriefConfigured) {
       // HT trigger: status == "HT" (the literal break) OR status == "2H"
@@ -1117,13 +1126,16 @@ async function handleRequest(req: Request): Promise<Response> {
           !briefsFired.includes("PREKICK_PUSH")
         ) {
           const copy = renderKickoffSoonPush({ home: homeTeam, away: awayTeam });
-          await sendWcPlayingTeamPush(supabase, {
-            homeTeamId,
-            awayTeamId,
-            copy,
-            category: "WC_KICKOFF_SOON",
-            fixtureId,
-            label: "kickoff",
+          pendingAlertPushes.push({
+            args: {
+              homeTeamId,
+              awayTeamId,
+              copy,
+              category: "WC_KICKOFF_SOON",
+              fixtureId,
+              label: "kickoff",
+            },
+            isGoal: false,
           });
           pushMarkers.push("PREKICK_PUSH");
         }
@@ -1162,13 +1174,16 @@ async function handleRequest(req: Request): Promise<Response> {
               side,
               scorerLine,
             });
-            goalPushSends += await sendWcPlayingTeamPush(supabase, {
-              homeTeamId,
-              awayTeamId,
-              copy,
-              category: "WC_GOAL",
-              fixtureId,
-              label: "goal",
+            pendingAlertPushes.push({
+              args: {
+                homeTeamId,
+                awayTeamId,
+                copy,
+                category: "WC_GOAL",
+                fixtureId,
+                label: "goal",
+              },
+              isGoal: true,
             });
           }
         }
@@ -1189,13 +1204,16 @@ async function handleRequest(req: Request): Promise<Response> {
             homeGoals: homeGoals ?? 0,
             awayGoals: awayGoals ?? 0,
           });
-          await sendWcPlayingTeamPush(supabase, {
-            homeTeamId,
-            awayTeamId,
-            copy,
-            category: "WC_HALFTIME",
-            fixtureId,
-            label: "ht",
+          pendingAlertPushes.push({
+            args: {
+              homeTeamId,
+              awayTeamId,
+              copy,
+              category: "WC_HALFTIME",
+              fixtureId,
+              label: "ht",
+            },
+            isGoal: false,
           });
           pushMarkers.push("HT_PUSH");
         }
@@ -1217,16 +1235,19 @@ async function handleRequest(req: Request): Promise<Response> {
             homeGoals: homeGoals ?? 0,
             awayGoals: awayGoals ?? 0,
           });
-          await sendWcPlayingTeamPush(supabase, {
-            homeTeamId,
-            awayTeamId,
-            copy,
-            category: "WC_RESULT",
-            fixtureId,
-            label: "ft",
-            // Deep-link each follower to their team's just-written result
-            // article (populated in the post_match block above, same tick).
-            contentIdByCountry: wcResultItemIds,
+          pendingAlertPushes.push({
+            args: {
+              homeTeamId,
+              awayTeamId,
+              copy,
+              category: "WC_RESULT",
+              fixtureId,
+              label: "ft",
+              // Deep-link each follower to their team's just-written result
+              // article (populated in the post_match block above, same tick).
+              contentIdByCountry: wcResultItemIds,
+            },
+            isGoal: false,
           });
           pushMarkers.push("FT_PUSH");
         }
@@ -1278,11 +1299,23 @@ async function handleRequest(req: Request): Promise<Response> {
         { onConflict: "fixture_id" },
       );
     if (upsertErr) {
-      console.warn(`state upsert failed for ${fixtureId}:`, upsertErr.message);
+      // State did NOT advance. Skip every collected alert push — they will be
+      // re-decided identically next tick once the row is observed again. This is
+      // what makes the pushes at-most-once: we never send on a tick whose state
+      // we couldn't persist (which would re-fire next tick = duplicate alerts).
+      console.warn(
+        `state upsert failed for ${fixtureId}; skipping ${pendingAlertPushes.length} alert push(es):`,
+        upsertErr.message,
+      );
       upsertErrors.push({ fixture_id: fixtureId, message: upsertErr.message });
     } else {
       stateUpdates++;
       if (!prior) firstSeen++;
+      // State (markers + score) is durably persisted — now safe to fire.
+      for (const p of pendingAlertPushes) {
+        const n = await sendWcPlayingTeamPush(supabase, p.args);
+        if (p.isGoal) goalPushSends += n;
+      }
     }
   }
 
