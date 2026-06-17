@@ -51,6 +51,13 @@ export interface UpcomingGroupFixture {
   opponentApiId: number;
   opponentName: string;
   venue: "home" | "away";
+  /**
+   * Set by the caller when this fixture has already kicked off (from the live
+   * match_status_state, not fixtures_next): "live" = in play, "just_finished" =
+   * final but not yet rolled into standings/fixtures_last. Drives a live-aware
+   * label that pre-empts the group-opener/contention logic.
+   */
+  phase?: "live" | "just_finished";
 }
 
 export type StakesLevel =
@@ -242,6 +249,24 @@ export function annotateFixtures(
 
   return fixtures.map((fx) => {
     const base = { date: fx.date, opponent: fx.opponentName, venue: fx.venue };
+
+    // Live / just-finished override: the caller saw (via match_status_state)
+    // that this game has kicked off, so it's already gone from fixtures_next.
+    // Lead with it and mark the slot consumed so the genuinely-next game is a
+    // later_group_game, not mislabeled the group opener (played still reads 0
+    // until the result posts). Pre-empts the non-group + opener logic below.
+    if (fx.phase) {
+      nextGroupGameSeen = true;
+      const live = fx.phase === "live";
+      return {
+        ...base,
+        importance_dots: live ? 4 : 2,
+        importance_label: live ? "Live now" : "Full time",
+        stakes_level: live ? "decisive" : "qualified_already",
+        reason: live ? "in_progress" : "just_finished",
+        certainty: "soft",
+      };
+    }
 
     // Non-group fixture (e.g. a pre-tournament friendly).
     if (!groupIds.has(fx.opponentApiId)) {

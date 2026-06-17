@@ -57,6 +57,10 @@ export function renderNextFixturePreview(ctx: NextFixtureContext): string {
       return `${teamName} cannot reach the knockouts; their tournament ends in the group.`;
     case "group_opener":
       return `${teamName} open ${grp} against ${opp}.`;
+    case "in_progress":
+      return `${teamName} are playing ${opp} in ${grp} right now.`;
+    case "just_finished":
+      return `${teamName} have just finished their ${grp} game against ${opp}.`;
     case "contention_generic":
       return `A big ${grp} game against ${opp}, with a knockout place on the line.`;
     case "non_group":
@@ -125,6 +129,20 @@ export interface ThisWeekContext {
 
 export function renderThisWeek(ctx: ThisWeekContext): { text: string; talking_point: string } {
   const { teamName, opponentName: opp, groupLabel: grp, stakes, otherFixtureLabel } = ctx;
+  // Live / just-finished games get their own present-tense framing rather than
+  // the future-tense "face" sentence (the game is happening now, or just ended).
+  if (stakes.reason === "in_progress") {
+    return {
+      text: `${grp} this week: ${teamName} are playing ${opp} right now.`,
+      talking_point: `Ask him how the ${opp} game is going.`,
+    };
+  }
+  if (stakes.reason === "just_finished") {
+    return {
+      text: `${grp} this week: ${teamName} have just played ${opp}.`,
+      talking_point: `Ask him what he made of the ${opp} game.`,
+    };
+  }
   const other = otherFixtureLabel ? ` ${otherFixtureLabel} in the other game.` : "";
   const stakeClause = stakeClauseFor(stakes, teamName);
   return {

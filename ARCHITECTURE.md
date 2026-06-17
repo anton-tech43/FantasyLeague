@@ -98,6 +98,14 @@ A device can follow **up to 2 WC countries + 2 PL clubs, all equal**. Design det
   API-Football per team into `raw_fetch_logs`, computes PL pressure flags into
   `team_context`, and triggers `team-page-generator` in **`dynamic_only`** mode (no
   Claude) to refresh deterministic team-page cards.
+- **Live-game leading fixture (team-page-generator):** the "coming up / this week" cards
+  are built from API-Football's `fixtures_next`, which drops a match the instant it kicks
+  off — so a naive build rolls forward to the next not-started game and (with standings
+  `played` still 0) mislabels it the group opener. The generator therefore reads the
+  team's kicked-off-but-unrecorded WC game from `match_status_state` and leads with it
+  (`phase: "live" | "just_finished"` → `in_progress`/`just_finished` stakes copy) until
+  the result posts to `fixtures_last`. See `stakes-engine.ts::annotateFixtures` +
+  `stakes-templates.ts`.
 - **Content type → origin → consumer:** see the table in the push-pipeline audit;
   the key ones: news/sunday_brief → routine → feed+push; matchday reminder + build-up →
   deterministic Edge → feed/push; insider → routine → `team_insider_items` (His Team

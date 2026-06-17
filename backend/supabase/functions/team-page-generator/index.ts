@@ -1081,6 +1081,56 @@ async function updateWcDynamicFields(
     }
   }
 
+  // LIVE-GAME OVERRIDE: API-Football's fixtures_next drops a match the moment it
+  // kicks off, so once a team's game starts the "coming up / this week" cards
+  // roll forward to the next not-started game and — with standings `played`
+  // still 0 — mislabel it as the group opener. match_status_state is the
+  // authoritative live source: if the team has a kicked-off WC game that
+  // fixtures_last hasn't recorded yet, lead with THAT game so the cards stay on
+  // it until the result posts. Best-effort; never breaks the refresh.
+  try {
+    const { data: liveRow } = await supabase
+      .from("match_status_state")
+      .select("fixture_id, home_team_id, away_team_id, status, kickoff_time")
+      .eq("league_id", WC_LEAGUE_ID)
+      .or(`home_team_id.eq.${team.id},away_team_id.eq.${team.id}`)
+      .order("kickoff_time", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (liveRow) {
+      const LIVE_STATUSES = new Set(["1H", "HT", "2H", "ET", "BT", "P", "SUSP", "INT", "LIVE"]);
+      const FINISHED = new Set(["FT", "AET", "PEN"]);
+      const status = String(liveRow.status ?? "");
+      const fid = liveRow.fixture_id as number | undefined;
+      const isLive = LIVE_STATUSES.has(status);
+      const isUnrecordedFinished = FINISHED.has(status) && (fid == null || !finishedIds.has(fid));
+      const alreadyListed = fid != null && upcoming.some((u) => u.fixtureId === fid);
+      if ((isLive || isUnrecordedFinished) && !alreadyListed) {
+        const isHome = liveRow.home_team_id === team.id;
+        const oppSlug = (isHome ? liveRow.away_team_id : liveRow.home_team_id) as string;
+        const { data: oppRow } = await supabase
+          .from("teams")
+          .select("display_name, short_name, api_football_id")
+          .eq("id", oppSlug)
+          .maybeSingle();
+        upcoming = [
+          {
+            fixtureId: fid,
+            date: (liveRow.kickoff_time as string) ?? now.toISOString(),
+            opponentApiId: (oppRow?.api_football_id as number | undefined) ?? -1,
+            opponentName: (oppRow?.display_name as string | undefined) ??
+              (oppRow?.short_name as string | undefined) ?? oppSlug,
+            venue: isHome ? "home" : "away",
+            phase: isLive ? "live" : "just_finished",
+          },
+          ...upcoming,
+        ];
+      }
+    }
+  } catch (_e) {
+    // best-effort: the live override must never break the page refresh.
+  }
+
   // E1: recent finished results (with scores) for the in-app "last games"
   // collapsible. Same newest-good-wins walk over fixtures_last; WC league only.
   const lastLogs = rawLogs.filter((l) => l.source === "api_football_fixtures_last");
@@ -1408,6 +1458,8 @@ interface ParsedFixture {
   opponentApiId: number;
   opponentName: string;
   venue: "home" | "away";
+  /** Set when sourced from the live match_status_state (kicked off already). */
+  phase?: "live" | "just_finished";
 }
 
 /// Parse api_football_fixtures_next into chronological FUTURE fixtures for

@@ -130,6 +130,38 @@ Deno.test("non-group fixture (friendly) marked low importance", () => {
   assert(s.importance_dots <= 2, "low dots");
 });
 
+// ---- live / just-finished override (team-page live-game bug) ----
+
+function fxLive(
+  opponentApiId: number,
+  phase: "live" | "just_finished",
+  date = "2026-06-17T20:00:00+00:00",
+): UpcomingGroupFixture {
+  return { ...fx(opponentApiId, date), phase };
+}
+
+Deno.test("live opener: in_progress label, and the genuine next game is NOT mislabeled the opener", () => {
+  // The exact buggy condition: nobody has played yet (played 0 all round), so
+  // labelSoonestGroupGame would stamp the soonest game "group_opener". With A's
+  // first game live, A vs B leads as in_progress and A's next game (C) must be
+  // a later_group_game, not "First game".
+  const group = g([[A, 0], [B, 0], [C, 0], [D, 0]], [[A, 0], [B, 0], [C, 0], [D, 0]]);
+  const [live, next] = annotateFixtures(group, A, [
+    fxLive(B, "live"),
+    fx(C, "2026-06-23T20:00:00+00:00"),
+  ]);
+  eq(live.reason, "in_progress", "live game labeled in_progress");
+  assert(live.importance_label.toLowerCase().includes("live"), "live label");
+  eq(next.reason, "later_group_game", "next game is not the opener (regression guard)");
+});
+
+Deno.test("just-finished override: full-time label, next game still not the opener", () => {
+  const group = g([[A, 0], [B, 0], [C, 0], [D, 0]], [[A, 0], [B, 0], [C, 0], [D, 0]]);
+  const [done, next] = annotateFixtures(group, A, [fxLive(B, "just_finished"), fx(C)]);
+  eq(done.reason, "just_finished", "just_finished label");
+  eq(next.reason, "later_group_game", "next not opener");
+});
+
 // ---- invariants across all branches ----
 
 Deno.test("all importance_labels are <= 30 chars and dots in 1..5", () => {
