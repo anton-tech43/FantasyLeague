@@ -82,7 +82,7 @@ struct NotificationPromptView: View {
                 .font(.feedHeadline)
                 .foregroundColor(.warmWhite)
 
-            Text("Without notifications, you won't know he's playing until he's already talking about it. It's the whole point of the app, and you can mute it any time.")
+            Text("Without notifications, you won't know \(appState.pIs) playing until \(appState.pIs) already talking about it. It's the whole point of the app, and you can mute it any time.")
                 .font(.jakarta(15, weight: .regular))
                 .foregroundColor(.warmWhite.opacity(0.8))
                 .multilineTextAlignment(.center)

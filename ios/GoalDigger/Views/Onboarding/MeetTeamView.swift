@@ -73,7 +73,7 @@ struct MeetTeamView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .center, spacing: 12) {
                 entityCrest
-                Text("Meet \(appState.personPossessive) lot.")
+                Text("Meet \(appState.pPossessive) lot.")
                     .font(.onboardingTitle)
                     .foregroundColor(.textOnDark)
             }
@@ -107,7 +107,7 @@ struct MeetTeamView: View {
         if let name = entityShortName {
             return "Three things about \(name), so you've got something for the next time [his name] starts talking about them."
         }
-        return "A few quick things about their team, so you've got something for the next time they start talking about them."
+        return "A few quick things about \(appState.pPossessive) team, so you've got something for the next time \(appState.pSubject) \(appState.usesHeVoice ? "starts" : "start") talking about them."
     }
 
     @ViewBuilder

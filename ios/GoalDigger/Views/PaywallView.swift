@@ -2,6 +2,7 @@ import SwiftUI
 import StoreKit
 
 struct PaywallView: View {
+    @Environment(AppState.self) var appState
     @State private var purchaseManager = PurchaseManager.shared
     @State private var product: Product?
 
@@ -28,9 +29,9 @@ struct PaywallView: View {
 
                 // Benefits
                 VStack(alignment: .leading, spacing: 16) {
-                    benefitRow("Know what's happening with his team")
+                    benefitRow("Know what's happening with \(appState.pPossessive) team")
                     benefitRow("Always have something to say")
-                    benefitRow("Know what mood he's coming home in")
+                    benefitRow("Know what mood \(appState.pIs) coming home in")
                 }
                 .padding(.horizontal, Layout.screenPadding)
 

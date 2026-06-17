@@ -38,7 +38,7 @@ struct OptionalPLTeamView: View {
     }
 
     private var countryShortName: String {
-        appState.selectedCountry?.shortName ?? "their country"
+        appState.selectedCountry?.shortName ?? "\(appState.pPossessive) country"
     }
 
     var body: some View {
@@ -48,13 +48,13 @@ struct OptionalPLTeamView: View {
                 .foregroundColor(.hotRose.opacity(0.6))
                 .padding(.top, 8)
 
-            GlossaryText(raw: "Does \(appState.hisName.isEmpty ? "they" : appState.hisName) follow a Premier League team too?")
+            GlossaryText(raw: "Does \(appState.hisName.isEmpty ? appState.pSubject : appState.hisName) follow a Premier League team too?")
                 .font(.onboardingTitle)
                 .foregroundColor(.textOnDark)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Layout.screenPadding)
 
-            Text("Skip if not. We'll focus on \(appState.personPossessive) \(countryShortName) squad.")
+            Text("Skip if not. We'll focus on \(appState.pPossessive) \(countryShortName) squad.")
                 .font(.onboardingBody)
                 .foregroundColor(.textOnDark.opacity(0.8))
                 .multilineTextAlignment(.center)
@@ -65,7 +65,7 @@ struct OptionalPLTeamView: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.mutedText)
                     .font(.system(size: 14))
-                TextField("Search for a team...", text: $searchText)
+                TextField("Search \(appState.pPossessive) team...", text: $searchText)
                     .font(.jakarta(17, weight: .regular))
                     .foregroundColor(.textPrimaryOnCard)
                     .autocorrectionDisabled()
@@ -136,7 +136,7 @@ struct OptionalPLTeamView: View {
                 .buttonStyle(PrimaryButtonStyle(isEnabled: !picks.isEmpty))
                 .disabled(picks.isEmpty)
 
-                Button("Skip, just \(appState.personPossessive) country") {
+                Button("Skip, just \(appState.pPossessive) country") {
                     appState.selectedTeams = []
                     onContinue()
                 }
@@ -167,7 +167,7 @@ struct OptionalPLTeamView: View {
                 Text("I want to add my own club too")
                     .font(.feedHeadline)
                     .foregroundColor(.textPrimaryOnCard)
-                Text(wantsSecond ? "Pick a second club (up to 2)." : "Follow two clubs, not just his.")
+                Text(wantsSecond ? "Pick a second club (up to 2)." : "Follow two clubs, not just \(appState.usesHeVoice ? "his" : "theirs").")
                     .font(.feedTimestamp)
                     .foregroundColor(.textSecondaryOnCard)
             }

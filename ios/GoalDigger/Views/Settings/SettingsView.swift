@@ -99,8 +99,8 @@ struct SettingsView: View {
             }
             Button("Cancel", role: .cancel) {}
         }
-        .alert("Edit His Name", isPresented: $editingHisName) {
-            TextField("His name", text: $hisNameDraft)
+        .alert("Edit \(appState.pPossessiveCap) Name", isPresented: $editingHisName) {
+            TextField("\(appState.pPossessiveCap) name", text: $hisNameDraft)
             Button("Save") {
                 appState.hisName = hisNameDraft.trimmingCharacters(in: .whitespaces)
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
@@ -185,7 +185,7 @@ struct SettingsView: View {
             } label: {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("His Name")
+                        Text("\(appState.pPossessiveCap) Name")
                             .font(.feedTimestamp)
                             .foregroundColor(.textSecondaryOnCard)
                         Text(appState.hisName.isEmpty ? "Not set" : appState.hisName)
@@ -206,7 +206,7 @@ struct SettingsView: View {
             Button { showTeamPicker = true } label: {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("\(appState.hisName.isEmpty ? "His" : appState.hisName + "'s") Team")
+                        Text("\(appState.namePossessiveCap) Team")
                             .font(.feedTimestamp)
                             .foregroundColor(.textSecondaryOnCard)
                         Text(appState.selectedTeams.isEmpty
@@ -229,7 +229,7 @@ struct SettingsView: View {
             Button { showCountryPicker = true } label: {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("\(appState.hisName.isEmpty ? "His" : appState.hisName + "'s") Country")
+                        Text("\(appState.namePossessiveCap) Country")
                             .font(.feedTimestamp)
                             .foregroundColor(.textSecondaryOnCard)
                         Text(appState.selectedCountries.isEmpty
@@ -311,7 +311,7 @@ struct SettingsView: View {
         settingsRow {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Add his fixtures to your calendar")
+                    Text("Add \(appState.pPossessive) fixtures to your calendar")
                         .font(.feedTimestamp)
                         .foregroundColor(.textSecondaryOnCard)
                     Text(appState.calendarSyncEnabled ? "On" : "Off")
@@ -354,7 +354,7 @@ struct SettingsView: View {
                 Text("GoalDigger")
                     .font(.feedHeadline)
                     .foregroundColor(.textPrimaryOnCard)
-                Text("For the girlfriend who's done nodding along. Made for her, not him.")
+                Text("For the girlfriend who's done nodding along. Made for her, not \(appState.pObject).")
                     .font(.feedTimestamp)
                     .foregroundColor(.textSecondaryOnCard)
             }
@@ -451,7 +451,7 @@ struct SettingsView: View {
         switch tier {
         case 1: return "Just enough to get by"
         case 2: return "Came to impress"
-        case 3: return "The one he brags about"
+        case 3: return "The one \(appState.pSubject) \(appState.usesHeVoice ? "brags" : "brag") about"
         default: return "Came to impress"
         }
     }
@@ -662,11 +662,14 @@ struct TierPickerSheet: View {
     @Environment(\.dismiss) var dismiss
     @State private var selected: Int = 2
 
-    private let tiers: [(number: Int, label: String, description: String)] = [
+    private var tiers: [(number: Int, label: String, description: String)] {
+        [
         (1, "Just enough to get by", "Just the essentials. No overload."),
         (2, "Came to impress", "Enough to hold your own in any conversation."),
-        (3, "The one he brags about", "She knows things he hasn't even googled yet.")
-    ]
+        (3, "The one \(appState.pSubject) \(appState.usesHeVoice ? "brags" : "brag") about",
+         "She knows things \(appState.pSubject) \(appState.usesHeVoice ? "hasn't" : "haven't") even googled yet.")
+        ]
+    }
 
     var body: some View {
         NavigationStack {

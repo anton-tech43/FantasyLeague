@@ -51,7 +51,7 @@ struct CalendarOptInView: View {
             }
             .padding(.bottom, 8)
 
-            Text("Want his matches\nin your calendar?")
+            Text("Want \(appState.pPossessive) matches\nin your calendar?")
                 .font(.onboardingTitle)
                 .foregroundColor(.textOnDark)
                 .multilineTextAlignment(.center)
@@ -119,15 +119,15 @@ struct CalendarOptInView: View {
     private var bodyText: String {
         let count = fixtures.count
         if isLoadingFixtures {
-            return "We'll add his upcoming matches so you know when he'll be glued to the TV."
+            return "We'll add \(appState.pPossessive) upcoming matches so you know when \(appState.pWill) be glued to the TV."
         }
         if count == 0 {
             return "No matches scheduled yet. We'll add them automatically once the fixture list drops, just flip the calendar switch in Settings when you're ready."
         }
         if count == 1 {
-            return "We'll add his next match so you know when he'll be glued to the TV."
+            return "We'll add \(appState.pPossessive) next match so you know when \(appState.pWill) be glued to the TV."
         }
-        return "We'll add his next \(count) matches so you know when he'll be glued to the TV."
+        return "We'll add \(appState.pPossessive) next \(count) matches so you know when \(appState.pWill) be glued to the TV."
     }
 
     // MARK: - Loading

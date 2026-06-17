@@ -26,7 +26,7 @@ struct HowItWorksView: View {
         [
             .init(
                 icon: "dot.radiowaves.left.and.right",
-                title: appState.personalise("We watch [his name's] teams for you"),
+                title: "We watch \(appState.pPossessive) teams for you",
                 body: appState.personalise("Every match and every story about [his name's] teams, turned into plain English. No jargon, no homework.")
             ),
             .init(
@@ -50,7 +50,7 @@ struct HowItWorksView: View {
                         Text("Here's how\nit works.")
                             .font(.onboardingTitle)
                             .foregroundColor(.textOnDark)
-                        Text("We keep you in the loop on his football, in plain English, so you can jump in whenever.")
+                        Text("We keep you in the loop on \(appState.pPossessive) football, in plain English, so you can jump in whenever.")
                             .font(.onboardingBody)
                             .foregroundColor(.textOnDark.opacity(0.8))
                     }

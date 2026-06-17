@@ -179,14 +179,16 @@ private struct FootballKnowledgeView: View {
         let body: String
     }
 
-    private let levels: [Level] = [
-        .init(id: 1, title: "I don't know anything",
-              body: "Total newcomer. You're here for him, not the football."),
-        .init(id: 2, title: "I know the basic rules",
-              body: "You get how the game works, but not his team or the players."),
-        .init(id: 3, title: "Rules, his team, some players",
-              body: "You know the rules, his team, and a few of the players by name.")
-    ]
+    private var levels: [Level] {
+        [
+            .init(id: 1, title: "I don't know anything",
+                  body: "Total newcomer. You're here for \(appState.pObject), not the football."),
+            .init(id: 2, title: "I know the basic rules",
+                  body: "You get how the game works, but not \(appState.pPossessive) team or the players."),
+            .init(id: 3, title: "Rules, \(appState.pPossessive) team, some players",
+                  body: "You know the rules, \(appState.pPossessive) team, and a few of the players by name.")
+        ]
+    }
 
     var body: some View {
         ScrollView {

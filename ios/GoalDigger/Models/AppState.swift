@@ -211,19 +211,22 @@ class AppState {
         return result
     }
 
-    // MARK: - Person references (name-first, relationship-aware, gender-neutral)
-    // The followed person's name is set during onboarding, so prefer it. When
-    // absent, fall back to the relationship noun (partner/parent/sibling/friend)
-    // — never assume "he", since relationshipType doesn't encode gender. Use
-    // these for FUNCTIONAL references to the person's team/country; the app's
-    // emotional brand taglines are intentionally voiced separately.
-
-    /// "Ada" or "your partner".
-    var personName: String { hisName.isEmpty ? "your \(relationshipType.noun)" : hisName }
-    /// "Ada's" or "your partner's".
-    var personPossessive: String { hisName.isEmpty ? "your \(relationshipType.noun)'s" : "\(hisName)'s" }
-    /// Sentence/section start: "Ada's" or "Your partner's".
-    var personPossessiveCap: String { hisName.isEmpty ? "Your \(relationshipType.noun)'s" : "\(hisName)'s" }
+    // MARK: - Followed-person pronouns (keep the boyfriend voice; neutralize the rest)
+    // The app's voice frames the followed person as a boyfriend. That stays the
+    // DEFAULT (.partner) → "he/his/him", byte-for-byte unchanged. For
+    // parent/sibling/friend we swap ONLY the followed person's pronoun to neutral
+    // "they/their/them" — same tone, no gender assumption. The user ("her/she")
+    // is untouched, and [his name] placeholders still render the name for everyone.
+    var usesHeVoice: Bool { relationshipType == .partner }
+    var pSubject: String { usesHeVoice ? "he" : "they" }        // he / they
+    var pSubjectCap: String { usesHeVoice ? "He" : "They" }
+    var pPossessive: String { usesHeVoice ? "his" : "their" }   // his / their
+    var pPossessiveCap: String { usesHeVoice ? "His" : "Their" }
+    var pObject: String { usesHeVoice ? "him" : "them" }        // him / them
+    var pIs: String { usesHeVoice ? "he's" : "they're" }        // he's / they're
+    var pWill: String { usesHeVoice ? "he'll" : "they'll" }     // he'll / they'll
+    /// Name-first possessive for labels/headers: "Ada's" or, with no name, "His"/"Their".
+    var namePossessiveCap: String { hisName.isEmpty ? pPossessiveCap : hisName + "'s" }
 
     /// Force pending UserDefaults writes to disk NOW.
     ///
