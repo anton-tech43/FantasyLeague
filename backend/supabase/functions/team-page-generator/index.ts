@@ -304,6 +304,23 @@ serve(async (req) => {
     const payload: TeamPageRequest = await req.json();
     const { mode, team_id } = payload;
 
+    // COST-1 (CLAUDE.md hard rule): `full` mode calls Claude PER TEAM. A full run
+    // with no team_id loops every team — the exact paid-API-loop-across-teams the
+    // rule forbids; that work belongs in a claude.ai routine, not an Edge cron.
+    // (The legacy weekly `team-page-refresh` cron that did this no longer exists
+    // in cron.job.) Refuse it so a stray invocation or a re-applied legacy
+    // migration can't bottom the API balance. Single-team full and the
+    // deterministic dynamic_only batch are unaffected.
+    if (mode === "full" && !team_id) {
+      return new Response(
+        JSON.stringify({
+          error:
+            "Refused: full mode requires team_id. Bulk full regeneration across all teams calls Claude per team (paid API) and must run as a claude.ai routine, not this Edge function. See BACKFILL_RULES.md / CLAUDE.md.",
+        }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
     // Get teams to process
     let teams: Team[];
     if (team_id) {
