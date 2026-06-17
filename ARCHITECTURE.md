@@ -159,7 +159,11 @@ There is **no** content→review→send chain in production for pushes. The live
   One push-to-start token per device (carries `country_ids`), per-activity update
   tokens by `fixture_id`. WC-only; shows score/period/minute. `live-match-current` /
   `live-brief-current` serve the in-app live box (minute X/90 + group standings +
-  scorers).
+  scorers). Headline/minute/scorers are ALWAYS deterministic from `match_status_state`
+  (never stale); the routine brief supplies the prose BODY, but `live-brief-current` drops
+  that body to a neutral period line once goals postdate the brief's minute (e.g. an HT
+  "level first half" brief while it's now 4-2 in the 2H) — score/scorers carry the truth,
+  no Claude re-fire.
 
 **Cron auth:** every cron `net.http_post` sends `Bearer get_cron_service_key()` (a
 SECURITY DEFINER accessor reading Postgres Vault; migrations 019/020). Functions

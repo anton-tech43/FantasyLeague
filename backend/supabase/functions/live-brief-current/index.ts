@@ -168,10 +168,26 @@ serve(async (req) => {
   // live score in the headline (and a live label, no stale minute outside HT).
   if (briefs && briefs.length > 0) {
     const brief = briefs[0] as Record<string, unknown>;
+    // Staleness guard: the routine brief's PROSE describes the score at the
+    // moment it was generated (e.g. the HT "both sides finding the net twice"
+    // at 2-2). The headline/scorers/minute below are always live, but the body
+    // would still claim a level first half at 87' 4-2. If goals have gone in
+    // since the brief's minute (second-half goals postdate it), drop the
+    // now-wrong narrative to a neutral deterministic period line — the live
+    // headline + scorers carry the up-to-date detail. Pure, off the stored
+    // goal_events; no Claude re-fire (cost rule).
+    const briefMinute = typeof brief.minute === "number"
+      ? brief.minute as number
+      : (String(brief.trigger_label ?? "").toUpperCase() === "HT" ? 45 : 0);
+    const goalsSinceBrief = (state.goal_events ?? []).filter(
+      (e) => (e.minute ?? 0) > briefMinute,
+    ).length;
+    const briefIsStale = state.status !== "HT" && goalsSinceBrief > 0;
     return new Response(
       JSON.stringify({
         ...brief,
         headline: liveHeadline,
+        body: briefIsStale ? periodLine(state.status) : brief.body,
         trigger_label: state.status === "HT" ? (brief.trigger_label ?? "HT") : liveLabel,
         minute: state.status === "HT" ? (brief.minute ?? null) : (state.elapsed ?? null),
         standings,
