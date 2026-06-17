@@ -54,7 +54,8 @@ serve(async (req) => {
   const { data: plTeams } = await supabase
     .from("teams")
     .select("id, api_football_id")
-    .eq("league_id", PL_LEAGUE_ID);
+    .eq("league_id", PL_LEAGUE_ID)
+    .eq("is_active", true);
 
   const plSlugs = (plTeams ?? []).map((t) => t.id as string);
   const apiIdToSlug = new Map<number, string>();

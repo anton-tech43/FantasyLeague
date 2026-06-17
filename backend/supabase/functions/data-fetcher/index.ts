@@ -293,10 +293,14 @@ serve(async (req) => {
       /* no body or invalid JSON — proceed in all-teams mode */
     }
 
-    // Get teams
+    // Get teams. is_active=false excludes relegated clubs (mig 074) so we don't
+    // burn RSS/API-Football fetches on clubs no longer in the league. An explicit
+    // team_id override still works (e.g. a one-off for a specific club).
     let query = supabase.from("teams").select("*");
     if (payload.team_id) {
       query = query.eq("id", payload.team_id);
+    } else {
+      query = query.eq("is_active", true);
     }
     const { data: teams, error: teamError } = await query;
 

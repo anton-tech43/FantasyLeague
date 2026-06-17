@@ -328,7 +328,9 @@ serve(async (req) => {
       if (!data) throw new Error(`Team not found: ${team_id}`);
       teams = [data];
     } else {
-      const { data } = await supabase.from("teams").select("*").order("id");
+      // is_active filter skips relegated clubs (mig 074) in the all-teams
+      // dynamic_only batch.
+      const { data } = await supabase.from("teams").select("*").eq("is_active", true).order("id");
       teams = data ?? [];
     }
 

@@ -49,14 +49,18 @@ type error.
 mig 004 **don't exist** in the live DB (verified). SEC-7 — legacy JWTs already rotated/
 disabled; just confirm in the dashboard.
 
+**Also done since:** **CONTENT-6** (PL roster reconciled to the real 2026-27 season —
+mig 074 adds an `is_active` flag, deactivates West Ham/Burnley/Wolves + the 2 stale
+clubs, adds Coventry/Hull; data-fetcher / team-page-generator / content-audit filter
+`is_active`; post_news.sh + schema.json + iOS `Team` enum updated. Backfill of
+Coventry/Hull team pages is a pre-season task, run via routines closer to Aug 2026).
+**ONB-5** (knowledge-level step dropped from onboarding; view + field parked for a
+wired-up reintroduction).
+
 **Deferred (rationale):**
 - **PUSH-4** (env-mismatch 400 → retry opposite host): rare (env is build-config-driven);
   a larger APNs-client change. Worth doing if 400-deactivations show up in `pipeline_health`.
-- **CONTENT-6** (PL roster drift): needs a decision on the canonical season — it's between
-  the 2025-26 and 2026-27 rosters, and PL is paused during the WC. Reconcile teams table +
-  schema.json + post_news.sh together when the 2026-27 season is set.
-- **ONB-5** (footballKnowledge unused) / **ONB-4** (denied-user re-prompt banner): product
-  decisions (wire the signal vs drop the step; add a nudge UI).
+- **ONB-4** (denied-user re-prompt banner): product decision (add a nudge UI).
 - **CONTENT-5** (feed floor >24h), **iOS-3** (per-entity unread lists): feature work.
 - **CONTENT-4** (content-reviewer retry), **CONTENT-8/9/10**, **PUSH-5/PUSH-9**, **SEC-5**:
   low value and/or dormant paths; safe to leave. **SEC-8** (local xcconfig may hold a legacy

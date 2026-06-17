@@ -29,7 +29,10 @@ struct OnboardingFlow: View {
         case hisName
         case countrySelection
         case plTeamOptional
-        case footballKnowledge
+        // ONB-5: `footballKnowledge` step removed from the flow until the signal
+        // is actually used (planned: drive content depth / glossary verbosity).
+        // FootballKnowledgeView + AppState.footballKnowledgeLevel are kept (parked)
+        // so reintroduction is a one-line re-add here. See AUDIT_FINDINGS.md ONB-5.
         case tierSelection
         case notificationPrompt
         case calendar
@@ -105,9 +108,7 @@ struct OnboardingFlow: View {
                 case .countrySelection:
                     CountrySelectionView(allowsSecond: true) { step = .plTeamOptional }
                 case .plTeamOptional:
-                    OptionalPLTeamView { step = .footballKnowledge }
-                case .footballKnowledge:
-                    FootballKnowledgeView { step = .tierSelection }
+                    OptionalPLTeamView { step = .tierSelection }
                 case .tierSelection:
                     TierSelectionView { step = .notificationPrompt }
                 case .notificationPrompt:
@@ -169,9 +170,12 @@ struct OnboardingFlow: View {
     }
 }
 
-/// "How much football do you already know?" — a 3-level self-rating gathered in
-/// onboarding. Stored on AppState.footballKnowledgeLevel; not wired to behavior
-/// yet (content-depth / glossary tuning is a later design).
+/// "How much football do you already know?" — a 3-level self-rating.
+/// ⏸️ PARKED (ONB-5): currently NOT in the onboarding flow — removed to cut a
+/// friction step that gathered a signal nothing used. Kept here, ready to
+/// reintroduce once it drives behaviour (planned: content depth / glossary
+/// verbosity by level). To re-add: restore `case footballKnowledge` in
+/// OnboardingStep + the switch case, and point OptionalPLTeamView at it.
 private struct FootballKnowledgeView: View {
     @Environment(AppState.self) var appState
     let onContinue: () -> Void

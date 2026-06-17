@@ -25,9 +25,15 @@ Voice = warm, cheeky best-friend. The live voice spec is the routine prompts in 
 **separate `goaldigger-routines` repo** (`PROMPT.md`), NOT this repo's `PROMPTS.md`
 (which describes the dormant edge generator).
 
-> Note: much UI/back-end copy still hardcodes "his/he/him". `relationshipType` is
-> collected but barely used (see `AUDIT_FINDINGS.md` F-COPY). Treat partner-male
-> framing as the de-facto default until that is reworked.
+> **⭐ Brand-voice rule (locked).** The app is for **a girl following her boyfriend/
+> partner** — that voice is primary and **goes first; we never dilute or "adapt" the
+> tone for the parent/sibling/friend options.** The audience is always "her/she"
+> (untouched). Inclusivity is *pronouns only*: when the followed person is NOT a
+> partner, the *followed person's* pronoun becomes neutral "they/their/them"; for the
+> default `.partner` it stays "he/his/him" (byte-for-byte the original voice). This is
+> implemented via `AppState.usesHeVoice` + `pSubject/pPossessive/pObject/pIs/pWill`
+> (Models/AppState.swift). `[his name]` placeholders render the name for everyone.
+> Do NOT neutralize the brand framing/taglines — only the followed-person pronoun.
 
 ## 2. Entities & scope
 

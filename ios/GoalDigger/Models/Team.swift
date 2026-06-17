@@ -1,10 +1,10 @@
 import Foundation
 
-// 2025-26 Premier League roster (the 20 current top-flight clubs).
-// Relegated 2024-25: Ipswich, Leicester, Southampton — removed from the
-// picker. The Supabase `teams` table still has rows for them so historical
-// content_items decode at the DB level; iOS just doesn't expose them as a
-// selectable team anymore.
+// 2026-27 Premier League roster (the 20 current top-flight clubs).
+// Promoted in for 2026-27: Coventry, Hull, Ipswich. Relegated out: West Ham,
+// Burnley, Wolves — removed from the picker. The Supabase `teams` table keeps
+// rows for relegated clubs (is_active=false, mig 074) so historical content
+// decodes at the DB level; iOS just doesn't expose them as selectable.
 // Long-term: fetch this list from the Supabase `teams` table at runtime so
 // season rollovers don't require an app release.
 enum Team: String, CaseIterable, Identifiable, Codable {
@@ -13,11 +13,13 @@ enum Team: String, CaseIterable, Identifiable, Codable {
     case bournemouth = "bournemouth"
     case brentford = "brentford"
     case brighton = "brighton"
-    case burnley = "burnley"
     case chelsea = "chelsea"
+    case coventry = "coventry"
     case crystalPalace = "crystal_palace"
     case everton = "everton"
     case fulham = "fulham"
+    case hull = "hull"
+    case ipswich = "ipswich"
     case leeds = "leeds"
     case liverpool = "liverpool"
     case manCity = "man_city"
@@ -26,8 +28,6 @@ enum Team: String, CaseIterable, Identifiable, Codable {
     case nottmForest = "nottm_forest"
     case spurs = "spurs"
     case sunderland = "sunderland"
-    case westHam = "west_ham"
-    case wolves = "wolves"
 
     var id: String { rawValue }
 
@@ -38,11 +38,13 @@ enum Team: String, CaseIterable, Identifiable, Codable {
         case .bournemouth: return "AFC Bournemouth"
         case .brentford: return "Brentford"
         case .brighton: return "Brighton & Hove Albion"
-        case .burnley: return "Burnley"
         case .chelsea: return "Chelsea"
+        case .coventry: return "Coventry City"
         case .crystalPalace: return "Crystal Palace"
         case .everton: return "Everton"
         case .fulham: return "Fulham"
+        case .hull: return "Hull City"
+        case .ipswich: return "Ipswich Town"
         case .leeds: return "Leeds United"
         case .liverpool: return "Liverpool"
         case .manCity: return "Manchester City"
@@ -51,8 +53,6 @@ enum Team: String, CaseIterable, Identifiable, Codable {
         case .nottmForest: return "Nottingham Forest"
         case .spurs: return "Tottenham Hotspur"
         case .sunderland: return "Sunderland"
-        case .westHam: return "West Ham United"
-        case .wolves: return "Wolverhampton Wanderers"
         }
     }
 
@@ -63,11 +63,13 @@ enum Team: String, CaseIterable, Identifiable, Codable {
         case .bournemouth: return "Bournemouth"
         case .brentford: return "Brentford"
         case .brighton: return "Brighton"
-        case .burnley: return "Burnley"
         case .chelsea: return "Chelsea"
+        case .coventry: return "Coventry"
         case .crystalPalace: return "Crystal Palace"
         case .everton: return "Everton"
         case .fulham: return "Fulham"
+        case .hull: return "Hull"
+        case .ipswich: return "Ipswich"
         case .leeds: return "Leeds"
         case .liverpool: return "Liverpool"
         case .manCity: return "Man City"
@@ -76,8 +78,6 @@ enum Team: String, CaseIterable, Identifiable, Codable {
         case .nottmForest: return "Nott'm Forest"
         case .spurs: return "Spurs"
         case .sunderland: return "Sunderland"
-        case .westHam: return "West Ham"
-        case .wolves: return "Wolves"
         }
     }
 
@@ -97,11 +97,13 @@ enum Team: String, CaseIterable, Identifiable, Codable {
         case .bournemouth:  return 35
         case .brentford:    return 55
         case .brighton:     return 51
-        case .burnley:      return 44
         case .chelsea:      return 49
+        case .coventry:     return 1346
         case .crystalPalace:return 52
         case .everton:      return 45
         case .fulham:       return 36
+        case .hull:         return 64
+        case .ipswich:      return 57
         case .leeds:        return 63
         case .liverpool:    return 40
         case .manCity:      return 50
@@ -110,8 +112,6 @@ enum Team: String, CaseIterable, Identifiable, Codable {
         case .nottmForest:  return 65
         case .spurs:        return 47
         case .sunderland:   return 746
-        case .westHam:      return 48
-        case .wolves:       return 39
         }
     }
 
@@ -128,11 +128,13 @@ enum Team: String, CaseIterable, Identifiable, Codable {
         case .bournemouth: nicknames = "Cherries"
         case .brentford: nicknames = "Bees"
         case .brighton: nicknames = "Seagulls"
-        case .burnley: nicknames = "Clarets"
         case .chelsea: nicknames = "Blues"
+        case .coventry: nicknames = "Sky Blues"
         case .crystalPalace: nicknames = "Eagles"
         case .everton: nicknames = "Toffees"
         case .fulham: nicknames = "Cottagers"
+        case .hull: nicknames = "Tigers"
+        case .ipswich: nicknames = "Tractor Boys"
         case .leeds: nicknames = "Whites Peacocks"
         case .liverpool: nicknames = "Reds"
         case .manCity: nicknames = "Citizens"
@@ -141,8 +143,6 @@ enum Team: String, CaseIterable, Identifiable, Codable {
         case .nottmForest: nicknames = "Tricky Trees"
         case .spurs: nicknames = "Lilywhites"
         case .sunderland: nicknames = "Black Cats"
-        case .westHam: nicknames = "Hammers"
-        case .wolves: nicknames = "Wanderers"
         }
         return "\(displayName) \(shortName) \(nicknames)".lowercased()
     }
