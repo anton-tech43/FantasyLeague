@@ -211,60 +211,48 @@ class APIClient {
                        teamIds: [String],
                        countryIds: [String],
                        tier: Int = 2) async throws {
-        let url = try requireBaseURL().appendingPathComponent("device_tokens")
+        // SEC-1/2: register via the SECURITY DEFINER RPC (migration 071), not a
+        // direct table upsert. The RPC runs as definer and does the full
+        // follow-set upsert server-side, so the app needs only EXECUTE — no anon
+        // SELECT/INSERT/UPDATE on device_tokens (which let anyone with the
+        // publishable key read/tamper every row). The scalar columns are mirrored
+        // to array[0] inside the RPC. apns_environment tells the server which
+        // APNs endpoint to use (else dev/prod mismatch → 400 → token deactivated).
+        let url = try requireBaseURL().appendingPathComponent("rpc/register_device_token")
         let body: [String: Any] = [
-            "apns_token": token,
-            "tier": tier,
-            // Tells the server which APNs endpoint to use for this token.
-            // Without this, the DB column defaults to 'development' and
-            // App Store / TestFlight tokens get pushed to the sandbox endpoint
-            // (which rejects them with 400, deactivating the token → no pushes).
-            "apns_environment": APIClient.apnsEnvironment,
-            "team_ids": teamIds,
-            "country_ids": countryIds,
-            // NSNull → JSON null → column nulled (keeps scalar == array[0]).
-            "team_id": teamIds.first ?? NSNull(),
-            "country_id": countryIds.first ?? NSNull(),
+            "p_apns_token": token,
+            "p_team_ids": teamIds,
+            "p_country_ids": countryIds,
+            "p_tier": tier,
+            "p_apns_environment": APIClient.apnsEnvironment,
         ]
         let bodyData = try JSONSerialization.data(withJSONObject: body)
-        let request = makeRequest(
-            url: url,
-            method: "POST",
-            body: bodyData,
-            extraHeaders: ["Prefer": "resolution=merge-duplicates"]
-        )
+        let request = makeRequest(url: url, method: "POST", body: bodyData)
         let (_, response) = try await URLSession.shared.data(for: request)
         try validateResponse(response)
     }
 
     /// Register a Live Activity push token. `kind` is "push_to_start" (per
     /// install — backend starts the activity at kickoff; fixtureId nil) or
-    /// "update" (per running activity — backend updates/ends it; fixtureId
-    /// set). Mirrors registerToken: direct upsert into live_activity_tokens,
-    /// merge-duplicates on the token.
+    /// "update" (per running activity — backend updates/ends it; fixtureId set).
+    /// SEC-3: registers via the SECURITY DEFINER RPC (migration 071), not a
+    /// direct table upsert, so anon needs no access to live_activity_tokens.
     /// V2.2: `countryIds` carries every followed WC country so the single
-    /// push-to-start token triggers the Live Activity for any of them. The
-    /// scalar `country_id` is mirrored to the first for back-compat.
+    /// push-to-start token triggers the Live Activity for any of them.
     func registerLiveActivityToken(_ token: String,
                                    kind: String,
                                    fixtureId: Int?,
                                    countryIds: [String]) async throws {
-        let url = try requireBaseURL().appendingPathComponent("live_activity_tokens")
-        var body: [String: Any] = [
-            "token": token,
-            "kind": kind,
-            "apns_environment": APIClient.apnsEnvironment,
-            "country_ids": countryIds,
-            "country_id": countryIds.first ?? NSNull(),
+        let url = try requireBaseURL().appendingPathComponent("rpc/register_la_token")
+        let body: [String: Any] = [
+            "p_token": token,
+            "p_kind": kind,
+            "p_fixture_id": fixtureId ?? NSNull(),
+            "p_country_ids": countryIds,
+            "p_apns_environment": APIClient.apnsEnvironment,
         ]
-        if let fixtureId { body["fixture_id"] = fixtureId }
         let bodyData = try JSONSerialization.data(withJSONObject: body)
-        let request = makeRequest(
-            url: url,
-            method: "POST",
-            body: bodyData,
-            extraHeaders: ["Prefer": "resolution=merge-duplicates"]
-        )
+        let request = makeRequest(url: url, method: "POST", body: bodyData)
         let (_, response) = try await URLSession.shared.data(for: request)
         try validateResponse(response)
     }
