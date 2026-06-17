@@ -1,6 +1,8 @@
 import SwiftUI
 
-/// The one-time-per-install screen shown right after onboarding completes.
+/// One-time-per-install primer. NOTE (ONB-8): new users no longer reach this —
+/// completeOnboarding() pre-sets hasSeenSeasonPrimer=true, so RootView's
+/// !hasSeenSeasonPrimer branch only fires after a Delete-My-Data re-onboard.
 /// Reads from `team_season_state` (populated daily by the gd-season-state
 /// cloud routine) and renders the redesigned **one-beat** primer:
 ///

@@ -84,6 +84,22 @@ class NotificationService {
         handleTokenRegistration(token)
     }
 
+    /// ONB-3: if onboarding finished but no APNs token is stored yet (delivery
+    /// can lag the permission grant by seconds), re-ask iOS to vend it so the
+    /// device registers THIS session instead of going push-silent until the next
+    /// launch. When the token lands, AppDelegate -> handleTokenRegistration POSTs
+    /// it (the hasCompletedOnboarding guard now passes). No-op if a token exists
+    /// or notifications aren't authorized.
+    func redriveTokenIfNeeded() {
+        let hasToken = !(UserDefaults.standard.string(forKey: "apnsToken") ?? "").isEmpty
+        guard !hasToken else { return }
+        Task {
+            let status = await checkNotificationStatus()
+            guard status == .authorized || status == .provisional else { return }
+            await MainActor.run { UIApplication.shared.registerForRemoteNotifications() }
+        }
+    }
+
     func checkNotificationStatus() async -> UNAuthorizationStatus {
         let settings = await UNUserNotificationCenter.current().notificationSettings()
         return settings.authorizationStatus

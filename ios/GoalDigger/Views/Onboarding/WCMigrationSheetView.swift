@@ -10,8 +10,8 @@ import SwiftUI
 ///
 /// After this sheet dismisses (either via country pick or "Maybe later"),
 /// the `hasSeenWCPrompt` flag is set so the user is never bothered again.
-/// Users who skip can pick a country later by Settings → Delete My Data
-/// → re-onboard (V2.1 will add a proper Settings option).
+/// Users who skip can pick a country later in Settings → "Your Countries"
+/// (CountryPickerSheet, which re-registers via reregisterForFollowChange).
 ///
 /// Visually: identical to the onboarding `CountrySelectionView` (same
 /// globe icon, same title, same subtitle, same search + list + Continue

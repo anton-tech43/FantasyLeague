@@ -158,6 +158,9 @@ struct OnboardingFlow: View {
         // no duplicated body here.
         appState.hasCompletedOnboarding = true
         NotificationService.shared.reregisterForFollowChange()
+        // ONB-3: cover the case where the APNs token hasn't been delivered yet
+        // (slow network / sim) — redrive so registration happens this session.
+        NotificationService.shared.redriveTokenIfNeeded()
         // Force-flush the whole onboarding set (names + team + country + tier
         // + flag) to disk NOW. UserDefaults writes are async; without this, a
         // user who finishes onboarding and immediately force-quits before

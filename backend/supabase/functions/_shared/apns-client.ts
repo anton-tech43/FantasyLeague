@@ -191,6 +191,10 @@ interface LiveActivityContentState {
   homeScore: number;
   awayScore: number;
   statusLabel: string;
+  // PUSH-6: match-watcher actually sends `elapsed` (the live minute the Swift
+  // ContentState renders as "63' / 90"); the type was missing it and declared a
+  // `note` nobody sends. Synced to the real wire shape.
+  elapsed?: number | null;
   note?: string;
 }
 
