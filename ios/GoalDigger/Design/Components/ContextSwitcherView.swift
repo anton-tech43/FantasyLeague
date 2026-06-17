@@ -91,17 +91,10 @@ struct ContextSwitcherView: View {
     private func contextIcon(_ context: FeedContext, isSelected: Bool) -> some View {
         switch context {
         case .team(let team):
-            // Club badge (16x16) — use first letter as placeholder
-            Text(String(team.shortName.prefix(2)).uppercased())
-                .font(.jakarta(10, weight: .bold))
-                .foregroundColor(isSelected ? .hotRose : .warmWhite.opacity(0.6))
-                .frame(width: 16, height: 16)
+            // Real club crest (matches the toolbar pill), 16x16.
+            TeamCrestView(team: team, size: 16)
         case .country(let country):
-            // National team — same initials pattern. Future: render flag crest.
-            Text(String(country.shortName.prefix(2)).uppercased())
-                .font(.jakarta(10, weight: .bold))
-                .foregroundColor(isSelected ? .hotRose : .warmWhite.opacity(0.6))
-                .frame(width: 16, height: 16)
+            TeamCrestView(country: country, size: 16)
         case .everyoneTalking:
             Image(systemName: "soccerball")
                 .font(.system(size: 14))

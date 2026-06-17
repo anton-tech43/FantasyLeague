@@ -627,11 +627,29 @@ struct CountryPickerSheet: View {
                 // to active context + cache + the device_tokens row.
                 CountrySelectionView(allowsSecond: true) {
                     guard let country = appState.selectedCountry else {
+                        // All countries removed — repair a now-invalid country context.
+                        if case .country = appState.activeContext {
+                            appState.activeContext = appState.selectedTeams.first.map { FeedContext.team($0) }
+                                ?? .everyoneTalking
+                        }
+                        appState.isContextSwitcherOpen = false
+                        NotificationService.shared.reregisterForFollowChange()
                         dismiss()
                         return
                     }
                     CacheService.shared.clearAll(in: modelContext)
-                    appState.activeContext = .country(country)
+                    // iOS-7: only move the active context if it pointed at a country
+                    // that's no longer followed; otherwise preserve the user's tab.
+                    if case .country(let active) = appState.activeContext,
+                       !appState.selectedCountries.contains(active) {
+                        appState.activeContext = .country(country)
+                    } else if case .country = appState.activeContext {
+                        // keep current
+                    } else if case .team = appState.activeContext {
+                        // keep current club tab
+                    } else {
+                        appState.activeContext = .country(country)
+                    }
                     appState.isContextSwitcherOpen = false
                     // Full re-register (UPSERT with the new country/team/tier) so the
                     // backend device_tokens row reflects the switch immediately.

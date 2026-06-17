@@ -94,5 +94,8 @@ struct TierSelectionView: View {
             .padding(.horizontal, Layout.screenPadding)
             .padding(.bottom, 40)
         }
+        // ONB-6: reflect the saved tier on (re)appear so back-navigating to this
+        // step doesn't silently reset a tier-3 user to the default of 2.
+        .onAppear { selected = appState.selectedTier }
     }
 }

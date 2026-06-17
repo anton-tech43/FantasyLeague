@@ -37,7 +37,6 @@ struct FeedView: View {
     /// 60-second poll loop while the user is on the feed AND scenePhase
     /// is active. Cleared when the poll returns 204 (no live match).
     @State private var liveBrief: LiveMatchBrief?
-    @State private var liveBriefPollTask: Task<Void, Never>?
     /// Saturday Quiz surface (V1.1 task C3). T3+ tier-gated. Fetched once
     /// on view load and on team change via the same `.task(id:)` that
     /// loads the live brief poll — no poll loop. The 36-hour freshness
@@ -92,10 +91,15 @@ struct FeedView: View {
             } else if displayItems.isEmpty && appState.activeContext == .everyoneTalking {
                 EveryoneEmptyStateCard(
                     cardHeight: screenHeight * Layout.immersiveCardHeightRatio,
-                    teamName: appState.selectedTeam?.shortName ?? "your team",
+                    teamName: appState.selectedTeam?.shortName
+                        ?? appState.selectedCountry?.shortName ?? "your team",
                     onBackToTeam: {
+                        // iOS-9: fall back to a followed country for WC-only users
+                        // (no club) so the button isn't a no-op.
                         if let team = appState.selectedTeam {
                             switchContext(to: .team(team))
+                        } else if let country = appState.selectedCountry {
+                            switchContext(to: .country(country))
                         }
                     }
                 )
@@ -167,19 +171,13 @@ struct FeedView: View {
             Task { await loadTeamFeed() }
         }
         .onChange(of: scenePhase) { oldPhase, newPhase in
-            // SwiftUI's .task auto-cancels on scenePhase background on
-            // some iOS versions but not others; explicitly cancel here so
-            // the 60s poll doesn't keep burning battery in the background.
-            // .task(id:) re-fires on the next active phase via the
-            // selectedTeam id, restarting the poll cleanly.
-            if newPhase == .background {
-                liveBriefPollTask?.cancel()
-                liveBriefPollTask = nil
-            } else if newPhase == .active && oldPhase == .background {
-                // Returning to the app: re-fire the live-brief poll (it was
-                // cancelled on background and won't restart on its own for the
-                // same context) and re-fetch the feed, so a "stale empty during
-                // the match" view is replaced by the latest (e.g. the FT result).
+            // The 60s live-brief poll runs inside `.task(id: livePollTaskID)`,
+            // which SwiftUI cancels when the view disappears / on background.
+            // On returning to the app, bump the generation so `.task(id:)`
+            // re-fires for the same context, and re-fetch the feed so a "stale
+            // empty during the match" view is replaced by the latest (e.g. the
+            // FT result).
+            if newPhase == .active && oldPhase == .background {
                 livePollGeneration += 1
                 Task { await refresh() }
             }
@@ -193,10 +191,6 @@ struct FeedView: View {
     /// T1 users skip the poll entirely. Cancelled by SwiftUI when the
     /// view disappears or scenePhase transitions to .background.
     private func runLiveBriefPoll() async {
-        // Cancel any prior task (defensive — .task(id:) should have done
-        // this, but the explicit nil-out keeps our state honest).
-        liveBriefPollTask?.cancel()
-
         guard TierGating.isAvailable(.matchDayLive, tier: appState.selectedTier),
               let teamId = activeEntityId else {
             liveBrief = nil

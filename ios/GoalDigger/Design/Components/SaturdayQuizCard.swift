@@ -186,7 +186,7 @@ struct SaturdayQuizCard: View {
             HStack(spacing: 10) {
                 // Index pip A/B/C — gives each option a visual handle so
                 // her tap target is bigger than the text alone.
-                Text(["A", "B", "C"][index])
+                Text(index < 3 ? ["A", "B", "C"][index] : String(UnicodeScalar(65 + index)!))
                     .font(.jakarta(11, weight: .bold))
                     .foregroundColor(hasAnswered && isCorrect ? .warmWhite : .hotRose)
                     .frame(width: 22, height: 22)

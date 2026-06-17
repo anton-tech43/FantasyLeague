@@ -270,8 +270,8 @@ class AppState {
                      "selectedTeam", "selectedCountry", "selectedTeams", "selectedCountries",
                      "selectedTier", "footballKnowledgeLevel",
                      "hasCompletedOnboarding", "notificationPermissionRequested", "apnsToken",
-                     "apnsTokenRegistered", "lastRegisteredScope",
-                     "hasAutoExpandedFirstItem", "feedStyle", "hasSeenImmersiveBanner",
+                     "apnsTokenRegistered", "lastRegisteredScope", "liveActivityPushToStartToken",
+                     "feedStyle",
                      "calendarSyncEnabled", "hasSeenSeasonPrimer", "hasSeenWCPrompt"]
         keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
         UnreadTracker.shared.clearAll()
