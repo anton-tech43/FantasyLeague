@@ -26,7 +26,8 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
-import { deactivateTokenIfDead, getSupabaseClient } from "../_shared/supabase-client.ts";
+import { deactivateTokens, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
+import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts";
 import { sendPushNotification, buildAPNsPayload } from "../_shared/apns-client.ts";
 import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 
@@ -162,11 +163,29 @@ serve(async (req) => {
 
       const kickoffStr = formatKickoff(fix.kickoff_time);
 
+      // Body name-drops both teams + kickoff time, then teases the lineup as a
+      // conversation starter — lineups drop ~60min before kickoff per
+      // API-Football's publication cadence. It's fixture-constant; only the
+      // title/payload differ per device (named after whichever side that device
+      // follows), so resolve payloads first then fan out with bounded
+      // concurrency. The old sequential loop + a pipeline_health insert PER
+      // token would blow the 400s wall-clock ceiling for a popular club at 50k
+      // followers (SCALING_50K.md §1).
+      const body =
+        `${home.display_name} vs ${away.display_name} at ${kickoffStr}. ` +
+        `Lineups drop an hour before — good thing to ask him about.`;
+
+      type Recipient = {
+        token: string;
+        payload: ReturnType<typeof buildAPNsPayload>;
+        env: "development" | "production";
+      };
+      const recipients: Recipient[] = [];
       for (const tk of tokens) {
-        // Pick which team this user follows so the title says "Game day
-        // at Arsenal" (not "Game day at Burnley") when the user is an
-        // Arsenal subscriber. Falls back to home team if both match.
-        // V2.2: check the legacy scalars AND the multi-follow arrays.
+        // Pick which team this user follows so the title says "Game day at
+        // Arsenal" (not "Game day at Burnley") when the user is an Arsenal
+        // subscriber. Falls back to home team if both match. V2.2: check the
+        // legacy scalars AND the multi-follow arrays.
         const follows = new Set<string>([
           ...((tk.team_ids as string[] | null) ?? (tk.team_id ? [tk.team_id as string] : [])),
           ...((tk.country_ids as string[] | null) ??
@@ -175,22 +194,9 @@ serve(async (req) => {
         const followsHome = follows.has(fix.home_team_id);
         const followsAway = follows.has(fix.away_team_id);
         const subject = followsHome ? home : (followsAway ? away : home);
-        const opponent = subject === home ? away : home;
-
         const title = `Game day at ${subject.short_name ?? subject.display_name}`;
-        // Body name-drops both teams + kickoff time, then teases the
-        // lineup as a conversation starter — lineups drop ~60min before
-        // kickoff per API-Football's publication cadence. Designed to
-        // give her something concrete to ask him about without us
-        // having to actually fetch + push the lineup itself.
-        const body =
-          `${home.display_name} vs ${away.display_name} at ${kickoffStr}. ` +
-          `Lineups drop an hour before — good thing to ask him about.`;
-
-        // Reuse the existing buildAPNsPayload helper. Pass the templated
-        // strings as pushTitle + pushText so they win over the fallbacks.
-        // contentId here is the fixture_id (not a content_items UUID);
-        // iOS uses it as a deep-link key to the team page Calendar tab.
+        // contentId here is the fixture_id (not a content_items UUID); iOS uses
+        // it as a deep-link key to the team page Calendar tab.
         const payload = buildAPNsPayload(
           subject.short_name ?? subject.display_name,
           body,
@@ -200,26 +206,38 @@ serve(async (req) => {
           body,
           title,
         );
-
         const env = (tk.apns_environment === "production" ? "production" : "development") as
           | "development" | "production";
-        const result = await sendPushNotification(tk.apns_token, payload, env);
-        await deactivateTokenIfDead(supabase, "device_tokens", tk.apns_token, result);
-
-        await logPipelineEvent(supabase, {
-          team_id: subject.id,
-          stage: "morning_push",
-          status: result.success ? "success" : "failure",
-          duration_ms: Date.now() - startTime,
-          message: result.success
-            ? null
-            : `morning_push send failed: ${result.reason ?? "unknown"}`,
-          content_item_id: null,
-        });
-
-        if (result.success) totalPushes++;
-        else totalFailures++;
+        recipients.push({ token: tk.apns_token, payload, env });
       }
+
+      const results = await mapWithConcurrency(recipients, PUSH_CONCURRENCY, async (r) => {
+        const res = await sendPushNotification(r.token, r.payload, r.env);
+        return { token: r.token, res };
+      });
+
+      // Batch the dead-token cleanup + derive counters from the results.
+      await deactivateTokens(
+        supabase,
+        "device_tokens",
+        results.filter((r) => isTokenDead(r.res)).map((r) => r.token),
+      );
+      const fixtureSent = results.filter((r) => r.res.success).length;
+      const fixtureFailed = results.length - fixtureSent;
+      totalPushes += fixtureSent;
+      totalFailures += fixtureFailed;
+
+      // One aggregate morning_push row per fixture (was one row PER token).
+      await logPipelineEvent(supabase, {
+        team_id: home.id,
+        stage: "morning_push",
+        status: fixtureFailed === 0 ? "success" : fixtureSent === 0 ? "failure" : "partial",
+        duration_ms: Date.now() - startTime,
+        message:
+          `morning_push ${fix.home_team_id} v ${fix.away_team_id}: ` +
+          `${fixtureSent} sent, ${fixtureFailed} failed of ${results.length}`,
+        content_item_id: null,
+      });
     }
 
     return new Response(

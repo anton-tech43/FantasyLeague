@@ -43,22 +43,45 @@ export function getSupabaseClient(): SupabaseClient {
 /// so WC-only followers' dead tokens were never cleaned. Best-effort; never
 /// throws. `table` picks the key column (device_tokens.apns_token vs
 /// live_activity_tokens.token).
+/// True when APNs reported this token permanently dead (410 Unregistered /
+/// 400 BadDeviceToken). Shared by the single-token and batched deactivation
+/// paths so the "what counts as dead" rule lives in exactly one place.
+export function isTokenDead(
+  result: { success: boolean; status?: number; reason?: string },
+): boolean {
+  if (result.success) return false;
+  return result.status === 410 || result.status === 400 ||
+    result.reason === "Unregistered" || result.reason === "BadDeviceToken";
+}
+
 export async function deactivateTokenIfDead(
   supabase: SupabaseClient,
   table: "device_tokens" | "live_activity_tokens",
   token: string,
   result: { success: boolean; status?: number; reason?: string },
 ): Promise<void> {
-  if (result.success) return;
-  const dead = result.status === 410 || result.status === 400 ||
-    result.reason === "Unregistered" || result.reason === "BadDeviceToken";
-  if (!dead) return;
+  if (!isTokenDead(result)) return;
+  await deactivateTokens(supabase, table, [token]);
+}
+
+/// Batched variant of deactivateTokenIfDead: flip is_active=false for many dead
+/// tokens in ONE UPDATE. The parallel fan-out senders collect the dead tokens
+/// from their results array and call this once after the loop, instead of an
+/// UPDATE per dead token. No-op on empty input. Best-effort — a permission/
+/// logging hiccup must never break the send path. `table` picks the key column
+/// (device_tokens.apns_token vs live_activity_tokens.token).
+export async function deactivateTokens(
+  supabase: SupabaseClient,
+  table: "device_tokens" | "live_activity_tokens",
+  tokens: string[],
+): Promise<void> {
+  if (tokens.length === 0) return;
   try {
     const col = table === "live_activity_tokens" ? "token" : "apns_token";
     await supabase
       .from(table)
       .update({ is_active: false, updated_at: new Date().toISOString() })
-      .eq(col, token);
+      .in(col, tokens);
   } catch (_e) {
     // best-effort; a logging/permission hiccup must not break the send loop
   }

@@ -18,7 +18,8 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
-import { deactivateTokenIfDead, getSupabaseClient } from "../_shared/supabase-client.ts";
+import { deactivateTokens, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
+import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts";
 import { buildAPNsPayload, sendPushNotification } from "../_shared/apns-client.ts";
 import { renderMatchdayReminder, renderPreMatchBuildup } from "../_shared/matchday-reminder-copy.ts";
 import { preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
@@ -188,22 +189,31 @@ serve(async (req) => {
         .or(`country_id.eq.${teamId},country_ids.cs.{${teamId}}`)
         .eq("is_active", true);
 
-      let sent = 0;
-      for (const t of tokens ?? []) {
-        const payload = buildAPNsPayload(
-          "", // teamShortName fallback unused — pushTitle is set below
-          copy.body, // headline fallback
-          `wc-matchday-${teamId}-${kickoff.getTime()}`, // non-UUID sentinel: tap just opens the app
-          "WC_MATCHDAY",
-          false,
-          copy.body, // push_text
-          copy.title, // push_title
-        );
+      // The payload is identical for every follower of this country (only the
+      // APNs env differs per device), so build it once and fan the sends out
+      // with bounded concurrency — the old sequential loop blew the 400s
+      // wall-clock ceiling for a popular country at 50k followers
+      // (SCALING_50K.md §1).
+      const payload = buildAPNsPayload(
+        "", // teamShortName fallback unused — pushTitle is set below
+        copy.body, // headline fallback
+        `wc-matchday-${teamId}-${kickoff.getTime()}`, // non-UUID sentinel: tap just opens the app
+        "WC_MATCHDAY",
+        false,
+        copy.body, // push_text
+        copy.title, // push_title
+      );
+      const sendResults = await mapWithConcurrency(tokens ?? [], PUSH_CONCURRENCY, async (t) => {
         const env = t.apns_environment === "production" ? "production" : "development";
         const res = await sendPushNotification(t.apns_token as string, payload, env);
-        await deactivateTokenIfDead(supabase, "device_tokens", t.apns_token as string, res);
-        if (res.success) sent++;
-      }
+        return { token: t.apns_token as string, res };
+      });
+      await deactivateTokens(
+        supabase,
+        "device_tokens",
+        sendResults.filter((r) => isTokenDead(r.res)).map((r) => r.token),
+      );
+      const sent = sendResults.filter((r) => r.res.success).length;
 
       remindersSent++;
       results.push({

@@ -137,6 +137,12 @@ There is **no** content→review→send chain in production for pushes. The live
   build's `#if DEBUG`). One ES256 provider JWT is cached ~50 min in `apns_jwt_cache` +
   in-memory (migration 064, fixes a 429 burst). Alert vs Live Activity use different
   `apns-push-type`/topics (`_shared/apns-client.ts`).
+- **Fan-out is bounded-concurrency, not sequential** (`_shared/concurrency.ts::mapWithConcurrency`,
+  `PUSH_CONCURRENCY=100`). All four senders + the LA `sendAll` send up to 100 pushes in
+  flight; per-recipient side effects are batched after the loop — dead tokens via one
+  `deactivateTokens` UPDATE (`_shared/supabase-client.ts`), and one aggregate `pipeline_health`
+  row per item/fixture (not per recipient). Sequential `for…await` blew the 400s Edge
+  wall-clock ceiling at ~2-4k recipients; see `SCALING_50K.md`.
 - **Deterministic WC math layer (pure, tested, $0):** `_shared/stakes-engine.ts`,
   `group-scenarios.ts`, `best-third.ts`, `stakes-templates.ts`, `consequence-templates.ts`,
   `matchup-verdict.ts`, `goal-push.ts`, `detect-consequences.ts`. These feed

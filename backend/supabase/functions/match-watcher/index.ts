@@ -16,7 +16,8 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
-import { deactivateTokenIfDead, getSupabaseClient } from "../_shared/supabase-client.ts";
+import { deactivateTokens, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
+import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts";
 import { seasonForLeague, FALLBACK_ACTIVE_LEAGUES } from "../_shared/league-helpers.ts";
 import { detectConsequences, loadPostResultWcContext, WC_LEAGUE_ID } from "../_shared/detect-consequences.ts";
 import { renderConsequence } from "../_shared/consequence-templates.ts";
@@ -262,8 +263,20 @@ async function sendWcPlayingTeamPush(
     // to audits (only the briefs_fired markers proved a push was attempted, never
     // whether APNs accepted it). This is how the 429 was caught for the sweep
     // pushes; now the live pushes get the same visibility.
-    const stats = new Map<string, { sent: number; failed: number; reason?: string; status?: number }>();
-    let sent = 0;
+    // Resolve each device to the followed country + its perspective copy
+    // FIRST (pure, fast), skipping devices that matched only on a stale scalar
+    // or have no body for this match. Then fan the sends out with bounded
+    // concurrency — a marquee country's goal could reach tens of thousands of
+    // followers, and the old sequential loop blew the 400s wall-clock ceiling
+    // mid-match (SCALING_50K.md §1). This runs on the every-minute tick, so it
+    // MUST stay sub-minute.
+    type Recipient = {
+      token: string;
+      country: string;
+      payload: ReturnType<typeof buildAPNsPayload>;
+      env: "development" | "production";
+    };
+    const recipients: Recipient[] = [];
     for (const t of tokens ?? []) {
       // Which of THIS device's followed countries is in the match decides the
       // perspective copy. Prefer home when a device follows both sides (they
@@ -289,8 +302,21 @@ async function sendWcPlayingTeamPush(
         args.copy.title, // push_title (lock-screen title)
       );
       const env = t.apns_environment === "production" ? "production" : "development";
-      const res = await sendPushNotification(t.apns_token as string, payload, env);
-      await deactivateTokenIfDead(supabase, "device_tokens", t.apns_token as string, res);
+      recipients.push({ token: t.apns_token as string, country, payload, env });
+    }
+
+    const results = await mapWithConcurrency(recipients, PUSH_CONCURRENCY, async (r) => {
+      const res = await sendPushNotification(r.token, r.payload, r.env);
+      return { country: r.country, token: r.token, res };
+    });
+
+    // Tally per country (for the per-country pipeline_health rows) and collect
+    // every dead token for ONE batched deactivation instead of an UPDATE each.
+    const stats = new Map<string, { sent: number; failed: number; reason?: string; status?: number }>();
+    let sent = 0;
+    const deadTokens: string[] = [];
+    for (const { country, token, res } of results) {
+      if (isTokenDead(res)) deadTokens.push(token);
       const s = stats.get(country) ?? { sent: 0, failed: 0 };
       if (res.success) {
         s.sent++;
@@ -302,6 +328,7 @@ async function sendWcPlayingTeamPush(
       }
       stats.set(country, s);
     }
+    await deactivateTokens(supabase, "device_tokens", deadTokens);
 
     // Best-effort observability: never let a logging error break the send.
     try {
@@ -1058,12 +1085,24 @@ async function handleRequest(req: Request): Promise<Response> {
           rows: Array<{ token: string; apns_environment: string }> | null,
           opts: Parameters<typeof sendLiveActivityPush>[1],
         ) => {
-          for (const r of rows ?? []) {
-            await sendLiveActivityPush(r.token, {
+          const list = rows ?? [];
+          if (list.length === 0) return;
+          // Bounded-concurrency fan-out: a big live match can have thousands of
+          // active Live Activities, and this fires every tick — it must stay
+          // sub-minute (SCALING_50K.md §1).
+          const sent = await mapWithConcurrency(list, PUSH_CONCURRENCY, (r) =>
+            sendLiveActivityPush(r.token, {
               ...opts,
               environment: r.apns_environment === "production" ? "production" : "development",
-            });
-          }
+            }).then((res) => ({ token: r.token, res })),
+          );
+          // Clean up tokens APNs reported dead (410/400) in one UPDATE so a
+          // stale Live Activity token stops being pushed on every tick.
+          await deactivateTokens(
+            supabase,
+            "live_activity_tokens",
+            sent.filter((s) => isTokenDead(s.res)).map((s) => s.token),
+          );
         };
 
         if (matchFinished && laStarted) {

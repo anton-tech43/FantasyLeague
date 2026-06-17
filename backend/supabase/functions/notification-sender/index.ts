@@ -9,7 +9,8 @@
 // Quiet hours are handled by iOS Do Not Disturb on the device, not server-side.
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { getSupabaseClient } from "../_shared/supabase-client.ts";
+import { deactivateTokens, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
+import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { sendPushNotification, buildAPNsPayload } from "../_shared/apns-client.ts";
 // Anti-spam removed 2026-05-17 — see _shared/anti-spam.ts header for rationale.
@@ -277,118 +278,131 @@ serve(async (req) => {
         item.push_title ?? null,
       );
 
-      // Send to all eligible tokens
-      let successCount = 0;
-      let failCount = 0;
-
-      for (const entry of eligibleTokens) {
-        const { token, env } = entry;
-        const tokenPrefix = token.slice(0, 12);
-        const result = await sendPushNotification(token, payload, env);
-
-        // Per-attempt apns_send observability row. Captures the APNs status
-        // for every token attempt so we see push churn (410/400 deactivations)
-        // and per-token success patterns in pipeline_health. See Phase J.
-        // Best-effort; logging never breaks the send loop.
-        // Narrow type so `errorClass` is one of PipelineHealthLog.error_class's
-        // valid values, not raw string. Catches taxonomy typos at compile time.
-        type ApnsClass = "token_expired" | "bad_token" | "auth_failure" | "rate_limited";
-        const APNS_STATUS_TO_ERROR_CLASS: Record<number, ApnsClass> = {
-          410: "token_expired",
-          400: "bad_token",
-          403: "auth_failure",
-          429: "rate_limited",
-        };
-        const errorClass: "success" | ApnsClass | "apns_error" = result.success
-          ? "success"
-          : (result.status !== undefined && APNS_STATUS_TO_ERROR_CLASS[result.status]) ||
-            "apns_error";
-        try {
-          await logPipelineEvent(supabase, {
-            team_id: teamId,
-            stage: "apns_send",
-            status: result.success ? "success" : "failure",
-            target: `apns:${tokenPrefix}:${item.id}`,
-            http_status: result.status ?? null,
-            error_class: errorClass,
-            message: result.success
-              ? null
-              : `APNs ${result.status}${result.reason ? ` ${result.reason}` : ""}`,
-            content_item_id: item.id,
-          });
-        } catch (e) {
-          console.error("apns_send pipeline_health log failed (non-fatal):", e);
-        }
-
-        if (result.success) {
-          successCount++;
-        } else {
-          failCount++;
-
-          // Handle specific APNs errors
-          if (result.status === 410 || result.reason === "Unregistered") {
-            // Token expired — deactivate
-            await supabase
-              .from("device_tokens")
-              .update({ is_active: false, updated_at: new Date().toISOString() })
-              .eq("apns_token", token);
-          } else if (result.status === 400) {
-            // Bad token — deactivate
-            await supabase
-              .from("device_tokens")
-              .update({ is_active: false, updated_at: new Date().toISOString() })
-              .eq("apns_token", token);
-          } else if (result.status === 403) {
-            // Auth broken — CRITICAL, stop all sends. Log + alert dev iPhone
-            // via the existing client-error-alert path so we find out within
-            // minutes (throttled to once per 30 min by the alert function).
-            // Note: the apns_send row above already captured this 403 with
-            // error_class='auth_failure'; this 'publish' row is the
-            // higher-level CRITICAL signal for the heartbeat to find.
-            console.error("CRITICAL: APNs auth failure (403). Check .p8 key configuration.");
-            await logPipelineEvent(supabase, {
-              team_id: teamId,
-              stage: "publish",
-              status: "failure",
-              duration_ms: Date.now() - startTime,
-              message: "CRITICAL: APNs 403 auth failure — check .p8 key",
-              content_item_id: item.id,
-            });
-            // Fire client-error-alert so the dev iPhone gets a push. The
-            // function logs + throttles + pushes via dev_alert_devices. Without
-            // this we'd only know via Supabase function logs (manual check).
-            // Best-effort: don't block the break-out on failure here.
-            try {
-              const supabaseUrl = Deno.env.get("SUPABASE_URL");
-              // SERVICE_KEY = new sb_secret_*; legacy JWT as transition fallback.
-              const serviceKey =
-                Deno.env.get("SERVICE_KEY") ??
-                Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-              if (supabaseUrl && serviceKey) {
-                await fetch(`${supabaseUrl}/functions/v1/client-error-alert`, {
-                  method: "POST",
-                  headers: {
-                    "Authorization": `Bearer ${serviceKey}`,
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    error_type: "apns_auth_failure",
-                    message: `APNs 403 sending content_item=${item.id} team=${teamId}. Check APNS_KEY_P8/KEY_ID/TEAM_ID secrets.`,
-                    team_id: teamId,
-                    app_version: "backend-notification-sender",
-                  }),
-                });
-              }
-            } catch (e) {
-              console.error("Failed to fire client-error-alert for apns_auth_failure:", e);
-            }
-            break;
-          } else if (result.status === 429) {
-            // Rate limited — back off and retry once
+      // Send to all eligible tokens with bounded concurrency. The old
+      // sequential `for … await` fan-out blew the 400s Edge wall-clock ceiling
+      // for any team with more than ~2k followers — the function died mid-loop
+      // and everyone after the cutoff silently got nothing (SCALING_50K.md §1).
+      // A fixed in-flight pool keeps the whole send to ~tens of seconds. The
+      // per-recipient side effects (dead-token cleanup, observability) are now
+      // batched AFTER the loop instead of adding two DB round-trips per token.
+      let aborted = false; // set on the first 403 — stop hammering APNs on auth failure
+      type SendOutcome = {
+        token: string;
+        success: boolean;
+        status?: number;
+        reason?: string;
+        skipped?: boolean;
+      };
+      const outcomes = await mapWithConcurrency<TokenEntry, SendOutcome>(
+        eligibleTokens,
+        PUSH_CONCURRENCY,
+        async ({ token, env }) => {
+          // A prior task hit a 403 (bad .p8 / JWT) — every send is doomed the
+          // same way, so skip the rest rather than spray thousands of requests.
+          if (aborted) return { token, success: false, skipped: true };
+          let result = await sendPushNotification(token, payload, env);
+          // 429 = APNs back-pressure. Back off once and retry this one token.
+          if (result.status === 429) {
             await new Promise((r) => setTimeout(r, 5000));
-            const retry = await sendPushNotification(token, payload, env);
-            if (retry.success) successCount++;
+            result = await sendPushNotification(token, payload, env);
           }
+          if (result.status === 403) aborted = true;
+          return { token, success: result.success, status: result.status, reason: result.reason };
+        },
+      );
+
+      const attempted = outcomes.filter((o) => !o.skipped);
+      const successCount = attempted.filter((o) => o.success).length;
+      const failCount = attempted.length - successCount;
+
+      // Batch-deactivate every token APNs reported dead (410/400) in ONE UPDATE.
+      const deadTokens = attempted.filter((o) => isTokenDead(o)).map((o) => o.token);
+      await deactivateTokens(supabase, "device_tokens", deadTokens);
+
+      // One aggregate apns_send observability row per item (was one row PER
+      // token — 50k inserts per push at scale). The message carries the
+      // per-class failure breakdown so push churn stays visible in
+      // pipeline_health; the dominant class is recorded in error_class.
+      const classCounts = new Map<string, number>();
+      for (const o of attempted) {
+        if (o.success) continue;
+        const cls = o.status === 410
+          ? "410"
+          : o.status === 400
+            ? "400"
+            : o.status === 403
+              ? "403"
+              : o.status === 429
+                ? "429"
+                : "other";
+        classCounts.set(cls, (classCounts.get(cls) ?? 0) + 1);
+      }
+      const breakdown = [...classCounts.entries()].map(([k, v]) => `${k}:${v}`).join(" ");
+      const sawAuthFailure = classCounts.has("403");
+      const apnsErrorClass = failCount === 0
+        ? "success"
+        : sawAuthFailure
+          ? "auth_failure"
+          : classCounts.has("429")
+            ? "rate_limited"
+            : classCounts.has("410")
+              ? "token_expired"
+              : classCounts.has("400")
+                ? "bad_token"
+                : "apns_error";
+      try {
+        await logPipelineEvent(supabase, {
+          team_id: teamId,
+          stage: "apns_send",
+          status: failCount === 0 ? "success" : successCount === 0 ? "failure" : "partial",
+          target: `item:${item.id}`,
+          error_class: apnsErrorClass,
+          message:
+            `APNs: ${successCount} sent, ${failCount} failed of ${attempted.length}` +
+            (breakdown ? ` (${breakdown})` : ""),
+          content_item_id: item.id,
+        });
+      } catch (e) {
+        console.error("apns_send pipeline_health log failed (non-fatal):", e);
+      }
+
+      // A 403 means the provider JWT/.p8 is broken — every push is doomed and
+      // the fan-out already aborted. Fire one CRITICAL alert to the dev iPhone
+      // (throttled to once per 30 min inside client-error-alert) + a high-level
+      // 'publish' failure row for the heartbeat to find.
+      if (sawAuthFailure) {
+        console.error("CRITICAL: APNs auth failure (403). Check .p8 key configuration.");
+        await logPipelineEvent(supabase, {
+          team_id: teamId,
+          stage: "publish",
+          status: "failure",
+          duration_ms: Date.now() - startTime,
+          message: "CRITICAL: APNs 403 auth failure — check .p8 key",
+          content_item_id: item.id,
+        });
+        try {
+          const supabaseUrl = Deno.env.get("SUPABASE_URL");
+          // SERVICE_KEY = new sb_secret_*; legacy JWT as transition fallback.
+          const serviceKey =
+            Deno.env.get("SERVICE_KEY") ??
+            Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+          if (supabaseUrl && serviceKey) {
+            await fetch(`${supabaseUrl}/functions/v1/client-error-alert`, {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${serviceKey}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                error_type: "apns_auth_failure",
+                message: `APNs 403 sending content_item=${item.id} team=${teamId}. Check APNS_KEY_P8/KEY_ID/TEAM_ID secrets.`,
+                team_id: teamId,
+                app_version: "backend-notification-sender",
+              }),
+            });
+          }
+        } catch (e) {
+          console.error("Failed to fire client-error-alert for apns_auth_failure:", e);
         }
       }
 
