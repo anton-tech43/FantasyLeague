@@ -1081,25 +1081,32 @@ async function updateWcDynamicFields(
     }
   }
 
-  // LIVE-GAME OVERRIDE: API-Football's fixtures_next drops a match the moment it
-  // kicks off, so once a team's game starts the "coming up / this week" cards
-  // roll forward to the next not-started game and — with standings `played`
-  // still 0 — mislabel it as the group opener. match_status_state is the
-  // authoritative live source: if the team has a kicked-off WC game that
-  // fixtures_last hasn't recorded yet, lead with THAT game so the cards stay on
-  // it until the result posts. Best-effort; never breaks the refresh.
+  // LIVE / PLAYED awareness from match_status_state — the authoritative live
+  // source. standings.played lags the result by minutes-to-hours, and
+  // API-Football's fixtures_next drops a match the instant it kicks off, so a
+  // naive build rolls forward to the next not-started game and mislabels it the
+  // group opener. Two uses:
+  //   1. Lead with a kicked-off game that fixtures_next has dropped (live, or a
+  //      just-posted result not yet in fixtures_last) so the cards stay on it.
+  //   2. openerPlayed: once ANY WC game has finished, the next not-started game
+  //      is NOT the opener — even while standings still read played 0. Without
+  //      this the "First game, everything still to play for" copy reappears in
+  //      the gap between full-time and the standings refresh.
+  // Best-effort; never breaks the refresh.
+  let openerPlayed = false;
   try {
-    const { data: liveRow } = await supabase
+    const LIVE_STATUSES = new Set(["1H", "HT", "2H", "ET", "BT", "P", "SUSP", "INT", "LIVE"]);
+    const FINISHED = new Set(["FT", "AET", "PEN"]);
+    const { data: msRows } = await supabase
       .from("match_status_state")
       .select("fixture_id, home_team_id, away_team_id, status, kickoff_time")
       .eq("league_id", WC_LEAGUE_ID)
       .or(`home_team_id.eq.${team.id},away_team_id.eq.${team.id}`)
-      .order("kickoff_time", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .order("kickoff_time", { ascending: false });
+    const rows = msRows ?? [];
+    openerPlayed = rows.some((r) => FINISHED.has(String(r.status ?? "")));
+    const liveRow = rows[0]; // latest by kickoff
     if (liveRow) {
-      const LIVE_STATUSES = new Set(["1H", "HT", "2H", "ET", "BT", "P", "SUSP", "INT", "LIVE"]);
-      const FINISHED = new Set(["FT", "AET", "PEN"]);
       const status = String(liveRow.status ?? "");
       const fid = liveRow.fixture_id as number | undefined;
       const isLive = LIVE_STATUSES.has(status);
@@ -1128,7 +1135,7 @@ async function updateWcDynamicFields(
       }
     }
   } catch (_e) {
-    // best-effort: the live override must never break the page refresh.
+    // best-effort: the live/played override must never break the page refresh.
   }
 
   // E1: recent finished results (with scores) for the in-app "last games"
@@ -1166,7 +1173,7 @@ async function updateWcDynamicFields(
     : undefined;
 
   if (group.length > 0 && upcoming.length > 0) {
-    const annotated = annotateFixtures(group, team.api_football_id, upcoming, undefined, exactInfo).slice(0, 8);
+    const annotated = annotateFixtures(group, team.api_football_id, upcoming, undefined, exactInfo, openerPlayed).slice(0, 8);
 
     cards.upcoming_fixtures = annotated.map((s) => ({
       date: s.date,

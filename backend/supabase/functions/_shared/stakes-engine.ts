@@ -243,6 +243,11 @@ export function annotateFixtures(
   fixtures: UpcomingGroupFixture[],
   totalGames: number = WC_TOTAL_GROUP_GAMES,
   exact?: ExactInfo,
+  // True once the team has actually played a group game (from the authoritative
+  // match_status_state, NOT laggy standings.played). Suppresses the group-opener
+  // label so the next fixture isn't called "First game" in the gap between
+  // full-time and the standings refresh.
+  openerPlayed: boolean = false,
 ): FixtureStakes[] {
   const groupIds = new Set(group.map((t) => t.teamApiId));
   let nextGroupGameSeen = false;
@@ -282,7 +287,7 @@ export function annotateFixtures(
 
     if (!nextGroupGameSeen) {
       nextGroupGameSeen = true;
-      return { ...base, ...labelSoonestGroupGame(group, teamApiId, fx, totalGames, exact) };
+      return { ...base, ...labelSoonestGroupGame(group, teamApiId, fx, totalGames, exact, openerPlayed) };
     }
 
     // A later group game: honest generic by current state.
@@ -310,6 +315,7 @@ function labelSoonestGroupGame(
   fx: UpcomingGroupFixture,
   totalGames: number,
   exact?: ExactInfo,
+  openerPlayed: boolean = false,
 ): StakesCore {
   // Exact-math overrides: when the outcome is mathematically LOCKED we state
   // it directly (no point saying "win and you're through" if already
@@ -344,7 +350,10 @@ function labelSoonestGroupGame(
   // Pre-tournament (no games played by anyone in the group): nothing is
   // decided yet — label by matchday position, all genuinely important.
   const played = group.find((t) => t.teamApiId === teamApiId)?.played ?? 0;
-  if (played === 0 && current === "contention") {
+  // `openerPlayed` (from match_status_state) overrides a laggy standings feed: if
+  // the team has already finished a group game, the soonest upcoming one is NOT
+  // the opener even while standings still read played 0.
+  if (played === 0 && !openerPlayed && current === "contention") {
     return {
       importance_dots: 4,
       importance_label: "Group opener",

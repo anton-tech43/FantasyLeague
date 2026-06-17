@@ -104,8 +104,11 @@ A device can follow **up to 2 WC countries + 2 PL clubs, all equal**. Design det
   `played` still 0) mislabels it the group opener. The generator therefore reads the
   team's kicked-off-but-unrecorded WC game from `match_status_state` and leads with it
   (`phase: "live" | "just_finished"` → `in_progress`/`just_finished` stakes copy) until
-  the result posts to `fixtures_last`. See `stakes-engine.ts::annotateFixtures` +
-  `stakes-templates.ts`.
+  the result posts to `fixtures_last`. It also derives `openerPlayed` from
+  `match_status_state` (any FINISHED WC game) and passes it to `annotateFixtures` so the
+  group-opener label is suppressed once a game has been played — even while the standings
+  feed still lags at `played: 0` (otherwise "First game…" reappears in the FT-to-standings
+  gap). See `stakes-engine.ts::annotateFixtures` + `stakes-templates.ts`.
 - **Content type → origin → consumer:** see the table in the push-pipeline audit;
   the key ones: news/sunday_brief → routine → feed+push; matchday reminder + build-up →
   deterministic Edge → feed/push; insider → routine → `team_insider_items` (His Team

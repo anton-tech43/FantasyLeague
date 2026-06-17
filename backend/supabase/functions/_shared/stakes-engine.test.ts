@@ -162,6 +162,18 @@ Deno.test("just-finished override: full-time label, next game still not the open
   eq(next.reason, "later_group_game", "next not opener");
 });
 
+Deno.test("openerPlayed: a finished opener (standings still 0) → next game is NOT 'group opener'", () => {
+  // The residual bug: A beat B, but the standings feed still reads played 0 for
+  // everyone. Without openerPlayed, the next game (C) gets stamped group_opener
+  // ("First game"). With openerPlayed=true (from match_status_state), it must not.
+  const group = g([[A, 0], [B, 0], [C, 0], [D, 0]], [[A, 0], [B, 0], [C, 0], [D, 0]]);
+  const [s] = annotateFixtures(group, A, [fx(C)], undefined, undefined, true);
+  assert(s.reason !== "group_opener", "must not be the opener after a game has been played");
+  // Sanity: the same input WITHOUT openerPlayed still hits the (buggy) opener path.
+  const [bug] = annotateFixtures(group, A, [fx(C)]);
+  eq(bug.reason, "group_opener", "control: laggy standings alone would mislabel");
+});
+
 // ---- invariants across all branches ----
 
 Deno.test("all importance_labels are <= 30 chars and dots in 1..5", () => {
