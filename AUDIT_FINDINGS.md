@@ -32,6 +32,37 @@ cross-checked and confirmed against the code during synthesis.
 | COST-1 | **Done (deployed) — was a prod no-op** | The flagged weekly cron does NOT exist in `cron.job` (verified; `app.settings` unset) → live spend was $0. Added a code guard refusing `full` + no `team_id`, enforcing the rule permanently. |
 | COPY-1 | **Mechanism + functional copy done; brand voice flagged** | Added `personName`/`personPossessive[Cap]` to AppState (relationship-aware, name-first, gender-neutral). Routed the functional offenders (TeamPageView "Ask him"/"THINGS HE…", FeedView, PlayerCardView, MeetTeamView, HowItWorks, onboarding search/skip/squad copy) through them. **Left** the deliberate girlfriend↔boyfriend brand taglines (`WelcomeView` "He has no idea", `SettingsView` "Made for her, not him", "The one he brags about") — fully neutralizing the brand voice (or dropping the relationship picker) is a product decision for the user. |
 
+## 🟢 MEDIUM / LOW — resolution (same session)
+
+**Done (deployed / built):** SEC-6 (delete-my-data clears the LA token; +iOS sends it),
+PUSH-3 (`deactivateTokenIfDead` across match-watcher/morning-push/matchday-reminder),
+PUSH-8 (morning-push skips WC country fixtures), SCHED-1 (matchday-scheduler skips
+countries), PUSH-6 (LA content-state type synced), CONTENT-2 (deleted dead
+`post_sunday_briefs.py`), CONTENT-7 (stale dormant-cron header fixed), ONB-3 (token
+redrive at completion), ONB-6 (tier restore on appear), ONB-8/ONB-10 (stale comments),
+ONB-9 (dead keys dropped + LA token cleared), iOS-4 (dead poll task removed), iOS-6
+(switcher crests), iOS-7 (country-picker context repair), iOS-8 (quiz index crash guard),
+iOS-9 (WC-only empty-state button). Plus the pre-existing `morning_push` stage-union
+type error.
+
+**Not needed:** SEC-4 — the orphaned `on_device_token_insert` trigger/function from
+mig 004 **don't exist** in the live DB (verified). SEC-7 — legacy JWTs already rotated/
+disabled; just confirm in the dashboard.
+
+**Deferred (rationale):**
+- **PUSH-4** (env-mismatch 400 → retry opposite host): rare (env is build-config-driven);
+  a larger APNs-client change. Worth doing if 400-deactivations show up in `pipeline_health`.
+- **CONTENT-6** (PL roster drift): needs a decision on the canonical season — it's between
+  the 2025-26 and 2026-27 rosters, and PL is paused during the WC. Reconcile teams table +
+  schema.json + post_news.sh together when the 2026-27 season is set.
+- **ONB-5** (footballKnowledge unused) / **ONB-4** (denied-user re-prompt banner): product
+  decisions (wire the signal vs drop the step; add a nudge UI).
+- **CONTENT-5** (feed floor >24h), **iOS-3** (per-entity unread lists): feature work.
+- **CONTENT-4** (content-reviewer retry), **CONTENT-8/9/10**, **PUSH-5/PUSH-9**, **SEC-5**:
+  low value and/or dormant paths; safe to leave. **SEC-8** (local xcconfig may hold a legacy
+  anon key): user action — verify the publishable key is in `Configuration.xcconfig` and the
+  legacy anon key's dashboard state before the next archive.
+
 Remaining detail of each finding below is preserved for reference.
 
 ## 🔴 HIGH — open
