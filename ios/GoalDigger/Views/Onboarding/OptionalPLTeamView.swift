@@ -38,7 +38,7 @@ struct OptionalPLTeamView: View {
     }
 
     private var countryShortName: String {
-        appState.selectedCountry?.shortName ?? "his country"
+        appState.selectedCountry?.shortName ?? "their country"
     }
 
     var body: some View {
@@ -48,13 +48,13 @@ struct OptionalPLTeamView: View {
                 .foregroundColor(.hotRose.opacity(0.6))
                 .padding(.top, 8)
 
-            GlossaryText(raw: "Does \(appState.hisName.isEmpty ? "he" : appState.hisName) follow a Premier League team too?")
+            GlossaryText(raw: "Does \(appState.hisName.isEmpty ? "they" : appState.hisName) follow a Premier League team too?")
                 .font(.onboardingTitle)
                 .foregroundColor(.textOnDark)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Layout.screenPadding)
 
-            Text("Skip if not. We'll focus on his \(countryShortName) squad.")
+            Text("Skip if not. We'll focus on \(appState.personPossessive) \(countryShortName) squad.")
                 .font(.onboardingBody)
                 .foregroundColor(.textOnDark.opacity(0.8))
                 .multilineTextAlignment(.center)
@@ -65,7 +65,7 @@ struct OptionalPLTeamView: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.mutedText)
                     .font(.system(size: 14))
-                TextField("Search his team...", text: $searchText)
+                TextField("Search for a team...", text: $searchText)
                     .font(.jakarta(17, weight: .regular))
                     .foregroundColor(.textPrimaryOnCard)
                     .autocorrectionDisabled()
@@ -136,7 +136,7 @@ struct OptionalPLTeamView: View {
                 .buttonStyle(PrimaryButtonStyle(isEnabled: !picks.isEmpty))
                 .disabled(picks.isEmpty)
 
-                Button("Skip, just his country") {
+                Button("Skip, just \(appState.personPossessive) country") {
                     appState.selectedTeams = []
                     onContinue()
                 }

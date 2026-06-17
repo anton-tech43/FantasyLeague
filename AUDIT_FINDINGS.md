@@ -22,6 +22,18 @@ cross-checked and confirmed against the code during synthesis.
 
 ---
 
+## 🟢 HIGH list — resolution (worked down this session)
+
+| ID | Status | What was done |
+|---|---|---|
+| SEC-1/2/3 | **Fix built + staged** | `register_device_token`/`register_la_token` SECURITY DEFINER RPCs (mig 071, applied + rollback-tested); iOS migrated to call them; the anon-access **drop** is staged as `072_...PENDING_APP_RELEASE` (non-`.sql`, apply after the RPC build is live — dropping now would break the currently-live app's direct-upsert registration, mig 030). Closing the read also defangs the tamper. |
+| PUSH-1 | **Done (deployed)** | Reaper cron `match-status-reaper` (mig 073, applied). Dry-run found exactly 1 stuck row (29-day-old); live match correctly untouched. |
+| PUSH-2 | **Done (deployed)** | match-watcher now persists state then fires alerts (collect-then-fire-after-upsert). At-most-once. |
+| COST-1 | **Done (deployed) — was a prod no-op** | The flagged weekly cron does NOT exist in `cron.job` (verified; `app.settings` unset) → live spend was $0. Added a code guard refusing `full` + no `team_id`, enforcing the rule permanently. |
+| COPY-1 | **Mechanism + functional copy done; brand voice flagged** | Added `personName`/`personPossessive[Cap]` to AppState (relationship-aware, name-first, gender-neutral). Routed the functional offenders (TeamPageView "Ask him"/"THINGS HE…", FeedView, PlayerCardView, MeetTeamView, HowItWorks, onboarding search/skip/squad copy) through them. **Left** the deliberate girlfriend↔boyfriend brand taglines (`WelcomeView` "He has no idea", `SettingsView` "Made for her, not him", "The one he brags about") — fully neutralizing the brand voice (or dropping the relationship picker) is a product decision for the user. |
+
+Remaining detail of each finding below is preserved for reference.
+
 ## 🔴 HIGH — open
 
 - **PUSH-1 · 0.8 · `match-watcher/index.ts:1249` (+ mig 007).** No reaper for

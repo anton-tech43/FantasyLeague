@@ -99,7 +99,7 @@ struct PlayerCardModal: View {
             .font(.detailBody)
             .foregroundColor(.textPrimaryOnCard)
 
-        Text("Bump to T3 in Settings to unlock who he is, how he plays, and what to mention.")
+        Text("Bump to T3 in Settings to unlock who they are, how they play, and what to mention.")
             .font(.feedTimestamp)
             .foregroundColor(.textSecondaryOnCard)
             .padding(.top, 2)

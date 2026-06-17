@@ -613,7 +613,7 @@ struct FeedView: View {
                             .font(.sectionHeader)
                             .tracking(1)
                             .foregroundColor(.mutedText)
-                        Text("We'll post his \(country.shortName) updates around each match. Open the \(country.shortName) tab to see what's coming up next.")
+                        Text("We'll post \(appState.personPossessive) \(country.shortName) updates around each match. Open the \(country.shortName) tab to see what's coming up next.")
                             .font(.onboardingBody)
                             .foregroundColor(.textOnDark.opacity(0.8))
                             .fixedSize(horizontal: false, vertical: true)

@@ -57,7 +57,7 @@ struct CountrySelectionView: View {
                 .foregroundColor(.hotRose.opacity(0.6))
                 .padding(.top, 8)
 
-            GlossaryText(raw: "Who is \(appState.hisName.isEmpty ? "he" : appState.hisName) backing at the World Championship?")
+            GlossaryText(raw: "Who is \(appState.hisName.isEmpty ? "they" : appState.hisName) backing at the World Championship?")
                 .font(.onboardingTitle)
                 .foregroundColor(.textOnDark)
                 .multilineTextAlignment(.center)
@@ -73,7 +73,7 @@ struct CountrySelectionView: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.mutedText)
                     .font(.system(size: 14))
-                TextField("Search his country...", text: $searchText)
+                TextField("Search for a country...", text: $searchText)
                     .font(.jakarta(17, weight: .regular))
                     .foregroundColor(.textPrimaryOnCard)
                     .autocorrectionDisabled()

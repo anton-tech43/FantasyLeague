@@ -211,6 +211,20 @@ class AppState {
         return result
     }
 
+    // MARK: - Person references (name-first, relationship-aware, gender-neutral)
+    // The followed person's name is set during onboarding, so prefer it. When
+    // absent, fall back to the relationship noun (partner/parent/sibling/friend)
+    // — never assume "he", since relationshipType doesn't encode gender. Use
+    // these for FUNCTIONAL references to the person's team/country; the app's
+    // emotional brand taglines are intentionally voiced separately.
+
+    /// "Ada" or "your partner".
+    var personName: String { hisName.isEmpty ? "your \(relationshipType.noun)" : hisName }
+    /// "Ada's" or "your partner's".
+    var personPossessive: String { hisName.isEmpty ? "your \(relationshipType.noun)'s" : "\(hisName)'s" }
+    /// Sentence/section start: "Ada's" or "Your partner's".
+    var personPossessiveCap: String { hisName.isEmpty ? "Your \(relationshipType.noun)'s" : "\(hisName)'s" }
+
     /// Force pending UserDefaults writes to disk NOW.
     ///
     /// UserDefaults persists asynchronously — `set(_:forKey:)` updates an

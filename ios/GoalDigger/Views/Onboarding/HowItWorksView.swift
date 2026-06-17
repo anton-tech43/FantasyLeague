@@ -26,7 +26,7 @@ struct HowItWorksView: View {
         [
             .init(
                 icon: "dot.radiowaves.left.and.right",
-                title: "We watch his teams for you",
+                title: appState.personalise("We watch [his name's] teams for you"),
                 body: appState.personalise("Every match and every story about [his name's] teams, turned into plain English. No jargon, no homework.")
             ),
             .init(

@@ -40,9 +40,7 @@ struct TeamPageView: View {
         var id: String { rawValue }
     }
 
-    private var hisNameOrHis: String {
-        appState.hisName.isEmpty ? "His" : appState.hisName + "'s"
-    }
+    private var hisNameOrHis: String { appState.personPossessiveCap }
 
     /// Resolve the entity for this team page — could be a PL Team or a WC
     /// Country, both keyed by the teamId string. V2.0: countries live in
@@ -384,7 +382,7 @@ struct TeamPageView: View {
         if TierGating.isAvailable(.insiderCard, tier: appState.selectedTier),
            !insiderSet.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
-                Text("THINGS HE DOESN'T KNOW")
+                Text("THINGS \(appState.personName.uppercased()) DOESN'T KNOW")
                     .font(.sectionHeader)
                     .tracking(1)
                     .foregroundColor(.mutedText)
@@ -483,7 +481,7 @@ struct TeamPageView: View {
             switch postMatch.state {
             case .win: return "Say this:"
             case .loss: return "Tonight:"
-            case .draw: return "Ask him:"
+            case .draw: return "Ask \(appState.personName):"
             }
         }()
 
