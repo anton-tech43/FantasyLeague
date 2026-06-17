@@ -16,7 +16,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
-import { getSupabaseClient } from "../_shared/supabase-client.ts";
+import { deactivateTokenIfDead, getSupabaseClient } from "../_shared/supabase-client.ts";
 import { seasonForLeague, FALLBACK_ACTIVE_LEAGUES } from "../_shared/league-helpers.ts";
 import { detectConsequences, loadPostResultWcContext, WC_LEAGUE_ID } from "../_shared/detect-consequences.ts";
 import { renderConsequence } from "../_shared/consequence-templates.ts";
@@ -289,6 +289,7 @@ async function sendWcPlayingTeamPush(
       );
       const env = t.apns_environment === "production" ? "production" : "development";
       const res = await sendPushNotification(t.apns_token as string, payload, env);
+      await deactivateTokenIfDead(supabase, "device_tokens", t.apns_token as string, res);
       const s = stats.get(country) ?? { sent: 0, failed: 0 };
       if (res.success) {
         s.sent++;

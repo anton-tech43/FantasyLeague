@@ -102,6 +102,13 @@ serve(async (req) => {
 
       if (!ourTeam) continue;
 
+      // SCHED-1: gd-matchday (what content-generator fires) produces nothing for
+      // WC country entities — match-watcher skips them for the same reason. Don't
+      // schedule a content-generator run that would be wasted (or, if it reached
+      // a callClaude path, billed). PL clubs only; countries get the deterministic
+      // matchday-reminder + match-watcher FT result instead.
+      if ((ourTeam as { entity_type?: string }).entity_type === "country") continue;
+
       const opponent = homeTeam
         ? fixture.teams.away.name
         : fixture.teams.home.name;

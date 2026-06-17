@@ -501,7 +501,15 @@ class APIClient {
 
     func deleteMyData(token: String) async throws {
         let url = try requireFunctionsBaseURL().appendingPathComponent("delete-my-data")
-        let body = try JSONSerialization.data(withJSONObject: ["apns_token": token])
+        // SEC-6: also send the Live Activity push-to-start token so the server
+        // deletes that row too (it holds followed-country data under a different
+        // token). Best-effort — omitted if the device never vended one.
+        var payload: [String: Any] = ["apns_token": token]
+        if let laToken = UserDefaults.standard.string(forKey: "liveActivityPushToStartToken"),
+           !laToken.isEmpty {
+            payload["la_token"] = laToken
+        }
+        let body = try JSONSerialization.data(withJSONObject: payload)
         let request = makeRequest(url: url, method: "POST", body: body)
         let (data, response) = try await URLSession.shared.data(for: request)
         // 404 (no token row) or 400 "Invalid token format" (iOS-17+ extended

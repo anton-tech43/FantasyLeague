@@ -6,9 +6,11 @@
 // (already in raw_fetch_logs via the existing data-fetcher) and upserts
 // the structured response into team_season_state.
 //
-// Triggered by pg_cron job 'team-season-state-daily' (06:00 UTC) defined
-// in migration 021. Can also be invoked manually with an optional
-// team_id payload for one-off regeneration.
+// DORMANT (CONTENT-7): the 'team-season-state-daily' cron was UNSCHEDULED in
+// migration 022 — the live season primer is produced by the gd-season-state
+// claude.ai routine (subscription quota). This Edge function still calls Claude
+// per team, so do NOT re-invoke it without a team_id: a no-team_id call loops
+// callClaude across every team (paid API, the BACKFILL_RULES anti-pattern).
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";

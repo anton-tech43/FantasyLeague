@@ -36,3 +36,30 @@ export function getSupabaseClient(): SupabaseClient {
 
   return _client;
 }
+
+/// PUSH-3: deactivate a token row when APNs reports it dead (410 Unregistered /
+/// 400 BadDeviceToken). Shared by ALL senders so a dead token stops being
+/// retried on every goal/match — previously only notification-sender did this,
+/// so WC-only followers' dead tokens were never cleaned. Best-effort; never
+/// throws. `table` picks the key column (device_tokens.apns_token vs
+/// live_activity_tokens.token).
+export async function deactivateTokenIfDead(
+  supabase: SupabaseClient,
+  table: "device_tokens" | "live_activity_tokens",
+  token: string,
+  result: { success: boolean; status?: number; reason?: string },
+): Promise<void> {
+  if (result.success) return;
+  const dead = result.status === 410 || result.status === 400 ||
+    result.reason === "Unregistered" || result.reason === "BadDeviceToken";
+  if (!dead) return;
+  try {
+    const col = table === "live_activity_tokens" ? "token" : "apns_token";
+    await supabase
+      .from(table)
+      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .eq(col, token);
+  } catch (_e) {
+    // best-effort; a logging/permission hiccup must not break the send loop
+  }
+}

@@ -26,7 +26,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
-import { getSupabaseClient } from "../_shared/supabase-client.ts";
+import { deactivateTokenIfDead, getSupabaseClient } from "../_shared/supabase-client.ts";
 import { sendPushNotification, buildAPNsPayload } from "../_shared/apns-client.ts";
 import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 
@@ -41,6 +41,7 @@ interface Team {
   id: string;
   display_name: string;
   short_name: string | null;
+  entity_type: string | null;
 }
 
 /// Format kickoff time as "19:00 BST" / "20:00 GMT". We display in
@@ -122,7 +123,7 @@ serve(async (req) => {
     }
     const { data: teamRows } = await supabase
       .from("teams")
-      .select("id, display_name, short_name")
+      .select("id, display_name, short_name, entity_type")
       .in("id", [...teamIds])
       .returns<Team[]>();
     const teamById = new Map<string, Team>((teamRows ?? []).map((t) => [t.id, t]));
@@ -137,6 +138,11 @@ serve(async (req) => {
         console.warn(`morning-push: missing team row for fixture ${fix.fixture_id}`);
         continue;
       }
+
+      // PUSH-8: WC country fixtures are owned by matchday-reminder (07:00 UTC).
+      // Skip them here so a followed country doesn't get that reminder AND this
+      // "Game day at X" push an hour apart. morning-push covers PL clubs only.
+      if (home.entity_type === "country" || away.entity_type === "country") continue;
 
       // Tokens subscribed to EITHER team (PL via team_id, WC via country_id).
       // Same .or() filter as notification-sender — legacy scalar OR the V2.2
@@ -198,6 +204,7 @@ serve(async (req) => {
         const env = (tk.apns_environment === "production" ? "production" : "development") as
           | "development" | "production";
         const result = await sendPushNotification(tk.apns_token, payload, env);
+        await deactivateTokenIfDead(supabase, "device_tokens", tk.apns_token, result);
 
         await logPipelineEvent(supabase, {
           team_id: subject.id,

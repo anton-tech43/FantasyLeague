@@ -18,7 +18,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
-import { getSupabaseClient } from "../_shared/supabase-client.ts";
+import { deactivateTokenIfDead, getSupabaseClient } from "../_shared/supabase-client.ts";
 import { buildAPNsPayload, sendPushNotification } from "../_shared/apns-client.ts";
 import { renderMatchdayReminder, renderPreMatchBuildup } from "../_shared/matchday-reminder-copy.ts";
 import { preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
@@ -201,6 +201,7 @@ serve(async (req) => {
         );
         const env = t.apns_environment === "production" ? "production" : "development";
         const res = await sendPushNotification(t.apns_token as string, payload, env);
+        await deactivateTokenIfDead(supabase, "device_tokens", t.apns_token as string, res);
         if (res.success) sent++;
       }
 
