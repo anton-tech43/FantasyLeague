@@ -36,6 +36,10 @@ struct ContentItem: Identifiable, Codable {
     /// so older items decoded from cache don't break. V2.0.
     let affectedTeamIds: [String]?
 
+    /// Goal scorers + minutes for a post-game result article (075). Reuses the
+    /// live-box Scorer shape. Nil for non-result items / legacy rows.
+    let scorers: [LiveMatchBrief.Scorer]?
+
     /// Links this content_item to a specific upcoming fixture. When set,
     /// the iOS Calendar tab uses this to navigate from a fixture row to
     /// the preview's ContentDetailView. Format:
@@ -88,6 +92,7 @@ struct ContentItem: Identifiable, Codable {
 
         // V2.0 team-crest header
         case affectedTeamIds = "affected_team_ids"
+        case scorers = "goal_events"
 
         // V2.0 WC pre-tournament preview linking — see previewFixtureId
         case previewFixtureId = "preview_fixture_id"
@@ -120,6 +125,7 @@ struct ContentItem: Identifiable, Codable {
         analogyApproved = (try? container.decodeIfPresent(Bool.self, forKey: .analogyApproved)) ?? false
         analogyAutoPublished = (try? container.decodeIfPresent(Bool.self, forKey: .analogyAutoPublished)) ?? false
         affectedTeamIds = try? container.decodeIfPresent([String].self, forKey: .affectedTeamIds)
+        scorers = try? container.decodeIfPresent([LiveMatchBrief.Scorer].self, forKey: .scorers)
         previewFixtureId = try? container.decodeIfPresent(String.self, forKey: .previewFixtureId)
     }
 

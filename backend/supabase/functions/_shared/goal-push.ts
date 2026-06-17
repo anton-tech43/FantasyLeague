@@ -147,6 +147,36 @@ export function toStoredGoalEvents(
   return out;
 }
 
+/// A display-ready scorer line for the live box AND the post-game news article.
+/// `minute` is the formatted string ("23'" / "45+2'"); `player` is the name (or
+/// "Own goal"); `team` is the scoring side's name. `penalty` flags a spot-kick.
+export interface DisplayScorer {
+  side: "home" | "away";
+  team: string;
+  player: string;
+  minute: string;
+  penalty: boolean;
+}
+
+/// Project stored goal events into display scorers, resolving each side's team
+/// name. Chronological (stored already sorted). Empty/missing → []. Never throws.
+export function formatScorers(
+  events: readonly StoredGoalEvent[] | null | undefined,
+  homeName: string,
+  awayName: string,
+): DisplayScorer[] {
+  if (!Array.isArray(events)) return [];
+  return events
+    .filter((e) => e.side === "home" || e.side === "away")
+    .map((e) => ({
+      side: e.side,
+      team: e.side === "home" ? homeName : awayName,
+      player: e.isOwnGoal ? "Own goal" : ((e.player ?? "").trim() || "Goal"),
+      minute: formatMinute(e.minute, e.extra),
+      penalty: e.isPenalty && !e.isOwnGoal,
+    }));
+}
+
 /// From a fixture's goal events, pick the one for the side that just scored,
 /// preferring the LATEST (highest minute, then highest extra) — that is the
 /// goal that triggered this tick's detectGoal. `scoringTeamApiId` is the

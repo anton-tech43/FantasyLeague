@@ -36,6 +36,7 @@ import {
   renderGoalPush,
   renderHalfTimePush,
   renderKickoffSoonPush,
+  formatScorers,
   type StoredGoalEvent,
   toStoredGoalEvents,
 } from "../_shared/goal-push.ts";
@@ -509,7 +510,7 @@ async function handleRequest(req: Request): Promise<Response> {
 
     const { data: prior } = await supabase
       .from("match_status_state")
-      .select("status, home_goals, away_goals, fired_finished_at, briefs_fired, matchday_fire_capped, la_started, la_sig, la_ended")
+      .select("status, home_goals, away_goals, fired_finished_at, briefs_fired, matchday_fire_capped, la_started, la_sig, la_ended, goal_events")
       .eq("fixture_id", fixtureId)
       .maybeSingle();
 
@@ -854,6 +855,14 @@ async function handleRequest(req: Request): Promise<Response> {
               for (const r of rankRows ?? []) {
                 rankBySlug.set(r.id as string, (r.strength_rank as number | null) ?? null);
               }
+              // Goal scorers + minutes for the post-game article (075). The FT
+              // tick doesn't fetch events, so read the list persisted on the
+              // prior row during the match. Same list on both perspectives.
+              const ftScorers = formatScorers(
+                prior?.goal_events as StoredGoalEvent[] | null | undefined,
+                fx.teams.home.name,
+                fx.teams.away.name,
+              );
               for (const p of playing) {
                 const state: PostMatchState = p.gf > p.ga ? "win" : p.gf < p.ga ? "loss" : "draw";
                 const pm = renderPostMatch({
@@ -905,6 +914,7 @@ async function handleRequest(req: Request): Promise<Response> {
                     // below; this feed article must NOT be re-pushed by
                     // notification-sender's sweep (double-ping). Feed-only.
                     push_eligible: false,
+                    goal_events: ftScorers.length > 0 ? ftScorers : null,
                     everyone_talking: isHome,
                     everyone_talking_headline: isHome ? neutralResult : null,
                     everyone_talking_body: isHome ? `${neutralResult}. Full-time in their World Championship group.` : null,

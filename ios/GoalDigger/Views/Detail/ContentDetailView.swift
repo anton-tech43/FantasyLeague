@@ -30,6 +30,9 @@ struct ContentDetailView: View {
                         VStack(alignment: .leading, spacing: Layout.sectionSpacing) {
                             headerSection(item)
                             headlineSection(item)
+                            if let scorers = item.scorers, !scorers.isEmpty {
+                                scorersSection(scorers)
+                            }
                             talkingPointsSection(item)
 
                             if item.type == .matchday, let postMatch = item.postMatchCheatSheet {
@@ -183,6 +186,37 @@ struct ContentDetailView: View {
     }
 
     @ViewBuilder
+    /// Goal scorers + minutes for a post-game result article (075).
+    private func scorersSection(_ scorers: [LiveMatchBrief.Scorer]) -> some View {
+        VStack(alignment: .leading, spacing: Layout.elementSpacing) {
+            SectionHeaderView(title: "Goals", icon: "soccerball")
+
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(scorers) { scorer in
+                    HStack(spacing: 10) {
+                        Text(scorer.minute.isEmpty ? "·" : scorer.minute)
+                            .font(.jakarta(13, weight: .bold))
+                            .foregroundColor(.hotRose)
+                            .frame(width: 46, alignment: .leading)
+                        Text(scorer.player + (scorer.penalty == true ? " (pen)" : ""))
+                            .font(.jakarta(15, weight: .regular))
+                            .foregroundColor(.textPrimaryOnCard)
+                            .lineLimit(1)
+                        Spacer(minLength: 8)
+                        Text(scorer.team.uppercased())
+                            .font(.jakarta(11, weight: .semiBold))
+                            .tracking(0.5)
+                            .foregroundColor(.textSecondaryOnCard)
+                            .lineLimit(1)
+                    }
+                }
+            }
+            .padding(Layout.cardPadding)
+            .background(Color.cardBackground)
+            .cornerRadius(Layout.cardCornerRadius)
+        }
+    }
+
     private func talkingPointsSection(_ item: ContentItem) -> some View {
         VStack(alignment: .leading, spacing: Layout.elementSpacing) {
             SectionHeaderView(title: "Things to say", icon: "bubble.left")

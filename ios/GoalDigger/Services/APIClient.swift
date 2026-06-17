@@ -104,7 +104,7 @@ class APIClient {
     // MARK: - Feed
 
     /// All columns needed for ContentItem decoding (base + everyone + immersive + analogy)
-    private static let contentSelectColumns = "id,team_id,type,headline,body,talking_points,kickoff_time,emotional_context,published_at,everyone_talking,everyone_talking_headline,everyone_talking_body,everyone_talking_talking_points,worth_knowing,immersive_headline,immersive_context,immersive_context_fallback,analogy_reviewed,analogy_approved,analogy_auto_published,affected_team_ids,preview_fixture_id"
+    private static let contentSelectColumns = "id,team_id,type,headline,body,talking_points,kickoff_time,emotional_context,published_at,everyone_talking,everyone_talking_headline,everyone_talking_body,everyone_talking_talking_points,worth_knowing,immersive_headline,immersive_context,immersive_context_fallback,analogy_reviewed,analogy_approved,analogy_auto_published,affected_team_ids,preview_fixture_id,goal_events"
 
     /// Decode a JSON array of ContentItems, skipping any individual item that fails to decode.
     ///
