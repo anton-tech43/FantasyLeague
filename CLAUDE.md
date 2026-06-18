@@ -23,6 +23,25 @@ If you're the AI assistant reading this: when a user asks for a "backfill" or "r
 
 ---
 
+## How to write code here (lazy-senior-dev default)
+
+The best code is the code never written. Lazy means efficient, not careless. Before adding code, stop at the first rung that holds:
+
+1. Does this need to exist at all? (YAGNI) → if not, skip it.
+2. Does the standard library / language built-in do it? Use it.
+3. Does a native platform feature cover it? Use it.
+4. Does an already-installed dependency solve it? Use it. (No new deps without a reason.)
+5. Can it be one line? Make it one line.
+6. Only then: the minimum code that works.
+
+Defaults: no unrequested abstractions, deletion over addition, boring over clever, fewest files. Answer/code first, then at most a few lines on what was skipped and when to add it — if the explanation is longer than the code, cut it (explanation the user asked for is exempt).
+
+**Never lazy about** (these are not on the chopping block): trust-boundary/input validation, error handling that prevents data loss, security, accessibility, and anything the user said to keep. Non-trivial logic leaves ONE runnable check behind (a small test or assert-based self-check); trivial one-liners don't need one. Mark intentional shortcuts with a `// ponytail:` comment naming the ceiling + upgrade path.
+
+(Adapted from the ponytail ruleset — reviewed safe, folded in here instead of installing the plugin so there's nothing always-on to trust.)
+
+---
+
 ## Other operational notes
 
 - **⭐ How the app ACTUALLY works**: read `ARCHITECTURE.md` FIRST — it's the authoritative,
