@@ -1399,36 +1399,13 @@ async function handleRequest(req: Request): Promise<Response> {
               isGoal: true,
             });
 
-            // Tournament-feed goal item (076): every user's shared feed gets
-            // the goal as a content row, no push. match_id carries the new
-            // aggregate score so each goal of the match is its own row.
-            const hg = homeGoals ?? 0;
-            const ag = awayGoals ?? 0;
-            const scoreLine = `${homeTeam.name} ${hg}-${ag} ${awayTeam.name}`;
-            const goalScorers = formatScorers(goalEventsStored, homeTeam.name, awayTeam.name);
-            // Latest goal for the scoring side (list is chronological). For
-            // side === "both" there is no single honest scorer — score only.
-            const latest = side !== "both"
-              ? [...goalScorers].reverse().find((s) => s.side === side)
-              : undefined;
-            const goalBody = latest && latest.player === "Own goal"
-              ? `An own goal for ${latest.team}${latest.minute ? ` (${latest.minute})` : ""}. It is now ${scoreLine}.`
-              : latest && latest.player !== "Goal"
-                ? `${latest.player} scored for ${latest.team}${latest.minute ? ` (${latest.minute})` : ""}. It is now ${scoreLine}.`
-                : `It is now ${scoreLine}.`;
-            pendingTournamentItems.push({
-              team_id: "world_championship",
-              type: "news",
-              match_id: `goal:${fixtureId}:${hg}-${ag}`,
-              headline: `GOAL! ${scoreLine}`,
-              body: goalBody,
-              goal_events: goalScorers.length > 0 ? goalScorers : null,
-              affected_team_ids: [homeTeamId, awayTeamId],
-              push_eligible: false,
-              everyone_talking: false,
-              status: "published",
-              published_at: new Date().toISOString(),
-            });
+            // NOTE: goals deliberately do NOT create per-goal tournament feed
+            // rows. The in-feed LiveMatchCard (live-brief-current, 60s poll)
+            // already shows the running score + every scorer with their photo,
+            // updating in place — one live item, not one row per goal. Separate
+            // "GOAL! x-y" rows just duplicated it and cluttered the feed. The
+            // goal PUSH above still fires; the FT result row (below) carries the
+            // final scorers for the post-match feed.
           }
         }
 
