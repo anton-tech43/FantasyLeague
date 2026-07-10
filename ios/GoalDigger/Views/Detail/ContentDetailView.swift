@@ -182,6 +182,23 @@ struct ContentDetailView: View {
             .foregroundColor(.textOnDark)
             .padding(.top, 4)
 
+        // Pre-match preview: lead with who's favoured (deterministic FIFA-rank
+        // verdict the routine puts in match_result), so the reader gets the
+        // "who's likely to win" answer the moment they open the brief.
+        if item.previewFixtureId != nil,
+           let verdict = item.matchResult, !verdict.isEmpty {
+            HStack(spacing: 8) {
+                Image(systemName: "star.fill")
+                    .font(.system(size: 12))
+                    .foregroundColor(.hotRose)
+                Text(verdict)
+                    .font(.jakarta(16, weight: .semiBold))
+                    .foregroundColor(.hotRose)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.top, 2)
+        }
+
         Divider().background(Color.feedDivider)
     }
 

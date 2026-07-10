@@ -48,6 +48,13 @@ struct ContentItem: Identifiable, Codable {
     /// See Lesson 78.
     let previewFixtureId: String?
 
+    /// For a pre-match preview (`previewFixtureId != nil`), the one-line
+    /// favourite verdict shown as a sub-header in the detail view, e.g.
+    /// "Spain are the clear favourites" (mapped deterministically from FIFA
+    /// ranks by the gd-wc-preview routine). For a result item it carries the
+    /// scoreline. nil for ordinary news.
+    let matchResult: String?
+
     enum ContentType: String, Codable {
         case news
         case matchday
@@ -96,6 +103,7 @@ struct ContentItem: Identifiable, Codable {
 
         // V2.0 WC pre-tournament preview linking — see previewFixtureId
         case previewFixtureId = "preview_fixture_id"
+        case matchResult = "match_result"
     }
 
     // Custom decoder for backward compatibility with cached items missing new fields
@@ -127,6 +135,7 @@ struct ContentItem: Identifiable, Codable {
         affectedTeamIds = try? container.decodeIfPresent([String].self, forKey: .affectedTeamIds)
         scorers = try? container.decodeIfPresent([LiveMatchBrief.Scorer].self, forKey: .scorers)
         previewFixtureId = try? container.decodeIfPresent(String.self, forKey: .previewFixtureId)
+        matchResult = try? container.decodeIfPresent(String.self, forKey: .matchResult)
     }
 
     /// The context/analogy line to display on the immersive card.

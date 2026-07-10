@@ -37,6 +37,9 @@ struct WCNextMatchCard: View {
                     .foregroundColor(.warmWhite)
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
+                if let hook = item.regularTalkingPoints.first, !hook.isEmpty {
+                    talkingPointHook(hook)
+                }
                 readMoreRow
             }
             .padding(Layout.cardPadding)
@@ -89,6 +92,21 @@ struct WCNextMatchCard: View {
                 .foregroundColor(.warmWhite)
                 .lineLimit(1)
         }
+    }
+
+    /// A conversational hook (the first talking point) so the pre-match card
+    /// carries a talking point like every other feed card, not just a headline.
+    private func talkingPointHook(_ text: String) -> some View {
+        HStack(spacing: 8) {
+            RoundedRectangle(cornerRadius: 1.5)
+                .fill(Color.hotRose)
+                .frame(width: 3)
+            Text(text)
+                .font(.jakarta(14, weight: .regular))
+                .foregroundColor(.warmWhite.opacity(0.85))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private var readMoreRow: some View {
