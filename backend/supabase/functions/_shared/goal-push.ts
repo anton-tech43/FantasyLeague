@@ -156,9 +156,20 @@ export function toStoredGoalEvents(
   return out;
 }
 
+/// API-Football player headshots are addressed deterministically by player id
+/// (`.../players/<id>.png`) — the same value the `players` table stores. So a
+/// valid player id is enough to build a face URL even when the players backfill
+/// missed that player. A player with no photo just 404s and iOS shows nothing,
+/// same as null — never a broken image.
+export function scorerPhotoUrl(playerApiId: number): string {
+  return `https://media.api-sports.io/football/players/${playerApiId}.png`;
+}
+
 /// Stamp scorer photo URLs onto stored goal events, joined STRICTLY on the
-/// provider player id (never the name). Missing id or missing lookup row →
-/// photo null (iOS falls back to no face). Pure; never throws.
+/// provider player id (never the name). Prefer the players-table value; fall
+/// back to the deterministic CDN URL when the table has no row for that id, so
+/// any scorer we have an id for always gets a face. No id → photo null. Pure;
+/// never throws.
 export function attachScorerPhotos(
   events: readonly StoredGoalEvent[] | null | undefined,
   photoByApiId: ReadonlyMap<number, string | null>,
@@ -166,7 +177,9 @@ export function attachScorerPhotos(
   if (!Array.isArray(events)) return [];
   return events.map((e) => ({
     ...e,
-    photo: e.playerApiId != null ? photoByApiId.get(e.playerApiId) ?? null : null,
+    photo: e.playerApiId != null
+      ? photoByApiId.get(e.playerApiId) ?? scorerPhotoUrl(e.playerApiId)
+      : null,
   }));
 }
 

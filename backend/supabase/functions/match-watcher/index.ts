@@ -151,6 +151,55 @@ async function fetchGoalEvents(fixtureId: number, apiKey: string): Promise<GoalE
   }
 }
 
+/// True if any stored goal still lacks its scorer id. API-Football publishes a
+/// goal's SCORE a beat before it fills in the player, so the goal-detection
+/// tick can store an anonymous entry (player/id null). A later tick must
+/// re-fetch to back-fill it, or the scorer stays "Goal" with no face forever
+/// (seen live 2026-07-10: Merino's 88' vs Belgium).
+function hasUnresolvedScorer(events: unknown): boolean {
+  return Array.isArray(events) &&
+    events.some((e) => e != null && typeof e === "object" &&
+      (e as StoredGoalEvent).playerApiId == null);
+}
+
+/// One players lookup by provider id, stamping photo URLs onto stored events.
+/// Shared by the goal-detection tick and the re-fetch-to-backfill path.
+async function enrichPhotos(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  stored: StoredGoalEvent[],
+): Promise<StoredGoalEvent[]> {
+  const ids = [
+    ...new Set(
+      stored.map((e) => e.playerApiId).filter((id): id is number => typeof id === "number"),
+    ),
+  ];
+  if (ids.length === 0) return attachScorerPhotos(stored, new Map());
+  const { data } = await supabase
+    .from("players").select("api_player_id, photo_url").in("api_player_id", ids);
+  return attachScorerPhotos(
+    stored,
+    new Map((data ?? []).map((r) => [r.api_player_id as number, (r.photo_url as string | null) ?? null])),
+  );
+}
+
+/// Return prior goal_events with any anonymous scorer back-filled from a fresh
+/// /fixtures/events fetch. No unresolved entry → returns prior unchanged, no
+/// fetch (so this is free on the common path). A fetch that comes back empty
+/// or still-anonymous falls back to prior rather than losing data.
+async function resolveScorers(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  fixtureId: number,
+  apiKey: string,
+  priorEvents: StoredGoalEvent[] | null | undefined,
+  homeApiId: number,
+  awayApiId: number,
+): Promise<StoredGoalEvent[] | null> {
+  if (!hasUnresolvedScorer(priorEvents)) return priorEvents ?? null;
+  const fresh = toStoredGoalEvents(await fetchGoalEvents(fixtureId, apiKey), homeApiId, awayApiId);
+  if (fresh.length === 0) return priorEvents ?? null;
+  return await enrichPhotos(supabase, fresh);
+}
+
 serve(async (req) => {
   // Caller-auth gate (see _shared/require-service-auth.ts). Server-only
   // function — rejects anon-key / no-auth callers; accepts the service
@@ -945,11 +994,26 @@ async function handleRequest(req: Request): Promise<Response> {
               for (const r of rankRows ?? []) {
                 rankBySlug.set(r.id as string, (r.strength_rank as number | null) ?? null);
               }
-              // Goal scorers + minutes for the post-game article (075). The FT
-              // tick doesn't fetch events, so read the list persisted on the
-              // prior row during the match. Same list on both perspectives.
-              const ftScorers = formatScorers(
+              // Goal scorers + minutes for the post-game article (075). Read the
+              // list persisted during the match, but re-fetch events first if a
+              // late goal's scorer never resolved (a stoppage-time goal whose
+              // player the API published after the last live tick — otherwise
+              // the FT summary shows "Goal" with no face forever). No unresolved
+              // scorer → no fetch. Persist the corrected list so the live/FT
+              // surfaces agree.
+              const resolvedFtEvents = await resolveScorers(
+                supabase,
+                fixtureId,
+                apiFootballKey,
                 prior?.goal_events as StoredGoalEvent[] | null | undefined,
+                homeApiId,
+                awayApiId,
+              );
+              if (resolvedFtEvents !== (prior?.goal_events ?? null)) {
+                goalEventsStored = resolvedFtEvents;
+              }
+              const ftScorers = formatScorers(
+                resolvedFtEvents,
                 fx.teams.home.name,
                 fx.teams.away.name,
               );
@@ -1349,31 +1413,13 @@ async function handleRequest(req: Request): Promise<Response> {
             // minute) is the one that just landed. Anything missing → scorerLine
             // null → clean fallback to the existing copy with no extra line.
             const events = await fetchGoalEvents(fixtureId, apiFootballKey);
-            goalEventsStored = toStoredGoalEvents(events, homeApiId, awayApiId);
-            // Scorer photos (077): ONE players lookup by provider player id,
-            // stamped as `photo` on the stored events so the live box and the
-            // FT articles (which copy this list) render faces with no join.
-            const playerIds = [
-              ...new Set(
-                goalEventsStored
-                  .map((e) => e.playerApiId)
-                  .filter((id): id is number => typeof id === "number"),
-              ),
-            ];
-            if (playerIds.length > 0) {
-              const { data: photoRows } = await supabase
-                .from("players")
-                .select("api_player_id, photo_url")
-                .in("api_player_id", playerIds);
-              goalEventsStored = attachScorerPhotos(
-                goalEventsStored,
-                new Map(
-                  (photoRows ?? []).map((
-                    r,
-                  ) => [r.api_player_id as number, (r.photo_url as string | null) ?? null]),
-                ),
-              );
-            }
+            // Scorer photos (077): stamped by enrichPhotos (one players lookup
+            // by provider id, CDN-URL fallback) so the live box and the FT
+            // articles that copy this list render faces with no join.
+            goalEventsStored = await enrichPhotos(
+              supabase,
+              toStoredGoalEvents(events, homeApiId, awayApiId),
+            );
             let scorerLine: string | null = null;
             if (side !== "both") {
               const scoringApiId = side === "home" ? homeApiId : awayApiId;
@@ -1406,6 +1452,19 @@ async function handleRequest(req: Request): Promise<Response> {
             // "GOAL! x-y" rows just duplicated it and cluttered the feed. The
             // goal PUSH above still fires; the FT result row (below) carries the
             // final scorers for the post-match feed.
+          } else if (hasUnresolvedScorer(prior.goal_events)) {
+            // No new goal this tick, but a prior goal is still anonymous
+            // (API-Football hadn't published its scorer when it was detected).
+            // Re-fetch to back-fill so the live box resolves "Goal" → the name
+            // within a minute, and the persisted list is correct before FT.
+            goalEventsStored = await resolveScorers(
+              supabase,
+              fixtureId,
+              apiFootballKey,
+              prior.goal_events as StoredGoalEvent[] | null | undefined,
+              homeApiId,
+              awayApiId,
+            );
           }
         }
 

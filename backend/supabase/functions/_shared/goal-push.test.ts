@@ -361,7 +361,7 @@ Deno.test("toStoredGoalEvents: drops events for neither side; tolerant of empty"
   eq(toStoredGoalEvents(null, 10, 20).length, 0, "null → []");
 });
 
-Deno.test("attachScorerPhotos: joins on provider player id only; misses → null", () => {
+Deno.test("attachScorerPhotos: table value wins, id-only falls back to CDN URL, no id → null", () => {
   const stored = toStoredGoalEvents(
     [
       ev({ teamApiId: 10, playerName: "Pedri", playerApiId: 777, minute: 47 }),
@@ -373,14 +373,16 @@ Deno.test("attachScorerPhotos: joins on provider player id only; misses → null
   );
   eq(stored[0].playerApiId, 777, "playerApiId carried into stored events");
   const enriched = attachScorerPhotos(stored, new Map([[777, "https://cdn/pedri.png"]]));
-  eq(enriched[0].photo, "https://cdn/pedri.png", "matched id gets the photo");
-  eq(enriched[1].photo, null, "id with no players row → null");
+  eq(enriched[0].photo, "https://cdn/pedri.png", "matched id gets the table photo");
+  // id present but no players row → deterministic CDN URL (the players backfill
+  // can miss a player; a valid id still yields a valid face URL).
+  eq(enriched[1].photo, "https://media.api-sports.io/football/players/888.png", "id-only → CDN fallback");
   eq(enriched[2].photo, null, "event without a player id → null");
   eq(attachScorerPhotos(null, new Map()).length, 0, "null events → []");
   // Photo survives into the display scorers iOS reads (key name `photo`).
   const scorers = formatScorers(enriched, "Spain", "France");
   eq(scorers[0].photo, "https://cdn/pedri.png", "photo flows into DisplayScorer");
-  eq(scorers[1].photo, null, "missing photo stays null in DisplayScorer");
+  eq(scorers[1].photo, "https://media.api-sports.io/football/players/888.png", "fallback flows into DisplayScorer");
 });
 
 Deno.test("formatScorers: own goal drops the (wrong-side) photo with the name", () => {
