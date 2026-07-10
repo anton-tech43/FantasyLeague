@@ -54,7 +54,22 @@ ALTER TABLE teams
     CHECK (entity_type IN ('club', 'country', 'tournament'));
 
 -- ---------------------------------------------------------------------------
--- 2. Insert the pseudo-entity row (idempotent).
+-- 2. Allow league_id NULL for the tournament pseudo-entity only.
+-- ---------------------------------------------------------------------------
+-- 034 made league_id NOT NULL to kill the silent PL-fallback bug. The whole
+-- invisibility argument above rests on this row having NO league_id, so the
+-- column-level NOT NULL is relaxed and 034's real guarantee — every club and
+-- country has a league — is re-stated as a CHECK that exempts only
+-- entity_type='tournament'.
+
+ALTER TABLE teams ALTER COLUMN league_id DROP NOT NULL;
+
+ALTER TABLE teams
+  ADD CONSTRAINT teams_league_id_required_for_real_entities
+    CHECK (league_id IS NOT NULL OR entity_type = 'tournament');
+
+-- ---------------------------------------------------------------------------
+-- 3. Insert the pseudo-entity row (idempotent).
 -- ---------------------------------------------------------------------------
 
 INSERT INTO teams (id, display_name, short_name, api_football_id, entity_type, league_id)

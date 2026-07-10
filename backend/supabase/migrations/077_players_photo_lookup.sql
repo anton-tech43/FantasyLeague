@@ -55,8 +55,14 @@ CREATE POLICY "players_service_only" ON players
 -- payload is missing/empty (data->'response'->0->'players' evaluates to SQL
 -- NULL) simply contributes zero rows rather than erroring.
 
+-- A player can appear in TWO squads (his club's and his country's — e.g.
+-- Saka in both Arsenal and England), which would hit the same api_player_id
+-- twice in one INSERT (ON CONFLICT can't resolve intra-statement dupes).
+-- DISTINCT ON the player id, preferring the COUNTRY row: this table exists
+-- for World Championship scorer photos, so country attribution wins.
+
 INSERT INTO players (api_player_id, team_id, name, position, photo_url, updated_at)
-SELECT
+SELECT DISTINCT ON ((p->>'id')::INT)
   (p->>'id')::INT,
   latest.team_id,
   p->>'name',
@@ -64,13 +70,15 @@ SELECT
   p->>'photo',
   now()
 FROM (
-  SELECT DISTINCT ON (team_id) team_id, data
-  FROM raw_fetch_logs
-  WHERE source = 'api_football_squad'
-  ORDER BY team_id, fetched_at DESC
+  SELECT DISTINCT ON (r.team_id) r.team_id, r.data, t.entity_type
+  FROM raw_fetch_logs r
+  JOIN teams t ON t.id = r.team_id
+  WHERE r.source = 'api_football_squad'
+  ORDER BY r.team_id, r.fetched_at DESC
 ) latest
 CROSS JOIN LATERAL jsonb_array_elements(latest.data -> 'response' -> 0 -> 'players') AS p
 WHERE p ->> 'id' IS NOT NULL
+ORDER BY (p->>'id')::INT, (latest.entity_type = 'country') DESC
 ON CONFLICT (api_player_id) DO UPDATE SET
   photo_url = EXCLUDED.photo_url,
   team_id   = EXCLUDED.team_id,
