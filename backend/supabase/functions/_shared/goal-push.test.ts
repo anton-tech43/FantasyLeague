@@ -2,9 +2,11 @@
 //   deno test backend/supabase/functions/_shared/goal-push.test.ts
 
 import {
+  attachScorerPhotos,
   detectGoal,
   formatMinute,
   formatScorerLine,
+  formatScorers,
   type GoalEvent,
   interpolate,
   pickLatestGoalForTeam,
@@ -137,6 +139,27 @@ Deno.test("renderFullTimePush: draw draws both sides from FT_DRAW", () => {
   const copy = renderFullTimePush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 1, rng: zero });
   eq(copy.bodies.mexico, interpolate(FT_DRAW[0], { score: "1-1", team: "Mexico" }), "home from FT_DRAW");
   eq(copy.bodies.south_africa, interpolate(FT_DRAW[0], { score: "1-1", team: "S. Africa" }), "away from FT_DRAW");
+});
+
+Deno.test("renderFullTimePush: shootout — pens pick the pools and the {score}", () => {
+  const copy = renderFullTimePush({
+    home: MEX, away: RSA, homeGoals: 1, awayGoals: 1, pens: { home: 4, away: 2 }, rng: zero,
+  });
+  eq(copy.title, "Full-time: Mexico 1-1 S. Africa (4-2 on pens)", "title carries goals + shootout");
+  eq(copy.bodies.mexico, interpolate(FT_WIN[0], { score: "4-2", team: "Mexico" }), "shootout winner from FT_WIN, never drew");
+  eq(copy.bodies.south_africa, interpolate(FT_LOSS[0], { score: "2-4", team: "S. Africa" }), "shootout loser from FT_LOSS");
+  assert(!copy.title.includes("–") && !copy.title.includes("—"), "no em/en dashes");
+});
+
+Deno.test("renderFullTimePush: away shootout winner + null pens keeps draw behavior", () => {
+  const away = renderFullTimePush({
+    home: MEX, away: RSA, homeGoals: 0, awayGoals: 0, pens: { home: 3, away: 5 }, rng: zero,
+  });
+  eq(away.bodies.south_africa, interpolate(FT_WIN[0], { score: "5-3", team: "S. Africa" }), "away shootout winner from FT_WIN");
+  eq(away.bodies.mexico, interpolate(FT_LOSS[0], { score: "3-5", team: "Mexico" }), "home from FT_LOSS");
+  const nullPens = renderFullTimePush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 1, pens: null, rng: zero });
+  eq(nullPens.title, "Full-time: Mexico 1-1 S. Africa", "null pens = unchanged title");
+  eq(nullPens.bodies.mexico, interpolate(FT_DRAW[0], { score: "1-1", team: "Mexico" }), "null pens = draw pool");
 });
 
 // ============================================================
@@ -336,6 +359,42 @@ Deno.test("toStoredGoalEvents: drops events for neither side; tolerant of empty"
   eq(stored[0].player, "Real", "only the matching-side event survives");
   eq(toStoredGoalEvents([], 10, 20).length, 0, "empty array → []");
   eq(toStoredGoalEvents(null, 10, 20).length, 0, "null → []");
+});
+
+Deno.test("attachScorerPhotos: joins on provider player id only; misses → null", () => {
+  const stored = toStoredGoalEvents(
+    [
+      ev({ teamApiId: 10, playerName: "Pedri", playerApiId: 777, minute: 47 }),
+      ev({ teamApiId: 20, playerName: "NoRow", playerApiId: 888, minute: 60 }),
+      ev({ teamApiId: 20, playerName: "NoId", minute: 70 }),
+    ],
+    10,
+    20,
+  );
+  eq(stored[0].playerApiId, 777, "playerApiId carried into stored events");
+  const enriched = attachScorerPhotos(stored, new Map([[777, "https://cdn/pedri.png"]]));
+  eq(enriched[0].photo, "https://cdn/pedri.png", "matched id gets the photo");
+  eq(enriched[1].photo, null, "id with no players row → null");
+  eq(enriched[2].photo, null, "event without a player id → null");
+  eq(attachScorerPhotos(null, new Map()).length, 0, "null events → []");
+  // Photo survives into the display scorers iOS reads (key name `photo`).
+  const scorers = formatScorers(enriched, "Spain", "France");
+  eq(scorers[0].photo, "https://cdn/pedri.png", "photo flows into DisplayScorer");
+  eq(scorers[1].photo, null, "missing photo stays null in DisplayScorer");
+});
+
+Deno.test("formatScorers: own goal drops the (wrong-side) photo with the name", () => {
+  const enriched = attachScorerPhotos(
+    toStoredGoalEvents(
+      [ev({ teamApiId: 10, playerName: "Wrong Side", playerApiId: 5, minute: 23, isOwnGoal: true })],
+      10,
+      20,
+    ),
+    new Map([[5, "https://cdn/wrong.png"]]),
+  );
+  const scorers = formatScorers(enriched, "Spain", "France");
+  eq(scorers[0].player, "Own goal", "name dropped for own goal");
+  eq(scorers[0].photo, null, "photo dropped for own goal");
 });
 
 Deno.test("renderGoalPush: scorerLine appended to both bodies, additive", () => {

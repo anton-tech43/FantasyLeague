@@ -64,6 +64,9 @@ export interface GoalPushTeam {
 export interface GoalEvent {
   teamApiId: number;
   playerName: string | null;
+  /// API-Football player.id — the ONLY key we join scorer photos on (076/077).
+  /// Never name-matched.
+  playerApiId?: number | null;
   minute: number | null;
   extra: number | null;
   isOwnGoal: boolean;
@@ -109,6 +112,11 @@ export function formatScorerLine(ev: GoalEvent | null | undefined): string | nul
 export interface StoredGoalEvent {
   side: "home" | "away";
   player: string | null;
+  playerApiId?: number | null;
+  /// Scorer photo URL from the players table, stamped by attachScorerPhotos at
+  /// fetch time (null/absent when the lookup missed). Key name `photo` is the
+  /// iOS contract.
+  photo?: string | null;
   minute: number | null;
   extra: number | null;
   isOwnGoal: boolean;
@@ -137,6 +145,7 @@ export function toStoredGoalEvents(
     out.push({
       side,
       player: ev.playerName,
+      playerApiId: ev.playerApiId ?? null,
       minute: ev.minute,
       extra: ev.extra,
       isOwnGoal: ev.isOwnGoal,
@@ -145,6 +154,20 @@ export function toStoredGoalEvents(
   }
   out.sort((a, b) => (a.minute ?? 0) - (b.minute ?? 0) || (a.extra ?? 0) - (b.extra ?? 0));
   return out;
+}
+
+/// Stamp scorer photo URLs onto stored goal events, joined STRICTLY on the
+/// provider player id (never the name). Missing id or missing lookup row →
+/// photo null (iOS falls back to no face). Pure; never throws.
+export function attachScorerPhotos(
+  events: readonly StoredGoalEvent[] | null | undefined,
+  photoByApiId: ReadonlyMap<number, string | null>,
+): StoredGoalEvent[] {
+  if (!Array.isArray(events)) return [];
+  return events.map((e) => ({
+    ...e,
+    photo: e.playerApiId != null ? photoByApiId.get(e.playerApiId) ?? null : null,
+  }));
 }
 
 /// A display-ready scorer line for the live box AND the post-game news article.
@@ -156,6 +179,7 @@ export interface DisplayScorer {
   player: string;
   minute: string;
   penalty: boolean;
+  photo: string | null;
 }
 
 /// Project stored goal events into display scorers, resolving each side's team
@@ -174,6 +198,9 @@ export function formatScorers(
       player: e.isOwnGoal ? "Own goal" : ((e.player ?? "").trim() || "Goal"),
       minute: formatMinute(e.minute, e.extra),
       penalty: e.isPenalty && !e.isOwnGoal,
+      // Own-goal photos are the WRONG side's face (API names the conceding
+      // player) — drop them alongside the name.
+      photo: e.isOwnGoal ? null : e.photo ?? null,
     }));
 }
 
@@ -320,19 +347,29 @@ export function renderHalfTimePush(args: {
 /// Full-time own-result push for the two PLAYING countries' followers. Title
 /// carries the scoreline; each side's body is drawn from the win / loss / draw
 /// pool by its own perspective.
+///
+/// `pens` (optional): shootout score when the match ended on penalties. Level
+/// goals are then NOT a draw — the title appends "(4-2 on pens)" and both the
+/// pool selection and the {score} placeholder use the shootout numbers, so the
+/// winner's followers get win copy reading "4-2", never "drew 1-1".
 export function renderFullTimePush(args: {
   home: GoalPushTeam;
   away: GoalPushTeam;
   homeGoals: number;
   awayGoals: number;
+  pens?: { home: number; away: number } | null;
   rng?: () => number;
 }): GoalPushCopy {
-  const { home, away, homeGoals, awayGoals, rng = Math.random } = args;
+  const { home, away, homeGoals, awayGoals, pens, rng = Math.random } = args;
+  const title = pens
+    ? `Full-time: ${home.name} ${homeGoals}-${awayGoals} ${away.name} (${pens.home}-${pens.away} on pens)`
+    : `Full-time: ${home.name} ${homeGoals}-${awayGoals} ${away.name}`;
+  const [h, a] = pens ? [pens.home, pens.away] : [homeGoals, awayGoals];
   return {
-    title: `Full-time: ${home.name} ${homeGoals}-${awayGoals} ${away.name}`,
+    title,
     bodies: {
-      [home.id]: periodBody(FT_WIN, FT_LOSS, FT_DRAW, homeGoals, awayGoals, home.name, rng),
-      [away.id]: periodBody(FT_WIN, FT_LOSS, FT_DRAW, awayGoals, homeGoals, away.name, rng),
+      [home.id]: periodBody(FT_WIN, FT_LOSS, FT_DRAW, h, a, home.name, rng),
+      [away.id]: periodBody(FT_WIN, FT_LOSS, FT_DRAW, a, h, away.name, rng),
     },
   };
 }

@@ -16,6 +16,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { formatMinute, type StoredGoalEvent } from "../_shared/goal-push.ts";
+import { WC_LEAGUE_ID } from "../_shared/detect-consequences.ts";
 
 const PRE_KICKOFF_BUFFER_MS = 10 * 60 * 1000;   // 10 min before kickoff
 const POST_KICKOFF_BUFFER_MS = 130 * 60 * 1000; // 130 min after kickoff
@@ -48,13 +49,6 @@ serve(async (req) => {
 
   const supabase = getSupabaseClient();
 
-  // 1. Is there a fixture for this team that's actually IN PLAY?
-  // Two filters compose: (a) status must be a live in-play state and
-  // (b) kickoff is within a sane window. Status alone is the stronger
-  // signal — a FT/AET/PEN match shouldn't trigger the card even if it
-  // ended within the window. Kickoff window is a defensive backstop in
-  // case the match-watcher fails to update status promptly.
-  //
   // LIVE_STATUSES = ['1H', 'HT', '2H', 'ET', 'P', 'BT'] — same set the
   // match-watcher uses to detect live fixtures. Mirroring it keeps the
   // two pieces of code in sync.
@@ -62,7 +56,68 @@ serve(async (req) => {
   const now = Date.now();
   const windowStartIso = new Date(now - POST_KICKOFF_BUFFER_MS).toISOString();
   const windowEndIso = new Date(now + PRE_KICKOFF_BUFFER_MS).toISOString();
+  const headers = {
+    "Content-Type": "application/json",
+    // No CDN caching: polled endpoint, want fresh values every 60s.
+    "Cache-Control": "no-store",
+  };
 
+  // Pseudo team_id from iOS meaning "whichever World Championship match is
+  // live right now", independent of followed countries. Scope by league_id
+  // instead of home/away team, pick the earliest kickoff if two are somehow
+  // live at once, and skip the per-team live_match_briefs/standings lookups
+  // entirely — there's no single followed side for this card to narrate.
+  if (teamId === "world_championship") {
+    const { data: wcRows, error: wcErr } = await supabase
+      .from("match_status_state")
+      .select(
+        "fixture_id, status, home_team_id, away_team_id, home_goals, away_goals, elapsed, goal_events",
+      )
+      .eq("league_id", WC_LEAGUE_ID)
+      .gte("kickoff_time", windowStartIso)
+      .lte("kickoff_time", windowEndIso)
+      .in("status", LIVE_STATUSES)
+      .order("kickoff_time", { ascending: true })
+      .limit(1);
+
+    if (wcErr) {
+      console.error("live-brief-current WC state read error:", wcErr.message);
+      return new Response(JSON.stringify({ error: "State read failed" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    if (!wcRows || wcRows.length === 0) {
+      return new Response(null, { status: 204 });
+    }
+
+    const state = wcRows[0] as MatchState;
+    const nameOf = await buildNameLookup(supabase, state);
+    return new Response(
+      JSON.stringify({
+        id: await stableUuid(
+          `${state.fixture_id}-${state.home_goals ?? 0}-${state.away_goals ?? 0}-${state.status}`,
+        ),
+        team_id: teamId,
+        match_id: String(state.fixture_id),
+        headline: buildNeutralHeadline(state, nameOf),
+        body: periodLine(state.status),
+        minute: state.elapsed ?? null,
+        trigger_label: state.status === "HT" ? "HT" : null,
+        standings: null,
+        scorers: buildScorersPassthrough(state, nameOf),
+        generated_at: new Date(now).toISOString(),
+      }),
+      { headers },
+    );
+  }
+
+  // 1. Is there a fixture for this team that's actually IN PLAY?
+  // Two filters compose: (a) status must be a live in-play state and
+  // (b) kickoff is within a sane window. Status alone is the stronger
+  // signal — a FT/AET/PEN match shouldn't trigger the card even if it
+  // ended within the window. Kickoff window is a defensive backstop in
+  // case the match-watcher fails to update status promptly.
   const { data: stateRows, error: stateErr } = await supabase
     .from("match_status_state")
     .select(
@@ -107,12 +162,6 @@ serve(async (req) => {
       headers: { "Content-Type": "application/json" },
     });
   }
-
-  const headers = {
-    "Content-Type": "application/json",
-    // No CDN caching: polled endpoint, want fresh values every 60s.
-    "Cache-Control": "no-store",
-  };
 
   const state = stateRows[0] as MatchState;
   // Team short/display names for both playing sides — fetched once and reused
@@ -245,6 +294,7 @@ interface ScorerLine {
   player: string;
   minute: string;
   penalty: boolean;
+  photo: string | null;
 }
 
 /// Resolve both playing sides' display names in a single teams read, returning
@@ -279,6 +329,45 @@ function buildLiveHeadline(teamId: string, state: MatchState, nameOf: NameLookup
   return `${myName} ${myGoals}-${oppGoals} ${oppName}`;
 }
 
+/// Neutral home-team-first live scoreline for the world_championship pseudo
+/// card, e.g. "Spain 1-0 France" — there's no followed side to lead with.
+/// Pure, same deterministic inputs as buildLiveHeadline.
+function buildNeutralHeadline(state: MatchState, nameOf: NameLookup): string {
+  const hg = state.home_goals ?? 0;
+  const ag = state.away_goals ?? 0;
+  return `${nameOf(state.home_team_id)} ${hg}-${ag} ${nameOf(state.away_team_id)}`;
+}
+
+/// Same shape as buildScorers, but spreads the raw stored goal_events entry
+/// first so any extra columns added later (e.g. the optional `photo` field)
+/// ride along unstripped — the world_championship card has no per-follower
+/// contract to protect the way ScorerLine does. Never throws.
+function buildScorersPassthrough(
+  state: MatchState,
+  nameOf: NameLookup,
+): Array<Record<string, unknown>> | null {
+  const events = state.goal_events;
+  if (!Array.isArray(events) || events.length === 0) return null;
+  const lines: Array<Record<string, unknown>> = [];
+  for (const ev of events) {
+    const raw = ev as unknown as Record<string, unknown>;
+    if (raw.side !== "home" && raw.side !== "away") continue;
+    const teamId = raw.side === "home" ? state.home_team_id : state.away_team_id;
+    const isOwnGoal = Boolean(raw.isOwnGoal);
+    lines.push({
+      ...raw,
+      team: nameOf(teamId),
+      player: isOwnGoal ? "Own goal" : (String(raw.player ?? "").trim() || "Goal"),
+      minute: formatMinute(raw.minute as number | null, raw.extra as number | null),
+      penalty: Boolean(raw.isPenalty) && !isOwnGoal,
+      // Own-goal photos are the WRONG side's face (API names the conceding
+      // player) — null it out alongside the name, same rule as formatScorers.
+      photo: isOwnGoal ? null : ((raw.photo as string | null | undefined) ?? null),
+    });
+  }
+  return lines.length > 0 ? lines : null;
+}
+
 /// Project the stored goal_events into display-ready scorer lines for the live
 /// box, resolving each side's team name. Returns null when there's nothing to
 /// show so the card omits the section entirely. Already chronological (stored
@@ -297,6 +386,9 @@ function buildScorers(state: MatchState, nameOf: NameLookup): ScorerLine[] | nul
       player,
       minute: formatMinute(ev.minute, ev.extra),
       penalty: ev.isPenalty && !ev.isOwnGoal,
+      // Own-goal photos are the WRONG side's face (API credits the conceding
+      // player) — null alongside the name, same rule as formatScorers.
+      photo: ev.isOwnGoal ? null : (ev.photo ?? null),
     });
   }
   return lines.length > 0 ? lines : null;

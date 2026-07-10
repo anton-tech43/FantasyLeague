@@ -110,11 +110,14 @@ serve(async (req) => {
       });
     }
 
-    // Get team short names
-    const { data: teams } = await supabase.from("teams").select("id, short_name");
+    // Get team short names + entity types (entity_type='tournament' marks
+    // broadcast pseudo-entities like 'world_championship')
+    const { data: teams } = await supabase.from("teams").select("id, short_name, entity_type");
     const teamShortNames: Record<string, string> = {};
+    const teamEntityTypes: Record<string, string> = {};
     for (const t of teams ?? []) {
       teamShortNames[t.id] = t.short_name;
+      teamEntityTypes[t.id] = t.entity_type;
     }
 
     // Per-team push throttle window (audit 2026-06-05, Lesson 89). Kept at
@@ -198,15 +201,51 @@ serve(async (req) => {
       // V2.2: a device may follow up to 2 countries + 2 clubs, stored in the
       // country_ids/team_ids arrays. Match the legacy scalar (old apps) OR the
       // array containing this slug (new apps). One row per device → one push.
-      const { data: tokens } = await supabase
-        .from("device_tokens")
-        .select("apns_token, tier, apns_environment")
-        .or(
-          `team_id.eq.${teamId},country_id.eq.${teamId},team_ids.cs.{${teamId}},country_ids.cs.{${teamId}}`,
-        )
-        .eq("is_active", true);
+      //
+      // Tournament broadcast (WC knockout match-day analysis, team_id=
+      // 'world_championship'): goes to ALL active devices, EXCEPT devices
+      // following either competing country (item.affected_team_ids) — those
+      // users already get the 07:00 UTC matchday-reminder that morning and
+      // must not be double-pinged. Exclusion happens in code after the fetch:
+      // PostgREST not.in / not.ov would drop rows with NULL country_id /
+      // country_ids (SQL NULL semantics), wrongly excluding club-only devices.
+      //
+      // Paginated with .range(): PostgREST silently caps one response at
+      // max-rows (Supabase default 1000), which would truncate an all-devices
+      // broadcast to the first 1000 users. Ordered by apns_token (UNIQUE) so
+      // pages neither skip nor duplicate rows. The same loop serves the
+      // follower path — it rarely needs page 2, but correctness is free.
+      const isTournament = teamEntityTypes[teamId] === "tournament";
+      const affected: string[] = isTournament ? (item.affected_team_ids ?? []) : [];
+      const TOKEN_PAGE_SIZE = 1000;
+      // deno-lint-ignore no-explicit-any
+      const tokens: any[] = [];
+      for (let from = 0; ; from += TOKEN_PAGE_SIZE) {
+        let pageQuery = supabase
+          .from("device_tokens")
+          .select("apns_token, tier, apns_environment, country_id, country_ids")
+          .eq("is_active", true)
+          .order("apns_token")
+          .range(from, from + TOKEN_PAGE_SIZE - 1);
+        if (!isTournament) {
+          pageQuery = pageQuery.or(
+            `team_id.eq.${teamId},country_id.eq.${teamId},team_ids.cs.{${teamId}},country_ids.cs.{${teamId}}`,
+          );
+        }
+        const { data: page, error: pageErr } = await pageQuery;
+        // Throw rather than continue: a mid-pagination error would otherwise
+        // look like "no more devices" and mark the item pushed with a partial
+        // (or empty) audience. Unpushed items get retried by the sweep.
+        if (pageErr) throw new Error(`Failed to fetch device tokens: ${pageErr.message}`);
+        for (const t of page ?? []) {
+          if (affected.includes(t.country_id)) continue;
+          if ((t.country_ids ?? []).some((c: string) => affected.includes(c))) continue;
+          tokens.push(t);
+        }
+        if (!page || page.length < TOKEN_PAGE_SIZE) break;
+      }
 
-      if (!tokens || tokens.length === 0) {
+      if (tokens.length === 0) {
         // No devices — still mark as published so it appears in the feed,
         // unless the item is already published (routine flow). Also mark
         // pushed_at so the sweep doesn't re-pick this item indefinitely:
@@ -268,6 +307,12 @@ serve(async (req) => {
       // long headline. Backwards-compat: if either field is NULL (rows
       // pre-migration 011/012), buildAPNsPayload falls back to teamShortName
       // and headline respectively.
+      //
+      // Tournament-broadcast items need everyone_talking=true in the payload
+      // so old apps deep-link into the Everyone context. That already works:
+      // the routine writes everyone_talking=true on the row and
+      // item.everyone_talking is passed straight through below into the
+      // payload's everyone_talking userInfo field. No hardcode needed.
       const payload = buildAPNsPayload(
         shortName,
         item.headline,

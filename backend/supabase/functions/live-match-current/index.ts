@@ -11,6 +11,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
+import { WC_LEAGUE_ID } from "../_shared/detect-consequences.ts";
 
 const PRE_KICKOFF_BUFFER_MS = 10 * 60 * 1000;   // 10 min before kickoff
 const POST_KICKOFF_BUFFER_MS = 130 * 60 * 1000; // 130 min after kickoff
@@ -44,14 +45,22 @@ serve(async (req) => {
   const windowStartIso = new Date(now - POST_KICKOFF_BUFFER_MS).toISOString();
   const windowEndIso = new Date(now + PRE_KICKOFF_BUFFER_MS).toISOString();
 
-  const { data: rows, error } = await supabase
+  // Pseudo country_id from iOS meaning "whichever World Championship match is
+  // live right now", independent of follows. Scope by league_id instead of
+  // home/away country, earliest kickoff wins if two are somehow live at once.
+  // homeTeamId/awayTeamId in the response are still real country slugs either
+  // way, so the client's Country(rawValue:) decode is unaffected.
+  const isWc = countryId === "world_championship";
+  let stateQuery = supabase
     .from("match_status_state")
     .select("fixture_id, home_team_id, away_team_id, home_goals, away_goals, status")
-    .or(`home_team_id.eq.${countryId},away_team_id.eq.${countryId}`)
     .gte("kickoff_time", windowStartIso)
     .lte("kickoff_time", windowEndIso)
-    .in("status", LIVE_STATUSES)
-    .limit(1);
+    .in("status", LIVE_STATUSES);
+  stateQuery = isWc
+    ? stateQuery.eq("league_id", WC_LEAGUE_ID).order("kickoff_time", { ascending: true })
+    : stateQuery.or(`home_team_id.eq.${countryId},away_team_id.eq.${countryId}`);
+  const { data: rows, error } = await stateQuery.limit(1);
 
   if (error) {
     console.error("live-match-current read error:", error.message);
