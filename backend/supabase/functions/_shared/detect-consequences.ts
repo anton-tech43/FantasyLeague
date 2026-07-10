@@ -1,0 +1,608 @@
+// _shared/detect-consequences.ts
+//
+// Deterministic, LLM-free detector for cross-team consequences of a just-
+// finished match. Triggered by match-watcher after gd-matchday fires
+// successfully. For each non-playing team in the same league/group whose
+// race state mathematically changed (title-won, relegated, UCL-clinched,
+// WC knockout-qualified, etc), returns a structured Consequence record
+// so the caller can INSERT a templated content_items row.
+//
+// Pure math + table reads. No Anthropic API calls. No claude.ai routine
+// fires. Cost: $0.
+//
+// Math model (works for both PL and WC group stage):
+//
+//   For each team T in the league/group:
+//     points_now = T.points (post-fixture)
+//     games_left = total_games_per_team − T.played
+//     min_possible = points_now + 0
+//     max_possible = points_now + 3 × games_left
+//
+//   TITLE_WON (PL): T.min > every other team's max
+//   RELEGATED (PL): T.max < (17th-placed team's min) AND not already
+//                   guaranteed relegation (state change check via the
+//                   partial unique index — caller's ON CONFLICT handles
+//                   the no-op).
+//   UCL_CLINCHED (PL): T.min > (5th-placed team's max)
+//   EUROPE_CLINCHED (PL): T.min > (8th-placed team's max)   ← UEL/UECL slot floor
+//
+//   WC_GROUP_WON: T.min > (2nd-placed team's max within group)
+//   WC_KNOCKOUT_QUALIFIED: T.min > (3rd-placed team's max within group)
+//                          (top-2 path — best-3rd cohort is V1.1 work)
+//   WC_KNOCKOUT_ELIMINATED: T.max < (2nd-placed team's min within group)
+//                           (conservative — only fires for teams who can't
+//                            even reach top-2; best-3rd top-up is V1.1)
+//
+// We deliberately compute the math AFTER applying this fixture's result
+// to the standings (the api_football_standings snapshot may be from
+// before the result lands). The detector mutates a local copy of the
+// standings array, never the underlying log.
+//
+// Idempotency is enforced at INSERT time by the partial unique index
+// on (team_id, consequence_type) — see migration 051. The detector can
+// return the same consequence on consecutive matches and the second
+// INSERT is a no-op. So we don't need to maintain detector-side state.
+//
+// See: BACKFILL_RULES.md (the cost-discipline doctrine that prevented us
+// from solving this with a per-team LLM routine), IMPLEMENTATION_PROGRESS
+// Lesson 74 (the May 19 Arsenal title incident that prompted this layer).
+
+import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import type { GroupStanding } from "./stakes-engine.ts";
+import { classifyBestThird, type BestThirdResult } from "./best-third.ts";
+import { coarseThirdPointsBounds, GROUP_GAMES_PER_TEAM, type GroupTeam } from "./group-scenarios.ts";
+
+// PL = 39, WC = 1 per the teams.league_id values in our DB.
+export const PL_LEAGUE_ID = 39;
+export const WC_LEAGUE_ID = 1;
+
+// Standings snapshots fetched within this window are assumed to already
+// include the just-finished result. Older snapshots get applyResult run
+// on a local copy. 5 min is the tightest race between match-watcher's
+// FT detection and data-fetcher's 2h cron — anything fresher than that
+// was almost certainly written AFTER FT.
+const STANDINGS_FRESHNESS_MS = 5 * 60_000;
+
+export type ConsequenceType =
+  | "TITLE_WON"
+  | "RELEGATED"
+  | "UCL_CLINCHED"
+  | "EUROPE_CLINCHED"
+  | "WC_KNOCKOUT_QUALIFIED"
+  | "WC_KNOCKOUT_ELIMINATED"
+  | "WC_GROUP_WON"
+  // Good news (pushes): a 3rd-placed team is mathematically guaranteed one
+  // of the 8 best-third spots → through to the Round of 32. Points-locked +
+  // cross-group; never asserted on a goal-difference bubble. Elimination
+  // ("out") is detected for IN-APP surfaces only and NEVER pushed.
+  | "WC_BEST_THIRD_QUALIFIED"
+  // Informational, NOT a math consequence: at the FT of a WC group game,
+  // the two NON-playing teams in that group get a factual "rival result"
+  // push ("Senegal beat Croatia in your group"). No derived "what you
+  // need" — that depends on a refreshed table + tiebreakers and lives
+  // in-app. Idempotent per (team_id, match_id) via unique_matchday_content
+  // (NOT the once-per-type index — see migration 060).
+  | "WC_RIVAL_RESULT";
+
+export interface Consequence {
+  /** team_id (goaldigger slug, e.g. "arsenal") of the AFFECTED team — not the playing team. */
+  team_id: string;
+  consequence_type: ConsequenceType;
+  /**
+   * Templated string the consequence-templates module embeds verbatim, e.g.
+   * "Manchester City could only draw 1-1 at Bournemouth" or "Bournemouth beat Brentford 2-1".
+   * Built deterministically from the fixture — no LLM voice.
+   */
+  trigger_summary: string;
+}
+
+interface StandingsEntry {
+  rank: number;
+  points: number;
+  goalsDiff: number; // B3: needed to break points ties when re-ranking
+  all: {
+    played: number; win: number; draw: number; lose: number;
+    goals?: { for: number; against: number };
+  };
+  team: { id: number; name: string };
+  group?: string; // present on WC standings; ignored on PL
+}
+
+/**
+ * Main entry. Returns `[]` if no math-driven consequence exists for any
+ * non-playing team. Idempotency is the caller's concern — the partial
+ * unique index makes duplicate INSERTs a no-op.
+ */
+export async function detectConsequences(
+  supabase: SupabaseClient,
+  args: {
+    fixtureId: number;
+    leagueId: number;
+    homeTeamId: string;     // goaldigger slug
+    awayTeamId: string;
+    homeApiId: number;      // API-Football team id
+    awayApiId: number;
+    homeGoals: number;
+    awayGoals: number;
+    homeDisplayName: string;
+    awayDisplayName: string;
+    round?: string;         // B2: API-Football league.round, e.g. "Group Stage - 3" / "Round of 16"
+  },
+): Promise<Consequence[]> {
+  // 1. Load the latest standings snapshot for this league.
+  // We index by either playing team's slug — both teams share the same
+  // standings log row in raw_fetch_logs (data-fetcher writes per-team).
+  // We use the home team's row by convention.
+  const { data: log } = await supabase
+    .from("raw_fetch_logs")
+    .select("data, fetched_at")
+    .eq("source", "api_football_standings")
+    .eq("team_id", args.homeTeamId)
+    .order("fetched_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!log?.data) return [];
+
+  // Standings fetched within STANDINGS_FRESHNESS_MS of now likely already
+  // include this match's result — applyResult would double-count and trip
+  // false-positive consequences for boundary teams.
+  const ageMs = Date.now() - new Date(log.fetched_at as string).getTime();
+  const standingsAlreadyIncludesResult = ageMs >= 0 && ageMs < STANDINGS_FRESHNESS_MS;
+
+  // 2. Resolve the standings array for THIS match's competition slice:
+  //    PL → standings[0]   (single 20-team league array)
+  //    WC → standings[i]   (i = index of group containing both playing teams)
+  const data = log.data as Record<string, unknown>;
+  const response = (data.response as Array<Record<string, unknown>> | undefined) ?? [];
+  const leagueBlock = response[0]?.league as Record<string, unknown> | undefined;
+  const standings = leagueBlock?.standings as StandingsEntry[][] | undefined;
+  if (!Array.isArray(standings) || standings.length === 0) return [];
+
+  let group: StandingsEntry[] | undefined;
+  if (args.leagueId === PL_LEAGUE_ID) {
+    group = standings[0];
+  } else if (args.leagueId === WC_LEAGUE_ID) {
+    // B2: group-qualification math applies ONLY to the group stage. WC
+    // knockout fixtures still carry league.id=1, but losing a knockout tie
+    // IS the elimination (covered by the matchday brief) — running group
+    // math against a stale group table here could fire a contradictory
+    // "qualified/group-won" for a team already knocked out. Gate on the
+    // round: anything that isn't a group-stage round returns no consequence.
+    const round = (args.round ?? "").toLowerCase();
+    if (round.length > 0 && !round.includes("group")) return [];
+
+    group = standings.find((g) =>
+      Array.isArray(g) &&
+      g.some((t) => t.team?.id === args.homeApiId) &&
+      g.some((t) => t.team?.id === args.awayApiId)
+    );
+  }
+  if (!group || group.length === 0) return [];
+
+  // 3. Build trigger_summary deterministically from the fixture.
+  //    Examples:
+  //      "Manchester City could only draw 1-1 at Bournemouth"
+  //      "Bournemouth beat Brentford 2-1"
+  //      "Liverpool lost 0-3 to Chelsea"
+  //    Voice is neutral/reportable — the per-consequence template wraps
+  //    this in the right emotional context for the affected team.
+  const trigger_summary = buildTriggerSummary(args);
+
+  // 4. Apply this fixture's result to a LOCAL COPY of the standings —
+  //    UNLESS the standings have already ingested this result (see the
+  //    age check above). data-fetcher's cron fires every 2h waking, so
+  //    99% of the time the standings are stale and we DO need to apply.
+  const localGroup = standingsAlreadyIncludesResult
+    ? cloneGroup(group)
+    : applyResult(group, args);
+
+  const totalGames = args.leagueId === PL_LEAGUE_ID ? 38 : 3;
+  const apiIdToSlug = await buildApiIdToSlugMap(supabase, localGroup);
+
+  // Hoist the rank-sorted view once. Every consequence check inside
+  // consequencesForTeam reads it; without this, ~20 PL non-playing
+  // teams × 3 sort calls = ~60 redundant array copies per FT.
+  const byRank = [...localGroup].sort((a, b) => a.rank - b.rank);
+
+  // Freshness/completeness gate for HARD WC qualification pushes. On the
+  // simultaneous final matchday the snapshot may predate the OTHER group
+  // game, so the table is incomplete and a "qualified/won/best-third" push
+  // could be wrong. Require every team in the (result-applied) group to have
+  // played the current matchday; otherwise defer the hard pushes and let
+  // them re-fire (idempotently) once data-fetcher refreshes the table. The
+  // factual WC_RIVAL_RESULT push is unaffected (it states a known score).
+  const hardPushesAllowed = args.leagueId !== WC_LEAGUE_ID ||
+    wcSnapshotComplete(localGroup.map((t) => t.all.played), args.round);
+
+  const consequences: Consequence[] = [];
+  for (const team of localGroup) {
+    // Playing teams are covered by gd-matchday; consequences are about
+    // OTHER teams whose race state shifted.
+    if (team.team?.id === args.homeApiId || team.team?.id === args.awayApiId) continue;
+
+    const slug = apiIdToSlug.get(team.team.id);
+    if (!slug) continue;
+
+    let detected = consequencesForTeam(team, localGroup, byRank, totalGames, args.leagueId);
+    if (!hardPushesAllowed) {
+      detected = detected.filter((t) => t !== "WC_GROUP_WON" && t !== "WC_KNOCKOUT_QUALIFIED");
+    }
+    for (const type of detected) {
+      consequences.push({ team_id: slug, consequence_type: type, trigger_summary });
+    }
+
+    if (args.leagueId === WC_LEAGUE_ID) {
+      // Best-third qualification (good news → pushes). Gated on a complete
+      // snapshot; points-locked + cross-group only. Never fires "out".
+      if (hardPushesAllowed && qualifiesAsBestThird(team, localGroup, standings)) {
+        consequences.push({ team_id: slug, consequence_type: "WC_BEST_THIRD_QUALIFIED", trigger_summary });
+      }
+      // Informational rival-result push (the other game's score). Factual
+      // only — no qualification math — so it is NOT gated.
+      consequences.push({ team_id: slug, consequence_type: "WC_RIVAL_RESULT", trigger_summary });
+    }
+  }
+
+  return consequences;
+}
+
+// ── WC group-stage qualification helpers (pure; exported for tests) ──────────
+
+/** Parse the matchday number from API-Football's round, e.g. "Group Stage - 3" → 3. */
+export function matchdayFromRound(round?: string): number | null {
+  const m = (round ?? "").match(/group stage\s*-\s*(\d+)/i);
+  return m ? Number(m[1]) : null;
+}
+
+/**
+ * True if the standings snapshot reflects every game of the current matchday
+ * (every team has played at least `md`). On the simultaneous final matchday
+ * an incomplete snapshot returns false → hard pushes defer. Unknown round
+ * (no matchday) → true (fall back to prior behaviour).
+ */
+export function wcSnapshotComplete(playedCounts: number[], round?: string): boolean {
+  const md = matchdayFromRound(round);
+  if (md === null) return true;
+  return playedCounts.every((p) => p >= md);
+}
+
+/**
+ * Points-only check that the focal team is GUARANTEED to finish exactly 3rd
+ * in its group (conservative — may under-fire, never over-fires). Requires
+ * exactly two group rivals guaranteed above (their floor beats focal's
+ * ceiling) and at least one guaranteed below (focal's floor beats theirs).
+ */
+export function guaranteedExactlyThird(
+  focalPoints: number,
+  focalPlayed: number,
+  others: Array<{ points: number; played: number }>,
+): boolean {
+  const fFloor = focalPoints;
+  const fCeil = focalPoints + 3 * Math.max(0, GROUP_GAMES_PER_TEAM - focalPlayed);
+  const aboveGuaranteed = others.filter((o) => o.points > fCeil).length; // o.floor > F.ceil
+  const belowGuaranteed = others.filter(
+    (o) => fFloor > o.points + 3 * Math.max(0, GROUP_GAMES_PER_TEAM - o.played),
+  ).length; // F.floor > o.ceil
+  return aboveGuaranteed === 2 && belowGuaranteed >= 1;
+}
+
+function toGroupTeams(rows: StandingsEntry[]): GroupTeam[] {
+  return rows.map((t) => ({
+    teamApiId: t.team.id,
+    teamName: t.team.name,
+    points: t.points,
+    played: t.all.played,
+    goalsDiff: t.goalsDiff ?? 0,
+    goalsFor: t.all.goals?.for ?? 0,
+  }));
+}
+
+/**
+ * Whether the focal team is mathematically through as one of the 8 best
+ * third-placed teams. Points-locked guaranteed-3rd in its own group AND
+ * classifyBestThird === guaranteed_in across the other 11 groups (coarse,
+ * stale-safe bounds). The completeness guard in classifyBestThird means a
+ * snapshot missing groups stays soft (no push).
+ */
+/**
+ * The cross-group best-third verdict for the focal team, or undefined when
+ * top-2 is not yet closed (best-third doesn't apply). Points-only + coarse,
+ * stale-safe; classifyBestThird's completeness guard keeps an incomplete
+ * snapshot soft. Used by both the push path and the post_match card.
+ */
+export function bestThirdResultFor(
+  focal: StandingsEntry,
+  focalGroup: StandingsEntry[], // result-applied
+  allStandings: StandingsEntry[][], // all 12 groups (+ the 13-team "Ranking of third-placed teams")
+): BestThirdResult | undefined {
+  const others = focalGroup.filter((t) => t.team.id !== focal.team.id);
+  const fFloor = focal.points;
+  const fCeil = focal.points + 3 * Math.max(0, GROUP_GAMES_PER_TEAM - focal.all.played);
+  // Best-third only applies once top-2 is closed (>=2 rivals guaranteed above).
+  const guaranteedAbove = others.filter((o) => o.points > fCeil).length;
+  if (guaranteedAbove < 2) return undefined;
+  // Other real groups only: exactly 4 teams and not containing the focal team
+  // (this also excludes the 12-team "Ranking of third-placed teams" array).
+  const otherGroups = allStandings
+    .filter((g) => Array.isArray(g) && g.length === 4 && !g.some((t) => t.team?.id === focal.team.id))
+    .map((g, i) => ({ group: `g${i}`, ...coarseThirdPointsBounds(toGroupTeams(g)) }));
+  return classifyBestThird({
+    focalGroup: focal.group ?? "focal",
+    focalGuaranteedThird: guaranteedExactlyThird(
+      focal.points,
+      focal.all.played,
+      others.map((o) => ({ points: o.points, played: o.all.played })),
+    ),
+    focalCanBeThird: guaranteedAbove <= 2, // not locked 4th
+    focalFloorPts: fFloor,
+    focalCeilPts: fCeil,
+    otherGroups,
+  });
+}
+
+/** Push gate: only the unambiguous "through as a best third" case. */
+function qualifiesAsBestThird(
+  focal: StandingsEntry,
+  focalGroup: StandingsEntry[],
+  allStandings: StandingsEntry[][],
+): boolean {
+  return bestThirdResultFor(focal, focalGroup, allStandings)?.status === "guaranteed_in";
+}
+
+export interface PostResultWcContext {
+  /** The focal group with this result applied, in GroupStanding shape. */
+  group: GroupStanding[];
+  /** Cross-group best-third verdict per team api id (only where top-2 is closed). */
+  bestThirdByApiId: Map<number, BestThirdResult>;
+}
+
+/**
+ * For a just-finished WC GROUP fixture, return the focal group (result
+ * applied, same freshness-aware logic as detectConsequences) PLUS the
+ * cross-group best-third verdict per team — so match-watcher can write a
+ * truthful post_match card (upbeat when through as a best third, definitive
+ * when out, honest "out of their hands" while pending). Returns null for
+ * non-WC / non-group-stage / missing data.
+ */
+export async function loadPostResultWcContext(
+  supabase: SupabaseClient,
+  args: {
+    leagueId: number;
+    homeTeamId: string; // slug, for the standings log lookup
+    homeApiId: number;
+    awayApiId: number;
+    homeGoals: number;
+    awayGoals: number;
+    round?: string;
+  },
+): Promise<PostResultWcContext | null> {
+  if (args.leagueId !== WC_LEAGUE_ID) return null;
+  const round = (args.round ?? "").toLowerCase();
+  if (round.length > 0 && !round.includes("group")) return null;
+
+  const { data: log } = await supabase
+    .from("raw_fetch_logs")
+    .select("data, fetched_at")
+    .eq("source", "api_football_standings")
+    .eq("team_id", args.homeTeamId)
+    .order("fetched_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!log?.data) return null;
+
+  const ageMs = Date.now() - new Date(log.fetched_at as string).getTime();
+  const alreadyIncludesResult = ageMs >= 0 && ageMs < STANDINGS_FRESHNESS_MS;
+
+  const data = log.data as Record<string, unknown>;
+  const response = (data.response as Array<Record<string, unknown>> | undefined) ?? [];
+  const leagueBlock = response[0]?.league as Record<string, unknown> | undefined;
+  const standings = leagueBlock?.standings as StandingsEntry[][] | undefined;
+  if (!Array.isArray(standings) || standings.length === 0) return null;
+
+  const group = standings.find((g) =>
+    Array.isArray(g) &&
+    g.some((t) => t.team?.id === args.homeApiId) &&
+    g.some((t) => t.team?.id === args.awayApiId)
+  );
+  if (!group || group.length === 0) return null;
+
+  const local = alreadyIncludesResult ? cloneGroup(group) : applyResult(group, args);
+  const bestThirdByApiId = new Map<number, BestThirdResult>();
+  for (const t of local) {
+    const verdict = bestThirdResultFor(t, local, standings);
+    if (verdict) bestThirdByApiId.set(t.team.id, verdict);
+  }
+  return {
+    group: local.map((t) => ({
+      teamApiId: t.team.id,
+      teamName: t.team.name,
+      points: t.points,
+      played: t.all.played,
+    })),
+    bestThirdByApiId,
+  };
+}
+
+// ============================================================
+// Helpers — deterministic, no I/O beyond the slug map lookup
+// ============================================================
+
+function buildTriggerSummary(args: {
+  homeDisplayName: string;
+  awayDisplayName: string;
+  homeGoals: number;
+  awayGoals: number;
+}): string {
+  const { homeDisplayName, awayDisplayName, homeGoals, awayGoals } = args;
+  if (homeGoals === awayGoals) {
+    // Draw — the away team's perspective tends to read as the "newsworthy"
+    // angle ("could only draw at X") since road draws are more often the
+    // result that triggers a title swing. Pick the higher-points-team
+    // mention later if needed.
+    return `${awayDisplayName} could only draw ${homeGoals}-${awayGoals} at ${homeDisplayName}`;
+  }
+  if (homeGoals > awayGoals) {
+    return `${homeDisplayName} beat ${awayDisplayName} ${homeGoals}-${awayGoals}`;
+  }
+  return `${awayDisplayName} beat ${homeDisplayName} ${awayGoals}-${homeGoals}`;
+}
+
+function cloneGroup(group: StandingsEntry[]): StandingsEntry[] {
+  return group.map((t) => ({
+    rank: t.rank,
+    points: t.points,
+    goalsDiff: t.goalsDiff ?? 0,
+    all: {
+      played: t.all.played, win: t.all.win, draw: t.all.draw, lose: t.all.lose,
+      goals: t.all.goals
+        ? { for: t.all.goals.for, against: t.all.goals.against }
+        : { for: 0, against: 0 },
+    },
+    team: { id: t.team.id, name: t.team.name },
+    group: t.group,
+  }));
+}
+
+function applyResult(
+  group: StandingsEntry[],
+  args: { homeApiId: number; awayApiId: number; homeGoals: number; awayGoals: number },
+): StandingsEntry[] {
+  const copy = cloneGroup(group);
+
+  const home = copy.find((t) => t.team.id === args.homeApiId);
+  const away = copy.find((t) => t.team.id === args.awayApiId);
+  if (!home || !away) return copy;
+
+  // Caller has already gated on STANDINGS_FRESHNESS_MS (only stale
+  // snapshots reach here). Apply unconditionally.
+  if (args.homeGoals > args.awayGoals) {
+    home.points += 3;
+    home.all.win += 1;
+    away.all.lose += 1;
+  } else if (args.homeGoals < args.awayGoals) {
+    away.points += 3;
+    home.all.lose += 1;
+    away.all.win += 1;
+  } else {
+    home.points += 1;
+    away.points += 1;
+    home.all.draw += 1;
+    away.all.draw += 1;
+  }
+  home.all.played += 1;
+  away.all.played += 1;
+
+  // B3: keep goals + goalsDiff current so the re-rank below can break
+  // points ties the way the real table does (cloneGroup guarantees
+  // all.goals is present).
+  home.all.goals!.for += args.homeGoals;
+  home.all.goals!.against += args.awayGoals;
+  away.all.goals!.for += args.awayGoals;
+  away.all.goals!.against += args.homeGoals;
+  home.goalsDiff = home.all.goals!.for - home.all.goals!.against;
+  away.goalsDiff = away.all.goals!.for - away.all.goals!.against;
+
+  // Re-rank by points DESC, then goal difference, then goals scored — the
+  // first two FIFA/PL tiebreakers. Head-to-head is still V1.1, but
+  // points-only ranking (the old behaviour) put tied teams in arbitrary
+  // order, which could mislabel the 2nd/3rd boundary team a consequence
+  // check compares against. GD-awareness removes the worst misfires.
+  copy.sort((a, b) =>
+    b.points - a.points ||
+    b.goalsDiff - a.goalsDiff ||
+    (b.all.goals?.for ?? 0) - (a.all.goals?.for ?? 0)
+  );
+  copy.forEach((t, i) => (t.rank = i + 1));
+  return copy;
+}
+
+function consequencesForTeam(
+  team: StandingsEntry,
+  group: StandingsEntry[],
+  byRank: StandingsEntry[], // hoisted, rank-sorted view of group
+  totalGames: number,
+  leagueId: number,
+): ConsequenceType[] {
+  const out: ConsequenceType[] = [];
+  const gamesLeft = totalGames - team.all.played;
+  const myMin = team.points;
+  const myMax = team.points + 3 * gamesLeft;
+
+  // Helper: a team strictly weaker than me on max possible (i.e. my floor
+  // exceeds their ceiling), checking the rank-N boundary team.
+  const myFloorBeatsRankCeiling = (rankIdx: number): boolean => {
+    const boundary = byRank[rankIdx];
+    if (!boundary || boundary.team.id === team.team.id) return false;
+    const boundaryMax = boundary.points + 3 * (totalGames - boundary.all.played);
+    return myMin > boundaryMax;
+  };
+
+  // Helper: my ceiling can't catch the rank-N team's floor (I'm out).
+  const myCeilingBelowRankFloor = (rankIdx: number): boolean => {
+    const boundary = byRank[rankIdx];
+    if (!boundary || boundary.team.id === team.team.id) return false;
+    return myMax < boundary.points;
+  };
+
+  if (leagueId === PL_LEAGUE_ID) {
+    // TITLE_WON: my floor exceeds every other team's ceiling.
+    const others = group.filter((t) => t.team.id !== team.team.id);
+    const othersMax = Math.max(
+      ...others.map((t) => t.points + 3 * (totalGames - t.all.played)),
+    );
+    if (myMin > othersMax) out.push("TITLE_WON");
+
+    // UCL_CLINCHED: my floor exceeds the 5th-placed team's ceiling.
+    if (group.length >= 5 && myFloorBeatsRankCeiling(4)) out.push("UCL_CLINCHED");
+
+    // EUROPE_CLINCHED: my floor exceeds the 9th-placed team's ceiling
+    // (Conference League slot is the 8th-place reward; 9th is the
+    // boundary we have to overshoot).
+    if (group.length >= 9 && myFloorBeatsRankCeiling(8)) out.push("EUROPE_CLINCHED");
+
+    // RELEGATED: my ceiling below the 17th-placed team's floor.
+    if (group.length >= 18 && myCeilingBelowRankFloor(16)) out.push("RELEGATED");
+  } else if (leagueId === WC_LEAGUE_ID) {
+    // WC_KNOCKOUT_QUALIFIED: my floor exceeds the 3rd-ranked team's
+    // ceiling within this group (top-2 advance directly; best-3rd is V1.1).
+    if (group.length >= 3 && myFloorBeatsRankCeiling(2)) out.push("WC_KNOCKOUT_QUALIFIED");
+
+    // WC_GROUP_WON: my floor exceeds the 2nd-ranked team's ceiling.
+    if (group.length >= 2 && myFloorBeatsRankCeiling(1)) out.push("WC_GROUP_WON");
+
+    // WC_KNOCKOUT_ELIMINATED: DISABLED (B1). The single-group check
+    // (my ceiling < 2nd-placed floor) is WRONG for the 2026 format: a
+    // 3rd-placed team that can't reach top-2 can STILL advance as one of
+    // the 8 best third-placed sides. Firing "you're out" when a team is
+    // actually still alive is the worst possible push, and unlike a false
+    // "you're through" it can't be walked back. A correct ELIMINATED needs
+    // a cross-group best-third comparator (3rd-place points across all 12
+    // groups) — that's V1.1. Until then we never fire it; group-stage exit
+    // is conveyed by the team's own matchday brief instead.
+    // if (group.length >= 2 && myCeilingBelowRankFloor(1)) out.push("WC_KNOCKOUT_ELIMINATED");
+  }
+
+  return out;
+}
+
+async function buildApiIdToSlugMap(
+  supabase: SupabaseClient,
+  group: StandingsEntry[],
+): Promise<Map<number, string>> {
+  const apiIds = group.map((t) => t.team?.id).filter((id): id is number => typeof id === "number");
+  if (apiIds.length === 0) return new Map();
+
+  const { data } = await supabase
+    .from("teams")
+    .select("id, api_football_id")
+    .in("api_football_id", apiIds);
+
+  const map = new Map<number, string>();
+  for (const row of data ?? []) {
+    const apiId = (row as { api_football_id: number }).api_football_id;
+    const slug = (row as { id: string }).id;
+    if (apiId && slug) map.set(apiId, slug);
+  }
+  return map;
+}

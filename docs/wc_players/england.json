@@ -1,0 +1,278 @@
+{
+ "country": "england",
+ "displayName": "England",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Thomas Tuchel",
+ "captain": "H. Kane",
+ "keyPlayers": [
+  "H. Kane",
+  "J. Bellingham",
+  "D. Rice",
+  "B. Saka",
+  "J. Pickford"
+ ],
+ "players": [
+  {
+   "id": 19088,
+   "name": "D. Henderson",
+   "age": 28,
+   "position": "Goalkeeper",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/19088.png",
+   "club": "Crystal Palace",
+   "note": "Spent years as England's loyal understudy keeper, then finally got regular football at Crystal Palace. He's the safe pair of hands Tuchel keeps in reserve behind Pickford."
+  },
+  {
+   "id": 2932,
+   "name": "J. Pickford",
+   "age": 31,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/2932.png",
+   "club": "Everton",
+   "note": "England's number one and a genuine penalty-shootout specialist who seems to do his homework on every taker. He's the loud organiser at the back, now heading to a third World Cup."
+  },
+  {
+   "id": 162489,
+   "name": "J. Trafford",
+   "age": 23,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/162489.png",
+   "club": "Manchester City",
+   "note": "The young keeper who set a record run of clean sheets while getting Burnley promoted, which earned him a move back to Manchester City. Tuchel handed him his first England cap just months before this tournament."
+  },
+  {
+   "id": 18961,
+   "name": "D. Burn",
+   "age": 33,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/18961.png",
+   "club": "Newcastle",
+   "note": "A towering Blyth lad who scored the header that won Newcastle their first major trophy in 70 years, then made his England debut at 32. Proof that the late bloomers sometimes get the best stories."
+  },
+  {
+   "id": 67971,
+   "name": "M. Gu\u00e9hi",
+   "age": 25,
+   "position": "Defender",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/67971.png",
+   "club": "Crystal Palace",
+   "note": "Crystal Palace's calm, ball-playing captain who reads danger before it arrives rather than relying on a last-ditch lunge. One of the more dependable centre-backs in Tuchel's defence."
+  },
+  {
+   "id": 19545,
+   "name": "R. James",
+   "age": 26,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/19545.png",
+   "club": "Chelsea",
+   "note": "Chelsea's right-back has the engine and crossing of a wing-back when fit, but injuries have repeatedly stalled his career. This is the first World Cup his body has finally let him reach."
+  },
+  {
+   "id": 19354,
+   "name": "E. Konsa",
+   "age": 28,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/19354.png",
+   "club": "Aston Villa",
+   "note": "Aston Villa's quietly versatile defender who can slot in at centre-back or right-back without complaint. Exactly the unflashy, do-his-job type tournament squads are built around."
+  },
+  {
+   "id": 158694,
+   "name": "T. Livramento",
+   "age": 23,
+   "position": "Defender",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/158694.png",
+   "club": "Newcastle",
+   "note": "A flying full-back whose career was nearly derailed by a serious knee injury early on, but he fought all the way back to Newcastle's first team. Quick and direct when his fitness holds up."
+  },
+  {
+   "id": 307123,
+   "name": "N. Oreilly",
+   "age": 20,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/307123.png",
+   "club": "Manchester City",
+   "note": "The youngest name here, a Manchester City academy product who went from unknown to first-team regular in a single season, scoring in the cup final win over Arsenal. A boyhood City fan suddenly at the World Cup."
+  },
+  {
+   "id": 158698,
+   "name": "J. Quansah",
+   "age": 22,
+   "position": "Defender",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/158698.png",
+   "club": "Bayer Leverkusen",
+   "note": "The Liverpool academy centre-back who backed himself by moving to Germany with Bayer Leverkusen for regular football. It paid off with an England debut and a place on the plane."
+  },
+  {
+   "id": 19235,
+   "name": "D. Spence",
+   "age": 25,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/19235.png",
+   "club": "Tottenham",
+   "note": "Once written off and shipped out on loan after a stalled Spurs move, he chose to fight for his place rather than drift away. The reward was a Tottenham regular's role and a surprise England call-up."
+  },
+  {
+   "id": 626,
+   "name": "J. Stones",
+   "age": 31,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/626.png",
+   "club": "Manchester City",
+   "note": "The composed Manchester City defender famous for dribbling out of trouble where others would just hoof it clear. A serial trophy winner now at his third World Cup, when his body cooperates."
+  },
+  {
+   "id": 138908,
+   "name": "E. Anderson",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/138908.png",
+   "club": "Nottingham Forest",
+   "note": "A tireless box-to-box midfielder who left boyhood club Newcastle for Nottingham Forest and turned into one of the league's most underrated engines. Big clubs have been circling ever since."
+  },
+  {
+   "id": 129718,
+   "name": "J. Bellingham",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/129718.png",
+   "club": "Real Madrid",
+   "note": "England's big-moment midfielder at Real Madrid, the one who arrives late in the box and somehow scores the goal everyone was waiting for. Plays with a swagger that can drag a whole team forward."
+  },
+  {
+   "id": 19586,
+   "name": "E. Eze",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/19586.png",
+   "club": "Arsenal",
+   "note": "A silky, close-control playmaker who finally got his big move to Arsenal after years lighting up Crystal Palace. The kind of player who can wriggle out of a tight corner and unlock a parked bus."
+  },
+  {
+   "id": 292,
+   "name": "J. Henderson",
+   "age": 35,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/292.png",
+   "club": "Brentford",
+   "note": "At 35 he's the squad's elder statesman, equalling a record fourth World Cup appearance by an England player. Whether he starts or not, he's the dressing-room voice Tuchel trusts."
+  },
+  {
+   "id": 284322,
+   "name": "K. Mainoo",
+   "age": 20,
+   "position": "Midfielder",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/284322.png",
+   "club": "Manchester United",
+   "note": "The Manchester United youngster with a midfielder's brain well beyond his years, gliding past challenges as if the ball's tied to his foot. Still only 20 but already trusted on the biggest stage."
+  },
+  {
+   "id": 2937,
+   "name": "D. Rice",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/2937.png",
+   "club": "Arsenal",
+   "note": "England's midfield anchor and one of the most expensive British players ever after his move to Arsenal. He shields the back four, wins the ball, and has quietly turned into a serious set-piece threat."
+  },
+  {
+   "id": 19170,
+   "name": "M. Rogers",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/19170.png",
+   "club": "Aston Villa",
+   "note": "Took the scenic route through the lower leagues before exploding at Aston Villa, where he scored in their first European trophy win. A big, skilful number ten who genuinely came from nowhere."
+  },
+  {
+   "id": 138787,
+   "name": "A. Gordon",
+   "age": 24,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/138787.png",
+   "club": "Newcastle",
+   "note": "Newcastle's blistering left winger whose pace alone forces defenders backwards. Boyhood Everton fan who's grown into one of England's most direct attacking threats."
+  },
+  {
+   "id": 184,
+   "name": "H. Kane",
+   "age": 32,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/184.png",
+   "club": "Bayern M\u00fcnchen",
+   "note": "The captain and England's all-time top scorer, a striker who scores every kind of goal and drops deep to create them too. Endlessly chasing the one major trophy that's still eluded him."
+  },
+  {
+   "id": 136723,
+   "name": "N. Madueke",
+   "age": 23,
+   "position": "Attacker",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/136723.png",
+   "club": "Arsenal",
+   "note": "A powerful, fearless winger at Arsenal who runs straight at full-backs and trusts his strength to win the duel. Raw at times, but the kind of off-the-bench spark that breaks tired defences."
+  },
+  {
+   "id": 909,
+   "name": "M. Rashford",
+   "age": 28,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/909.png",
+   "club": "Barcelona",
+   "note": "Written off after falling out of favour at Manchester United, he rebuilt his game on loan at Barcelona and forced his way back into the England squad. A reminder that careers aren't always a straight line."
+  },
+  {
+   "id": 1460,
+   "name": "B. Saka",
+   "age": 24,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/1460.png",
+   "club": "Arsenal",
+   "note": "Arsenal's right-winger who cuts inside onto his left foot so often that everyone knows it's coming and still can't stop it. One of England's most reliable goal-and-assist machines."
+  },
+  {
+   "id": 19974,
+   "name": "I. Toney",
+   "age": 29,
+   "position": "Attacker",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/19974.png",
+   "club": "Al-Ahli Jeddah",
+   "note": "Famous for his ice-cold, slow-motion penalty run-up where he barely looks at the ball, this Saudi-based striker came back from a long ban to keep scoring. England's specialist plan B up front."
+  },
+  {
+   "id": 19366,
+   "name": "O. Watkins",
+   "age": 30,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/19366.png",
+   "club": "Aston Villa",
+   "note": "The Aston Villa striker who works the channels and has a habit of scoring decisive substitute goals for England. Late to the top level, he's made up for lost time with sheer reliability."
+  }
+ ],
+ "guardianStarPlayer": "Harry Kane",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

@@ -1,0 +1,279 @@
+{
+ "country": "norway",
+ "displayName": "Norway",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "St\u00e5le Solbakken",
+ "captain": "Martin \u00d8degaard",
+ "keyPlayers": [
+  "Erling Haaland",
+  "Martin \u00d8degaard",
+  "Alexander S\u00f8rloth",
+  "Antonio Nusa",
+  "Sander Berge",
+  "Andreas Schjelderup"
+ ],
+ "players": [
+  {
+   "id": 19172,
+   "name": "\u00d8. Nyland",
+   "age": 35,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/19172.png",
+   "club": "Sevilla",
+   "note": "At 35, the veteran of the squad and Norway's likely number one in goal, even though he spent much of the season as a backup at Sevilla. Steady and experienced rather than flashy, exactly what you want behind a young defence at a first World Cup in nearly three decades."
+  },
+  {
+   "id": 39082,
+   "name": "E. Selvik",
+   "age": 28,
+   "position": "Goalkeeper",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/39082.png",
+   "club": "Watford",
+   "note": "A 28-year-old keeper at Watford in England's second tier, here as a backup option behind Nyland. He spent years as a reliable starter and captain in Norway before moving abroad, so he brings calm cover rather than a likely starting spot."
+  },
+  {
+   "id": 264378,
+   "name": "S. Tangvik",
+   "age": 23,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/264378.png",
+   "club": "Rosenborg",
+   "note": "The youngest of the three keepers at 23, a tall shot-stopper who broke through as a regular starter in the Norwegian league and earned his first senior call-ups late in qualifying. This tournament is mostly about experience for him; expect him to train and learn rather than play."
+  },
+  {
+   "id": 1119,
+   "name": "K. Ajer",
+   "age": 27,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/1119.png",
+   "club": "Brentford",
+   "note": "A tall, ball-playing centre-back for Brentford and one of Norway's likely starting defenders. He even chipped in with goals during qualifying, and at 27 he is now one of the senior heads anchoring a fairly young back line."
+  },
+  {
+   "id": 39058,
+   "name": "F. Bj\u00f8rkan",
+   "age": 27,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/39058.png",
+   "club": "Bodo/Glimt",
+   "note": "A 27-year-old left-back for Bodo/Glimt, the club that punched above its weight in Europe, where he gained Champions League experience. He provides cover and competition at left-back rather than a guaranteed start."
+  },
+  {
+   "id": 180937,
+   "name": "H. Falchener",
+   "age": 22,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/180937.png",
+   "club": "Viking",
+   "note": "A towering 22-year-old centre-back who had a breakout season for Viking, scoring more goals than any other defender in the Norwegian league as his club topped the table for the first time in over thirty years. Newly capped and one for the future, he is squad depth at this tournament."
+  },
+  {
+   "id": 265444,
+   "name": "S. Lang\u00e5s",
+   "age": 24,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/265444.png",
+   "club": "Derby",
+   "note": "A 24-year-old centre-back who became a regular starter for Derby in England's second tier after moving over from Norway, even chipping in with a few goals. He is part of the defensive cover here rather than a first-choice pick."
+  },
+  {
+   "id": 39254,
+   "name": "T. Heggem",
+   "age": 26,
+   "position": "Defender",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/39254.png",
+   "club": "Bologna",
+   "note": "A 26-year-old centre-back whose stock has risen fast: a player-of-the-season award in England earned him a move to Bologna in Italy's Serie A, and he is now pencilled in to start alongside Ajer at the back. Comfortable on the ball and able to fill in at left-back."
+  },
+  {
+   "id": 18967,
+   "name": "L. \u00d8stig\u00e5rd",
+   "age": 26,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/18967.png",
+   "club": "Genoa",
+   "note": "A 26-year-old centre-back at Genoa with a well-travelled career and a Serie A title from his Napoli days. He had a productive league season scoring a handful of goals, but in this squad he is experienced backup behind the first-choice pairing."
+  },
+  {
+   "id": 39362,
+   "name": "M. Pedersen",
+   "age": 25,
+   "position": "Defender",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/39362.png",
+   "club": "Torino",
+   "note": "A 25-year-old right-back at Torino who became a league regular in Italy and won an Eredivisie title earlier in his career with Feyenoord. He can cover both flanks, which makes him useful depth behind Norway's first-choice full-backs."
+  },
+  {
+   "id": 265782,
+   "name": "D. M\u00f8ller Wolfe",
+   "age": 23,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/265782.png",
+   "club": "Wolves",
+   "note": "A 23-year-old left-back who earned a big-money move to Wolves in the Premier League after standing out in the Netherlands for his attacking output from the flank. He is in the frame to start at left-back, offering plenty going forward."
+  },
+  {
+   "id": 277930,
+   "name": "T. Aasgaard",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/277930.png",
+   "club": "Rangers",
+   "note": "A 23-year-old midfielder at Rangers in Scotland, born in Liverpool and Norwegian through his father. An attack-minded player who chips in with goals, he is one of the squad's younger options in midfield rather than a regular starter."
+  },
+  {
+   "id": 39043,
+   "name": "F. Aursnes",
+   "age": 30,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/39043.png",
+   "club": "Benfica",
+   "note": "A 30-year-old midfielder at Benfica, reliable and versatile across the middle and flanks. He had actually retired from international football, then reversed that decision once Norway reached the finals so he could finally play at a World Cup."
+  },
+  {
+   "id": 39064,
+   "name": "P. Berg",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/39064.png",
+   "club": "Bodo/Glimt",
+   "note": "A 28-year-old defensive midfielder and captain of Bodo/Glimt, from a famous Norwegian footballing family. He racked up assists and led his club to league titles and a deep European run, bringing leadership and tidy passing to Norway's midfield depth."
+  },
+  {
+   "id": 1934,
+   "name": "S. Berge",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/1934.png",
+   "club": "Fulham",
+   "note": "A 27-year-old defensive midfielder at Fulham and one of Norway's likely starters in the engine room. Tall and rangy, his job is the unglamorous one of breaking up play and screening the back four so the creative players ahead of him can shine."
+  },
+  {
+   "id": 278133,
+   "name": "Oscar Bobb",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/278133.png",
+   "club": "Fulham",
+   "note": "A 22-year-old winger who joined Fulham in January chasing regular minutes after years on the fringes at Manchester City, partly due to injuries. Quick and inventive, he is one of Norway's most exciting attacking options off the bench."
+  },
+  {
+   "id": 37127,
+   "name": "M. \u00d8degaard",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/37127.png",
+   "club": "Arsenal",
+   "note": "Norway's captain and creative heartbeat, the 27-year-old Arsenal playmaker who pulls the strings from midfield. A knee injury wrecked much of his club season, but he marked his return by scoring in a World Cup warm-up; how fit he is may shape how far Norway can go."
+  },
+  {
+   "id": 36980,
+   "name": "M. Thorsby",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/36980.png",
+   "club": "Genoa",
+   "note": "A 29-year-old hard-running midfielder with a Serie A pedigree, valued for his energy and willingness to do the dirty work. He famously wears number 2 as a nod to his climate campaigning, and offers experienced cover in the middle of the park."
+  },
+  {
+   "id": 39143,
+   "name": "K. Thorstvedt",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/39143.png",
+   "club": "Sassuolo",
+   "note": "A 26-year-old box-to-box midfielder at Sassuolo who weighs in with goals and assists from deeper positions. He is firmly in the mix for a starting role and is set for his first World Cup, part of a midfield three meant to support Odegaard."
+  },
+  {
+   "id": 301528,
+   "name": "A. Schjelderup",
+   "age": 21,
+   "position": "Midfielder",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/301528.png",
+   "club": "Benfica",
+   "note": "A 21-year-old forward and one of the brightest young talents in the squad, he finished the season strongly at Benfica and is now among their most coveted players. A left-sided attacker who can play through the middle, he gives Norway dangerous depth in the final third."
+  },
+  {
+   "id": 39073,
+   "name": "J. Hauge",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/39073.png",
+   "club": "Bodo/Glimt",
+   "note": "A 26-year-old left winger back at Bodo/Glimt after spells in Italy and Germany, where he shone in the Champions League with a brace against Tottenham. A direct dribbler with an eye for goal, he is a useful wide attacking option from the bench."
+  },
+  {
+   "id": 1100,
+   "name": "E. Haaland",
+   "age": 25,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/1100.png",
+   "club": "Manchester City",
+   "note": "The reason Norway are even here, and one of the most feared strikers on the planet. The 25-year-old Manchester City forward scored in all eight qualifiers, racking up 16 goals to drag his country to a first World Cup in 28 years. Defences will plan their whole match around stopping him."
+  },
+  {
+   "id": 2032,
+   "name": "J. Strand Larsen",
+   "age": 25,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/2032.png",
+   "club": "Wolves",
+   "note": "A 25-year-old striker who enjoyed a strong first season in the Premier League with Wolves and scored the late goal in Italy that sealed Norway's qualification. With Haaland and Sorloth ahead of him, he is an able backup who can lead the line if needed."
+  },
+  {
+   "id": 314511,
+   "name": "A. Nusa",
+   "age": 20,
+   "position": "Attacker",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/314511.png",
+   "club": "RB Leipzig",
+   "note": "At 20, one of Norway's most exciting young attackers and a likely starter on the wing. The RB Leipzig winger is comfortable on either flank, with the explosive pace and direct dribbling to terrify full-backs on the counter."
+  },
+  {
+   "id": 8492,
+   "name": "A. S\u00f8rloth",
+   "age": 30,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/8492.png",
+   "club": "Atletico Madrid",
+   "note": "A 30-year-old striker for Atletico Madrid who is among Europe's most prolific forwards, once scoring four times in a single La Liga match. Expected to start alongside Haaland, he gives Norway a powerful, physical front two that few defences will relish facing."
+  },
+  {
+   "id": 24845,
+   "name": "J. Ryerson",
+   "age": 28,
+   "position": "Attacker",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/24845.png",
+   "club": "Borussia Dortmund",
+   "note": "A 28-year-old full-back and wing-back for Borussia Dortmund, despite being listed here as an attacker, and tipped to start at right-back for Norway. He is an excellent crosser who racked up assists in the Bundesliga and is happy to bomb forward down either flank."
+  }
+ ],
+ "guardianStarPlayer": "Erling Haaland",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

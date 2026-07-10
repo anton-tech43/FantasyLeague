@@ -1,0 +1,278 @@
+{
+ "country": "tunisia",
+ "displayName": "Tunisia",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Sabri Lamouchi",
+ "captain": "Ellyes Skhiri",
+ "keyPlayers": [
+  "Ellyes Skhiri",
+  "Hannibal Mejbri",
+  "Montassar Talbi",
+  "Sebastian Tounekti",
+  "Firas Chaouat"
+ ],
+ "players": [
+  {
+   "id": 49423,
+   "name": "S. Ben Hsan",
+   "age": 29,
+   "position": "Goalkeeper",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/49423.png",
+   "club": "Etoile du Sahel",
+   "note": "A 29-year-old keeper for Etoile du Sahel in the Tunisian league, here as a backup option behind the established names. He moved to Etoile in 2025 and is likelier to watch from the bench than to play."
+  },
+  {
+   "id": 533394,
+   "name": "C. Abdelmouhib",
+   "age": 24,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/533394.png",
+   "club": "Club Africain",
+   "note": "A 24-year-old who was the first-choice keeper as Club Africain won the Tunisian league title, which is a strong year for someone his age. He wears the number 1 shirt here but is competing with a more capped goalkeeper for the actual starting spot."
+  },
+  {
+   "id": 49424,
+   "name": "A. Dahmen",
+   "age": 28,
+   "position": "Goalkeeper",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/49424.png",
+   "club": "CS Sfaxien",
+   "note": "Tunisia's expected number one despite wearing 16, with around 37 caps and a steady home-league season at his boyhood club CS Sfaxien. Calm and well-drilled, he is the keeper Lamouchi trusts to anchor the defence."
+  },
+  {
+   "id": 49583,
+   "name": "A. Abdi",
+   "age": 32,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/49583.png",
+   "club": "Nice",
+   "note": "A 32-year-old left-back at Ligue 1 side Nice and one of Tunisia's more experienced full-backs. He pushes forward to support attacks, so expect him overlapping down the left when Tunisia have the ball."
+  },
+  {
+   "id": 393977,
+   "name": "A. Arous",
+   "age": 21,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/393977.png",
+   "club": "Kasımpaşa",
+   "note": "A tall, 21-year-old centre-back who broke through this season at Turkish club Kasimpasa and earned his first Tunisia caps in early 2026. A breakout year has drawn interest from bigger clubs, and this tournament is his chance to keep rising."
+  },
+  {
+   "id": 135059,
+   "name": "A. Ben Hmida",
+   "age": 30,
+   "position": "Defender",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/135059.png",
+   "club": "ES Tunis",
+   "note": "A left-back from Esperance de Tunis, the biggest club in the domestic league, providing depth and cover on the left side. At 30 he brings plenty of experience even if he is not nailed-on to start."
+  },
+  {
+   "id": 2945,
+   "name": "D. Bronn",
+   "age": 30,
+   "position": "Defender",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/2945.png",
+   "club": "Servette FC",
+   "note": "A vastly experienced centre-back, now at Swiss side Servette, who famously scored against Belgium at the 2018 World Cup. With more than 40 caps he is a calming, senior presence in the back line."
+  },
+  {
+   "id": 533360,
+   "name": "R. Chikhaoui",
+   "age": 21,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/533360.png",
+   "club": "US Monastir",
+   "note": "A 21-year-old defender from US Monastir who only recently earned his first senior cap, included here mostly to develop and add depth. Tall and still raw, he is one for the future rather than the starting eleven."
+  },
+  {
+   "id": 375608,
+   "name": "M. Neffati",
+   "age": 21,
+   "position": "Defender",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/375608.png",
+   "club": "IFK Norrkoping",
+   "note": "A 21-year-old defender plying his trade in Sweden with IFK Norrkoping, one of the squad's younger and less-established names. He is here to gain tournament experience rather than to feature heavily."
+  },
+  {
+   "id": 163068,
+   "name": "O. Rekik",
+   "age": 24,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/163068.png",
+   "club": "Maribor",
+   "note": "A 24-year-old centre-back, Dutch-born and a former Arsenal academy product, now settled at Slovenian club Maribor. After years of loans he has found regular football, which is what brought him into the Tunisia squad."
+  },
+  {
+   "id": 50030,
+   "name": "M. Talbi",
+   "age": 27,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/50030.png",
+   "club": "Lorient",
+   "note": "A near-ever-present centre-back for Ligue 1 club Lorient and the cornerstone of Tunisia's defence. Tall and strong in the air, he wins the majority of his aerial duels, exactly what you want against the bigger forwards in Group F."
+  },
+  {
+   "id": 18942,
+   "name": "Y. Valery",
+   "age": 26,
+   "position": "Defender",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/18942.png",
+   "club": "Sheffield Wednesday",
+   "note": "Tunisia's likely starting right-back, a France-born defender who came up through Southampton before settling in English football. He brings the energy to get up and down the right flank throughout a game."
+  },
+  {
+   "id": 49469,
+   "name": "M. Ben Ouanes",
+   "age": 31,
+   "position": "Defender",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/49469.png",
+   "club": "Kasımpaşa",
+   "note": "A 31-year-old full-back who has been a regular at Turkish club Kasimpasa for several years. Versatile enough to cover either flank, he offers reliable, experienced cover off the bench."
+  },
+  {
+   "id": 533295,
+   "name": "K. Ayari",
+   "age": 20,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/533295.png",
+   "club": "Paris Saint-Germain",
+   "note": "A 20-year-old talent on the books at Paris Saint-Germain, where he has been working with the academy and reserve setup. Calling him up is a bet on his potential, so he is here to learn more than to start."
+  },
+  {
+   "id": 310196,
+   "name": "Ismaël Gharbi",
+   "age": 21,
+   "position": "Midfielder",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/310196.png",
+   "club": "FC Augsburg",
+   "note": "A creative midfielder who grew up in PSG's academy alongside the likes of Messi and Mbappe, now on loan at Bundesliga side Augsburg. He only switched his international allegiance to Tunisia in 2025 and gives the side a touch of flair in possession."
+  },
+  {
+   "id": 25300,
+   "name": "R. Khedira",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/25300.png",
+   "club": "Union Berlin",
+   "note": "A 31-year-old holding midfielder for Bundesliga club Union Berlin and the younger brother of former Germany star Sami Khedira. He only switched to Tunisia in 2026 but is expected to slot straight into the starting midfield as a screen in front of the defence."
+  },
+  {
+   "id": 180560,
+   "name": "H. Mejbri",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/180560.png",
+   "club": "Burnley",
+   "note": "Tunisia's number 10 and the team's main spark, a combative former Manchester United youngster now playing his football at Burnley. The Guardian's pick as the squad's standout, he is the player most likely to make something happen in the final third."
+  },
+  {
+   "id": 21587,
+   "name": "E. Skhiri",
+   "age": 30,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/21587.png",
+   "club": "Eintracht Frankfurt",
+   "note": "The captain and Tunisia's most-capped player, a tireless box-to-box midfielder at Bundesliga club Eintracht Frankfurt. He has been a first-choice starter for over a decade and is the engine the whole team is built around."
+  },
+  {
+   "id": 199310,
+   "name": "A. Ben Slimane",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/199310.png",
+   "club": "Norwich",
+   "note": "A 24-year-old, Denmark-born midfielder at Norwich whose strong end to the season earned him this call-up after a long injury layoff earlier in the campaign. He adds physicality and depth to the engine room."
+  },
+  {
+   "id": 67195,
+   "name": "H. Mahmoud",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/67195.png",
+   "club": "FC Lugano",
+   "note": "A 25-year-old midfielder at Swiss club Lugano, one of the squad's lesser-known names brought in to add options in the middle of the park. He is more likely to feature in rotation than to be a guaranteed starter."
+  },
+  {
+   "id": 57518,
+   "name": "S. Tounekti",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/57518.png",
+   "club": "Celtic",
+   "note": "A direct, 23-year-old winger who earned a multi-million-pound move to Celtic in 2025 after impressing in Sweden. Primarily a left winger who can switch sides, he gives Tunisia genuine pace and one-on-one threat out wide."
+  },
+  {
+   "id": 42012,
+   "name": "E. Achouri",
+   "age": 26,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/42012.png",
+   "club": "FC Copenhagen",
+   "note": "Tunisia's main wide attacking threat, a left winger at FC Copenhagen with regular Champions League minutes under his belt. He chips in with goals and assists and brings real European pedigree to the front line."
+  },
+  {
+   "id": 2962,
+   "name": "F. Chaouat",
+   "age": 29,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/2962.png",
+   "club": "Club Africain",
+   "note": "A 29-year-old striker in red-hot domestic form, leading the Tunisian league scoring charts for Club Africain including a derby hat-trick this season. After years abroad he is the in-form home-based forward Tunisia hope can finish chances at the tournament."
+  },
+  {
+   "id": 566059,
+   "name": "R. Elloumi",
+   "age": 18,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/566059.png",
+   "club": "Vancouver Whitecaps",
+   "note": "At 18 the youngest member of the squad, a forward who became the first Vancouver Whitecaps academy graduate to score on his home MLS debut. He committed to Tunisia in late 2025 and is a thrilling prospect along for the experience."
+  },
+  {
+   "id": 344862,
+   "name": "H. Mastouri",
+   "age": 28,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/344862.png",
+   "club": "Dinamo Makhachkala",
+   "note": "A 28-year-old striker wearing the number 9, now playing in the Russian top flight with Dinamo Makhachkala after a late-blooming international rise. He is a squad forward option rather than a guaranteed starter up top."
+  },
+  {
+   "id": 323974,
+   "name": "E. Saad",
+   "age": 26,
+   "position": "Attacker",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/323974.png",
+   "club": "Hannover 96",
+   "note": "A German-born left winger who made his name winning promotion with St Pauli and now plays in the German second tier with Hannover 96. He offers an extra wide attacking option and the kind of direct running that stretches defences."
+  }
+ ],
+ "guardianStarPlayer": "Hannibal Mejbri",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

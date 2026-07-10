@@ -1,0 +1,278 @@
+{
+ "country": "jordan",
+ "displayName": "Jordan",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Jamal Sellami",
+ "captain": "Ehsan Haddad",
+ "keyPlayers": [
+  "Mousa Tamari",
+  "Ali Olwan",
+  "Yazan Al Arab",
+  "Ehsan Haddad",
+  "Yazid Abu Layla"
+ ],
+ "players": [
+  {
+   "id": 140607,
+   "name": "Yazid Abu Layla",
+   "age": 32,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/140607.png",
+   "club": "Al Hussein",
+   "note": "Jordan's first-choice keeper at their debut World Cup, the 32-year-old plays his club football at home with Al Hussein. He'll be the last line against Argentina, Algeria and Austria in Group J, so expect a busy summer."
+  },
+  {
+   "id": 163884,
+   "name": "Abdallah Al Fakhouri",
+   "age": 25,
+   "position": "Goalkeeper",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/163884.png",
+   "club": "Al Wihdat",
+   "note": "Long tipped as the heir to Jordan's legendary keeper Amer Shafi, the 25-year-old made his senior debut at just 17. He plays for Al Wihdat and is the most likely back-up if the starter is unavailable."
+  },
+  {
+   "id": 163908,
+   "name": "Noureddin Zaid",
+   "age": 32,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/163908.png",
+   "club": "Al-Faisaly",
+   "note": "The third goalkeeper in the squad, this 32-year-old is a regular for domestic side Al-Faisaly in Amman. He's here as experienced cover and is unlikely to play unless injuries strike ahead of him."
+  },
+  {
+   "id": 542822,
+   "name": "H. Abu Al Dahab",
+   "age": 25,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/542822.png",
+   "club": "Al-Samiya",
+   "note": "A 25-year-old centre-back who has spent recent football in Kuwait, he sits among the squad's defensive depth rather than the first-choice back line. Useful cover for a back three if Jordan need to shore things up."
+  },
+  {
+   "id": 542710,
+   "name": "M. Abu Hasheesh",
+   "age": 30,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/542710.png",
+   "club": "Al-Karma",
+   "note": "A 30-year-old left-back who was born in Iraq and chose to represent Jordan, he plays his club football across the border with Al-Karma. He gives the squad an option down the left flank."
+  },
+  {
+   "id": 102538,
+   "name": "M. Abualnadi",
+   "age": 24,
+   "position": "Defender",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/102538.png",
+   "club": "Selangor",
+   "note": "A 24-year-old centre-back born in Kansas, he played college soccer at Notre Dame before choosing Jordan over the United States and moving to Malaysian side Selangor. A composed left-sided defender pushing for minutes at the back."
+  },
+  {
+   "id": 53900,
+   "name": "Yazan Al Arab",
+   "age": 29,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/53900.png",
+   "club": "FC Seoul",
+   "note": "One of the squad's most reliable defenders and a fixture in the back line since 2017, the 29-year-old centre-back plays in South Korea for FC Seoul, where he settled in quickly. He even scored against Barcelona in a 2025 friendly."
+  },
+  {
+   "id": 213978,
+   "name": "Saed Al Rosan",
+   "age": 28,
+   "position": "Defender",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/213978.png",
+   "club": "Al Hussein",
+   "note": "A 28-year-old centre-back for domestic powerhouse Al Hussein, he scored his first international goal in a 7-0 thrashing of Pakistan during qualifying. He's part of Jordan's home-based defensive group."
+  },
+  {
+   "id": 664028,
+   "name": "A. Badawi",
+   "age": 28,
+   "position": "Defender",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/664028.png",
+   "club": "Al-Faisaly",
+   "note": "A 28-year-old defender from Amman club Al-Faisaly, he's one of the squad's less-capped members and sits in the depth chart at the back. Expect him to be cover rather than a regular starter."
+  },
+  {
+   "id": 310835,
+   "name": "Abdallah Naseeb",
+   "age": 31,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/310835.png",
+   "club": "Al Zawra'a",
+   "note": "A 31-year-old centre-back currently playing in Iraq with Al Zawra'a, he brings experience to the defensive ranks. A steady veteran option as Jordan navigate a tough Group J."
+  },
+  {
+   "id": 72140,
+   "name": "Saleem Obaid",
+   "age": 33,
+   "position": "Defender",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/72140.png",
+   "club": "Al Hussein",
+   "note": "At 33, this left-back from Al Hussein is one of the squad's elder statesmen, having first played for Jordan back in 2019. A dependable veteran offering depth and experience down the left."
+  },
+  {
+   "id": 53902,
+   "name": "Ehsan Haddad",
+   "age": 31,
+   "position": "Defender",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/53902.png",
+   "club": "Al Hussein",
+   "note": "Jordan's captain and a defensive leader with around 75 caps, the 31-year-old has been a serial title winner at home, first with Al-Faisaly and now with Al Hussein. He'll wear the armband leading the nation out at its first World Cup."
+  },
+  {
+   "id": 310785,
+   "name": "Mohannad Abu Taha",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/310785.png",
+   "club": "Al-Quwa Al-Jawiya",
+   "note": "At 22, he's one of the squad's youngest and most versatile players, comfortable across the left flank as a defender, midfielder or winger. He's bounced between Jordan, Saudi Arabia and Iraq, where he now plays for Al-Quwa Al-Jawiya."
+  },
+  {
+   "id": 651096,
+   "name": "M. Al Daoud",
+   "age": 33,
+   "position": "Midfielder",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/651096.png",
+   "club": "Al Wihdat",
+   "note": "The squad's oldest outfield player at 33, this Al Wihdat midfielder made his Jordan debut all the way back in 2011 and is the son of former international Rateb Al-Dawoud. A deep-lying veteran whose experience matters more than his minutes here."
+  },
+  {
+   "id": 542768,
+   "name": "Ibrahim Sa'deh",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/542768.png",
+   "club": "Al-Karma",
+   "note": "A 25-year-old central midfielder now plying his trade in Iraq with Al-Karma, he was part of Jordan's run to the 2023 Asian Cup final. He's squad depth in the engine room rather than a guaranteed starter."
+  },
+  {
+   "id": 213980,
+   "name": "Nizar Al Rashdan",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/213980.png",
+   "club": "Qatar SC",
+   "note": "A 26-year-old defensive midfielder who shields the back four and links defence to attack, letting Jordan sit deep and counter. Born in Irbid, he moved to Qatar SC in early 2026 and is central to the team's game plan against bigger sides."
+  },
+  {
+   "id": 140609,
+   "name": "Noor Al Rawabdeh",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/140609.png",
+   "club": "Selangor",
+   "note": "A 28-year-old midfielder who has carved out a key role for club and country since moving to Malaysian side Selangor in 2023. He featured in the 2023 Asian Cup final run and is a regular contributor in Jordan's midfield."
+  },
+  {
+   "id": 104242,
+   "name": "Rajaei Ayed",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/104242.png",
+   "club": "Al Hussein",
+   "note": "A 32-year-old central midfielder and a serial winner with Al Hussein, where he's collected a dozen trophies. With around 72 caps, he brings ball progression and tireless work rate to the middle of the park."
+  },
+  {
+   "id": 198211,
+   "name": "Amer Jamous",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/198211.png",
+   "club": "Al Wihdat",
+   "note": "A 23-year-old midfielder who helped Al Wihdat win the Jordanian FA Cup, he's part of the squad's younger generation. He spent the early part of 2026 on loan in Iraq and provides energetic depth in midfield."
+  },
+  {
+   "id": 123530,
+   "name": "Mahmoud Al Mardi",
+   "age": 32,
+   "position": "Attacker",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/123530.png",
+   "club": "Dibba Al-Fujairah",
+   "note": "A 32-year-old left winger with around 60 caps, currently playing in the UAE for Dibba Al-Fujairah. He's been part of the national team since 2015 and offers experienced width and depth in attack."
+  },
+  {
+   "id": 72142,
+   "name": "Mohammed Abu Zurayq",
+   "age": 28,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/72142.png",
+   "club": "Raja CA",
+   "note": "A 28-year-old forward nicknamed \"Sharara,\" he joined Moroccan giants Raja Casablanca in early 2026 and started the Arab Cup final. A handy attacking option who can lead the line or play off the main striker."
+  },
+  {
+   "id": 568556,
+   "name": "O. Al Fakhouri",
+   "age": 19,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/568556.png",
+   "club": "Pyramids FC",
+   "note": "At 19, he's the squad's youngest member and one of its brightest prospects, a left winger who can also play up top. He made a record-breaking move to Egyptian side Pyramids FC and scored on his debut, so he's a name to file away for the future."
+  },
+  {
+   "id": 575283,
+   "name": "A. Azaizeh",
+   "age": 21,
+   "position": "Attacker",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/575283.png",
+   "club": "Al Shabab",
+   "note": "A 21-year-old winger born in Germany who chose Jordan, he was top scorer at the AFC U-23 Asian Cup and earned a loan move to Saudi side Al Shabab off the back of it. He scored a brace soon after arriving, marking him out as one to watch."
+  },
+  {
+   "id": 164026,
+   "name": "Ali Olwan",
+   "age": 25,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/164026.png",
+   "club": "Al-Sailiya",
+   "note": "Jordan's deadliest finisher and their main hope for goals, the 25-year-old striker plays in Qatar with Al-Sailiya and scored nine times in qualifying, including a hat-trick away to Oman that clinched their World Cup place. He's been recovering from ankle surgery, so his sharpness will be one to monitor."
+  },
+  {
+   "id": 432841,
+   "name": "Ibrahim Sabra",
+   "age": 20,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/432841.png",
+   "club": "NK Lokomotiva Zagreb",
+   "note": "A 20-year-old centre-forward and exciting young talent, he scored on his way into the Croatian top flight with Lokomotiva Zagreb. Known for his power and pace, he's one of Jordan's promising attackers, though a recent ankle injury has clouded his summer."
+  },
+  {
+   "id": 15286,
+   "name": "Mousa Tamari",
+   "age": 28,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/15286.png",
+   "club": "Rennes",
+   "note": "Jordan's talisman and by far their highest-profile player, the 28-year-old winger plays in France for Rennes and was the first Jordanian to score in Ligue 1. Nicknamed the \"Jordanian Messi,\" he led the side to its first World Cup and is the man their attack runs through."
+  }
+ ],
+ "guardianStarPlayer": "Mousa Al-Tamari",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

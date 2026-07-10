@@ -10,10 +10,19 @@ struct ContextSwitcherView: View {
     let onDismiss: () -> Void
 
     private var contexts: [FeedContext] {
-        if let team = appState.selectedTeam {
-            return [.team(team), .everyoneTalking]
+        // V2.2 multi-fandom: one row per followed country, then per followed
+        // club, then Everyone. Countries come first (the WC anchor) so the
+        // first row matches AppState's default activeContext picker.
+        var result: [FeedContext] = []
+        result.append(contentsOf: appState.selectedCountries.map { .country($0) })
+        result.append(contentsOf: appState.selectedTeams.map { .team($0) })
+        // Tournament-wide feed, visible for everyone during the World
+        // Championship; self-hides after the final (WCSeason gate).
+        if WCSeason.isVisible {
+            result.append(.worldChampionship)
         }
-        return [.everyoneTalking]
+        result.append(.everyoneTalking)
+        return result
     }
 
     var body: some View {
@@ -87,13 +96,12 @@ struct ContextSwitcherView: View {
     private func contextIcon(_ context: FeedContext, isSelected: Bool) -> some View {
         switch context {
         case .team(let team):
-            // Club badge (16x16) — use first letter as placeholder
-            Text(String(team.shortName.prefix(2)).uppercased())
-                .font(.jakarta(10, weight: .bold))
-                .foregroundColor(isSelected ? .hotRose : .warmWhite.opacity(0.6))
-                .frame(width: 16, height: 16)
-        case .everyoneTalking:
-            Image(systemName: "soccerball")
+            // Real club crest (matches the toolbar pill), 16x16.
+            TeamCrestView(team: team, size: 16)
+        case .country(let country):
+            TeamCrestView(country: country, size: 16)
+        case .worldChampionship, .everyoneTalking:
+            Image(systemName: context.iconName)
                 .font(.system(size: 14))
                 .foregroundColor(.hotRose)
                 .frame(width: 16, height: 16)
@@ -104,7 +112,11 @@ struct ContextSwitcherView: View {
     private func unreadBadge(for context: FeedContext) -> some View {
         let items: [ContentItem] = {
             switch context {
-            case .team: return teamItems
+            case .team, .country: return teamItems
+            // The switcher only receives the active entity's items +
+            // everyone items; WC items aren't loaded until the context is
+            // opened, so it shows no badge. Acceptable minimal wiring.
+            case .worldChampionship: return []
             case .everyoneTalking: return everyoneItems
             }
         }()

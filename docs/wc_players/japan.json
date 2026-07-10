@@ -1,0 +1,279 @@
+{
+ "country": "japan",
+ "displayName": "Japan",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Hajime Moriyasu",
+ "captain": "W. Endo",
+ "keyPlayers": [
+  "T. Kubo",
+  "W. Endo",
+  "R. Doan",
+  "D. Kamada",
+  "A. Ueda",
+  "K. Goto"
+ ],
+ "players": [
+  {
+   "id": 304782,
+   "name": "T. Hayakawa",
+   "age": 26,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/304782.png",
+   "club": "Kashima",
+   "note": "He had a remarkable 2025 in Japan's top flight, playing every league minute for Kashima as they won the title and being voted the J.League's best player of the season. Here he is back-up cover, but a keeper in fine form to push the starter."
+  },
+  {
+   "id": 33034,
+   "name": "K. Osako",
+   "age": 26,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/33034.png",
+   "club": "Sanfrecce Hiroshima",
+   "note": "A goalkeeper for Sanfrecce Hiroshima in Japan's top division, he is one of the squad's home-based keepers and a long-serving Samurai Blue squad member. Expect him as a reliable option behind the first choice rather than a starter."
+  },
+  {
+   "id": 199578,
+   "name": "Z. Suzuki",
+   "age": 23,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/199578.png",
+   "club": "Parma",
+   "note": "Japan's first-choice keeper and the only one wearing the number 1, despite being just 23. He spent the season in Italy's Serie A with Parma, and his shot-stopping at that level is why he has leapfrogged more experienced names into the net."
+  },
+  {
+   "id": 38114,
+   "name": "K. Itakura",
+   "age": 28,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/38114.png",
+   "club": "Ajax",
+   "note": "A composed, ball-playing centre-back who anchors Japan's back line, he became the first Japanese player to sign for Ajax in 2025 after three solid seasons in Germany's Bundesliga. He is one of the first names on the team sheet at the back."
+  },
+  {
+   "id": 32893,
+   "name": "H. Ito",
+   "age": 26,
+   "position": "Defender",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/32893.png",
+   "club": "Bayern München",
+   "note": "A left-sided defender at Bayern Munich, where a long run of foot and muscle injuries has cost him most of two seasons since his move from Stuttgart. If fully fit he adds real quality, but the question mark is whether he has the match minutes behind him."
+  },
+  {
+   "id": 440,
+   "name": "Y. Nagatomo",
+   "age": 39,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/440.png",
+   "club": "FC Tokyo",
+   "note": "At 39, the FC Tokyo full-back becomes the first Japanese player ever selected for five World Cups, having featured at every edition since 2010. He is here as a veteran leader and squad presence as much as a likely starter."
+  },
+  {
+   "id": 33165,
+   "name": "A. Seko",
+   "age": 25,
+   "position": "Defender",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/33165.png",
+   "club": "Le Havre",
+   "note": "A 25-year-old centre-back who became Le Havre's first Japanese signing in 2025 and played regularly in France's Ligue 1 this season. He provides defensive depth, with a handful of caps and still building his international experience."
+  },
+  {
+   "id": 32887,
+   "name": "Y. Sugawara",
+   "age": 25,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/32887.png",
+   "club": "Werder Bremen",
+   "note": "An attacking right-back who spent the season on loan at Werder Bremen in the Bundesliga, racking up assists from the flank. His energy going forward makes him a strong contender to start on the right of Japan's defence."
+  },
+  {
+   "id": 351014,
+   "name": "J. Suzuki",
+   "age": 22,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/351014.png",
+   "club": "FC Copenhagen",
+   "note": "A 22-year-old defender who moved to FC Copenhagen in 2025 after topping Japan's top flight for aerial duels won. Quick and versatile across the back line, he is one of the squad's younger options gaining European experience."
+  },
+  {
+   "id": 32954,
+   "name": "S. Taniguchi",
+   "age": 34,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/32954.png",
+   "club": "St. Truiden",
+   "note": "A 34-year-old centre-back now playing in Belgium with St. Truiden, after years in Japan with Kawasaki and a spell in Qatar. He brings calm experience to the defensive group and is more a senior squad option than a guaranteed starter."
+  },
+  {
+   "id": 2597,
+   "name": "T. Tomiyasu",
+   "age": 27,
+   "position": "Defender",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/2597.png",
+   "club": "Ajax",
+   "note": "A versatile defender who can fill any position across the back four, his recent years have been wrecked by knee trouble that ended his time at Arsenal. He joined Ajax to rebuild fitness, so this is as much a comeback story as a tournament."
+  },
+  {
+   "id": 32858,
+   "name": "T. Watanabe",
+   "age": 28,
+   "position": "Defender",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/32858.png",
+   "club": "Feyenoord",
+   "note": "A centre-back who joined Feyenoord in 2025 and quickly became a regular, even chipping in with goals from set pieces. Comfortable in possession, he gives Moriyasu another dependable option in Japan's three-man defence."
+  },
+  {
+   "id": 2598,
+   "name": "R. Doan",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/2598.png",
+   "club": "Eintracht Frankfurt",
+   "note": "A direct, left-footed right winger who wears Japan's number 10 and spent the season scoring and creating for Eintracht Frankfurt in the Bundesliga. He is one of the team's main attacking outlets and a near-certain starter."
+  },
+  {
+   "id": 8500,
+   "name": "W. Endo",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/8500.png",
+   "club": "Liverpool",
+   "note": "Japan's captain and defensive-midfield anchor, he led his country to become the first nation to qualify for this World Cup. Game time at Liverpool dried up this season and a foot injury interrupted his spring, but his leadership keeps him central to the plan."
+  },
+  {
+   "id": 2601,
+   "name": "D. Kamada",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/2601.png",
+   "club": "Crystal Palace",
+   "note": "A clever, two-footed midfielder at Crystal Palace, where he has collected a clutch of trophies including a European cup this season. He can play deep or further forward, and his passing range makes him one of Japan's key creators."
+  },
+  {
+   "id": 33889,
+   "name": "K. Sano",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/33889.png",
+   "club": "FSV Mainz 05",
+   "note": "A tireless defensive midfielder for Mainz in the Bundesliga, where he covers some of the most ground of any player in the league. He gives Japan an energetic engine in front of the defence, either alongside or in place of the captain."
+  },
+  {
+   "id": 32966,
+   "name": "A. Tanaka",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/32966.png",
+   "club": "Leeds",
+   "note": "A central midfielder who helped Leeds reach the Premier League and was voted their players' player of the year the season before. Good for a long-range goal, he offers Japan composure and drive in the middle of the park."
+  },
+  {
+   "id": 1942,
+   "name": "J. Ito",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/1942.png",
+   "club": "Genk",
+   "note": "An experienced right winger with around 70 caps, now back in Belgium with Genk after his French club were relegated. His pace and crossing on the flank make him a useful starter or impact option off the bench."
+  },
+  {
+   "id": 32862,
+   "name": "T. Kubo",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/32862.png",
+   "club": "Real Sociedad",
+   "note": "The Guardian's pick as Japan's star man, a gifted winger and Spain's Real Sociedad's main creative force who came through Barcelona and Real Madrid's youth systems. He is the player most likely to unlock a tight defence with a moment of magic."
+  },
+  {
+   "id": 33224,
+   "name": "D. Maeda",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/33224.png",
+   "club": "Celtic",
+   "note": "A relentless runner who finished the Scottish season on fire for Celtic, scoring in five league games in a row plus the cup final. Whether wide or up top, his pressing and goal threat give Japan a real cutting edge in attack."
+  },
+  {
+   "id": 33321,
+   "name": "Keito Nakamura",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/33321.png",
+   "club": "Reims",
+   "note": "A quick, dribbling left winger who was Reims' top scorer in France this season. His direct running and eye for goal give Japan another attacking option from wide areas, likely from the bench in a deep forward line."
+  },
+  {
+   "id": 199143,
+   "name": "Y. Suzuki",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/199143.png",
+   "club": "SC Freiburg",
+   "note": "An attacking midfielder who joined Freiburg in 2025 after lighting up the Danish league as a playmaker. At 24 he is one of the newer faces in the squad, offering creativity and a goal threat from midfield off the bench."
+  },
+  {
+   "id": 375930,
+   "name": "K. Goto",
+   "age": 20,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/375930.png",
+   "club": "St. Truiden",
+   "note": "A 20-year-old striker who broke through in Belgium this season with double figures in goals and a monthly player-of-the-month award. Wearing the number 9, he is the squad's exciting young forward and a bright prospect to watch."
+  },
+  {
+   "id": 33289,
+   "name": "Koki Ogawa",
+   "age": 28,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/33289.png",
+   "club": "NEC Nijmegen",
+   "note": "A penalty-box striker for NEC Nijmegen in the Dutch league, the kind of forward who does his work inside the area rather than dropping deep. His near-double-figure goal return this season makes him a genuine option through the middle."
+  },
+  {
+   "id": 422572,
+   "name": "K. Shiogai",
+   "age": 20,
+   "position": "Attacker",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/422572.png",
+   "club": "NEC Nijmegen",
+   "note": "A 20-year-old forward who made his name at NEC in the Netherlands after coming straight from university football, earning a January move to Germany. One of the youngest in the squad, he is here to develop and provide attacking depth."
+  },
+  {
+   "id": 72155,
+   "name": "A. Ueda",
+   "age": 27,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/72155.png",
+   "club": "Feyenoord",
+   "note": "Feyenoord's main striker and the Dutch league's standout scorer this season, with more than 20 goals to his name. He was also lethal in qualifying, so despite wearing 18 he is a leading candidate to lead Japan's line."
+  }
+ ],
+ "guardianStarPlayer": "Takefusa Kubo",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

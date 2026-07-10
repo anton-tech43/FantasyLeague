@@ -2,13 +2,23 @@ import SwiftUI
 
 struct ContentDetailView: View {
     let contentId: UUID
-    var scrollToTalkingPoints: Bool = false
-    var isEveryoneContext: Bool = false
+    let scrollToTalkingPoints: Bool
+    let isEveryoneContext: Bool
     @Environment(AppState.self) var appState
     @State private var item: ContentItem?
-    @State private var isLoading = true
+    @State private var isLoading: Bool
     @State private var onesToWatch: [PlayerCard] = []
     @State private var isBackstoryExpanded = false
+
+    /// Preloaded item lets the feed render the detail view instantly without re-fetching.
+    /// When opened from a push deep link, `preloadedItem` is nil and `loadItem()` fetches by id.
+    init(contentId: UUID, scrollToTalkingPoints: Bool = false, isEveryoneContext: Bool = false, preloadedItem: ContentItem? = nil) {
+        self.contentId = contentId
+        self.scrollToTalkingPoints = scrollToTalkingPoints
+        self.isEveryoneContext = isEveryoneContext
+        self._item = State(initialValue: preloadedItem)
+        self._isLoading = State(initialValue: preloadedItem == nil)
+    }
 
     var body: some View {
         ZStack {
@@ -20,6 +30,9 @@ struct ContentDetailView: View {
                         VStack(alignment: .leading, spacing: Layout.sectionSpacing) {
                             headerSection(item)
                             headlineSection(item)
+                            if let scorers = item.scorers, !scorers.isEmpty {
+                                scorersSection(scorers)
+                            }
                             talkingPointsSection(item)
 
                             if item.type == .matchday, let postMatch = item.postMatchCheatSheet {
@@ -49,6 +62,30 @@ struct ContentDetailView: View {
             } else if isLoading {
                 ProgressView()
                     .tint(.hotRose)
+            } else {
+                // Empty/error state — never fall through to a blank screen.
+                VStack(spacing: 16) {
+                    Text("Couldn't load this story")
+                        .font(.feedHeadline)
+                        .foregroundColor(.textOnDark)
+                    Text("It might have been removed, or your connection dropped.")
+                        .font(.onboardingBody)
+                        .foregroundColor(.textTertiary)
+                        .multilineTextAlignment(.center)
+                    Button {
+                        isLoading = true
+                        Task { await loadItem() }
+                    } label: {
+                        Text("Try again")
+                            .font(.feedHeadline)
+                            .foregroundColor(.warmWhite)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 10)
+                            .background(Color.hotRose)
+                            .cornerRadius(Layout.buttonCornerRadius)
+                    }
+                }
+                .padding(Layout.screenPadding)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -56,6 +93,7 @@ struct ContentDetailView: View {
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbar {
             if item != nil {
+                ToolbarItem(placement: .topBarTrailing) { listenToolbarButton }
                 ToolbarItem(placement: .topBarTrailing) {
                     ShareLink(
                         item: "\(displayHeadline)\n\nvia GoalDigger"
@@ -67,6 +105,25 @@ struct ContentDetailView: View {
             }
         }
         .task { await loadItem() }
+        .onDisappear { AudioPlayerService.shared.stop() }
+    }
+
+    // MARK: - Listen button
+
+    @ViewBuilder
+    private var listenToolbarButton: some View {
+        let audio = AudioPlayerService.shared
+        Button {
+            switch audio.state {
+            case .idle:    audio.speak("\(displayHeadline). \(displayBody)")
+            case .playing: audio.pause()
+            case .paused:  audio.resume()
+            }
+        } label: {
+            Image(systemName: audio.state == .playing ? "pause.circle" : "play.circle")
+                .foregroundColor(.hotRose)
+        }
+        .accessibilityLabel(audio.state == .playing ? "Pause listening" : "Listen")
     }
 
     // MARK: - Sections
@@ -109,15 +166,85 @@ struct ContentDetailView: View {
 
     @ViewBuilder
     private func headlineSection(_ item: ContentItem) -> some View {
+        // V2.0: team-crest header — renders 1 or 2 crests when the
+        // content-generator (or routine) tagged the item with
+        // affected_team_ids. >2 crests would crowd the detail view, so
+        // those items render no header (matches the "everyone's talking"
+        // cross-team UX). Legacy items with nil affectedTeamIds also
+        // render no header — gracefully invisible.
+        AffectedTeamsHeader(teamIds: item.affectedTeamIds)
+
+        // The headline carries inline name explanations now (handled in the
+        // generator prompt), so we don't need a separate factual sub-headline
+        // here. The user already saw the analogy on the immersive card.
         Text(displayHeadline)
             .font(.jakarta(22, weight: .bold))
             .foregroundColor(.textOnDark)
             .padding(.top, 4)
 
+        // Pre-match preview: lead with who's favoured (deterministic FIFA-rank
+        // verdict the routine puts in match_result), so the reader gets the
+        // "who's likely to win" answer the moment they open the brief.
+        if item.previewFixtureId != nil,
+           let verdict = item.matchResult, !verdict.isEmpty {
+            HStack(spacing: 8) {
+                Image(systemName: "star.fill")
+                    .font(.system(size: 12))
+                    .foregroundColor(.hotRose)
+                Text(verdict)
+                    .font(.jakarta(16, weight: .semiBold))
+                    .foregroundColor(.hotRose)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.top, 2)
+        }
+
         Divider().background(Color.feedDivider)
     }
 
     @ViewBuilder
+    /// Goal scorers + minutes for a post-game result article (075).
+    private func scorersSection(_ scorers: [LiveMatchBrief.Scorer]) -> some View {
+        VStack(alignment: .leading, spacing: Layout.elementSpacing) {
+            SectionHeaderView(title: "Goals", icon: "soccerball")
+
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(scorers) { scorer in
+                    HStack(spacing: 10) {
+                        Text(scorer.minute.isEmpty ? "·" : scorer.minute)
+                            .font(.jakarta(13, weight: .bold))
+                            .foregroundColor(.hotRose)
+                            .frame(width: 46, alignment: .leading)
+                        if let photoURL = scorer.photoURL {
+                            AsyncImage(url: photoURL) { phase in
+                                if case .success(let image) = phase {
+                                    image.resizable().scaledToFill()
+                                } else {
+                                    Color.clear
+                                }
+                            }
+                            .frame(width: 28, height: 28)
+                            .clipShape(Circle())
+                        }
+                        Text(scorer.player + (scorer.penalty == true ? " (pen)" : ""))
+                            .font(.jakarta(15, weight: .regular))
+                            .foregroundColor(.textPrimaryOnCard)
+                            .lineLimit(1)
+                        Spacer(minLength: 8)
+                        Text(scorer.team.uppercased())
+                            .font(.jakarta(11, weight: .semiBold))
+                            .tracking(0.5)
+                            .foregroundColor(.textSecondaryOnCard)
+                            .lineLimit(1)
+                    }
+                }
+            }
+            .padding(Layout.cardPadding)
+            .background(Color.cardBackground)
+            .cornerRadius(Layout.cardCornerRadius)
+        }
+    }
+
     private func talkingPointsSection(_ item: ContentItem) -> some View {
         VStack(alignment: .leading, spacing: Layout.elementSpacing) {
             SectionHeaderView(title: "Things to say", icon: "bubble.left")
@@ -151,8 +278,6 @@ struct ContentDetailView: View {
                 tintColor: Color.loseTint,
                 barColor: Color.loseBar
             )
-
-            // Bold prediction removed — not part of the feed experience
         }
     }
 
@@ -177,7 +302,7 @@ struct ContentDetailView: View {
             }
 
             if isBackstoryExpanded {
-                Text(displayBody)
+                GlossaryText(raw: displayBody)
                     .font(.detailBody)
                     .foregroundColor(.textOnDark.opacity(0.9))
                     .lineSpacing(6)
@@ -189,15 +314,19 @@ struct ContentDetailView: View {
     // MARK: - Loading
 
     private func loadItem() async {
-        do {
-            item = try await APIClient.shared.fetchItem(id: contentId)
-        } catch {
-            #if DEBUG
-            // Fall back to mock data during development
-            if let mock = MockData.feed.first(where: { $0.id == contentId }) {
-                item = mock
+        // Skip the network round-trip when the feed already passed the item.
+        // Re-fetch only when we arrived here from a push deep link (no preload).
+        if item == nil {
+            do {
+                item = try await APIClient.shared.fetchItem(id: contentId)
+            } catch {
+                #if DEBUG
+                // Fall back to mock data during development
+                if let mock = MockData.feed.first(where: { $0.id == contentId }) {
+                    item = mock
+                }
+                #endif
             }
-            #endif
         }
         isLoading = false
 
@@ -236,10 +365,25 @@ struct TalkingPointCard: View {
                 .fill(Color.hotRose)
                 .frame(width: 3)
 
-            Text(text)
-                .font(.talkingPointText)
-                .foregroundColor(.textPrimaryOnCard)
-                .padding(14)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(text)
+                    .font(.talkingPointText)
+                    .foregroundColor(.textPrimaryOnCard)
+
+                HStack(spacing: 4) {
+                    Spacer()
+                    CopyButton(text: text)
+                    ShareLink(item: text, preview: SharePreview("From GoalDigger")) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.hotRose)
+                            .frame(width: 32, height: 32)
+                            .contentShape(Rectangle())
+                    }
+                    .accessibilityLabel("Share talking point")
+                }
+            }
+            .padding(14)
         }
         .background(Color.hotRose.opacity(0.06))
         .background(Color.cardBackground)

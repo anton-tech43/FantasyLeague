@@ -1,0 +1,279 @@
+{
+ "country": "haiti",
+ "displayName": "Haiti",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "S\u00e9bastien Mign\u00e9",
+ "captain": "Johny Placide",
+ "keyPlayers": [
+  "Johny Placide",
+  "Jean-Ricner Bellegarde",
+  "Wilson Isidor",
+  "Duckens Nazon",
+  "Frantzdy Pierrot",
+  "Danley Jean-Jacques"
+ ],
+ "players": [
+  {
+   "id": 123742,
+   "name": "J. Duverger",
+   "age": 23,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/123742.png",
+   "club": "FC Cosmos Koblenz",
+   "note": "Born in Canada, Josue Duverger may be the lowest-ranked club player at the whole tournament: his side plays in Germany's fifth tier. He is here as a backup keeper behind captain Placide, and his selection is a feel-good story in its own right."
+  },
+  {
+   "id": 174768,
+   "name": "A. Pierre",
+   "age": 24,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/174768.png",
+   "club": "Sochaux",
+   "note": "A 24-year-old keeper born just outside Paris, Alexandre Pierre is one of the goalkeeping understudies behind Placide. He plies his trade in France's second division with Sochaux and is unlikely to start unless something goes wrong ahead of him."
+  },
+  {
+   "id": 87789,
+   "name": "J. Placide",
+   "age": 38,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/87789.png",
+   "club": "Bastia",
+   "note": "The captain and first-choice goalkeeper, and at 38 the wise old head of this squad with more caps than anyone else in it. He keeps goal for Bastia in France's second tier, and his job against Brazil, Morocco and Scotland is to organise the defence and keep Haiti's first World Cup since 1974 from getting away from them."
+  },
+  {
+   "id": 20850,
+   "name": "C. Arcus",
+   "age": 29,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/20850.png",
+   "club": "Angers",
+   "note": "Carlens Arcus is Haiti's likely starting right-back, a Port-au-Prince native who plays top-flight football for Angers in France. He is more of a defend-first full-back than an overlapping attacker, which is exactly what this group will need against stronger opponents."
+  },
+  {
+   "id": 573613,
+   "name": "K. Thermoncy",
+   "age": 20,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/573613.png",
+   "club": "BSC Young Boys",
+   "note": "At 20, Keeto Thermoncy is the youngest player in the squad, a Switzerland-born defender on the books of Swiss champions Young Boys. He is more a project for the future than a guaranteed starter, but Haiti's brightest young talent at the back gets to learn at a World Cup."
+  },
+  {
+   "id": 12303,
+   "name": "Ricardo Ade",
+   "age": 35,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/12303.png",
+   "club": "LDU de Quito",
+   "note": "A 35-year-old centre-back and one of the team's co-captains, Ricardo Ade is the experienced anchor of the back line. Born in Haiti, he won a league title in Ecuador and now plays for one of the country's biggest clubs, LDU Quito, bringing exactly the kind of calm this young defence needs."
+  },
+  {
+   "id": 1411,
+   "name": "H. Delcroix",
+   "age": 26,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/1411.png",
+   "club": "FC Lugano",
+   "note": "Born in Haiti and raised in Belgium, Hannes Delcroix came through the Anderlecht academy and can play centre-back or left-back. Now at Lugano in Switzerland, he is one of the more pedigreed defenders here and a likely starter alongside Ade."
+  },
+  {
+   "id": 20655,
+   "name": "J. Duverne",
+   "age": 28,
+   "position": "Defender",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/20655.png",
+   "club": "Gent",
+   "note": "A 28-year-old centre-back born in France, Jean-Kevin Duverne plays his club football in Belgium for Gent. He gives the manager another experienced option in the middle of defence and competes for one of the starting centre-back spots."
+  },
+  {
+   "id": 190747,
+   "name": "M. Exp\u00e9rience",
+   "age": 26,
+   "position": "Defender",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/190747.png",
+   "club": "Nancy",
+   "note": "Martin Experience is a left-footed wing-back who plays in France's second division with Nancy, where he chipped in a goal and an assist this season. He gives Haiti an attacking option down the left flank and is in contention to start there."
+  },
+  {
+   "id": 102505,
+   "name": "D. Lacroix",
+   "age": 32,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/102505.png",
+   "club": "Colorado Springs",
+   "note": "Duke Lacroix is a New Jersey-born defender who has spent years as a reliable presence in America's second-tier USL Championship with Colorado Springs. He chipped in goals during World Cup qualifying and offers squad depth across the back line."
+  },
+  {
+   "id": 275367,
+   "name": "W. Paugain",
+   "age": 24,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/275367.png",
+   "club": "Zulte Waregem",
+   "note": "Wilguens Paugain is a 24-year-old right-back from Haiti who earned promotion to Belgium's top flight with Zulte Waregem. He provides cover and competition for the full-back spots and is part of the rising generation in this defence."
+  },
+  {
+   "id": 20665,
+   "name": "J. Bellegarde",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/20665.png",
+   "club": "Wolves",
+   "note": "The squad's marquee name and creative engine, Jean-Ricner Bellegarde plays in England for Wolves and only switched his international allegiance to Haiti in 2025. He started every game of the qualifying run, and Haiti's best chances of making something happen in midfield run through him."
+  },
+  {
+   "id": 338367,
+   "name": "D. Jean-Jacques",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/338367.png",
+   "club": "Philadelphia Union",
+   "note": "Danley Jean-Jacques is a defensive midfielder who broke out in MLS in 2025, helping Philadelphia Union win the Supporters' Shield and becoming one of the league's better holding players. He is the shield in front of Haiti's defence, doing the unglamorous work that lets Bellegarde push forward."
+  },
+  {
+   "id": 20538,
+   "name": "L. Pierre",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/20538.png",
+   "club": "Vizela",
+   "note": "Leverton Pierre is an experienced defensive midfielder, born in Haiti, who plays in Portugal's second division for Vizela. A veteran of multiple Gold Cups, he gives the manager a steady, ball-winning option in the centre of the park."
+  },
+  {
+   "id": 371050,
+   "name": "W. Pierre",
+   "age": 21,
+   "position": "Midfielder",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/371050.png",
+   "club": "Real du Cap",
+   "note": "Woodensky Pierre is the only player in the squad based in Haiti's domestic league, a two-time league MVP whose visa to enter the United States was held up before the tournament. At 21 he is a developing defensive midfielder and depth option, but his presence carries real meaning for fans back home."
+  },
+  {
+   "id": 540857,
+   "name": "C. F. Sainte",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/540857.png",
+   "club": "El Paso Locomotive FC",
+   "note": "A 23-year-old midfielder from Grand-Goave in Haiti, Carl-Fred Sainte plays in America's second-tier USL Championship with El Paso Locomotive. He is squad depth rather than a likely starter, but reaching a World Cup from that level is a story in itself."
+  },
+  {
+   "id": 194242,
+   "name": "D. Simon",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/194242.png",
+   "club": "Tatran Pre\u0161ov",
+   "note": "Dominique Simon is a France-born defensive midfielder who joined Slovakia's Tatran Presov on loan in 2025. At 25 he is one of the squad's depth options in the middle of the park, more likely to feature off the bench than to start."
+  },
+  {
+   "id": 174915,
+   "name": "J. Casimir",
+   "age": 24,
+   "position": "Attacker",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/174915.png",
+   "club": "Auxerre",
+   "note": "Born in Guadeloupe, Josue Casimir is a versatile attacker who can play out wide or at wing-back, and he was a near ever-present for top-flight Auxerre in France this season. That flexibility makes him a useful card for the manager to play depending on the opponent."
+  },
+  {
+   "id": 128766,
+   "name": "L. Deedson",
+   "age": 24,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/128766.png",
+   "club": "FC Dallas",
+   "note": "A pacey winger known for his runs in behind, Louicius Don Deedson moved to MLS side FC Dallas in 2025 after helping his Danish club earn promotion. He is one of Haiti's more reliable goal threats from wide and a candidate to start on the flank."
+  },
+  {
+   "id": 50958,
+   "name": "D. Etienne",
+   "age": 29,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/50958.png",
+   "club": "Toronto FC",
+   "note": "Derrick Etienne Jr. is a New Jersey-raised winger with nearly a decade in MLS and a long list of caps for Haiti. Now at Toronto FC after winning silverware earlier in his career, his experience and directness make him a useful option in attack."
+  },
+  {
+   "id": 48535,
+   "name": "Y. Fortun\u00e9",
+   "age": 26,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/48535.png",
+   "club": "Vizela",
+   "note": "Yassin Fortune is a tall, right-footed forward who has been scoring goals for Vizela in Portugal's second division. At 26 he gives Haiti an alternative profile up front and another finishing option off the bench."
+  },
+  {
+   "id": 84087,
+   "name": "W. Isidor",
+   "age": 25,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/84087.png",
+   "club": "Sunderland",
+   "note": "The Guardian's pick as Haiti's star player, Wilson Isidor is a Premier League forward at Sunderland who only committed to Haiti in 2026 after a push from supporters. He scored important goals in his first top-flight season, including a late winner against Chelsea, and his finishing could be Haiti's best route to a memorable result."
+  },
+  {
+   "id": 21613,
+   "name": "L. Joseph",
+   "age": 25,
+   "position": "Attacker",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/21613.png",
+   "club": "Ferencvarosi TC",
+   "note": "Lenny Joseph is a France-born forward who lit up the Hungarian league with 16 goals and 10 assists for champions Ferencvaros, including Champions League experience. At 25 and in red-hot form, he gives Haiti genuine firepower and is pushing to start up front."
+  },
+  {
+   "id": 45020,
+   "name": "D. Nazon",
+   "age": 31,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/45020.png",
+   "club": "Esteghlal FC",
+   "note": "Duckens Nazon is Haiti's all-time leading scorer and a true journeyman striker who has played in roughly a dozen countries, recently passing 100 career club goals. His club Esteghlal is in Iran, and his road to the tournament was disrupted when war there forced him to scramble for travel before the World Cup."
+  },
+  {
+   "id": 8601,
+   "name": "F. Pierrot",
+   "age": 30,
+   "position": "Attacker",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/8601.png",
+   "club": "AEK Athens FC",
+   "note": "Raised in Massachusetts, Frantzdy Pierrot is the focal point of Haiti's attack, a powerful target striker with more than 30 international goals. He plays for AEK Athens in Greece, and his hold-up play and finishing led the line through the qualifying campaign."
+  },
+  {
+   "id": 162733,
+   "name": "R. Providence",
+   "age": 24,
+   "position": "Attacker",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/162733.png",
+   "club": "Almere City FC",
+   "note": "A France-born forward who came through the academies at PSG and Roma, Ruben Providence now plays in the Netherlands for Almere City and is sometimes nicknamed the 'Haitian Neymar' by fans. He scored a key goal during qualifying and offers pace and trickery off the bench."
+  }
+ ],
+ "guardianStarPlayer": "Wilson Isidor",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

@@ -1,0 +1,279 @@
+{
+ "country": "qatar",
+ "displayName": "Qatar",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Julen Lopetegui",
+ "captain": "Hassan Al Haydos",
+ "keyPlayers": [
+  "Akram Afif",
+  "Almoez Ali",
+  "Hassan Al Haydos",
+  "Boualem Khoukhi",
+  "Assim Madibo",
+  "Tahsin Jamshid"
+ ],
+ "players": [
+  {
+   "id": 42207,
+   "name": "Mahmud Abunada",
+   "age": 25,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/42207.png",
+   "club": "Al-Rayyan SC",
+   "note": "The 25-year-old Al-Rayyan keeper wears the number one shirt and has played his way into Lopetegui's good books, with recent friendly displays nudging him ahead in the battle to start. Born in Qatar to a Palestinian family, he was the country's best domestic goalkeeper last season."
+  },
+  {
+   "id": 42021,
+   "name": "Meshaal Barsham",
+   "age": 27,
+   "position": "Goalkeeper",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/42021.png",
+   "club": "Al Sadd",
+   "note": "The Al Sadd goalkeeper, 27, was long seen as Qatar's established number one and is the most experienced of the three keepers here. Sudan-born and a commanding presence in the box, he is now in a real fight with Abunada for the starting job."
+  },
+  {
+   "id": 136503,
+   "name": "Salah Zakaria",
+   "age": 26,
+   "position": "Goalkeeper",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/136503.png",
+   "club": "Al-Duhail SC",
+   "note": "The 26-year-old is Al-Duhail's regular keeper at club level but sits third in the national-team pecking order, so he is most likely here to train and cover. Egypt-born and unusually tall for a Qatar goalkeeper, he has only a handful of caps to his name."
+  },
+  {
+   "id": 175439,
+   "name": "Homam Ahmed",
+   "age": 26,
+   "position": "Defender",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/175439.png",
+   "club": "Al-Duhail SC",
+   "note": "A 26-year-old left-back who is the one Qatar player getting his football in Europe, spending this season on loan in Spain's second tier to test himself in a tougher league. He gives Lopetegui a genuine option down the left flank."
+  },
+  {
+   "id": 42060,
+   "name": "Sultan Al Braik",
+   "age": 29,
+   "position": "Defender",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/42060.png",
+   "club": "Al-Duhail SC",
+   "note": "A 29-year-old full-back who was part of the squad that won the 2023 Asian Cup, so he knows how to deliver on a big stage. Reliable and steady rather than flashy, he gives Qatar dependable cover out wide."
+  },
+  {
+   "id": 542542,
+   "name": "A. Al Hussain",
+   "age": 22,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/542542.png",
+   "club": "Al-Arabi SC",
+   "note": "At 22, this Al-Arabi defender is one of the youngest in the squad and very much here for the experience rather than to start. Expect him to be learning from the veterans in front of him."
+  },
+  {
+   "id": 542548,
+   "name": "A. Al Oui",
+   "age": 20,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/542548.png",
+   "club": "Al-Gharafa",
+   "note": "At 20, the Al-Gharafa defender is the youngest outfield player Qatar brought, a squad-depth pick handed an early taste of a World Cup. He is here to develop, not to be thrown straight into the back line."
+  },
+  {
+   "id": 200981,
+   "name": "Jassem Gaber",
+   "age": 23,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/200981.png",
+   "club": "Al-Rayyan SC",
+   "note": "A 23-year-old who can play centre-back or sit in front of the defence, and who already has a knack for big moments: he scored the equaliser in Qatar's 2023 Asian Cup semi-final against Iran. Versatile and still rising, he is a useful option for Lopetegui."
+  },
+  {
+   "id": 2532,
+   "name": "Boualem Khoukhi",
+   "age": 35,
+   "position": "Defender",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/2532.png",
+   "club": "Al Sadd",
+   "note": "The 35-year-old Al Sadd man is the leader of Qatar's defence, with well over 100 caps and the rare habit of scoring goals for a centre-back, around 19 for his country. It was his header that helped secure the win over the UAE that booked this World Cup ticket."
+  },
+  {
+   "id": 42288,
+   "name": "Lucas Mendes",
+   "age": 35,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/42288.png",
+   "club": "Al Wakrah",
+   "note": "Brazilian-born and a former Marseille player, this 35-year-old defender switched to Qatar after years living there and was part of the 2023 Asian Cup-winning squad. He can fill in at left-back or centre-back and brings a lot of senior experience to the group."
+  },
+  {
+   "id": 542536,
+   "name": "G. Laye",
+   "age": 27,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/542536.png",
+   "club": "Al-Arabi SC",
+   "note": "A 27-year-old Al-Arabi defender and one of the naturalised players in Lopetegui's group, brought in for squad depth at the back. Little senior international football to his name, so he is more likely to feature off the bench than start."
+  },
+  {
+   "id": 2530,
+   "name": "Pedro Miguel",
+   "age": 35,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/2530.png",
+   "club": "Al Sadd",
+   "note": "Known as Ro-Ro, this 35-year-old was born in Portugal and naturalised to play for Qatar, where he has won two Asian Cups and featured at the 2022 World Cup. A right-sided defender who can also play centre-back, he is one of the most decorated veterans in the squad."
+  },
+  {
+   "id": 2535,
+   "name": "Assim Madibo",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/2535.png",
+   "club": "Al Wakrah",
+   "note": "Qatar's midfield enforcer, a 29-year-old whose job is to break up play and protect the back four so the creative players can get on with things. A regular through the Asian Cup wins, he is one of the names Lopetegui leans on in the engine room."
+  },
+  {
+   "id": 42286,
+   "name": "Ahmed Al Ganehi",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/42286.png",
+   "club": "Al-Gharafa",
+   "note": "A 25-year-old from Al-Gharafa who operates as a right-sided midfielder or winger, offering energy and width when called upon. He is more of a rotation option here than a guaranteed starter."
+  },
+  {
+   "id": 2533,
+   "name": "Abdulaziz Hatem",
+   "age": 35,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/2533.png",
+   "club": "Al-Rayyan SC",
+   "note": "A 35-year-old Al-Rayyan midfielder and a veteran of Qatar's golden generation, having featured in both the 2019 and 2023 Asian Cup-winning runs. His experience and game-management are why he is still around at this World Cup."
+  },
+  {
+   "id": 2537,
+   "name": "Karim Boudiaf",
+   "age": 35,
+   "position": "Midfielder",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/2537.png",
+   "club": "Al-Duhail SC",
+   "note": "A 35-year-old Al-Duhail midfielder who played at the 2022 World Cup on home soil, including the group game against Senegal. A long-serving holding option, he brings calm and know-how to the middle of the park."
+  },
+  {
+   "id": 2539,
+   "name": "Ahmed Fathi",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/2539.png",
+   "club": "Al-Arabi SC",
+   "note": "Egypt-born and raised in Qatar from childhood, this 32-year-old is the kind of midfielder who does the unglamorous work, winning more tackles than any other Qatar player during qualifying. He sits at the base of the midfield and was part of both Asian Cup wins."
+  },
+  {
+   "id": 2545,
+   "name": "Hassan Al Haydos",
+   "age": 35,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/2545.png",
+   "club": "Al Sadd",
+   "note": "Qatar's captain and record cap-holder, with well over 180 appearances to his name, who joined Al Sadd as a boy and never really left. At 35 he leads the side at his first qualified World Cup, having previously played as host in 2022."
+  },
+  {
+   "id": 283174,
+   "name": "Mohamed Al Manai",
+   "age": 22,
+   "position": "Attacker",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/283174.png",
+   "club": "Al Shamal",
+   "note": "At 22, this Al Shamal forward is one of the squad's least-tested attackers and is here largely for the experience. Expect him on the fringes rather than leading the line."
+  },
+  {
+   "id": 542541,
+   "name": "Y. Abdurisag",
+   "age": 26,
+   "position": "Attacker",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/542541.png",
+   "club": "Al Wakrah",
+   "note": "A 26-year-old winger, born in Somalia, who is on loan at Al Wakrah and offers pace and directness off the flank. He is a squad attacking option, more likely to be used as an impact substitute than a nailed-on starter."
+  },
+  {
+   "id": 2544,
+   "name": "Akram Afif",
+   "age": 29,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/2544.png",
+   "club": "Al Sadd",
+   "note": "Qatar's best player and a two-time Asian Footballer of the Year, this 29-year-old left winger top-scored at the 2023 Asian Cup and famously buried a hat-trick of penalties in the final. He also racked up more assists than anyone else across Asian qualifying, so if Qatar create anything dangerous, it usually runs through him."
+  },
+  {
+   "id": 2542,
+   "name": "Ahmed Alaa",
+   "age": 32,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/2542.png",
+   "club": "Al-Rayyan SC",
+   "note": "Egypt-born and a one-club man with Al-Rayyan since he was a teenager, this 32-year-old attacker has been part of the Qatar setup for years. A rotation forward at this point in his career, he offers Lopetegui a familiar option off the bench."
+  },
+  {
+   "id": 2543,
+   "name": "Almoez Ali",
+   "age": 29,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/2543.png",
+   "club": "Al-Duhail SC",
+   "note": "Qatar's all-time leading scorer and the man who set a single-tournament Asian Cup record with nine goals back in 2019. The 29-year-old Al-Duhail captain led the line in qualifying as Asia's top scorer, and he is the obvious focal point for Qatar's attack at this World Cup."
+  },
+  {
+   "id": 42075,
+   "name": "Edmilson Junior",
+   "age": 31,
+   "position": "Attacker",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/42075.png",
+   "club": "Al-Duhail SC",
+   "note": "Born in Liege, Belgium, this 31-year-old winger became a Qatar regular at club level with Al-Duhail before naturalising and breaking into the national team. He brings direct one-on-one running and an eye for goal, a handy attacking weapon alongside Afif and Almoez."
+  },
+  {
+   "id": 423737,
+   "name": "Tahsin Jamshid",
+   "age": 19,
+   "position": "Attacker",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/423737.png",
+   "club": "Al-Duhail SC",
+   "note": "At 19 the baby of the squad, a quick, tricky winger who came through Qatar's Aspire Academy and is the first player of Indian origin, with family roots in Kerala, to make a World Cup squad. Whether he plays much or not, his selection is already a story, and he is one to keep an eye on for the future."
+  },
+  {
+   "id": 42089,
+   "name": "Mohammed Muntari",
+   "age": 32,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/42089.png",
+   "club": "Al-Gharafa",
+   "note": "Ghana-born and naturalised, this 32-year-old striker holds a slice of history as the man who scored Qatar's first and so far only World Cup goal, against Senegal in 2022. Now an Al-Gharafa forward and a backup here, he would dearly love a second to call his own."
+  }
+ ],
+ "guardianStarPlayer": "Akram Afif",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

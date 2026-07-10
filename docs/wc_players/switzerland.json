@@ -1,0 +1,279 @@
+{
+ "country": "switzerland",
+ "displayName": "Switzerland",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Murat Yakin",
+ "captain": "G. Xhaka",
+ "keyPlayers": [
+  "G. Xhaka",
+  "M. Akanji",
+  "B. Embolo",
+  "D. Ndoye",
+  "A. Jashari",
+  "R. Rodr\u00edguez"
+ ],
+ "players": [
+  {
+   "id": 123468,
+   "name": "M. Keller",
+   "age": 23,
+   "position": "Goalkeeper",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/123468.png",
+   "club": "BSC Young Boys",
+   "note": "At 23, Keller is the youngest of Switzerland's three keepers and travels as a backup. He's the regular number one at Young Boys, one of the bigger clubs in Swiss football, so the tournament is about gaining experience behind the established names rather than expecting minutes."
+  },
+  {
+   "id": 25282,
+   "name": "G. Kobel",
+   "age": 28,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/25282.png",
+   "club": "Borussia Dortmund",
+   "note": "Kobel is Switzerland's number one, having inherited the gloves from the long-serving Yann Sommer in 2024. A commanding presence at Borussia Dortmund, he kept a league-best tally of clean sheets in 2025-26, and that shot-stopping is exactly what the Swiss will lean on in tight knockout games."
+  },
+  {
+   "id": 1142,
+   "name": "Y. Mvogo",
+   "age": 31,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/1142.png",
+   "club": "Lorient",
+   "note": "Mvogo is the experienced third keeper, a 31-year-old who has bounced around Europe with PSV, RB Leipzig and now Lorient in France. He's been a reliable presence in goal at club level, but in this squad he sits behind Kobel and is here mostly for his calm, senior head in the goalkeeping group."
+  },
+  {
+   "id": 5,
+   "name": "M. Akanji",
+   "age": 30,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/5.png",
+   "club": "Inter",
+   "note": "Akanji is the rock at the heart of the Swiss defence and one of their genuine stars. After three trophy-laden years under Pep Guardiola at Manchester City, the 30-year-old became a regular starter at Inter, where his composure on the ball and ability to play out from the back make him the defender everything is built around."
+  },
+  {
+   "id": 162414,
+   "name": "A. Amenda",
+   "age": 22,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/162414.png",
+   "club": "Eintracht Frankfurt",
+   "note": "Amenda is a towering 22-year-old centre-back, listed at around 1.94m, who moved from Young Boys to Eintracht Frankfurt and has been linked with bigger clubs across Italy and England. He's squad depth here, learning behind the senior defenders, but his size and physical presence mark him as one for Switzerland's future."
+  },
+  {
+   "id": 48372,
+   "name": "E. C\u00f6mert",
+   "age": 27,
+   "position": "Defender",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/48372.png",
+   "club": "Valencia",
+   "note": "Cömert is a centre-back who has been at Valencia in Spain since 2022, with a recent loan spell at Valladolid for regular minutes. He's been part of the Swiss setup through three major tournaments, so while he's competing for a starting spot here, his familiarity with the squad makes him a dependable defensive option."
+  },
+  {
+   "id": 2803,
+   "name": "N. Elvedi",
+   "age": 29,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/2803.png",
+   "club": "Borussia M\u00f6nchengladbach",
+   "note": "Elvedi has been a fixture at Borussia M\u00f6nchengladbach for a decade and is one of the most experienced centre-backs in the Bundesliga. Calm and consistent, the 29-year-old is a likely starter alongside Akanji, giving the Swiss back line a settled, well-drilled core."
+  },
+  {
+   "id": 349344,
+   "name": "L. Jaquez",
+   "age": 22,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/349344.png",
+   "club": "VfB Stuttgart",
+   "note": "Jaquez is a 22-year-old centre-back who earned a move from Lucerne to VfB Stuttgart, though injuries have slowed his first season in Germany. He's one of the youngest defenders in the squad and travels as depth, here to develop behind the senior players rather than to start."
+  },
+  {
+   "id": 48489,
+   "name": "M. Muheim",
+   "age": 27,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/48489.png",
+   "club": "Hamburger SV",
+   "note": "Muheim is an attack-minded left-back who helped Hamburg win promotion back to the Bundesliga in 2025 and has carried that form into the top flight with a steady run of assists. A relatively late bloomer for the national team, the 27-year-old competes with veteran Ricardo Rodríguez for the left-back berth."
+  },
+  {
+   "id": 1631,
+   "name": "R. Rodr\u00edguez",
+   "age": 33,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/1631.png",
+   "club": "Real Betis",
+   "note": "Rodríguez is the grand old man of the defence, a left-back with well over 130 caps and a record-holder for tournament appearances with Switzerland. Now 33 and playing at Real Betis after years in Italy and Germany, his experience, set-piece delivery and ability to slot in at centre-back make him invaluable even if his starting days are numbered."
+  },
+  {
+   "id": 48378,
+   "name": "S. Widmer",
+   "age": 32,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/48378.png",
+   "club": "FSV Mainz 05",
+   "note": "Widmer is the first-choice right-back and a leader at club level, captaining Mainz in the Bundesliga. He started all three group games at Euro 2024, so expect the reliable, hard-running full-back to hold down the right side of Switzerland's defence again here."
+  },
+  {
+   "id": 951,
+   "name": "M. Aebischer",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/951.png",
+   "club": "Pisa",
+   "note": "Aebischer is a versatile central midfielder who dropped down to Pisa on loan from Bologna in search of regular minutes after struggling for game time. The 28-year-old is squad depth in a crowded Swiss midfield, valued for his passing range and ability to cover several roles when called upon."
+  },
+  {
+   "id": 2807,
+   "name": "R. Freuler",
+   "age": 33,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/2807.png",
+   "club": "Bologna",
+   "note": "Freuler is a tireless central midfielder who has been a mainstay for club and country for nearly a decade, now plying his trade at Bologna in Serie A. At 33 he's a ball-winner with a tidy passing range, the kind of dependable engine-room presence who helps the Swiss control games."
+  },
+  {
+   "id": 264705,
+   "name": "A. Jashari",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/264705.png",
+   "club": "AC Milan",
+   "note": "Jashari is one of Switzerland's most exciting young midfielders, a 23-year-old who earned a big-money move to AC Milan after winning Player of the Year honours in Belgium with Club Brugge. A broken leg wrecked much of his first Milan season, so the World Cup is a chance to show the form that made him so coveted."
+  },
+  {
+   "id": 957,
+   "name": "D. Sow",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/957.png",
+   "club": "Sevilla",
+   "note": "Sow is a defensive midfielder who has rediscovered his goal touch at Sevilla, chipping in with a useful handful of strikes in La Liga this season. The 28-year-old offers the Swiss a physical, box-to-box option in the middle and gives Yakin a different profile alongside the deeper-lying holders."
+  },
+  {
+   "id": 1464,
+   "name": "G. Xhaka",
+   "age": 33,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/1464.png",
+   "club": "Sunderland",
+   "note": "Xhaka is the captain and the heartbeat of this team, a deep-lying playmaker dictating tempo from in front of the defence. After captaining Bayer Leverkusen to a league-and-cup double, he took the surprising step of joining promoted Sunderland, where he wears the armband too. This is his fourth straight World Cup, and Switzerland goes as far as he drives them."
+  },
+  {
+   "id": 2810,
+   "name": "D. Zakaria",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/2810.png",
+   "club": "Monaco",
+   "note": "Zakaria is a powerful, athletic midfielder who captains Monaco and partners Xhaka in the Swiss engine room. He chips in with goals and drives forward with the ball, though an adductor injury disrupted his club season, so his sharpness coming into the tournament is one to watch."
+  },
+  {
+   "id": 952,
+   "name": "C. Fassnacht",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/952.png",
+   "club": "BSC Young Boys",
+   "note": "Fassnacht is a right winger who returned home to Young Boys after a spell at Norwich City, and that move helped revive his international career after more than two years away from the squad. At 32, he's a useful attacking option off the bench, bringing directness and goal threat from wide areas."
+  },
+  {
+   "id": 48497,
+   "name": "C. Itten",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/48497.png",
+   "club": "Fortuna D\u00fcsseldorf",
+   "note": "Itten is a target-man striker who has been banging in goals for Fortuna D\u00fcsseldorf in Germany's second tier, where his aerial strength and finishing make him a real handful. He's a squad option here for late-game situations when Switzerland needs a focal point up top to chase a result."
+  },
+  {
+   "id": 163032,
+   "name": "F. Rieder",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/163032.png",
+   "club": "FC Augsburg",
+   "note": "Rieder is a creative attacking midfielder whose career got back on track in Germany after a tricky spell in France, winning the German Cup before joining Augsburg. At 23 he offers Switzerland passing and vision from the middle, a tidy option to unlock defences when games get stubborn."
+  },
+  {
+   "id": 48471,
+   "name": "R. Vargas",
+   "age": 27,
+   "position": "Attacker",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/48471.png",
+   "club": "Sevilla",
+   "note": "Vargas is a direct, quick winger who left a six-year stint at Augsburg to take on a new challenge at Sevilla. The 27-year-old likes to cut inside and shoot, and his pace gives Switzerland a way to stretch tiring defences, making him a strong candidate to start or change games out wide."
+  },
+  {
+   "id": 123469,
+   "name": "Z. Amdouni",
+   "age": 25,
+   "position": "Attacker",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/123469.png",
+   "club": "Burnley",
+   "note": "Amdouni is a flexible forward who can lead the line or play just behind, and he showed his quality on loan at Benfica with goals against Champions League heavyweights. The 25-year-old gives Switzerland a mobile, technical attacking option, competing for minutes in a forward line with several strong choices."
+  },
+  {
+   "id": 421,
+   "name": "B. Embolo",
+   "age": 28,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/421.png",
+   "club": "Rennes",
+   "note": "Embolo is Switzerland's main centre-forward, a strong, mobile striker who scored at the last World Cup and racked up goals over three seasons at Monaco before moving to Rennes. At 28 he combines power with link-up play, and the Swiss will look to him as their most reliable source of goals up front."
+  },
+  {
+   "id": 406244,
+   "name": "J. Manzambi",
+   "age": 20,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/406244.png",
+   "club": "SC Freiburg",
+   "note": "Manzambi is the breakout name, a 20-year-old from Geneva who was named the revelation of the 2025-26 Europa League after starring in Freiburg's run to the final. An energetic, box-to-box talent who already has a goal for the senior side, he is one of the youngest in the squad and an exciting wildcard going into the tournament."
+  },
+  {
+   "id": 48389,
+   "name": "N. Okafor",
+   "age": 25,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/48389.png",
+   "club": "Leeds",
+   "note": "Okafor is a quick, versatile forward who won a Serie A title on loan with Napoli before joining Leeds in a big-money move to the Premier League. The 25-year-old can play across the front line, and his pace and finishing, including a memorable brace at Old Trafford, give Switzerland a dangerous attacking option."
+  },
+  {
+   "id": 48648,
+   "name": "D. Ndoye",
+   "age": 25,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/48648.png",
+   "club": "Nottingham Forest",
+   "note": "Ndoye is one of Switzerland's brightest attackers, a winger who scored the goal that won Bologna their first Coppa Italia in 51 years before a big move to Nottingham Forest. At 25 his pace, dribbling and end product make him a key creative threat, and he is the kind of player who can decide a knockout tie on his own."
+  }
+ ],
+ "guardianStarPlayer": "Granit Xhaka",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

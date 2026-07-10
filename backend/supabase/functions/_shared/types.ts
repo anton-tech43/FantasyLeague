@@ -74,12 +74,48 @@ export interface ReviewNote {
 }
 
 export interface PipelineHealthLog {
-  team_id: string;
-  stage: "fetch" | "generate" | "review" | "safety_review" | "publish";
-  status: "success" | "failure" | "skipped";
-  duration_ms: number;
-  message: string | null;
-  content_item_id: string | null;
+  // team_id is now optional for system-level rows (cron_invoke heartbeat,
+  // global SLA checks). Set when the event is per-team.
+  team_id?: string | null;
+  stage:
+    | "fetch"
+    | "generate"
+    | "review"
+    | "safety_review"
+    | "publish"
+    | "live_brief_fire"   // match-watcher firing gd-live-brief via routine API
+    | "matchday_fire"     // match-watcher firing gd-matchday via routine API
+    | "consequence_fire"  // match-watcher INSERTing a templated cross-team consequence row (no LLM call). See Lesson 74.
+    | "apns_send"         // notification-sender sending a single APNs push
+    | "morning_push"      // morning-push "game day" send (was missing → type error)
+    | "routine_post"      // routine post_*.sh POSTing to Supabase REST
+    | "cron_invoke";      // pg_cron invoking an Edge Function
+  // 'partial' for aggregated hop results where some children succeeded and
+  // others failed (e.g., notification-sender batching to multiple tokens).
+  status: "success" | "failure" | "skipped" | "partial";
+  duration_ms?: number;
+  message?: string | null;
+  content_item_id?: string | null;
+  // V2.x observability columns added by migration 038. All optional.
+  target?: string | null;
+  http_status?: number | null;
+  response_excerpt?: string | null;
+  // Typed taxonomy — per /simplify Quality #1 + Lesson 64. Typos now
+  // fail at compile time instead of slipping through as raw strings.
+  // The SQL CHECK constraint at the table level stays loose because
+  // this taxonomy may grow (new HTTP-status-derived classes); the TS
+  // narrowing is the primary guard.
+  error_class?:
+    | "success"
+    | "fire_failed"        // match-watcher routine API returned non-2xx
+    | "fire_threw"         // network error reaching routine API
+    | "post_rejected"      // Supabase REST rejected the routine post script
+    | "token_expired"      // APNs 410: device token unregistered
+    | "bad_token"          // APNs 400: malformed device token
+    | "auth_failure"       // APNs 403: JWT auth issue
+    | "rate_limited"       // APNs 429 or routine API 429
+    | "apns_error"         // APNs other non-2xx
+    | null;
 }
 
 export interface TriggerPayload {
@@ -102,6 +138,13 @@ export interface Team {
   display_name: string;
   api_football_id: number;
   short_name: string;
+  /// 'club' for Premier League sides, 'country' for World Cup national
+  /// teams. Added in migration 032. Defaults to 'club' for back-compat.
+  entity_type?: "club" | "country";
+  /// API-Football league_id: 39 = Premier League, 1 = FIFA World Cup.
+  /// Added in migration 032 to drive per-league data fetches without
+  /// hardcoded constants in Edge Functions.
+  league_id?: number;
 }
 
 export interface DeviceToken {

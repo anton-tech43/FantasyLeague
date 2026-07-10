@@ -5,6 +5,18 @@ struct PlayerCardModal: View {
     @Environment(AppState.self) var appState
     @Environment(\.dismiss) var dismiss
 
+    /// Three rendering modes for the modal:
+    /// - `.locked`: user is below T3, show a soft teaser inviting them to upgrade
+    /// - `.empty`: T3 user but the routine hasn't generated a dossier yet
+    /// - `.full`: T3 user with a real dossier row
+    private enum Mode { case locked, empty, full }
+
+    private var mode: Mode {
+        if !TierGating.isAvailable(.playerDossier, tier: appState.selectedTier) { return .locked }
+        if player.summary.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return .empty }
+        return .full
+    }
+
     var body: some View {
         ZStack(alignment: .topTrailing) {
             Color.cardBackground.ignoresSafeArea()
@@ -20,29 +32,13 @@ struct PlayerCardModal: View {
                     .tracking(0.5)
                     .foregroundColor(.hotRose)
 
-                Text(appState.personalise(player.summary))
-                    .font(.detailBody)
-                    .foregroundColor(.textPrimaryOnCard)
-                    .lineLimit(5)
-
-                if let vibe = player.vibe {
-                    HStack(spacing: 6) {
-                        Image(systemName: vibeIcon(vibe))
-                            .font(.system(size: 12))
-                        Text(vibe.capitalized)
-                            .font(.feedTimestamp)
-                    }
-                    .foregroundColor(.textSecondaryOnCard)
-                }
-
-                if let form = player.form {
-                    HStack(spacing: 6) {
-                        Image(systemName: "chart.line.uptrend.xyaxis")
-                            .font(.system(size: 12))
-                        Text(appState.personalise(form))
-                            .font(.feedTimestamp)
-                    }
-                    .foregroundColor(.textSecondaryOnCard)
+                switch mode {
+                case .locked:
+                    lockedBody
+                case .empty:
+                    emptyBody
+                case .full:
+                    fullBody
                 }
             }
             .padding(Layout.cardPadding)
@@ -61,6 +57,66 @@ struct PlayerCardModal: View {
         }
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
+    }
+
+    // MARK: - Modes
+
+    /// T3+ with a real dossier: name, position, summary, optional vibe + form.
+    @ViewBuilder
+    private var fullBody: some View {
+        Text(appState.personalise(player.summary))
+            .font(.detailBody)
+            .foregroundColor(.textPrimaryOnCard)
+            .lineLimit(5)
+
+        if let vibe = player.vibe {
+            HStack(spacing: 6) {
+                Image(systemName: vibeIcon(vibe))
+                    .font(.system(size: 12))
+                Text(vibe.capitalized)
+                    .font(.feedTimestamp)
+            }
+            .foregroundColor(.textSecondaryOnCard)
+        }
+
+        if let form = player.form {
+            HStack(spacing: 6) {
+                Image(systemName: "chart.line.uptrend.xyaxis")
+                    .font(.system(size: 12))
+                Text(appState.personalise(form))
+                    .font(.feedTimestamp)
+            }
+            .foregroundColor(.textSecondaryOnCard)
+        }
+    }
+
+    /// T1/T2: soft teaser. Doesn't promise a specific paywall flow — Settings
+    /// is the only tier-switch surface today (paywall was removed when the app
+    /// went paid-up-front on the App Store), so just point her there.
+    @ViewBuilder
+    private var lockedBody: some View {
+        Text("Player dossiers are part of the Premium tier.")
+            .font(.detailBody)
+            .foregroundColor(.textPrimaryOnCard)
+
+        Text("Bump to T3 in Settings to unlock who \(appState.pSubject) \(appState.usesHeVoice ? "is" : "are"), how \(appState.pSubject) \(appState.usesHeVoice ? "plays" : "play"), and what to mention.")
+            .font(.feedTimestamp)
+            .foregroundColor(.textSecondaryOnCard)
+            .padding(.top, 2)
+    }
+
+    /// T3+ but no row yet (routine hasn't run for this player). Sister-voice
+    /// "lands Sunday" copy so she knows it's coming, not broken.
+    @ViewBuilder
+    private var emptyBody: some View {
+        Text("\(player.playerName)'s dossier lands Sunday evening.")
+            .font(.detailBody)
+            .foregroundColor(.textPrimaryOnCard)
+
+        Text("Fresh details every week so you always know who's who.")
+            .font(.feedTimestamp)
+            .foregroundColor(.textSecondaryOnCard)
+            .padding(.top, 2)
     }
 
     private func vibeIcon(_ vibe: String) -> String {

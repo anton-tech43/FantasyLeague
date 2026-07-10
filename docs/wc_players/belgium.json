@@ -1,0 +1,279 @@
+{
+ "country": "belgium",
+ "displayName": "Belgium",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Rudi Garcia",
+ "captain": "Youri Tielemans",
+ "keyPlayers": [
+  "T. Courtois",
+  "K. De Bruyne",
+  "R. Lukaku",
+  "Y. Tielemans",
+  "A. Onana",
+  "J. Doku"
+ ],
+ "players": [
+  {
+   "id": 730,
+   "name": "T. Courtois",
+   "age": 33,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/730.png",
+   "club": "Real Madrid",
+   "note": "Real Madrid's giant goalkeeper sat out Belgium for nearly two years after falling out with the old manager, then came back under Rudi Garcia with one goal in mind: the World Cup. Tall enough to fill a goal on his own, and one of the best in the world at doing exactly that."
+  },
+  {
+   "id": 162511,
+   "name": "S. Lammens",
+   "age": 23,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/162511.png",
+   "club": "Manchester United",
+   "note": "A penalty-saving specialist who left Antwerp for Manchester United on deadline day and quickly won over a tough crowd, earning a Premier League transfer-of-the-season nod. Here he's the understudy keeping Courtois honest in training."
+  },
+  {
+   "id": 340151,
+   "name": "M. Penders",
+   "age": 20,
+   "position": "Goalkeeper",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/340151.png",
+   "club": "Strasbourg",
+   "note": "One of the youngest names in the squad, a Chelsea-owned keeper learning the trade on loan in France. He won't play a minute unless something goes very wrong, but being here at all is the reward for a precocious debut season at Genk \u2014 Owned by Chelsea, on a season-long loan at Strasbourg."
+  },
+  {
+   "id": 2920,
+   "name": "T. Castagne",
+   "age": 30,
+   "position": "Defender",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/2920.png",
+   "club": "Fulham",
+   "note": "The kind of dependable full-back every team needs, equally happy down the right or the left, with an FA Cup from his Leicester days in the cupboard. After ankle surgery cut short last season at Fulham, this is his fourth major tournament for Belgium."
+  },
+  {
+   "id": 162007,
+   "name": "M. De Cuyper",
+   "age": 25,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/162007.png",
+   "club": "Brighton",
+   "note": "An attacking left-back who racked up titles at Club Brugge before a big-money move to Brighton last summer. He likes to push forward and create, so think of him as a winger who also defends."
+  },
+  {
+   "id": 162141,
+   "name": "K. De Winter",
+   "age": 23,
+   "position": "Defender",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/162141.png",
+   "club": "AC Milan",
+   "note": "A versatile defender who came through Juventus's academy, made his name at Genoa, then sealed a 'dream' move to AC Milan. He can slot in anywhere across the back line, which is exactly why managers love him."
+  },
+  {
+   "id": 304228,
+   "name": "Z. Debast",
+   "age": 22,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/304228.png",
+   "club": "Sporting CP",
+   "note": "An Anderlecht graduate who moved to Sporting in Portugal and announced himself by scoring against Lille on his Champions League debut. Comfortable as a centre-back or sitting in midfield, he's one of the young faces Belgium is building around."
+  },
+  {
+   "id": 69,
+   "name": "B. Mechele",
+   "age": 32,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/69.png",
+   "club": "Club Brugge KV",
+   "note": "A true one-club man who joined Club Brugge at the age of six and has since racked up more than 500 appearances and a stack of league titles. The kind of steady, no-fuss defender who only gets noticed when he's not there."
+  },
+  {
+   "id": 264,
+   "name": "T. Meunier",
+   "age": 34,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/264.png",
+   "club": "Lille",
+   "note": "The squad's old hand at right-back, with PSG and Borussia Dortmund behind him and now a steadying presence at Lille. Plenty of caps, plenty of tournaments, and still chipping in the odd goal at 34."
+  },
+  {
+   "id": 312964,
+   "name": "N. Ngoy",
+   "age": 22,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/312964.png",
+   "club": "Lille",
+   "note": "A Brussels-born centre-back who left Standard Liege for Lille and impressed with his reading of the game more than brute strength. Injuries slowed his start, but he's now seen as one of Belgium's brightest defensive prospects."
+  },
+  {
+   "id": 375974,
+   "name": "J. Seys",
+   "age": 20,
+   "position": "Defender",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/375974.png",
+   "club": "Club Brugge KV",
+   "note": "A flying full-back who shot up from Club Brugge's reserves to the first team in a matter of months and was named the league's best young player. Quick and tidy on the ball, he's already got the big Premier League clubs taking notes."
+  },
+  {
+   "id": 204043,
+   "name": "A. Theate",
+   "age": 25,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/204043.png",
+   "club": "Eintracht Frankfurt",
+   "note": "A left-footed defender who once became the most expensive Belgian defender ever when Rennes signed him, and now anchors the back line at Eintracht Frankfurt. Equally at home in the middle or out on the left."
+  },
+  {
+   "id": 629,
+   "name": "K. De Bruyne",
+   "age": 34,
+   "position": "Midfielder",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/629.png",
+   "club": "Napoli",
+   "note": "After a decade and a trophy cabinet's worth of medals at Manchester City, Belgium's finest passer moved to Napoli on a free and reunited with old pal Lukaku. At 34 this is almost certainly his last World Cup, and that vision and right foot are still the team's beating heart."
+  },
+  {
+   "id": 162714,
+   "name": "A. Onana",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/162714.png",
+   "club": "Aston Villa",
+   "note": "Born in Senegal and raised in Belgium, this towering midfielder is the muscle in front of the defence and an Europa League winner with Aston Villa. He finally got off the mark for his country with a goal against the USA earlier this year."
+  },
+  {
+   "id": 2120,
+   "name": "N. Raskin",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/2120.png",
+   "club": "Rangers",
+   "note": "A combative, all-action midfielder who has become Rangers' engine room in Scotland, chipping in goals and assists from deep. He only made his Belgium debut last year and is now pushing hard for a starting spot."
+  },
+  {
+   "id": 1417,
+   "name": "A. Saelemaekers",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/1417.png",
+   "club": "AC Milan",
+   "note": "A tireless wide player who had a strong loan spell at Roma before settling back in at AC Milan, where he'll do a shift anywhere down the right. The sort of selfless runner whose work often goes unsung."
+  },
+  {
+   "id": 2926,
+   "name": "Y. Tielemans",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/2926.png",
+   "club": "Aston Villa",
+   "note": "Belgium's captain and a calm, smart midfielder who orchestrates things from the centre for Aston Villa, voted their player of the season and an Europa League winner. He inherited the armband from De Bruyne in 2025 and now sets the tone for this team."
+  },
+  {
+   "id": 335056,
+   "name": "D. Moreira",
+   "age": 21,
+   "position": "Midfielder",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/335056.png",
+   "club": "Strasbourg",
+   "note": "A Liege-born winger-turned-wing-back who came through Benfica and Chelsea before thriving at Strasbourg, and who only switched his allegiance to Belgium last year. Fast, fearless and a nightmare to mark when he gets the ball at his feet."
+  },
+  {
+   "id": 78,
+   "name": "H. Vanaken",
+   "age": 33,
+   "position": "Midfielder",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/78.png",
+   "club": "Club Brugge KV",
+   "note": "A three-time Belgian Footballer of the Year and the brain of Club Brugge's midfield, prized for his vision and an eye for goal. A bit of a throwback to an old-school playmaker, and proof you don't have to leave the home league to be brilliant."
+  },
+  {
+   "id": 20,
+   "name": "A. Witsel",
+   "age": 36,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/20.png",
+   "club": "Girona",
+   "note": "The elder statesman of the squad, a composed deep-lying midfielder now playing in Spain for Girona after years at the top with Atletico and Dortmund. He scored against Barcelona this season just to remind everyone he's still got it."
+  },
+  {
+   "id": 1422,
+   "name": "J. Doku",
+   "age": 23,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/1422.png",
+   "club": "Manchester City",
+   "note": "Manchester City's electric winger and arguably the player most likely to win Belgium a game on his own, thanks to dribbling that ties defenders in knots. After a season where his end product finally caught up with the flair, he's the one to watch."
+  },
+  {
+   "id": 340077,
+   "name": "M. Fernandez-Pardo",
+   "age": 20,
+   "position": "Attacker",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/340077.png",
+   "club": "Lille",
+   "note": "A Brussels-born forward who briefly switched to Spain before changing his mind and committing to Belgium, with much of Europe's elite now circling his Lille form. At 20 he's the squad's wildcard, full of pace and goals across the front line."
+  },
+  {
+   "id": 907,
+   "name": "R. Lukaku",
+   "age": 32,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/907.png",
+   "club": "Napoli",
+   "note": "Belgium's all-time top scorer arrives at his fourth World Cup, but a muscle injury wrecked his Napoli season and the manager has already said he won't start the opener. A big, powerful number nine racing the clock to be fit when it matters."
+  },
+  {
+   "id": 25458,
+   "name": "D. Lukebakio",
+   "age": 28,
+   "position": "Attacker",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/25458.png",
+   "club": "Benfica",
+   "note": "A quick, direct right-winger who was Sevilla's top scorer before joining Benfica, with a knack for both finishing and setting others up. Useful change-of-pace option off the bench when defences need stretching."
+  },
+  {
+   "id": 147859,
+   "name": "C. De Ketelaere",
+   "age": 24,
+   "position": "Attacker",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/147859.png",
+   "club": "Atalanta",
+   "note": "A tall, graceful forward whose pricey move to AC Milan flopped badly, only for Atalanta to revive his career with goals and assists by the dozen. A reminder that sometimes a player just needs the right home to come good."
+  },
+  {
+   "id": 1946,
+   "name": "L. Trossard",
+   "age": 31,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/1946.png",
+   "club": "Arsenal",
+   "note": "Arsenal's clever forward who pops up with big goals whether he starts or comes off the bench, the definition of a useful man to have around. Left foot, sharp brain, and a habit of scoring in the matches that matter."
+  }
+ ],
+ "guardianStarPlayer": "Kevin De Bruyne",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

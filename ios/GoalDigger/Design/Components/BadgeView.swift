@@ -21,6 +21,8 @@ struct BadgeView: View {
         switch type {
         case .news: return "NEWS"
         case .matchday: return "MATCH DAY"
+        case .sundayBrief: return "SUNDAY BRIEF"
+        case .startingXi: return "STARTING XI"
         }
     }
 
@@ -28,6 +30,11 @@ struct BadgeView: View {
         switch type {
         case .news: return .badgeNewsText
         case .matchday: return .badgeMatchdayText
+        // Sunday Brief + Starting XI reuse the news colourway (warm white
+        // on hot rose). No new colour pair needed; the label change
+        // carries the signal.
+        case .sundayBrief: return .badgeNewsText
+        case .startingXi: return .badgeNewsText
         }
     }
 
@@ -35,6 +42,8 @@ struct BadgeView: View {
         switch type {
         case .news: return .badgeNews
         case .matchday: return .badgeMatchday
+        case .sundayBrief: return .badgeNews
+        case .startingXi: return .badgeNews
         }
     }
 }

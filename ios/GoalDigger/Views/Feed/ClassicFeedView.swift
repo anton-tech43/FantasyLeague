@@ -51,7 +51,7 @@ struct ClassicFeedView: View {
 
                 // YOUR MOVE card (team context only)
                 if let moveItem = yourMoveItem {
-                    NavigationLink(value: ContentDetailDestination(contentId: moveItem.id, scrollToTalkingPoints: true, isEveryoneContext: false)) {
+                    NavigationLink(value: ContentDetailDestination(contentId: moveItem.id, scrollToTalkingPoints: true, isEveryoneContext: false, preloadedItem: moveItem)) {
                         YourMoveCard(item: moveItem, appState: appState)
                     }
                     .buttonStyle(.plain)
@@ -59,7 +59,7 @@ struct ClassicFeedView: View {
 
                 // MATCH DAY card (team context only)
                 if let matchItem = matchDayItem {
-                    NavigationLink(value: ContentDetailDestination(contentId: matchItem.id, scrollToTalkingPoints: false, isEveryoneContext: false)) {
+                    NavigationLink(value: ContentDetailDestination(contentId: matchItem.id, scrollToTalkingPoints: false, isEveryoneContext: false, preloadedItem: matchItem)) {
                         MatchDayCard(item: matchItem, appState: appState, players: matchdayPlayers)
                     }
                     .buttonStyle(.plain)
@@ -67,7 +67,7 @@ struct ClassicFeedView: View {
 
                 // WORTH KNOWING card (everyone context only) — gold hero
                 if let worthItem = worthKnowingItem {
-                    NavigationLink(value: ContentDetailDestination(contentId: worthItem.id, scrollToTalkingPoints: false, isEveryoneContext: true)) {
+                    NavigationLink(value: ContentDetailDestination(contentId: worthItem.id, scrollToTalkingPoints: false, isEveryoneContext: true, preloadedItem: worthItem)) {
                         WorthKnowingCard(item: worthItem)
                     }
                     .buttonStyle(.plain)
@@ -76,7 +76,7 @@ struct ClassicFeedView: View {
                 // NEWS cards
                 ForEach(newsItems) { item in
                     let isEveryoneCtx = feedContext == .everyoneTalking
-                    NavigationLink(value: ContentDetailDestination(contentId: item.id, scrollToTalkingPoints: false, isEveryoneContext: isEveryoneCtx)) {
+                    NavigationLink(value: ContentDetailDestination(contentId: item.id, scrollToTalkingPoints: false, isEveryoneContext: isEveryoneCtx, preloadedItem: item)) {
                         ContentCard(item: item, appState: appState, feedContext: feedContext)
                     }
                     .buttonStyle(.plain)
@@ -124,7 +124,7 @@ struct ClassicFeedView: View {
                     icon: "sun.max",
                     iconColor: .tierGold,
                     title: "Season's over!",
-                    message: "The Premier League is on summer break. Enjoy the peace and quiet — we'll be back in August.\n\n(Transfer rumours might still pop up though)"
+                    message: "The Premier League is on summer break. Enjoy the peace and quiet. We'll be back in August.\n\n(Transfer rumours might still pop up though)"
                 )
             } else {
                 FreshnessCard(

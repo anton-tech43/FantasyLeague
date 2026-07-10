@@ -7,57 +7,144 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AA000001 /* GoalDiggerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001; };
-		AA000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002; };
-		AA000003 /* Team.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003; };
-		AA000004 /* ContentItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000004; };
-		AA000005 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000005; };
-		AA000006 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000006; };
-		AA000007 /* ContentCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000007; };
-		AA000008 /* TeamPickerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000008; };
-		AA000009 /* BadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000009; };
-		AA000010 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000010; };
-		AA000011 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000011; };
-		AA000012 /* TeamSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000012; };
-		AA000013 /* NotificationPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000013; };
-		AA000014 /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000014; };
-		AA000015 /* ContentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000015; };
-		AA000016 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000016; };
-		AA000017 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000017; };
-		AA000018 /* CacheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000018; };
-		AA000019 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000019; };
-		AA000020 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB000020; };
-		AA000021 /* MockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000022; };
-		AA000030 /* HerNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000030; };
-		AA000031 /* HisNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000031; };
-		AA000032 /* OnboardingFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000032; };
-		AA000033 /* TierSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000033; };
-		AA000035 /* OnesToWatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000035; };
-		AA000040 /* ProgressDotsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000040; };
-		AA000036 /* PlayerCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000036; };
-		AA000037 /* TeamPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000037; };
-		AA000041 /* YourMoveCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000041; };
-		AA000042 /* MatchDayCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000042; };
-		AA000043 /* GoalDiggerWordmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000043; };
-		AA000050 /* arsenal.json in Resources */ = {isa = PBXBuildFile; fileRef = AB000050; };
-		AA000060 /* FeedContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000060; };
-		AA000061 /* UnreadTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000061; };
-		AA000062 /* ImmersiveCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000062; };
-		AA000063 /* ImmersiveSkeletonCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000063; };
-		AA000064 /* ContextSwitcherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000064; };
-		AA000065 /* EveryoneEmptyStateCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000065; };
-		AA000066 /* ClassicFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000066; };
-		AA000070 /* PlusJakartaSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000070; };
-		AA000071 /* PlusJakartaSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000071; };
-		AA000072 /* PlusJakartaSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000072; };
-		AA000073 /* PlusJakartaSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000073; };
-		AA000074 /* PlusJakartaSans-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000074; };
-		AA000075 /* PlusJakartaSans-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000075; };
-		AA000076 /* PlusJakartaSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000076; };
-		AA000077 /* LeagueSpartan-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000077; };
+		003F6A856B6B334723F84F32 /* MatchLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCDB9E93E3CF813F605541EE /* MatchLiveActivity.swift */; };
+		11668C80EB1ED7F740D84481 /* TierGating.swift in Sources */ = {isa = PBXBuildFile; fileRef = 427A2A492E809AB52CDF85A0 /* TierGating.swift */; };
+		14474256E2DD1E7DA90DA178 /* GlossaryText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1969411F418AE27184440E14 /* GlossaryText.swift */; };
+		159D99B3A0BD1457CA4C4F47 /* LiveMatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCA4D1D232DB07DA5CC85E8B /* LiveMatchSnapshot.swift */; };
+		244B4E7A89E82714DCF2F917 /* MatchActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BDA3526673665ADFD98752B /* MatchActivityAttributes.swift */; };
+		25B33D3555E190DC97F79521 /* LiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D73223B9708A1BB7B5EA13D /* LiveActivityManager.swift */; };
+		4F7EFB5C35390135CD067439 /* GoalDiggerLiveActivity.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2C3E6B0D62430537E6511905 /* GoalDiggerLiveActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, CodeSignOnCopy, ); }; };
+		52553E77A05FC21AFD39FE05 /* glossary.json in Resources */ = {isa = PBXBuildFile; fileRef = 842AE9AEAF418CB78FA4589A /* glossary.json */; };
+		52636A01D4C19FDD19072096 /* CalendarSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37D3E46E7BC8929DF2B09425 /* CalendarSyncService.swift */; };
+		5C6D265B75886BF7277447B7 /* GlossaryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AD6B0120F684DF2FDE52DDA /* GlossaryService.swift */; };
+		6CA1FD4A864451C12D212143 /* LiveMatchCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A88D0BF10EC36C829985F7 /* LiveMatchCard.swift */; };
+		6DB27580A7465723CA70926A /* LiveMatchBrief.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9B40C83CE30947DD4E9AB4 /* LiveMatchBrief.swift */; };
+		7AE5C40C19D72FA48BC51F30 /* SaturdayQuiz.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BC4A29F62D389F4A4751E27 /* SaturdayQuiz.swift */; };
+		8DF6B51D2AE83FB59CD63041 /* SaturdayQuizCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD5B3A073E49AF5B5862F38 /* SaturdayQuizCard.swift */; };
+		0A758A8D47CD4DF9A356EB6C /* WCNextMatchCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 912013703FAF48AC8F477692 /* WCNextMatchCard.swift */; };
+		AA000001 /* GoalDiggerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001 /* GoalDiggerApp.swift */; };
+		AA000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002 /* AppDelegate.swift */; };
+		AA000003 /* Team.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003 /* Team.swift */; };
+		AA000004 /* ContentItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000004 /* ContentItem.swift */; };
+		AA000005 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000005 /* AppState.swift */; };
+		AA000006 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000006 /* Theme.swift */; };
+		AA000007 /* ContentCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000007 /* ContentCard.swift */; };
+		AA000008 /* TeamPickerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000008 /* TeamPickerCard.swift */; };
+		AA000009 /* BadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000009 /* BadgeView.swift */; };
+		AA000010 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000010 /* EmptyStateView.swift */; };
+		AA000011 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000011 /* WelcomeView.swift */; };
+		AA000013 /* NotificationPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000013 /* NotificationPromptView.swift */; };
+		AA000014 /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000014 /* FeedView.swift */; };
+		AA000015 /* ContentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000015 /* ContentDetailView.swift */; };
+		AA000016 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000016 /* SettingsView.swift */; };
+		AA000017 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000017 /* APIClient.swift */; };
+		AA000018 /* CacheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000018 /* CacheService.swift */; };
+		AA000019 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000019 /* NotificationService.swift */; };
+		AA000020 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB000020 /* Assets.xcassets */; };
+		AA000021 /* MockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000022 /* MockData.swift */; };
+		AA000030 /* HerNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000030 /* HerNameView.swift */; };
+		AA000031 /* HisNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000031 /* HisNameView.swift */; };
+		AA000032 /* OnboardingFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000032 /* OnboardingFlow.swift */; };
+		AA000033 /* TierSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000033 /* TierSelectionView.swift */; };
+		AA000035 /* OnesToWatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000035 /* OnesToWatchView.swift */; };
+		AA000036 /* PlayerCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000036 /* PlayerCardView.swift */; };
+		AA000037 /* TeamPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000037 /* TeamPageView.swift */; };
+		AA000040 /* ProgressDotsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000040 /* ProgressDotsView.swift */; };
+		AA000041 /* YourMoveCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000041 /* YourMoveCard.swift */; };
+		AA000042 /* MatchDayCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000042 /* MatchDayCard.swift */; };
+		AA000043 /* GoalDiggerWordmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000043 /* GoalDiggerWordmark.swift */; };
+		AA000050 /* arsenal.json in Resources */ = {isa = PBXBuildFile; fileRef = AB000050 /* arsenal.json */; };
+		AA000060 /* FeedContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000060 /* FeedContext.swift */; };
+		AA000061 /* UnreadTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000061 /* UnreadTracker.swift */; };
+		AA000062 /* ImmersiveCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000062 /* ImmersiveCard.swift */; };
+		AA000063 /* ImmersiveSkeletonCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000063 /* ImmersiveSkeletonCard.swift */; };
+		AA000064 /* ContextSwitcherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000064 /* ContextSwitcherView.swift */; };
+		AA000065 /* EveryoneEmptyStateCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000065 /* EveryoneEmptyStateCard.swift */; };
+		AA000066 /* ClassicFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000066 /* ClassicFeedView.swift */; };
+		AA000070 /* PlusJakartaSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000070 /* PlusJakartaSans-Regular.ttf */; };
+		AA000071 /* PlusJakartaSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000071 /* PlusJakartaSans-Medium.ttf */; };
+		AA000072 /* PlusJakartaSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000072 /* PlusJakartaSans-SemiBold.ttf */; };
+		AA000073 /* PlusJakartaSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000073 /* PlusJakartaSans-Bold.ttf */; };
+		AA000074 /* PlusJakartaSans-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000074 /* PlusJakartaSans-Italic.ttf */; };
+		AA000075 /* PlusJakartaSans-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000075 /* PlusJakartaSans-MediumItalic.ttf */; };
+		AA000076 /* PlusJakartaSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000076 /* PlusJakartaSans-ExtraBold.ttf */; };
+		AA000077 /* LeagueSpartan-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000077 /* LeagueSpartan-Black.ttf */; };
+		AA000080 /* PurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000080 /* PurchaseManager.swift */; };
+		AA000081 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000081 /* PaywallView.swift */; };
+		AA000090 /* TeamPageCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000090 /* TeamPageCard.swift */; };
+		AA000091 /* TeamPageMoodBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000091 /* TeamPageMoodBanner.swift */; };
+		AA000092 /* TeamPageThisWeek.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000092 /* TeamPageThisWeek.swift */; };
+		AA000093 /* TeamPageRivalryMeter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000093 /* TeamPageRivalryMeter.swift */; };
+		AA000094 /* TeamPageCountdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000094 /* TeamPageCountdown.swift */; };
+		AA000095 /* TeamPageFormDots.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000095 /* TeamPageFormDots.swift */; };
+		AA000200 /* OnboardingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000200 /* OnboardingTextField.swift */; };
+		AA000300 /* MeetTeamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000300 /* MeetTeamView.swift */; };
+		AA000301 /* HowItWorksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000301 /* HowItWorksView.swift */; };
+		AA000302 /* CalendarOptInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000302 /* CalendarOptInView.swift */; };
+		AA000303 /* MeetManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000303 /* MeetManagerView.swift */; };
+		AA000304 /* TeamCrestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000304 /* TeamCrestView.swift */; };
+		AA000305 /* Country.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000305 /* Country.swift */; };
+		AA000306 /* CountrySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000306 /* CountrySelectionView.swift */; };
+		AA000307 /* OptionalPLTeamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000307 /* OptionalPLTeamView.swift */; };
+		AA000308 /* WCMigrationSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000308 /* WCMigrationSheetView.swift */; };
+		AA000309 /* InsiderHeadlineRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000309 /* InsiderHeadlineRow.swift */; };
+		AA000310 /* CollapsibleSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000310 /* CollapsibleSection.swift */; };
+		AA000311 /* AffectedTeamsHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000311 /* AffectedTeamsHeader.swift */; };
+		AC8165AEE3D87BDE0DF13AA8 /* GlossaryTerm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 270994EEE49DF138BC2540A0 /* GlossaryTerm.swift */; };
+		B5994EBA3DC6541DF77F9768 /* ShareableCardRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B6B4EAC55CB925992D81ED /* ShareableCardRenderer.swift */; };
+		B864567C90FBF5CFB72B37CD /* MatchActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BDA3526673665ADFD98752B /* MatchActivityAttributes.swift */; };
+		C6106E6CA3714FF9402A1F68 /* TeamSeasonState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19D7EA257F3133FF29F0A866 /* TeamSeasonState.swift */; };
+		C7B8DACE2D719CBF1D50DE0A /* LiveActivityBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94C9314600B101EA7FBA6D9 /* LiveActivityBundle.swift */; };
+		C8D06CD38DF3FEBE15567E43 /* SeasonPrimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B5B3A50DCC8E9B41626BB81 /* SeasonPrimerView.swift */; };
+		CCD1E4EDA6BD470832977407 /* InsiderItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCC2F8DAF9A3D770423F8C38 /* InsiderItem.swift */; };
+		CEE0AA64A8A71768C7DAE896 /* AudioPlayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36F66AB00E15F67DAA68C18A /* AudioPlayerService.swift */; };
+		DACB60FB5B8E068045070D2F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F288B1DCFB01F70EA2722C7 /* Foundation.framework */; };
+		DF1EDE6C6A0AA125869C7F8D /* InsiderCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C25D6C48090CD68B903A14 /* InsiderCard.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		F29E822EDC8481A7A4F775C9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AF000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7E34607F1890727D5CFF3540;
+			remoteInfo = GoalDiggerLiveActivity;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		49B9DFA32C526E30B1DCA6F5 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				4F7EFB5C35390135CD067439 /* GoalDiggerLiveActivity.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		0E9B40C83CE30947DD4E9AB4 /* LiveMatchBrief.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveMatchBrief.swift; sourceTree = "<group>"; };
+		1969411F418AE27184440E14 /* GlossaryText.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlossaryText.swift; sourceTree = "<group>"; };
+		19D7EA257F3133FF29F0A866 /* TeamSeasonState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TeamSeasonState.swift; sourceTree = "<group>"; };
+		1BC4A29F62D389F4A4751E27 /* SaturdayQuiz.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SaturdayQuiz.swift; sourceTree = "<group>"; };
+		270994EEE49DF138BC2540A0 /* GlossaryTerm.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlossaryTerm.swift; sourceTree = "<group>"; };
+		2AD6B0120F684DF2FDE52DDA /* GlossaryService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlossaryService.swift; sourceTree = "<group>"; };
+		2B5B3A50DCC8E9B41626BB81 /* SeasonPrimerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SeasonPrimerView.swift; sourceTree = "<group>"; };
+		2BDA3526673665ADFD98752B /* MatchActivityAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MatchActivityAttributes.swift; sourceTree = "<group>"; };
+		2C3E6B0D62430537E6511905 /* GoalDiggerLiveActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GoalDiggerLiveActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		2CD5B3A073E49AF5B5862F38 /* SaturdayQuizCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SaturdayQuizCard.swift; sourceTree = "<group>"; };
+		912013703FAF48AC8F477692 /* WCNextMatchCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WCNextMatchCard.swift; sourceTree = "<group>"; };
+		36F66AB00E15F67DAA68C18A /* AudioPlayerService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioPlayerService.swift; sourceTree = "<group>"; };
+		37D3E46E7BC8929DF2B09425 /* CalendarSyncService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarSyncService.swift; sourceTree = "<group>"; };
+		3F288B1DCFB01F70EA2722C7 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		427A2A492E809AB52CDF85A0 /* TierGating.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TierGating.swift; sourceTree = "<group>"; };
+		7239C9DAC195717215AC20F2 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		842AE9AEAF418CB78FA4589A /* glossary.json */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json; path = glossary.json; sourceTree = "<group>"; };
+		9D73223B9708A1BB7B5EA13D /* LiveActivityManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityManager.swift; sourceTree = "<group>"; };
 		AB000001 /* GoalDiggerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalDiggerApp.swift; sourceTree = "<group>"; };
 		AB000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		AB000003 /* Team.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Team.swift; sourceTree = "<group>"; };
@@ -69,7 +156,6 @@
 		AB000009 /* BadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeView.swift; sourceTree = "<group>"; };
 		AB000010 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
 		AB000011 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
-		AB000012 /* TeamSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamSelectionView.swift; sourceTree = "<group>"; };
 		AB000013 /* NotificationPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPromptView.swift; sourceTree = "<group>"; };
 		AB000014 /* FeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedView.swift; sourceTree = "<group>"; };
 		AB000015 /* ContentDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentDetailView.swift; sourceTree = "<group>"; };
@@ -81,20 +167,20 @@
 		AB000021 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AB000022 /* MockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockData.swift; sourceTree = "<group>"; };
 		AB000023 /* GoalDigger.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GoalDigger.entitlements; sourceTree = "<group>"; };
-		AB000024 /* Configuration.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Configuration.xcconfig.example"; sourceTree = "<group>"; };
+		AB000024 /* Configuration.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration.xcconfig.example; sourceTree = "<group>"; };
 		AB000025 /* Configuration.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration.xcconfig; sourceTree = "<group>"; };
+		AB000026 /* GoalDigger-Release.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "GoalDigger-Release.entitlements"; sourceTree = "<group>"; };
 		AB000030 /* HerNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HerNameView.swift; sourceTree = "<group>"; };
 		AB000031 /* HisNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HisNameView.swift; sourceTree = "<group>"; };
 		AB000032 /* OnboardingFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlow.swift; sourceTree = "<group>"; };
 		AB000033 /* TierSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TierSelectionView.swift; sourceTree = "<group>"; };
 		AB000035 /* OnesToWatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnesToWatchView.swift; sourceTree = "<group>"; };
-		AB000040 /* ProgressDotsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressDotsView.swift; sourceTree = "<group>"; };
 		AB000036 /* PlayerCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerCardView.swift; sourceTree = "<group>"; };
 		AB000037 /* TeamPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageView.swift; sourceTree = "<group>"; };
+		AB000040 /* ProgressDotsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressDotsView.swift; sourceTree = "<group>"; };
 		AB000041 /* YourMoveCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YourMoveCard.swift; sourceTree = "<group>"; };
 		AB000042 /* MatchDayCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDayCard.swift; sourceTree = "<group>"; };
 		AB000043 /* GoalDiggerWordmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalDiggerWordmark.swift; sourceTree = "<group>"; };
-		AB000099 /* GoalDigger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GoalDigger.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB000050 /* arsenal.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = arsenal.json; sourceTree = "<group>"; };
 		AB000060 /* FeedContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedContext.swift; sourceTree = "<group>"; };
 		AB000061 /* UnreadTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnreadTracker.swift; sourceTree = "<group>"; };
@@ -111,14 +197,77 @@
 		AB000075 /* PlusJakartaSans-MediumItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-MediumItalic.ttf"; sourceTree = "<group>"; };
 		AB000076 /* PlusJakartaSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-ExtraBold.ttf"; sourceTree = "<group>"; };
 		AB000077 /* LeagueSpartan-Black.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "LeagueSpartan-Black.ttf"; sourceTree = "<group>"; };
+		AB000080 /* PurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseManager.swift; sourceTree = "<group>"; };
+		AB000081 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		AB000090 /* TeamPageCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageCard.swift; sourceTree = "<group>"; };
+		AB000091 /* TeamPageMoodBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageMoodBanner.swift; sourceTree = "<group>"; };
+		AB000092 /* TeamPageThisWeek.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageThisWeek.swift; sourceTree = "<group>"; };
+		AB000093 /* TeamPageRivalryMeter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageRivalryMeter.swift; sourceTree = "<group>"; };
+		AB000094 /* TeamPageCountdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageCountdown.swift; sourceTree = "<group>"; };
+		AB000095 /* TeamPageFormDots.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageFormDots.swift; sourceTree = "<group>"; };
+		AB000099 /* GoalDigger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GoalDigger.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB000200 /* OnboardingTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingTextField.swift; sourceTree = "<group>"; };
+		AB000300 /* MeetTeamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetTeamView.swift; sourceTree = "<group>"; };
+		AB000301 /* HowItWorksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HowItWorksView.swift; sourceTree = "<group>"; };
+		AB000302 /* CalendarOptInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarOptInView.swift; sourceTree = "<group>"; };
+		AB000303 /* MeetManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetManagerView.swift; sourceTree = "<group>"; };
+		AB000304 /* TeamCrestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamCrestView.swift; sourceTree = "<group>"; };
+		AB000305 /* Country.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Country.swift; sourceTree = "<group>"; };
+		AB000306 /* CountrySelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountrySelectionView.swift; sourceTree = "<group>"; };
+		AB000307 /* OptionalPLTeamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionalPLTeamView.swift; sourceTree = "<group>"; };
+		AB000308 /* WCMigrationSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WCMigrationSheetView.swift; sourceTree = "<group>"; };
+		AB000309 /* InsiderHeadlineRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InsiderHeadlineRow.swift; sourceTree = "<group>"; };
+		AB000310 /* CollapsibleSection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CollapsibleSection.swift; sourceTree = "<group>"; };
+		AB000311 /* AffectedTeamsHeader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AffectedTeamsHeader.swift; sourceTree = "<group>"; };
+		BCDB9E93E3CF813F605541EE /* MatchLiveActivity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MatchLiveActivity.swift; sourceTree = "<group>"; };
+		C94C9314600B101EA7FBA6D9 /* LiveActivityBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityBundle.swift; sourceTree = "<group>"; };
+		CCC2F8DAF9A3D770423F8C38 /* InsiderItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InsiderItem.swift; sourceTree = "<group>"; };
+		D5A88D0BF10EC36C829985F7 /* LiveMatchCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveMatchCard.swift; sourceTree = "<group>"; };
+		D8C25D6C48090CD68B903A14 /* InsiderCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InsiderCard.swift; sourceTree = "<group>"; };
+		DCA4D1D232DB07DA5CC85E8B /* LiveMatchSnapshot.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveMatchSnapshot.swift; sourceTree = "<group>"; };
+		E5B6B4EAC55CB925992D81ED /* ShareableCardRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareableCardRenderer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFrameworksBuildPhase section */
+		187FD6B6B752FCC5E5FDB83A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DACB60FB5B8E068045070D2F /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AD000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
 /* Begin PBXGroup section */
-		AC000001 /* Root */ = {
+		9BDC8E03FFB595370D8F671B /* LiveActivity */ = {
+			isa = PBXGroup;
+			children = (
+				2BDA3526673665ADFD98752B /* MatchActivityAttributes.swift */,
+				C94C9314600B101EA7FBA6D9 /* LiveActivityBundle.swift */,
+				BCDB9E93E3CF813F605541EE /* MatchLiveActivity.swift */,
+				7239C9DAC195717215AC20F2 /* Info.plist */,
+				9D73223B9708A1BB7B5EA13D /* LiveActivityManager.swift */,
+				DCA4D1D232DB07DA5CC85E8B /* LiveMatchSnapshot.swift */,
+			);
+			name = LiveActivity;
+			path = GoalDigger/LiveActivity;
+			sourceTree = "<group>";
+		};
+		AC000001 = {
 			isa = PBXGroup;
 			children = (
 				AC000002 /* GoalDigger */,
 				AC000099 /* Products */,
+				EC4E473D3864E71C2025A110 /* Frameworks */,
+				9BDC8E03FFB595370D8F671B /* LiveActivity */,
 			);
 			sourceTree = "<group>";
 		};
@@ -134,8 +283,9 @@
 				AC000020 /* MockData */,
 				AB000021 /* Info.plist */,
 				AB000023 /* GoalDigger.entitlements */,
+				AB000026 /* GoalDigger-Release.entitlements */,
 				AB000024 /* Configuration.xcconfig.example */,
-			AB000025 /* Configuration.xcconfig */,
+				AB000025 /* Configuration.xcconfig */,
 			);
 			path = GoalDigger;
 			sourceTree = "<group>";
@@ -164,6 +314,7 @@
 				AB000007 /* ContentCard.swift */,
 				AB000008 /* TeamPickerCard.swift */,
 				AB000009 /* BadgeView.swift */,
+				AB000304 /* TeamCrestView.swift */,
 				AB000010 /* EmptyStateView.swift */,
 				AB000040 /* ProgressDotsView.swift */,
 				AB000041 /* YourMoveCard.swift */,
@@ -173,6 +324,16 @@
 				AB000063 /* ImmersiveSkeletonCard.swift */,
 				AB000064 /* ContextSwitcherView.swift */,
 				AB000065 /* EveryoneEmptyStateCard.swift */,
+				AB000200 /* OnboardingTextField.swift */,
+				E5B6B4EAC55CB925992D81ED /* ShareableCardRenderer.swift */,
+				1969411F418AE27184440E14 /* GlossaryText.swift */,
+				D8C25D6C48090CD68B903A14 /* InsiderCard.swift */,
+				AB000309 /* InsiderHeadlineRow.swift */,
+				AB000310 /* CollapsibleSection.swift */,
+				AB000311 /* AffectedTeamsHeader.swift */,
+				D5A88D0BF10EC36C829985F7 /* LiveMatchCard.swift */,
+				2CD5B3A073E49AF5B5862F38 /* SaturdayQuizCard.swift */,
+				912013703FAF48AC8F477692 /* WCNextMatchCard.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -187,6 +348,7 @@
 				AC000014 /* Team */,
 				AC000015 /* Player */,
 				AC000016 /* Matchday */,
+				AB000081 /* PaywallView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -198,9 +360,16 @@
 				AB000011 /* WelcomeView.swift */,
 				AB000030 /* HerNameView.swift */,
 				AB000031 /* HisNameView.swift */,
-				AB000012 /* TeamSelectionView.swift */,
-				AB000033 /* TierSelectionView.swift */,
+				AB000306 /* CountrySelectionView.swift */,
+				AB000307 /* OptionalPLTeamView.swift */,
+				AB000308 /* WCMigrationSheetView.swift */,
 				AB000013 /* NotificationPromptView.swift */,
+				AB000300 /* MeetTeamView.swift */,
+				AB000303 /* MeetManagerView.swift */,
+				AB000301 /* HowItWorksView.swift */,
+				AB000033 /* TierSelectionView.swift */,
+				AB000302 /* CalendarOptInView.swift */,
+				2B5B3A50DCC8E9B41626BB81 /* SeasonPrimerView.swift */,
 			);
 			path = Onboarding;
 			sourceTree = "<group>";
@@ -226,10 +395,17 @@
 			isa = PBXGroup;
 			children = (
 				AB000003 /* Team.swift */,
+				AB000305 /* Country.swift */,
 				AB000004 /* ContentItem.swift */,
 				AB000005 /* AppState.swift */,
 				AB000022 /* MockData.swift */,
 				AB000060 /* FeedContext.swift */,
+				427A2A492E809AB52CDF85A0 /* TierGating.swift */,
+				270994EEE49DF138BC2540A0 /* GlossaryTerm.swift */,
+				19D7EA257F3133FF29F0A866 /* TeamSeasonState.swift */,
+				CCC2F8DAF9A3D770423F8C38 /* InsiderItem.swift */,
+				0E9B40C83CE30947DD4E9AB4 /* LiveMatchBrief.swift */,
+				1BC4A29F62D389F4A4751E27 /* SaturdayQuiz.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -241,6 +417,10 @@
 				AB000018 /* CacheService.swift */,
 				AB000019 /* NotificationService.swift */,
 				AB000061 /* UnreadTracker.swift */,
+				AB000080 /* PurchaseManager.swift */,
+				36F66AB00E15F67DAA68C18A /* AudioPlayerService.swift */,
+				37D3E46E7BC8929DF2B09425 /* CalendarSyncService.swift */,
+				2AD6B0120F684DF2FDE52DDA /* GlossaryService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -250,23 +430,9 @@
 			children = (
 				AB000020 /* Assets.xcassets */,
 				AC000022 /* Fonts */,
+				842AE9AEAF418CB78FA4589A /* glossary.json */,
 			);
 			path = Resources;
-			sourceTree = "<group>";
-		};
-		AC000022 /* Fonts */ = {
-			isa = PBXGroup;
-			children = (
-				AB000070 /* PlusJakartaSans-Regular.ttf */,
-				AB000071 /* PlusJakartaSans-Medium.ttf */,
-				AB000072 /* PlusJakartaSans-SemiBold.ttf */,
-				AB000073 /* PlusJakartaSans-Bold.ttf */,
-				AB000074 /* PlusJakartaSans-Italic.ttf */,
-				AB000075 /* PlusJakartaSans-MediumItalic.ttf */,
-				AB000076 /* PlusJakartaSans-ExtraBold.ttf */,
-				AB000077 /* LeagueSpartan-Black.ttf */,
-			);
-			path = Fonts;
 			sourceTree = "<group>";
 		};
 		AC000013 /* Settings */ = {
@@ -281,6 +447,12 @@
 			isa = PBXGroup;
 			children = (
 				AB000037 /* TeamPageView.swift */,
+				AB000090 /* TeamPageCard.swift */,
+				AB000091 /* TeamPageMoodBanner.swift */,
+				AB000092 /* TeamPageThisWeek.swift */,
+				AB000093 /* TeamPageRivalryMeter.swift */,
+				AB000094 /* TeamPageCountdown.swift */,
+				AB000095 /* TeamPageFormDots.swift */,
 			);
 			path = Team;
 			sourceTree = "<group>";
@@ -301,14 +473,6 @@
 			path = Matchday;
 			sourceTree = "<group>";
 		};
-		AC000099 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				AB000099 /* GoalDigger.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		AC000020 /* MockData */ = {
 			isa = PBXGroup;
 			children = (
@@ -325,9 +489,66 @@
 			path = team_pages;
 			sourceTree = "<group>";
 		};
+		AC000022 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				AB000070 /* PlusJakartaSans-Regular.ttf */,
+				AB000071 /* PlusJakartaSans-Medium.ttf */,
+				AB000072 /* PlusJakartaSans-SemiBold.ttf */,
+				AB000073 /* PlusJakartaSans-Bold.ttf */,
+				AB000074 /* PlusJakartaSans-Italic.ttf */,
+				AB000075 /* PlusJakartaSans-MediumItalic.ttf */,
+				AB000076 /* PlusJakartaSans-ExtraBold.ttf */,
+				AB000077 /* LeagueSpartan-Black.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
+		AC000099 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AB000099 /* GoalDigger.app */,
+				2C3E6B0D62430537E6511905 /* GoalDiggerLiveActivity.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D1E3744EBFCDEA2EBF0613AC /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				3F288B1DCFB01F70EA2722C7 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		EC4E473D3864E71C2025A110 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D1E3744EBFCDEA2EBF0613AC /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		7E34607F1890727D5CFF3540 /* GoalDiggerLiveActivity */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 35E4E7E5D6C66DDF23070C5F /* Build configuration list for PBXNativeTarget "GoalDiggerLiveActivity" */;
+			buildPhases = (
+				2ED390361D01176DC5A81686 /* Sources */,
+				187FD6B6B752FCC5E5FDB83A /* Frameworks */,
+				DA7BAE8400E9CBBFEB3A7BD2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GoalDiggerLiveActivity;
+			productName = GoalDiggerLiveActivity;
+			productReference = 2C3E6B0D62430537E6511905 /* GoalDiggerLiveActivity.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		AD000001 /* GoalDigger */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = AE000003 /* Build configuration list for PBXNativeTarget "GoalDigger" */;
@@ -335,10 +556,12 @@
 				AD000002 /* Sources */,
 				AD000003 /* Resources */,
 				AD000004 /* Frameworks */,
+				49B9DFA32C526E30B1DCA6F5 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				B49859D075866BFE9AB20E81 /* PBXTargetDependency */,
 			);
 			name = GoalDigger;
 			productName = GoalDigger;
@@ -368,12 +591,13 @@
 				en,
 				Base,
 			);
-			mainGroup = AC000001 /* Root */;
+			mainGroup = AC000001;
 			productRefGroup = AC000099 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				AD000001 /* GoalDigger */,
+				7E34607F1890727D5CFF3540 /* GoalDiggerLiveActivity */,
 			);
 		};
 /* End PBXProject section */
@@ -393,12 +617,30 @@
 				AA000075 /* PlusJakartaSans-MediumItalic.ttf in Resources */,
 				AA000076 /* PlusJakartaSans-ExtraBold.ttf in Resources */,
 				AA000077 /* LeagueSpartan-Black.ttf in Resources */,
+				52553E77A05FC21AFD39FE05 /* glossary.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DA7BAE8400E9CBBFEB3A7BD2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		2ED390361D01176DC5A81686 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B864567C90FBF5CFB72B37CD /* MatchActivityAttributes.swift in Sources */,
+				C7B8DACE2D719CBF1D50DE0A /* LiveActivityBundle.swift in Sources */,
+				003F6A856B6B334723F84F32 /* MatchLiveActivity.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AD000002 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -406,6 +648,7 @@
 				AA000001 /* GoalDiggerApp.swift in Sources */,
 				AA000002 /* AppDelegate.swift in Sources */,
 				AA000003 /* Team.swift in Sources */,
+				AA000305 /* Country.swift in Sources */,
 				AA000004 /* ContentItem.swift in Sources */,
 				AA000005 /* AppState.swift in Sources */,
 				AA000006 /* Theme.swift in Sources */,
@@ -414,7 +657,6 @@
 				AA000009 /* BadgeView.swift in Sources */,
 				AA000010 /* EmptyStateView.swift in Sources */,
 				AA000011 /* WelcomeView.swift in Sources */,
-				AA000012 /* TeamSelectionView.swift in Sources */,
 				AA000013 /* NotificationPromptView.swift in Sources */,
 				AA000014 /* FeedView.swift in Sources */,
 				AA000015 /* ContentDetailView.swift in Sources */,
@@ -427,6 +669,14 @@
 				AA000031 /* HisNameView.swift in Sources */,
 				AA000032 /* OnboardingFlow.swift in Sources */,
 				AA000033 /* TierSelectionView.swift in Sources */,
+				AA000300 /* MeetTeamView.swift in Sources */,
+				AA000301 /* HowItWorksView.swift in Sources */,
+				AA000302 /* CalendarOptInView.swift in Sources */,
+				AA000303 /* MeetManagerView.swift in Sources */,
+				AA000304 /* TeamCrestView.swift in Sources */,
+				AA000306 /* CountrySelectionView.swift in Sources */,
+				AA000307 /* OptionalPLTeamView.swift in Sources */,
+				AA000308 /* WCMigrationSheetView.swift in Sources */,
 				AA000035 /* OnesToWatchView.swift in Sources */,
 				AA000040 /* ProgressDotsView.swift in Sources */,
 				AA000036 /* PlayerCardView.swift in Sources */,
@@ -434,29 +684,114 @@
 				AA000041 /* YourMoveCard.swift in Sources */,
 				AA000042 /* MatchDayCard.swift in Sources */,
 				AA000043 /* GoalDiggerWordmark.swift in Sources */,
-			AA000060 /* FeedContext.swift in Sources */,
-			AA000061 /* UnreadTracker.swift in Sources */,
-			AA000062 /* ImmersiveCard.swift in Sources */,
-			AA000063 /* ImmersiveSkeletonCard.swift in Sources */,
-			AA000064 /* ContextSwitcherView.swift in Sources */,
-			AA000065 /* EveryoneEmptyStateCard.swift in Sources */,
-			AA000066 /* ClassicFeedView.swift in Sources */,
+				AA000060 /* FeedContext.swift in Sources */,
+				AA000061 /* UnreadTracker.swift in Sources */,
+				AA000062 /* ImmersiveCard.swift in Sources */,
+				AA000063 /* ImmersiveSkeletonCard.swift in Sources */,
+				AA000064 /* ContextSwitcherView.swift in Sources */,
+				AA000065 /* EveryoneEmptyStateCard.swift in Sources */,
+				AA000066 /* ClassicFeedView.swift in Sources */,
+				AA000080 /* PurchaseManager.swift in Sources */,
+				AA000081 /* PaywallView.swift in Sources */,
+				AA000090 /* TeamPageCard.swift in Sources */,
+				AA000091 /* TeamPageMoodBanner.swift in Sources */,
+				AA000092 /* TeamPageThisWeek.swift in Sources */,
+				AA000093 /* TeamPageRivalryMeter.swift in Sources */,
+				AA000094 /* TeamPageCountdown.swift in Sources */,
+				AA000095 /* TeamPageFormDots.swift in Sources */,
+				AA000200 /* OnboardingTextField.swift in Sources */,
+				11668C80EB1ED7F740D84481 /* TierGating.swift in Sources */,
+				B5994EBA3DC6541DF77F9768 /* ShareableCardRenderer.swift in Sources */,
+				CEE0AA64A8A71768C7DAE896 /* AudioPlayerService.swift in Sources */,
+				52636A01D4C19FDD19072096 /* CalendarSyncService.swift in Sources */,
+				AC8165AEE3D87BDE0DF13AA8 /* GlossaryTerm.swift in Sources */,
+				5C6D265B75886BF7277447B7 /* GlossaryService.swift in Sources */,
+				14474256E2DD1E7DA90DA178 /* GlossaryText.swift in Sources */,
+				C6106E6CA3714FF9402A1F68 /* TeamSeasonState.swift in Sources */,
+				C8D06CD38DF3FEBE15567E43 /* SeasonPrimerView.swift in Sources */,
+				CCD1E4EDA6BD470832977407 /* InsiderItem.swift in Sources */,
+				DF1EDE6C6A0AA125869C7F8D /* InsiderCard.swift in Sources */,
+				AA000309 /* InsiderHeadlineRow.swift in Sources */,
+				AA000310 /* CollapsibleSection.swift in Sources */,
+				AA000311 /* AffectedTeamsHeader.swift in Sources */,
+				6DB27580A7465723CA70926A /* LiveMatchBrief.swift in Sources */,
+				6CA1FD4A864451C12D212143 /* LiveMatchCard.swift in Sources */,
+				7AE5C40C19D72FA48BC51F30 /* SaturdayQuiz.swift in Sources */,
+				8DF6B51D2AE83FB59CD63041 /* SaturdayQuizCard.swift in Sources */,
+				0A758A8D47CD4DF9A356EB6C /* WCNextMatchCard.swift in Sources */,
+				244B4E7A89E82714DCF2F917 /* MatchActivityAttributes.swift in Sources */,
+				25B33D3555E190DC97F79521 /* LiveActivityManager.swift in Sources */,
+				159D99B3A0BD1457CA4C4F47 /* LiveMatchSnapshot.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXFrameworksBuildPhase section */
-		AD000004 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
+/* Begin PBXTargetDependency section */
+		B49859D075866BFE9AB20E81 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = GoalDiggerLiveActivity;
+			target = 7E34607F1890727D5CFF3540 /* GoalDiggerLiveActivity */;
+			targetProxy = F29E822EDC8481A7A4F775C9 /* PBXContainerItemProxy */;
 		};
-/* End PBXFrameworksBuildPhase section */
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		1C468A9E96051C806BCCD3C0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 8;
+				DEVELOPMENT_TEAM = XG9549JP5L;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = GoalDigger/LiveActivity/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.goaldigger.app.LiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		AA7C75CA988E4099E3186947 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 8;
+				DEVELOPMENT_TEAM = XG9549JP5L;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = GoalDigger/LiveActivity/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.goaldigger.app.LiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		AE000010 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -520,8 +855,8 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = GoalDigger/GoalDigger.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				CURRENT_PROJECT_VERSION = 8;
+				DEVELOPMENT_TEAM = XG9549JP5L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = GoalDigger/Info.plist;
@@ -534,7 +869,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.goaldigger.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -551,10 +886,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = GoalDigger/GoalDigger.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "GoalDigger/GoalDigger-Release.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				CURRENT_PROJECT_VERSION = 8;
+				DEVELOPMENT_TEAM = XG9549JP5L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = GoalDigger/Info.plist;
@@ -567,7 +902,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.goaldigger.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -581,6 +916,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		35E4E7E5D6C66DDF23070C5F /* Build configuration list for PBXNativeTarget "GoalDiggerLiveActivity" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA7C75CA988E4099E3186947 /* Release */,
+				1C468A9E96051C806BCCD3C0 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		AE000001 /* Build configuration list for PBXProject "GoalDigger" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -600,7 +944,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
 	};
 	rootObject = AF000001 /* Project object */;
 }

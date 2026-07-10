@@ -1,0 +1,279 @@
+{
+ "country": "south_korea",
+ "displayName": "South Korea",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Hong Myung-bo",
+ "captain": "Son Heung-Min",
+ "keyPlayers": [
+  "Son Heung-Min",
+  "Kim Min-Jae",
+  "Lee Kang-In",
+  "Hwang Hee-Chan",
+  "Lee Jae-Sung",
+  "Bae Jun-Ho"
+ ],
+ "players": [
+  {
+   "id": 2890,
+   "name": "Jo Hyeon-Woo",
+   "age": 34,
+   "position": "Goalkeeper",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/2890.png",
+   "club": "Ulsan Hyundai FC",
+   "note": "The Ulsan keeper who became a national hero in 2018 for a string of saves that helped sink Germany, and at 34 he is locked in a genuine fight with Kim Seung-Gyu for the starting gloves here. Quick off his line and brave in one-on-ones, he is the home-based option in a goalkeeping department where neither man is guaranteed."
+  },
+  {
+   "id": 2892,
+   "name": "Kim Seung-Gyu",
+   "age": 35,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/2892.png",
+   "club": "FC Tokyo",
+   "note": "The most-capped goalkeeper in this squad, with more than 80 appearances and a fourth World Cup now in front of him at age 35. He has spent recent years sharpening his footwork in Japan with FC Tokyo, and his case for the number one shirt rests almost entirely on that mountain of big-game experience."
+  },
+  {
+   "id": 34374,
+   "name": "Song Bum-Keun",
+   "age": 28,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/34374.png",
+   "club": "Jeonbuk Motors",
+   "note": "The third goalkeeper, here mostly to train and push the two veterans ahead of him rather than to play. A towering shot-stopper for his club, he was a standout at youth level, named best keeper as South Korea won the 2020 AFC U-23 title, but with only a handful of senior caps he is the long-term project in this group."
+  },
+  {
+   "id": 547307,
+   "name": "Cho Wi-Je",
+   "age": 24,
+   "position": "Defender",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/547307.png",
+   "club": "Jeonbuk Motors",
+   "note": "A genuine fairytale call-up: in second-tier football at the start of the year, he then earned a move to the domestic champions and impressed enough that a late injury to another defender handed him a World Cup ticket. At 24 he is squad depth at the back rather than a guaranteed starter, but simply being here caps a remarkable twelve months."
+  },
+  {
+   "id": 2897,
+   "name": "Kim Min-Jae",
+   "age": 29,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/2897.png",
+   "club": "Bayern M\u00fcnchen",
+   "note": "The defensive anchor and one of the best centre-backs in the world, a ball-playing stopper who reads danger early and is just as comfortable starting attacks as snuffing them out. His Bayern Munich move made him the most expensive Asian player ever, and after a Serie A title with Napoli and Bundesliga honours in Germany, everything at the back is built around him."
+  },
+  {
+   "id": 2912,
+   "name": "Kim Moon-Hwan",
+   "age": 30,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/2912.png",
+   "club": "Daejeon Citizen",
+   "note": "An experienced wing-back who was the undisputed right-sided defender at the 2022 World Cup and is back for a second tournament at 30. He earns his place with relentless running up and down the flank, though he is competing with younger legs for the starting role this time around."
+  },
+  {
+   "id": 34418,
+   "name": "Kim Tae-Hyeon",
+   "age": 25,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/34418.png",
+   "club": "Kashima",
+   "note": "A left-footed centre-back plying his trade in Japan, and one of the leading candidates to partner Kim Min-Jae in the heart of defence. At 25 he offers genuine pace and a wide covering range to mop up the space behind the line, exactly the profile this back line needs against quick forwards."
+  },
+  {
+   "id": 237218,
+   "name": "Lee Han-Beom",
+   "age": 23,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/237218.png",
+   "club": "FC Midtjylland",
+   "note": "A 23-year-old centre-back who timed his run to the squad perfectly, heading home the winner in the Danish Cup final with Midtjylland just as the World Cup picture was being finalised. Comfortable on the ball and still on the rise in European football, he gives the back line a useful younger option."
+  },
+  {
+   "id": 99211,
+   "name": "Park Jin-Seop",
+   "age": 30,
+   "position": "Defender",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/99211.png",
+   "club": "Jeonbuk Motors",
+   "note": "A versatile defender who can slot in at centre-back or drop into defensive midfield, which is exactly why he is useful as cover at 30. His tactical flexibility makes him a candidate to step in alongside or in place of Kim Min-Jae, and he is comfortable stepping into midfield to help build play from deep."
+  },
+  {
+   "id": 237220,
+   "name": "Lee Tae-Seok",
+   "age": 23,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/237220.png",
+   "club": "Austria Vienna",
+   "note": "The likely starting left wing-back at just 23, having nailed down the role with a productive season at Austria Vienna that brought goals as well as assists. Pacy and attack-minded down the left, he is one of the younger players the manager is trusting with a regular job in this tournament."
+  },
+  {
+   "id": 197985,
+   "name": "Seol Young-Woo",
+   "age": 27,
+   "position": "Defender",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/197985.png",
+   "club": "FK Crvena Zvezda",
+   "note": "A right wing-back who became the first South Korean to join Red Star Belgrade and immediately helped them to a Serbian league and cup double. A converted winger, he loves to push high and overlap, and he can cover either flank, which makes him a strong bet to start on the right of the back line."
+  },
+  {
+   "id": 280358,
+   "name": "J. Castrop",
+   "age": 22,
+   "position": "Defender",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/280358.png",
+   "club": "Borussia M\u00f6nchengladbach",
+   "note": "A D\u00fcsseldorf-born midfielder who came up through Germany's youth ranks before switching allegiance through his Korean mother, becoming the first foreign-born, mixed-heritage player ever picked for a South Korea World Cup squad. Aggressive and combative in the engine room at Borussia M\u00f6nchengladbach, he is a fresh option for the manager at 22."
+  },
+  {
+   "id": 304951,
+   "name": "Lee Gi-Hyuk",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/304951.png",
+   "club": "Gangwon FC",
+   "note": "The bolt-from-the-blue pick of this squad, a 25-year-old from the K League who was the surprise name on the final list. His real value is flexibility: he can play centre-back, in midfield or at full-back, and is prized for his composure in build-up, so think of him as a do-everything reserve rather than a guaranteed starter."
+  },
+  {
+   "id": 357286,
+   "name": "Bae Jun-Ho",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/357286.png",
+   "club": "Stoke City",
+   "note": "A 22-year-old attacking midfielder and one to watch, named Stoke City's player of the year in his debut season in English football. A regular starter in the Championship since, he carries the ball with flair from the left or through the middle, even if the goals and assists have not always followed; expect him as a creative option off the bench or in rotation."
+  },
+  {
+   "id": 237050,
+   "name": "Eom Ji-Sung",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/237050.png",
+   "club": "Swansea",
+   "note": "A right-footed winger who tends to operate from the left, plying his trade in the English Championship with Swansea. At 23 he is a wide attacking option rather than a nailed-on starter, offering pace and directness in the wider midfield areas if the manager wants to change the picture."
+  },
+  {
+   "id": 2901,
+   "name": "Hwang In-Beom",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/2901.png",
+   "club": "Feyenoord",
+   "note": "Normally the metronome at the base of midfield, the man who dictates tempo and breaks up opposition moves, but he arrives under a cloud of fitness after an injury-wrecked season at Feyenoord. If he is right, he is a key starter; if not, his minutes will need careful managing through the group stage."
+  },
+  {
+   "id": 34168,
+   "name": "Kim Jin-Gyu",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/34168.png",
+   "club": "Jeonbuk Motors",
+   "note": "A holding midfielder from the domestic champions whose stock has risen with Hwang In-Beom's fitness in doubt, putting him in line to do the unglamorous running in front of the defence. His job is to cover ground and ease the physical load on those around him, a useful insurance policy in the middle of the park."
+  },
+  {
+   "id": 34431,
+   "name": "Lee Dong-Gyeong",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/34431.png",
+   "club": "Gimcheon Sangmu FC",
+   "note": "A left-footed attacking midfielder coming off a standout K League campaign, when he racked up double figures in both goals and assists on his way to the league's MVP award. That form earned him his spot, and he gives the manager a creative, goal-threatening option from the middle or the left."
+  },
+  {
+   "id": 2906,
+   "name": "Lee Jae-Sung",
+   "age": 33,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/2906.png",
+   "club": "FSV Mainz 05",
+   "note": "One of the squad's wise heads at 33, an attacking midfielder who has become a fan favourite over several seasons in the Bundesliga with Mainz for his clever, intelligent play. He has drifted in and out of the starting line-up for his country lately, but his tournament savvy and tactical brain make him a valuable presence whether he starts or comes on."
+  },
+  {
+   "id": 927,
+   "name": "Lee Kang-In",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/927.png",
+   "club": "Paris Saint Germain",
+   "note": "The squad's in-form creator, fresh from winning back-to-back Champions League titles with Paris Saint-Germain and becoming the first Asian player to lift the trophy twice. A wonderfully gifted attacking midfielder who picks locks with his passing and dribbling, he is the man expected to supply the chances behind the front line."
+  },
+  {
+   "id": 2909,
+   "name": "Paik Seung-Ho",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/2909.png",
+   "club": "Birmingham",
+   "note": "A central midfielder tipped to partner the deeper holder in the engine room, bringing tempo control and tidy distribution. He was central to Birmingham City's rise, earning a place in the League One team of the year as they stormed to the title, and then holding his own back in the Championship; a likely starter who keeps things ticking."
+  },
+  {
+   "id": 304958,
+   "name": "Yang Hyun-Jun",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/304958.png",
+   "club": "Celtic",
+   "note": "A 23-year-old winger who turned a Celtic bit-part role into a regular starting spot, chipping in seven league goals as the club swept the Scottish honours. Direct and quick down the flank, he gives the manager extra width and energy in attack as a rotation option rather than a certain starter."
+  },
+  {
+   "id": 24888,
+   "name": "Hwang Hee-Chan",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/24888.png",
+   "club": "Wolves",
+   "note": "Listed as a midfielder but really a forward, a powerful runner who hurts teams in behind with his pace and direct dribbling. His Wolves side endured a grim relegation from the Premier League, but his quality on the counter makes him an important attacking weapon, especially with Son alongside him."
+  },
+  {
+   "id": 34211,
+   "name": "Cho Gue-Sung",
+   "age": 28,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/34211.png",
+   "club": "FC Midtjylland",
+   "note": "The big target striker who became a household name with a two-goal cameo against Ghana at the 2022 World Cup, and his selection here caps a comeback from a long-term knee problem that once threatened his career. A natural central finisher with real physical presence, he gives the side a different look as a backup to the first-choice number nine."
+  },
+  {
+   "id": 34710,
+   "name": "Oh Hyeon-Gyu",
+   "age": 24,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/34710.png",
+   "club": "Genk",
+   "note": "A 24-year-old striker who finally landed the number 18 shirt he had long coveted, and arrives in good scoring form after a productive run of league goals. Mobile and willing to run the channels, he is one of the younger forwards competing for minutes off the bench behind the established names."
+  },
+  {
+   "id": 186,
+   "name": "Son Heung-Min",
+   "age": 33,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/186.png",
+   "club": "Los Angeles FC",
+   "note": "The captain, the talisman and the whole project's emotional centre, playing in his fourth World Cup at 33 after a glittering decade in the Premier League. Now with LAFC, he has reinvented himself as much a creator as a finisher, and South Korea's hopes of escaping the group lean heavily on his left foot and big-game nerve."
+  }
+ ],
+ "guardianStarPlayer": "Son Heung-min",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

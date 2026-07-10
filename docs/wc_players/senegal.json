@@ -1,0 +1,280 @@
+{
+ "country": "senegal",
+ "displayName": "Senegal",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Pape Thiaw",
+ "captain": "K. Koulibaly",
+ "keyPlayers": [
+  "K. Koulibaly",
+  "S. Man\u00e9",
+  "\u00c9. Mendy",
+  "N. Jackson",
+  "I. Sarr",
+  "I. Gueye",
+  "H. Diarra"
+ ],
+ "players": [
+  {
+   "id": 119853,
+   "name": "M. Diaw",
+   "age": 32,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/119853.png",
+   "club": "Le Havre",
+   "note": "A towering keeper, French-born and standing close to two metres, who became Le Havre's first-choice between the posts after arriving in 2025. Here he is back-up cover behind Mendy, the kind of experienced hand you want on the bench rather than starting."
+  },
+  {
+   "id": 20566,
+   "name": "Y. Diouf",
+   "age": 26,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/20566.png",
+   "club": "Nice",
+   "note": "Paris-born and only recently cleared by FIFA to play for Senegal, he was one of Ligue 1's standout keepers at Reims before joining Nice in 2025 as their new number one. With Mendy ahead of him for Senegal, he is the understudy gaining big-stage experience."
+  },
+  {
+   "id": 2986,
+   "name": "\u00c9. Mendy",
+   "age": 33,
+   "position": "Goalkeeper",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/2986.png",
+   "club": "Al-Ahli Jeddah",
+   "note": "Senegal's first-choice keeper and a former Champions League winner with Chelsea, he now captains Al-Ahli in Saudi Arabia and has lifted back-to-back Asian club titles there. Calm, commanding and a leader as much as a shot-stopper, he is the safe pair of hands behind this defence."
+  },
+  {
+   "id": 409303,
+   "name": "E. Diouf",
+   "age": 21,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/409303.png",
+   "club": "West Ham",
+   "note": "A marauding left-back who earned a big move to West Ham in 2025 after a title-winning spell at Slavia Prague, and has since become one of the Hammers' most creative outlets from defence. At 21 he is one to watch on Senegal's left flank, comfortable getting forward and crossing."
+  },
+  {
+   "id": 158121,
+   "name": "I. Jakobs",
+   "age": 26,
+   "position": "Defender",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/158121.png",
+   "club": "Galatasaray",
+   "note": "German-born left-back who has settled into a key role at Turkish champions Galatasaray, where he is trusted to handle the toughest European nights. He provided an assist on Senegal's run to the 2025 Africa Cup of Nations title and competes for the left-back slot here."
+  },
+  {
+   "id": 318,
+   "name": "K. Koulibaly",
+   "age": 34,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/318.png",
+   "club": "Al-Hilal Saudi FC",
+   "note": "The captain and emotional anchor of this team, a centre-back who built his reputation at Napoli and now plays for Al-Hilal in Saudi Arabia. At 34 he has lifted two Africa Cup of Nations titles with Senegal; his reading of the game and leadership matter as much as his tackling."
+  },
+  {
+   "id": 313937,
+   "name": "A. Mendy",
+   "age": 21,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/313937.png",
+   "club": "Nice",
+   "note": "A 21-year-old defender who came through the Nice academy and can play right-back or centre-back, prized for his aerial strength and composure on the ball. New to the senior squad with only a handful of caps, he is squad depth here, getting his tournament education early."
+  },
+  {
+   "id": 25916,
+   "name": "M. Niakhat\u00e9",
+   "age": 29,
+   "position": "Defender",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/25916.png",
+   "club": "Lyon",
+   "note": "A tall, left-footed centre-back who moved from Nottingham Forest to Lyon for a club-record fee and has since become a dependable fixture and vice-captain there. He partnered the back line on the way to the 2025 Africa Cup of Nations and is a strong contender to start alongside Koulibaly."
+  },
+  {
+   "id": 276184,
+   "name": "M. Sarr",
+   "age": 20,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/276184.png",
+   "club": "Strasbourg",
+   "note": "A 20-year-old centre-back whose rise has been dizzying: he played the full 120 minutes of the 2025 Africa Cup of Nations final, deputising for the injured and suspended Koulibaly, and won the trophy. He spent the season on loan at Strasbourg and is a genuine option in the heart of defence."
+  },
+  {
+   "id": 8450,
+   "name": "A. Seck",
+   "age": 33,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/8450.png",
+   "club": "Maccabi Haifa",
+   "note": "An experienced centre-back, now 33, who has been a steady presence for Maccabi Haifa in Israel and chipped in with the odd goal from set pieces. A 2025 Africa Cup of Nations winner, he offers reliable depth and a calm head behind the first-choice pairing."
+  },
+  {
+   "id": 81,
+   "name": "K. Diatta",
+   "age": 26,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/81.png",
+   "club": "Monaco",
+   "note": "A natural attacker who reinvented himself as a tireless right wing-back, thriving in that role at Monaco and named their player of the month earlier in the season. That flexibility makes him a useful starter or rotation option, equally happy bombing forward or tucking in to defend."
+  },
+  {
+   "id": 374058,
+   "name": "L. Camara",
+   "age": 21,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/374058.png",
+   "club": "Monaco",
+   "note": "A box-to-box midfielder still only 21 yet already an Africa Cup of Nations winner, having broken through at Metz before becoming a regular at Monaco. He chips in with goals and assists and has attracted big-club interest; expect him to be a key engine in Senegal's midfield."
+  },
+  {
+   "id": 41552,
+   "name": "P. Ciss",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/41552.png",
+   "club": "Rayo Vallecano",
+   "note": "A versatile midfielder for Spain's Rayo Vallecano who can also fill in at centre-back, and a 2025 Africa Cup of Nations winner. He started as a depth option there before forcing his way into the side, which is exactly the kind of dependable utility man a tournament squad needs."
+  },
+  {
+   "id": 327631,
+   "name": "H. Diarra",
+   "age": 21,
+   "position": "Midfielder",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/327631.png",
+   "club": "Sunderland",
+   "note": "An energetic 21-year-old midfielder who became Sunderland's record signing in 2025 after impressing at Strasbourg, where he chipped in with goals, assists and plenty of chances created. One of the brightest young talents in this squad and a likely starter in the middle of the park."
+  },
+  {
+   "id": 2990,
+   "name": "I. Gueye",
+   "age": 36,
+   "position": "Midfielder",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/2990.png",
+   "club": "Everton",
+   "note": "At 36 the elder statesman of the midfield, a relentless ball-winner who keeps racking up tackles for Everton and was their player of the season not long ago. A hugely experienced figure who lifted the 2025 Africa Cup of Nations; his know-how is invaluable in the deep-lying role."
+  },
+  {
+   "id": 20696,
+   "name": "P. Gueye",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/20696.png",
+   "club": "Villarreal",
+   "note": "A defensive midfielder who has quietly become one of La Liga's best, voted the division's top African player for the 2025-26 season after anchoring Villarreal's midfield. He shields the back four and dictates tempo, and is pushing hard for a starting spot alongside the veteran Gueye."
+  },
+  {
+   "id": 630895,
+   "name": "Bara Ndiaye",
+   "age": 18,
+   "position": "Midfielder",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/630895.png",
+   "club": "Bayern M\u00fcnchen",
+   "note": "At 18 the youngest outfield player here, a midfielder whose journey from Senegal's regional football to Bayern Munich in barely a few months reads like a fairy tale; he made his Bundesliga debut in 2026 coming on for Jamal Musiala. He is in this squad to learn, not to start."
+  },
+  {
+   "id": 237129,
+   "name": "P. Sarr",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/237129.png",
+   "club": "Tottenham",
+   "note": "A composed central midfielder who has grown into a trusted regular at Tottenham and helped them win the 2025 Europa League. A World Cup veteran from 2022 and a 2025 Africa Cup of Nations winner, the 23-year-old offers a smart mix of energy and passing in the middle."
+  },
+  {
+   "id": 400948,
+   "name": "Assane Diao",
+   "age": 20,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/400948.png",
+   "club": "Como",
+   "note": "A quick, direct right winger who chose to represent Senegal over Spain, where he came through Real Betis's academy before moving to Como in Serie A. At 20 he is one of the squad's exciting young wide players, offering pace and unpredictability off the bench."
+  },
+  {
+   "id": 284072,
+   "name": "B. Dieng",
+   "age": 25,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/284072.png",
+   "club": "Lorient",
+   "note": "A striker who revived his career with a prolific run for Lorient, scoring a flurry of Ligue 1 goals to earn a recall after time away from the national team. The former Marseille forward is back-up firepower up top, the kind of poacher who can change a game from the bench."
+  },
+  {
+   "id": 283058,
+   "name": "N. Jackson",
+   "age": 24,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/283058.png",
+   "club": "Bayern M\u00fcnchen",
+   "note": "A powerful, mobile centre-forward who joined Bayern Munich on loan from Chelsea and helped them to the Bundesliga title in his first season. At 24 he is Senegal's leading striker option, with the pace and physicality to lead the line and stretch defences."
+  },
+  {
+   "id": 304,
+   "name": "S. Man\u00e9",
+   "age": 33,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/304.png",
+   "club": "Al-Nassr",
+   "note": "Senegal's talisman and the Guardian's pick as the team's star man, a former Liverpool great who now plays alongside Cristiano Ronaldo at Al-Nassr. At 33 he was named best player of the 2025 Africa Cup of Nations; whether starting or impacting late, he is the player opponents fear most."
+  },
+  {
+   "id": 446249,
+   "name": "I. Mbaye",
+   "age": 17,
+   "position": "Attacker",
+   "number": 27,
+   "photo": "https://media.api-sports.io/football/players/446249.png",
+   "club": "Paris Saint Germain",
+   "note": "At 17 the baby of the squad, a forward from the PSG academy who became Senegal's youngest-ever scorer when he netted on just his second cap. Picking Senegal over France, he is here for the experience; do not expect many minutes, but the future looks bright."
+  },
+  {
+   "id": 14379,
+   "name": "C. Ndiaye",
+   "age": 30,
+   "position": "Attacker",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/14379.png",
+   "club": "Samsunspor",
+   "note": "A tall, physical target-man striker who has been scoring steadily for Samsunspor in Turkey, including in Europe. A late bloomer who only debuted for Senegal in his late twenties, he is squad depth up front, the kind of focal point you bring on to hold the ball up and chase a goal."
+  },
+  {
+   "id": 18592,
+   "name": "I. Ndiaye",
+   "age": 25,
+   "position": "Attacker",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/18592.png",
+   "club": "Everton",
+   "note": "A creative forward who plays wide or off the front for Everton and had a standout 2025-26 with goals and assists. He featured in all of Senegal's 2025 Africa Cup of Nations games, scoring the quarter-final winner; expect him to be a key attacking weapon, whether starting or breaking the deadlock late."
+  },
+  {
+   "id": 2218,
+   "name": "I. Sarr",
+   "age": 27,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/2218.png",
+   "club": "Crystal Palace",
+   "note": "A flying winger who was voted Crystal Palace's player of the season and finished top scorer as they won the 2026 UEFA Conference League. Fast, direct and a regular goal threat, the 27-year-old is one of Senegal's most dangerous attackers and a likely starter out wide."
+  }
+ ],
+ "guardianStarPlayer": "Sadio Man\u00e9",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

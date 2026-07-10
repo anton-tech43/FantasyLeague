@@ -4,6 +4,15 @@
 Configuration.xcconfig
 *.p8
 
+# Supabase CLI cache (contains DB pooler URL with embedded password)
+**/.temp/
+
+# Claude Code per-machine runtime artifacts. .claude/settings.json is
+# committed (project-shared permissions); settings.local.json is already
+# excluded via user-level git config; these are the leftovers.
+.claude/scheduled_tasks.lock
+.claude/plans/
+
 # Xcode
 *.xcuserdata
 *.xcworkspace

@@ -1,0 +1,279 @@
+{
+ "country": "colombia",
+ "displayName": "Colombia",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "N\u00e9stor Lorenzo",
+ "captain": "James Rodr\u00edguez",
+ "keyPlayers": [
+  "Luis D\u00edaz",
+  "James Rodr\u00edguez",
+  "Daniel Mu\u00f1oz",
+  "Richard R\u00edos",
+  "Jhon C\u00f3rdoba",
+  "Luis Su\u00e1rez"
+ ],
+ "players": [
+  {
+   "id": 2481,
+   "name": "\u00c1. Montero",
+   "age": 30,
+   "position": "Goalkeeper",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/2481.png",
+   "club": "Millonarios",
+   "note": "Millonarios' long-serving number one, tipped to start ahead of the more famous names in goal. At 30 he is, by Colombian keeper standards this tournament, practically a kid."
+  },
+  {
+   "id": 313,
+   "name": "D. Ospina",
+   "age": 37,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/313.png",
+   "club": "Atletico Nacional",
+   "note": "Colombia's most-capped player ever, back home at Atletico Nacional at 37 for what is almost certainly his last tournament. He may not start, but having him in the room is its own kind of insurance."
+  },
+  {
+   "id": 2482,
+   "name": "C. Vargas",
+   "age": 36,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/2482.png",
+   "club": "Atlas",
+   "note": "The third 30-something keeper in a notably greying goalkeeping group, plying his trade in Mexico's Liga MX with Atlas. More likely to watch than play, but a steady pair of hands if called."
+  },
+  {
+   "id": 30,
+   "name": "S. Arias",
+   "age": 33,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/30.png",
+   "club": "Bahia",
+   "note": "A right-back whose career was nearly ended by a brutal ankle break on international duty in 2020. That he is here at 33, still going, tells you most of what you need to know about him."
+  },
+  {
+   "id": 13571,
+   "name": "W. Ditta",
+   "age": 28,
+   "position": "Defender",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/13571.png",
+   "club": "Cruz Azul",
+   "note": "Voted the best defender in Mexico's top flight for the 2024-25 season, and a Champions Cup winner with Cruz Azul. Quietly become one of the more reliable centre-backs in the region."
+  },
+  {
+   "id": 1929,
+   "name": "J. Lucum\u00ed",
+   "age": 27,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/1929.png",
+   "club": "Bologna",
+   "note": "A composed, ball-playing centre-back who has made himself a fixture at Bologna in Serie A. The kind of defender who looks unflustered right up until you realise he has snuffed out the danger."
+  },
+  {
+   "id": 2483,
+   "name": "D. Machado",
+   "age": 32,
+   "position": "Defender",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/2483.png",
+   "club": "Nantes",
+   "note": "A left-back who moved to Nantes late in 2025 after running short of minutes at Lens. Left-footed and willing to bomb forward, he is competing for a starting berth that is far from settled."
+  },
+  {
+   "id": 2484,
+   "name": "Y. Mina",
+   "age": 31,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/2484.png",
+   "club": "Cagliari",
+   "note": "A towering centre-back who topped Serie A for duels won in 2024-25, when he can stay fit. The 'when he can stay fit' has followed him around his whole career, which is the maddening part."
+  },
+  {
+   "id": 64268,
+   "name": "J. Mojica",
+   "age": 33,
+   "position": "Defender",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/64268.png",
+   "club": "Mallorca",
+   "note": "A LaLiga left-back at Mallorca who has built a tidy career out of being dependable rather than flashy. At 33 he provides the experienced cover Colombia want down that side."
+  },
+  {
+   "id": 13736,
+   "name": "D. Mu\u00f1oz",
+   "age": 29,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/13736.png",
+   "club": "Crystal Palace",
+   "note": "An all-action right-back who became a fan favourite at Crystal Palace and chipped in as they lifted the 2025 FA Cup. He defends one minute and turns up at the back post the next, which is exactly why Colombia love him."
+  },
+  {
+   "id": 324034,
+   "name": "G. Puerta",
+   "age": 22,
+   "position": "Defender",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/324034.png",
+   "club": "Racing Santander",
+   "note": "The baby of the squad at 22, a midfielder cutting his teeth in Spain's second tier with Racing Santander. He scored on his senior Colombia debut against New Zealand, which is a fine way to make people remember your name."
+  },
+  {
+   "id": 168,
+   "name": "D. S\u00e1nchez",
+   "age": 29,
+   "position": "Defender",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/168.png",
+   "club": "Galatasaray",
+   "note": "A nailed-on starter at centre-back, now anchoring the defence at Galatasaray in Turkey. Quick across the ground and good in the air, he is the one Colombia build the back line around."
+  },
+  {
+   "id": 289592,
+   "name": "K. Casta\u00f1o",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/289592.png",
+   "club": "River Plate",
+   "note": "A defensive midfielder who won a Russian title with Krasnodar before becoming one of River Plate's priciest-ever signings. Plenty of technical quality for a player whose main job is breaking things up."
+  },
+  {
+   "id": 2490,
+   "name": "J. Lerma",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/2490.png",
+   "club": "Crystal Palace",
+   "note": "Daniel Munoz's Crystal Palace clubmate, a combative holding midfielder who does the unglamorous covering and tackling. The sort of player you only really notice in the games where he is missing."
+  },
+  {
+   "id": 13151,
+   "name": "J. Portilla",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/13151.png",
+   "club": "Talleres Cordoba",
+   "note": "A tough-tackling holding midfielder making his name in Argentina with Talleres, and still early into his Colombia career. Brought along as a combative depth option for the engine room."
+  },
+  {
+   "id": 13708,
+   "name": "J. Arias",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/13708.png",
+   "club": "Wolves",
+   "note": "A technically gifted forward-thinking midfielder, now at Wolves, who can drift in off the wing or operate more centrally. Likely part of Colombia's preferred midfield trio rather than a winger this time around."
+  },
+  {
+   "id": 5994,
+   "name": "J. Carrascal",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/5994.png",
+   "club": "Flamengo",
+   "note": "A silky attacking midfielder at Flamengo who can produce the unexpected pass or shot. The kind of player who frustrates you for an hour and then wins the game in one moment."
+  },
+  {
+   "id": 6005,
+   "name": "J. Quintero",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/6005.png",
+   "club": "America de Cali",
+   "note": "A playmaker with a wand of a left foot, back in Colombia after years bouncing around South America. When the cross or the killer pass is needed, he is the one you want on the ball."
+  },
+  {
+   "id": 195104,
+   "name": "R. Rios",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/195104.png",
+   "club": "Benfica",
+   "note": "A box-to-box midfielder whose rise has been startling, from Brazilian football to Benfica in a couple of seasons. At 25 he may be Colombia's most dangerous engine in the centre of the park."
+  },
+  {
+   "id": 517,
+   "name": "J. Rodr\u00edguez",
+   "age": 34,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/517.png",
+   "club": "Leon",
+   "note": "The captain, who won the Golden Boot at the 2014 World Cup and is still pulling the strings at 34. The legs may have slowed, but the left foot has not forgotten a thing."
+  },
+  {
+   "id": 13376,
+   "name": "J. Campaz",
+   "age": 25,
+   "position": "Attacker",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/13376.png",
+   "club": "Rosario Central",
+   "note": "A small, quick left winger who was tipped as a teenage prospect years ago and has since become a key man at Rosario Central. Direct, two-footed trouble for any full-back."
+  },
+  {
+   "id": 24810,
+   "name": "J. C\u00f3rdoba",
+   "age": 32,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/24810.png",
+   "club": "FC Krasnodar",
+   "note": "A powerful centre-forward who became Krasnodar's all-time leading scorer and won the Russian league's golden boot. Whatever you think of the league, the man simply keeps putting the ball in the net."
+  },
+  {
+   "id": 47582,
+   "name": "C. Hern\u00e1ndez",
+   "age": 26,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/47582.png",
+   "club": "Real Betis",
+   "note": "Known to everyone as Cucho, a forward at Real Betis with a habit of scoring outrageous, acrobatic goals. Unpredictable in the best sense, which makes him a genuine wildcard off the bench or from the start."
+  },
+  {
+   "id": 2489,
+   "name": "L. D\u00edaz",
+   "age": 28,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/2489.png",
+   "club": "Bayern M\u00fcnchen",
+   "note": "The Guardian's pick of the squad and the man Colombia's attack runs through, fresh off a flying first season at Bayern after his Liverpool years. Give him space on the left and bad things happen to defenders."
+  },
+  {
+   "id": 345748,
+   "name": "A. G\u00f3mez",
+   "age": 23,
+   "position": "Attacker",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/345748.png",
+   "club": "Vasco DA Gama",
+   "note": "At 23, a winger who earned a permanent deal at Brazil's Vasco da Gama after impressing on loan. One of the squad's young wildcards, picked as much for what he might become as what he is now."
+  },
+  {
+   "id": 47237,
+   "name": "L. Su\u00e1rez",
+   "age": 28,
+   "position": "Attacker",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/47237.png",
+   "club": "Sporting CP",
+   "note": "A striker in the form of his life at Sporting, where the goals have arrived almost weekly. Not to be confused with the other, more notorious Luis Suarez, and rather keen to write his own headlines."
+  }
+ ],
+ "guardianStarPlayer": "Luis D\u00edaz",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

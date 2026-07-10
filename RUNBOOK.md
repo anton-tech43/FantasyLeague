@@ -484,3 +484,97 @@ After any outage > 12 hours:
 ---
 
 *This runbook is a living document. Update it after every incident. The best runbook is one that gets shorter over time because the pipeline gets more reliable.*
+
+---
+
+## SOP: Push pipeline health check ("user says no push")
+
+When a user reports they're not getting push notifications they expected, run this 5-step check. Each step has a "what to do if it fails" branch.
+
+### Step 1 — Cron + gateway health (the silent-failure pattern)
+
+```sql
+SELECT id, status_code, LEFT(content::text, 100) AS body, created::timestamp AT TIME ZONE 'Europe/Stockholm' AS local_time
+FROM net._http_response
+WHERE created > NOW() - INTERVAL '15 minutes'
+ORDER BY id DESC
+LIMIT 10;
+```
+
+**Pass:** all `status_code = 200`.
+**Fail with `401 UNAUTHORIZED_INVALID_JWT_FORMAT`:** Vault has wrong-shape key. See IOS_GOTCHAS.md #14 for the fix (`vault.update_secret` to legacy JWT). Phase 27.3 of IMPLEMENTATION_PROGRESS.md has the full case study.
+**Fail with `5xx`:** Function-side error. Check the Edge Function logs in the Supabase dashboard.
+
+### Step 2 — Did the relevant fixture get observed?
+
+For the user's team (e.g., West Ham, API-Football id=48):
+```sql
+SELECT fixture_id, home_team_id, away_team_id, status, fired_finished_at, last_checked, league_id
+FROM match_status_state
+WHERE (home_team_id = 'west_ham' OR away_team_id = 'west_ham')
+  AND last_checked > NOW() - INTERVAL '48 hours'
+ORDER BY last_checked DESC LIMIT 5;
+```
+
+**No rows + a fixture happened:** match-watcher missed it. Two common causes:
+- Fixture is in a non-tracked league (e.g., FA Cup `league_id=45` isn't in `SELECT DISTINCT league_id FROM teams` since we only have PL=39 and WC=1). This is the V2.1 cup-coverage gap documented in Phase 27.4.
+- API-Football didn't return the fixture for the date filter (timezone drift, abandoned match, etc.).
+
+**Row present but `fired_finished_at IS NULL`:** match-watcher saw it but didn't catch the FT transition. Often the first-observation guard (deploy-during-live-match).
+
+### Step 3 — Did a content_item land?
+
+```sql
+SELECT id, team_id, type, LEFT(headline, 60) AS headline, status, pushed_at
+FROM content_items
+WHERE team_id IN ('<user team>', '<opponent>')
+  AND created_at > NOW() - INTERVAL '48 hours'
+ORDER BY created_at DESC LIMIT 10;
+```
+
+**No rows:** routine never produced content. Either the routine (in `goaldigger-routines` repo) didn't fire, or its post-script validator rejected.
+**Rows exist but all `pushed_at IS NULL`:** notification-sender hasn't picked them up. Go to Step 4.
+**Rows exist, `pushed_at` set:** APNs was attempted. Go to Step 5.
+
+### Step 4 — Why hasn't notification-sender swept?
+
+Sweep cron is `notification-sweep` at minute 15 of each hour. Sweep query filters to items with `published_at > NOW() - INTERVAL '24h' AND published_at < NOW() - INTERVAL '5 min'`. Items older than 24h are NOT pushed (correct — no stale news).
+
+Manual sweep:
+```bash
+SERVICE_KEY=$(grep "^SUPABASE_SERVICE_ROLE_KEY=" backend/.env | cut -d= -f2)
+curl -s -X POST "https://cwgpsmbunrocrofziqad.supabase.co/functions/v1/notification-sender" \
+  -H "Authorization: Bearer $SERVICE_KEY" -H "Content-Type: application/json" -d '{}'
+```
+Returns `{"success":true,"items_processed":N}`.
+
+### Step 5 — Did APNs accept the push?
+
+Use the `push-probe` Edge Function (read-only diagnostic):
+```bash
+curl -s -X POST "https://cwgpsmbunrocrofziqad.supabase.co/functions/v1/push-probe" \
+  -H "Authorization: Bearer $SERVICE_KEY" -H "Content-Type: application/json" \
+  -d '{"team_id":"<user team>"}'
+```
+
+Response shape:
+- `push_result.status: 200` + `success: true` → APNs accepted. iOS side issue (see Step 6).
+- `push_result.status: 410` → token expired/dead. User needs to re-onboard.
+- `push_result.status: 400` + `reason: BadDeviceToken` → environment mismatch (production token sent to sandbox or vice versa).
+- `push_result.status: 403` → APNs key rotated or expired. Check `APNS_KEY_ID`/`APNS_TEAM_ID`/`APNS_KEY_P8` secrets.
+
+### Step 6 — APNs accepted but iOS didn't display
+
+- iOS Settings → app → Notifications → confirm "Allow" is ON.
+- Notification Center on lock screen — was it grouped into a summary?
+- Focus mode / Do Not Disturb active?
+- Phone was rebooting when push arrived?
+- Permission was revoked by the user post-install?
+
+### Recovery actions
+
+If matchday content was missed entirely (Step 2 fail), manually invoke `gd-matchday` from the `goaldigger-routines` repo with the right fixture_id + team_id payload.
+
+If content_items exist but unpushed and are still <24h old, Step 4's manual sweep handles them.
+
+If push-probe fails at APNs, look at `dev_alert_devices` and `client_errors` for parallel 403/410 traces from other tokens — if it's only this token, the user has to re-onboard. If it's all tokens, the APNs key/secrets are the issue.

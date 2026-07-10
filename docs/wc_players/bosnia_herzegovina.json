@@ -1,0 +1,279 @@
+{
+ "country": "bosnia_herzegovina",
+ "displayName": "Bosnia & Herzegovina",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Sergej Barbarez",
+ "captain": "E. Dzeko",
+ "keyPlayers": [
+  "E. Dzeko",
+  "E. Demirovic",
+  "E. Bajraktarevic",
+  "H. Tabakovic",
+  "S. Kolasinac",
+  "A. Dedic"
+ ],
+ "players": [
+  {
+   "id": 446130,
+   "name": "M. Jurkas",
+   "age": 29,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/446130.png",
+   "club": "Bosnia-Herzegovina U17",
+   "note": "The third keeper, here to train hard and carry the bibs rather than expect minutes. If you see him on the pitch in the group stage, something has gone very wrong for the two in front of him."
+  },
+  {
+   "id": 9026,
+   "name": "N. Vasilj",
+   "age": 30,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/9026.png",
+   "club": "FC St. Pauli",
+   "note": "The number one, who spent five seasons at St. Pauli and got promoted to the Bundesliga with them. He's the calm pair of hands Bosnia will lean on when the bigger names come knocking."
+  },
+  {
+   "id": 108370,
+   "name": "M. Zlomislic",
+   "age": 27,
+   "position": "Goalkeeper",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/108370.png",
+   "club": "HNK Rijeka",
+   "note": "The backup keeper who quietly does his job at Rijeka, where he's kept a clean sheet in roughly a quarter of his league games this season. Born in Posusje, he's the sort of steady deputy every squad needs and few notice."
+  },
+  {
+   "id": 395589,
+   "name": "N. Celik",
+   "age": 19,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/395589.png",
+   "club": "Lens",
+   "note": "At 19 he's already a Ligue 1 regular, having left Sarajevo for Lens in a record fee for a Bosnian league player. A towering centre-back who decided his future was in France before most teenagers have finished growing into one."
+  },
+  {
+   "id": 7318,
+   "name": "A. Dedic",
+   "age": 23,
+   "position": "Defender",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/7318.png",
+   "club": "Benfica",
+   "note": "An attacking right-back who left Salzburg for Benfica in a big-money move and has been chipping in goals and assists in Lisbon. One of the names on Barbarez's keep-an-eye-on list, and the kind of full-back who treats defending as the dull part of the job."
+  },
+  {
+   "id": 53517,
+   "name": "D. Hadzikadunic",
+   "age": 27,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/53517.png",
+   "club": "Sampdoria",
+   "note": "A tall, right-footed centre-back born in Sweden who chose Bosnia over the country he came up through. His career has wandered from Malmo to Italy, and he's currently holding the line for Sampdoria in Serie B."
+  },
+  {
+   "id": 1741,
+   "name": "N. Katic",
+   "age": 29,
+   "position": "Defender",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/1741.png",
+   "club": "FC Schalke 04",
+   "note": "Once a Rangers favourite who scored a derby winner against Celtic before a bad injury derailed things, he's rebuilt at Schalke and switched his allegiance from Croatia to Bosnia. He admitted to tears after the win that booked this World Cup."
+  },
+  {
+   "id": 1442,
+   "name": "S. Kolasinac",
+   "age": 32,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/1442.png",
+   "club": "Atalanta",
+   "note": "The squad's other survivor from the 2014 World Cup alongside Dzeko, with an FA Cup at Arsenal and a Europa League at Atalanta behind him. Twelve years on he's still here, doing the unglamorous defensive shifts so the youngsters can go forward."
+  },
+  {
+   "id": 271350,
+   "name": "T. Muharemovic",
+   "age": 22,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/271350.png",
+   "club": "Sassuolo",
+   "note": "A 22-year-old centre-back who's become one of Serie A's more talked-about defenders, with the bigger Italian clubs reportedly circling. He helped knock Italy out in the play-off and then said he felt a bit sorry about it, which tells you the sort of player he is."
+  },
+  {
+   "id": 76867,
+   "name": "N. Mujakic",
+   "age": 27,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/76867.png",
+   "club": "Ey\u00fcpspor",
+   "note": "A ball-playing defender who's spent his career mostly in Turkey and is on loan at Eyupspor. He grabbed his first international goal in a qualifier against San Marino, the sort of milestone a centre-back tucks away for the grandkids."
+  },
+  {
+   "id": 14301,
+   "name": "S. Radeljic",
+   "age": 28,
+   "position": "Defender",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/14301.png",
+   "club": "HNK Rijeka",
+   "note": "A centre-back who took the scenic route through Stuttgart's reserves, Osijek and a spell in Moldova before winning the Croatian title with Rijeka. A late bloomer who's earned his place rather than been handed it."
+  },
+  {
+   "id": 162222,
+   "name": "I. Basic",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/162222.png",
+   "club": "FC Astana",
+   "note": "A midfielder who started out at Zrinjski Mostar and has since taken his trade to Russia and now Kazakhstan with Astana. Plays his club football a long way from the spotlight, which makes a World Cup squad spot all the sweeter."
+  },
+  {
+   "id": 70514,
+   "name": "A. Gigovic",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/70514.png",
+   "club": "BSC Young Boys",
+   "note": "A central midfielder born in Sweden who switched to Bosnia and moved to Young Boys, where he marked his European debut for the club with a brace. Energetic in the middle, he's the legs that let the older heads conserve theirs."
+  },
+  {
+   "id": 50006,
+   "name": "A. Hadziahmetovic",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/50006.png",
+   "club": "Hull City",
+   "note": "A defensive midfielder born in Denmark who came up through Zeljeznicar and now anchors things on loan at Hull City. The kind of player who breaks up play and lets the flair merchants take the applause."
+  },
+  {
+   "id": 340173,
+   "name": "Ermin Mahmic",
+   "age": 20,
+   "position": "Midfielder",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/340173.png",
+   "club": "Slovan Liberec",
+   "note": "A 20-year-old attacking midfielder having a productive season in the Czech league, with goals and assists to his name. His switch from Austria to Bosnia was only cleared by FIFA weeks before the squad was named, so he's a very new face."
+  },
+  {
+   "id": 1324,
+   "name": "I. Sunjic",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/1324.png",
+   "club": "Pafos",
+   "note": "A holding midfielder whose pricey Birmingham City spell never quite clicked, so he reinvented himself in Cyprus and won the title in his first season at Pafos. A reminder that the right move matters more than the biggest one."
+  },
+  {
+   "id": 264094,
+   "name": "B. Tahirovic",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/264094.png",
+   "club": "Brondby",
+   "note": "A deep-lying midfielder who passed through Roma and Ajax before settling at Brondby in Denmark. Still only 22, he played nearly every qualifier and even chipped in a goal, so the rebuild is being built partly around him."
+  },
+  {
+   "id": 322101,
+   "name": "A. Memic",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/322101.png",
+   "club": "Plzen",
+   "note": "Filed as a midfielder but really an attacking creator, he's been one of Plzen's brighter sparks with a healthy haul of goals and assists. Reportedly being eyed by bigger clubs, which usually means a busy summer ahead."
+  },
+  {
+   "id": 25129,
+   "name": "D. Burnic",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/25129.png",
+   "club": "Karlsruher SC",
+   "note": "A central midfielder who came through Borussia Dortmund's academy and won the DFB-Pokal there before settling into steady work at Karlsruhe. A former Germany youth player who threw his lot in with Bosnia, and he collects yellow cards like souvenirs."
+  },
+  {
+   "id": 395559,
+   "name": "Kerim-Sam Alajbegovic",
+   "age": 18,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/395559.png",
+   "club": "Red Bull Salzburg",
+   "note": "At 18 he's the squad's baby, a Cologne-born winger who openly dreams of Real Madrid and already has a Europa League wonder goal on his highlight reel. He scored the clinching penalty in the play-off shootout, which is a lot of nerve for someone barely out of school."
+  },
+  {
+   "id": 329409,
+   "name": "E. Bajraktarevic",
+   "age": 20,
+   "position": "Attacker",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/329409.png",
+   "club": "PSV Eindhoven",
+   "note": "The Appleton, Wisconsin kid nicknamed the \"Milwaukee Messi,\" who came up through the New England Revolution, switched from the US to Bosnia, and now plays for PSV. He set up Dzeko's crucial play-off equaliser, so the American detour worked out rather well for everyone."
+  },
+  {
+   "id": 314377,
+   "name": "S. Bazdar",
+   "age": 21,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/314377.png",
+   "club": "Jagiellonia",
+   "note": "A forward born in Serbia who once represented them before switching to Bosnia in 2024, currently on loan in Poland with Jagiellonia. Young and still finding his level, he's one for the future more than the starting eleven."
+  },
+  {
+   "id": 46930,
+   "name": "E. Demirovic",
+   "age": 27,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/46930.png",
+   "club": "VfB Stuttgart",
+   "note": "Bosnia's most reliable goal threat after Dzeko, a Stuttgart forward who hits double figures in the Bundesliga and won the German Cup. He's the natural heir to the number nine shirt once the captain finally hangs his up."
+  },
+  {
+   "id": 790,
+   "name": "E. Dzeko",
+   "age": 39,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/790.png",
+   "club": "Fiorentina",
+   "note": "The 39-year-old captain, all-time top scorer and most-capped player, still finding the net and still the focal point of everything Bosnia do going forward. He's the last man standing from the 2014 squad, refusing to let his record-breaking story end before North America."
+  },
+  {
+   "id": 77037,
+   "name": "J. Lukic",
+   "age": 27,
+   "position": "Attacker",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/77037.png",
+   "club": "Universitatea Cluj",
+   "note": "A late-blooming forward who became the Romanian top flight's leading scorer and player of the season at Universitatea Cluj, the best year of his career by a distance. Proof that the call-up sometimes goes to the man simply scoring the most goals, wherever he happens to play."
+  },
+  {
+   "id": 28382,
+   "name": "H. Tabakovic",
+   "age": 31,
+   "position": "Attacker",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/28382.png",
+   "club": "Borussia M\u00f6nchengladbach",
+   "note": "A near-two-metre target man who flopped at Hoffenheim, then revived his career on loan at Gladbach by climbing the Bundesliga scoring charts behind the likes of Harry Kane. Big, late to bloom, and exactly the sort of aerial nuisance Bosnia can throw on when chasing a game."
+  }
+ ],
+ "guardianStarPlayer": "Edin Dzeko",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

@@ -1,0 +1,278 @@
+{
+ "country": "uzbekistan",
+ "displayName": "Uzbekistan",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Fabio Cannavaro",
+ "captain": "E. Shomurodov",
+ "keyPlayers": [
+  "A. Khusanov",
+  "E. Shomurodov",
+  "J. Masharipov",
+  "A. Fayzullaev",
+  "J. Iskanderov"
+ ],
+ "players": [
+  {
+   "id": 72120,
+   "name": "B. Ergashev",
+   "age": 30,
+   "position": "Goalkeeper",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/72120.png",
+   "club": "Neftchi",
+   "note": "Neftchi Fergana's keeper is here as a backup option, with only a handful of caps to his name. At 1.92m he's a big presence in the box, but at this tournament he'll most likely be watching from the bench while the senior keeper plays."
+  },
+  {
+   "id": 73507,
+   "name": "A. Nematov",
+   "age": 24,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/73507.png",
+   "club": "Nasaf",
+   "note": "A young goalkeeper from Nasaf who has already won a best-keeper award at U23 level and played at the Paris Olympics. He's one of the most valued players in Uzbekistan's domestic league, but on this squad he sits behind the established number one and is more about the future than starting now."
+  },
+  {
+   "id": 73534,
+   "name": "U. Yusupov",
+   "age": 34,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/73534.png",
+   "club": "Foolad FC",
+   "note": "Uzbekistan's first-choice goalkeeper, the 34-year-old plays his club football in Iran for Foolad and racked up a dozen clean sheets last season. With more than 40 caps, he's the steady, experienced hand expected to start in goal at the country's debut World Cup."
+  },
+  {
+   "id": 72122,
+   "name": "K. Alijonov",
+   "age": 28,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/72122.png",
+   "club": "Pakhtakor",
+   "note": "Pakhtakor's right-back is a regular for the national team and a serial trophy-winner at club level, having collected a stack of Uzbek league and cup titles. Reliable and experienced, he's a strong candidate to start down the right side of the defence."
+  },
+  {
+   "id": 34121,
+   "name": "R. Ashurmatov",
+   "age": 29,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/34121.png",
+   "club": "Esteghlal FC",
+   "note": "A centre-back who has built his career across Russia, South Korea and now Iran with Esteghlal, he won an Asian U23 title with Uzbekistan back in 2018. Expect him to be in the conversation for a starting spot in the middle of the back line."
+  },
+  {
+   "id": 73510,
+   "name": "U. Eshmurodov",
+   "age": 33,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/73510.png",
+   "club": "Nasaf",
+   "note": "An experienced centre-back at Nasaf, the 33-year-old offers height and steadiness rather than flash. He's squad depth at this World Cup, the kind of seasoned defender a coach is glad to have on the bench if injuries or suspensions bite."
+  },
+  {
+   "id": 416964,
+   "name": "B. Karimov",
+   "age": 18,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/416964.png",
+   "club": "Surkhon",
+   "note": "At 18, this Surkhon right-back is one of the youngest players in the whole tournament, earning his place after a breakout domestic season. A leg fracture in the spring clouded his build-up, so realistically he's here to learn and soak up the experience rather than start."
+  },
+  {
+   "id": 360114,
+   "name": "A. Khusanov",
+   "age": 21,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/360114.png",
+   "club": "Manchester City",
+   "note": "The crown jewel of this squad: the first Uzbek to play in the Premier League, he joined Manchester City in early 2025 and has already won the League Cup and FA Cup. Quick and composed for a defender just 21, he anchors the back line and is the player most opponents will have circled."
+  },
+  {
+   "id": 73514,
+   "name": "S. Nasrullayev",
+   "age": 27,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/73514.png",
+   "club": "Nasaf",
+   "note": "A left-back who came through at Nasaf and helped them win a run of domestic cups. He's been part of the national-team picture for a few years and gives the squad a useful option on the left, though he may have to settle for a backup role here."
+  },
+  {
+   "id": 532759,
+   "name": "F. Sayfiev",
+   "age": 34,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/532759.png",
+   "club": "Neftchi",
+   "note": "At 34, this left-back is one of the squad's elder statesmen, with more than 60 caps and a move to Neftchi in 2025. Left-footed and versatile across the back line, he brings experience and tactical know-how whether he starts or comes off the bench."
+  },
+  {
+   "id": 358427,
+   "name": "J. Urozov",
+   "age": 22,
+   "position": "Defender",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/358427.png",
+   "club": "Dinamo Samarqand",
+   "note": "A young left-back at Dinamo Samarqand who only made his senior international debut in early 2026. He's squad depth at this tournament, one of the developing defenders Cannavaro is blooding for the years ahead rather than relying on now."
+  },
+  {
+   "id": 416952,
+   "name": "A. Abdullaev",
+   "age": 28,
+   "position": "Defender",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/416952.png",
+   "club": "Dibba",
+   "note": "A defender who can also screen midfield, he has bounced between Uzbek clubs and the UAE, now turning out for Dibba. With a modest cap tally he's more of a depth option here, valued for his versatility across defence."
+  },
+  {
+   "id": 65571,
+   "name": "A. Ulmasaliev",
+   "age": 26,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/65571.png",
+   "club": "Olmaliq",
+   "note": "A centre-back at Olmaliq (AGMK) who was part of the 2025 CAFA Nations Cup-winning squad. He provides cover in the middle of the defence and is likely to feature as backup rather than a guaranteed starter at this World Cup."
+  },
+  {
+   "id": 53836,
+   "name": "J. Masharipov",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/53836.png",
+   "club": "Esteghlal FC",
+   "note": "A creative left winger and one of the team's most capped attacking players, he plays his club football in Iran. The cloud over him is fitness: a serious knee injury kept him out for much of the season, so how sharp he is could decide whether he's a starter or an impact option."
+  },
+  {
+   "id": 73520,
+   "name": "A. Ganiyev",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/73520.png",
+   "club": "Al Bataeh",
+   "note": "A defensive-minded midfielder now playing in the UAE with Al Bataeh, he won league titles early in his career at Nasaf and later collected silverware in Dubai. On this squad he's a depth option in central midfield rather than a nailed-on starter."
+  },
+  {
+   "id": 65576,
+   "name": "J. Iskanderov",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/65576.png",
+   "club": "Neftchi",
+   "note": "An experienced midfielder at Neftchi who is one of the squad's senior figures. At 32 he brings calm and game-management in the middle of the park, and is exactly the kind of steady head a team leans on at a first World Cup."
+  },
+  {
+   "id": 53835,
+   "name": "O. Hamrobekov",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/53835.png",
+   "club": "Bunyodkor",
+   "note": "A central midfielder who has played for Bunyodkor and abroad, with a good chunk of caps and a few international goals. He's competing for minutes in a crowded midfield and is likely to be used as a rotation or impact option here."
+  },
+  {
+   "id": 73522,
+   "name": "A. Mozgovoy",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/73522.png",
+   "club": "Nasaf",
+   "note": "An attacking midfielder of mixed Uzbek-Russian heritage who has come through clubs including Nasaf, he offers craft in the final third. He's squad depth at this tournament, a creative option to bring on rather than an automatic starter."
+  },
+  {
+   "id": 50272,
+   "name": "O. Shukurov",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/50272.png",
+   "club": "Baniyas SC",
+   "note": "One of the team's leaders and a regular starter in central midfield, the Baniyas man does the unglamorous work: breaking up play, shielding the defence and keeping the ball moving. With more than 70 caps, he's a likely fixture in the engine room."
+  },
+  {
+   "id": 263676,
+   "name": "A. Fayzullaev",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/263676.png",
+   "club": "Ba\u015fak\u015fehir",
+   "note": "Uzbekistan's brightest young creator, an attacking midfielder who was the breakout star of the 2024 Asian Cup before a club-record move to Istanbul Basaksehir. At 22 he's the imagination of this team, the player expected to unlock defences and the one neutrals should watch."
+  },
+  {
+   "id": 363723,
+   "name": "S. Esanov",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/363723.png",
+   "club": "Buxoro",
+   "note": "A young central midfielder who only joined Bukhara in early 2026, he's among the least experienced names in the squad. Realistically he's here for the experience and squad balance rather than to start, a prospect getting an early taste of the big stage."
+  },
+  {
+   "id": 72127,
+   "name": "O. Orunov",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/72127.png",
+   "club": "Persepolis FC",
+   "note": "A pacey left winger now at Persepolis in Iran, known for his dribbling and his eye for goal from wide areas after a prolific spell in the Uzbek league. He gives the attack a direct, run-at-defenders option, whether from the start or off the bench."
+  },
+  {
+   "id": 53834,
+   "name": "D. Khamdamov",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/53834.png",
+   "club": "Pakhtakor",
+   "note": "A right winger and former Asian young-player-of-the-year who has been a Pakhtakor mainstay. Tricky and direct, he's a genuine attacking weapon for Uzbekistan and pushes hard for a place in the front line, even if competition for those spots is fierce."
+  },
+  {
+   "id": 65584,
+   "name": "A. Amonov",
+   "age": 28,
+   "position": "Attacker",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/65584.png",
+   "club": "Bunyodkor",
+   "note": "A centre-forward who has played across the Uzbek league, the UAE and Iran, now back at Bunyodkor. He's a backup striking option behind the established names up front, the sort of forward brought on to chase a game late."
+  },
+  {
+   "id": 72128,
+   "name": "I. Sergeev",
+   "age": 32,
+   "position": "Attacker",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/72128.png",
+   "club": "Pakhtakor",
+   "note": "A veteran striker with more than 80 caps who once topped the Uzbek league scoring charts and finished as top scorer of an Asian U19 tournament as a teenager. Now at Persepolis, the 32-year-old is the experienced foil and backup to the captain in attack."
+  },
+  {
+   "id": 53535,
+   "name": "E. Shomurodov",
+   "age": 30,
+   "position": "Attacker",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/53535.png",
+   "club": "Ba\u015fak\u015fehir",
+   "note": "The captain, all-time leading scorer and emotional heart of the team, he led Uzbekistan to its first-ever World Cup. After spells with Genoa and Roma in Italy, he plundered goals on loan at Basaksehir, and as the focal point of the attack he'll carry the country's hopes up front."
+  }
+ ],
+ "guardianStarPlayer": "Abdukodir Khusanov",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

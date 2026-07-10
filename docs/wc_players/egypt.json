@@ -1,0 +1,279 @@
+{
+ "country": "egypt",
+ "displayName": "Egypt",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Hossam Hassan",
+ "captain": "Mohamed Salah",
+ "keyPlayers": [
+  "Mohamed Salah",
+  "Omar Marmoush",
+  "Mohamed El Shenawy",
+  "Emam Ashour",
+  "Tr\u00e9z\u00e9guet",
+  "Ahmed Zizo"
+ ],
+ "players": [
+  {
+   "id": 550469,
+   "name": "M. Alaa",
+   "age": 26,
+   "position": "Goalkeeper",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/550469.png",
+   "club": "El Gouna FC",
+   "note": "The third-choice keeper from El Gouna, out on the Red Sea coast, who is here mostly to train hard and stay ready. If he gets on the pitch, something has gone very wrong for Egypt."
+  },
+  {
+   "id": 16797,
+   "name": "Mohamed El Shenawy",
+   "age": 37,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/16797.png",
+   "club": "Al Ahly",
+   "note": "Egypt's No. 1, who turned 37 just before the tournament and last kept goal at a World Cup back in 2018. Eight years on, he is still the safest pair of hands the Pharaohs have, and probably writing the final chapter of a long career."
+  },
+  {
+   "id": 269174,
+   "name": "Mostafa Shobeir",
+   "age": 25,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/269174.png",
+   "club": "Al Ahly",
+   "note": "The son of a former Egypt keeper who has quietly outdone his dad's reputation, once stringing together nine straight clean sheets in the African Champions League. If El Shenawy's legs go, this is the man waiting in the wings."
+  },
+  {
+   "id": 16831,
+   "name": "Al Mahdi Soliman",
+   "age": 38,
+   "position": "Goalkeeper",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/16831.png",
+   "club": "Zamalek SC",
+   "note": "At 38, the elder statesman of the squad, a keeper who has bounced around half the Egyptian league and been called up plenty of times without ever actually playing a senior international. A World Cup squad spot is a lovely reward for a patient career."
+  },
+  {
+   "id": 269621,
+   "name": "Hossam Abdelmaguid",
+   "age": 24,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/269621.png",
+   "club": "Zamalek SC",
+   "note": "A young Zamalek centre-back who has grown into one of the steadier heads at the back for the Cairo side. The World Cup is a big jump up, but he has time on his side to grow into it."
+  },
+  {
+   "id": 196343,
+   "name": "Mohamed Abdelmonem",
+   "age": 26,
+   "position": "Defender",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/196343.png",
+   "club": "Nice",
+   "note": "The centre-back who made the leap from Cairo to French football with Nice, giving Egypt a defender tested week in, week out against top-flight forwards. He is the one at the back who has seen this level of opponent before."
+  },
+  {
+   "id": 2649,
+   "name": "Ahmed Fatouh",
+   "age": 27,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/2649.png",
+   "club": "Zamalek SC",
+   "note": "Zamalek's left-back, who likes to get forward and overlap as much as defend. A useful outlet down that flank when Egypt have the ball and want to stretch the pitch."
+  },
+  {
+   "id": 2656,
+   "name": "Karim Hafez",
+   "age": 29,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/2656.png",
+   "club": "Pyramids FC",
+   "note": "A left-back at Pyramids who spent earlier years drifting through clubs in Europe before settling back home. Steady cover on the left, the sort who does the job without anyone noticing."
+  },
+  {
+   "id": 2654,
+   "name": "Mohamed Hany",
+   "age": 29,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/2654.png",
+   "club": "Al Ahly",
+   "note": "Al Ahly's right-back, a reliable full-back who has spent his whole career with the Cairo club. The kind of dependable option a manager reaches for when he wants no surprises."
+  },
+  {
+   "id": 16804,
+   "name": "Yasser Ibrahim",
+   "age": 32,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/16804.png",
+   "club": "Al Ahly",
+   "note": "An experienced Al Ahly centre-back who has won most of what there is to win in African club football. At 32 he brings the calm and the trophy-laden know-how Egypt will lean on at the back."
+  },
+  {
+   "id": 16805,
+   "name": "Rami Rabia",
+   "age": 32,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/16805.png",
+   "club": "Al Ain",
+   "note": "A centre-back who took his game to the Gulf with Al Ain in the UAE. Another of the older heads in defence, picked for his reading of the game rather than his pace."
+  },
+  {
+   "id": 550371,
+   "name": "T. Alaa",
+   "age": 23,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/550371.png",
+   "club": "Masr",
+   "note": "At 23, one of the youngest defenders in the group, plucked from a smaller Egyptian club rather than the Cairo giants. A squad pick for the future as much as the present."
+  },
+  {
+   "id": 17269,
+   "name": "Emam Ashour",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/17269.png",
+   "club": "Al Ahly",
+   "note": "Egypt's engine in midfield and one of the names Hossam Hassan builds the team around. The Al Ahly man does the running and the linking that lets Salah and Marmoush stay fresh further up."
+  },
+  {
+   "id": 190575,
+   "name": "Marwan Attia",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/190575.png",
+   "club": "Al Ahly",
+   "note": "A holding midfielder at Al Ahly who is happiest breaking up play and keeping things simple. Not flashy, but the sort of shield in front of the back line a tournament side quietly needs."
+  },
+  {
+   "id": 2660,
+   "name": "Nabil Emad Dunga",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/2660.png",
+   "club": "Zamalek SC",
+   "note": "Everyone calls him Dunga, a defensive midfielder who has gone from Pyramids to Zamalek and on to the Saudi league. A tidy operator who keeps the ball moving and the tempo under control."
+  },
+  {
+   "id": 16813,
+   "name": "Hamdi Fathy",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/16813.png",
+   "club": "Al Wakrah",
+   "note": "A combative midfielder now earning his living with Al Wakrah in Qatar. He is the one who throws himself into tackles and does the unglamorous work so the creative players can play."
+  },
+  {
+   "id": 16841,
+   "name": "Mohanad Lasheen",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/16841.png",
+   "club": "Pyramids FC",
+   "note": "A midfielder for Pyramids, the ambitious Cairo club that has muscled its way into the conversation with the old giants. He gives Hossam Hassan another option in the middle of the park."
+  },
+  {
+   "id": 69196,
+   "name": "Mahmoud Saber",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/69196.png",
+   "club": "Masr",
+   "note": "At 24, a midfielder from a smaller domestic side who has played his way into the conversation. Proof that Egypt's net is cast wider than just Al Ahly and Zamalek."
+  },
+  {
+   "id": 395075,
+   "name": "Mostafa Zico",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/395075.png",
+   "club": "Pyramids FC",
+   "note": "A Pyramids attacking midfielder who goes by Zico, a nickname that sets a high bar. He offers a creative spark off the bench when Egypt need someone to unlock a stubborn defence."
+  },
+  {
+   "id": 2664,
+   "name": "Tr\u00e9z\u00e9guet",
+   "age": 31,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/2664.png",
+   "club": "Al Ahly",
+   "note": "The winger who cuts in from the right and was Egypt's other big scorer in qualifying, with braces against Ethiopia and Burkina Faso. English fans may remember his Aston Villa days; these days he does his damage back home at Al Ahly."
+  },
+  {
+   "id": 20844,
+   "name": "H. Hassan",
+   "age": 23,
+   "position": "Attacker",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/20844.png",
+   "club": "Oviedo",
+   "note": "A France-born winger who chose Egypt and earns his stripes with Oviedo in Spain's top flight. An energetic, direct runner who gives the attack a different flavour off the bench."
+  },
+  {
+   "id": 664079,
+   "name": "Ahmed Zizo",
+   "age": 30,
+   "position": "Attacker",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/664079.png",
+   "club": "Al Ahly",
+   "note": "An experienced winger who made his name at Zamalek before crossing the Cairo divide to Al Ahly. He brings goals and assists, though even at 30 he is no longer guaranteed a starting spot in this attack."
+  },
+  {
+   "id": 550547,
+   "name": "H. Abdelkarim",
+   "age": 17,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/550547.png",
+   "club": "Al Ahly",
+   "note": "The teenage striker who is the squad's big surprise, a wonderkid Barcelona have been chasing and some have nicknamed Egypt's Haaland. At 17 he is here for the experience, but the future clearly has his name on it."
+  },
+  {
+   "id": 70535,
+   "name": "Ibrahim Adel",
+   "age": 24,
+   "position": "Attacker",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/70535.png",
+   "club": "FC Nordsjaelland",
+   "note": "A young winger who moved to Denmark's Nordsjaelland, a club famous for polishing rough African talent into the finished article. A move to Europe at the right age to keep climbing."
+  },
+  {
+   "id": 81573,
+   "name": "Omar Marmoush",
+   "age": 26,
+   "position": "Attacker",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/81573.png",
+   "club": "Manchester City",
+   "note": "Egypt's second big gun, a Manchester City forward who arrived from Germany for big money and announced himself with a hat-trick. Quick, sharp, and able to play off Salah or lead the line himself, he gives the Pharaohs a genuine second threat."
+  },
+  {
+   "id": 306,
+   "name": "Mohamed Salah",
+   "age": 33,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/306.png",
+   "club": "Liverpool",
+   "note": "The captain, the talisman, and the reason much of the world will tune in to watch Egypt at all. He top-scored qualifying with nine goals, and at 33 this is almost certainly his last realistic shot at finally dragging the Pharaohs out of the group."
+  }
+ ],
+ "guardianStarPlayer": "Mohamed Salah",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

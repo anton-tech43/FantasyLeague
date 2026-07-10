@@ -1,0 +1,279 @@
+{
+ "country": "france",
+ "displayName": "France",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Didier Deschamps",
+ "captain": "Kylian Mbappé",
+ "keyPlayers": [
+  "Kylian Mbappé",
+  "Ousmane Dembélé",
+  "Mike Maignan",
+  "William Saliba",
+  "Aurélien Tchouaméni",
+  "Michael Olise"
+ ],
+ "players": [
+  {
+   "id": 22221,
+   "name": "M. Maignan",
+   "age": 30,
+   "position": "Goalkeeper",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/22221.png",
+   "club": "AC Milan",
+   "note": "France's first-choice keeper and the captain of his club in Milan, where they trust him enough to have tied him down on a long contract. He's a confident shot-stopper who likes to start attacks with his feet, basically a goalkeeper who fancies himself as an extra outfield player."
+  },
+  {
+   "id": 347211,
+   "name": "R. Risser",
+   "age": 21,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/347211.png",
+   "club": "Lens",
+   "note": "The fairytale pick: a 21-year-old who had never played a senior international when he was named in the squad, after a season so good at Lens that he was voted the league's best goalkeeper. The new boy along for the ride, learning from the men ahead of him."
+  },
+  {
+   "id": 21628,
+   "name": "B. Samba",
+   "age": 31,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/21628.png",
+   "club": "Rennes",
+   "note": "The number two keeper, a calm and experienced head who knows his job is to be ready if Maignan ever falters. He wears the number 1 shirt, which is one of football's gentle little ironies for a backup."
+  },
+  {
+   "id": 2724,
+   "name": "L. Digne",
+   "age": 32,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/2724.png",
+   "club": "Aston Villa",
+   "note": "An experienced left-back at Aston Villa who's been around the France setup for years, the reliable older option when the manager wants someone who won't be fazed. Famous for whipping in dangerous set-pieces, which makes him useful at both ends of the pitch."
+  },
+  {
+   "id": 161907,
+   "name": "M. Gusto",
+   "age": 22,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/161907.png",
+   "club": "Chelsea",
+   "note": "A young, energetic right-back at Chelsea who loves to bomb forward and overlap, the kind of full-back who treats defending as a chore he gets through so he can attack. One of the squad's up-and-comers rather than a guaranteed starter."
+  },
+  {
+   "id": 33,
+   "name": "L. Hernández",
+   "age": 29,
+   "position": "Defender",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/33.png",
+   "club": "Paris Saint Germain",
+   "note": "The elder of the Hernández brothers and a versatile defender who can play left-back or centre-back, now at PSG. He's had more than his share of bad knee injuries over the years, so just being here fit is its own small victory."
+  },
+  {
+   "id": 47300,
+   "name": "T. Hernández",
+   "age": 28,
+   "position": "Defender",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/47300.png",
+   "club": "Al-Hilal Saudi FC",
+   "note": "The younger Hernández brother, a flying left-back who's swapped Italy for the Saudi league but still gallops up and down the wing the same way. With Lucas also in the squad, France get two brothers for the price of one defensive berth."
+  },
+  {
+   "id": 1145,
+   "name": "I. Konaté",
+   "age": 26,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/1145.png",
+   "club": "Liverpool",
+   "note": "A big, quick centre-back from Liverpool, where he became the regular partner to Virgil van Dijk in one of the league's toughest defences. He's locked in a friendly three-way contest with Saliba and Upamecano for the two starting spots, so France can't really lose."
+  },
+  {
+   "id": 1257,
+   "name": "J. Koundé",
+   "age": 27,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/1257.png",
+   "club": "Barcelona",
+   "note": "A Barcelona defender who's spent years being shuffled between centre-back and right-back without ever complaining, the dependable utility man every squad needs. He has a knack for big-game goals, the sort that win cup finals."
+  },
+  {
+   "id": 20995,
+   "name": "M. Lacroix",
+   "age": 25,
+   "position": "Defender",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/20995.png",
+   "club": "Crystal Palace",
+   "note": "A no-nonsense centre-back who helped Crystal Palace win their first big trophies, then earned his first France caps off the back of that form. A late bloomer at international level who's gatecrashed the party at exactly the right time."
+  },
+  {
+   "id": 22090,
+   "name": "W. Saliba",
+   "age": 24,
+   "position": "Defender",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/22090.png",
+   "club": "Arsenal",
+   "note": "Arsenal's defensive anchor and, for a man not yet 25, remarkably unflappable, the sort of centre-back who makes the hard stuff look boring. Tall, fast and calm on the ball, he's exactly what you want when the opposition counter-attacks."
+  },
+  {
+   "id": 1149,
+   "name": "D. Upamecano",
+   "age": 27,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/1149.png",
+   "club": "Bayern München",
+   "note": "A powerful, aggressive centre-back at Bayern Munich who defends on the front foot and isn't afraid to step out and win the ball high up the pitch. The third name in France's centre-back puzzle, which is a luxury problem most teams would love to have."
+  },
+  {
+   "id": 156477,
+   "name": "R. Cherki",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/156477.png",
+   "club": "Manchester City",
+   "note": "A gifted playmaker who joined Manchester City after dazzling in Lyon, where he was the league's best dribbler and top creator of chances. The squad's wildcard: capable of unlocking any defence with a single flick when nothing else is working."
+  },
+  {
+   "id": 2290,
+   "name": "N. Kanté",
+   "age": 34,
+   "position": "Midfielder",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/2290.png",
+   "club": "Al-Ittihad FC",
+   "note": "The much-loved engine of the 2018 World Cup-winning side, still chasing the ball down from box to box at 34, now playing his football in Saudi Arabia. Football's nicest man, the joke goes, because the 30 percent of the pitch he doesn't cover is where God plays."
+  },
+  {
+   "id": 22147,
+   "name": "M. Koné",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/22147.png",
+   "club": "AS Roma",
+   "note": "A tall, ball-carrying midfielder who's become a key man for Roma, the type who sets the tempo and breaks up the game in equal measure. He gives France a younger alternative in the middle when they need fresh legs."
+  },
+  {
+   "id": 272,
+   "name": "A. Rabiot",
+   "age": 30,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/272.png",
+   "club": "AC Milan",
+   "note": "A tall, elegant midfielder and a long-standing favourite of the manager, now enjoying a strong season at AC Milan after a cut-price move. He glides around the pitch and chips in with surprising goals, the kind of player coaches trust more than fans expect."
+  },
+  {
+   "id": 1271,
+   "name": "A. Tchouaméni",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/1271.png",
+   "club": "Real Madrid",
+   "note": "The midfield shield in front of the defence, a Real Madrid regular who protects the back line and recycles the ball without fuss. He's the quiet, dependable foundation the flashier players are built on top of."
+  },
+  {
+   "id": 336657,
+   "name": "W. Zaïre-Emery",
+   "age": 19,
+   "position": "Midfielder",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/336657.png",
+   "club": "Paris Saint Germain",
+   "note": "Still a teenager but already a two-time Champions League winner with PSG, where he became the club's youngest-ever player and one of its youngest captains. The wonderkid who skipped the slow part of the career and went straight to the trophies."
+  },
+  {
+   "id": 274300,
+   "name": "M. Akliouche",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/274300.png",
+   "club": "Monaco",
+   "note": "A creative, slightly shy attacking midfielder from Monaco who won Olympic silver on home soil in 2024 before breaking into the senior side. One to keep an eye on as France's next generation of playmakers."
+  },
+  {
+   "id": 161904,
+   "name": "B. Barcola",
+   "age": 23,
+   "position": "Attacker",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/161904.png",
+   "club": "Paris Saint Germain",
+   "note": "A rapid, direct winger at PSG, part of the young attack that won the Champions League, and a frontrunner to start out wide for France. He's all about pace and running in behind, the player defenders dread sprinting at them."
+  },
+  {
+   "id": 25927,
+   "name": "J. Mateta",
+   "age": 28,
+   "position": "Attacker",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/25927.png",
+   "club": "Crystal Palace",
+   "note": "A big, hard-working centre-forward at Crystal Palace who came late to the international party and made it count, finishing among the top scorers at the 2024 Olympics. The proper old-fashioned number nine in a squad full of speedsters and tricksters."
+  },
+  {
+   "id": 153,
+   "name": "O. Dembélé",
+   "age": 28,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/153.png",
+   "club": "Paris Saint Germain",
+   "note": "The reigning Ballon d'Or winner, who rebuilt his career at PSG and was the heartbeat of their first Champions League triumph. Two-footed and unpredictable, he's spent years being told he was wasting his talent, and has finally answered everyone at once."
+  },
+  {
+   "id": 343027,
+   "name": "D. Doué",
+   "age": 20,
+   "position": "Attacker",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/343027.png",
+   "club": "Paris Saint Germain",
+   "note": "A 20-year-old who announced himself to the world by scoring twice in PSG's Champions League final win, one of the youngest ever to do so. The kid who treats the biggest stage as if it's a kickabout in the park."
+  },
+  {
+   "id": 278,
+   "name": "Kylian Mbappé",
+   "age": 27,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/278.png",
+   "club": "Real Madrid",
+   "note": "The captain, the talisman, and one of the fastest players on the planet, now leading the line at Real Madrid and closing in on France's record books at his third World Cup. If anyone scores the goal everyone remembers from this tournament, the smart money's on him."
+  },
+  {
+   "id": 21509,
+   "name": "M. Thuram",
+   "age": 28,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/21509.png",
+   "club": "Inter",
+   "note": "A strong, link-up centre-forward at Inter Milan and the son of Lilian Thuram, a France legend from the 1998 World Cup-winning team. Tall and good with his back to goal, he brings others into play as much as he scores himself."
+  },
+  {
+   "id": 19617,
+   "name": "M. Olise",
+   "age": 24,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/19617.png",
+   "club": "Bayern München",
+   "note": "A right-winger having a breakout season at Bayern Munich, where he racked up assists at a remarkable rate and pushed his way into the Ballon d'Or conversation. He cuts inside onto his clever left foot to either score or set up a team-mate, and you rarely know which until it's too late."
+  }
+ ],
+ "guardianStarPlayer": "Kylian Mbappé",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

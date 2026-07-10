@@ -5,11 +5,14 @@ struct TierSelectionView: View {
     @State private var selected: Int = 2
     let onContinue: () -> Void
 
-    private let tiers: [(number: Int, icon: String, label: String, description: String)] = [
-        (1, "cup.and.saucer", "Just enough to get by", "Just the essentials. No overload."),
-        (2, "bolt.fill", "Came to impress", "Enough to hold your own in any conversation."),
-        (3, "crown.fill", "The one he brags about", "She knows things he hasn't even googled yet.")
-    ]
+    private var tiers: [(number: Int, icon: String, label: String, description: String)] {
+        [
+            (1, "cup.and.saucer", "Just enough to get by", "Just the essentials. No overload."),
+            (2, "bolt.fill", "Came to impress", "Enough to hold your own in any conversation."),
+            (3, "crown.fill", "The one \(appState.pSubject) \(appState.usesHeVoice ? "brags" : "brag") about",
+             "She knows things \(appState.pSubject) \(appState.usesHeVoice ? "hasn't" : "haven't") even googled yet.")
+        ]
+    }
 
     private var buttonText: String {
         switch selected {
@@ -91,5 +94,8 @@ struct TierSelectionView: View {
             .padding(.horizontal, Layout.screenPadding)
             .padding(.bottom, 40)
         }
+        // ONB-6: reflect the saved tier on (re)appear so back-navigating to this
+        // step doesn't silently reset a tier-3 user to the default of 2.
+        .onAppear { selected = appState.selectedTier }
     }
 }

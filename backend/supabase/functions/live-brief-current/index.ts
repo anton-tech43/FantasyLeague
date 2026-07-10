@@ -1,0 +1,417 @@
+// live-brief-current/index.ts
+// GoalDigger v1.1 — Read endpoint for the LiveMatchCard (V1.1 task C5).
+//
+// GET /functions/v1/live-brief-current?team_id=<id>
+//
+// Returns the most recent live_match_briefs row for the given team IF the
+// team has a match currently in the "live window" — defined as kickoff
+// minus 10 minutes through kickoff plus 130 minutes (2h 10m, covers full
+// time + extra time + a healthy buffer).
+//
+// Returns 204 No Content (with no body) when there's no live match in the
+// window. This lets iOS distinguish "no fetch error, just no live card"
+// from real failures without parsing a body. Polled every 60s during the
+// live window.
+
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { getSupabaseClient } from "../_shared/supabase-client.ts";
+import { formatMinute, type StoredGoalEvent } from "../_shared/goal-push.ts";
+import { WC_LEAGUE_ID } from "../_shared/detect-consequences.ts";
+
+const PRE_KICKOFF_BUFFER_MS = 10 * 60 * 1000;   // 10 min before kickoff
+const POST_KICKOFF_BUFFER_MS = 130 * 60 * 1000; // 130 min after kickoff
+
+serve(async (req) => {
+  if (req.method !== "GET") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const url = new URL(req.url);
+  const teamId = url.searchParams.get("team_id");
+  if (!teamId) {
+    return new Response(JSON.stringify({ error: "team_id is required" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // Validate format: same regex as team-season-state. Defensive against
+  // query mangling — teams.id is always lowercase letters + underscores.
+  if (!/^[a-z_]{2,32}$/.test(teamId)) {
+    return new Response(JSON.stringify({ error: "Invalid team_id format" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const supabase = getSupabaseClient();
+
+  // LIVE_STATUSES = ['1H', 'HT', '2H', 'ET', 'P', 'BT'] — same set the
+  // match-watcher uses to detect live fixtures. Mirroring it keeps the
+  // two pieces of code in sync.
+  const LIVE_STATUSES = ["1H", "HT", "2H", "ET", "P", "BT"];
+  const now = Date.now();
+  const windowStartIso = new Date(now - POST_KICKOFF_BUFFER_MS).toISOString();
+  const windowEndIso = new Date(now + PRE_KICKOFF_BUFFER_MS).toISOString();
+  const headers = {
+    "Content-Type": "application/json",
+    // No CDN caching: polled endpoint, want fresh values every 60s.
+    "Cache-Control": "no-store",
+  };
+
+  // Pseudo team_id from iOS meaning "whichever World Championship match is
+  // live right now", independent of followed countries. Scope by league_id
+  // instead of home/away team, pick the earliest kickoff if two are somehow
+  // live at once, and skip the per-team live_match_briefs/standings lookups
+  // entirely — there's no single followed side for this card to narrate.
+  if (teamId === "world_championship") {
+    const { data: wcRows, error: wcErr } = await supabase
+      .from("match_status_state")
+      .select(
+        "fixture_id, status, home_team_id, away_team_id, home_goals, away_goals, elapsed, goal_events",
+      )
+      .eq("league_id", WC_LEAGUE_ID)
+      .gte("kickoff_time", windowStartIso)
+      .lte("kickoff_time", windowEndIso)
+      .in("status", LIVE_STATUSES)
+      .order("kickoff_time", { ascending: true })
+      .limit(1);
+
+    if (wcErr) {
+      console.error("live-brief-current WC state read error:", wcErr.message);
+      return new Response(JSON.stringify({ error: "State read failed" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    if (!wcRows || wcRows.length === 0) {
+      return new Response(null, { status: 204 });
+    }
+
+    const state = wcRows[0] as MatchState;
+    const nameOf = await buildNameLookup(supabase, state);
+    return new Response(
+      JSON.stringify({
+        id: await stableUuid(
+          `${state.fixture_id}-${state.home_goals ?? 0}-${state.away_goals ?? 0}-${state.status}`,
+        ),
+        team_id: teamId,
+        match_id: String(state.fixture_id),
+        headline: buildNeutralHeadline(state, nameOf),
+        body: periodLine(state.status),
+        minute: state.elapsed ?? null,
+        trigger_label: state.status === "HT" ? "HT" : null,
+        standings: null,
+        scorers: buildScorersPassthrough(state, nameOf),
+        generated_at: new Date(now).toISOString(),
+      }),
+      { headers },
+    );
+  }
+
+  // 1. Is there a fixture for this team that's actually IN PLAY?
+  // Two filters compose: (a) status must be a live in-play state and
+  // (b) kickoff is within a sane window. Status alone is the stronger
+  // signal — a FT/AET/PEN match shouldn't trigger the card even if it
+  // ended within the window. Kickoff window is a defensive backstop in
+  // case the match-watcher fails to update status promptly.
+  const { data: stateRows, error: stateErr } = await supabase
+    .from("match_status_state")
+    .select(
+      "fixture_id, status, home_team_id, away_team_id, home_goals, away_goals, elapsed, goal_events",
+    )
+    .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
+    .gte("kickoff_time", windowStartIso)
+    .lte("kickoff_time", windowEndIso)
+    .in("status", LIVE_STATUSES)
+    .limit(1);
+
+  if (stateErr) {
+    console.error("live-brief-current state read error:", stateErr.message);
+    return new Response(JSON.stringify({ error: "State read failed" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  if (!stateRows || stateRows.length === 0) {
+    // No fixture in the live window. 204 = "nothing right now, this is
+    // expected." iOS interprets this as "skip the LiveMatchCard." Avoids
+    // a 404 which iOS might confuse with a real not-found error.
+    return new Response(null, { status: 204 });
+  }
+
+  // 2. Fetch the most recent brief for this team. Could constrain by
+  // match_id from stateRows[0].fixture_id, but if a stale brief from an
+  // older match leaks in, the published_at filter below catches it.
+  const { data: briefs, error: briefErr } = await supabase
+    .from("live_match_briefs")
+    .select("id, team_id, match_id, headline, body, minute, trigger_label, generated_at")
+    .eq("team_id", teamId)
+    .gte("generated_at", new Date(now - POST_KICKOFF_BUFFER_MS).toISOString())
+    .order("generated_at", { ascending: false })
+    .limit(1);
+
+  if (briefErr) {
+    console.error("live-brief-current briefs read error:", briefErr.message);
+    return new Response(JSON.stringify({ error: "Briefs read failed" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const state = stateRows[0] as MatchState;
+  // Team short/display names for both playing sides — fetched once and reused
+  // for the live headline AND the scorers list, so the 60s poll does a single
+  // teams read rather than one per surface.
+  const nameOf = await buildNameLookup(supabase, state);
+  // The headline is ALWAYS the live score (deterministic, from match state),
+  // so the feed mirrors the Live Activity and never shows a stale "0-0 at the
+  // break" once the score moves in the second half.
+  const liveHeadline = buildLiveHeadline(teamId, state, nameOf);
+  const liveLabel = state.status === "HT" ? "HT" : null; // null → "LIVE" badge
+  // Live-box scorers: who scored and when, chronological. Best-effort off the
+  // stored goal_events (068); empty/missing → null (card omits the section).
+  const scorers = buildScorers(state, nameOf);
+
+  // Group standings for the live box: read the already-computed group table off
+  // the team page (no recompute), trimmed to what the card renders. Best-effort
+  // — a missing/unparseable card just omits standings, never fails the live card.
+  let standings:
+    | { competition_label: string; entries: Array<Record<string, unknown>> }
+    | null = null;
+  try {
+    const { data: page } = await supabase
+      .from("team_pages")
+      .select("content")
+      .eq("team_id", teamId)
+      .maybeSingle();
+    const card = ((page?.content as Record<string, unknown> | undefined)?.cards as
+      | Record<string, unknown>
+      | undefined)?.standings as
+        | { competition_label?: string; entries?: Array<Record<string, unknown>> }
+        | undefined;
+    if (Array.isArray(card?.entries) && card!.entries!.length > 0) {
+      standings = {
+        competition_label: (card!.competition_label as string) ?? "Group",
+        entries: card!.entries!.map((e) => ({
+          rank: e.rank,
+          team: e.team_name,
+          played: e.played,
+          won: e.won,
+          drawn: e.drawn,
+          lost: e.lost,
+          gd: e.gd,
+          points: e.points,
+        })),
+      };
+    }
+  } catch (_e) {
+    // standings best-effort; ignore.
+  }
+
+  // Routine brief present → keep its richer analysis as the body, but show the
+  // live score in the headline (and a live label, no stale minute outside HT).
+  if (briefs && briefs.length > 0) {
+    const brief = briefs[0] as Record<string, unknown>;
+    // Staleness guard: the routine brief's PROSE describes the score at the
+    // moment it was generated (e.g. the HT "both sides finding the net twice"
+    // at 2-2). The headline/scorers/minute below are always live, but the body
+    // would still claim a level first half at 87' 4-2. If goals have gone in
+    // since the brief's minute (second-half goals postdate it), drop the
+    // now-wrong narrative to a neutral deterministic period line — the live
+    // headline + scorers carry the up-to-date detail. Pure, off the stored
+    // goal_events; no Claude re-fire (cost rule).
+    const briefMinute = typeof brief.minute === "number"
+      ? brief.minute as number
+      : (String(brief.trigger_label ?? "").toUpperCase() === "HT" ? 45 : 0);
+    const goalsSinceBrief = (state.goal_events ?? []).filter(
+      (e) => (e.minute ?? 0) > briefMinute,
+    ).length;
+    const briefIsStale = state.status !== "HT" && goalsSinceBrief > 0;
+    return new Response(
+      JSON.stringify({
+        ...brief,
+        headline: liveHeadline,
+        body: briefIsStale ? periodLine(state.status) : brief.body,
+        trigger_label: state.status === "HT" ? (brief.trigger_label ?? "HT") : liveLabel,
+        minute: state.status === "HT" ? (brief.minute ?? null) : (state.elapsed ?? null),
+        standings,
+        scorers,
+      }),
+      { headers },
+    );
+  }
+
+  // No routine brief yet — match just kicked off and HT hasn't landed, or the
+  // gd-live-brief routine is late / rate-limited. Return a fully DETERMINISTIC
+  // live-score card so the feed shows a live card from kickoff, independent of
+  // the claude.ai routine (same deterministic-floor principle as the pushes).
+  // The id is STABLE per (fixture, score, status) so it re-animates only when
+  // something actually changes, not on every 60s poll.
+  return new Response(
+    JSON.stringify({
+      id: await stableUuid(
+        `${state.fixture_id}-${state.home_goals ?? 0}-${state.away_goals ?? 0}-${state.status}`,
+      ),
+      team_id: teamId,
+      match_id: String(state.fixture_id),
+      headline: liveHeadline,
+      body: periodLine(state.status),
+      minute: state.elapsed ?? null,
+      trigger_label: liveLabel,
+      standings,
+      scorers,
+      generated_at: new Date(now).toISOString(),
+    }),
+    { headers },
+  );
+});
+
+interface MatchState {
+  fixture_id: number;
+  status: string;
+  home_team_id: string;
+  away_team_id: string;
+  home_goals: number | null;
+  away_goals: number | null;
+  elapsed: number | null;
+  goal_events: StoredGoalEvent[] | null;
+}
+
+type NameLookup = (id: string) => string;
+
+/// One scorer as returned to the live card, e.g. { side, team, player, minute }.
+/// `minute` is the formatted string ("47'" / "45+2'"), `player` is the name or
+/// "Own goal" (the API credits OGs to the conceding player, so we never name
+/// them), `penalty` flags a spot-kick for a "(pen)" tag client-side.
+interface ScorerLine {
+  side: "home" | "away";
+  team: string;
+  player: string;
+  minute: string;
+  penalty: boolean;
+  photo: string | null;
+}
+
+/// Resolve both playing sides' display names in a single teams read, returning
+/// a lookup closure. Short name wins, display name is the fallback, id is the
+/// last resort.
+async function buildNameLookup(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  state: MatchState,
+): Promise<NameLookup> {
+  const { data: teamRows } = await supabase
+    .from("teams")
+    .select("id, short_name, display_name")
+    .in("id", [state.home_team_id, state.away_team_id]);
+  return (id: string): string => {
+    const r = (teamRows ?? []).find((t) => t.id === id) as
+      | { short_name?: string; display_name?: string }
+      | undefined;
+    return (r?.short_name && r.short_name.length > 0 ? r.short_name : r?.display_name) || id;
+  };
+}
+
+/// Follower-first live scoreline, e.g. "Spain 1-0 Cape Verde". Pure — names
+/// come from the shared lookup; no Claude.
+function buildLiveHeadline(teamId: string, state: MatchState, nameOf: NameLookup): string {
+  const hg = state.home_goals ?? 0;
+  const ag = state.away_goals ?? 0;
+  const isHome = state.home_team_id === teamId;
+  const myName = nameOf(teamId);
+  const oppName = nameOf(isHome ? state.away_team_id : state.home_team_id);
+  const myGoals = isHome ? hg : ag;
+  const oppGoals = isHome ? ag : hg;
+  return `${myName} ${myGoals}-${oppGoals} ${oppName}`;
+}
+
+/// Neutral home-team-first live scoreline for the world_championship pseudo
+/// card, e.g. "Spain 1-0 France" — there's no followed side to lead with.
+/// Pure, same deterministic inputs as buildLiveHeadline.
+function buildNeutralHeadline(state: MatchState, nameOf: NameLookup): string {
+  const hg = state.home_goals ?? 0;
+  const ag = state.away_goals ?? 0;
+  return `${nameOf(state.home_team_id)} ${hg}-${ag} ${nameOf(state.away_team_id)}`;
+}
+
+/// Same shape as buildScorers, but spreads the raw stored goal_events entry
+/// first so any extra columns added later (e.g. the optional `photo` field)
+/// ride along unstripped — the world_championship card has no per-follower
+/// contract to protect the way ScorerLine does. Never throws.
+function buildScorersPassthrough(
+  state: MatchState,
+  nameOf: NameLookup,
+): Array<Record<string, unknown>> | null {
+  const events = state.goal_events;
+  if (!Array.isArray(events) || events.length === 0) return null;
+  const lines: Array<Record<string, unknown>> = [];
+  for (const ev of events) {
+    const raw = ev as unknown as Record<string, unknown>;
+    if (raw.side !== "home" && raw.side !== "away") continue;
+    const teamId = raw.side === "home" ? state.home_team_id : state.away_team_id;
+    const isOwnGoal = Boolean(raw.isOwnGoal);
+    lines.push({
+      ...raw,
+      team: nameOf(teamId),
+      player: isOwnGoal ? "Own goal" : (String(raw.player ?? "").trim() || "Goal"),
+      minute: formatMinute(raw.minute as number | null, raw.extra as number | null),
+      penalty: Boolean(raw.isPenalty) && !isOwnGoal,
+      // Own-goal photos are the WRONG side's face (API names the conceding
+      // player) — null it out alongside the name, same rule as formatScorers.
+      photo: isOwnGoal ? null : ((raw.photo as string | null | undefined) ?? null),
+    });
+  }
+  return lines.length > 0 ? lines : null;
+}
+
+/// Project the stored goal_events into display-ready scorer lines for the live
+/// box, resolving each side's team name. Returns null when there's nothing to
+/// show so the card omits the section entirely. Already chronological (stored
+/// sorted by match-watcher); never throws.
+function buildScorers(state: MatchState, nameOf: NameLookup): ScorerLine[] | null {
+  const events = state.goal_events;
+  if (!Array.isArray(events) || events.length === 0) return null;
+  const lines: ScorerLine[] = [];
+  for (const ev of events) {
+    if (ev.side !== "home" && ev.side !== "away") continue;
+    const teamId = ev.side === "home" ? state.home_team_id : state.away_team_id;
+    const player = ev.isOwnGoal ? "Own goal" : ((ev.player ?? "").trim() || "Goal");
+    lines.push({
+      side: ev.side,
+      team: nameOf(teamId),
+      player,
+      minute: formatMinute(ev.minute, ev.extra),
+      penalty: ev.isPenalty && !ev.isOwnGoal,
+      // Own-goal photos are the WRONG side's face (API credits the conceding
+      // player) — null alongside the name, same rule as formatScorers.
+      photo: ev.isOwnGoal ? null : (ev.photo ?? null),
+    });
+  }
+  return lines.length > 0 ? lines : null;
+}
+
+function periodLine(status: string): string {
+  switch (status) {
+    case "1H": return "First half under way.";
+    case "HT": return "Half-time.";
+    case "2H": return "Second half under way.";
+    case "ET": return "Extra time.";
+    case "P": return "Penalty shootout.";
+    case "BT": return "Break before extra time.";
+    default: return "Live now.";
+  }
+}
+
+/// Deterministic UUID (SHA-256 of the key, first 16 bytes in UUID format).
+/// Swift's UUID parser accepts it; it does not validate version/variant bits.
+async function stableUuid(key: string): Promise<string> {
+  const digest = new Uint8Array(
+    await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key)),
+  );
+  const h = [...digest.slice(0, 16)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20, 32)}`;
+}

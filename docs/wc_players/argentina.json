@@ -1,0 +1,279 @@
+{
+ "country": "argentina",
+ "displayName": "Argentina",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Lionel Scaloni",
+ "captain": "L. Messi",
+ "keyPlayers": [
+  "L. Messi",
+  "Lautaro Mart\u00ednez",
+  "J. \u00c1lvarez",
+  "E. Fern\u00e1ndez",
+  "C. Romero",
+  "E. Mart\u00ednez"
+ ],
+ "players": [
+  {
+   "id": 19599,
+   "name": "E. Mart\u00ednez",
+   "age": 33,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/19599.png",
+   "club": "Aston Villa",
+   "note": "Argentina's undisputed No. 1 and a genuine folk hero at home after the penalty heroics that won the 2022 final and the shootouts of two Copa Americas. Loud, theatrical and very good at getting inside opponents' heads, he is the one keeper Scaloni never has to think twice about."
+  },
+  {
+   "id": 2465,
+   "name": "J. Musso",
+   "age": 31,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/2465.png",
+   "club": "Atletico Madrid",
+   "note": "A reliable, low-drama goalkeeper now at Atletico Madrid who is here as a steady third pair of hands rather than a starter. The kind of squad member who trains hard, says little and would only see the pitch if something went badly wrong ahead of him."
+  },
+  {
+   "id": 47296,
+   "name": "G. Rulli",
+   "age": 33,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/47296.png",
+   "club": "Marseille",
+   "note": "The likely backup keeper, an experienced campaigner at Marseille who has knocked about the game in Spain and France for years. He has a knack for the dramatic, having once saved a penalty in the final seconds to win Argentina an Olympic gold, so he is calmer than most when it matters."
+  },
+  {
+   "id": 6,
+   "name": "L. Balerdi",
+   "age": 26,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/6.png",
+   "club": "Marseille",
+   "note": "Marseille's captain and a centre-back who turned a rocky early career into one of the steadier defensive seasons in France. He is the next man up behind Argentina's first-choice pairing, which at a tournament this long is far from a quiet job."
+  },
+  {
+   "id": 2467,
+   "name": "Lisandro Mart\u00ednez",
+   "age": 27,
+   "position": "Defender",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/2467.png",
+   "club": "Manchester United",
+   "note": "Half of Argentina's first-choice centre-back duo, a left-footed defender who plays like he has a personal grudge against the ball. Small for the position but ferociously aggressive, he is one of those defenders forwards quietly dread spending ninety minutes against."
+  },
+  {
+   "id": 6231,
+   "name": "F. Medina",
+   "age": 26,
+   "position": "Defender",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/6231.png",
+   "club": "Marseille",
+   "note": "A Marseille defender comfortable at centre-back or left-back, which is exactly the kind of two-in-one flexibility Scaloni likes to pack into a 26-man squad. He arrived from Lens in a sizeable move and gives Argentina cover across the whole left side of the back line."
+  },
+  {
+   "id": 6503,
+   "name": "N. Molina",
+   "age": 27,
+   "position": "Defender",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/6503.png",
+   "club": "Atletico Madrid",
+   "note": "A galloping right-back at Atletico Madrid who loves nothing more than bombing forward, best remembered for setting up Argentina's opener in the 2022 final. Quick and direct going forward, occasionally caught out coming back, which is the eternal trade-off with attacking full-backs."
+  },
+  {
+   "id": 2468,
+   "name": "G. Montiel",
+   "age": 28,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/2468.png",
+   "club": "River Plate",
+   "note": "A right-back back home at River Plate after a spell in Europe, and the man who calmly tucked away the winning penalty in the 2022 World Cup final shootout. Whatever else happens in his career, he will always be the one who kicked the trophy home."
+  },
+  {
+   "id": 624,
+   "name": "N. Otamendi",
+   "age": 37,
+   "position": "Defender",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/624.png",
+   "club": "Benfica",
+   "note": "At 37, the elder statesman of the back line and a one-man link to nearly every Argentina campaign of the last decade. Still tough as old boots at Benfica, he is the experienced voice Scaloni leans on when the pairing in front of him needs a rest."
+  },
+  {
+   "id": 30776,
+   "name": "C. Romero",
+   "age": 27,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/30776.png",
+   "club": "Tottenham",
+   "note": "Known to everyone as 'Cuti,' the Tottenham centre-back is the other half of Argentina's preferred defensive pairing and not a man who shies away from a battle. He shrugged off a knee scare in the build-up and brings the kind of front-foot aggression that sets the tone for the whole team."
+  },
+  {
+   "id": 529,
+   "name": "N. Tagliafico",
+   "age": 33,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/529.png",
+   "club": "Lyon",
+   "note": "A left-back with stacks of international miles on the clock, now at Lyon and heading to another World Cup. Reliable and uncomplicated, he is the sort of full-back who quietly does his job for the full ninety while the headlines go to others."
+  },
+  {
+   "id": 319572,
+   "name": "V. Barco",
+   "age": 21,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/319572.png",
+   "club": "Strasbourg",
+   "note": "A 21-year-old known as 'Colo,' an adventurous left-back at Strasbourg who treats overlapping runs as a personal calling. One of Argentina's brightest young defensive prospects, he plays like he is permanently set to fast-forward while everyone else moves at normal speed."
+  },
+  {
+   "id": 5996,
+   "name": "E. Fern\u00e1ndez",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/5996.png",
+   "club": "Chelsea",
+   "note": "Argentina's midfield engine at just 24, a Chelsea man who was named the best young player of the 2022 World Cup he helped win. He covers enormous ground and breaks up play, the kind of all-action presence that lets the creative types ahead of him do the fun stuff."
+  },
+  {
+   "id": 1578,
+   "name": "G. Lo Celso",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/1578.png",
+   "club": "Real Betis",
+   "note": "A creative midfielder at Real Betis who, when fit, supplies the clever passing and set-piece quality that loosens stubborn defences. Injuries have interrupted his career more than once, so a healthy spell at the right moment makes him a useful card to have."
+  },
+  {
+   "id": 6716,
+   "name": "A. Mac Allister",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/6716.png",
+   "club": "Liverpool",
+   "note": "A Liverpool midfielder who does a bit of everything and rarely gives the ball away, one of the steadier members of the 2022-winning core. Tidy, intelligent and a good runner, he is the type who makes the job look easier than it is."
+  },
+  {
+   "id": 6002,
+   "name": "E. Palacios",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/6002.png",
+   "club": "Bayer Leverkusen",
+   "note": "A combative central midfielder at Bayer Leverkusen who can both protect the defence and step into a tackle without flinching. He chipped in with important goals during Leverkusen's recent rise, so he is more than just a destroyer when the moment calls for it."
+  },
+  {
+   "id": 271,
+   "name": "L. Paredes",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/271.png",
+   "club": "Boca Juniors",
+   "note": "A deep-lying playmaker now back home at Boca Juniors, the man who dictates tempo from the base of midfield and floats in dangerous set-pieces. A veteran of the 2022 triumph, he is the metronome the rest of the side plays around."
+  },
+  {
+   "id": 26315,
+   "name": "N. Gonz\u00e1lez",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/26315.png",
+   "club": "Atletico Madrid",
+   "note": "A versatile attacking midfielder at Atletico Madrid who can fill in across the front and supply goals and assists from wide or central areas. He missed the cut for Qatar 2022 at the very last moment, so this tournament is something of a long-awaited second chance."
+  },
+  {
+   "id": 2472,
+   "name": "R. De Paul",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/2472.png",
+   "club": "Inter Miami",
+   "note": "Messi's self-appointed bodyguard on the pitch and now his clubmate again at Inter Miami, having reunited with his captain in 2025. A relentless, talkative midfielder whose job is partly to run and partly to make sure nobody gets near the No. 10."
+  },
+  {
+   "id": 6067,
+   "name": "T. Almada",
+   "age": 24,
+   "position": "Attacker",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/6067.png",
+   "club": "Atletico Madrid",
+   "note": "A creative attacker now at Atletico Madrid with a left foot built for through balls and a fondness for spectacular goals. He was a surprise late call-up to the winning Qatar squad as a youngster, so a tournament has a way of putting him in the right place."
+  },
+  {
+   "id": 6009,
+   "name": "J. \u00c1lvarez",
+   "age": 25,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/6009.png",
+   "club": "Atletico Madrid",
+   "note": "A relentless, do-everything forward at Atletico Madrid who scored four times in Argentina's 2022 triumph despite barely starting the campaign. Happy to play through the middle, out wide or as a chasing nuisance, he is the kind of striker managers build whole game plans around."
+  },
+  {
+   "id": 350037,
+   "name": "N. Paz",
+   "age": 21,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/350037.png",
+   "club": "Como",
+   "note": "At 21, the squad's most exciting young playmaker, a classic No. 10 at Como who lit up Serie A and dragged his club into Europe for the first time. Born in Spain to Argentine football roots, he shook off a late knee scare to make Messi's final World Cup squad."
+  },
+  {
+   "id": 295513,
+   "name": "J. L\u00f3pez",
+   "age": 25,
+   "position": "Attacker",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/295513.png",
+   "club": "Palmeiras",
+   "note": "A tall striker nicknamed 'Flaco' who earns his living at Palmeiras in Brazil, one of the least-capped names in the squad. He impressed Scaloni enough in recent call-ups to leapfrog more familiar faces, which tells you something about the form he is in."
+  },
+  {
+   "id": 217,
+   "name": "Lautaro Mart\u00ednez",
+   "age": 28,
+   "position": "Attacker",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/217.png",
+   "club": "Inter",
+   "note": "Inter Milan's prolific striker and the man wearing the goals burden when Messi drops deeper, fresh off being top scorer at the last Copa America and scoring the winner in the final. A ruthless, instinctive finisher who is now firmly Argentina's No. 9."
+  },
+  {
+   "id": 154,
+   "name": "L. Messi",
+   "age": 38,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/154.png",
+   "club": "Inter Miami",
+   "note": "The captain, the 38-year-old who has won everything and is set for a record sixth World Cup, almost certainly his last. Three goals short of the all-time tournament scoring record, he plays a little deeper these days but still bends games to his will when it counts."
+  },
+  {
+   "id": 323935,
+   "name": "G. Simeone",
+   "age": 23,
+   "position": "Attacker",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/323935.png",
+   "club": "Atletico Madrid",
+   "note": "A tireless winger at Atletico Madrid and, yes, the son of his manager there, Diego Simeone. He earned his place on hard running and relentless pressing rather than the family name, the sort of player who chases lost causes until they stop being lost."
+  }
+ ],
+ "guardianStarPlayer": "Lionel Messi",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

@@ -1,0 +1,278 @@
+{
+ "country": "ghana",
+ "displayName": "Ghana",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Carlos Queiroz",
+ "captain": "Jordan Ayew",
+ "keyPlayers": [
+  "Antoine Semenyo",
+  "Thomas Partey",
+  "Iñaki Williams",
+  "Jordan Ayew",
+  "Kamaldeen Sulemana"
+ ],
+ "players": [
+  {
+   "id": 480108,
+   "name": "B. Asare",
+   "age": 33,
+   "position": "Goalkeeper",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/480108.png",
+   "club": "Hearts of Oak",
+   "note": "The only home-based player in the squad, this 33-year-old keeps goal for Accra's Hearts of Oak and was named Ghana's goalkeeper of the year in 2025. He started keeping for the Black Stars during qualifying and is likely to be first choice at the tournament."
+  },
+  {
+   "id": 144709,
+   "name": "J. Anang",
+   "age": 25,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/144709.png",
+   "club": "St Patrick's Athl.",
+   "note": "Born near Accra, this 25-year-old keeper came through West Ham's academy before settling at Dublin's St Patrick's Athletic, where he has become a reliable first choice. He is the first St Pat's player ever to make a World Cup squad, here as a backup option behind the gloves."
+  },
+  {
+   "id": 3412,
+   "name": "L. Zigi",
+   "age": 29,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/3412.png",
+   "club": "FC ST. Gallen",
+   "note": "Wearing the number 1 shirt, Lawrence Ati-Zigi has been Ghana's go-to keeper for years and is a long-serving fixture at Swiss club St Gallen, where he passed 250 appearances and helped them finish runners-up. At 29 he brings the most international experience of the goalkeeping group."
+  },
+  {
+   "id": 369425,
+   "name": "J. Adjetey",
+   "age": 22,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/369425.png",
+   "club": "FC Basel 1893",
+   "note": "A 22-year-old centre-back who made his name winning the Swiss title with Basel, Adjetey is one of Ghana's brightest young defenders and drew interest from bigger clubs. He is comfortable on either side of the back line and is part of the squad's future at the back."
+  },
+  {
+   "id": 25341,
+   "name": "D. Luckassen",
+   "age": 30,
+   "position": "Defender",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/25341.png",
+   "club": "Pafos",
+   "note": "A Dutch-born centre-back who only committed to Ghana in early 2026, Luckassen got the nod after Alexander Djiku was ruled out injured. At 30 he arrives off a fine season with Cypriot side Pafos, who won the league and cup and reached the Champions League, where he played and even scored."
+  },
+  {
+   "id": 7578,
+   "name": "G. Mensah",
+   "age": 27,
+   "position": "Defender",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/7578.png",
+   "club": "Auxerre",
+   "note": "A 27-year-old left-back who played at the 2022 World Cup, Mensah has been a regular for French side Auxerre, racking up around 30 league outings. He is an experienced, left-footed option for the left side of Ghana's defence."
+  },
+  {
+   "id": 196187,
+   "name": "A. Seidu",
+   "age": 26,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/196187.png",
+   "club": "Rennes",
+   "note": "A versatile full-back at French club Rennes who can cover both flanks and centre-back, Seidu lost nearly a year to a serious knee injury before fighting his way back to fitness. His return to the Black Stars after that long layoff makes him a useful, adaptable defensive option."
+  },
+  {
+   "id": 137223,
+   "name": "J. Opoku",
+   "age": 27,
+   "position": "Defender",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/137223.png",
+   "club": "Başakşehir",
+   "note": "England-born centre-back of Ghanaian descent, Opoku has become a steady regular for Istanbul's Basaksehir, where he even chips in with the odd goal. At 27 he offers experienced cover in the middle of the back line."
+  },
+  {
+   "id": 404172,
+   "name": "K. Peprah Oppong",
+   "age": 21,
+   "position": "Defender",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/404172.png",
+   "club": "Nice",
+   "note": "A 21-year-old defender who only debuted for Ghana late in 2025, Peprah Oppong earned his move to French side Nice after spells in Sweden and became a near-ever-present starter there this season. Young but already trusted, he is one of the squad's emerging names at the back."
+  },
+  {
+   "id": 15900,
+   "name": "A. Mumin",
+   "age": 28,
+   "position": "Defender",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/15900.png",
+   "club": "Rayo Vallecano",
+   "note": "A commanding centre-back from Spain's Rayo Vallecano, Mumin lost over 400 days to a knee injury before returning to action in spring 2026. Whether he is fully sharp after that lay-off is the question, but his physical presence is exactly the kind Ghana want against Group L's bigger forwards."
+  },
+  {
+   "id": 191240,
+   "name": "M. Senaya",
+   "age": 24,
+   "position": "Defender",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/191240.png",
+   "club": "Auxerre",
+   "note": "France-born and eligible for both Ghana and Togo, Senaya picked the Black Stars in 2026 and quickly looked like a first-choice right-back. He has been one of Auxerre's better defenders for tackles and interceptions, and at 24 he is one to watch on the right."
+  },
+  {
+   "id": 21996,
+   "name": "A. Baba",
+   "age": 31,
+   "position": "Defender",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/21996.png",
+   "club": "PAOK",
+   "note": "A familiar face at left-back, Baba Rahman has worn the Ghana shirt for over a decade and reached a Cup of Nations final back in 2015. He put up the strongest numbers among Ghana's left-back options this season at Greek club PAOK, giving the veteran a real claim to the starting spot."
+  },
+  {
+   "id": 21010,
+   "name": "E. Owusu",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/21010.png",
+   "club": "Auxerre",
+   "note": "A defensive midfielder for French side Auxerre, Owusu featured at the 2022 World Cup and offers a screening presence in front of the back four. Injuries have nibbled at his season, but at 28 he is an experienced body for the engine room."
+  },
+  {
+   "id": 49,
+   "name": "T. Partey",
+   "age": 32,
+   "position": "Midfielder",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/49.png",
+   "club": "Villarreal",
+   "note": "Ghana's most decorated midfielder, the 32-year-old left Arsenal for Spanish side Villarreal in 2025 and has clocked over 30 games there. As the deep-lying anchor he is the steadying presence the rest of the midfield plays around."
+  },
+  {
+   "id": 3608,
+   "name": "K. Sibo",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/3608.png",
+   "club": "Oviedo",
+   "note": "A combative midfielder who helped Real Oviedo climb back into Spain's top flight, Sibo earned his Ghana place with that promotion run and a role in qualifying. At 27 he is squad depth in central midfield, ready to add legs and bite if called upon."
+  },
+  {
+   "id": 475575,
+   "name": "Caleb Marfo Yirenkyi",
+   "age": 19,
+   "position": "Midfielder",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/475575.png",
+   "club": "FC Nordsjaelland",
+   "note": "The teenager of the group, Yirenkyi was named Danish league young player of the year and made the league's team of the season for Nordsjaelland, the club linked to Ghana's Right to Dream academy. Manager Queiroz has tipped him as a future Ghana mainstay, and he can fill in across midfield and defence."
+  },
+  {
+   "id": 19281,
+   "name": "A. Semenyo",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/19281.png",
+   "club": "Manchester City",
+   "note": "Ghana's in-form attacker arrives off a breakout season, scoring freely before a January move to Manchester City and netting the winner in the 2026 FA Cup final. Quick and direct down the flank, the 25-year-old carries much of Ghana's goal threat into the tournament."
+  },
+  {
+   "id": 337426,
+   "name": "A. Boakye",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/337426.png",
+   "club": "Saint Etienne",
+   "note": "A left-footed right winger at French club Saint-Etienne, Boakye was one of the second division's best creators this season, piling up assists. At 25 he is an attacking option off the bench who brings dribbling and final-ball quality."
+  },
+  {
+   "id": 303467,
+   "name": "A. Fatawu",
+   "age": 21,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/303467.png",
+   "club": "Leicester",
+   "note": "An exciting 21-year-old winger at Leicester, Fatawu lost the best part of a year to a knee injury suffered on Ghana duty before returning to score for club and country. When fit and flying he is one of the squad's most dangerous one-on-one runners."
+  },
+  {
+   "id": 410016,
+   "name": "P. Adu",
+   "age": 22,
+   "position": "Attacker",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/410016.png",
+   "club": "Plzen",
+   "note": "A 22-year-old forward who scored his way into the squad with a productive season for Czech side Viktoria Plzen, Adu earned his first Ghana call only in late 2025. His own coach backed him to handle the World Cup stage; here he is a fresh attacking option in reserve."
+  },
+  {
+   "id": 82090,
+   "name": "B. Thomas-Asante",
+   "age": 27,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/82090.png",
+   "club": "Coventry",
+   "note": "A centre-forward who fired Coventry to promotion and was a Championship player of the month, Thomas-Asante was born in England and chose Ghana. The 27-year-old gives the front line a more traditional target-man option to lead the attack or change a game from the bench."
+  },
+  {
+   "id": 3428,
+   "name": "J. Ayew",
+   "age": 34,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/3428.png",
+   "club": "Leicester",
+   "note": "The captain and elder statesman at 34, Ayew leads the line and the dressing room, with this set to be his third World Cup. Son of Ghana legend Abedi Pele, he left Leicester after their relegation but remains the emotional anchor of the Black Stars."
+  },
+  {
+   "id": 411800,
+   "name": "C. Bonsu Baah",
+   "age": 21,
+   "position": "Attacker",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/411800.png",
+   "club": "Al-Qadisiyah FC",
+   "note": "A 21-year-old winger who moved from Belgium to Saudi side Al-Qadisiyah in a sizeable deal, Bonsu Baah racked up double-figure assists there this season under Brendan Rodgers. Young and pacy, he is an attacking option with plenty of creative upside."
+  },
+  {
+   "id": 47294,
+   "name": "I. Williams",
+   "age": 31,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/47294.png",
+   "club": "Athletic Club",
+   "note": "Born in Spain to Ghanaian parents, Williams once played for Spain before switching to Ghana, and he captains Athletic Bilbao as the first black player to wear their armband. At 31 the pacey forward is set for his second World Cup, leading the line alongside Ayew and Semenyo."
+  },
+  {
+   "id": 350856,
+   "name": "E. Nuamah",
+   "age": 22,
+   "position": "Attacker",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/350856.png",
+   "club": "Lyon",
+   "note": "A 22-year-old winger at Lyon, Nuamah missed more than a year and over 50 matches with a knee injury, only returning to play in spring 2026. If he can rediscover his sharpness, his pace and directness add another dimension to Ghana's attack."
+  },
+  {
+   "id": 199837,
+   "name": "K. Sulemana",
+   "age": 23,
+   "position": "Attacker",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/199837.png",
+   "club": "Atalanta",
+   "note": "A left winger known for his pace and dribbling, Sulemana joined Italian side Atalanta in 2025 but had a frustrating, low-scoring first season there. He scored his first Ghana goal during qualifying, and at 23 the tournament is a chance to show the talent that earned a big-money move."
+  }
+ ],
+ "guardianStarPlayer": "Antoine Semenyo",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

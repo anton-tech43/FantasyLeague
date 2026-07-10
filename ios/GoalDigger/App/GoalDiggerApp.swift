@@ -15,11 +15,54 @@ struct GoalDiggerApp: App {
                 .preferredColorScheme(.dark)
                 .onChange(of: scenePhase) { oldPhase, newPhase in
                     if oldPhase == .background && newPhase == .active {
-                        // Reset to team context and notify FeedView to reset scroll positions
-                        if let team = appState.selectedTeam {
-                            appState.activeContext = .team(team)
+                        // Only REPAIR an invalid active context on resume; never
+                        // override a still-valid one. V2.2: a user following two
+                        // entities who switched to their 2nd tab must stay there
+                        // after backgrounding (the old code snapped everyone back
+                        // to entity #1). We only reset when the current context no
+                        // longer points at a followed entity (e.g. a removed team,
+                        // or a country-only user left on .team(nil)).
+                        let stillValid: Bool = {
+                            switch appState.activeContext {
+                            case .country(let c): return appState.selectedCountries.contains(c)
+                            case .team(let t):    return appState.selectedTeams.contains(t)
+                            case .worldChampionship: return WCSeason.isVisible
+                            case .everyoneTalking: return true
+                            }
+                        }()
+                        if !stillValid {
+                            if let country = appState.selectedCountries.first {
+                                appState.activeContext = .country(country)
+                            } else if let team = appState.selectedTeams.first {
+                                appState.activeContext = .team(team)
+                            } else {
+                                appState.activeContext = .everyoneTalking
+                            }
                         }
                         appState.isContextSwitcherOpen = false
+                    }
+                    if newPhase == .inactive || newPhase == .background {
+                        // Flush pending UserDefaults writes before the app can be
+                        // suspended or killed. Defends onboarding state (and the
+                        // persisted toggles) against a force-quit that would
+                        // otherwise drop unflushed writes. See AppState.persistNow.
+                        appState.persistNow()
+                    }
+                    if newPhase == .active {
+                        // Foreground fallback: re-assert the push-to-start
+                        // registration and, if the followed country has a live
+                        // match with no running activity, start one locally.
+                        LiveActivityManager.shared.syncForegroundActivity()
+                        // Keep his fixtures calendar current on every return to
+                        // the app: add new games, drop finished ones. Throttled
+                        // + no-op unless sync is on and access is granted.
+                        Task {
+                            await CalendarSyncService.shared.autoResync(
+                                teams: appState.selectedTeams,
+                                countries: appState.selectedCountries,
+                                enabled: appState.calendarSyncEnabled
+                            )
+                        }
                     }
                 }
         }
@@ -30,22 +73,100 @@ struct ContentDetailDestination: Hashable {
     let contentId: UUID
     let scrollToTalkingPoints: Bool
     let isEveryoneContext: Bool
+    /// Item to render immediately. Set when navigating from a feed (we already have the item in memory).
+    /// Push-notification deep links pass `nil`; the detail view falls back to `fetchItem(id:)` in that case.
+    let preloadedItem: ContentItem?
 
-    init(contentId: UUID, scrollToTalkingPoints: Bool, isEveryoneContext: Bool = false) {
+    init(contentId: UUID, scrollToTalkingPoints: Bool, isEveryoneContext: Bool = false, preloadedItem: ContentItem? = nil) {
         self.contentId = contentId
         self.scrollToTalkingPoints = scrollToTalkingPoints
         self.isEveryoneContext = isEveryoneContext
+        self.preloadedItem = preloadedItem
     }
 }
 
 struct RootView: View {
     @Environment(AppState.self) var appState
+    @Environment(\.modelContext) private var modelContext
 
+    /// V2.0 migration prompt — fires once for V1.x users who finished
+    /// onboarding before V2.0 and haven't picked a country yet. Skipped
+    /// for new V2.0 users (they pick country during onboarding).
+    private var shouldShowWCPrompt: Bool {
+        appState.hasCompletedOnboarding
+          && appState.selectedCountry == nil
+          && !appState.hasSeenWCPrompt
+    }
+
+    // Paid app on App Store (£4.99) — no in-app paywall. Purchase is enforced at the
+    // storefront before download. PurchaseManager + PaywallView are kept in the
+    // codebase but unreferenced; can be re-wired if we add an IAP later
+    // (e.g. World Cup pass).
     var body: some View {
-        if appState.hasCompletedOnboarding {
-            MainTabView()
-        } else {
-            OnboardingFlow()
+        Group {
+            if !appState.hasCompletedOnboarding {
+                OnboardingFlow()
+                    .onAppear {
+                        #if DEBUG
+                        // Confirms (in TestFlight) whether a re-onboarding user
+                        // lost state entirely (write-flush bug — all <empty>) vs
+                        // a partial/inconsistent state. Logs presence only, not
+                        // the names (local-only PII).
+                        print("🔄 ONBOARDING shown — herName:\(appState.herName.isEmpty ? "<empty>" : "set") hisName:\(appState.hisName.isEmpty ? "<empty>" : "set") team:\(appState.selectedTeam?.rawValue ?? "nil") country:\(appState.selectedCountry?.rawValue ?? "nil")")
+                        #endif
+                    }
+            } else if !appState.hasSeenSeasonPrimer {
+                // One-time Season Primer screen (V1.1 task A1). Shows where
+                // his team is in the season + 3 text-message-style openers
+                // she can send him now. Dismissed permanently for the install
+                // when either CTA fires; re-shown only after Settings →
+                // Delete My Data → re-onboard.
+                SeasonPrimerView(
+                    onTeachMore: {
+                        appState.pendingTabAfterPrimer = 1   // His Team tab
+                        appState.hasSeenSeasonPrimer = true
+                    },
+                    onSkipToFeed: {
+                        appState.pendingTabAfterPrimer = 0   // Feed tab (explicit)
+                        appState.hasSeenSeasonPrimer = true
+                    }
+                )
+            } else {
+                MainTabView()
+                    .sheet(isPresented: Binding(
+                        get: { shouldShowWCPrompt },
+                        set: { newValue in
+                            // Belt-and-braces: if SwiftUI ever flips the
+                            // binding to false via a system-initiated
+                            // dismiss (swipe-down, hardware back) we MUST
+                            // flip hasSeenWCPrompt too, otherwise the
+                            // sheet bounces right back on the next render.
+                            // The view itself sets the flag in both Skip
+                            // and Continue branches before calling dismiss(),
+                            // but this handles the path where neither runs.
+                            if !newValue { appState.hasSeenWCPrompt = true }
+                        }
+                    )) {
+                        WCMigrationSheetView()
+                    }
+            }
+        }
+        .task(id: "cache-schema-purge") {
+            // Drop cached rows from a previous app version with an older
+            // CacheService.cacheSchemaVersion. Prevents decoding crashes when
+            // the ContentItem schema changes between releases. Cheap on every
+            // launch — no-op if the cache is already on the current version.
+            CacheService.shared.purgeStaleVersionItems(in: modelContext)
+        }
+        .task(id: "calendar-autoresync") {
+            // Cold-launch fixtures-calendar refresh, so his games stay current
+            // even if the app is launched fresh rather than resumed. No-op
+            // unless sync is enabled and calendar access is already granted.
+            await CalendarSyncService.shared.autoResync(
+                teams: appState.selectedTeams,
+                countries: appState.selectedCountries,
+                enabled: appState.calendarSyncEnabled
+            )
         }
     }
 }
@@ -54,6 +175,39 @@ struct MainTabView: View {
     @Environment(AppState.self) var appState
     @State private var selectedTab = 0
     @State private var feedPath = NavigationPath()
+
+    /// V2.0: The "His Team" tab follows the active feed context, so the team
+    /// page shows whatever the user has currently selected in the switcher.
+    /// Fallback (when on the cross-team `.everyoneTalking` feed): country
+    /// preferred over team, matching AppState's activeContext default picker.
+    /// teamId keys into the same `team_pages` table for both entity types.
+    private var teamPageEntityId: String? {
+        switch appState.activeContext {
+        case .team(let team):
+            return team.rawValue
+        case .country(let country):
+            return country.rawValue
+        case .worldChampionship, .everyoneTalking:
+            // No team page for the tournament-wide contexts — fall back to
+            // the first followed entity so the His Team tab keeps working.
+            return appState.selectedCountry?.rawValue ?? appState.selectedTeam?.rawValue
+        }
+    }
+
+    /// V2.0: Tab label tracks the active entity so the user sees "Arsenal"
+    /// or "Sweden" rather than the generic "His Team" — clarifies which
+    /// entity the tab is currently showing. On the cross-team feed we fall
+    /// back to "His Team" since neither entity is primary.
+    private var teamTabLabel: String {
+        switch appState.activeContext {
+        case .team(let team):
+            return team.displayName
+        case .country(let country):
+            return country.displayName
+        case .worldChampionship, .everyoneTalking:
+            return "His Team"
+        }
+    }
 
     init() {
         let deepMauve = UIColor(red: 45/255, green: 27/255, blue: 46/255, alpha: 1)
@@ -99,11 +253,20 @@ struct MainTabView: View {
             NavigationStack(path: $feedPath) {
                 FeedView()
                     .navigationDestination(for: ContentDetailDestination.self) { dest in
-                        ContentDetailView(contentId: dest.contentId, scrollToTalkingPoints: dest.scrollToTalkingPoints, isEveryoneContext: dest.isEveryoneContext)
+                        ContentDetailView(
+                            contentId: dest.contentId,
+                            scrollToTalkingPoints: dest.scrollToTalkingPoints,
+                            isEveryoneContext: dest.isEveryoneContext,
+                            preloadedItem: dest.preloadedItem
+                        )
                     }
                     .navigationDestination(for: String.self) { destination in
                         if destination == "playerCards",
-                           let teamId = appState.selectedTeam?.rawValue {
+                           let teamId = teamPageEntityId {
+                            // V2.0: WC-only users can navigate here too — use
+                            // teamPageEntityId (country-first fallback) so the
+                            // PlayerCardsListView gets a valid entityId. The
+                            // view itself handles "no rows" empty state.
                             PlayerCardsListView(teamId: teamId)
                         }
                     }
@@ -113,14 +276,30 @@ struct MainTabView: View {
             }
             .tag(0)
 
-            // Tab 2: His Team
+            // Tab 2: His Team — V2.0: prefer country (WC primary) over team
+            // (PL). If neither is set, render an empty NavigationStack
+            // (shouldn't happen in normal flow but defensive).
             NavigationStack {
-                if let teamId = appState.selectedTeam?.rawValue {
+                if let teamId = teamPageEntityId {
                     TeamPageView(teamId: teamId)
+                        // V2.0 WC preview surface: TeamPageView's Calendar
+                        // tab can navigate to a preview content_item's
+                        // detail view via NavigationLink(value:
+                        // ContentDetailDestination(...)). Same destination
+                        // type as the Feed tab uses, so we register the
+                        // handler here too. See Lesson 78.
+                        .navigationDestination(for: ContentDetailDestination.self) { dest in
+                            ContentDetailView(
+                                contentId: dest.contentId,
+                                scrollToTalkingPoints: dest.scrollToTalkingPoints,
+                                isEveryoneContext: dest.isEveryoneContext,
+                                preloadedItem: dest.preloadedItem
+                            )
+                        }
                 }
             }
             .tabItem {
-                Label("His Team", systemImage: "shield")
+                Label(teamTabLabel, systemImage: "shield")
             }
             .tag(1)
 
@@ -150,6 +329,31 @@ struct MainTabView: View {
             if let dest = notification.object as? ContentDetailDestination {
                 selectedTab = 0
                 feedPath.append(dest)
+            }
+        }
+        .onAppear {
+            // Consume the Season Primer's "Teach me more" / "Take me to the
+            // news" preference, set by SeasonPrimerView's CTAs before the
+            // primer dismissed. Clear immediately so subsequent re-appears
+            // (e.g., scenePhase background→active) don't snap back to it.
+            if let tab = appState.pendingTabAfterPrimer {
+                selectedTab = tab
+                appState.pendingTabAfterPrimer = nil
+            }
+            // Cold-launch deep-link catch. If the user tapped a notification
+            // while the app was killed, AppDelegate sets deepLinkContentId
+            // during launch — which may run BEFORE this view first mounts.
+            // The `.onChange` below only fires on subsequent transitions, so
+            // an already-set value would otherwise be silently dropped.
+            if let id = appState.deepLinkContentId {
+                selectedTab = 0
+                let isEveryone = appState.activeContext == .everyoneTalking
+                feedPath.append(ContentDetailDestination(
+                    contentId: id,
+                    scrollToTalkingPoints: false,
+                    isEveryoneContext: isEveryone
+                ))
+                appState.deepLinkContentId = nil
             }
         }
     }

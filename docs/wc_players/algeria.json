@@ -1,0 +1,279 @@
+{
+ "country": "algeria",
+ "displayName": "Algeria",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Vladimir Petkovi\u0107",
+ "captain": "R. Mahrez",
+ "keyPlayers": [
+  "R. Mahrez",
+  "M. Amoura",
+  "A. Gouiri",
+  "R. A\u00eft-Nouri",
+  "R. Benseba\u00efni",
+  "I. Maza"
+ ],
+ "players": [
+  {
+   "id": 4414,
+   "name": "O. Benbot",
+   "age": 31,
+   "position": "Goalkeeper",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/4414.png",
+   "club": "USM Alger",
+   "note": "He retired from the national team, then changed his mind when an injury crisis thinned out Algeria's goalkeeping options. The home-based USM Alger man is back, slightly to his own surprise."
+  },
+  {
+   "id": 304229,
+   "name": "M. Mastil",
+   "age": 25,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/304229.png",
+   "club": "Stade Nyonnais",
+   "note": "France-born and on loan in the Swiss second tier, he had hernia surgery that left his tournament in doubt. A long way from the spotlight for a man hoping to make a World Cup squad."
+  },
+  {
+   "id": 732,
+   "name": "L. Zidane",
+   "age": 27,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/732.png",
+   "club": "Granada CF",
+   "note": "Yes, that Zidane: Zinedine's son, a goalkeeper who has chosen Algeria over France. He carries the most famous surname in the squad and quietly minds the goal for Granada."
+  },
+  {
+   "id": 342740,
+   "name": "A. Abada",
+   "age": 26,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/342740.png",
+   "club": "ASO Chlef",
+   "note": "A no-frills defender who made his name in the Algerian league with Chlef and earned a domestic move on the back of it. One of the few in the squad who has never left home."
+  },
+  {
+   "id": 21138,
+   "name": "R. A\u00eft-Nouri",
+   "age": 24,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/21138.png",
+   "club": "Manchester City",
+   "note": "After five seasons quietly impressing at Wolves, the attacking left-back earned a big-money move to Manchester City in 2025. He likes to bomb forward, which is half the fun of watching him."
+  },
+  {
+   "id": 4561,
+   "name": "Z. Bela\u00efd",
+   "age": 27,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/4561.png",
+   "club": "JS Kabylie",
+   "note": "A centre-back who signed for storied home club JS Kabylie in 2025. He is one of the squad's locally-based options, plying his trade in front of Algeria's own crowds rather than Europe's."
+  },
+  {
+   "id": 303362,
+   "name": "R. Belghali",
+   "age": 23,
+   "position": "Defender",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/303362.png",
+   "club": "Hellas Verona",
+   "note": "A right-back who became one of Verona's standouts and got bigger Italian clubs taking notice. Injuries kept interrupting his breakout, but the talent is not in question."
+  },
+  {
+   "id": 2194,
+   "name": "R. Benseba\u00efni",
+   "age": 30,
+   "position": "Defender",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/2194.png",
+   "club": "Borussia Dortmund",
+   "note": "A left-sided defender who chips in goals more than most, though back trouble has him scrapping for a starting place at Dortmund. Useful from the penalty spot when Algeria need it."
+  },
+  {
+   "id": 20869,
+   "name": "S. Chergui",
+   "age": 26,
+   "position": "Defender",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/20869.png",
+   "club": "Paris FC",
+   "note": "A defender at the recently risen Paris FC, the capital's quieter, less-glamorous club. He is one of the squad's understated options rather than a household name."
+  },
+  {
+   "id": 271539,
+   "name": "J. Hadjam",
+   "age": 22,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/271539.png",
+   "club": "BSC Young Boys",
+   "note": "A France-born left-back who picked Algeria and scored his first international goals during the qualifying run. At 22, he is the youthful alternative down that flank to Aït-Nouri."
+  },
+  {
+   "id": 1567,
+   "name": "A. Mandi",
+   "age": 34,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/1567.png",
+   "club": "Lille",
+   "note": "Algeria's most-capped player ever and a survivor of the 2014 World Cup, now the calm elder of the back line at Lille. If anyone in this squad has seen it all before, it is him."
+  },
+  {
+   "id": 4569,
+   "name": "M. Tougai",
+   "age": 26,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/4569.png",
+   "club": "ES Tunis",
+   "note": "An Algiers-born centre-back who plays his club football next door in Tunisia with continental heavyweights Espérance. He even chips in the odd goal from the back."
+  },
+  {
+   "id": 658,
+   "name": "H. Aouar",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/658.png",
+   "club": "Al-Ittihad FC",
+   "note": "Once a Lyon prodigy, he switched to Algeria and is now enjoying the most prolific scoring of his career in Saudi Arabia. A creative midfielder who has finally found his goal touch."
+  },
+  {
+   "id": 409,
+   "name": "N. Bentaleb",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/409.png",
+   "club": "Lille",
+   "note": "He suffered a cardiac arrest in 2024 and was told he might never play again, then returned eight months later and scored on his Lille comeback. The most remarkable story in the squad, no contest."
+  },
+  {
+   "id": 4399,
+   "name": "H. Boudaoui",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/4399.png",
+   "club": "Nice",
+   "note": "A tireless central midfielder now in his seventh season at Nice, the kind of player teammates rate more than headlines do. He does the unglamorous running so others can shine."
+  },
+  {
+   "id": 380587,
+   "name": "I. Maza",
+   "age": 20,
+   "position": "Midfielder",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/380587.png",
+   "club": "Bayer Leverkusen",
+   "note": "Germany capped him at youth level, but Petkovic persuaded the 18-year-old to choose Algeria instead. Now 20 and a breakout name at Leverkusen, he is the squad's most exciting young creator."
+  },
+  {
+   "id": 327599,
+   "name": "Y. Titraoui",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/327599.png",
+   "club": "Charleroi",
+   "note": "A Paradou academy graduate who has become one of Belgium's steadier midfielders at Charleroi, with English clubs circling. At 22, this is his big audition."
+  },
+  {
+   "id": 129047,
+   "name": "R. Zerrouki",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/129047.png",
+   "club": "Twente",
+   "note": "A holding midfielder who returned on loan to Twente, the Dutch club he started at, after a Feyenoord move never quite clicked. He is the squad's screen in front of the back four."
+  },
+  {
+   "id": 276670,
+   "name": "F. Cha\u00efbi",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/276670.png",
+   "club": "Eintracht Frankfurt",
+   "note": "A French-Algerian playmaker who has become a key creator at Frankfurt, racking up assists from a deeper role or as a number 10. Watch him for the clever pass nobody else saw."
+  },
+  {
+   "id": 200139,
+   "name": "M. Amoura",
+   "age": 26,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/200139.png",
+   "club": "VfL Wolfsburg",
+   "note": "Algeria's qualifying top scorer, who led the line with goals to spare and grabbed his first international hat-trick along the way. A quick, sharp Bundesliga finisher who is the team's main goal threat."
+  },
+  {
+   "id": 292924,
+   "name": "A. Benbouali",
+   "age": 26,
+   "position": "Attacker",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/292924.png",
+   "club": "Gyori ETO FC",
+   "note": "A Paradou-trained striker who has banged in goals by the bucketload in Hungary's top flight, earning a late look from Petkovic. Proof that the goals count wherever you score them."
+  },
+  {
+   "id": 329163,
+   "name": "A. Boulbina",
+   "age": 22,
+   "position": "Attacker",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/329163.png",
+   "club": "Al-Duhail SC",
+   "note": "A left winger who exploded at Paradou before cashing in with a move to Qatar's Al-Duhail. At 22 he carries plenty of trickery, even if the league switch is a quieter stage."
+  },
+  {
+   "id": 334915,
+   "name": "F. Ghedjemis",
+   "age": 23,
+   "position": "Attacker",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/334915.png",
+   "club": "Frosinone",
+   "note": "A winger who turned down richer offers to fire Frosinone to promotion as their top scorer, and credits Mahrez as his inspiration. Loyalty and ambition in roughly equal measure."
+  },
+  {
+   "id": 85041,
+   "name": "A. Gouiri",
+   "age": 25,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/85041.png",
+   "club": "Marseille",
+   "note": "France's top scorer at a youth Euros who chose to play for Algeria, then hit double figures in half a season after a big move to Marseille. A versatile forward at home leading the line or drifting wide."
+  },
+  {
+   "id": 326067,
+   "name": "A. Hadj-Moussa",
+   "age": 23,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/326067.png",
+   "club": "Feyenoord",
+   "note": "A winger who lit up the last AFCON and stunned Manchester City in the Champions League, with Chelsea among those now sniffing around. Direct, fearless, and the squad's most likely breakout."
+  },
+  {
+   "id": 635,
+   "name": "R. Mahrez",
+   "age": 34,
+   "position": "Attacker",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/635.png",
+   "club": "Al-Ahli Jeddah",
+   "note": "The captain and the star: a Leicester title-winner, Manchester City treble champion, and the man whose free-kick won Algeria the 2019 AFCON. At 34 in Saudi Arabia, this is likely his last World Cup, and that left foot still does the talking."
+  }
+ ],
+ "guardianStarPlayer": "Riyad Mahrez",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

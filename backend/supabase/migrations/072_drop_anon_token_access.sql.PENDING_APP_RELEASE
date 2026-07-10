@@ -1,0 +1,35 @@
+-- 072_drop_anon_token_access.sql  — ⛔ STAGED, DO NOT APPLY YET ⛔
+--
+-- This file intentionally has a non-.sql extension so no "apply all migrations"
+-- step runs it. APPLYING THIS NOW BREAKS THE CURRENTLY-LIVE APP: the shipped
+-- App Store build still registers via a direct PostgREST merge-duplicates upsert
+-- on device_tokens / live_activity_tokens, which needs anon SELECT/INSERT/UPDATE
+-- (migration 030). Dropping that access before the RPC-using build is live means
+-- new installs + token rotations stop registering (silent, the iOS try? swallows
+-- the 42501) → those users get no pushes.
+--
+-- APPLY ONLY WHEN: the build containing migration 071's RPC calls
+-- (APIClient.registerToken → rpc/register_device_token, registerLiveActivityToken
+-- → rpc/register_la_token) is live in the App Store AND old direct-upsert installs
+-- have aged out (or you accept breaking their re-registration). Then rename to
+-- `072_drop_anon_token_access.sql` and run it.
+--
+-- Effect: closes SEC-1 (anon can read every device's apns_token + fandom) and
+-- SEC-2/SEC-3 (anon can tamper any row). After this, registration works ONLY via
+-- the SECURITY DEFINER RPCs (which bypass RLS and need only EXECUTE).
+
+-- device_tokens: remove all anon table access (RPC handles writes as definer).
+DROP POLICY IF EXISTS device_tokens_anon_select ON device_tokens;  -- the PII read leak (mig 030)
+DROP POLICY IF EXISTS device_tokens_insert ON device_tokens;        -- mig 001
+DROP POLICY IF EXISTS device_tokens_update ON device_tokens;        -- mig 001 (the tamper vector)
+REVOKE SELECT, INSERT, UPDATE ON device_tokens FROM anon, authenticated;
+
+-- live_activity_tokens: same.
+DROP POLICY IF EXISTS live_activity_tokens_anon_select ON live_activity_tokens;
+DROP POLICY IF EXISTS live_activity_tokens_anon_insert ON live_activity_tokens;
+DROP POLICY IF EXISTS live_activity_tokens_anon_update ON live_activity_tokens;
+REVOKE SELECT, INSERT, UPDATE ON live_activity_tokens FROM anon, authenticated;
+
+-- NOTE: confirm the exact live_activity_tokens policy names against migration 062
+-- before applying (they may differ). service_role policies/grants stay untouched,
+-- so all Edge functions (which use the service key) keep full access.

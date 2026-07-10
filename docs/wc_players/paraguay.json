@@ -1,0 +1,279 @@
+{
+ "country": "paraguay",
+ "displayName": "Paraguay",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Gustavo Alfaro",
+ "captain": "G. G\u00f3mez",
+ "keyPlayers": [
+  "G. G\u00f3mez",
+  "O. Alderete",
+  "M. Almir\u00f3n",
+  "A. Sanabria",
+  "D. G\u00f3mez",
+  "J. Enciso"
+ ],
+ "players": [
+  {
+   "id": 535737,
+   "name": "R. Fernandez",
+   "age": 37,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/535737.png",
+   "club": "Cerro Porte\u00f1o",
+   "note": "Known to everyone as Gatito, the 37-year-old Cerro Porteno keeper is Paraguay's first choice and the calm, vastly experienced head behind a defence that conceded very little during qualifying. Expect him between the posts when the tournament starts."
+  },
+  {
+   "id": 70852,
+   "name": "O. Gill",
+   "age": 25,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/70852.png",
+   "club": "San Lorenzo",
+   "note": "A towering 25-year-old who has become San Lorenzo's regular keeper in Argentina, Gill is the heir apparent here but likely backs up the veteran Gatito for now. He only made his senior Paraguay debut in late 2025, so this is a fast education."
+  },
+  {
+   "id": 51733,
+   "name": "G. Olveira",
+   "age": 32,
+   "position": "Goalkeeper",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/51733.png",
+   "club": "Olimpia",
+   "note": "Uruguay-born and naturalised, the 32-year-old Olimpia keeper is the third choice here, on hand to train and cover rather than play. A steady domestic-league veteran filling out the goalkeeping trio."
+  },
+  {
+   "id": 6168,
+   "name": "O. Alderete",
+   "age": 29,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/6168.png",
+   "club": "Sunderland",
+   "note": "A 29-year-old centre-back who moved to newly promoted Sunderland in 2025 and quietly helped them survive in the Premier League, the left-footed Alderete is one of the pillars of Paraguay's defence. Comfortable across the back line and good in the air."
+  },
+  {
+   "id": 2499,
+   "name": "J. Alonso",
+   "age": 32,
+   "position": "Defender",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/2499.png",
+   "club": "Atletico-MG",
+   "note": "A 32-year-old left-sided centre-back who has spent years anchoring Atletico Mineiro's defence in Brazil, Alonso is a long-serving international first capped back in 2013. Reliable squad experience who can step into the back line when needed."
+  },
+  {
+   "id": 195992,
+   "name": "J. C\u00e1ceres",
+   "age": 25,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/195992.png",
+   "club": "Dynamo",
+   "note": "A 25-year-old right-back born and raised in Argentina who came through Boca Juniors' academy before moving to Russia, Caceres switched allegiance to Paraguay and earned his place by shutting down dangerous wingers in qualifying. Tough in one-on-one duels."
+  },
+  {
+   "id": 2500,
+   "name": "F. Balbuena",
+   "age": 34,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/2500.png",
+   "club": "Gremio",
+   "note": "A 34-year-old centre-back with a long CV that includes three seasons at West Ham, Balbuena joined Gremio in 2025 and brings calm, battle-tested defending. A four-time Copa America participant, he is depth and leadership rather than a guaranteed starter now."
+  },
+  {
+   "id": 2502,
+   "name": "G. G\u00f3mez",
+   "age": 32,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/2502.png",
+   "club": "Palmeiras",
+   "note": "The captain and the heartbeat of this side, the 32-year-old has anchored Palmeiras' defence for years and is unusually dangerous from set pieces, having become the club's highest-scoring defender. He leads Paraguay into his first World Cup with around 90 caps behind him."
+  },
+  {
+   "id": 425020,
+   "name": "A. Maidana",
+   "age": 20,
+   "position": "Defender",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/425020.png",
+   "club": "Club Guarani",
+   "note": "At 20 the baby of the squad, this left-back came through Guarani's youth ranks and played at the 2025 U-20 World Cup before a senior debut in early 2026. He is here to learn from the veterans, with the long-term left-back slot in mind."
+  },
+  {
+   "id": 35808,
+   "name": "G. Vel\u00e1zquez",
+   "age": 34,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/35808.png",
+   "club": "Cerro Porteno",
+   "note": "A 34-year-old centre-back who returned home to Cerro Porteno in 2025 after a spell with Newell's in Argentina, Velazquez offers experienced cover at the back. More of a squad option than a nailed-on starter in this group."
+  },
+  {
+   "id": 70732,
+   "name": "J. Canale",
+   "age": 29,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/70732.png",
+   "club": "Lanus",
+   "note": "A 29-year-old centre-back who became a fixture in Lanus' back line on their run to the 2025 Copa Sudamericana final, Canale earned a maiden Paraguay call-up only this year. A late-bloomer reward for consistent form, here as defensive depth."
+  },
+  {
+   "id": 195107,
+   "name": "D. Bobadilla",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/195107.png",
+   "club": "Sao Paulo",
+   "note": "A 24-year-old central midfielder who has carved out a role at Sao Paulo since moving to Brazil, Bobadilla does the unglamorous covering and ball-winning in front of the defence. A useful option in Paraguay's engine room."
+  },
+  {
+   "id": 119128,
+   "name": "G. Caballero",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/119128.png",
+   "club": "Nacional Asuncion",
+   "note": "A 24-year-old winger who was a joint top scorer in Paraguay's league before earning a move abroad, Caballero brings pace and direct running off the bench. One of the squad's wildcards, rewarded for a breakout couple of seasons."
+  },
+  {
+   "id": 6236,
+   "name": "A. Cubas",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/6236.png",
+   "club": "Vancouver Whitecaps",
+   "note": "A 29-year-old defensive midfielder who has become a fan favourite at Vancouver for his relentless tackling and ball recovery, Cubas is the kind of player who lets the creative names shine. Born in Argentina, he is set for his first World Cup as a key shield in front of the defence."
+  },
+  {
+   "id": 305832,
+   "name": "M. Galarza",
+   "age": 23,
+   "position": "Midfielder",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/305832.png",
+   "club": "Talleres Cordoba",
+   "note": "A 23-year-old midfielder who featured in several of Paraguay's qualifying matches, Galarza can play box-to-box or sit deeper. A youngster building his international footing, more likely to feature off the bench than start."
+  },
+  {
+   "id": 278370,
+   "name": "D. G\u00f3mez",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/278370.png",
+   "club": "Brighton",
+   "note": "At 22, one of Paraguay's brightest talents, this versatile midfielder earned a big-money move from Inter Miami to Brighton in 2025 and chips in with goals from midfield. Energetic and two-footed, he is central to how this team plays going forward."
+  },
+  {
+   "id": 106485,
+   "name": "Maur\u00edcio",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/106485.png",
+   "club": "Palmeiras",
+   "note": "A 24-year-old Brazil-born attacking midfielder who took over the playmaker role at Palmeiras, Mauricio only switched allegiance to Paraguay through his father's family in early 2026. A fresh creative option still settling into the international setup."
+  },
+  {
+   "id": 70767,
+   "name": "B. Ojeda",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/70767.png",
+   "club": "Real Salt Lake",
+   "note": "A 25-year-old midfielder who briefly passed through Nottingham Forest before settling at Real Salt Lake, where he now scores and creates regularly. Recalled to the national team after a couple of years away, Ojeda is a useful all-rounder in the middle."
+  },
+  {
+   "id": 196298,
+   "name": "R. Sosa",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/196298.png",
+   "club": "Palmeiras",
+   "note": "A 26-year-old winger whose pace and one-on-one dribbling earned a move from Nottingham Forest to Palmeiras in 2025, Sosa gives Paraguay a direct threat out wide. Listed here as a midfielder but really an attacker who runs at defenders."
+  },
+  {
+   "id": 2507,
+   "name": "M. Almir\u00f3n",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/2507.png",
+   "club": "Atlanta United FC",
+   "note": "The number 10 and most recognisable name, the 31-year-old spent six years at Newcastle, where he helped them back into the Champions League, before returning to Atlanta United in 2025. He carries Paraguay's creativity and is a near-certain starter."
+  },
+  {
+   "id": 2514,
+   "name": "A. Romero",
+   "age": 30,
+   "position": "Attacker",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/2514.png",
+   "club": "Al Ain",
+   "note": "A 30-year-old right winger and one half of the Romero twins (his brother Oscar is also a Paraguay regular), known for his crossing and a knack for big goals. An experienced wide option who can change a game from the flank."
+  },
+  {
+   "id": 95460,
+   "name": "A. Arce",
+   "age": 30,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/95460.png",
+   "club": "LDU de Quito",
+   "note": "A 30-year-old striker who made his name with a prolific scoring run at LDU Quito, banging in goals at better than one every other game. A genuine penalty-box finisher, he has pushed his way into Paraguay's forward line."
+  },
+  {
+   "id": 6483,
+   "name": "G. \u00c1valos",
+   "age": 35,
+   "position": "Attacker",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/6483.png",
+   "club": "Independiente",
+   "note": "At 35 the oldest outfield player here, this Independiente striker is in fine scoring form in Argentina and was determined to arrive at the World Cup sharp. A target-man option and experienced head, useful from the bench when Paraguay need a goal."
+  },
+  {
+   "id": 70747,
+   "name": "J. Enciso",
+   "age": 21,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/70747.png",
+   "club": "Strasbourg",
+   "note": "The Guardian's pick as Paraguay's star man, this 21-year-old left Brighton for Strasbourg in 2025 to play regular football in a World Cup year, and the gamble paid off with goals and assists in Ligue 1. Quick, inventive and unpredictable, he is the one who can produce a moment of magic."
+  },
+  {
+   "id": 70670,
+   "name": "I. Pitta",
+   "age": 26,
+   "position": "Attacker",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/70670.png",
+   "club": "RB Bragantino",
+   "note": "A 26-year-old forward who scores steadily for Bragantino in Brazil's top flight, Pitta is a relatively recent addition to the national team. Squad depth up front, ready to step in if the first-choice strikers tire or pick up knocks."
+  },
+  {
+   "id": 2522,
+   "name": "A. Sanabria",
+   "age": 29,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/2522.png",
+   "club": "Cremonese",
+   "note": "Paraguay's experienced number 9 and a Serie A regular for years, the 29-year-old moved to Cremonese in 2025 and leads the line for his country. He links play as much as he scores, and is the focal point of the attack."
+  }
+ ],
+ "guardianStarPlayer": "Julio Enciso",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

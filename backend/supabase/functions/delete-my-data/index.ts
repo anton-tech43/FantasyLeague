@@ -18,6 +18,9 @@ serve(async (req) => {
   try {
     const body = await req.json();
     const apnsToken = body.apns_token as string | undefined;
+    // SEC-6: also delete the device's Live Activity token (a DIFFERENT token,
+    // holds followed-country data). The client sends its push-to-start token.
+    const laToken = body.la_token as string | undefined;
 
     if (!apnsToken || typeof apnsToken !== "string") {
       return new Response(
@@ -51,7 +54,19 @@ serve(async (req) => {
       );
     }
 
-    if (!data || data.length === 0) {
+    // Best-effort: delete the Live Activity token(s) for this device too.
+    let laDeleted = 0;
+    if (laToken && /^[a-fA-F0-9]{16,}$/.test(laToken)) {
+      const { data: laData, error: laErr } = await supabase
+        .from("live_activity_tokens")
+        .delete()
+        .eq("token", laToken)
+        .select("id");
+      if (laErr) console.error("LA token delete failed (non-fatal):", laErr.message);
+      else laDeleted = laData?.length ?? 0;
+    }
+
+    if ((!data || data.length === 0) && laDeleted === 0) {
       return new Response(
         JSON.stringify({ error: "No matching device token found" }),
         { status: 404, headers: { "Content-Type": "application/json" } }

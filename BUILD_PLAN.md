@@ -1,5 +1,9 @@
 # Goal Digger — Build Plan
 
+> ⚠️ **HISTORICAL REFERENCE (April 2026).** This was the original V1.0 build plan. V1.0 shipped, V1.1 shipped (May 12-13), V1.2/V1.3 onboarding shipped (May 15-16), V2.0 World Cup support is in flight.
+>
+> **For current state and active work, see [STATUS.md](./STATUS.md) and [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (Phase 24+).** Kept here as the audit trail of how V1.0 was built — useful for understanding architecture decisions but not for new work.
+
 **Version:** 1.1
 **Date:** April 6, 2026 (security audit applied)
 **Companion documents:** [PRD.md](./PRD.md) | [AGENT_CONTRACTS.md](./AGENT_CONTRACTS.md) | [CHANGELOG_SECURITY.md](./CHANGELOG_SECURITY.md) | [PRODUCT_BRIEF_INTEGRATION.md](./PRODUCT_BRIEF_INTEGRATION.md)

@@ -1,0 +1,279 @@
+{
+ "country": "czech_republic",
+ "displayName": "Czech Republic",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Miroslav Koubek",
+ "captain": "L. Krejcí",
+ "keyPlayers": [
+  "P. Schick",
+  "T. Soucek",
+  "L. Krejcí",
+  "V. Coufal",
+  "A. Hlozek",
+  "P. Sulc"
+ ],
+ "players": [
+  {
+   "id": 269349,
+   "name": "L. Hornícek",
+   "age": 23,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/269349.png",
+   "club": "SC Braga",
+   "note": "First-choice keeper at Portugal's SC Braga, where the 23-year-old has racked up a full season of games and a healthy pile of clean sheets. He is one for the future in the Czech goal, brought along behind the more capped options here."
+  },
+  {
+   "id": 138804,
+   "name": "M. Kovár",
+   "age": 25,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/138804.png",
+   "club": "PSV Eindhoven",
+   "note": "Came up through Manchester United's youth ranks without ever cracking the first team, then rebuilt himself in the Netherlands; PSV liked him enough to turn his loan into a permanent deal in January 2026. At 25 he is a serious contender for minutes between the posts."
+  },
+  {
+   "id": 66347,
+   "name": "J. Stanek",
+   "age": 29,
+   "position": "Goalkeeper",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/66347.png",
+   "club": "Slavia Praha",
+   "note": "The man who has worn the Czech national-team number one in recent years, the 29-year-old Slavia Praha keeper played at Euro 2024 and is the most likely starter here. Steady and experienced, he anchors a goalkeeping group with three genuine options."
+  },
+  {
+   "id": 337740,
+   "name": "S. Chaloupek",
+   "age": 22,
+   "position": "Defender",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/337740.png",
+   "club": "Slavia Praha",
+   "note": "A 22-year-old centre-back from champions Slavia Praha who has been getting a Champions League education this season, logging real minutes against top European sides. He is squad depth at the back for now, but the kind a manager is happy to blood early."
+  },
+  {
+   "id": 1231,
+   "name": "V. Coufal",
+   "age": 33,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/1231.png",
+   "club": "1899 Hoffenheim",
+   "note": "At 33 the elder statesman of the defence, a right-back who spent five seasons grinding out games in the Premier League with West Ham before moving to Hoffenheim in Germany. Tough, vocal and reliable, he is exactly the sort of head you want in a back line at a tournament."
+  },
+  {
+   "id": 2252,
+   "name": "T. Holes",
+   "age": 32,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/2252.png",
+   "club": "Slavia Praha",
+   "note": "The Czech fans will always love this one: at Euro 2020 he scored and set up the goals that knocked the Netherlands out. A versatile Slavia Praha defender who can slot in across the back line or sit in midfield, he turns 32 here as a trusted utility man."
+  },
+  {
+   "id": 162964,
+   "name": "R. Hranác",
+   "age": 25,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/162964.png",
+   "club": "1899 Hoffenheim",
+   "note": "A 25-year-old centre-back who earned a move to Germany's Hoffenheim off the back of his form at Viktoria Plzen, and has been a regular starter in the Bundesliga this season. Calm on the ball, he is one of the likely first-choice partnerships at the heart of this defence."
+  },
+  {
+   "id": 128793,
+   "name": "D. Jurásek",
+   "age": 25,
+   "position": "Defender",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/128793.png",
+   "club": "Slavia Praha",
+   "note": "A left-back whose career stalled after a big-money move to Benfica barely worked out, then came roaring back once he returned home to Slavia Praha, where his crossing and overlapping runs have produced a string of assists. At 25 he looks like the first-choice on the left."
+  },
+  {
+   "id": 66407,
+   "name": "L. Krejcí",
+   "age": 26,
+   "position": "Defender",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/66407.png",
+   "club": "Wolves",
+   "note": "The captain, and the first Czech player Wolves have ever signed, arriving from Spain's Girona in 2025. A left-footed centre-back comfortable carrying the ball out, the 26-year-old led Sparta Praha to two titles before going abroad and now leads his country at its first World Cup in 20 years."
+  },
+  {
+   "id": 1237,
+   "name": "J. Zelený",
+   "age": 33,
+   "position": "Defender",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/1237.png",
+   "club": "Sparta Praha",
+   "note": "A 33-year-old Sparta Praha defender who can fill in at left-back or centre-back, the kind of experienced squad hand who gives the manager cover in two positions. He is unlikely to start but knows the level and won't be fazed."
+  },
+  {
+   "id": 128772,
+   "name": "D. Zima",
+   "age": 25,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/128772.png",
+   "club": "Slavia Praha",
+   "note": "A tall, physical centre-back who tried his luck in Italy's Serie A with Torino before deciding regular football back at Slavia Praha suited him better. At 25 he offers competition and aerial presence as a backup option in the middle of the defence."
+  },
+  {
+   "id": 66214,
+   "name": "D. Doudera",
+   "age": 27,
+   "position": "Defender",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/66214.png",
+   "club": "Slavia Praha",
+   "note": "A Slavia Praha full-back whose club season ended badly, sent off in the heated Prague derby and then frozen out by his own club. He travels as defensive cover, but arrives at the tournament short of recent match sharpness and minutes."
+  },
+  {
+   "id": 162194,
+   "name": "L. Cerv",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/162194.png",
+   "club": "Plzen",
+   "note": "A 25-year-old central midfielder who has quietly become one of Viktoria Plzen's most dependable players, all running and tidy distribution. With single-digit caps he is still establishing himself internationally, more squad rotation than guaranteed starter."
+  },
+  {
+   "id": 25348,
+   "name": "V. Darida",
+   "age": 35,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/25348.png",
+   "club": "Hradec Králové",
+   "note": "The grand old man of the group at 35, a former Hertha Berlin captain now winding down his career back home at Hradec Kralove. He has seen everything in the game, and his presence is as much about steadying the dressing room as the minutes he might play."
+  },
+  {
+   "id": 66353,
+   "name": "L. Provod",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/66353.png",
+   "club": "Slavia Praha",
+   "note": "A left-sided attacking midfielder for Slavia Praha who scored the Czechs' first goal of Euro 2024 against Portugal, and has had a productive club season chipping in goals and assists. At 29 he is one of the team's main sources of creativity from the flank."
+  },
+  {
+   "id": 241,
+   "name": "M. Sadílek",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/241.png",
+   "club": "Slavia Praha",
+   "note": "A combative central midfielder who was part of the Euro 2020 quarter-final squad and returned to Slavia Praha in 2025 after a spell in the Netherlands. At 26 he gives the engine room legs and bite, competing for a place in the middle."
+  },
+  {
+   "id": 555437,
+   "name": "H. Sochurek",
+   "age": 17,
+   "position": "Midfielder",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/555437.png",
+   "club": "Sparta Praha",
+   "note": "The headline of the squad: a 17-year-old Sparta Praha midfielder who became the youngest player ever to appear for the senior national team. He is here to learn rather than start, but his composure and passing have people talking about him as one to watch for years."
+  },
+  {
+   "id": 386837,
+   "name": "A. Sojka",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/386837.png",
+   "club": "Hradec Králové",
+   "note": "A young midfielder and one of the manager's newcomers for this campaign, included to add legs and energy to the squad. With little senior international football behind him, he is here mainly to develop and provide depth in the middle of the park."
+  },
+  {
+   "id": 1243,
+   "name": "T. Soucek",
+   "age": 30,
+   "position": "Midfielder",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/1243.png",
+   "club": "West Ham",
+   "note": "The squad's most experienced international and a real engine in midfield, this West Ham mainstay became the highest-scoring Czech in Premier League history during the season. A towering presence who arrives late into the box, he is central to everything his country does at its first World Cup since 2006."
+  },
+  {
+   "id": 66387,
+   "name": "P. Sulc",
+   "age": 25,
+   "position": "Attacker",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/66387.png",
+   "club": "Lyon",
+   "note": "Named Czech Footballer of the Year in 2025, this attacking midfielder earned a move to French side Lyon after lighting up the league at Plzen with goals and assists. At 25 he is the squad's most dangerous creator-scorer and one of the players opponents will plan around."
+  },
+  {
+   "id": 818,
+   "name": "T. Chorý",
+   "age": 30,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/818.png",
+   "club": "Slavia Praha",
+   "note": "A genuine throwback at 1.99m tall, a target-man striker for Slavia Praha who bullies defenders in the air yet moves better than his frame suggests. He has been among the league's top scorers this season and offers a clear plan B: get it forward and let him win it."
+  },
+  {
+   "id": 66275,
+   "name": "M. Chytil",
+   "age": 26,
+   "position": "Attacker",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/66275.png",
+   "club": "Slavia Praha",
+   "note": "A 26-year-old Slavia Praha forward who has fought injuries and competition for a regular run, scoring in patches when he plays. He is a backup striking option here, providing a different body up front off the bench."
+  },
+  {
+   "id": 66019,
+   "name": "A. Hlozek",
+   "age": 23,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/66019.png",
+   "club": "1899 Hoffenheim",
+   "note": "Once the great hope of Czech attacking talent, the 23-year-old has found minutes hard to come by at Germany's Hoffenheim this season, often used from the bench. Still gifted and versatile across the front line, he is a high-ceiling option the manager will hope rediscovers his spark."
+  },
+  {
+   "id": 66340,
+   "name": "J. Kuchta",
+   "age": 28,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/66340.png",
+   "club": "Sparta Praha",
+   "note": "A combative, hard-running striker for Sparta Praha who has been among the most reliable scorers in the Czech league this season. At 28 he offers energy and goals as a forward who presses relentlessly, pushing for a starting spot or a useful card off the bench."
+  },
+  {
+   "id": 794,
+   "name": "P. Schick",
+   "age": 29,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/794.png",
+   "club": "Bayer Leverkusen",
+   "note": "The star turn: a striker for Germany's Bayer Leverkusen who passed 100 goals for the club and finished among the Bundesliga's top scorers this season. The Czechs' designated talisman up front, he is a clinical, two-footed finisher and the player most likely to win them a game on his own."
+  },
+  {
+   "id": 290212,
+   "name": "D. Visinský",
+   "age": 22,
+   "position": "Attacker",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/290212.png",
+   "club": "Plzen",
+   "note": "A 22-year-old forward at Viktoria Plzen who has enjoyed a breakout season, scoring regularly and earning European nights along the way. Quick and direct, he is one of the younger attacking options and represents the future of this front line more than a guaranteed starter now."
+  }
+ ],
+ "guardianStarPlayer": "Patrik Schick",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

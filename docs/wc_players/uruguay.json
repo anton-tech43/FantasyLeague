@@ -1,0 +1,280 @@
+{
+ "country": "uruguay",
+ "displayName": "Uruguay",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Marcelo Bielsa",
+ "captain": "J. Gim\u00e9nez",
+ "keyPlayers": [
+  "F. Valverde",
+  "J. Gim\u00e9nez",
+  "R. Ara\u00fajo",
+  "R. Bentancur",
+  "M. Ugarte",
+  "G. de Arrascaeta",
+  "D. N\u00fa\u00f1ez"
+ ],
+ "players": [
+  {
+   "id": 61895,
+   "name": "S. Mele",
+   "age": 28,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/61895.png",
+   "club": "Junior",
+   "note": "A 28-year-old goalkeeper who built his name in South American club football, Mele is here as one of the deeper options behind Bielsa's first-choice keeper. Expect him to spend the tournament training and on the bench rather than starting."
+  },
+  {
+   "id": 429,
+   "name": "F. Muslera",
+   "age": 39,
+   "position": "Goalkeeper",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/429.png",
+   "club": "Estudiantes L.P.",
+   "note": "At 39 the grand old man of the squad, Muslera was Uruguay's undisputed No. 1 at the last three World Cups before stepping back. He returns as a senior backup and dressing-room steadier, set to feature in his fifth World Cup, a feat very few players have ever managed."
+  },
+  {
+   "id": 50077,
+   "name": "S. Rochet",
+   "age": 32,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/50077.png",
+   "club": "Internacional",
+   "note": "The 32-year-old who wears the No. 1 shirt and is Bielsa's expected starter in goal, sharpened by regular Brazilian top-flight football with Internacional. Calm with the ball at his feet, he is the man Uruguay will lean on to launch attacks from the back."
+  },
+  {
+   "id": 101814,
+   "name": "R. Ara\u00fajo",
+   "age": 26,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/101814.png",
+   "club": "Barcelona",
+   "note": "Barcelona's centre-back and one of Uruguay's defensive cornerstones, the 26-year-old combines raw pace with the kind of last-ditch tackling that lets a back line sit higher. Watch for whether he shakes off a minor pre-tournament muscle knock, because Uruguay are a far harder team to break down with him in it."
+  },
+  {
+   "id": 135334,
+   "name": "S. Bueno",
+   "age": 27,
+   "position": "Defender",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/135334.png",
+   "club": "Wolves",
+   "note": "A 27-year-old centre-back who has logged his heaviest workload yet in English football with Wolves, making him a credible squad option in central defence. He is more likely to provide cover and rotation than to be guaranteed a starting spot."
+  },
+  {
+   "id": 51535,
+   "name": "S. C\u00e1ceres",
+   "age": 26,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/51535.png",
+   "club": "Club America",
+   "note": "A 26-year-old centre-back who has spent years anchoring the defence at Club America in Mexico, earning most of his caps during the recent World Cup qualifying run. He offers reliable depth in the heart of Bielsa's back line."
+  },
+  {
+   "id": 31,
+   "name": "J. Gim\u00e9nez",
+   "age": 30,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/31.png",
+   "club": "Atletico Madrid",
+   "note": "Uruguay's captain and a centre-back hardened by years of Atletico Madrid's no-nonsense defending, the 30-year-old leads the back line and reads danger before it arrives. He sets the tone for a side that still treats its own goal as something close to sacred."
+  },
+  {
+   "id": 47254,
+   "name": "M. Olivera",
+   "age": 28,
+   "position": "Defender",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/47254.png",
+   "club": "Napoli",
+   "note": "A 28-year-old left-back who has won Serie A titles with Napoli, comfortable defending one-on-one and overlapping down the flank. He is in the mix to start at left-back, where his big-match experience in Italy gives Bielsa a steady option."
+  },
+  {
+   "id": 1290,
+   "name": "G. Varela",
+   "age": 32,
+   "position": "Defender",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/1290.png",
+   "club": "Flamengo",
+   "note": "A 32-year-old right-back who came through Manchester United's ranks as a teenager and has since found his level as a regular for Flamengo in Brazil. An experienced full-back, he offers Uruguay cover and competition on the right side of defence."
+  },
+  {
+   "id": 51572,
+   "name": "M. Vi\u00f1a",
+   "age": 28,
+   "position": "Defender",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/51572.png",
+   "club": "Flamengo",
+   "note": "A 28-year-old left-back whose career was interrupted by a serious knee injury in 2024 that needed major surgery, before he fought his way back to fitness through 2025. Reaching this squad at all is a comeback story, and he provides experienced depth at left-back."
+  },
+  {
+   "id": 863,
+   "name": "R. Bentancur",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/863.png",
+   "club": "Tottenham",
+   "note": "Tottenham's midfield metronome and, at 28, heading into his third World Cup with more than 70 caps to his name. He breaks up play and then keeps the ball moving, the unshowy hub that lets the flashier names around him take risks."
+  },
+  {
+   "id": 153083,
+   "name": "E. Mart\u00ednez",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/153083.png",
+   "club": "Palmeiras",
+   "note": "A 26-year-old defensive midfielder who anchored a Palmeiras side that chased the Brazilian title, doing the quiet shielding work in front of the back four. He gives Bielsa another holding option if Uruguay want extra protection in midfield."
+  },
+  {
+   "id": 162891,
+   "name": "J. Sanabria",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/162891.png",
+   "club": "Atletico San Luis",
+   "note": "A versatile 25-year-old who operates down the left, equally able to defend as a full-back or push on as a wide midfielder after years of regular football in Mexico's top flight. That flexibility is exactly why Bielsa values him as squad cover."
+  },
+  {
+   "id": 51494,
+   "name": "M. Ugarte",
+   "age": 24,
+   "position": "Midfielder",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/51494.png",
+   "club": "Manchester United",
+   "note": "At 24 the youngest of Uruguay's key midfielders, a ball-winning specialist at Manchester United whose whole game is snapping into tackles and cutting out passes. If Uruguay want to suffocate a stronger opponent, he is the player who makes that possible."
+  },
+  {
+   "id": 756,
+   "name": "F. Valverde",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/756.png",
+   "club": "Real Madrid",
+   "note": "Uruguay's standout name and the engine of the team, a Real Madrid midfielder who covers absurd amounts of ground and strikes the ball ferociously from distance, including his first career hat-trick against Manchester City this season. At 27 and in his prime, he is the player opponents must plan around."
+  },
+  {
+   "id": 108563,
+   "name": "R. Zalazar",
+   "age": 26,
+   "position": "Midfielder",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/108563.png",
+   "club": "SC Braga",
+   "note": "A 26-year-old attacking midfielder who had a breakout scoring season at Braga in Portugal, racking up goals from the No. 10 role and earning a big-money move on the back of it. He gives Bielsa creativity and a goal threat off the bench."
+  },
+  {
+   "id": 2612,
+   "name": "G. de Arrascaeta",
+   "age": 31,
+   "position": "Midfielder",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/2612.png",
+   "club": "Flamengo",
+   "note": "Uruguay's chief playmaker and, at 31, the reigning South American Footballer of the Year after a glittering season at Flamengo. He carries a calf injury into the tournament, so the question is less whether he can unlock defences and more about when in the competition he will be fit to do it."
+  },
+  {
+   "id": 5995,
+   "name": "N. de la Cruz",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/5995.png",
+   "club": "Flamengo",
+   "note": "A 28-year-old midfielder who plays alongside de Arrascaeta at Flamengo, so the two arrive with a built-in understanding. Left-footed and inventive, he can drift between the lines and may become more important if his club teammate's fitness wavers."
+  },
+  {
+   "id": 51776,
+   "name": "M. Ara\u00fajo",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/51776.png",
+   "club": "Sporting CP",
+   "note": "A 25-year-old left-sided player at Sporting in Portugal who can fill in at left-back or bomb forward as a winger, with a Champions League goal against Manchester City already on his CV. That two-way profile makes him a useful tactical wildcard down the left."
+  },
+  {
+   "id": 51603,
+   "name": "A. Canobbio",
+   "age": 27,
+   "position": "Midfielder",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/51603.png",
+   "club": "Fluminense",
+   "note": "A 27-year-old winger who has been among Fluminense's sharper attackers this season, chipping in goals from wide and carrying the ball directly at defenders. He gives Bielsa fresh legs and width to change a game from the bench."
+  },
+  {
+   "id": 16482,
+   "name": "R. Aguirre",
+   "age": 31,
+   "position": "Attacker",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/16482.png",
+   "club": "Club America",
+   "note": "A 31-year-old striker who earned his Uruguay call-up off a strong run of form in Mexican football and marked his international debut by scoring a winner in a qualifier against Colombia. He is a backup centre-forward here, the kind of physical presence to throw on late when chasing a goal."
+  },
+  {
+   "id": 51466,
+   "name": "J. Piquerez",
+   "age": 27,
+   "position": "Attacker",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/51466.png",
+   "club": "Palmeiras",
+   "note": "Despite being grouped with the attackers, the 27-year-old is really an attack-minded left-back for Palmeiras who loves getting forward. Watch for his recovery from an ankle injury picked up on Uruguay duty, because fit and firing he is a genuine starting option down the left."
+  },
+  {
+   "id": 51617,
+   "name": "D. N\u00fa\u00f1ez",
+   "age": 26,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/51617.png",
+   "club": "Al-Hilal Saudi FC",
+   "note": "Uruguay's spearhead, a 26-year-old striker all raw pace, power and chaos who terrifies defenders even when his finishing runs hot and cold. After a former spell in the Premier League with Liverpool and a move to Saudi club football, the World Cup is his stage to lead the line and turn half-chances into goals."
+  },
+  {
+   "id": 70078,
+   "name": "F. Pellistri",
+   "age": 24,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/70078.png",
+   "club": "Panathinaikos",
+   "note": "A 24-year-old winger, once a Manchester United prospect, who is now getting regular minutes at Panathinaikos in Greece. Quick and direct on the right, he is squad depth out wide and a useful change-of-pace option off the bench."
+  },
+  {
+   "id": 51618,
+   "name": "B. Rodr\u00edguez",
+   "age": 25,
+   "position": "Attacker",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/51618.png",
+   "club": "Club America",
+   "note": "A 25-year-old winger who finally became an undisputed starter at Club America this season, repaying the trust with a healthy haul of goals and assists. Direct and tricky, he is pushing to be more than just a squad option in Uruguay's wide areas."
+  },
+  {
+   "id": 51530,
+   "name": "F. Vi\u00f1as",
+   "age": 27,
+   "position": "Attacker",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/51530.png",
+   "club": "Oviedo",
+   "note": "A 27-year-old centre-forward who hit a steady run of goals for Oviedo in Spain's top flight this season, which is what earned him a place. He is a backup striker option, the sort of penalty-box poacher Bielsa can call on to chase a goal late."
+  }
+ ],
+ "guardianStarPlayer": "Federico Valverde",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}

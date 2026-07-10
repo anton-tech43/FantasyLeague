@@ -1,0 +1,280 @@
+{
+ "country": "mexico",
+ "displayName": "Mexico",
+ "source": "api_football_squad + api-football /players club enrichment (season 2025)",
+ "manager": "Javier Aguirre",
+ "captain": "Edson \u00c1lvarez",
+ "keyPlayers": [
+  "Edson \u00c1lvarez",
+  "Ra\u00fal Jim\u00e9nez",
+  "Santiago Gim\u00e9nez",
+  "\u00c1lvaro Fidalgo",
+  "Orbel\u00edn Pineda",
+  "Guillermo Ochoa",
+  "Gilberto Mora"
+ ],
+ "players": [
+  {
+   "id": 35769,
+   "name": "C. Acevedo",
+   "age": 29,
+   "position": "Goalkeeper",
+   "number": 12,
+   "photo": "https://media.api-sports.io/football/players/35769.png",
+   "club": "Santos Laguna",
+   "note": "Santos Laguna's keeper and the third-choice option in goal, the kind of steady hand a squad keeps around even when his club is having a rough season. He's only played a handful of times for the national team, so a World Cup appearance would be a rare day out."
+  },
+  {
+   "id": 2098,
+   "name": "G. Ochoa",
+   "age": 40,
+   "position": "Goalkeeper",
+   "number": 13,
+   "photo": "https://media.api-sports.io/football/players/2098.png",
+   "club": "AEL",
+   "note": "At 40, the veteran keeper is chasing history: a sixth World Cup, a feat only Messi and Ronaldo would share. He's the elder statesman here, famous for the kind of penalty-saving heroics that turned him into a folk hero back in 2014."
+  },
+  {
+   "id": 270774,
+   "name": "J. Rangel",
+   "age": 25,
+   "position": "Goalkeeper",
+   "number": 1,
+   "photo": "https://media.api-sports.io/football/players/270774.png",
+   "club": "Guadalajara Chivas",
+   "note": "Known as \"Tala,\" the Chivas keeper has quietly worked his way into pole position for the starting spot, a big leap for someone who only broke into top-flight football a couple of years ago. The new generation pushing past the old guard, basically."
+  },
+  {
+   "id": 2881,
+   "name": "J. Gallardo",
+   "age": 31,
+   "position": "Defender",
+   "number": 23,
+   "photo": "https://media.api-sports.io/football/players/2881.png",
+   "club": "Toluca",
+   "note": "A left-back with well over a hundred caps, the Toluca man is heading to his third World Cup, which makes him one of the most experienced bodies in the squad. He started out as a winger, so he loves to gallop forward and lend a hand in attack."
+  },
+  {
+   "id": 2873,
+   "name": "C. Montes",
+   "age": 28,
+   "position": "Defender",
+   "number": 3,
+   "photo": "https://media.api-sports.io/football/players/2873.png",
+   "club": "Lokomotiv",
+   "note": "A towering centre-back now plying his trade at Lokomotiv Moscow, he's the sort of defender who chips in at the other end too, heading home a few set-pieces at last summer's Gold Cup. Good in the air, hard to get past, and not shy about the dark arts of defending."
+  },
+  {
+   "id": 127227,
+   "name": "I. Reyes",
+   "age": 25,
+   "position": "Defender",
+   "number": 15,
+   "photo": "https://media.api-sports.io/football/players/127227.png",
+   "club": "Club America",
+   "note": "A do-it-all defender for Club América who can slot in at centre-back or right-back depending on what the day demands, the kind of versatility coaches quietly adore. He'll get to play the World Cup opener in front of his home crowd, which is about as good as it gets."
+  },
+  {
+   "id": 2878,
+   "name": "J. S\u00e1nchez",
+   "age": 28,
+   "position": "Defender",
+   "number": 2,
+   "photo": "https://media.api-sports.io/football/players/2878.png",
+   "club": "Cruz Azul",
+   "note": "A right-back who has had spells in Europe with Ajax and Porto before circling back home, so he's seen a bit of the world. Quick and busy down the flank, he's the type who'd rather overlap the winger than sit back and watch."
+  },
+  {
+   "id": 35544,
+   "name": "J. V\u00e1squez",
+   "age": 27,
+   "position": "Defender",
+   "number": 5,
+   "photo": "https://media.api-sports.io/football/players/35544.png",
+   "club": "Genoa",
+   "note": "The centre-back who captains Genoa in Serie A, which tells you everything about how much they trust him: a foreign player handed the armband at an Italian club doesn't happen by accident. He's racked up more Serie A appearances than any Mexican before him, so Italy clearly suits him."
+  },
+  {
+   "id": 2869,
+   "name": "E. \u00c1lvarez",
+   "age": 28,
+   "position": "Defender",
+   "number": 4,
+   "photo": "https://media.api-sports.io/football/players/2869.png",
+   "club": "Fenerbah\u00e7e",
+   "note": "Mexico's captain and the engine in front of the back four, equally happy breaking up play in midfield or dropping into defence when needed. He scored the winner in last summer's Gold Cup final against the USA and walked off with the player-of-the-tournament award, so the armband is well earned."
+  },
+  {
+   "id": 390002,
+   "name": "M. Ch\u00e1vez",
+   "age": 21,
+   "position": "Defender",
+   "number": 20,
+   "photo": "https://media.api-sports.io/football/players/390002.png",
+   "club": "AZ Alkmaar",
+   "note": "A young left-back who came up through the Chivas academy and then made the leap to the Dutch league, betting that a move abroad was the surest route to this World Cup. Fast, disciplined, and keen to join the attack, he's one of the squad's bright young things."
+  },
+  {
+   "id": 313383,
+   "name": "O. Vargas",
+   "age": 20,
+   "position": "Midfielder",
+   "number": 18,
+   "photo": "https://media.api-sports.io/football/players/313383.png",
+   "club": "Seattle Sounders",
+   "note": "A central midfielder born in Alaska who could have played for the United States but chose Mexico instead, and made his pro debut for the Seattle Sounders at just 15. Still only 20, he's the kind of calm, ball-winning presence good teams build a midfield around."
+  },
+  {
+   "id": 35690,
+   "name": "L. Ch\u00e1vez",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 24,
+   "photo": "https://media.api-sports.io/football/players/35690.png",
+   "club": "Dynamo",
+   "note": "A midfielder with a left foot that turns dead balls into chances: his thunderbolt free-kick against Saudi Arabia at the last World Cup is still replayed today. Now at Dynamo Moscow, he's recently fought back from a long injury layoff just in time for this tournament."
+  },
+  {
+   "id": 750,
+   "name": "\u00c1lvaro Fidalgo",
+   "age": 28,
+   "position": "Midfielder",
+   "number": 8,
+   "photo": "https://media.api-sports.io/football/players/750.png",
+   "club": "Club America",
+   "note": "A Spanish-born playmaker who came through Real Madrid's youth ranks, then spent years winning titles with Club América and earned Mexican citizenship along the way. FIFA cleared him to switch allegiance to Mexico early in 2026, so this World Cup is the start of a brand-new international chapter for him."
+  },
+  {
+   "id": 212233,
+   "name": "B. Guti\u00e9rrez",
+   "age": 22,
+   "position": "Midfielder",
+   "number": 26,
+   "photo": "https://media.api-sports.io/football/players/212233.png",
+   "club": "Chicago Fire",
+   "note": "An attacking midfielder raised in the Chicago Fire academy who took out Mexican citizenship in late 2025 to play for El Tri. He's one of several in this squad who could have lined up for the United States and chose the green shirt instead."
+  },
+  {
+   "id": 266345,
+   "name": "\u00c9. Lira",
+   "age": 25,
+   "position": "Midfielder",
+   "number": 6,
+   "photo": "https://media.api-sports.io/football/players/266345.png",
+   "club": "Cruz Azul",
+   "note": "A defensive midfielder who captains Cruz Azul, the type who does the unglamorous shielding and tackling so the creative players can shine. Still in his mid-twenties, he's reportedly on the radar of a few big European clubs for after the tournament."
+  },
+  {
+   "id": 482605,
+   "name": "G. Mora",
+   "age": 17,
+   "position": "Midfielder",
+   "number": 19,
+   "photo": "https://media.api-sports.io/football/players/482605.png",
+   "club": "Club Tijuana",
+   "note": "At 17, the Tijuana midfielder is the youngest player at the entire World Cup, out of all 1,248 names across the 48 squads. He's been breaking precocious records for a while now, starting and scoring in the Mexican top flight at 15 and helping win the Gold Cup last summer, which is why Europe's biggest clubs are already circling."
+  },
+  {
+   "id": 35576,
+   "name": "O. Pineda",
+   "age": 29,
+   "position": "Midfielder",
+   "number": 17,
+   "photo": "https://media.api-sports.io/football/players/35576.png",
+   "club": "AEK Athens FC",
+   "note": "A clever playmaker who has made a real home for himself at AEK Athens, where he's collected league titles and a reputation for threading passes nobody else spots. He can play deep or high up the pitch, which gives the coach plenty of options."
+  },
+  {
+   "id": 35970,
+   "name": "L. Romo",
+   "age": 30,
+   "position": "Midfielder",
+   "number": 7,
+   "photo": "https://media.api-sports.io/football/players/35970.png",
+   "club": "Guadalajara Chivas",
+   "note": "A genuine Swiss-army-knife player for Chivas who can fill in as a holding midfielder, a sweeper, or a centre-back without missing a beat. He strikes a lovely long pass, so even when he's playing deep he tends to start the attacks."
+  },
+  {
+   "id": 2879,
+   "name": "R. Alvarado",
+   "age": 27,
+   "position": "Attacker",
+   "number": 25,
+   "photo": "https://media.api-sports.io/football/players/2879.png",
+   "club": "Guadalajara Chivas",
+   "note": "Nicknamed \"El Piojo,\" the Chivas winger is a popping-up-in-the-right-place type who has lately taken on more of a playmaking role for his club. This is his second World Cup, so he knows what the big stage feels like."
+  },
+  {
+   "id": 94562,
+   "name": "S. Gim\u00e9nez",
+   "age": 24,
+   "position": "Attacker",
+   "number": 11,
+   "photo": "https://media.api-sports.io/football/players/94562.png",
+   "club": "AC Milan",
+   "note": "The AC Milan striker is Mexico's sharpest finisher, a proper number nine who scores with either foot and lives off smart movement in the box. The son of former player Christian Giménez, he's had an injury-bothered season in Serie A, so his place in the XI isn't quite nailed down."
+  },
+  {
+   "id": 291713,
+   "name": "A. Gonz\u00e1lez",
+   "age": 22,
+   "position": "Attacker",
+   "number": 14,
+   "photo": "https://media.api-sports.io/football/players/291713.png",
+   "club": "Guadalajara Chivas",
+   "note": "Known as \"La Hormiga\" (The Ant), the young Chivas striker earned this call-up the hard way, finishing as a top scorer in the Mexican league and forcing his name into the conversation. At 22 he's one to watch, with European clubs already sniffing around."
+  },
+  {
+   "id": 36111,
+   "name": "C. Huerta",
+   "age": 25,
+   "position": "Attacker",
+   "number": 21,
+   "photo": "https://media.api-sports.io/football/players/36111.png",
+   "club": "Anderlecht",
+   "note": "A direct, quick-footed winger at Anderlecht in Belgium, the kind who likes to take defenders on one-against-one. He's been working his way back from a groin problem, so the question is whether he'll arrive at full sharpness."
+  },
+  {
+   "id": 2887,
+   "name": "R. Jim\u00e9nez",
+   "age": 34,
+   "position": "Attacker",
+   "number": 9,
+   "photo": "https://media.api-sports.io/football/players/2887.png",
+   "club": "Fulham",
+   "note": "The Fulham striker and one of Mexico's all-time leading scorers, now heading to his fourth World Cup and still chasing an elusive first goal at the tournament. That he's even here is remarkable: he fractured his skull in a sickening collision back in 2020 and came all the way back to the Premier League."
+  },
+  {
+   "id": 36088,
+   "name": "G. Mart\u00ednez",
+   "age": 30,
+   "position": "Attacker",
+   "number": 22,
+   "photo": "https://media.api-sports.io/football/players/36088.png",
+   "club": "U.N.A.M. - Pumas",
+   "note": "A big, old-fashioned target man for Pumas, nicknamed \"Memote,\" who chips in a steady handful of goals each season. He's one of the squad's home-based forwards, more of a squad option than a guaranteed starter."
+  },
+  {
+   "id": 35532,
+   "name": "J. Qui\u00f1ones",
+   "age": 28,
+   "position": "Attacker",
+   "number": 16,
+   "photo": "https://media.api-sports.io/football/players/35532.png",
+   "club": "Al-Qadisiyah FC",
+   "note": "Born in Colombia, he naturalised as Mexican in 2023 and has since turned into a goal machine in Saudi Arabia, outscoring even Cristiano Ronaldo in the league this season. That hot streak makes him one of the more intriguing names in the attack."
+  },
+  {
+   "id": 2889,
+   "name": "A. Vega",
+   "age": 28,
+   "position": "Attacker",
+   "number": 10,
+   "photo": "https://media.api-sports.io/football/players/2889.png",
+   "club": "Toluca",
+   "note": "The Toluca captain and a forward who can drift across the front line or drop in to create, he was electric for his club last season with goals and assists by the bagful. The puzzle is form: he hasn't fired for the national team the way he does at Toluca, and the coaches are betting this is where he turns it around."
+  }
+ ],
+ "guardianStarPlayer": "Ra\u00fal Jim\u00e9nez",
+ "guardianSource": "https://www.theguardian.com/football/ng-interactive/2026/jun/04/world-cup-2026-complete-player-guide"
+}
