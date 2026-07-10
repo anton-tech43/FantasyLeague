@@ -26,6 +26,7 @@ struct GoalDiggerApp: App {
                             switch appState.activeContext {
                             case .country(let c): return appState.selectedCountries.contains(c)
                             case .team(let t):    return appState.selectedTeams.contains(t)
+                            case .worldChampionship: return WCSeason.isVisible
                             case .everyoneTalking: return true
                             }
                         }()
@@ -186,7 +187,9 @@ struct MainTabView: View {
             return team.rawValue
         case .country(let country):
             return country.rawValue
-        case .everyoneTalking:
+        case .worldChampionship, .everyoneTalking:
+            // No team page for the tournament-wide contexts — fall back to
+            // the first followed entity so the His Team tab keeps working.
             return appState.selectedCountry?.rawValue ?? appState.selectedTeam?.rawValue
         }
     }
@@ -201,7 +204,7 @@ struct MainTabView: View {
             return team.displayName
         case .country(let country):
             return country.displayName
-        case .everyoneTalking:
+        case .worldChampionship, .everyoneTalking:
             return "His Team"
         }
     }

@@ -70,6 +70,17 @@ struct LiveMatchCard: View {
                                 .font(.jakarta(12, weight: .bold))
                                 .foregroundColor(.hotRose)
                                 .frame(width: 40, alignment: .leading)
+                            if let photoURL = scorer.photoURL {
+                                AsyncImage(url: photoURL) { phase in
+                                    if case .success(let image) = phase {
+                                        image.resizable().scaledToFill()
+                                    } else {
+                                        Color.clear
+                                    }
+                                }
+                                .frame(width: 24, height: 24)
+                                .clipShape(Circle())
+                            }
                             Text(scorer.player + (scorer.penalty == true ? " (pen)" : ""))
                                 .font(.jakarta(13, weight: .regular))
                                 .foregroundColor(.warmWhite)

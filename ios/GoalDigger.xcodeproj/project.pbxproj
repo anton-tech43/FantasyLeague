@@ -21,6 +21,7 @@
 		6DB27580A7465723CA70926A /* LiveMatchBrief.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9B40C83CE30947DD4E9AB4 /* LiveMatchBrief.swift */; };
 		7AE5C40C19D72FA48BC51F30 /* SaturdayQuiz.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BC4A29F62D389F4A4751E27 /* SaturdayQuiz.swift */; };
 		8DF6B51D2AE83FB59CD63041 /* SaturdayQuizCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD5B3A073E49AF5B5862F38 /* SaturdayQuizCard.swift */; };
+		0A758A8D47CD4DF9A356EB6C /* WCNextMatchCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 912013703FAF48AC8F477692 /* WCNextMatchCard.swift */; };
 		AA000001 /* GoalDiggerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001 /* GoalDiggerApp.swift */; };
 		AA000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002 /* AppDelegate.swift */; };
 		AA000003 /* Team.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003 /* Team.swift */; };
@@ -136,6 +137,7 @@
 		2BDA3526673665ADFD98752B /* MatchActivityAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MatchActivityAttributes.swift; sourceTree = "<group>"; };
 		2C3E6B0D62430537E6511905 /* GoalDiggerLiveActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GoalDiggerLiveActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		2CD5B3A073E49AF5B5862F38 /* SaturdayQuizCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SaturdayQuizCard.swift; sourceTree = "<group>"; };
+		912013703FAF48AC8F477692 /* WCNextMatchCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WCNextMatchCard.swift; sourceTree = "<group>"; };
 		36F66AB00E15F67DAA68C18A /* AudioPlayerService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioPlayerService.swift; sourceTree = "<group>"; };
 		37D3E46E7BC8929DF2B09425 /* CalendarSyncService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarSyncService.swift; sourceTree = "<group>"; };
 		3F288B1DCFB01F70EA2722C7 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -331,6 +333,7 @@
 				AB000311 /* AffectedTeamsHeader.swift */,
 				D5A88D0BF10EC36C829985F7 /* LiveMatchCard.swift */,
 				2CD5B3A073E49AF5B5862F38 /* SaturdayQuizCard.swift */,
+				912013703FAF48AC8F477692 /* WCNextMatchCard.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -715,6 +718,7 @@
 				6CA1FD4A864451C12D212143 /* LiveMatchCard.swift in Sources */,
 				7AE5C40C19D72FA48BC51F30 /* SaturdayQuiz.swift in Sources */,
 				8DF6B51D2AE83FB59CD63041 /* SaturdayQuizCard.swift in Sources */,
+				0A758A8D47CD4DF9A356EB6C /* WCNextMatchCard.swift in Sources */,
 				244B4E7A89E82714DCF2F917 /* MatchActivityAttributes.swift in Sources */,
 				25B33D3555E190DC97F79521 /* LiveActivityManager.swift in Sources */,
 				159D99B3A0BD1457CA4C4F47 /* LiveMatchSnapshot.swift in Sources */,

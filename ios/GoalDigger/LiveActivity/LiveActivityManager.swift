@@ -39,15 +39,15 @@ final class LiveActivityManager {
         }
     }
 
-    /// Re-assert the push-to-start registration once we know the user's
-    /// countries (the token may be vended during onboarding, before any country
-    /// is picked). V2.2: the single PTS token carries ALL followed countries, so
-    /// it triggers for whichever plays. Safe to call repeatedly — backend
+    /// Re-assert the push-to-start registration. V2.2: the single PTS token
+    /// carries ALL followed countries, so it triggers for whichever plays.
+    /// An empty countryIds array is fine — the backend broadcasts knockout
+    /// Live Activities to every registered token, so every device registers
+    /// even with no followed country. Safe to call repeatedly — backend
     /// upserts on the token.
     func registerPushToStartIfPossible() async {
         guard let token = UserDefaults.standard.string(forKey: Self.ptsTokenKey) else { return }
         let countryIds = AppState.shared.selectedCountries.map(\.rawValue)
-        guard !countryIds.isEmpty else { return }
         try? await APIClient.shared.registerLiveActivityToken(
             token, kind: "push_to_start", fixtureId: nil, countryIds: countryIds)
     }
@@ -82,7 +82,6 @@ final class LiveActivityManager {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
         Task { await registerPushToStartIfPossible() }
         let countryIds = AppState.shared.selectedCountries.map(\.rawValue)
-        guard !countryIds.isEmpty else { return }
         Task {
             // Check each followed country — either could be live (e.g. his
             // Norway and her Sweden). startOrUpdate is keyed by fixtureId so
@@ -90,6 +89,15 @@ final class LiveActivityManager {
             for countryId in countryIds {
                 guard let snap = try? await APIClient.shared.fetchCurrentLiveMatch(countryId: countryId),
                       snap.isLive else { continue }
+                startOrUpdate(from: snap)
+            }
+            // Tournament-wide: whichever World Championship match is live
+            // right now, for every user. If it's also a followed country's
+            // match, the fixtureId key in startOrUpdate dedupes it into an
+            // update rather than a second activity.
+            if let snap = try? await APIClient.shared.fetchCurrentLiveMatch(
+                   countryId: FeedContext.worldChampionshipEntityId),
+               snap.isLive {
                 startOrUpdate(from: snap)
             }
         }

@@ -198,6 +198,17 @@ struct ContentDetailView: View {
                             .font(.jakarta(13, weight: .bold))
                             .foregroundColor(.hotRose)
                             .frame(width: 46, alignment: .leading)
+                        if let photoURL = scorer.photoURL {
+                            AsyncImage(url: photoURL) { phase in
+                                if case .success(let image) = phase {
+                                    image.resizable().scaledToFill()
+                                } else {
+                                    Color.clear
+                                }
+                            }
+                            .frame(width: 28, height: 28)
+                            .clipShape(Circle())
+                        }
                         Text(scorer.player + (scorer.penalty == true ? " (pen)" : ""))
                             .font(.jakarta(15, weight: .regular))
                             .foregroundColor(.textPrimaryOnCard)

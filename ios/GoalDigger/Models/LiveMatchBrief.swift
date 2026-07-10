@@ -42,7 +42,18 @@ struct LiveMatchBrief: Codable, Identifiable, Equatable {
         let player: String
         let minute: String
         let penalty: Bool?
+        /// Optional headshot URL string (API-Football CDN), key "photo".
+        /// Nil for legacy rows / players without a photo on file — synthesized
+        /// Codable's decodeIfPresent-for-Optional keeps this backward and
+        /// forward compatible with rows that predate this field.
+        let photo: String?
         var id: String { "\(side)-\(player)-\(minute)" }
+
+        /// Convenience URL for AsyncImage call sites.
+        var photoURL: URL? {
+            guard let photo else { return nil }
+            return URL(string: photo)
+        }
     }
 
     /// The group table rendered under the live score, sourced deterministically
