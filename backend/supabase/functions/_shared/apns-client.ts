@@ -87,10 +87,27 @@ async function generateJWT(): Promise<string> {
 const JWT_TTL_MS = 50 * 60 * 1000; // refresh well inside APNs's 60-min validity
 let memoJwt: { jwt: string; generatedAtMs: number } | null = null;
 
-async function getProviderJWT(): Promise<string> {
-  const nowMs = Date.now();
-  if (memoJwt && nowMs - memoJwt.generatedAtMs < JWT_TTL_MS) return memoJwt.jwt;
+// Single-flight guard: a concurrent burst (bounded fan-out of N sends) calls
+// getProviderJWT N times before the first mint completes. Memoizing only the
+// RESULT let all N mint their own token on a cold/stale cache — N provider
+// tokens in one second = APNs 429 TooManyProviderTokenUpdates for all but the
+// first few (seen live 2026-07-10: 12 of 15 broadcast sends failed). Sharing
+// the in-flight PROMISE means a burst performs exactly one mint.
+let inflightJwt: Promise<string> | null = null;
 
+function getProviderJWT(): Promise<string> {
+  const nowMs = Date.now();
+  if (memoJwt && nowMs - memoJwt.generatedAtMs < JWT_TTL_MS) {
+    return Promise.resolve(memoJwt.jwt);
+  }
+  if (inflightJwt) return inflightJwt;
+  inflightJwt = fetchOrMintJWT(nowMs).finally(() => {
+    inflightJwt = null;
+  });
+  return inflightJwt;
+}
+
+async function fetchOrMintJWT(nowMs: number): Promise<string> {
   try {
     const supabase = getSupabaseClient();
     const { data } = await supabase
@@ -151,17 +168,26 @@ export async function sendPushNotification(
     const jwt = await getProviderJWT();
     const host = getAPNsHost(env);
 
-    const response = await fetch(`${host}/3/device/${token}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `bearer ${jwt}`,
-        "apns-topic": bundleId,
-        "apns-push-type": "alert",
-        "apns-priority": "10",
-      },
-      body: JSON.stringify(payload),
-    });
+    const doSend = (authJwt: string) =>
+      fetch(`${host}/3/device/${token}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `bearer ${authJwt}`,
+          "apns-topic": bundleId,
+          "apns-push-type": "alert",
+          "apns-priority": "10",
+        },
+        body: JSON.stringify(payload),
+      });
+
+    let response = await doSend(jwt);
+    if (response.status === 429) {
+      // TooManyProviderTokenUpdates. By now the single-flight memo holds ONE
+      // shared provider token — one delayed retry with it recovers the send.
+      await new Promise((r) => setTimeout(r, 750));
+      response = await doSend(await getProviderJWT());
+    }
 
     if (response.ok) {
       return { token, success: true, status: 200 };
@@ -256,17 +282,25 @@ export async function sendLiveActivityPush(
       aps["dismissal-date"] = now + opts.dismissalSeconds;
     }
 
-    const response = await fetch(`${host}/3/device/${token}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `bearer ${jwt}`,
-        "apns-topic": `${bundleId}.push-type.liveactivity`,
-        "apns-push-type": "liveactivity",
-        "apns-priority": String(opts.priority ?? 10),
-      },
-      body: JSON.stringify({ aps }),
-    });
+    const doSend = (authJwt: string) =>
+      fetch(`${host}/3/device/${token}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `bearer ${authJwt}`,
+          "apns-topic": `${bundleId}.push-type.liveactivity`,
+          "apns-push-type": "liveactivity",
+          "apns-priority": String(opts.priority ?? 10),
+        },
+        body: JSON.stringify({ aps }),
+      });
+
+    let response = await doSend(jwt);
+    if (response.status === 429) {
+      // Same TooManyProviderTokenUpdates recovery as sendPushNotification.
+      await new Promise((r) => setTimeout(r, 750));
+      response = await doSend(await getProviderJWT());
+    }
 
     if (response.ok) return { token, success: true, status: 200 };
     const body = await response.json().catch(() => ({}));
