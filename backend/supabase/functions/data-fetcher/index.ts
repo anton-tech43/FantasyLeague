@@ -146,8 +146,8 @@ async function fetchAPIFootball(
   const endpoints = [
     { name: "fixtures_next", path: `/fixtures?team=${team.api_football_id}&next=5` },
     { name: "fixtures_last", path: `/fixtures?team=${team.api_football_id}&last=3` },
-    { name: "injuries", path: `/injuries?team=${team.api_football_id}&season=2025` },
-    { name: "standings", path: `/standings?league=39&season=2025` },
+    { name: "injuries", path: `/injuries?team=${team.api_football_id}&season=2026` },
+    { name: "standings", path: `/standings?league=39&season=2026` },
     { name: "transfers", path: `/transfers?team=${team.api_football_id}` },
     { name: "squad", path: `/players/squads?team=${team.api_football_id}` },
   ];
