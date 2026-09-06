@@ -114,7 +114,7 @@ Filerna `06b_pipeline_health_dump.csv` och `07_match_status_state.csv` är reten
 | **P0** | A1 | Sätt PL-säsong och trupp 2026-27 i routines: `fetch_news.sh` (`SEASON`, `TEAMS` → läs `teams` där `league_id=39 AND is_active`), `MATCHDAY_PROMPT.md:57,61`, `PROMPT.md:20`, `SUNDAY_BRIEF`/`QUIZ`/`INSIDER` om de nämner 2025-26. Verifiera att Coventry/Hull får items. | routines |
 | **P0** | A2 | Aktivera matchdags-påminnelse för PL-klubbar (`matchday-reminder`: ta bort `entity_type='country'`-filtret, token-matcha på `team_id/team_ids`, Stockholm-tid). | app |
 | **P0** | A3 | **Pausa VM-läget** enligt checklistan i §4. **DB-spaken dragen 6 sep 12:3x:** mig 079 körd, 48 länder `is_active=false` (data-fetcher, content-audit, team-page-generator hoppar över dem). Kvar: routines-dashboarden (gd-news-wc/preview/factcheck av; season-state/insider/quiz/brief till klubbar), match-watcher-filter på `is_active`, iOS-onboarding, `world_championship`-raden. | båda |
-| **P0** | A17 | **PL-live-kedjan blind sedan säsongsstart.** Verifiera i dag (6 sep, Everton–Man Utd 15:00 / Arsenal–Chelsea 17:30 CEST) att match-watcher tar matcherna till FT och att FT-push + `gd-matchday`-fire landar (läsvakt igång). Om ja: A14 var orsaken. Om nej: felsök `match-watcher` PL-vägen (Edge-loggar). Sätt pg_net `timeout_milliseconds` explicit i cron-kommandona (saknas i alla 11) och lägg ett heartbeat-CHECK "PL-fixture i dag men 0 `state_updates`". | prod/app |
+| **P0** | A17 | **PL-live-kedjan blind sedan säsongsstart.** Felsökt 6 sep: API friskt, kod oförändrad och fungerande nu → DB-latens + 5 s pg_net-timeout + tysta fel (`index.ts:603` error→null, `:505` 500 utan spår). Verifiera i kväll (läsvakt), sedan: pg_net-timeout 30 s i cronen, error≠null på prior-uppslaget, en `watch`-rad per körning, heartbeat-CHECK 6 på `last_checked`. Detaljer i §3 A17. | prod/app |
 | **P0** | A18 | **`gd-season-state` skriver 2025-26-text på team-sidorna.** Samma rotorsak som A1 (`SEASON_STATE_PROMPT.md` + `fetch_*` med `season=2025`). Åtgärd ingår i A1; verifiera efteråt att `28d` ger `phase=mid_season` med 2026-27-summary och att Coventry/Hull får rader. | routines |
 | **P0** | A14 | **Driftstopp 23 aug → 6 sep.** Omstart gjord 6 sep 11:38 CEST (match-watcher grön från 11:50). Kvar: hitta och ta bort IO-drivaren innan det händer igen — (a) `teams.is_active=false` för 48 länder (70 % av data-fetcher-jobbet, A3), (b) gallra `cron.job_run_details` (A16), (c) `VACUUM (FULL)`/repack av `raw_fetch_logs` (169 MB → ~20 MB) i ett servicefönster, (d) överväg Micro-compute om (a)–(c) inte räcker. Skriv in "DB Unhealthy"-runbook. | prod/Anton |
 | **P0** | A15 | **Larmet kraschar.** `check_pipeline_heartbeat` CHECK 2 använder `FORMAT('… %.0f%% …')` — Postgres `format()` stöder inte `%.0f` → `unrecognized format() type specifier "."` (13 ggr 25–30 aug). Byt till `round(…)::text` med `%s`. Utan detta finns ingen signal när crons dör. | app (mig 037/039/041:109-116) |
@@ -384,9 +384,36 @@ per 2026-07-10.
 - **Orsak (sannolik):** A14 — under IO-svälten tog match-watcher-anropen längre än pg_net-timeouten
   eller misslyckades i Edge, utan spår i `pipeline_health` (funktionen loggar inte egna körningar).
   Första sikt av 1557367 skedde nattetid (låg last), uppdateringarna dagtid föll bort.
-- **Åtgärd:** verifiera i dag (läsvakt på dagens två matcher), sätt explicit `timeout_milliseconds`,
-  lägg heartbeat-CHECK "fixture i dag i liga 39 men 0 `state_updates` senaste 10 min", och logga
-  en `pipeline_health`-rad per match-watcher-körning (stage `watch`, aggregerad).
+- **Felsökning 6 sep 12:50 (B6 + kodläsning):**
+  1. **API:et är friskt för exakt match-watchers fråga.** `fixtures?league=39&season=2026&date=D`
+     ger i dag 1 (21 aug), 5 (22 aug), 3 (23 aug), 2 (6 sep) fixtures — samma URL-form som
+     `index.ts:551`. Datan fanns; funktionen skrev den inte.
+  2. **pg_net-timeouten är 5 000 ms** (`net.http_post(... timeout_milliseconds DEFAULT 5000)`,
+     pg_net 0.20.0) och inget cron-kommando sätter något annat. PostgREST-rollen `authenticator`
+     har `statement_timeout=8s`. match-watcher gör 4–6 sekventiella PostgREST-anrop per körning
+     (teams, hangover, prior per fixture, upsert per fixture) + 1–2 API-Football-anrop. Under
+     IO-svälten (pg_cron själv fick `statement timeout` på Vault-läsningen) räckte **ett** långsamt
+     anrop för att spräcka 5 s. I dag svarar funktionen inom samma sekund som cronen fyrar.
+  3. **Två kodställen gör fel tyst:** (a) `index.ts:603` ignorerar `error` från prior-uppslaget —
+     ett DB-fel blir `prior = null` = "första observation", som per design **aldrig fyrar**
+     (ingen FT-push, inget `gd-matchday`) även om upserten lyckas. (b) `index.ts:505-512`: fel på
+     `teams`-frågan → 500 och körningen avbryts utan spår; funktionen skriver ingen
+     `pipeline_health`-rad för sin egen körning (bara `apns_send`/`matchday_fire`/
+     `live_brief_fire`/`consequence_fire` vid händelser), så 27 dagars tystnad var osynlig.
+  4. **Inget heartbeat-CHECK bevakar själva pollningen** (mig 039/041 tittar på briefs/matchday
+     *efter* FT); CHECK 2 (non-200 i pg_net) var det enda som kunde ha larmat — och det kraschade
+     (A15).
+  5. Edge-loggarna för augusti är borta (free-tier retention 1 dag), så exakt felrad kan inte
+     bevisas. Sannolikhetsbedömning: DB-latens → pg_net-timeout/PostgREST-timeout → (b) eller
+     tyst fel i loopen. Koden i sig är oförändrad sedan 10 jul och fungerar nu.
+- **Åtgärd (ett steg före i kväll):** (1) läsvakt igång på 1557390/1557387 — förväntat: `status`
+  1H→HT→2H→FT, `briefs_fired` får `HT`/`FT_PUSH`, `matchday_fire`-rader för arsenal/chelsea, FT-push
+  till 8 Arsenal-följare ~19:25–19:35 svensk tid; (2) ny migration: `timeout_milliseconds => 30000`
+  i match-watcher-cronen; (3) `index.ts:603` behandla `error` som fel (hoppa över fixturen, logga),
+  inte som `null`; (4) match-watcher skriver en aggregerad `pipeline_health`-rad per körning
+  (stage `watch`: fixtures_seen/state_updates/upsert_errors) så tystnad syns; (5) heartbeat-CHECK 6:
+  "rad i `match_status_state` med `kickoff_time` i dag och `status` icke-terminal men `last_checked`
+  äldre än 5 min mellan kickoff−15 och kickoff+150" → `client_errors`.
 
 ### A18 · `team_season_state` = förra säsongens slutspurt — **P0 (nytt, B3)**
 - **Bevis:** `28d`: 20 klubbar `phase=mid_season`, genererade 21–24 aug 03:1x CEST av routinen
@@ -498,7 +525,7 @@ sunday-brief-kort tomma/versaler (A20); 3 interna motsägelser. Spot-check-lista
 (retention-DELETE + `VACUUM FULL`), `cron.job_run_details` 88 MB → 4,6 MB (>14 d raderade + `VACUUM
 FULL`), databas 308 MB → **61 MB**. Del 2 körd 12:3x CEST: gallrings-cron `cron_job_run_details_retention_sweep`
 (jobid 25, 03:20 UTC, mig 078) skapad; `UPDATE 48` → alla länder `is_active=false` (mig 079).
-Verifierat read-only: `country | f | 48`, match-watcher grön varje minut, dagens PL-matcher spårade.
+Verifierat read-only: `country | f | 48`, match-watcher grön varje minut, dagens PL-matcher spårade. 12:4x: `world_championship` inaktiv (`tournament | f | 1`, mig 079 uppdaterad).
 
 ---
 
