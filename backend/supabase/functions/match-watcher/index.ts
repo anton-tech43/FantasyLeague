@@ -500,11 +500,21 @@ async function handleRequest(req: Request): Promise<Response> {
   // api_football_id → team_id map. Previously this was two separate
   // SELECTs; combining them is cheaper (one round-trip per tick instead
   // of two) and atomic (no risk of a team being inserted between queries).
+  // Audit 2026-09 (A3/A17): only active entities drive league polling. With the 48
+  // WC countries flipped to is_active=false (mig 079) this stops the every-minute
+  // league-1 poll; relegated PL clubs never appear in league-39 fixtures anyway.
   const { data: teams, error: teamsErr } = await supabase
     .from("teams")
     .select("id, api_football_id, league_id")
-    .not("league_id", "is", null);
+    .not("league_id", "is", null)
+    .eq("is_active", true);
   if (teamsErr) {
+    // A17: this early exit used to be invisible (no pipeline_health row, and the
+    // pg_cron "succeeded" only means the HTTP call was queued). Leave a trace.
+    await logWatchRow(supabase, "failure", {
+      date: today,
+      error: `teams query failed: ${teamsErr.message}`,
+    }, "teams_query_failed");
     return new Response(
       JSON.stringify({ error: `teams query failed: ${teamsErr.message}` }),
       { status: 500, headers: { "Content-Type": "application/json" } },
@@ -575,6 +585,8 @@ async function handleRequest(req: Request): Promise<Response> {
   let liveBriefFires = 0;
   let goalPushSends = 0;
   const upsertErrors: Array<{ fixture_id: number; message: string }> = [];
+  const priorErrors: Array<{ fixture_id: number; message: string }> = [];
+  let skippedFixtures = 0; // unknown team / no league id — expected, not an anomaly
 
   for (const fx of fixtures) {
     const fixtureId = fx.fixture.id;
@@ -590,20 +602,31 @@ async function handleRequest(req: Request): Promise<Response> {
 
     // Defensive: skip fixtures where either team isn't one of our 20.
     // Should never happen for league=39 but cheap to check.
-    if (!homeTeamId || !awayTeamId) continue;
+    if (!homeTeamId || !awayTeamId) { skippedFixtures++; continue; }
     // V2.0: skip fixtures with no league context — match_status_state.league_id
     // is NOT NULL with no FK, so writing `?? 0` would create ghost rows that
     // pollute diagnostics. A fixture with no league.id is unactionable anyway.
     if (!fixtureLeagueId) {
       console.warn(`match-watcher: skipping fixture ${fixtureId} — no league.id`);
+      skippedFixtures++;
       continue;
     }
 
-    const { data: prior } = await supabase
+    const { data: prior, error: priorErr } = await supabase
       .from("match_status_state")
       .select("status, home_goals, away_goals, fired_finished_at, briefs_fired, matchday_fire_capped, la_started, la_sig, la_ended, goal_events")
       .eq("fixture_id", fixtureId)
       .maybeSingle();
+    if (priorErr) {
+      // A17 (audit 2026-09): a failed lookup used to fall through as prior=null,
+      // i.e. "first observation" — which by design NEVER fires (no FT push, no
+      // gd-matchday) and would also overwrite briefs_fired with []. Under DB
+      // latency that silently swallowed whole matches. Skip this fixture for
+      // this tick instead; the next tick re-observes it with correct prior state.
+      console.warn(`prior lookup failed for ${fixtureId}; skipping this tick:`, priorErr.message);
+      priorErrors.push({ fixture_id: fixtureId, message: priorErr.message });
+      continue;
+    }
 
     // Only fire when we OBSERVE a transition firsthand.
     // First observation never fires (avoids mass-fire on initial deploy).
@@ -1615,20 +1638,61 @@ async function handleRequest(req: Request): Promise<Response> {
     }
   }
 
+  const summary = {
+    fixtures_seen: fixtures.length,
+    first_seen: firstSeen,
+    state_updates: stateUpdates,
+    fires_dispatched: firesDispatched,
+    live_brief_fires: liveBriefFires,
+    live_brief_configured: liveBriefConfigured,
+    goal_push_sends: goalPushSends,
+    upsert_errors: upsertErrors,
+    prior_errors: priorErrors,
+    skipped_fixtures: skippedFixtures,
+    date: today,
+    active_leagues: activeLeagues,
+    league_errors: leagueErrors,
+  };
+
+  // A17 (audit 2026-09): leave a trace of the run itself. Not every tick — that
+  // would be 1 440 rows/day on a nano DB (the very write pressure that caused
+  // the outage). Rules: (1) any anomaly (API error, prior/upsert error, or a
+  // fixture seen but not updated) → row; (2) otherwise one heartbeat row per
+  // hour on a day with fixtures (minute == 0). Quiet days write nothing; the
+  // pg_cron run log and CHECK 6 (mig 081) cover "is it running at all".
+  const anomalous =
+    leagueErrors.length > 0 || upsertErrors.length > 0 || priorErrors.length > 0 ||
+    (fixtures.length > 0 && stateUpdates + skippedFixtures < fixtures.length);
+  const hourlyBeat = fixtures.length > 0 && new Date().getUTCMinutes() === 0;
+  if (anomalous || hourlyBeat) {
+    await logWatchRow(supabase, anomalous ? "partial" : "success", summary,
+      anomalous ? "anomaly" : "hourly");
+  }
+
   return new Response(
-    JSON.stringify({
-      fixtures_seen: fixtures.length,
-      first_seen: firstSeen,
-      state_updates: stateUpdates,
-      fires_dispatched: firesDispatched,
-      live_brief_fires: liveBriefFires,
-      live_brief_configured: liveBriefConfigured,
-      goal_push_sends: goalPushSends,
-      upsert_errors: upsertErrors,
-      date: today,
-      active_leagues: activeLeagues,
-      league_errors: leagueErrors,
-    }),
+    JSON.stringify(summary),
     { headers: { "Content-Type": "application/json" } },
   );
+}
+
+/// Best-effort aggregated pipeline_health row for a match-watcher run
+/// (stage 'watch', mig 080). Never throws — observability must not take the
+/// watcher down with it.
+async function logWatchRow(
+  // deno-lint-ignore no-explicit-any
+  supabase: any,
+  status: "success" | "partial" | "failure",
+  summary: Record<string, unknown>,
+  reason: string,
+): Promise<void> {
+  try {
+    await supabase.from("pipeline_health").insert({
+      stage: "watch",
+      status,
+      target: `watch:${(summary.date as string) ?? new Date().toISOString().slice(0, 10)}:${reason}`,
+      message: JSON.stringify(summary).slice(0, 2000),
+    });
+  } catch (e) {
+    console.warn("match-watcher: watch row insert failed (non-fatal):", e instanceof Error ? e.message : String(e));
+  }
 }
