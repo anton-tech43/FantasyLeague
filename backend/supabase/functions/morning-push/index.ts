@@ -145,6 +145,22 @@ serve(async (req) => {
       // "Game day at X" push an hour apart. morning-push covers PL clubs only.
       if (home.entity_type === "country" || away.entity_type === "country") continue;
 
+      // Audit 2026-09 (A2/A27): matchday-reminder now covers PL clubs too, with
+      // Stockholm kickoff times. If it already claimed this fixture for either
+      // side (matchday_reminders_sent, 07:00 UTC run), skip here so nobody gets
+      // two "game day" pushes an hour apart. morning-push stays as the fallback
+      // for the morning the reminder run failed.
+      const { data: claimed } = await supabase
+        .from("matchday_reminders_sent")
+        .select("team_id")
+        .eq("kickoff_time", fix.kickoff_time)
+        .in("team_id", [fix.home_team_id, fix.away_team_id])
+        .limit(1);
+      if (claimed && claimed.length > 0) {
+        console.log(`morning-push: ${fix.home_team_id} v ${fix.away_team_id} already reminded by matchday-reminder, skipping`);
+        continue;
+      }
+
       // Tokens subscribed to EITHER team (PL via team_id, WC via country_id).
       // Same .or() filter as notification-sender — legacy scalar OR the V2.2
       // multi-follow arrays. One row per device → one push.
