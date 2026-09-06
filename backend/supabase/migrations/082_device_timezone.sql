@@ -4,20 +4,23 @@
 -- morning-push wrote London ("19:00 BST"), matchday-reminder wrote Stockholm.
 -- iOS already renders in-app times device-locally; only the push text was fixed.
 --
--- 1. device_tokens.timezone — IANA name, default Europe/Stockholm (the market).
--- 2. register_device_token gains p_timezone (default Stockholm). The 5-arg
+-- 1. device_tokens.timezone — IANA name, default Europe/London. Product call
+--    (Anton, 2026-09-06): the app is marketed and PAID FOR in the UK; the ~20
+--    existing devices are Swedish friends who will get the right time once the
+--    app build that sends p_timezone ships. Until then unknown = London.
+-- 2. register_device_token gains p_timezone (default London). The 5-arg
 --    signature is DROPPED, not overloaded: PostgREST cannot disambiguate two
 --    candidates that differ only by a defaulted parameter ("could not choose
 --    the best candidate function"). Old app builds that omit p_timezone still
---    resolve to the 6-arg function via the default.
+--    resolve to the 6-arg function via the default (London).
 -- 3. Validation is a cheap shape check (Area/City[/Sub]); anything odd falls
---    back to the default rather than raising, so a weird device never fails to
+--    back to London rather than raising, so a weird device never fails to
 --    register. The Edge side guards Intl with try/catch as well.
 --
 -- Applied manually (schema_migrations only tracks 001–017, see A12).
 
 ALTER TABLE device_tokens
-  ADD COLUMN IF NOT EXISTS timezone text NOT NULL DEFAULT 'Europe/Stockholm';
+  ADD COLUMN IF NOT EXISTS timezone text NOT NULL DEFAULT 'Europe/London';
 
 DROP FUNCTION IF EXISTS public.register_device_token(text, text[], text[], integer, text);
 
@@ -27,7 +30,7 @@ CREATE OR REPLACE FUNCTION public.register_device_token(
   p_country_ids text[],
   p_tier integer,
   p_apns_environment text,
-  p_timezone text DEFAULT 'Europe/Stockholm'
+  p_timezone text DEFAULT 'Europe/London'
 )
  RETURNS void
  LANGUAGE plpgsql
@@ -46,11 +49,11 @@ BEGIN
   END IF;
 
   -- IANA shape: "Europe/Stockholm", "America/Argentina/Buenos_Aires", "Etc/GMT+1".
-  -- Anything else → market default. Never raise: registration must not fail on tz.
+  -- Anything else → London (the paying market). Never raise: registration must not fail on tz.
   v_tz := CASE
     WHEN p_timezone ~ '^[A-Za-z_]+(/[A-Za-z0-9_+\-]+){1,2}$' AND length(p_timezone) <= 64
       THEN p_timezone
-    ELSE 'Europe/Stockholm'
+    ELSE 'Europe/London'
   END;
 
   INSERT INTO public.device_tokens AS dt (

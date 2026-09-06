@@ -47,10 +47,9 @@ interface Team {
 }
 
 /// Format kickoff as "HH:MM" in the READER's zone (device_tokens.timezone,
-/// mig 082; Stockholm when unknown). Until Sept 2026 this rendered London time
-/// with a BST/GMT suffix for everyone — wrong by an hour for the Swedish
-/// audience (audit 2026-09, A5). No suffix: the time is in her own zone, so a
-/// suffix would only add noise.
+/// mig 082; London when unknown). Until Sept 2026 this rendered London time
+/// with a BST/GMT suffix for everyone (audit 2026-09, A5). No suffix: the time
+/// is in her own zone, so a suffix would only add noise.
 function formatKickoff(iso: string, tz: string): string {
   return hhmm(new Date(iso), safeTz(tz));
 }

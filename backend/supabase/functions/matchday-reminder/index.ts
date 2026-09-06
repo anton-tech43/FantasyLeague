@@ -4,7 +4,7 @@
 // Europe/Stockholm). For every ACTIVE entity (PL club today; WC country when a
 // tournament is on) with a fixture kicking off within the next 24h, sends ONE
 // deterministic reminder to that entity's followers, with the kickoff in
-// Stockholm time. PL never kicks off after midnight, so in practice this is
+// the reader's own time (device_tokens.timezone, mig 082; London when unknown). PL never kicks off after midnight, so in practice this is
 // "the morning of the match"; the 24h window is kept as a guard and the copy
 // says "today"/"tomorrow" on its own.
 //
@@ -292,7 +292,7 @@ serve(async (req) => {
       // into a handful of zones, so build one payload per zone (not per device)
       // and fan the sends out with bounded concurrency — the old sequential
       // loop blew the 400s wall-clock ceiling for a popular team at 50k
-      // followers (SCALING_50K.md §1). Unknown/invalid zone → Stockholm.
+      // followers (SCALING_50K.md §1). Unknown/invalid zone → London (paying market).
       const payloadByTz = new Map<string, ReturnType<typeof buildAPNsPayload>>();
       const payloadFor = (tzRaw: string | null | undefined) => {
         const tz = safeTz(tzRaw);

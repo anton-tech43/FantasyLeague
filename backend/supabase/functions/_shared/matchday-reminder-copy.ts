@@ -7,10 +7,12 @@
 // therefore read correctly whether the game is "today" or "tomorrow".
 //
 // Times are rendered in the READER's timezone when known (device_tokens.timezone,
-// mig 082), defaulting to Europe/Stockholm (the audience market). DST-correct via
-// Intl. No em-dashes (campaign rule).
+// mig 082), defaulting to Europe/London: the app is marketed and paid for in the
+// UK (Anton, 2026-09-06). Devices on builds that predate mig 082 send no zone and
+// therefore read London time until they update. DST-correct via Intl. No
+// em-dashes (campaign rule).
 
-export const DEFAULT_TZ = "Europe/Stockholm";
+export const DEFAULT_TZ = "Europe/London";
 
 /// Return `tz` if Intl accepts it as an IANA zone, else the market default. A
 /// device can report anything; a bad zone must never break a push.
@@ -68,7 +70,7 @@ export interface MatchdayReminderCopy {
 
 /// Render the reminder push for a single fixture. `now` is the moment the
 /// reminder fires (the cron run), used only to decide "today" vs "tomorrow".
-/// `tz` is the reader's zone (device_tokens.timezone); defaults to Stockholm.
+/// `tz` is the reader's zone (device_tokens.timezone); defaults to London.
 export function renderMatchdayReminder(args: {
   teamName: string;
   opponent: string;
