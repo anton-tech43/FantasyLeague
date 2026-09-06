@@ -64,7 +64,14 @@ Trusted, because we write it, with two standing traps:
 
 ## The claude.ai routines
 
-The routines produce prose, not facts. They are only as grounded as the payload handed to them, and a model with a knowledge cutoff will fill any gap with last season's memory unless stopped. Documented failures, all from 2026-09-06: a full-time article citing "wins over Brighton, Luton, and Fulham" when Luton are not in the division; the same article claiming "two wins from two" and "three straight wins" two paragraphs apart; a manager summary inventing a first name and a tenure for a name it had never seen.
+The routines produce prose, not facts. They are only as grounded as the payload handed to them, and a model with a knowledge cutoff will fill any gap with last season's memory unless stopped. Documented failures, all from 2026-09-06:
+
+- a full-time article citing "wins over Brighton, Luton, and Fulham" when Luton are not in the division;
+- the same article claiming "two wins from two" and "three straight wins" two paragraphs apart;
+- a manager summary inventing a first name and a career for a name it had never seen ("Sinisa Jakirovic" for Sergej Jakirović);
+- a manager summary dating the tenure from memory, "Carrick has been Manchester United's manager since August 2025", against a verified start of 2026-01-13 that was in the payload it was given.
+
+The last one is the pattern to watch: **a date or number that is present in the payload and still comes out wrong**. Where a fact is in our database, the post script now checks the prose against it rather than trusting the prompt.
 
 The guards live in `post_news.sh` and `post_team_page.sh` and are listed in the skill. **When a new failure gets through, add a guard and a test for it in the same change** — the prompt alone has never been enough.
 

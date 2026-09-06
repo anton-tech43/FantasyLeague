@@ -194,7 +194,7 @@ These stop a model writing last season's memory into today's article. Confirm th
 
 - `post_news.sh`: rejects a results clause naming a non-Premier-League club (unless the sentence is about a cup tie); a bracket token iOS does not substitute (it knows only `[his name]`, `[her name]` and their capitalised and possessive forms, per `AppState.personalise`); and any placeholder at all in `push_title`, `push_text`, `headline`, `immersive_headline` or `everyone_talking_headline`, because nothing personalises those. If you add a surface that renders content text, check whether it calls `personalise()` and update that field list.
 - Update the `non_pl` club list at a promotion or relegation.
-- `post_team_page.sh`: rejects players outside the current squad, a manager who is not `teams.manager_name`, last-season phrasing, fan voice, `?`/`!`, and placeholders other than `[his name]`.
+- `post_team_page.sh`: rejects players outside the current squad, a manager who is not `teams.manager_name`, a tenure year that disagrees with `teams.manager_started_on`, last-season phrasing, fan voice, `?`/`!`, and placeholders other than `[his name]`.
 - `MATCHDAY_PROMPT.md`: results, season record and a player's club come only from the fetched payloads.
 
 Test a guard rather than trusting it, using the sentence that got through last time. The routines repo needs its own env names:
