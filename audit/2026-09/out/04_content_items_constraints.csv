@@ -1,0 +1,10 @@
+conname,definition
+content_items_emotional_context_check,"CHECK ((emotional_context = ANY (ARRAY['exciting'::text, 'bad_news'::text, 'drama'::text, 'informational'::text, 'funny'::text])))"
+content_items_pipeline_source_check,"CHECK ((pipeline_source = ANY (ARRAY['edge_function'::text, 'routine'::text])))"
+content_items_pkey,PRIMARY KEY (id)
+content_items_push_text_check,CHECK (((push_text IS NULL) OR (length(push_text) <= 100)))
+content_items_push_title_check,CHECK (((push_title IS NULL) OR (length(push_title) <= 35)))
+content_items_status_check,"CHECK ((status = ANY (ARRAY['draft'::text, 'approved'::text, 'rejected'::text, 'published'::text, 'retrying'::text, 'archived'::text])))"
+content_items_team_id_fkey,FOREIGN KEY (team_id) REFERENCES teams(id)
+content_items_type_check,"CHECK ((type = ANY (ARRAY['news'::text, 'matchday'::text, 'sunday_brief'::text, 'starting_xi'::text])))"
+unique_matchday_content,"UNIQUE (team_id, match_id)"

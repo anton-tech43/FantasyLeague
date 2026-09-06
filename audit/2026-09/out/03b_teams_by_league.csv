@@ -1,0 +1,5 @@
+entity_type,league_id,is_active,count
+club,39,f,5
+club,39,t,20
+country,1,t,48
+tournament,,t,1

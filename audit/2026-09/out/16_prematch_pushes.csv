@@ -1,0 +1,2 @@
+src,team_id,entity_type,kickoff_sthlm,sent_sthlm,message
+pipeline_health:morning_push,arsenal,,,2026-08-21 10:00:05.789127,"success morning_push arsenal v coventry: 10 sent, 0 failed of 10"

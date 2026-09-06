@@ -1,0 +1,75 @@
+id,display_name,entity_type,league_id,is_active,api_football_id,strength_rank
+arsenal,Arsenal,club,39,t,42,
+aston_villa,Aston Villa,club,39,t,66,
+bournemouth,AFC Bournemouth,club,39,t,35,
+brentford,Brentford,club,39,t,55,
+brighton,Brighton & Hove Albion,club,39,t,51,
+burnley,Burnley,club,39,f,44,
+chelsea,Chelsea,club,39,t,49,
+coventry,Coventry City,club,39,t,1346,
+crystal_palace,Crystal Palace,club,39,t,52,
+everton,Everton,club,39,t,45,
+fulham,Fulham,club,39,t,36,
+hull,Hull City,club,39,t,64,
+ipswich,Ipswich Town,club,39,t,57,
+leeds,Leeds United,club,39,t,63,
+leicester,Leicester City,club,39,f,46,
+liverpool,Liverpool,club,39,t,40,
+man_city,Manchester City,club,39,t,50,
+man_utd,Manchester United,club,39,t,33,
+newcastle,Newcastle United,club,39,t,34,
+nottm_forest,Nottingham Forest,club,39,t,65,
+southampton,Southampton,club,39,f,41,
+spurs,Tottenham Hotspur,club,39,t,47,
+sunderland,Sunderland,club,39,t,746,
+west_ham,West Ham United,club,39,f,48,
+wolves,Wolverhampton Wanderers,club,39,f,39,
+algeria,Algeria,country,1,t,1532,28
+argentina,Argentina,country,1,t,26,1
+australia,Australia,country,1,t,20,27
+austria,Austria,country,1,t,775,24
+belgium,Belgium,country,1,t,1,9
+bosnia_herzegovina,Bosnia & Herzegovina,country,1,t,1113,64
+brazil,Brazil,country,1,t,6,6
+canada,Canada,country,1,t,5529,30
+cape_verde,Cape Verde Islands,country,1,t,1533,67
+colombia,Colombia,country,1,t,8,13
+congo_dr,Congo DR,country,1,t,1508,46
+croatia,Croatia,country,1,t,3,11
+curacao,Curaçao,country,1,t,5530,82
+czech_republic,Czech Republic,country,1,t,770,40
+ecuador,Ecuador,country,1,t,2382,23
+egypt,Egypt,country,1,t,32,29
+england,England,country,1,t,10,4
+france,France,country,1,t,2,3
+germany,Germany,country,1,t,25,10
+ghana,Ghana,country,1,t,1504,73
+haiti,Haiti,country,1,t,2386,83
+iran,Iran,country,1,t,22,20
+iraq,Iraq,country,1,t,1567,57
+ivory_coast,Ivory Coast,country,1,t,1501,33
+japan,Japan,country,1,t,12,18
+jordan,Jordan,country,1,t,1548,63
+mexico,Mexico,country,1,t,16,14
+morocco,Morocco,country,1,t,31,7
+netherlands,Netherlands,country,1,t,1118,8
+new_zealand,New Zealand,country,1,t,4673,85
+norway,Norway,country,1,t,1090,31
+panama,Panama,country,1,t,11,34
+paraguay,Paraguay,country,1,t,2380,41
+portugal,Portugal,country,1,t,27,5
+qatar,Qatar,country,1,t,1569,56
+saudi_arabia,Saudi Arabia,country,1,t,23,61
+scotland,Scotland,country,1,t,1108,42
+senegal,Senegal,country,1,t,13,15
+south_africa,South Africa,country,1,t,1531,60
+south_korea,South Korea,country,1,t,17,25
+spain,Spain,country,1,t,9,2
+sweden,Sweden,country,1,t,5,38
+switzerland,Switzerland,country,1,t,15,19
+tunisia,Tunisia,country,1,t,28,45
+turkiye,Türkiye,country,1,t,777,22
+uruguay,Uruguay,country,1,t,7,16
+usa,USA,country,1,t,2384,17
+uzbekistan,Uzbekistan,country,1,t,1568,50
+world_championship,World Championship,tournament,,t,0,

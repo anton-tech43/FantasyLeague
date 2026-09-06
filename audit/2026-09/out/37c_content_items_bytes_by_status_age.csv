@@ -1,0 +1,12 @@
+status,pipeline_source,age,rows,body_text,row_bytes_est
+archived,routine,30-90d,1411,501 kB,2203 kB
+archived,routine,>90d,953,336 kB,1487 kB
+archived,routine,0-30d,264,99 kB,415 kB
+archived,edge_function,>90d,80,41 kB,288 kB
+published,routine,0-30d,144,52 kB,219 kB
+archived,edge_function,30-90d,412,45 kB,212 kB
+retrying,edge_function,>90d,13,6560 bytes,49 kB
+published,routine,>90d,40,15 kB,42 kB
+published,routine,30-90d,11,12 kB,29 kB
+rejected,edge_function,>90d,10,5841 bytes,29 kB
+draft,edge_function,>90d,4,2366 bytes,8684 bytes

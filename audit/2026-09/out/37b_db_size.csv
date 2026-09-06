@@ -1,0 +1,11 @@
+scope,size,bytes
+database,308 MB,323095699
+schema:public,237 MB,248815616
+schema:cron,91 MB,95911936
+schema:pg_toast,4168 kB,4268032
+schema:auth,1688 kB,1728512
+schema:storage,368 kB,376832
+schema:supabase_migrations,136 kB,139264
+schema:realtime,96 kB,98304
+schema:net,96 kB,98304
+schema:vault,80 kB,81920

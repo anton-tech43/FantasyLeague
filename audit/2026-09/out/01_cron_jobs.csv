@@ -1,0 +1,86 @@
+jobid,jobname,schedule,active,nodename,database,command
+22,content-audit-nightly,30 3 * * *,t,localhost,postgres,"
+    SELECT net.http_post(
+      url := 'https://cwgpsmbunrocrofziqad.supabase.co/functions/v1/content-audit',
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'Authorization', 'Bearer ' || get_cron_service_key()
+      ),
+      body := '{""days"": 7}'::jsonb
+    )
+  "
+19,gd-morning-push,0 8 * * *,t,localhost,postgres,"
+    SELECT net.http_post(
+        url := 'https://cwgpsmbunrocrofziqad.supabase.co/functions/v1/morning-push',
+        headers := jsonb_build_object(
+            'Content-Type', 'application/json',
+            'Authorization', 'Bearer ' || get_cron_service_key()
+        ),
+        body := '{}'::jsonb
+    )
+  "
+2,goaldigger-archive-old-content,0 6 * * *,t,localhost,postgres,"
+    UPDATE content_items
+    SET status = 'archived'
+    WHERE status = 'published'
+      AND published_at < NOW() - INTERVAL '7 days'
+      AND preview_fixture_id IS NULL;
+"
+14,goaldigger-cron-heartbeat-check,*/30 * * * *,t,localhost,postgres,SELECT check_pipeline_heartbeat();
+20,goaldigger-daily-pipeline,0 6-22/2 * * *,t,localhost,postgres,"
+    SELECT net.http_post(
+        url := 'https://cwgpsmbunrocrofziqad.supabase.co/functions/v1/data-fetcher',
+        headers := jsonb_build_object(
+            'Content-Type', 'application/json',
+            'Authorization', 'Bearer ' || get_cron_service_key()
+        ),
+        body := '{}'::jsonb
+    )
+  "
+23,goaldigger-matchday-reminder,0 7 * * *,t,localhost,postgres,"
+    SELECT net.http_post(
+        url := 'https://cwgpsmbunrocrofziqad.supabase.co/functions/v1/matchday-reminder',
+        headers := jsonb_build_object(
+            'Content-Type', 'application/json',
+            'Authorization', 'Bearer ' || get_cron_service_key()
+        ),
+        body := '{}'::jsonb
+    )
+  "
+24,match-status-reaper,0 5 * * *,t,localhost,postgres,"
+    UPDATE match_status_state
+    SET status = 'ABD',
+        la_ended = true,
+        last_checked = now()
+    WHERE status NOT IN ('FT','AET','PEN','ABD','PST','CANC','AWD','WO','TBD')
+      AND kickoff_time < now() - interval '4 hours'
+  "
+12,match-watcher-1min,* * * * *,t,localhost,postgres,"SELECT net.http_post(
+        url := 'https://cwgpsmbunrocrofziqad.supabase.co/functions/v1/match-watcher',
+        headers := jsonb_build_object(
+            'Content-Type', 'application/json',
+            'Authorization', 'Bearer ' || get_cron_service_key()
+        ),
+        body := '{}'::jsonb
+    )"
+13,notification-sweep,15 * * * *,t,localhost,postgres,"SELECT net.http_post(
+        url := 'https://cwgpsmbunrocrofziqad.supabase.co/functions/v1/notification-sender',
+        headers := jsonb_build_object(
+            'Content-Type', 'application/json',
+            'Authorization', 'Bearer ' || get_cron_service_key()
+        ),
+        body := '{}'::jsonb
+    )"
+17,pipeline_health_retention_sweep,0 3 * * *,t,localhost,postgres,"
+    DELETE FROM pipeline_health
+    WHERE created_at < NOW() - INTERVAL '90 days';
+  "
+21,raw_fetch_logs_retention_sweep,15 3 * * *,t,localhost,postgres,"
+    DELETE FROM raw_fetch_logs r
+    WHERE r.fetched_at < NOW() - INTERVAL '7 days'
+      AND r.id NOT IN (
+        SELECT DISTINCT ON (source, team_id) id
+        FROM raw_fetch_logs
+        ORDER BY source, team_id, fetched_at DESC
+      );
+  "

@@ -501,3 +501,66 @@ WHERE entity_kind='team' ORDER BY active_followers DESC;
 \o
 
 \echo Klart. CSV:er ligger i out/. Zippa mappen och dela.
+
+-- ============================================================================
+-- INFRA (tillagt 2026-09-06 efter driftstoppet: Disk IO 100 %, DB 478 MB / 500 MB free-tak)
+-- ============================================================================
+
+-- 37 Tabellstorlekar inkl. index + TOAST, dead tuples, senaste vacuum — vad tar plats, vad kan gallras
+\o out/37_table_sizes.csv
+SELECT n.nspname AS schema, c.relname AS table,
+       pg_size_pretty(pg_total_relation_size(c.oid)) AS total,
+       pg_total_relation_size(c.oid) AS total_bytes,
+       pg_size_pretty(pg_relation_size(c.oid)) AS heap,
+       pg_size_pretty(pg_indexes_size(c.oid)) AS indexes,
+       pg_size_pretty(COALESCE(pg_total_relation_size(c.reltoastrelid),0)) AS toast,
+       s.n_live_tup, s.n_dead_tup, s.last_autovacuum, s.last_autoanalyze
+FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+LEFT JOIN pg_stat_user_tables s ON s.relid=c.oid
+WHERE c.relkind IN ('r','m') AND n.nspname NOT IN ('pg_catalog','information_schema','pg_toast')
+ORDER BY pg_total_relation_size(c.oid) DESC LIMIT 60;
+\o
+
+-- 37b Databasstorlek totalt + per schema
+\o out/37b_db_size.csv
+SELECT 'database' AS scope, pg_size_pretty(pg_database_size(current_database())) AS size, pg_database_size(current_database()) AS bytes
+UNION ALL
+SELECT 'schema:'||n.nspname, pg_size_pretty(sum(pg_total_relation_size(c.oid))), sum(pg_total_relation_size(c.oid))
+FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+WHERE c.relkind IN ('r','m','i') AND n.nspname NOT IN ('pg_catalog','information_schema')
+GROUP BY n.nspname ORDER BY 3 DESC;
+\o
+
+-- 37c content_items: bytes per status × ålder (vad skulle en arkiv-/body-gallring frigöra?)
+\o out/37c_content_items_bytes_by_status_age.csv
+SELECT status, pipeline_source,
+       CASE WHEN created_at >= now()-interval '30 days' THEN '0-30d'
+            WHEN created_at >= now()-interval '90 days' THEN '30-90d' ELSE '>90d' END AS age,
+       count(*) AS rows,
+       pg_size_pretty(sum(length(body))::bigint) AS body_text,
+       pg_size_pretty(sum(pg_column_size(t.*))::bigint) AS row_bytes_est
+FROM content_items t GROUP BY 1,2,3 ORDER BY sum(pg_column_size(t.*)) DESC;
+\o
+
+-- 37d raw_fetch_logs: bytes per typ × dag (7 d retention enligt mig 057 — håller den?)
+\o out/37d_raw_fetch_logs_by_day.csv
+SELECT (fetched_at AT TIME ZONE 'Europe/Stockholm')::date AS day_sthlm, count(*) AS rows,
+       pg_size_pretty(sum(pg_column_size(r.*))::bigint) AS bytes_est,
+       count(DISTINCT team_id) AS teams
+FROM raw_fetch_logs r GROUP BY 1 ORDER BY 1;
+\o
+
+-- 37e Aktivitet per tabell (skrivtryck = disk-IO): inserts/updates/deletes sedan senaste stats-reset
+\o out/37e_table_write_activity.csv
+SELECT relname, n_tup_ins, n_tup_upd, n_tup_del, n_tup_hot_upd, seq_scan, idx_scan,
+       n_live_tup, n_dead_tup
+FROM pg_stat_user_tables ORDER BY (n_tup_ins+n_tup_upd+n_tup_del) DESC LIMIT 40;
+\o
+
+-- 37f Postgres-uptime + stats-reset (för att tolka 37e och tidsätta omstarten)
+\o out/37f_uptime.csv
+SELECT now() AS now_utc, pg_postmaster_start_time() AS postmaster_start_utc,
+       pg_postmaster_start_time() AT TIME ZONE 'Europe/Stockholm' AS postmaster_start_sthlm,
+       (SELECT stats_reset FROM pg_stat_database WHERE datname=current_database()) AS stats_reset_utc,
+       version();
+\o

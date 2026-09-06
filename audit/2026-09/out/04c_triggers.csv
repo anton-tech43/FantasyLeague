@@ -1,0 +1,3 @@
+event_object_table,trigger_name,action_timing,event_manipulation
+content_items,trg_suppress_wc_result_recap_push,BEFORE,INSERT
+live_activity_tokens,trg_la_tokens_touch,BEFORE,UPDATE

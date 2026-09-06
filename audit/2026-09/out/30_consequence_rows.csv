@@ -1,0 +1,145 @@
+team_id,consequence_type,created_sthlm,pushed,headline
+algeria,WC_RIVAL_RESULT,2026-06-17 08:09:03.631685,t,Austria beat Jordan 3-1.
+algeria,WC_RIVAL_RESULT,2026-06-22 21:03:04.623818,t,Argentina beat Austria 2-0.
+algeria,WC_RIVAL_RESULT,2026-06-28 05:58:05.225098,t,Argentina beat Jordan 3-1.
+argentina,WC_RIVAL_RESULT,2026-06-17 08:09:03.492201,t,Austria beat Jordan 3-1.
+argentina,WC_RIVAL_RESULT,2026-06-23 07:01:04.085409,t,Algeria beat Jordan 2-1.
+argentina,WC_RIVAL_RESULT,2026-06-28 06:00:15.579869,t,Austria could only draw 3-3 at Algeria.
+australia,WC_RIVAL_RESULT,2026-06-13 05:04:02.883792,t,USA beat Paraguay 4-1.
+australia,WC_RIVAL_RESULT,2026-06-20 07:07:02.610322,t,Paraguay beat Türkiye 1-0.
+australia,WC_RIVAL_RESULT,2026-06-26 06:03:02.045327,t,Türkiye beat USA 3-2.
+austria,WC_RIVAL_RESULT,2026-06-17 05:01:05.684205,t,Argentina beat Algeria 3-0.
+austria,WC_RIVAL_RESULT,2026-06-23 07:01:04.601143,t,Algeria beat Jordan 2-1.
+austria,WC_RIVAL_RESULT,2026-06-28 05:58:05.105882,t,Argentina beat Jordan 3-1.
+belgium,WC_RIVAL_RESULT,2026-06-16 05:04:03.172035,t,New Zealand could only draw 2-2 at Iran.
+belgium,WC_RIVAL_RESULT,2026-06-22 05:02:04.763109,t,Egypt beat New Zealand 3-1.
+belgium,WC_RIVAL_RESULT,2026-06-27 07:04:06.241793,t,Iran could only draw 1-1 at Egypt.
+bosnia_herzegovina,WC_RIVAL_RESULT,2026-06-13 23:05:07.036781,t,Switzerland could only draw 1-1 at Qatar.
+bosnia_herzegovina,WC_RIVAL_RESULT,2026-06-19 02:03:04.173427,t,Canada beat Qatar 6-0.
+bosnia_herzegovina,WC_RIVAL_RESULT,2026-06-24 22:57:03.283921,t,Switzerland beat Canada 2-1.
+brazil,WC_RIVAL_RESULT,2026-06-14 05:04:03.747962,t,Scotland beat Haiti 1-0.
+brazil,WC_RIVAL_RESULT,2026-06-20 02:00:31.629552,t,Morocco beat Scotland 1-0.
+brazil,WC_RIVAL_RESULT,2026-06-25 02:02:04.051473,t,Morocco beat Haiti 4-2.
+canada,WC_RIVAL_RESULT,2026-06-13 23:05:06.912456,t,Switzerland could only draw 1-1 at Qatar.
+canada,WC_RIVAL_RESULT,2026-06-18 22:58:04.444167,t,Switzerland beat Bosnia & Herzegovina 4-1.
+canada,WC_RIVAL_RESULT,2026-06-24 23:00:06.189057,t,Bosnia & Herzegovina beat Qatar 3-1.
+cape_verde,WC_RIVAL_RESULT,2026-06-16 02:06:04.822978,t,Uruguay could only draw 1-1 at Saudi Arabia.
+cape_verde,WC_RIVAL_RESULT,2026-06-21 20:02:02.490411,t,Spain beat Saudi Arabia 4-0.
+cape_verde,WC_RIVAL_RESULT,2026-06-27 04:02:04.273738,t,Spain beat Uruguay 1-0.
+colombia,WC_RIVAL_RESULT,2026-06-17 21:00:11.72328,t,Congo DR could only draw 1-1 at Portugal.
+colombia,WC_RIVAL_RESULT,2026-06-23 21:00:05.380704,t,Portugal beat Uzbekistan 5-0.
+colombia,WC_RIVAL_RESULT,2026-06-28 03:33:04.133051,t,Congo DR beat Uzbekistan 3-1.
+congo_dr,WC_RIVAL_RESULT,2026-06-18 06:03:03.790717,t,Colombia beat Uzbekistan 3-1.
+congo_dr,WC_RIVAL_RESULT,2026-06-23 21:00:05.528519,t,Portugal beat Uzbekistan 5-0.
+congo_dr,WC_RIVAL_RESULT,2026-06-28 03:29:04.821046,t,Portugal could only draw 0-0 at Colombia.
+croatia,WC_RIVAL_RESULT,2026-06-18 03:06:03.588784,t,Ghana beat Panama 1-0.
+croatia,WC_RIVAL_RESULT,2026-06-24 00:01:05.067775,t,Ghana could only draw 0-0 at England.
+croatia,WC_RIVAL_RESULT,2026-06-28 00:56:04.572997,t,England beat Panama 2-0.
+curacao,WC_RIVAL_RESULT,2026-06-15 03:05:09.656445,t,Ivory Coast beat Ecuador 1-0.
+curacao,WC_RIVAL_RESULT,2026-06-21 00:01:03.77546,t,Germany beat Ivory Coast 2-1.
+curacao,WC_RIVAL_RESULT,2026-06-26 00:00:08.135276,t,Ecuador beat Germany 2-1.
+czech_republic,WC_RIVAL_RESULT,2026-06-11 23:05:07.856796,t,Mexico beat South Africa 2-0.
+czech_republic,WC_RIVAL_RESULT,2026-06-19 04:57:03.129253,t,Mexico beat South Korea 1-0.
+czech_republic,WC_RIVAL_RESULT,2026-06-25 04:58:05.03682,t,South Africa beat South Korea 1-0.
+ecuador,WC_RIVAL_RESULT,2026-06-14 21:00:06.079248,t,Germany beat Curaçao 7-1.
+ecuador,WC_RIVAL_RESULT,2026-06-21 00:01:03.66033,t,Germany beat Ivory Coast 2-1.
+ecuador,WC_RIVAL_RESULT,2026-06-25 23:59:02.141789,t,Ivory Coast beat Curaçao 2-0.
+egypt,WC_RIVAL_RESULT,2026-06-16 05:04:03.284973,t,New Zealand could only draw 2-2 at Iran.
+egypt,WC_RIVAL_RESULT,2026-06-21 23:02:06.119839,t,Iran could only draw 0-0 at Belgium.
+egypt,WC_RIVAL_RESULT,2026-06-27 06:58:02.419372,t,Belgium beat New Zealand 5-1.
+england,WC_RIVAL_RESULT,2026-06-18 03:06:03.464176,t,Ghana beat Panama 1-0.
+england,WC_RIVAL_RESULT,2026-06-24 02:55:07.329024,t,Croatia beat Panama 1-0.
+england,WC_RIVAL_RESULT,2026-06-28 00:59:03.79539,t,Croatia beat Ghana 2-1.
+france,WC_RIVAL_RESULT,2026-06-17 02:05:05.13207,t,Norway beat Iraq 4-1.
+france,WC_RIVAL_RESULT,2026-06-23 04:01:05.550271,t,Norway beat Senegal 3-2.
+france,WC_RIVAL_RESULT,2026-06-26 23:05:05.53944,t,Senegal beat Iraq 5-0.
+germany,WC_RIVAL_RESULT,2026-06-15 03:05:09.549901,t,Ivory Coast beat Ecuador 1-0.
+germany,WC_RIVAL_RESULT,2026-06-21 03:56:03.875328,t,Curaçao could only draw 0-0 at Ecuador.
+germany,WC_RIVAL_RESULT,2026-06-25 23:59:02.022126,t,Ivory Coast beat Curaçao 2-0.
+ghana,WC_RIVAL_RESULT,2026-06-18 00:01:03.202377,t,England beat Croatia 4-2.
+ghana,WC_RIVAL_RESULT,2026-06-24 02:55:07.436264,t,Croatia beat Panama 1-0.
+ghana,WC_RIVAL_RESULT,2026-06-28 00:56:04.477597,t,England beat Panama 2-0.
+haiti,WC_RIVAL_RESULT,2026-06-14 02:11:02.809271,t,Morocco could only draw 1-1 at Brazil.
+haiti,WC_RIVAL_RESULT,2026-06-20 02:00:31.773513,t,Morocco beat Scotland 1-0.
+haiti,WC_RIVAL_RESULT,2026-06-25 02:02:04.723817,t,Brazil beat Scotland 3-0.
+iran,WC_RIVAL_RESULT,2026-06-15 22:58:05.300443,t,Egypt could only draw 1-1 at Belgium.
+iran,WC_RIVAL_RESULT,2026-06-22 05:02:04.626086,t,Egypt beat New Zealand 3-1.
+iran,WC_RIVAL_RESULT,2026-06-27 06:58:02.537809,t,Belgium beat New Zealand 5-1.
+iraq,WC_RIVAL_RESULT,2026-06-16 23:05:03.222987,t,France beat Senegal 3-1.
+iraq,WC_RIVAL_RESULT,2026-06-23 04:01:05.684466,t,Norway beat Senegal 3-2.
+iraq,WC_RIVAL_RESULT,2026-06-26 23:00:12.899076,t,France beat Norway 4-1.
+ivory_coast,WC_RIVAL_RESULT,2026-06-14 21:00:06.003677,t,Germany beat Curaçao 7-1.
+ivory_coast,WC_RIVAL_RESULT,2026-06-21 03:56:04.018695,t,Curaçao could only draw 0-0 at Ecuador.
+ivory_coast,WC_RIVAL_RESULT,2026-06-26 00:00:08.024672,t,Ecuador beat Germany 2-1.
+japan,WC_RIVAL_RESULT,2026-06-15 05:58:05.353853,t,Sweden beat Tunisia 5-1.
+japan,WC_RIVAL_RESULT,2026-06-20 20:58:04.144331,t,Netherlands beat Sweden 5-1.
+japan,WC_RIVAL_RESULT,2026-06-26 02:55:06.756497,t,Netherlands beat Tunisia 3-1.
+jordan,WC_RIVAL_RESULT,2026-06-17 05:01:05.863902,t,Argentina beat Algeria 3-0.
+jordan,WC_RIVAL_RESULT,2026-06-22 21:03:04.453064,t,Argentina beat Austria 2-0.
+jordan,WC_RIVAL_RESULT,2026-06-28 06:00:15.842844,t,Austria could only draw 3-3 at Algeria.
+mexico,WC_RIVAL_RESULT,2026-06-12 05:57:01.543952,t,South Korea beat Czech Republic 2-1.
+mexico,WC_RIVAL_RESULT,2026-06-18 19:59:03.095104,t,South Africa could only draw 1-1 at Czechia.
+mexico,WC_RIVAL_RESULT,2026-06-25 04:58:04.986351,t,South Africa beat South Korea 1-0.
+morocco,WC_RIVAL_RESULT,2026-06-14 05:04:03.890777,t,Scotland beat Haiti 1-0.
+morocco,WC_RIVAL_RESULT,2026-06-20 04:32:07.4534,t,Brazil beat Haiti 3-0.
+morocco,WC_RIVAL_RESULT,2026-06-25 02:02:04.674611,t,Brazil beat Scotland 3-0.
+netherlands,WC_RIVAL_RESULT,2026-06-15 05:58:05.541663,t,Sweden beat Tunisia 5-1.
+netherlands,WC_RIVAL_RESULT,2026-06-21 07:57:04.000175,t,Japan beat Tunisia 4-0.
+netherlands,WC_RIVAL_RESULT,2026-06-26 02:59:03.457161,t,Sweden could only draw 1-1 at Japan.
+new_zealand,WC_RIVAL_RESULT,2026-06-15 22:58:05.447422,t,Egypt could only draw 1-1 at Belgium.
+new_zealand,WC_RIVAL_RESULT,2026-06-21 23:02:05.96193,t,Iran could only draw 0-0 at Belgium.
+new_zealand,WC_RIVAL_RESULT,2026-06-27 07:04:06.410851,t,Iran could only draw 1-1 at Egypt.
+norway,WC_RIVAL_RESULT,2026-06-16 23:05:03.362659,t,France beat Senegal 3-1.
+norway,WC_RIVAL_RESULT,2026-06-23 02:49:04.343546,t,France beat Iraq 3-0.
+norway,WC_RIVAL_RESULT,2026-06-26 23:05:05.659941,t,Senegal beat Iraq 5-0.
+panama,WC_RIVAL_RESULT,2026-06-18 00:01:03.390923,t,England beat Croatia 4-2.
+panama,WC_RIVAL_RESULT,2026-06-24 00:01:04.717414,t,Ghana could only draw 0-0 at England.
+panama,WC_RIVAL_RESULT,2026-06-28 00:59:03.898711,t,Croatia beat Ghana 2-1.
+paraguay,WC_RIVAL_RESULT,2026-06-14 07:57:02.179796,t,Australia beat Türkiye 2-0.
+paraguay,WC_RIVAL_RESULT,2026-06-19 23:05:06.515401,t,USA beat Australia 2-0.
+paraguay,WC_RIVAL_RESULT,2026-06-26 06:03:02.22203,t,Türkiye beat USA 3-2.
+portugal,WC_RIVAL_RESULT,2026-06-18 06:03:03.989696,t,Colombia beat Uzbekistan 3-1.
+portugal,WC_RIVAL_RESULT,2026-06-24 05:58:03.756368,t,Colombia beat Congo DR 1-0.
+portugal,WC_RIVAL_RESULT,2026-06-28 03:33:04.238099,t,Congo DR beat Uzbekistan 3-1.
+qatar,WC_RIVAL_RESULT,2026-06-12 22:59:01.895241,t,Bosnia & Herzegovina could only draw 1-1 at Canada.
+qatar,WC_RIVAL_RESULT,2026-06-18 22:58:04.604937,t,Switzerland beat Bosnia & Herzegovina 4-1.
+qatar,WC_RIVAL_RESULT,2026-06-24 22:57:03.395283,t,Switzerland beat Canada 2-1.
+saudi_arabia,WC_RIVAL_RESULT,2026-06-15 19:57:03.872646,t,Cape Verde Islands could only draw 0-0 at Spain.
+saudi_arabia,WC_RIVAL_RESULT,2026-06-22 02:05:07.940569,t,Cape Verde Islands could only draw 2-2 at Uruguay.
+saudi_arabia,WC_RIVAL_RESULT,2026-06-27 04:02:04.571036,t,Spain beat Uruguay 1-0.
+scotland,WC_RIVAL_RESULT,2026-06-14 02:11:02.916092,t,Morocco could only draw 1-1 at Brazil.
+scotland,WC_RIVAL_RESULT,2026-06-20 04:32:07.197617,t,Brazil beat Haiti 3-0.
+scotland,WC_RIVAL_RESULT,2026-06-25 02:02:04.163679,t,Morocco beat Haiti 4-2.
+senegal,WC_RIVAL_RESULT,2026-06-17 02:05:05.264851,t,Norway beat Iraq 4-1.
+senegal,WC_RIVAL_RESULT,2026-06-23 02:49:04.454755,t,France beat Iraq 3-0.
+senegal,WC_RIVAL_RESULT,2026-06-26 23:00:12.779635,t,France beat Norway 4-1.
+south_africa,WC_RIVAL_RESULT,2026-06-12 05:57:01.663009,t,South Korea beat Czech Republic 2-1.
+south_africa,WC_RIVAL_RESULT,2026-06-19 04:57:03.257927,t,Mexico beat South Korea 1-0.
+south_africa,WC_RIVAL_RESULT,2026-06-25 04:58:04.514892,t,Mexico beat Czechia 3-0.
+south_korea,WC_RIVAL_RESULT,2026-06-11 23:05:07.763183,t,Mexico beat South Africa 2-0.
+south_korea,WC_RIVAL_RESULT,2026-06-18 19:59:03.237294,t,South Africa could only draw 1-1 at Czechia.
+south_korea,WC_RIVAL_RESULT,2026-06-25 04:58:04.311288,t,Mexico beat Czechia 3-0.
+spain,WC_RIVAL_RESULT,2026-06-16 02:06:04.685213,t,Uruguay could only draw 1-1 at Saudi Arabia.
+spain,WC_RIVAL_RESULT,2026-06-22 02:05:08.129382,t,Cape Verde Islands could only draw 2-2 at Uruguay.
+spain,WC_RIVAL_RESULT,2026-06-27 04:00:09.419554,t,Saudi Arabia could only draw 0-0 at Cape Verde Islands.
+sweden,WC_RIVAL_RESULT,2026-06-14 23:56:04.963705,t,Japan could only draw 2-2 at Netherlands.
+sweden,WC_RIVAL_RESULT,2026-06-21 07:57:03.86979,t,Japan beat Tunisia 4-0.
+sweden,WC_RIVAL_RESULT,2026-06-26 02:55:06.875676,t,Netherlands beat Tunisia 3-1.
+switzerland,WC_RIVAL_RESULT,2026-06-12 22:59:01.970194,t,Bosnia & Herzegovina could only draw 1-1 at Canada.
+switzerland,WC_RIVAL_RESULT,2026-06-19 02:03:04.023188,t,Canada beat Qatar 6-0.
+switzerland,WC_RIVAL_RESULT,2026-06-24 23:00:06.298771,t,Bosnia & Herzegovina beat Qatar 3-1.
+tunisia,WC_RIVAL_RESULT,2026-06-14 23:56:05.095327,t,Japan could only draw 2-2 at Netherlands.
+tunisia,WC_RIVAL_RESULT,2026-06-20 20:58:04.291403,t,Netherlands beat Sweden 5-1.
+tunisia,WC_RIVAL_RESULT,2026-06-26 02:59:03.571805,t,Sweden could only draw 1-1 at Japan.
+turkiye,WC_RIVAL_RESULT,2026-06-13 05:04:02.990814,t,USA beat Paraguay 4-1.
+turkiye,WC_RIVAL_RESULT,2026-06-19 23:05:06.356363,t,USA beat Australia 2-0.
+turkiye,WC_RIVAL_RESULT,2026-06-26 05:59:02.374689,t,Australia could only draw 0-0 at Paraguay.
+uruguay,WC_RIVAL_RESULT,2026-06-15 19:57:03.990757,t,Cape Verde Islands could only draw 0-0 at Spain.
+uruguay,WC_RIVAL_RESULT,2026-06-21 20:02:02.378252,t,Spain beat Saudi Arabia 4-0.
+uruguay,WC_RIVAL_RESULT,2026-06-27 04:00:09.523563,t,Saudi Arabia could only draw 0-0 at Cape Verde Islands.
+usa,WC_RIVAL_RESULT,2026-06-14 07:57:02.047943,t,Australia beat Türkiye 2-0.
+usa,WC_RIVAL_RESULT,2026-06-20 07:07:02.460456,t,Paraguay beat Türkiye 1-0.
+usa,WC_RIVAL_RESULT,2026-06-26 05:59:02.184739,t,Australia could only draw 0-0 at Paraguay.
+uzbekistan,WC_RIVAL_RESULT,2026-06-17 21:00:11.571153,t,Congo DR could only draw 1-1 at Portugal.
+uzbekistan,WC_RIVAL_RESULT,2026-06-24 05:58:03.889866,t,Colombia beat Congo DR 1-0.
+uzbekistan,WC_RIVAL_RESULT,2026-06-28 03:29:04.951398,t,Portugal could only draw 0-0 at Colombia.

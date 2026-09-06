@@ -1,0 +1,2 @@
+now_utc,postmaster_start_utc,postmaster_start_sthlm,stats_reset_utc,version
+2026-09-06 09:49:50.962609+00,2026-09-06 09:38:46.343672+00,2026-09-06 11:38:46.343672,,"PostgreSQL 17.6 on aarch64-unknown-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit"

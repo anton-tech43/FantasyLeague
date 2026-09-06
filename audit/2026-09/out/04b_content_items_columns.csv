@@ -1,0 +1,37 @@
+column_name,data_type,is_nullable,column_default
+id,uuid,NO,gen_random_uuid()
+team_id,text,NO,
+type,text,NO,
+headline,text,NO,
+body,text,NO,
+talking_points,jsonb,NO,'[]'::jsonb
+source_urls,jsonb,YES,'[]'::jsonb
+match_id,text,YES,
+kickoff_time,timestamp with time zone,YES,
+emotional_context,text,YES,
+status,text,NO,'draft'::text
+review_notes,jsonb,YES,'[]'::jsonb
+created_at,timestamp with time zone,YES,now()
+published_at,timestamp with time zone,YES,
+everyone_talking,boolean,NO,false
+everyone_talking_headline,text,YES,
+everyone_talking_body,text,YES,
+everyone_talking_talking_points,jsonb,YES,
+worth_knowing,boolean,NO,false
+immersive_headline,text,YES,
+immersive_context,text,YES,
+immersive_context_fallback,text,YES,
+analogy_reviewed,boolean,NO,false
+analogy_approved,boolean,NO,false
+analogy_auto_published,boolean,NO,false
+analogy_critic_score,jsonb,YES,
+match_result,text,YES,
+pipeline_source,text,NO,'edge_function'::text
+push_text,text,YES,
+push_title,text,YES,
+pushed_at,timestamp with time zone,YES,
+affected_team_ids,ARRAY,YES,
+consequence_type,text,YES,
+push_eligible,boolean,NO,true
+preview_fixture_id,text,YES,
+goal_events,jsonb,YES,
