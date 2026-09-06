@@ -113,7 +113,7 @@ Filerna `06b_pipeline_health_dump.csv` och `07_match_status_state.csv` är reten
 |---|---|---|---|
 | **P0** | A1 | Sätt PL-säsong och trupp 2026-27 i routines: `fetch_news.sh` (`SEASON`, `TEAMS` → läs `teams` där `league_id=39 AND is_active`), `MATCHDAY_PROMPT.md:57,61`, `PROMPT.md:20`, `SUNDAY_BRIEF`/`QUIZ`/`INSIDER` om de nämner 2025-26. Verifiera att Coventry/Hull får items. | routines |
 | **P0** | A2 | Aktivera matchdags-påminnelse för PL-klubbar (`matchday-reminder`: ta bort `entity_type='country'`-filtret, token-matcha på `team_id/team_ids`, Stockholm-tid). | app |
-| **P0** | A3 | **Pausa VM-läget** enligt checklistan i §4. **Delvis gjort 6 sep:** mig 079 (48 länder `is_active=false`) skriven; körs av Anton (`cleanup_2026_09_06_part2.sql`). Kvar: routines-dashboarden, match-watcher-filter, onboarding. | båda |
+| **P0** | A3 | **Pausa VM-läget** enligt checklistan i §4. **DB-spaken dragen 6 sep 12:3x:** mig 079 körd, 48 länder `is_active=false` (data-fetcher, content-audit, team-page-generator hoppar över dem). Kvar: routines-dashboarden (gd-news-wc/preview/factcheck av; season-state/insider/quiz/brief till klubbar), match-watcher-filter på `is_active`, iOS-onboarding, `world_championship`-raden. | båda |
 | **P0** | A17 | **PL-live-kedjan blind sedan säsongsstart.** Verifiera i dag (6 sep, Everton–Man Utd 15:00 / Arsenal–Chelsea 17:30 CEST) att match-watcher tar matcherna till FT och att FT-push + `gd-matchday`-fire landar (läsvakt igång). Om ja: A14 var orsaken. Om nej: felsök `match-watcher` PL-vägen (Edge-loggar). Sätt pg_net `timeout_milliseconds` explicit i cron-kommandona (saknas i alla 11) och lägg ett heartbeat-CHECK "PL-fixture i dag men 0 `state_updates`". | prod/app |
 | **P0** | A18 | **`gd-season-state` skriver 2025-26-text på team-sidorna.** Samma rotorsak som A1 (`SEASON_STATE_PROMPT.md` + `fetch_*` med `season=2025`). Åtgärd ingår i A1; verifiera efteråt att `28d` ger `phase=mid_season` med 2026-27-summary och att Coventry/Hull får rader. | routines |
 | **P0** | A14 | **Driftstopp 23 aug → 6 sep.** Omstart gjord 6 sep 11:38 CEST (match-watcher grön från 11:50). Kvar: hitta och ta bort IO-drivaren innan det händer igen — (a) `teams.is_active=false` för 48 länder (70 % av data-fetcher-jobbet, A3), (b) gallra `cron.job_run_details` (A16), (c) `VACUUM (FULL)`/repack av `raw_fetch_logs` (169 MB → ~20 MB) i ett servicefönster, (d) överväg Micro-compute om (a)–(c) inte räcker. Skriv in "DB Unhealthy"-runbook. | prod/Anton |
@@ -496,8 +496,9 @@ sunday-brief-kort tomma/versaler (A20); 3 interna motsägelser. Spot-check-lista
 
 **Genomförda åtgärder 6 sep (Anton körde, agenten read-only):** `raw_fetch_logs` 169 MB → 4,5 MB
 (retention-DELETE + `VACUUM FULL`), `cron.job_run_details` 88 MB → 4,6 MB (>14 d raderade + `VACUUM
-FULL`), databas 308 MB → **61 MB**. Återstår i `cleanup_2026_09_06_part2.sql`: gallrings-cron (mig
-078) och `is_active=false` för 48 länder (mig 079).
+FULL`), databas 308 MB → **61 MB**. Del 2 körd 12:3x CEST: gallrings-cron `cron_job_run_details_retention_sweep`
+(jobid 25, 03:20 UTC, mig 078) skapad; `UPDATE 48` → alla länder `is_active=false` (mig 079).
+Verifierat read-only: `country | f | 48`, match-watcher grön varje minut, dagens PL-matcher spårade.
 
 ---
 
