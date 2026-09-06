@@ -1,0 +1,161 @@
+1	T3	assumes	"He's been tracking every England squad update" - invented fact about the partner
+2	T3	not-tp	"Notice if he relaxes or tightens" - a behaviour instruction, not a line she can say
+3	T3	not-tp	"Notice how into it he is"
+4	T3	generic	"The table writes the drama" - filler
+5	T3	not-tp	"Notice if he gets twitchy"
+7	T3	generic	"never far from drama, even in the off-season"
+8	H	thin	"england. starting to click." - a manager quote, not an event
+8	G	noevent	group-chat-at-10pm does not map to "found their groove"
+8	T2	assumes	"He has probably been tense about England's form"
+9	T2	assumes	"He'll have strong views"
+10	T2	assumes	"He might have seen the BBC Panorama documentary"
+11	T3	not-tp	context restated as a talking point
+12	T2	thin	"His dad's a cellist" - trivia with no football link
+13	T2	generic	restates the headline
+14	T2	assumes	"He'll probably know the Haiti kit story already"
+15	T3	generic	"does knowing the personal story change how you watch" - essay question
+16	-	-	clean
+17	H	thin	"time for thursday?" - awkward, and the peg is a 16-year-old streak
+17	T2	assumes	"He might already be watching"
+18	T2	generic	"he'll either know it or need to look it up" - filler
+19	H	thin	bookmaker odds are not an event; "world cup 2026" is a dead third line
+19	T2	generic	US punters are irrelevant to a Spain follower
+20	H	blank	no immersive headline - raw scoreline fallback
+20	G	blank	no girl reference at all
+20	T1	dup	the "Ask him what that result does to X's group" template
+21	H	blank	no immersive headline
+21	G	blank	no girl reference
+21	T1	dup	template
+26	T1	condesc	"Watch him explain what a false nine is"
+27	G	noevent	"earned it" - the dinner was granted, not earned
+28	T1	assumes	presumes he wants England compared
+30	T3	generic	restates the headline
+31	T3	generic	restates the headline
+33	H	blank	no immersive headline
+33	G	blank	no girl reference
+33	T1	dup	template
+34	H	blank	no immersive headline
+34	G	blank	no girl reference
+34	T1	dup	template
+35	T2	not-tp	"Did you know...?" - quiz framing, not a talking point
+36	T3	generic	"whether Osasuna is the kind of club Newcastle should shop at"
+37	T3	assumes	"He'll probably have strong feelings"
+38	T2	assumes	"He'll probably say it shows how risky it is"
+39	H	blank	rival-result card: no headline, no girl ref
+39	T1	dup	template
+40	H	blank	rival-result card
+40	T1	dup	template
+41	T3	generic	"does Arsenal transfer business pick up before or after the World Cup" - trivia
+42	T2	condesc	"He might go on about Ratcliffe's ownership. Let him."
+43	T3	assumes	"He'll point out Bosnia still have two group games"
+44	T3	not-tp	"Did you know...?" and duplicates T2's question
+45	T2	not-tp	"Did you know...?"
+45	T3	assumes	"He'll be buzzing"
+46	T3	assumes	"He's been building his own expected lineup for weeks"
+47	T3	assumes	"He's been thinking about the England squad since it dropped"
+48	T3	assumes	"He's probably been tracking Mbappe's form"
+49	T3	assumes	"He's probably got thoughts on Ghana's squad depth"
+50	T3	assumes	"He's been following Mexico's tournament prep"
+51	T3	assumes	"He's been watching this group"
+52	T3	not-tp	"He'll want to picture Haaland on the bleachers"
+53	T3	assumes	"He's had Panama pegged as underdogs"
+54	T3	assumes	"He's been following Scotland's World Cup build-up"
+55	T3	assumes	"He's been tracking Son Heung-min"
+56	H	blank	rival-result card
+56	T1	dup	template
+57	H	blank	rival-result card
+57	T1	dup	template
+58	T1	assumes	"He's been waiting on Palace to sort their manager situation"
+60	T3	assumes	"He'll appreciate that you spotted this one"
+62	H	blank	rival-result card
+62	T1	dup	template
+63	H	blank	rival-result card
+63	T1	dup	template
+64	T3	dup-in-card	"Did you know two big clubs are circling the same player" restates T1
+65	T3	assumes	"He'll probably say it was the right call"
+66	T3	assumes	"Watch him disappear down a rabbit hole"
+68	T3	assumes	"He'll probably have very strong opinions... Get comfortable"
+69	T3	dup-in-card	"Did you know West Ham's ownership changed" restates T1
+70	T3	dup-in-card	"Did you know Haiti haven't been since 1974" restates T1
+72	T3	assumes	"He'll want to study that VAR row... Get the popcorn"
+73	T1	assumes	push-facing slot opens on an invented habit: "He'll be studying that offside frame for the rest of the week"
+74	H	blank	rival-result card
+75	H	blank	rival-result card
+76	H	blank	rival-result card
+77	H	blank	rival-result card
+78	H	blank	rival-result card
+79	H	blank	rival-result card
+83	T3	assumes	"He will already be tracking this one"
+85	G	craft	"getting the your order is on its way notification" - missing punctuation, reads broken
+85	T3	assumes	"He has been following the Netherlands build-up"
+86	T3	condesc	"Did you know the USA are co-hosting this World Cup?" - breaks the never-question-her-football-knowledge rule
+88	H	case	Sunday Brief headline is Title Case; the immersive card convention is lowercase
+88	G	not-girlref	Sunday Brief writes a stats line into the analogy field, not a cultural reference
+89	G	not-girlref	stats line
+90	G	not-girlref	stats line
+91	G	not-girlref	stats line
+91	T3	filler	"Pre-season starts in August. Plenty of summer to get through first."
+92	G	not-girlref	stats line
+93	G	not-girlref	stats line
+94	G	not-girlref	stats line
+95	G	not-girlref	stats line
+96	G	not-girlref	stats line
+97	G	not-girlref	stats line
+98	G	not-girlref	stats line
+99	G	not-girlref	stats line
+100	G	not-girlref	stats line
+101	G	not-girlref	stats line
+102	G	not-girlref	stats line
+103	G	not-girlref	stats line
+104	G	not-girlref	stats line
+105	G	not-girlref	stats line
+106	G	not-girlref	stats line
+107	G	not-girlref	stats line
+107	T3	filler	"Pre-season is in July. Championship football can be competitive."
+108	H	blank	rival-result card
+109	H	blank	rival-result card
+110	H	blank	rival-result card
+111	H	blank	rival-result card
+112	T3	dup-in-card	"third different player linked to Arsenal" restates T1
+113	T3	assumes	"He might not have expected this one so soon"
+116	STALE	wrong-club	Leicester content generated in June 2026 - not a Premier League club that season
+117	T3	assumes	"He has been backing them from the start"
+118	T3	assumes	"He might already know Irankunda's whole story"
+119	T2	assumes	"He knows the final score was 7-1"
+121	T3	assumes	"He's been building his case for England's lineup all week"
+122	T2	assumes	"He's had the whole group mapped out since the draw"
+123	T3	assumes	"He has been following Japan quietly"
+124	T3	assumes	"He has been watching the group unfold"
+125	T3	assumes	"He has been watching the tournament closely"
+126	T3	assumes	"He has been waiting for Scotland's WC return for years"
+127	T3	assumes	"He has been following Spain all tournament"
+128	T3	thin	"He might know someone who supports Turkiye"
+139	G	generic	company away-day / performance review - workplace cliche, no named anchor
+144	T3	filler	"It is one of those games worth watching together"
+146	T1	assumes	"He will have Costinha highlights playing before dinner"
+147	T3	unverified	"Spain had gone 2,500 passes without a World Cup goal" - unsourced stat
+148	T1	assumes	"He's been watching this manager search play out"
+150	T1	assumes	"He's been checking the team news"
+152	STALE	wrong-club	Leicester content in June 2026 - not a Premier League club
+152	G	mismapped	analogy calls Russell Martin "her" (the nail tech mapping breaks)
+152	T1	condesc	"He'll be looking up Russell Martin's record tonight. Let him."
+153	T1	assumes	"He'll have opinions on Iraola's transfer targets"
+153	T2	assumes	"He'll have a full analysis ready"
+155	T3	unverified	repeats the unsourced "2,500 passes" stat
+161	T3	tone	"watch him act like he had no doubts about it all along" - mocks the partner
+164	G	mismapped	"Kante's her" - the analogy genders a male player as a woman
+170	H	blank	pre-match fixture card: no headline, no girl ref, one templated point
+171	H	blank	pre-match fixture card
+172	H	blank	pre-match fixture card
+173	H	blank	pre-match fixture card
+174	H	blank	pre-match fixture card
+175	H	blank	pre-match fixture card
+175	T1	dup	"Text him big one coming up? and let him run with it" - used 16 times
+176	H	blank	pre-match fixture card
+177	H	blank	rival-result card
+178	H	blank	rival-result card
+181	STALE	wrong-club	Ipswich were a Championship club in June 2026
+187	G	generic	"no formal training vs people who went to Oxford" - no named anchor, class-coded
+188	T2	assumes	"He's been watching England's defensive setup closely"
+189	G	generic	boss/KPI/contract - workplace cliche, no named anchor
+193	T3	copywriter	"The BBC has the full story" - sourcing note, not a talking point
