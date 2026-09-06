@@ -29,9 +29,9 @@ good? is it right for the audience? is the link to what actually happened clear?
 | Rule broken | Cards | Share |
 |---|---|---|
 | Girl ref over the 16-word cap | 766 | 61 % |
-| Girl ref has no named cultural anchor | 483 | 38 % |
+| Girl ref has no named cultural anchor | 343–483 | 27–38 % |
 | No girl reference at all | 321 | 25 % |
-| A talking point states a fact about her partner | 304 | 24 % |
+| A talking point states or presumes a fact about her partner | 304 | 24 % |
 | No designed headline — shipped the raw fallback | 302 | 24 % |
 | "Did you know…?" framing | 61 | 5 % |
 | Headline not lowercase | 46 | 4 % |
@@ -112,8 +112,13 @@ prompt was never taught what the field is for. Nobody noticed for six weeks.
 
 - **766 of 945 (81 %) exceed the 16-word cap.** Median is 23 words, longest 55. The spec
   says "1–2 sentences, tighter is better. If you can say it in one sentence, do."
-- **483 (51 % of those present) have no named cultural anchor**, which the prompt does not
-  merely discourage — it says *"Generic = boring = forbidden."* What shipped instead:
+- **Between 36 % and 51 % of the girl refs present have no named cultural anchor**, which
+  the prompt does not merely discourage — it says *"Generic = boring = forbidden."* The
+  range is honest about the measurement: "named anchor" is a judgement, not a regex. A
+  strict allowlist of brands, apps and named people gives 51 %; widening it to include
+  every anchor I saw while reading — weddings, marathons, bridesmaids, flatmates — gives
+  36 %. The truth sits between, and closer to the strict end, because the prompt explicitly
+  names "your friend" and "your flatmate" as failures. What shipped instead:
   "your flatmate", "a job interview", "the first exam of the semester", "hosting a party at
   your own place", "your company away-day", "your boss offering a pay rise but writing your
   KPIs into the contract". The spec lists workplace analogies as second choice at best;
@@ -251,11 +256,13 @@ The Belgium version of the same story keeps it on the football decision and is f
 USA version is not a football question, and the app should not be handing a couple a
 political opinion to disagree about.
 
-**Is the link clear?** Yes, and the corpus is factually sound. I cross-checked every card
-carrying a scoreline against its own body text: **no card contradicted its own facts.**
-Six flagged pairs were all false positives on inspection (a talking point referencing a
-different match, or the score at a different moment). Whatever else went wrong here, the
-app did not lie about what happened.
+**Is the link clear?** Yes, and on the one thing I could test mechanically the corpus is
+sound. I cross-checked all 150 cards carrying a scoreline in both the card and its body:
+**none contradicted itself.** The seven flagged pairs were false positives on inspection —
+a talking point referencing a different match, or the score at a different moment. That is
+a narrower claim than "the facts were right": it means the app did not disagree with its
+own source text. Claims it could not check against itself — the Almirón red card below —
+are a separate matter.
 
 **When the talking points are good, they are very good** — and they cluster around emotion,
 not information:
