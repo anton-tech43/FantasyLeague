@@ -74,3 +74,35 @@ Deno.test("every body variant: names opponent + time, bounded, no em/en dashes",
     assert(!all.includes("—") && !all.includes("–"), `variant ${i} no em/en dash`);
   }
 });
+
+// ── mig 082: per-reader timezone ────────────────────────────────────────────
+
+Deno.test("tz: same kickoff renders 17:30 for Stockholm and 16:30 for London", () => {
+  // Arsenal v Chelsea 2026-09-06 15:30 UTC (CEST +2, BST +1).
+  const kickoff = new Date("2026-09-06T15:30:00Z");
+  const now = new Date("2026-09-06T07:00:00Z");
+  const se = renderMatchdayReminder({ teamName: "Arsenal", opponent: "Chelsea", kickoffUtc: kickoff, now, rng: zero });
+  const uk = renderMatchdayReminder({ teamName: "Arsenal", opponent: "Chelsea", kickoffUtc: kickoff, now, tz: "Europe/London", rng: zero });
+  assert(se.body.includes("today at 17:30"), "default zone is Stockholm: " + se.body);
+  assert(uk.body.includes("today at 16:30"), "London reader sees BST clock: " + uk.body);
+  eq(se.title, uk.title, "title is zone-independent");
+});
+
+Deno.test("tz: invalid or missing zone falls back to Stockholm, never throws", () => {
+  const kickoff = new Date("2026-09-06T15:30:00Z");
+  const now = new Date("2026-09-06T07:00:00Z");
+  for (const tz of ["Not/AZone", "", null, undefined, "garbage;drop table"]) {
+    const c = renderMatchdayReminder({ teamName: "Arsenal", opponent: "Chelsea", kickoffUtc: kickoff, now, tz, rng: zero });
+    assert(c.body.includes("today at 17:30"), `fallback for ${JSON.stringify(tz)}: ${c.body}`);
+  }
+});
+
+Deno.test("tz: 'today'/'tomorrow' follows the reader's calendar date", () => {
+  // Kickoff 23:30 UTC Sep 6 = 01:30 CEST Sep 7 (tomorrow in Stockholm) but
+  // 00:30 BST Sep 7 (also tomorrow) vs 19:30 EDT Sep 6 (today in New York).
+  const kickoff = new Date("2026-09-06T23:30:00Z");
+  const now = new Date("2026-09-06T07:00:00Z");
+  eq(dayWord(kickoff, now), "tomorrow", "Stockholm");
+  eq(dayWord(kickoff, now, "Europe/London"), "tomorrow", "London");
+  eq(dayWord(kickoff, now, "America/New_York"), "today", "New York");
+});

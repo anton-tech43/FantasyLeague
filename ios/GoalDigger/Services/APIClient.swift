@@ -225,6 +225,11 @@ class APIClient {
             "p_country_ids": countryIds,
             "p_tier": tier,
             "p_apns_environment": APIClient.apnsEnvironment,
+            // Migration 082: the device's IANA timezone so push copy (matchday
+            // reminder, morning game-day push) renders kickoff in HER local time
+            // instead of one fixed zone. Re-sent on every registration, so a
+            // move between zones is picked up on the next app start.
+            "p_timezone": TimeZone.current.identifier,
         ]
         let bodyData = try JSONSerialization.data(withJSONObject: body)
         let request = makeRequest(url: url, method: "POST", body: bodyData)

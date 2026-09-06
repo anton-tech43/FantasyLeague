@@ -6,32 +6,45 @@
 // BEFORE (the fixture falls into the previous day's 24h window). The copy must
 // therefore read correctly whether the game is "today" or "tomorrow".
 //
-// Times are rendered in Europe/Stockholm (the audience market), DST-correct via
+// Times are rendered in the READER's timezone when known (device_tokens.timezone,
+// mig 082), defaulting to Europe/Stockholm (the audience market). DST-correct via
 // Intl. No em-dashes (campaign rule).
 
-const TZ = "Europe/Stockholm";
+export const DEFAULT_TZ = "Europe/Stockholm";
 
-/** Stockholm-local calendar date as "YYYY-MM-DD". */
-function ymd(d: Date): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(d);
+/// Return `tz` if Intl accepts it as an IANA zone, else the market default. A
+/// device can report anything; a bad zone must never break a push.
+export function safeTz(tz: string | null | undefined): string {
+  if (!tz) return DEFAULT_TZ;
+  try {
+    new Intl.DateTimeFormat("en-GB", { timeZone: tz });
+    return tz;
+  } catch {
+    return DEFAULT_TZ;
+  }
 }
 
-/** Stockholm-local 24h clock time as "HH:MM". */
-export function hhmm(d: Date): string {
+/** Zone-local calendar date as "YYYY-MM-DD". */
+function ymd(d: Date, tz: string = DEFAULT_TZ): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(d);
+}
+
+/** Zone-local 24h clock time as "HH:MM". */
+export function hhmm(d: Date, tz: string = DEFAULT_TZ): string {
   return new Intl.DateTimeFormat("en-GB", {
-    timeZone: TZ,
+    timeZone: tz,
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
   }).format(d);
 }
 
-/// "today" / "tomorrow" relative to `now`, both in Stockholm-local date. The
+/// "today" / "tomorrow" relative to `now`, both in the zone's local date. The
 /// 24h reminder window guarantees the kickoff is one of these two.
-export function dayWord(kickoff: Date, now: Date): string {
-  const k = ymd(kickoff);
-  if (k === ymd(now)) return "today";
-  if (k === ymd(new Date(now.getTime() + 24 * 60 * 60 * 1000))) return "tomorrow";
+export function dayWord(kickoff: Date, now: Date, tz: string = DEFAULT_TZ): string {
+  const k = ymd(kickoff, tz);
+  if (k === ymd(now, tz)) return "today";
+  if (k === ymd(new Date(now.getTime() + 24 * 60 * 60 * 1000), tz)) return "tomorrow";
   return "soon"; // outside the window — defensive, shouldn't be reached
 }
 
@@ -55,16 +68,19 @@ export interface MatchdayReminderCopy {
 
 /// Render the reminder push for a single fixture. `now` is the moment the
 /// reminder fires (the cron run), used only to decide "today" vs "tomorrow".
+/// `tz` is the reader's zone (device_tokens.timezone); defaults to Stockholm.
 export function renderMatchdayReminder(args: {
   teamName: string;
   opponent: string;
   kickoffUtc: Date;
   now: Date;
+  tz?: string | null;
   rng?: () => number;
 }): MatchdayReminderCopy {
   const { teamName, opponent, kickoffUtc, now, rng = Math.random } = args;
-  const when = dayWord(kickoffUtc, now);
-  const whenAt = `${when} at ${hhmm(kickoffUtc)}`;
+  const tz = safeTz(args.tz);
+  const when = dayWord(kickoffUtc, now, tz);
+  const whenAt = `${when} at ${hhmm(kickoffUtc, tz)}`;
   return {
     title: `${teamName} play ${when}`,
     body: pick(BODY_VARIANTS, rng)(teamName, opponent, whenAt),

@@ -27,7 +27,7 @@ import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { deactivateTokens, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
 import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts";
 import { buildAPNsPayload, sendPushNotification } from "../_shared/apns-client.ts";
-import { renderMatchdayReminder, renderPreMatchBuildup } from "../_shared/matchday-reminder-copy.ts";
+import { renderMatchdayReminder, renderPreMatchBuildup, safeTz } from "../_shared/matchday-reminder-copy.ts";
 import { preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
 import { seasonForLeague } from "../_shared/league-helpers.ts";
 
@@ -246,6 +246,7 @@ serve(async (req) => {
 
       // ── Reminder PUSH — followed entities only ───────────────────────────
       const isFollowed = followed.has(teamId);
+      // Default-zone copy for the dry-run report; real sends render per zone below.
       const copy = renderMatchdayReminder({ teamName, opponent: fx.opponent, kickoffUtc: kickoff, now });
 
       if (dryRun) {
@@ -283,29 +284,40 @@ serve(async (req) => {
       // device (UNIQUE apns_token) → one push even if it follows both sides.
       const { data: tokens } = await supabase
         .from("device_tokens")
-        .select("apns_token, apns_environment")
+        .select("apns_token, apns_environment, timezone")
         .or(`team_id.eq.${teamId},team_ids.cs.{${teamId}},country_id.eq.${teamId},country_ids.cs.{${teamId}}`)
         .eq("is_active", true);
 
-      // The payload is identical for every follower of this country (only the
-      // APNs env differs per device), so build it once and fan the sends out
-      // with bounded concurrency — the old sequential loop blew the 400s
-      // wall-clock ceiling for a popular country at 50k followers
-      // (SCALING_50K.md §1).
-      const payload = buildAPNsPayload(
-        "", // teamShortName fallback unused — pushTitle is set below
-        copy.body, // headline fallback
-        `matchday-${teamId}-${kickoff.getTime()}`, // non-UUID sentinel: tap just opens the app
-        "WC_MATCHDAY", // category string is not interpreted by iOS today; kept for log continuity
-        false,
-        copy.body, // push_text
-        copy.title, // push_title
-      );
+      // Mig 082: kickoff is rendered in each READER's zone. Followers cluster
+      // into a handful of zones, so build one payload per zone (not per device)
+      // and fan the sends out with bounded concurrency — the old sequential
+      // loop blew the 400s wall-clock ceiling for a popular team at 50k
+      // followers (SCALING_50K.md §1). Unknown/invalid zone → Stockholm.
+      const payloadByTz = new Map<string, ReturnType<typeof buildAPNsPayload>>();
+      const payloadFor = (tzRaw: string | null | undefined) => {
+        const tz = safeTz(tzRaw);
+        let p = payloadByTz.get(tz);
+        if (!p) {
+          const c = renderMatchdayReminder({ teamName, opponent: fx.opponent, kickoffUtc: kickoff, now, tz });
+          p = buildAPNsPayload(
+            "", // teamShortName fallback unused — pushTitle is set below
+            c.body, // headline fallback
+            `matchday-${teamId}-${kickoff.getTime()}`, // non-UUID sentinel: tap just opens the app
+            "WC_MATCHDAY", // category string is not interpreted by iOS today; kept for log continuity
+            false,
+            c.body, // push_text
+            c.title, // push_title
+          );
+          payloadByTz.set(tz, p);
+        }
+        return p;
+      };
       const sendResults = await mapWithConcurrency(tokens ?? [], PUSH_CONCURRENCY, async (t) => {
         const env = t.apns_environment === "production" ? "production" : "development";
-        const res = await sendPushNotification(t.apns_token as string, payload, env);
+        const res = await sendPushNotification(t.apns_token as string, payloadFor(t.timezone as string | null), env);
         return { token: t.apns_token as string, res };
       });
+      const zones = [...payloadByTz.keys()];
       await deactivateTokens(
         supabase,
         "device_tokens",
@@ -319,6 +331,7 @@ serve(async (req) => {
         opponent: fx.opponent,
         kickoff: kickoff.toISOString(),
         tokens_sent: sent,
+        timezones: zones,
         buildup: buildupWritten,
         source: cand.source,
       });

@@ -29,6 +29,7 @@ import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { deactivateTokens, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
 import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts";
 import { sendPushNotification, buildAPNsPayload } from "../_shared/apns-client.ts";
+import { hhmm, safeTz } from "../_shared/matchday-reminder-copy.ts";
 import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 
 interface Fixture {
@@ -45,34 +46,13 @@ interface Team {
   entity_type: string | null;
 }
 
-/// Format kickoff time as "19:00 BST" / "20:00 GMT". We display in
-/// London time since most users are UK/EU and the app's voice has a
-/// UK lean. iOS shows kickoff in the user's locale on the team page;
-/// the push body is short enough that one consistent timezone here
-/// reads cleaner than a per-user lookup we don't have data for.
-///
-/// We BUILD the BST/GMT suffix ourselves from the UK offset rather than
-/// letting `Intl.DateTimeFormat` emit `timeZoneName: "short"`. V8/ICU
-/// builds vary in how they render the suffix for `en-GB`/`Europe/London`
-/// — some emit "BST" (preferred), some emit "GMT+1". Deterministic
-/// suffix avoids the rendering jitter.
-function formatKickoff(iso: string): string {
-  const date = new Date(iso);
-  const time = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Europe/London",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).format(date);
-  // Compute the UK offset at this moment from London-local vs UTC hour.
-  // London is +1 during BST (late Mar → late Oct), +0 the rest of the
-  // year. Doing it this way (vs. a hardcoded date range) covers the
-  // year-on-year DST transition without code edits.
-  const ukHour = parseInt(time.split(":")[0], 10);
-  const utcHour = date.getUTCHours();
-  const offset = (ukHour - utcHour + 24) % 24;
-  const suffix = offset === 1 ? "BST" : "GMT";
-  return `${time} ${suffix}`;
+/// Format kickoff as "HH:MM" in the READER's zone (device_tokens.timezone,
+/// mig 082; Stockholm when unknown). Until Sept 2026 this rendered London time
+/// with a BST/GMT suffix for everyone — wrong by an hour for the Swedish
+/// audience (audit 2026-09, A5). No suffix: the time is in her own zone, so a
+/// suffix would only add noise.
+function formatKickoff(iso: string, tz: string): string {
+  return hhmm(new Date(iso), safeTz(tz));
 }
 
 serve(async (req) => {
@@ -167,7 +147,7 @@ serve(async (req) => {
       const teams = `${fix.home_team_id},${fix.away_team_id}`;
       const { data: tokens } = await supabase
         .from("device_tokens")
-        .select("apns_token, apns_environment, team_id, country_id, team_ids, country_ids")
+        .select("apns_token, apns_environment, team_id, country_id, team_ids, country_ids, timezone")
         .or(
           `team_id.eq.${fix.home_team_id},country_id.eq.${fix.home_team_id},` +
           `team_id.eq.${fix.away_team_id},country_id.eq.${fix.away_team_id},` +
@@ -177,19 +157,23 @@ serve(async (req) => {
 
       if (!tokens || tokens.length === 0) continue;
 
-      const kickoffStr = formatKickoff(fix.kickoff_time);
-
       // Body name-drops both teams + kickoff time, then teases the lineup as a
       // conversation starter — lineups drop ~60min before kickoff per
-      // API-Football's publication cadence. It's fixture-constant; only the
-      // title/payload differ per device (named after whichever side that device
-      // follows), so resolve payloads first then fan out with bounded
-      // concurrency. The old sequential loop + a pipeline_health insert PER
-      // token would blow the 400s wall-clock ceiling for a popular club at 50k
-      // followers (SCALING_50K.md §1).
-      const body =
-        `${home.display_name} vs ${away.display_name} at ${kickoffStr}. ` +
-        `Lineups drop an hour before — good thing to ask him about.`;
+      // API-Football's publication cadence. Fixture-constant except the kickoff
+      // clock, which is rendered in each reader's zone (mig 082) — memoised per
+      // zone since followers cluster into a few zones. Resolve payloads first,
+      // then fan out with bounded concurrency (SCALING_50K.md §1).
+      const bodyByTz = new Map<string, string>();
+      const bodyFor = (tzRaw: string | null | undefined): string => {
+        const tz = safeTz(tzRaw);
+        let b = bodyByTz.get(tz);
+        if (!b) {
+          b = `${home.display_name} vs ${away.display_name} at ${formatKickoff(fix.kickoff_time, tz)}. ` +
+            `Lineups drop an hour before, good thing to ask him about.`;
+          bodyByTz.set(tz, b);
+        }
+        return b;
+      };
 
       type Recipient = {
         token: string;
@@ -211,6 +195,7 @@ serve(async (req) => {
         const followsAway = follows.has(fix.away_team_id);
         const subject = followsHome ? home : (followsAway ? away : home);
         const title = `Game day at ${subject.short_name ?? subject.display_name}`;
+        const body = bodyFor(tk.timezone as string | null);
         // contentId here is the fixture_id (not a content_items UUID); iOS uses
         // it as a deep-link key to the team page Calendar tab.
         const payload = buildAPNsPayload(
