@@ -2,7 +2,7 @@
 
 **Datum:** 2026-09-06 · **Scope:** Premier League i dagsläget (huvudspår) + VM-slutspelet
 28 jun–19 jul (lätt retrospektiv) · **Status:** Spår A (kod/konfig) klart · Spår B: snapshot tagen 2026-09-06 11:45 CEST
-(`audit/2026-09/out/`), **B1 klart** (driftfacit), B2–B7 pågår.
+(`audit/2026-09/out/`), **B1–B7 klara** 2026-09-06. B4-bilaga: `audit/2026-09/B4_urval.md`.
 
 Granskningen bygger vidare på `CONTENT_PUSH_AUDIT_2026-06.md` (5 juni) och använder samma
 princip: deterministiskt först, LLM-omdömen bara på urval, och **bara interna motsägelser räknas
@@ -19,6 +19,16 @@ som "osant"** (juniauditens lärdom om stale spelartrupper). Allt är read-only 
    `pipeline_health`-frågor). Dashboarden visade **Disk IO 100 %, Compute 100 %** på `t4g.nano`.
    Sista routine-post 29 aug 11:17 CEST, sista push 29 aug 08:56 CEST. Larmet som skulle ha sagt
    till (`check_pipeline_heartbeat`) kraschar självt på en `FORMAT('%.0f')`-bugg. (A14, A15 — P0)
+0b. **NYTT (B2/B6): match-watcher har varit blind för PL hela säsongen.** API-Football listar 30
+   PL-matcher 21 aug–6 sep (28 spelade). `match_status_state` innehåller **1** av dem (Arsenal–Coventry
+   21 aug), och den raden uppdaterades aldrig efter NS. Alltså **0 live-pushar (mål/HT/FT), 0
+   `gd-matchday`-fires, 0 deterministiska FT-artiklar, 1 morning-push** för PL i augusti.
+   Cron-loggen visar att degraderingen började **9 aug** (19 startup-timeouts → 486/dag den 17 aug).
+   Efter omstarten i dag ser match-watcher dagens två matcher (`fixtures_seen: 2`). (A17, P0)
+0c. **NYTT (B3): `team_season_state` för alla 20 PL-klubbar är förra säsongens slutspurt.**
+   Routinen `gd-season-state` skrev om raderna dagligen t.o.m. 24 aug med 2025-26-data: "Arsenal are
+   top with 79 points from 36 games, two games left" — i slutet av augusti 2026. Coventry/Hull har
+   tomma rader sedan 24 jun. Det är A1 i sin mest synliga form. (A18, P0)
 1. **Routines kör fortfarande säsong 2025-26 för PL.** `fetch_news.sh` hämtar tabellen för
    `season=2025` med förra truppen (Coventry/Hull saknas, West Ham/Wolves/Burnley kvar);
    `MATCHDAY_PROMPT.md` hämtar `season=2025`-tabellen; `PROMPT.md` säger "2025-26 season".
@@ -45,9 +55,10 @@ som "osant"** (juniauditens lärdom om stale spelartrupper). Allt är read-only 
    Status-CHECK i prod har `retrying` + `archived` som saknas i alla migrationer. Fem crons ur
    mig 003 (`matchday-scheduler`, `data-fetcher`, `cleanup-*`) är borttagna utanför git.
    (A12/A13, P0-process)
-7. **Nattpushar är policy, inte bugg:** `gd-news` fyrar 00:30 UTC (01:30–02:30 svensk tid) och
-   servern har inga quiet hours sedan 17 maj (flyttat till iOS DND). Juniauditen kallade
-   nattpusharna "lösta"; schemat kvarstår. Mät i B2 och besluta. (A4, P1/policy)
+7. **Nattpushar, uppmätt (B2):** **112 av 347 PL-pushar (32 %) landade 00:37–01:03 svensk tid**,
+   14 av 29 nätter. Fyren är alltså ~00:30 *Stockholm* (22:30 UTC), inte 00:30 UTC som README säger.
+   Övriga pushar: 08:37–09:22 (45 %) och 11:1x (söndagsbriefar, 23 %). Körningarna 12:30/18:30 UTC
+   ger **noll** pushar. Servern har inga quiet hours sedan 17 maj. Beslut krävs. (A4, P1/policy)
 8. **Blandade tidszoner i kopian:** morning-push skriver BST/GMT, matchday-reminder Stockholm,
    iOS enhetslokalt. (A5, P1)
 9. **Retention:** snapshoten är tagen och committad (`audit/2026-09/out/`, 50+ filer, 11 MB
@@ -102,7 +113,9 @@ Filerna `06b_pipeline_health_dump.csv` och `07_match_status_state.csv` är reten
 |---|---|---|---|
 | **P0** | A1 | Sätt PL-säsong och trupp 2026-27 i routines: `fetch_news.sh` (`SEASON`, `TEAMS` → läs `teams` där `league_id=39 AND is_active`), `MATCHDAY_PROMPT.md:57,61`, `PROMPT.md:20`, `SUNDAY_BRIEF`/`QUIZ`/`INSIDER` om de nämner 2025-26. Verifiera att Coventry/Hull får items. | routines |
 | **P0** | A2 | Aktivera matchdags-påminnelse för PL-klubbar (`matchday-reminder`: ta bort `entity_type='country'`-filtret, token-matcha på `team_id/team_ids`, Stockholm-tid). | app |
-| **P0** | A3 | **Pausa VM-läget** enligt checklistan i §4 (onboarding PL-först, stäng VM-routines, stoppa liga-1-pollning och landshämtning). | båda |
+| **P0** | A3 | **Pausa VM-läget** enligt checklistan i §4. **Delvis gjort 6 sep:** mig 079 (48 länder `is_active=false`) skriven; körs av Anton (`cleanup_2026_09_06_part2.sql`). Kvar: routines-dashboarden, match-watcher-filter, onboarding. | båda |
+| **P0** | A17 | **PL-live-kedjan blind sedan säsongsstart.** Verifiera i dag (6 sep, Everton–Man Utd 15:00 / Arsenal–Chelsea 17:30 CEST) att match-watcher tar matcherna till FT och att FT-push + `gd-matchday`-fire landar (läsvakt igång). Om ja: A14 var orsaken. Om nej: felsök `match-watcher` PL-vägen (Edge-loggar). Sätt pg_net `timeout_milliseconds` explicit i cron-kommandona (saknas i alla 11) och lägg ett heartbeat-CHECK "PL-fixture i dag men 0 `state_updates`". | prod/app |
+| **P0** | A18 | **`gd-season-state` skriver 2025-26-text på team-sidorna.** Samma rotorsak som A1 (`SEASON_STATE_PROMPT.md` + `fetch_*` med `season=2025`). Åtgärd ingår i A1; verifiera efteråt att `28d` ger `phase=mid_season` med 2026-27-summary och att Coventry/Hull får rader. | routines |
 | **P0** | A14 | **Driftstopp 23 aug → 6 sep.** Omstart gjord 6 sep 11:38 CEST (match-watcher grön från 11:50). Kvar: hitta och ta bort IO-drivaren innan det händer igen — (a) `teams.is_active=false` för 48 länder (70 % av data-fetcher-jobbet, A3), (b) gallra `cron.job_run_details` (A16), (c) `VACUUM (FULL)`/repack av `raw_fetch_logs` (169 MB → ~20 MB) i ett servicefönster, (d) överväg Micro-compute om (a)–(c) inte räcker. Skriv in "DB Unhealthy"-runbook. | prod/Anton |
 | **P0** | A15 | **Larmet kraschar.** `check_pipeline_heartbeat` CHECK 2 använder `FORMAT('… %.0f%% …')` — Postgres `format()` stöder inte `%.0f` → `unrecognized format() type specifier "."` (13 ggr 25–30 aug). Byt till `round(…)::text` med `%s`. Utan detta finns ingen signal när crons dör. | app (mig 037/039/041:109-116) |
 | **P1** | A16 | `cron.job_run_details` saknar gallring (177 k rader / 88 MB, 1 440 rader/dag från match-watcher). Lägg cron `DELETE … WHERE end_time < now() - interval '7 days'` (Supabase-rekommendation). | app (ny migration) |
@@ -110,11 +123,17 @@ Filerna `06b_pipeline_health_dump.csv` och `07_match_status_state.csv` är reten
 | **P0→process** | A6 | Merga/kör **aldrig** `b7df6ae`/branchen `claude/create-markdown-file-hIdbj`. **Verifierat oskadd i prod 6 sep** (`03_teams.csv`). Ta bort branchen på origin. | process |
 | **P0** | A12 | Dokumentera prod-driften: `01_cron_jobs.csv` är facit. Skriv migrationer för archive-cronen (`UPDATE … 'archived' … published_at < now()-7d AND preview_fixture_id IS NULL`, 06:00 UTC), status-CHECK (`retrying`,`archived`), unschedule av `matchday-scheduler`/`data-fetcher`/`cleanup-*`. Bestäm om `schema_migrations` ska backfyllas 018–077 eller om `supabase db push` överges formellt. | app |
 | ~~P0~~ ✔ | A11 | Retention-snapshot tagen 6 sep 11:45 CEST och committad (`a4c5650`). | — |
-| **P1** | A4 | Besluta nattpush-policy: flytta `gd-news` 00:30 UTC → t.ex. 05:30 UTC, och/eller återinför server-quiet-hours 22–07 Stockholm i `notification-sender` (håll live-pushar undantagna). | routines/app |
-| **P1** | A5 | En tidszon i all kopia: Europe/Stockholm (morning-push `formatKickoff`, content-generator `kickoff_day`). | app |
-| **P1** | A7 | Nollställ förra säsongens `consequence_type`-rader för PL så TITLE_WON/RELEGATED/UCL kan fira 2026-27 (mig 051-instruktion). | prod (SQL) |
+| **P1** | A4 | Besluta nattpush-policy. Mätt: 32 % av pusharna 00:37–01:03 Stockholm. Alternativ: flytta nattkörningen till 05:30 Stockholm (feed-only på natten), och/eller server-quiet-hours 22–07 Stockholm i `notification-sender` (live-pushar undantagna). Fixa README (schemat är Stockholm-tid, inte UTC). | routines/app |
+| **P1** | A5 | En tidszon i all kopia. Mätt: 25 items med klockslag, 5 anger zon; alla UK-tid → svensk läsare 1 h fel. Intern motsägelse 1pm/2pm (`c0dfff54` vs `4f4903fe`). Regel i PROMPT/SUNDAY_BRIEF: "skriv svensk tid, skriv 'svensk tid'". | routines/app |
+| **P1** | A19 | **Röst-tokens som läcker:** `[him]` substitueras inte av iOS (8 items renderar "[him]"), "your partner"/"your guy" (12 items), "If [his name] follows X" (15 items). Lägg hard-reject i `post_news.sh` för `\[him\]`, `your (partner|guy|man)`, `if \[his name\] (follows|supports)`. | routines |
+| **P1** | A20 | **Sunday-brief-korten:** 19/80 saknar `immersive_headline`+`immersive_context`, 41/80 har versaler. Kör sunday_brief genom samma validering som news (lowercase, ≤22/rad, fält obligatoriska eller fallback). | routines |
+| **P1** | A21 | **8 dubbelpushar <3 min till samma lag** (`11`): routinen postar två items för samma lag i följd och båda pushar direkt (latens 0,0 min → 5-min-throttlen i `notification-sender` gäller inte direkt-post-vägen). Lägg throttlen i `post_news.sh` eller i den specifika-item-vägen. | app/routines |
+| ~~P1~~ ✔ | A7 | **Ej aktuell:** `30` visar 0 PL-`consequence_type`-rader (bara 144 `WC_RIVAL_RESULT`, jun). Inget blockerar 2026-27. | — |
 | **P1** | A13 | Branch-hygien: gör trunken till `main` (eller döp om), pusha lokala commits, re-basa arbetsbranches. | process |
-| **P2** | A8 | Bekräfta tier-gates mot produktavsikt (sunday_brief T2+, quiz T3+). | policy |
+| **P2** | A8 | Bekräfta tier-gates mot produktavsikt (sunday_brief T2+, quiz T3+). Publik: 9 T2, 4 T3, 0 T1. | policy |
+| **P2** | A22 | **Girl ref-kvalitet (B4):** 13/69 godkända, median 12/20; 87 % över 16 ord, 69 % "It's like"-öppning, jobb-zon dominerar; 1 privatlivsbrott (`c313273b`, spelarens barn, pushad). Skärp `post_news.sh`: ordräkning ≤16 → reject, `^(it'?s like|like|imagine)` → varning, `football equivalent` → reject; lägg familje-ord i content-safety-regexen. | routines |
+| **P2** | A23 | `content-audit` ger falskt larm vid säsongsstart: "spurs finished 20/20 → RELEGATED" mot en 2026-27-tabell med 0 spelade (`19`). Kräv `played ≥ 1` innan rank-påståenden lintas. | app |
+| **P2** | A24 | 49 items (45 pushade) i augusti till fem inaktiva klubbar med 0 följare (west_ham 18, wolves 12, southampton 8, leicester 6, burnley 5) — routinekvot i onödan. Följer av A1. | routines |
 | **P2** | A10 | VM-retro-lärdomar → nästa turnering (previews i tid, ingen manuell bulk-postning). | docs |
 | **P2** | — | Uppdatera routines `README.md` (säger "6 lag var 6:e timme"). | routines |
 
@@ -145,6 +164,11 @@ per 2026-07-10.
   items till 0 följare.
 - **Åtgärd:** Läs laglistan ur `teams` (som Edge gör) och säsongen datumstyrt (kopiera
   `seasonForLeague`-logiken till bash); rensa "2025-26" ur prompterna → `{{season}}`.
+- **B3-bevis (6 sep):** `18`: Coventry 0 / Hull 0 items; `35` `empty_feeds` = coventry, hull.
+  `28a`/`28b`: sunday_brief och quiz går varje vecka till exakt 2025-26-listan (inkl. burnley,
+  west_ham, wolves; utan ipswich, coventry, hull). `28d`: se A18. `20`: de 84 "last season"-träffarna
+  är legitima förssäsongsreferenser — förra säsongens tabell citeras **inte** som nuvarande i
+  aug-texterna (routinen har haft få tabellpåståenden att göra före omgång 1).
 
 ### A2 · Ingen matchdags-påminnelse för PL — **P0**
 - **Bevis:** `matchday-reminder/index.ts:48-52` (`.eq("entity_type","country")` med kommentar
@@ -154,6 +178,11 @@ per 2026-07-10.
 - **Symptom:** PL-följare får ingen "han spelar i dag" 09:00; bara `morning-push` 08:00 UTC
   (`morning-push/index.ts:83-90`, 18 h-fönster) — som dessutom skriver London-tid (A5).
 - **Åtgärd:** öppna för klubbar; källa `team_season_state.next_fixtures` finns redan för PL.
+- **B2-bevis (6 sep):** `16`: 0 rader i `matchday_reminders_sent` sedan 1 aug (senaste 27 jun, VM).
+  `morning-push` loggade **1** sändning i augusti (21 aug "arsenal v coventry: 10 sent") — den läser
+  `match_status_state`, som var tom för PL (A17), så även "Game day"-pushen var i praktiken död.
+  Leeds 22 aug och Liverpool 23 aug fick inget. OBS: `team_season_state.next_fixtures` är
+  routine-skrivet och stod på 2025-26 (A18) — använd `match_status_state`/API direkt.
 
 ### A3 · VM-läget lever kvar — **P0 (pausa)**
 - **Bevis:** iOS onboarding `Views/Onboarding/OnboardingFlow.swift:9-12,17,47-48,107-109`
@@ -179,6 +208,11 @@ per 2026-07-10.
   har DND. Mät: `09_pushes_by_hour_sthlm.csv`, `10_night_pushes.csv`.
 - **Åtgärd:** flytta 00:30-fire eller lägg 22–07-fönster i `notification-sender` (låt
   `match-watcher`-live-pushar vara).
+- **B2-mätning (6 sep):** `09`: pushar per timme Stockholm 00: 96 · 01: 16 · 08: 139 · 09: 16 ·
+  11: 80 (inga andra timmar). `10`: 112 nattpushar (108 news, 4 matchday), 14 nätter, topp
+  00:37–01:03. `06b` routine_post-timmar: post_news 00/01/08/09/11, post_insider 04, post_season_state
+  03, post_quiz 13, post_player_dossier 19 — **README:s UTC-schema stämmer inte**; nattkörningen
+  fyrar ~00:30 svensk tid och 12:30/18:30-körningarna ger inga pushar alls.
 
 ### A5 · Blandade tidszoner i kopian — **P1**
 - **Bevis:** `morning-push/index.ts:48-75` (`Europe/London`, suffix BST/GMT, motivering "most
@@ -187,6 +221,9 @@ per 2026-07-10.
   iOS `ImmersiveCard`/`MatchDayCard` enhetslokalt. Publiken är svensk
   (`063_matchday_reminder.sql:6-7`).
 - **Åtgärd:** en TZ-konstant (Stockholm) för all serverkopia.
+- **B4-bevis (6 sep):** 25 items med klockslag i push/headline, 5 nämner zon; alla är UK-tid
+  ("Newcastle away next Sunday 4:30", API: 17:30 svensk). `c0dfff54` säger 1pm, `4f4903fe` 2pm för
+  samma avspark (API: 14:00 UK). Se `B4_urval.md` §2.
 
 ### A6 · Farlig commit på gammal branch — **P0 (process)**
 - **Bevis:** `b7df6ae` (3 aug) på `origin/claude/create-markdown-file-hIdbj`, merge-base med
@@ -241,6 +278,12 @@ per 2026-07-10.
   bygger på rubrik-scoreline-matchning (mig 065, heuristik); `gd-matchday` avstängd för VM →
   deterministisk FT-artikel. Data: `31_wc_knockout_matches.csv`, `32_wc_items.csv`,
   `33_jun28_burst.csv`, `34_wc_apns_send_daily.csv`.
+- **B5-utfall (6 sep): slutspelet levererade.** 34 knockout-matcher (25 FT, 5 AET, 4 PEN):
+  **34/34 HT_PUSH, 34/34 FT_PUSH, 31/34 PREKICK_PUSH**. FT-latens från avspark: median 122 min (FT),
+  167 (AET), 174 (PEN) — konsistent med 90+15+stopp resp. förlängning/straffar; ingen missad FT.
+  `32`: 388 VM-items i fönstret (311 news, 48 sunday_brief, 29 matchday), 274 pushade, 37
+  `edge_function` (FT-artiklar). `33`: 28 jun-bursten = 48 briefar 11:27–11:30 svensk tid, alla
+  pushade inom 4 minuter. `34`: leveransloggen fanns kvar och är nu snapshotad.
 
 ### A11 · Retention — **P0 (kör nu)**
 - `003_pg_cron_jobs.sql:67-71` + `043_pipeline_health_retention_sweep.sql` (90 d),
@@ -323,6 +366,73 @@ per 2026-07-10.
 - **Åtgärd:** ny migration med gallrings-cron (behåll 14 d); engångs-`DELETE` + `VACUUM` efter att
   snapshoten (`38*`) är säkrad — den är det nu.
 
+### A17 · match-watcher blind för PL 21 aug → 6 sep — **P0 (nytt, B2/B6)**
+- **Bevis:** `43_api_football_pl_fixtures_aug.json` (B6, Pro-plan, 537/7 500 anrop förbrukade):
+  30 PL-fixtures 21 aug–6 sep, 28 med status FT. `07`/`15`: `match_status_state` har **en** PL-rad
+  sedan 1 aug — 1557367 Arsenal–Coventry 21 aug 21:00 CEST, status ABD (reapern), `home_goals` NULL,
+  `briefs_fired []`, `last_checked` = reaperns 05:00 UTC. Övriga 27 spelade matcher saknas helt.
+  `06b`: 0 `matchday_fire`/`live_brief_fire`/live-`apns_send` för PL i aug. `42`: match-watcher
+  pg_cron-fel 0/dag t.o.m. 8 aug → 19 (9 aug) → 124 (10 aug) → 380 (13 aug) → 486 (17 aug) → ~500–600
+  (18–30 aug), typ `job startup timeout` + `statement timeout`. pg_cron:s "succeeded" betyder bara
+  att `net.http_post` köades; inga `timeout_milliseconds` sätts i något av de 11 cron-kommandona
+  (`01`), så pg_net-defaulten gäller. `net._http_response` (6 h retention) visar efter omstarten
+  `{"fixtures_seen":2,"state_updates":2,"active_leagues":[39,1]}` varje minut → koden fungerar när
+  DB:n svarar.
+- **Konsekvens:** PL-följare (12 enheter, Arsenal 8) fick i augusti inga mål-/HT-/FT-pushar, ingen
+  deterministisk FT-artikel och en (1) morning-push. De 10 `type=matchday`-items som finns är
+  routine-skrivna referat av cup-/försäsongsmatcher (se `B4_urval.md` §3).
+- **Orsak (sannolik):** A14 — under IO-svälten tog match-watcher-anropen längre än pg_net-timeouten
+  eller misslyckades i Edge, utan spår i `pipeline_health` (funktionen loggar inte egna körningar).
+  Första sikt av 1557367 skedde nattetid (låg last), uppdateringarna dagtid föll bort.
+- **Åtgärd:** verifiera i dag (läsvakt på dagens två matcher), sätt explicit `timeout_milliseconds`,
+  lägg heartbeat-CHECK "fixture i dag i liga 39 men 0 `state_updates` senaste 10 min", och logga
+  en `pipeline_health`-rad per match-watcher-körning (stage `watch`, aggregerad).
+
+### A18 · `team_season_state` = förra säsongens slutspurt — **P0 (nytt, B3)**
+- **Bevis:** `28d`: 20 klubbar `phase=mid_season`, genererade 21–24 aug 03:1x CEST av routinen
+  (`post_season_state`), med summaries som "Arsenal are top of the Premier League with 79 points
+  from 36 games", "Villa are in the run-in with two massive games left", "Wolves are deep in the
+  relegation fight with just two games left". Coventry/Hull `pre_season` med tom summary sedan
+  24 jun; Leicester `run_in` sedan 15 maj; ipswich `pre_season` "back in the Championship".
+  `next_fixture` var dock rätt (22–23 aug-matcher) — routinen blandar 2026-fixtures med
+  2025-tabell.
+- **Rotorsak:** A1 (`SEASON_STATE_PROMPT.md`/fetch med `season=2025`, laglista 2025-26).
+- **Symptom:** team-sidans säsongsstrip och feed-kontext visar en säsong som är slut; alla
+  `[his name]`-samtalsöppnare bygger på fel tabell.
+
+### A19 · Röst-tokens som läcker till kortet — **P1 (nytt, B4)**
+- **Bevis:** `08`: `[him]` i 8 items (iOS substituerar bara `[his name]`, `AppState.swift:196` →
+  renderas bokstavligt), "your partner"/"your guy" i 12 items (`7625ae96`, `31441491` …), "If [his
+  name] follows X" i 15 items. `post_news.sh` har regex för fan-slang/ALL-CAPS/em-dash men inte för
+  dessa.
+
+### A20 · Sunday-brief-korten saknar text / bryter lowercase — **P1 (nytt, B3/B4)**
+- **Bevis:** `08` filtrerat `type=sunday_brief` (80): 19 med `immersive_headline` **och**
+  `immersive_context` NULL (t.ex. `c0dfff54` 23 aug man_city), 41 med versaler
+  ("PSG drawn 1-1. / Hull City opener"). News/matchday: 0/353 — gaten i `post_news.sh` fungerar,
+  men briefarna postas via en väg som inte validerar.
+
+### A21 · Dubbelpushar till samma lag inom 3 minuter — **P1 (nytt, B2)**
+- **Bevis:** `11`: 8 par (man_city ×3, arsenal ×2, nottm_forest, aston_villa, chelsea), gap
+  0,2–2,8 min, alla pushade. `08`: push-latens median 0,0 min → `post_news.sh` triggar
+  `notification-sender` för det specifika itemet direkt; 5-min-throttlen ligger bara i sweepen.
+
+### A22 · Girl ref-kvalitet — **P2 (nytt, B4)**
+- Se `audit/2026-09/B4_urval.md`: 13/69 godkända (≥16/20), median 12; 304/350 över 16 ord (`26`);
+  283/411 "It's like"-öppning; 3 "football equivalent"; jobb-zon ~40 % av urvalet. 1 privatlivsbrott
+  (`c313273b`, Maddisons tvillingar, pushad 22 aug). Interna motsägelser: `60fe15e2` "Arne Slot's
+  squad" 8 aug (Slot avgick i maj), "första hemmamatchen" två gånger (`966bbd0f`/`ada2cbfb`),
+  Savio/Savinho.
+
+### A23 · `content-audit` falskt larm vid säsongsstart — **P2 (nytt, B3)**
+- **Bevis:** `19`: 2 träffar, båda `1ec9c18b` (spurs): "Claims survival but spurs finished 20/20 →
+  RELEGATED". Tabellen 1–2 aug är 2026-27 med 0 spelade; rank 20 är alfabetisk/utgångsläge.
+
+### A24 · Items till inaktiva klubbar — **P2 (nytt, B3)**
+- **Bevis:** `18`: west_ham 18, wolves 12, southampton 8, leicester 6, burnley 5 items (45 pushade)
+  sedan 1 aug; `36`: 0 följare. Sunday_brief/quiz till burnley/west_ham/wolves varje vecka (`28a`,
+  `28b`). Följer av A1:s laglista.
+
 ---
 
 ## 4. Checklista — "Pausa VM-läget"
@@ -364,22 +474,30 @@ visar inga `matchday_fire`/`live_brief_fire` för liga 1; API-Football-kvot sjun
 | Är teams-tabellen oskadd (A6)? | `03`, `03b` | **Svar: ja.** 48 × `league_id=1`, 20 aktiva + 5 inaktiva klubbar, Coventry 1346, Hull 64. |
 | Infra: vad tar plats, vad skriver mest? | `37*`, `39`, `40` | **Svar:** DB 308 MB (`pg_database_size`) / 478 MB (dashboard). `raw_fetch_logs` 169 MB (≈16 MB levande → bloat), `cron.job_run_details` 88 MB, `pipeline_health` 27 MB, `content_items` 6,5 MB. 62 % av `raw_fetch_logs`-raderna är VM-länder. pg_net-köer tomma. |
 | Publik (proportion) | `35`, `36` | **Svar:** 13 aktiva enheter (T2 9, T3 4), 12 följer PL-lag: arsenal 8, liverpool 2, leeds 1; 11 följer land (sweden 8). `empty_feeds`: coventry, hull (A1 bekräftat). |
-| Nattpushar och timprofil | `09`, `10` | topp vid 02:30 Stockholm om 00:30-fire pushar |
-| Dubbletter/burst per lag | `11`, `23`, `24` | throttle 5 min bör hålla; opener-repetition? |
-| Aldrig skickat | `12`, `13`, `14` | sweep-fel, APNs-fel |
-| PL-matchday-kedjan | `15` | fyrar `gd-matchday` för PL 2026-27? latens? |
-| Förmatch-pushar PL | `16` | 0 reminders (A2); morning-push-rader finns? |
-| Tysta dagar | `17`, `17b` | luckor i `cron_invoke`/`routine_post` |
-| Coventry/Hull, inaktiva lag | `18` | 0 resp. >0 (A1) |
-| Tabellpåståenden | `19`, `20` | content-audit-träffar; "2025-26"-glidningar |
-| Formregler | `21`, `22`, `25`, `26` | längdtak, register, "Ask him", analogi-andel |
-| Kadens | `27`, `28a-d` | sunday_brief varje söndag/lag? quiz varje lördag? season-state `mid_season` |
-| Delad feed, konsekvenser | `29`, `30` | A7 |
-| VM-slutspel | `31`–`34` | markörer per match, 28 jun-burst, kvarvarande logg |
-| Publik | `35`, `36` | vem påverkas av A1/A2 |
+| Nattpushar och timprofil | `09`, `10` | **Svar:** 433 items, 347 pushade (80 %), 86 feed-only. Timmar (Sthlm): 00→96, 01→16, 08→139, 09→16, 11→80. **112 nattpushar (32 %)**, 14 nätter, 00:37–01:03. Fyren är ~00:30 Stockholm, ej UTC (A4). |
+| Dubbletter/burst per lag | `11`, `23`, `24` | **Svar:** 8 par <3 min, alla pushade (A21). 5 opener-repetitioner 72 h ("He might have opinions", "He'll be a bit gutted"). 34 rubrik-nära-dubbletter, 26 båda pushade (uppföljningar av samma story). |
+| Aldrig skickat | `12`, `13`, `14` | **Svar:** 0 aldrig-pushade. Push-latens median 0,0 min (direktväg). APNs-fel: liverpool 4 aug ×2 "0 sent, 2 failed (other)", arsenal 28 aug 1×410. Leverans annars 100 %. |
+| PL-matchday-kedjan | `15`, `07`, `43` | **Svar: kedjan har inte fyrat en gång.** 1/30 fixtures i `match_status_state`, aldrig förbi NS (A17). 0 `matchday_fire` sedan 11 jun. |
+| Förmatch-pushar PL | `16` | **Svar:** 0 reminders (A2 bekräftat); **1** morning-push i aug (21 aug arsenal, 10 sent) — övriga dagar tom `match_status_state`. |
+| Tysta dagar | `17`, `17b` | **Svar:** `cron_invoke`-stage används inte (0 rader). `routine_post` varje dag 1–29 aug (18–124/dag, 1–5 HTTP 400/dag), **tyst 30 aug → 6 sep** (A14). |
+| Coventry/Hull, inaktiva lag | `18` | **Svar:** Coventry 0, Hull 0. Inaktiva: 49 items / 45 pushade till 0 följare (A24). |
+| Tabellpåståenden | `19`, `20` | **Svar:** 2 content-audit-träffar, båda falskt larm (A23). 84 "last season"-träffar = legitima förssäsongsreferenser. Stale-säsongen syns i `28d` (A18), inte i news-texterna. |
+| Formregler | `21`, `22`, `25`, `26` | **Svar:** längdtak 0, bannad register 0, TP-regler 0 (gaten fungerar). Analogi: 350/353 har girl ref, **304 över 16 ord** (median 23), 283/411 "It's like"-öppning (A22). |
+| Kadens | `27`, `28a-d` | **Svar:** sunday_brief 20/söndag (2, 9, 16, 23 aug; **30 aug saknas**), quiz 20/lördag (1–29 aug) — båda på 2025-26-listan. Insider 16–25/dag, 4 dagar/vecka (inkl. 5 inaktiva + coventry/hull). Season-state: 20 `mid_season` men 2025-26-text (A18). |
+| Delad feed, konsekvenser | `29`, `30` | **Svar:** 111/433 items (26 %) `everyone_talking`. `30`: 0 PL-konsekvensrader → A7 ej aktuell. |
+| VM-slutspel | `31`–`34` | **Svar:** 34/34 HT+FT-push, 31/34 prekick, FT-latens median 122/167/174 min (FT/AET/PEN). 28 jun: 48 briefar på 4 min. Godkänt (A10). |
+| Publik | `35`, `36` | **Svar:** 13 aktiva (T2 9, T3 4), 12 följer PL-lag (arsenal 8, liverpool 2, leeds 1), 11 följer land. Registreringar: 1 (16 aug). Churn: 1 (28 aug). |
+| Oberoende facit (B6) | `43` | **Svar:** API-Football Pro (7 500/dag, 537 använda 6 sep). 30 PL-fixtures 21 aug–6 sep; avsparkstider i `07`/`28d` stämmer med API där rader finns. |
 
-**B4 (kvalitativt urval)** dras ur `08_pl_items.csv`: stratifierat per segment × vecka × lag,
-läses mot §1-måttstocken, dubbelbedöms, och du spot-checkar ett delurval.
+**B4 (kvalitativt urval):** 70 items (52 news × 6 lag × 4 veckor, 10 matchday, 8 sunday_brief),
+poängsatta i `audit/2026-09/B4_urval.md`. Girl ref: 13/69 godkända, median 12/20. Gates: TRANSFER
+och HEADLINE CLARITY hålls; 4 pushar utan team-impact; 1 privatlivsbrott; röst-tokens läcker (A19);
+sunday-brief-kort tomma/versaler (A20); 3 interna motsägelser. Spot-check-lista för Anton i bilagan §3.
+
+**Genomförda åtgärder 6 sep (Anton körde, agenten read-only):** `raw_fetch_logs` 169 MB → 4,5 MB
+(retention-DELETE + `VACUUM FULL`), `cron.job_run_details` 88 MB → 4,6 MB (>14 d raderade + `VACUUM
+FULL`), databas 308 MB → **61 MB**. Återstår i `cleanup_2026_09_06_part2.sql`: gallrings-cron (mig
+078) och `is_active=false` för 48 länder (mig 079).
 
 ---
 
@@ -402,5 +520,10 @@ läses mot §1-måttstocken, dubbelbedöms, och du spot-checkar ett delurval.
 | 19–20 jul | VM-final; PL-push-pausen släpper 21 jul |
 | 22 jul | iOS VM-flik gömmer sig själv |
 | 3 aug | `b7df6ae` på gammal branch (A6) |
-| ~15 aug | PL 2026-27 startar — routines på 2025-26-konfig (A1), ingen PL-reminder (A2) |
-| 6 sep | Denna granskning |
+| 9 aug | Första pg_cron `job startup timeout` (19 st); 13 aug 380/dag; 17 aug 486/dag (A14) |
+| 21 aug | PL 2026-27 startar (Arsenal–Coventry 21:00 CEST) — routines på 2025-26-konfig (A1), ingen PL-reminder (A2), match-watcher ser matchen men uppdaterar den aldrig (A17) |
+| 22–29 aug | 19 PL-matcher utan en enda rad i `match_status_state`; routines postar men 30 aug-briefen uteblir |
+| 29 aug 11:17 | Sista routine-post; 08:56 sista push |
+| 30 aug 16:32 | Sista cron-körning — prod tyst (A14) |
+| 6 sep 11:38 | Fast database reboot (Anton); 11:45 snapshot; 12:0x städning (308 → 61 MB); match-watcher ser dagens matcher |
+| 6 sep | Denna granskning (Spår A + B) |
