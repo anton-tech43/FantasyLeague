@@ -153,6 +153,7 @@ Filerna `06b_pipeline_health_dump.csv` och `07_match_status_state.csv` är reten
 | **P0** | A27 | **Påminnelser bygger på routine-skriven `next_fixtures`** → 0 i slutspelet. **Fix skriven 6 sep (ej deployad):** `matchday-reminder` hämtar fixtures från API-Football per aktiv liga (1 anrop/liga/dag, `from`/`to` = 24 h) med `match_status_state` som fallback; `next_fixtures` läses inte alls. **Deployad 6 sep 13:16 CEST (v9, morning-push v11).** Dry-run 13:2x: 4 kandidater från `api_football`, svensk tid i kopian ("Arsenal face Chelsea today at 17:30"), Arsenal `would_push: true`, övriga tre ej följda. Första skarpa körning: nästa PL-matchdag 09:00. | app |
 | **P0** | A28 | **Routines delar 5-timmarskvot med interaktiva Claude Code-sessioner.** 6 sep föll både HT-brief och FT-artikel för Everton–Man Utd på "session limit" trots att match-watcher fungerade; fire loggas som `success`, ingen retry. Beslut: egen kvot för routines och/eller fire-utan-artikel = fail (§3 A28). | routines/app |
 | **P0** | A29 | **Alla livepushar och Live Activity var hårdkodade till VM-ligan.** `match-watcher` skickade avspark-, mål-, HT- och FT-push samt Live Activity bara när `league_id = 1`; en PL-följare fick ingenting mellan morgonpåminnelsen och FT-artikeln. **Åtgärdat 6 sep 18:45 (v67 + mig 083):** gaten borttagen, klubbar hämtar namn ur `teams.short_name`, `device_tokens.team_ids` matchas, `live_activity_tokens.team_ids` tillagd. Live Activity för klubbar kräver ny app-build (§3 A29). | app/server |
+| **P0** | A30 | **Lagsidorna och truppdatan var från maj.** `team_pages`: säsongskort "two games left, Champions League final", tabell med 36 spelade, tränare Iraola/Marco Silva (bytta i somras), Coventry/Hull utan sida. `players` senast skriven 10 jul: 10–26 spelare saknades per klubb. gd-matchday hittade på "wins over Luton" och "[his name]" gick igenom. **Åtgärdat 6 sep 20:0x:** mig 084 (spelarsynk från squads, daglig cron), team-page-generator v72 (tabell + tränare deterministiskt varannan timme), ny rutin gd-team-page (prosa, veckovis), validatorer i post_news.sh, grounding-regler i MATCHDAY_PROMPT. | server/routines |
 | **P2** | — | Uppdatera routines `README.md` (säger "6 lag var 6:e timme"). | routines |
 
 **Policyfrågor att ta ställning till (inte buggar):** nattfire 00:30 UTC; quiet hours på server
@@ -564,6 +565,33 @@ per 2026-07-10.
   undantag från quiet hours, Antons beslut om det ska gälla. `goal-push-copy.ts` säger fortfarande
   "he" (240 strängar) och når nu även PL-följare med relation ≠ partner.
 
+### A30 · Lagsidor, trupper och matchtexter byggde på förra säsongen — **P0 (åtgärdat 6 sep)**
+- **Bevis:** `team_pages.cards` för 18 klubbar: `season`/`manager`/`ones_to_know`/`standings` med
+  `updated_at` 2026-05-18, `basics`/`rivalry` 2026-04-07; bara `form` (siffror) och `next_fixture`
+  (datum) uppdaterades av `dynamic_only`. Arsenal-sidan: "top of the table with two games left …
+  Champions League final", tabellen med 36 omgångar, `next_fixture.preview` "Home to Burnley … title on
+  the line" under en Napoli-match. Tränarkort mot API-Footballs `coachs`: Bournemouth Iraola (nu
+  Tindall), Fulham Marco Silva (nu Arbeloa). Coventry och Hull saknade `team_pages`-rad helt.
+  `players` (scorer-foton) senast skriven 2026-07-10; mot dagens `squads` saknades 10–26 spelare per
+  klubb (Arsenal 23 av 36). Kvällens Chelsea-artikel: "wins over Brighton, Luton, and Fulham" (Luton är
+  inte i ligan), "two wins from two" mot "three straight wins" i nästa stycke; Arsenal-artikeln
+  renderade "[his name]" bokstavligen (validatorn kände bara `[him]`-formen). Orsak: den veckovisa
+  betalda `team-page-refresh`-cronen togs bort (COST-1) utan ersättare, och rutinerna fick skriva ur
+  minnet där payloaden saknade fakta.
+- **Åtgärd (gjord):** (1) mig 084 `sync_players_from_squads()` + cron 05:30 UTC, 375 rader skrivna
+  direkt. (2) team-page-generator v72 `dynamic_only`: 20-radstabell och tränare (öppen `career`-post,
+  senaste start) ur `raw_fetch_logs`; byte av tränare blankar den gamla prosan och sätter
+  `summary_stale`; säsongsetiketten räknas ur datumet ("2025-26" var hårdkodad). (3) Ny rutin
+  **gd-team-page** (`trig_015wVs1ZDsEaMYd7c99Fcy34`, måndagar 02:30 UTC, `TEAM_PAGE_PROMPT.md` +
+  `post_team_page.sh`): skriver manager/form/season/next_fixture-prosa och tre ones_to_know ur dagens
+  trupp, skapar sidor för Coventry/Hull, rör aldrig kurerade `basics`/`rivalry`; scriptet avvisar
+  spelare utanom truppen, förra säsongens formuleringar, fan-röst, `?`/`!`, andra placeholders än
+  `[his name]`. (4) `post_news.sh`: hård avvisning av resultatsatser som nämner icke-PL-klubbar (utom
+  cupmatcher) och av alla `[…]`-placeholders med pronomen/name; `MATCHDAY_PROMPT.md`: resultat,
+  säsongsfacit och spelarens klubb bara ur `match_form`/`match_fixture`.
+- **Kvar:** spelaren "Morgan Rogers (Chelsea forward)" kunde inte verifieras härifrån; ligger nu under
+  grounding-regeln. gd-team-page-körningen 6 sep 20:09 verifieras i §7.
+
 ## 4. Checklista — "Pausa VM-läget"
 
 **iOS (kräver build)**
@@ -660,4 +688,6 @@ Verifierat read-only: `country | f | 48`, match-watcher grön varje minut, dagen
 | 6 sep 15:50–17:01 | match-watcher v66 följer Everton–Man Utd live (HT-fire, FT-fire) — båda rutinkörningarna avvisas av claude.ai-kvoten (A28) |
 | 6 sep 17:00–18:24 | Arsenal–Chelsea: match-watcher följer matchen, HT-briefer skrivs för båda, men noll pushar till Arsenals nio följare — allt live var VM-gatat (A29) |
 | 6 sep 18:45 | match-watcher v67 + mig 083: kickoff/mål/HT/FT-push och Live Activity för PL-klubbar (A29) |
+| 6 sep 19:28 | Arsenal–Chelsea FT: `live_ft:arsenal` 9/9 skickade; gd-matchday-artiklar 19:31–19:32 feed-only (A29 verifierad) |
+| 6 sep 20:0x | A30: mig 084 spelarsynk, team-page-generator v72, gd-team-page skapad och körd, post_news-validatorer (`3e8b7d8`) |
 | 6 sep | Denna granskning (Spår A + B) + kundgranskning (plan `parsed-chasing-ladybug`): onboarding utan VM-steg, routines på `teams`-tabellen och innevarande säsong, quiet hours, validatorer |
