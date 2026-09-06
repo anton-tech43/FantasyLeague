@@ -126,7 +126,7 @@ Filerna `06b_pipeline_health_dump.csv` och `07_match_status_state.csv` är reten
 |---|---|---|---|
 | **P0** | A1 | Sätt PL-säsong och trupp 2026-27 i routines: `fetch_news.sh` (`SEASON`, `TEAMS` → läs `teams` där `league_id=39 AND is_active`), `MATCHDAY_PROMPT.md:57,61`, `PROMPT.md:20`, `SUNDAY_BRIEF`/`QUIZ`/`INSIDER` om de nämner 2025-26. Verifiera att Coventry/Hull får items. | routines |
 | **P0** | A2 | Aktivera matchdags-påminnelse för PL-klubbar. **Patch skriven 6 sep (ej deployad):** `matchday-reminder` går på alla `is_active`-entiteter, token-matchar på `team_id/team_ids/country_id/country_ids`, Stockholm-tid i kopian; `morning-push` hoppar över fixtures som redan påmints (ingen dubbelpush). Build-up-feeditemet behålls för länder, inte klubbar. **Deployad 6 sep 13:16, dry-run OK.** | app |
-| **P0** | A3 | **Pausa VM-läget** enligt checklistan i §4. **DB-spaken dragen 6 sep 12:3x:** mig 079 körd, 48 länder `is_active=false` (data-fetcher, content-audit, team-page-generator hoppar över dem). Kvar: routines-dashboarden (gd-news-wc/preview/factcheck av; season-state/insider/quiz/brief till klubbar), match-watcher-filter på `is_active`, iOS-onboarding, `world_championship`-raden. | båda |
+| **P0** | A3 | **Pausa VM-läget** enligt checklistan i §4. **DB-spaken dragen 6 sep 12:3x:** mig 079 körd, 48 länder `is_active=false` (data-fetcher, content-audit, team-page-generator hoppar över dem). **Routines 6 sep 18:06:** gd-news-wc/gd-wc-preview/gd-wc-factcheck avstängda; övriga läser klubblistan ur `teams` (`c23b182`). **iOS 6 sep:** VM-steget borttaget ur onboarding, landsväljaren bakom `WCSeason.isVisible` (ej i build ännu). Kvar: `world_championship`-raden, server-styrd `WCSeason`. | båda |
 | **P0** | A17 | **PL-live-kedjan blind sedan säsongsstart.** Felsökt 6 sep (§3 A17). **Härdning skriven, ej deployad:** mig 080 (match-watcher-cron med `timeout_milliseconds 30000` + stage `watch`), mig 081 (CHECK 6: live fixture med `last_checked` >5 min → `client_errors` `match_watcher_stalled`), patch `match-watcher/index.ts` (prior-fel ≠ första observation, `is_active`-filter på lag, aggregerad `watch`-rad per anomali/timme, `deno check`+lint+121 tester gröna). **080+081 körda 6 sep 12:5x** (verifierat: cron jobid 26 med 30 s timeout, första körning 12:55 OK; stage `watch` tillåten; CHECK 6 i prod, `%.0f` borta; inget falsklarm). **match-watcher v66 deployad av Anton 6 sep 12:54 CEST** (verifierat: svaret har `prior_errors`/`skipped_fixtures`, `active_leagues:[39]` — liga 1 pollas inte längre, första `watch`-rad 13:00). Kvällens A17-test körs alltså på patchad kod; ett fel i kväll pekar på miljön, inte på gamla kodvägar. | prod/app |
 | **P0** | A18 | **`gd-season-state` skriver 2025-26-text på team-sidorna.** Samma rotorsak som A1 (`SEASON_STATE_PROMPT.md` + `fetch_*` med `season=2025`). Åtgärd ingår i A1; verifiera efteråt att `28d` ger `phase=mid_season` med 2026-27-summary och att Coventry/Hull får rader. | routines |
 | **P0** | A14 | **Driftstopp 23 aug → 6 sep.** Omstart gjord 6 sep 11:38 CEST (match-watcher grön från 11:50). Kvar: hitta och ta bort IO-drivaren innan det händer igen — (a) `teams.is_active=false` för 48 länder (70 % av data-fetcher-jobbet, A3), (b) gallra `cron.job_run_details` (A16), (c) `VACUUM (FULL)`/repack av `raw_fetch_logs` (169 MB → ~20 MB) i ett servicefönster, (d) överväg Micro-compute om (a)–(c) inte räcker. Skriv in "DB Unhealthy"-runbook. | prod/Anton |
@@ -152,6 +152,7 @@ Filerna `06b_pipeline_health_dump.csv` och `07_match_status_state.csv` är reten
 | ✔ hist. | A26 | Kickoff-push 429 efter mig 064 (3 Sverige-matcher, 23/40 misslyckade). Fixad 10 jul (`45e62a2` single-flight + retry). Lärdom: verifiera fixar mot `apns_send`-raderna nästa match, inte mot koden. | — |
 | **P0** | A27 | **Påminnelser bygger på routine-skriven `next_fixtures`** → 0 i slutspelet. **Fix skriven 6 sep (ej deployad):** `matchday-reminder` hämtar fixtures från API-Football per aktiv liga (1 anrop/liga/dag, `from`/`to` = 24 h) med `match_status_state` som fallback; `next_fixtures` läses inte alls. **Deployad 6 sep 13:16 CEST (v9, morning-push v11).** Dry-run 13:2x: 4 kandidater från `api_football`, svensk tid i kopian ("Arsenal face Chelsea today at 17:30"), Arsenal `would_push: true`, övriga tre ej följda. Första skarpa körning: nästa PL-matchdag 09:00. | app |
 | **P0** | A28 | **Routines delar 5-timmarskvot med interaktiva Claude Code-sessioner.** 6 sep föll både HT-brief och FT-artikel för Everton–Man Utd på "session limit" trots att match-watcher fungerade; fire loggas som `success`, ingen retry. Beslut: egen kvot för routines och/eller fire-utan-artikel = fail (§3 A28). | routines/app |
+| **P0** | A29 | **Alla livepushar och Live Activity var hårdkodade till VM-ligan.** `match-watcher` skickade avspark-, mål-, HT- och FT-push samt Live Activity bara när `league_id = 1`; en PL-följare fick ingenting mellan morgonpåminnelsen och FT-artikeln. **Åtgärdat 6 sep 18:45 (v67 + mig 083):** gaten borttagen, klubbar hämtar namn ur `teams.short_name`, `device_tokens.team_ids` matchas, `live_activity_tokens.team_ids` tillagd. Live Activity för klubbar kräver ny app-build (§3 A29). | app/server |
 | **P2** | — | Uppdatera routines `README.md` (säger "6 lag var 6:e timme"). | routines |
 
 **Policyfrågor att ta ställning till (inte buggar):** nattfire 00:30 UTC; quiet hours på server
@@ -538,6 +539,28 @@ per 2026-07-10.
   (c) deterministisk FT-fallbackpush för PL (finns redan för länder) så kunden får resultatet även när
   rutinen faller.
 
+### A29 · Livepushar och Live Activity fanns bara för landslag — **P0 (åtgärdat 6 sep)**
+- **Bevis:** `match-watcher/index.ts` (v66) omgav Live Activity-blocket och kickoff/mål/HT/FT-
+  pusharna med `if (fixtureLeagueId === WC_LEAGUE_ID)`; namn och flagga hämtades ur `WC_COUNTRY_META`
+  (48 länder) och mottagarfrågan matchade bara `country_id`/`country_ids`. `live_activity_tokens`
+  hade enbart landskolumner. Arsenal–Chelsea 6 sep: Arsenals nio följare fick ingen push vid avspark
+  (17:00 CEST), 1-0, 1-1 eller HT (18:24); HT-briefen skrevs till feeden utan push (by design i
+  `post_live_brief.sh`). Det enda PL-följaren någonsin fått är morgonpåminnelsen och FT-artikeln.
+- **Vad kunden ser:** App Store-löftet "match-day briefs at half-time and full-time" höll för Sverige
+  i juni och för ingen PL-klubb i augusti–september.
+- **Åtgärd (gjord):** match-watcher v67: gaten borttagen; `liveMeta()` ger länder flagga + namn ur
+  `WC_COUNTRY_META` och klubbar `teams.short_name` utan flagga (`interpolate()` tar bort tomt
+  `{flag}`); `sendPlayingTeamPush` matchar `team_id`/`team_ids` också; knockout-broadcast av Live
+  Activity gäller bara liga 1 (annars hade "Regular Season - 3" startat aktiviteter på alla
+  enheter). Mig 083: `live_activity_tokens.team_ids` + `register_la_token(..., p_team_ids)`. iOS:
+  `LiveActivityManager` registrerar klubbar och kan starta aktiviteten i förgrunden för en klubb
+  (namn utan flagga, tre bokstäver i Dynamic Island). `post_news.sh` (`965760a`): PL-`matchday`-
+  artiklar blir feed-only eftersom FT-pushen nu går deterministiskt vid slutsignalen.
+- **Kvar:** ny app-build för Live Activity på klubbar (befintliga 2.1.1(9) skickar inga `team_ids`;
+  pusharna fungerar utan ny build). Sena avsparkar (20:00 UK) ger FT-push ~22:00 UK — medvetet
+  undantag från quiet hours, Antons beslut om det ska gälla. `goal-push-copy.ts` säger fortfarande
+  "he" (240 strängar) och når nu även PL-följare med relation ≠ partner.
+
 ## 4. Checklista — "Pausa VM-läget"
 
 **iOS (kräver build)**
@@ -632,4 +655,6 @@ Verifierat read-only: `country | f | 48`, match-watcher grön varje minut, dagen
 | 30 aug 16:32 | Sista cron-körning — prod tyst (A14) |
 | 6 sep 11:38 | Fast database reboot (Anton); 11:45 snapshot; 12:0x städning (308 → 61 MB); match-watcher ser dagens matcher |
 | 6 sep 15:50–17:01 | match-watcher v66 följer Everton–Man Utd live (HT-fire, FT-fire) — båda rutinkörningarna avvisas av claude.ai-kvoten (A28) |
+| 6 sep 17:00–18:24 | Arsenal–Chelsea: match-watcher följer matchen, HT-briefer skrivs för båda, men noll pushar till Arsenals nio följare — allt live var VM-gatat (A29) |
+| 6 sep 18:45 | match-watcher v67 + mig 083: kickoff/mål/HT/FT-push och Live Activity för PL-klubbar (A29) |
 | 6 sep | Denna granskning (Spår A + B) + kundgranskning (plan `parsed-chasing-ladybug`): onboarding utan VM-steg, routines på `teams`-tabellen och innevarande säsong, quiet hours, validatorer |

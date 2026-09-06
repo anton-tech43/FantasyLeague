@@ -81,6 +81,20 @@ Deno.test("interpolate: fills present tokens, drops absent ones, tidies spacing"
   eq(interpolate("{team} score, {score}.", { score: "2-0" }), "score, 2-0.", "absent {team} tidied");
 });
 
+Deno.test("renderGoalPush: PL club with empty flag renders clean copy (no leading space)", () => {
+  // Clubs have no emoji flag (match-watcher liveMeta → flag ""); every body
+  // must still start with a letter, never a space or a stray "{flag}".
+  const ARS = { id: "arsenal", name: "Arsenal", flag: "" };
+  const CHE = { id: "chelsea", name: "Chelsea", flag: "" };
+  const copy = renderGoalPush({ home: ARS, away: CHE, homeGoals: 1, awayGoals: 0, side: "home", rng: zero });
+  for (const slug of ["arsenal", "chelsea"]) {
+    const body = copy.bodies[slug];
+    assert(body.length > 0 && /^[A-Za-z0-9]/.test(body), `${slug} body starts clean: ${JSON.stringify(body)}`);
+    assert(!body.includes("{flag}") && !body.includes("  "), `${slug} body tidy: ${body}`);
+    assert(body.includes("Arsenal"), `${slug} body names the scorer: ${body}`);
+  }
+});
+
 // ============================================================
 // renderGoalPush perspective routing (rng:zero pins pool index 0)
 // ============================================================

@@ -11,9 +11,11 @@ private enum LA {
     static let warmWhiteDim = Color(red: 245 / 255, green: 240 / 255, blue: 240 / 255).opacity(0.6)
 }
 
-/// Live Activity for an in-progress World Cup match: live score on the Lock
-/// Screen + Dynamic Island, started at kickoff and updated via backend pushes
-/// through to full-time.
+/// Live Activity for an in-progress match of a followed team (WC country or PL
+/// club): live score on the Lock Screen + Dynamic Island, started at kickoff
+/// and updated via backend pushes through to full-time. Clubs have no flag
+/// emoji, so the flag slots collapse and the compact leading shows a 3-letter
+/// code instead.
 struct MatchLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: MatchActivityAttributes.self) { context in
@@ -47,7 +49,13 @@ struct MatchLiveActivity: Widget {
                     }
                 }
             } compactLeading: {
-                Text(context.attributes.homeFlag)
+                if context.attributes.homeFlag.isEmpty {
+                    Text(context.attributes.homeName.prefix(3).uppercased())
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(LA.warmWhite)
+                } else {
+                    Text(context.attributes.homeFlag)
+                }
             } compactTrailing: {
                 Text("\(context.state.homeScore)-\(context.state.awayScore)")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
@@ -63,7 +71,7 @@ struct MatchLiveActivity: Widget {
 
     private func sideLabel(flag: String, name: String) -> some View {
         VStack(spacing: 2) {
-            Text(flag).font(.system(size: 22))
+            if !flag.isEmpty { Text(flag).font(.system(size: 22)) }
             Text(name)
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(LA.warmWhite)
@@ -118,7 +126,7 @@ private struct LockScreenView: View {
 
     private func teamColumn(flag: String, name: String) -> some View {
         VStack(spacing: 4) {
-            Text(flag).font(.system(size: 34))
+            if !flag.isEmpty { Text(flag).font(.system(size: 34)) }
             Text(name)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(LA.warmWhite)

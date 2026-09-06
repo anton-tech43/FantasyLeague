@@ -9,7 +9,7 @@ import ActivityKit
 /// on each score/status change. So the widget process needs no network and no
 /// shared container: it renders exactly what it is handed. Flags are emoji
 /// (Country.flagEmoji) because the widget can't reliably load the remote crest
-/// CDN.
+/// CDN; PL clubs carry an empty flag and the widget shows the name alone.
 struct MatchActivityAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
         var homeScore: Int

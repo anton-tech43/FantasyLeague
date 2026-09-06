@@ -242,18 +242,21 @@ class APIClient {
     /// "update" (per running activity — backend updates/ends it; fixtureId set).
     /// SEC-3: registers via the SECURITY DEFINER RPC (migration 071), not a
     /// direct table upsert, so anon needs no access to live_activity_tokens.
-    /// V2.2: `countryIds` carries every followed WC country so the single
-    /// push-to-start token triggers the Live Activity for any of them.
+    /// V2.2: `countryIds` carries every followed WC country and (mig 083)
+    /// `teamIds` every followed PL club, so the single push-to-start token
+    /// triggers the Live Activity for any of them.
     func registerLiveActivityToken(_ token: String,
                                    kind: String,
                                    fixtureId: Int?,
-                                   countryIds: [String]) async throws {
+                                   countryIds: [String],
+                                   teamIds: [String]) async throws {
         let url = try requireBaseURL().appendingPathComponent("rpc/register_la_token")
         let body: [String: Any] = [
             "p_token": token,
             "p_kind": kind,
             "p_fixture_id": fixtureId ?? NSNull(),
             "p_country_ids": countryIds,
+            "p_team_ids": teamIds,
             "p_apns_environment": APIClient.apnsEnvironment,
         ]
         let bodyData = try JSONSerialization.data(withJSONObject: body)

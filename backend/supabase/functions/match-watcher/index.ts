@@ -284,18 +284,19 @@ async function logFire(
   }
 }
 
-/// Direct APNs alert to the followers of the two PLAYING WC countries (goal /
-/// half-time / full-time). Unlike consequence content_items, which wait on
-/// notification-sender's hourly sweep (5-75 min), these fire immediately from
-/// the tick that observed the event, since a goal alert is worthless an hour
-/// late. Recipients: device_tokens whose country_id matches either playing
-/// team; sent to ALL tiers (matches existing WC push behaviour). The body is
-/// the follower's perspective (copy.bodies keyed by country slug); the title
-/// is shared. content_id is a non-UUID sentinel so an app tap just opens the
-/// app (AppDelegate only deep-links when content_id parses as a UUID). Returns
-/// the number of pushes successfully dispatched. Best-effort and self-
-/// contained: a token-query or send error never aborts the tick.
-async function sendWcPlayingTeamPush(
+/// Direct APNs alert to the followers of the two PLAYING teams (kickoff-soon /
+/// goal / half-time / full-time), WC countries and PL clubs alike. Unlike
+/// consequence content_items, which wait on notification-sender's hourly sweep
+/// (5-75 min), these fire immediately from the tick that observed the event,
+/// since a goal alert is worthless an hour late. Recipients: device_tokens
+/// following either playing team (country_id/country_ids or team_id/team_ids);
+/// sent to ALL tiers. The body is the follower's perspective (copy.bodies keyed
+/// by team slug); the title is shared. content_id is a non-UUID sentinel so an
+/// app tap just opens the app (AppDelegate only deep-links when content_id
+/// parses as a UUID). Returns the number of pushes successfully dispatched.
+/// Best-effort and self-contained: a token-query or send error never aborts
+/// the tick.
+async function sendPlayingTeamPush(
   supabase: ReturnType<typeof getSupabaseClient>,
   args: {
     homeTeamId: string;
@@ -311,15 +312,18 @@ async function sendWcPlayingTeamPush(
   },
 ): Promise<number> {
   try {
-    // Match a device that follows either playing country via the legacy scalar
-    // (old apps) OR the multi-follow array (new apps). One row per device
-    // (UNIQUE apns_token) so a device that follows BOTH playing countries still
-    // appears once → one push.
+    // Match a device that follows either playing team via the legacy scalars
+    // (old apps) OR the multi-follow arrays (new apps), country or club. One
+    // row per device (UNIQUE apns_token) so a device that follows BOTH playing
+    // teams still appears once → one push.
     const playing = `${args.homeTeamId},${args.awayTeamId}`;
     const { data: tokens } = await supabase
       .from("device_tokens")
-      .select("apns_token, country_id, country_ids, apns_environment")
-      .or(`country_id.in.(${playing}),country_ids.ov.{${playing}}`)
+      .select("apns_token, country_id, country_ids, team_id, team_ids, apns_environment")
+      .or(
+        `country_id.in.(${playing}),country_ids.ov.{${playing}},` +
+          `team_id.in.(${playing}),team_ids.ov.{${playing}}`,
+      )
       .eq("is_active", true);
 
     // Per-country tallies so we can write one apns_send pipeline_health row per
@@ -342,11 +346,13 @@ async function sendWcPlayingTeamPush(
     };
     const recipients: Recipient[] = [];
     for (const t of tokens ?? []) {
-      // Which of THIS device's followed countries is in the match decides the
+      // Which of THIS device's followed teams is in the match decides the
       // perspective copy. Prefer home when a device follows both sides (they
       // play each other) so the single push is deterministic.
-      const followed = (t.country_ids as string[] | null) ??
-        (t.country_id ? [t.country_id as string] : []);
+      const followed = [
+        ...((t.country_ids as string[] | null) ?? (t.country_id ? [t.country_id as string] : [])),
+        ...((t.team_ids as string[] | null) ?? (t.team_id ? [t.team_id as string] : [])),
+      ];
       const country = followed.includes(args.homeTeamId)
         ? args.homeTeamId
         : followed.includes(args.awayTeamId)
@@ -355,7 +361,7 @@ async function sendWcPlayingTeamPush(
       if (!country) continue; // matched on stale scalar only — not actually following
       const body = args.copy.bodies[country];
       if (!body) continue; // follower of a team not in this match — shouldn't happen
-      const contentId = args.contentIdByCountry?.[country] ?? `wc-${args.label}-${args.fixtureId}`;
+      const contentId = args.contentIdByCountry?.[country] ?? `live-${args.label}-${args.fixtureId}`;
       const payload = buildAPNsPayload(
         "", // teamShortName fallback unused — we pass pushTitle below
         body, // headline fallback
@@ -403,20 +409,20 @@ async function sendWcPlayingTeamPush(
           team_id: country,
           stage: "apns_send",
           status,
-          target: `wc_${args.label}:${country}:${args.fixtureId}`,
+          target: `live_${args.label}:${country}:${args.fixtureId}`,
           http_status: s.status ?? null,
           response_excerpt: s.failed > 0 ? (s.reason ?? "unknown").slice(0, 200) : null,
           error_class: status === "success" ? "success" : "apns_send_failed",
-          message: `WC ${args.label}: ${s.sent} sent, ${s.failed} failed of ${total}`,
+          message: `live ${args.label}: ${s.sent} sent, ${s.failed} failed of ${total}`,
         });
       }
     } catch (logErr) {
-      console.error("sendWcPlayingTeamPush logging failed (non-fatal):", logErr);
+      console.error("sendPlayingTeamPush logging failed (non-fatal):", logErr);
     }
 
     return sent;
   } catch (e) {
-    console.error(`sendWcPlayingTeamPush failed for fixture ${args.fixtureId} [${args.label}] (non-fatal):`, e);
+    console.error(`sendPlayingTeamPush failed for fixture ${args.fixtureId} [${args.label}] (non-fatal):`, e);
     return 0;
   }
 }
@@ -505,7 +511,7 @@ async function handleRequest(req: Request): Promise<Response> {
   // league-1 poll; relegated PL clubs never appear in league-39 fixtures anyway.
   const { data: teams, error: teamsErr } = await supabase
     .from("teams")
-    .select("id, api_football_id, league_id")
+    .select("id, api_football_id, league_id, short_name")
     .not("league_id", "is", null)
     .eq("is_active", true);
   if (teamsErr) {
@@ -526,6 +532,20 @@ async function handleRequest(req: Request): Promise<Response> {
   const teamIdMap = new Map<number, string>(
     (teams ?? []).map((t) => [t.api_football_id as number, t.id as string]),
   );
+  // Display meta for the live pushes + Live Activity (name + flag). Countries
+  // come from WC_COUNTRY_META (emoji flag); clubs from teams.short_name with no
+  // flag (the widget can't load crests, and interpolate() drops an empty
+  // {flag}). Until Sept 2026 these surfaces were WC-only — a PL follower got no
+  // kickoff / goal / HT / FT push and no Live Activity (audit 2026-09, P0).
+  const shortNameById = new Map<string, string>(
+    (teams ?? []).map((t) => [t.id as string, (t.short_name as string | null) ?? (t.id as string)]),
+  );
+  const liveMeta = (teamId: string): { name: string; flag: string } | null => {
+    const wc = WC_COUNTRY_META[teamId];
+    if (wc) return wc;
+    const name = shortNameById.get(teamId);
+    return name ? { name, flag: "" } : null;
+  };
 
   // Poll plan: every active league polls `today` (UTC). Additionally, while a
   // fixture dated YESTERDAY (UTC) is still in a non-terminal status — a
@@ -725,13 +745,13 @@ async function handleRequest(req: Request): Promise<Response> {
     // (i.e. a detected goal). Stays null on quiet ticks so the upsert leaves
     // match_status_state.goal_events untouched rather than clobbering it.
     let goalEventsStored: StoredGoalEvent[] | null = null;
-    // PUSH-2: WC alert pushes (goal/HT/FT/kickoff) are COLLECTED here and fired
+    // PUSH-2: live alert pushes (goal/HT/FT/kickoff) are COLLECTED here and fired
     // only AFTER the end-of-tick state upsert succeeds — so a failed upsert can
     // never leave us having pushed without persisting the marker/score (which
     // would re-fire duplicate alerts next tick). At-most-once by construction:
     // a send failure after a good upsert is a missed push, never a duplicate.
     const pendingAlertPushes: Array<{
-      args: Parameters<typeof sendWcPlayingTeamPush>[1];
+      args: Parameters<typeof sendPlayingTeamPush>[1];
       isGoal: boolean;
     }> = [];
     // Tournament-feed rows (team_id='world_championship', migration 076).
@@ -1269,17 +1289,18 @@ async function handleRequest(req: Request): Promise<Response> {
     }
 
     // ─── Live Activity (Lock Screen / Dynamic Island) drive ──────────────
-    // WC matches only (the activity UI + flag emoji are WC-scoped). Start once
-    // at kickoff (push-to-start), update on score/period change, end at FT.
-    // Idempotency via la_started / la_sig / la_ended on the row. Pushes carry
-    // the full attributes + content-state, so the widget needs no network.
+    // Every polled league (WC countries + PL clubs since Sept 2026; clubs show
+    // short_name with no flag). Start once at kickoff (push-to-start), update
+    // on score/period change, end at FT. Idempotency via la_started / la_sig /
+    // la_ended on the row. Pushes carry the full attributes + content-state,
+    // so the widget needs no network.
     let laStarted = (prior?.la_started as boolean | undefined) ?? false;
     let laSig = (prior?.la_sig as string | null | undefined) ?? null;
     let laEnded = (prior?.la_ended as boolean | undefined) ?? false;
 
-    if (fixtureLeagueId === WC_LEAGUE_ID && !laEnded) {
-      const homeMeta = WC_COUNTRY_META[homeTeamId];
-      const awayMeta = WC_COUNTRY_META[awayTeamId];
+    if (!laEnded) {
+      const homeMeta = liveMeta(homeTeamId);
+      const awayMeta = liveMeta(awayTeamId);
       if (homeMeta && awayMeta) {
         // Live minute drives the "63' / 90" badge. Only meaningful during an
         // active half (1H/2H/ET) — null at HT/BT/penalties/FT so the badge
@@ -1333,19 +1354,21 @@ async function handleRequest(req: Request): Promise<Response> {
         } else if (isLive && !laStarted && prior !== null) {
           // START — push-to-start the followers' activities (first observed
           // live tick; prior!==null mirrors the matchday first-observation guard).
-          // Knockout matches start EVERY device's activity, not just the two
+          // WC knockout matches start EVERY device's activity, not just the two
           // countries' followers — from the round of 32 on, every game matters
           // to everyone. Round convention mirrors detect-consequences: an
-          // empty/missing round stays follower-scoped (safe default).
+          // empty/missing round stays follower-scoped (safe default). League
+          // matches ("Regular Season - 3") are always follower-scoped.
           const round = (fx.league?.round ?? "").toLowerCase();
-          const isKnockout = round.length > 0 && !round.includes("group");
+          const isKnockout = fixtureLeagueId === WC_LEAGUE_ID && round.length > 0 && !round.includes("group");
           let ptsQuery = supabase
             .from("live_activity_tokens")
             .select("token, apns_environment")
             .eq("kind", "push_to_start").eq("is_active", true);
           if (!isKnockout) {
+            const playing = `${homeTeamId},${awayTeamId}`;
             ptsQuery = ptsQuery
-              .or(`country_id.in.(${homeTeamId},${awayTeamId}),country_ids.ov.{${homeTeamId},${awayTeamId}}`);
+              .or(`country_id.in.(${playing}),country_ids.ov.{${playing}},team_ids.ov.{${playing}}`);
           }
           const { data: ptsTokens } = await ptsQuery;
           await sendAll(ptsTokens, {
@@ -1375,17 +1398,20 @@ async function handleRequest(req: Request): Promise<Response> {
       }
     }
 
-    // ─── Goal / half-time / full-time pushes (WC playing teams) ──────────
-    // The alert banners the user asked for: followers of BOTH playing
-    // countries get a lock-screen push at every goal, at the break, and at
-    // full-time. Distinct from the Live Activity above (that's the persistent
-    // lock-screen score; these are the one-shot alerts) and from WC_RIVAL_RESULT
-    // (which stays after-the-game-only for the OTHER teams in the group).
-    // Deterministic, zero Claude. Fires for any WC round including knockouts —
-    // it keys off the live score, not group math.
-    if (fixtureLeagueId === WC_LEAGUE_ID) {
-      const homeMeta = WC_COUNTRY_META[homeTeamId];
-      const awayMeta = WC_COUNTRY_META[awayTeamId];
+    // ─── Kickoff / goal / half-time / full-time pushes (playing teams) ────
+    // The alert banners the user asked for: followers of BOTH playing teams
+    // (WC countries and, since Sept 2026, PL clubs) get a lock-screen push 30
+    // min before kickoff, at every goal, at the break, and at full-time.
+    // Distinct from the Live Activity above (that's the persistent lock-screen
+    // score; these are the one-shot alerts) and from WC_RIVAL_RESULT (which
+    // stays after-the-game-only for the OTHER teams in the group).
+    // Deterministic, zero Claude. Keys off the live score, not group math.
+    // For PL the FT push is the result alert; gd-matchday's article lands in
+    // the feed a few minutes later as feed-only (post_news.sh), so nobody gets
+    // two FT pushes ten minutes apart.
+    {
+      const homeMeta = liveMeta(homeTeamId);
+      const awayMeta = liveMeta(awayTeamId);
       if (homeMeta && awayMeta) {
         const homeTeam = { id: homeTeamId, name: homeMeta.name, flag: homeMeta.flag };
         const awayTeam = { id: awayTeamId, name: awayMeta.name, flag: awayMeta.flag };
@@ -1632,7 +1658,7 @@ async function handleRequest(req: Request): Promise<Response> {
         }
       }
       for (const p of pendingAlertPushes) {
-        const n = await sendWcPlayingTeamPush(supabase, p.args);
+        const n = await sendPlayingTeamPush(supabase, p.args);
         if (p.isGoal) goalPushSends += n;
       }
     }

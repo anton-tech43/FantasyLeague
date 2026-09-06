@@ -1,7 +1,9 @@
 import Foundation
 import ActivityKit
 
-/// Owns the Live Activity lifecycle for live WC matches.
+/// Owns the Live Activity lifecycle for live matches of the followed teams:
+/// WC countries and, since Sept 2026, PL clubs (clubs show a short name and no
+/// flag; the widget can't load crests).
 ///
 /// Two token flows feed the backend so it can drive the activity remotely:
 ///   - push-to-start token (per install, iOS 17.2+): lets the backend START
@@ -40,17 +42,20 @@ final class LiveActivityManager {
     }
 
     /// Re-assert the push-to-start registration. V2.2: the single PTS token
-    /// carries ALL followed countries, so it triggers for whichever plays.
-    /// An empty countryIds array is fine — the backend broadcasts knockout
-    /// Live Activities to every registered token, so every device registers
-    /// even with no followed country. Safe to call repeatedly — backend
-    /// upserts on the token.
+    /// carries ALL followed countries and clubs, so it triggers for whichever
+    /// plays. Empty arrays are fine — the backend broadcasts WC knockout Live
+    /// Activities to every registered token, so every device registers even
+    /// with nothing followed. Safe to call repeatedly — backend upserts on the
+    /// token.
     func registerPushToStartIfPossible() async {
         guard let token = UserDefaults.standard.string(forKey: Self.ptsTokenKey) else { return }
-        let countryIds = AppState.shared.selectedCountries.map(\.rawValue)
         try? await APIClient.shared.registerLiveActivityToken(
-            token, kind: "push_to_start", fixtureId: nil, countryIds: countryIds)
+            token, kind: "push_to_start", fixtureId: nil,
+            countryIds: Self.followedCountryIds, teamIds: Self.followedTeamIds)
     }
+
+    private static var followedCountryIds: [String] { AppState.shared.selectedCountries.map(\.rawValue) }
+    private static var followedTeamIds: [String] { AppState.shared.selectedTeams.map(\.rawValue) }
 
     // MARK: Per-activity update tokens
 
@@ -68,26 +73,27 @@ final class LiveActivityManager {
                 try? await APIClient.shared.registerLiveActivityToken(
                     tokenData.gdHexString, kind: "update",
                     fixtureId: activity.attributes.fixtureId,
-                    countryIds: AppState.shared.selectedCountries.map(\.rawValue))
+                    countryIds: Self.followedCountryIds, teamIds: Self.followedTeamIds)
             }
         }
     }
 
     // MARK: Foreground-start fallback
 
-    /// On foreground: re-assert the push-to-start registration, and if the
-    /// followed country has a live match with no running activity, start one
+    /// On foreground: re-assert the push-to-start registration, and if a
+    /// followed team has a live match with no running activity, start one
     /// locally (which vends its update token to the backend).
     func syncForegroundActivity() {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
         Task { await registerPushToStartIfPossible() }
-        let countryIds = AppState.shared.selectedCountries.map(\.rawValue)
+        let followedIds = Self.followedCountryIds + Self.followedTeamIds
         Task {
-            // Check each followed country — either could be live (e.g. his
-            // Norway and her Sweden). startOrUpdate is keyed by fixtureId so
-            // two live matches each get their own activity.
-            for countryId in countryIds {
-                guard let snap = try? await APIClient.shared.fetchCurrentLiveMatch(countryId: countryId),
+            // Check each followed team — any could be live (e.g. his Arsenal
+            // and her Sweden). startOrUpdate is keyed by fixtureId so two live
+            // matches each get their own activity. live-match-current matches
+            // on home/away id, so a club slug works the same as a country slug.
+            for entityId in followedIds {
+                guard let snap = try? await APIClient.shared.fetchCurrentLiveMatch(countryId: entityId),
                       snap.isLive else { continue }
                 startOrUpdate(from: snap)
             }
@@ -112,20 +118,28 @@ final class LiveActivityManager {
             return
         }
 
-        guard let home = Country(rawValue: snap.homeTeamId),
-              let away = Country(rawValue: snap.awayTeamId) else { return }
+        guard let home = Self.side(snap.homeTeamId),
+              let away = Self.side(snap.awayTeamId) else { return }
 
         let attributes = MatchActivityAttributes(
             fixtureId: snap.fixtureId,
-            homeName: home.shortName,
-            awayName: away.shortName,
-            homeFlag: home.flagEmoji,
-            awayFlag: away.flagEmoji,
+            homeName: home.name,
+            awayName: away.name,
+            homeFlag: home.flag,
+            awayFlag: away.flag,
             groupLabel: snap.groupLabel)
 
         // pushType: .token so iOS vends an update token → observeToken registers
         // it → the backend takes over live updates through to full-time.
         _ = try? Activity.request(attributes: attributes, content: content, pushType: .token)
+    }
+
+    /// Display side for a country or club slug. Mirrors the backend's liveMeta:
+    /// countries carry an emoji flag, clubs an empty one (the widget hides it).
+    private static func side(_ id: String) -> (name: String, flag: String)? {
+        if let c = Country(rawValue: id) { return (c.shortName, c.flagEmoji) }
+        if let t = Team(rawValue: id) { return (t.shortName, "") }
+        return nil
     }
 }
 
