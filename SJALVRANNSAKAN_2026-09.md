@@ -151,6 +151,7 @@ Filerna `06b_pipeline_health_dump.csv` och `07_match_status_state.csv` är reten
 | **P1** | A25 | **VM-nattpushar 55 %.** Samma beslut som A4 men större: routine-schemat är Stockholm-tid, inte UTC; live-pushar för nattmatcher kräver ett medvetet val (opt-in "väck mig" eller quiet hours med undantag bara för mål/FT). | routines/app/policy |
 | ✔ hist. | A26 | Kickoff-push 429 efter mig 064 (3 Sverige-matcher, 23/40 misslyckade). Fixad 10 jul (`45e62a2` single-flight + retry). Lärdom: verifiera fixar mot `apns_send`-raderna nästa match, inte mot koden. | — |
 | **P0** | A27 | **Påminnelser bygger på routine-skriven `next_fixtures`** → 0 i slutspelet. **Fix skriven 6 sep (ej deployad):** `matchday-reminder` hämtar fixtures från API-Football per aktiv liga (1 anrop/liga/dag, `from`/`to` = 24 h) med `match_status_state` som fallback; `next_fixtures` läses inte alls. **Deployad 6 sep 13:16 CEST (v9, morning-push v11).** Dry-run 13:2x: 4 kandidater från `api_football`, svensk tid i kopian ("Arsenal face Chelsea today at 17:30"), Arsenal `would_push: true`, övriga tre ej följda. Första skarpa körning: nästa PL-matchdag 09:00. | app |
+| **P0** | A28 | **Routines delar 5-timmarskvot med interaktiva Claude Code-sessioner.** 6 sep föll både HT-brief och FT-artikel för Everton–Man Utd på "session limit" trots att match-watcher fungerade; fire loggas som `success`, ingen retry. Beslut: egen kvot för routines och/eller fire-utan-artikel = fail (§3 A28). | routines/app |
 | **P2** | — | Uppdatera routines `README.md` (säger "6 lag var 6:e timme"). | routines |
 
 **Policyfrågor att ta ställning till (inte buggar):** nattfire 00:30 UTC; quiet hours på server
@@ -467,6 +468,13 @@ per 2026-07-10.
   "rad i `match_status_state` med `kickoff_time` i dag och `status` icke-terminal men `last_checked`
   äldre än 5 min mellan kickoff−15 och kickoff+150" → `client_errors`.
 
+- **Verifiering 6 sep kväll (Everton–Man Utd 15:00, Arsenal–Chelsea 17:30 CEST):** match-watcher v66
+  följde 1557390 live: 1H → 2H, `briefs_fired ["HT"]`, FT 2–2 kl 17:0x, `watch`-rad varje hel timme,
+  `live_brief_fire` 15:50 (everton, man_utd) och `matchday_fire` 17:01 (båda) med status `success`.
+  **Kedjan bröts i nästa led:** både `gd-live-brief` (13:50 UTC) och `gd-matchday` (15:01 UTC)
+  avbröts efter 0 s med *"You've hit your session limit · resets 3:30pm (UTC)"*. Se A28. Ingen följer
+  Everton/Man Utd (0 följare) så ingen kund drabbades; Arsenal (9 följare) avgörs efter kvotåterställningen.
+
 ### A18 · `team_season_state` = förra säsongens slutspurt — **P0 (nytt, B3)**
 - **Bevis:** `28d`: 20 klubbar `phase=mid_season`, genererade 21–24 aug 03:1x CEST av routinen
   (`post_season_state`), med summaries som "Arsenal are top of the Premier League with 79 points
@@ -513,6 +521,22 @@ per 2026-07-10.
   `28b`). Följer av A1:s laglista.
 
 ---
+
+### A28 · Routines delar claude.ai-kvot med interaktiva sessioner; "fire OK" ≠ artikel — **P0 (nytt, kvällens verifiering)**
+- **Bevis:** RemoteTrigger-loggar `cse_01N2Cvwk3FPTbiY3VYHUynfZ` (gd-live-brief, HT) och
+  `cse_01Qnv3pCFK8gk4egAUpk9FpV` (gd-matchday, FT): `rate_limit: rejected (five_hour)
+  resets_at=1788708600` (15:30 UTC), `result: success is_error=true turns=1 duration=0s`. Samma
+  dag kördes en lång Claude Code-session (denna granskning) på samma konto. `pipeline_health` visar
+  ändå `matchday_fire success` eftersom match-watcher bara ser HTTP 200 från fire-endpointen;
+  `matchday-retry.ts` backar bara vid *misslyckad* fire, så artikeln återskapas aldrig automatiskt.
+  Heartbeat CHECK 4 (matchday-SLA) är enda skyddsnätet och larmar till Anton, inte till kunden.
+- **Vad kunden ser:** matchdag utan FT-artikel och utan HT-brief trots att allt "lyckades" i loggen.
+  Under VM (A10) höll kvoten eftersom ingen interaktiv session konkurrerade under matcherna.
+- **Åtgärd (Antons beslut):** (a) separat konto/kvot för routines, eller en regel att inte köra
+  tunga agentsessioner under PL-matchdagar; (b) i `match-watcher` betrakta en fire som misslyckad
+  om ingen `matchday`-item finns 20 min senare, så `matchday-retry` tar över (S, `match-watcher/index.ts`);
+  (c) deterministisk FT-fallbackpush för PL (finns redan för länder) så kunden får resultatet även när
+  rutinen faller.
 
 ## 4. Checklista — "Pausa VM-läget"
 
@@ -607,4 +631,5 @@ Verifierat read-only: `country | f | 48`, match-watcher grön varje minut, dagen
 | 29 aug 11:17 | Sista routine-post; 08:56 sista push |
 | 30 aug 16:32 | Sista cron-körning — prod tyst (A14) |
 | 6 sep 11:38 | Fast database reboot (Anton); 11:45 snapshot; 12:0x städning (308 → 61 MB); match-watcher ser dagens matcher |
-| 6 sep | Denna granskning (Spår A + B) |
+| 6 sep 15:50–17:01 | match-watcher v66 följer Everton–Man Utd live (HT-fire, FT-fire) — båda rutinkörningarna avvisas av claude.ai-kvoten (A28) |
+| 6 sep | Denna granskning (Spår A + B) + kundgranskning (plan `parsed-chasing-ladybug`): onboarding utan VM-steg, routines på `teams`-tabellen och innevarande säsong, quiet hours, validatorer |
