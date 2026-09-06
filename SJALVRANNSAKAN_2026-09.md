@@ -136,7 +136,7 @@ Filerna `06b_pipeline_health_dump.csv` och `07_match_status_state.csv` är reten
 | **P0→process** | A6 | Merga/kör **aldrig** `b7df6ae`/branchen `claude/create-markdown-file-hIdbj`. **Verifierat oskadd i prod 6 sep** (`03_teams.csv`). Ta bort branchen på origin. | process |
 | **P0** | A12 | Dokumentera prod-driften: `01_cron_jobs.csv` är facit. Skriv migrationer för archive-cronen (`UPDATE … 'archived' … published_at < now()-7d AND preview_fixture_id IS NULL`, 06:00 UTC), status-CHECK (`retrying`,`archived`), unschedule av `matchday-scheduler`/`data-fetcher`/`cleanup-*`. Bestäm om `schema_migrations` ska backfyllas 018–077 eller om `supabase db push` överges formellt. | app |
 | ~~P0~~ ✔ | A11 | Retention-snapshot tagen 6 sep 11:45 CEST och committad (`a4c5650`). | — |
-| **P1** | A4 | Besluta nattpush-policy. Mätt: 32 % av pusharna 00:37–01:03 Stockholm. Alternativ: flytta nattkörningen till 05:30 Stockholm (feed-only på natten), och/eller server-quiet-hours 22–07 Stockholm i `notification-sender` (live-pushar undantagna). Fixa README (schemat är Stockholm-tid, inte UTC). | routines/app |
+| **P1** | A4 | Besluta nattpush-policy för **nyheter** (livepushar beslutade 6 sep: inget tystnadsfönster). Mätt: 32 % av pusharna 00:37–01:03 Stockholm. Alternativ: flytta nattkörningen till 05:30 Stockholm (feed-only på natten), och/eller server-quiet-hours 22–07 Stockholm i `notification-sender` (live-pushar undantagna). Fixa README (schemat är Stockholm-tid, inte UTC). | routines/app |
 | **P1** | A5 | En tidszon i all kopia. Mätt: 25 items med klockslag, 5 anger zon; alla UK-tid → svensk läsare 1 h fel. **Push-sidan löst 6 sep (skriven, ej deployad): mig 082** `device_tokens.timezone` + `register_device_token(p_timezone)`; iOS skickar `TimeZone.current.identifier`; `matchday-reminder` och `morning-push` renderar avspark per läsarens zon (en payload per zon). **Default/fallback = Europe/London** (Antons beslut 6 sep: appen marknadsförs och betalas i UK; de ~20 befintliga svenska enheterna får London-tid tills iOS-builden som skickar zon är ute). Fler marknader senare → per-enhet-zon i stället för fast zon. **Körd/deployad 6 sep 13:41 CEST:** mig 082 i prod (`timezone` = London för 20 befintliga tokens, RPC 6-arg med PUBLIC återkallat), matchday-reminder v10, morning-push v12. iOS 2.1.1 (build 9) arkiverad + IPA exporterad 6 sep 13:46 (`~/Desktop/GoalDigger-2.1.1-build9/`), Anton laddar upp och skickar in i kväll. **Routine-sidan kvarstår:** regel i PROMPT/SUNDAY_BRIEF att skriva tid med zon eller relativt ("tonight"). | app/routines |
 | **P1** | A19 | **Röst-tokens som läcker:** `[him]` substitueras inte av iOS (8 items renderar "[him]"), "your partner"/"your guy" (12 items), "If [his name] follows X" (15 items). Lägg hard-reject i `post_news.sh` för `\[him\]`, `your (partner|guy|man)`, `if \[his name\] (follows|supports)`. | routines |
 | **P1** | A20 | **Sunday-brief-korten:** 19/80 saknar `immersive_headline`+`immersive_context`, 41/80 har versaler. Kör sunday_brief genom samma validering som news (lowercase, ≤22/rad, fält obligatoriska eller fallback). | routines |
@@ -148,7 +148,7 @@ Filerna `06b_pipeline_health_dump.csv` och `07_match_status_state.csv` är reten
 | **P2** | A23 | `content-audit` ger falskt larm vid säsongsstart: "spurs finished 20/20 → RELEGATED" mot en 2026-27-tabell med 0 spelade (`19`). Kräv `played ≥ 1` innan rank-påståenden lintas. | app |
 | **P2** | A24 | 49 items (45 pushade) i augusti till fem inaktiva klubbar med 0 följare (west_ham 18, wolves 12, southampton 8, leicester 6, burnley 5) — routinekvot i onödan. Följer av A1. | routines |
 | **P2** | A10 | VM-retro-lärdomar → nästa turnering (previews i tid, ingen manuell bulk-postning). | docs |
-| **P1** | A25 | **VM-nattpushar 55 %.** Samma beslut som A4 men större: routine-schemat är Stockholm-tid, inte UTC; live-pushar för nattmatcher kräver ett medvetet val (opt-in "väck mig" eller quiet hours med undantag bara för mål/FT). | routines/app/policy |
+| **P1** | A25 | **VM-nattpushar 55 %.** ~~Live-pushar för nattmatcher kräver ett medvetet val~~ — **beslutat 6 sep: livepushar tystas aldrig.** Kvar: routine-schemat är Stockholm-tid, inte UTC, och nattkörningens nyhetspush. | routines/policy |
 | ✔ hist. | A26 | Kickoff-push 429 efter mig 064 (3 Sverige-matcher, 23/40 misslyckade). Fixad 10 jul (`45e62a2` single-flight + retry). Lärdom: verifiera fixar mot `apns_send`-raderna nästa match, inte mot koden. | — |
 | **P0** | A27 | **Påminnelser bygger på routine-skriven `next_fixtures`** → 0 i slutspelet. **Fix skriven 6 sep (ej deployad):** `matchday-reminder` hämtar fixtures från API-Football per aktiv liga (1 anrop/liga/dag, `from`/`to` = 24 h) med `match_status_state` som fallback; `next_fixtures` läses inte alls. **Deployad 6 sep 13:16 CEST (v9, morning-push v11).** Dry-run 13:2x: 4 kandidater från `api_football`, svensk tid i kopian ("Arsenal face Chelsea today at 17:30"), Arsenal `would_push: true`, övriga tre ej följda. Första skarpa körning: nästa PL-matchdag 09:00. | app |
 | **P0** | A28 | **Routines delar 5-timmarskvot med interaktiva Claude Code-sessioner.** 6 sep föll både HT-brief och FT-artikel för Everton–Man Utd på "session limit" trots att match-watcher fungerade; fire loggas som `success`, ingen retry. Beslut: egen kvot för routines och/eller fire-utan-artikel = fail (§3 A28). | routines/app |
@@ -228,6 +228,10 @@ per 2026-07-10.
   har DND. Mät: `09_pushes_by_hour_sthlm.csv`, `10_night_pushes.csv`.
 - **Åtgärd:** flytta 00:30-fire eller lägg 22–07-fönster i `notification-sender` (låt
   `match-watcher`-live-pushar vara).
+- **Beslut (Anton, 6 sep):** **inget tystnadsfönster för livepushar.** En sen avspark ger
+  kickoff/mål/HT/FT när de händer, även 22–01. Live är hela produktlöftet; en fördröjd
+  slutsignal är värdelös. Kvar av A4 är därför bara *nyhetspusharna* från nattkörningen —
+  de har ingen händelse bakom sig och ska inte gå ut 00:37.
 - **B2-mätning (6 sep):** `09`: pushar per timme Stockholm 00: 96 · 01: 16 · 08: 139 · 09: 16 ·
   11: 80 (inga andra timmar). `10`: 112 nattpushar (108 news, 4 matchday), 14 nätter, topp
   00:37–01:03. `06b` routine_post-timmar: post_news 00/01/08/09/11, post_insider 04, post_season_state
@@ -319,6 +323,10 @@ per 2026-07-10.
 - **Juniauditen** (`CONTENT_PUSH_AUDIT_2026-06.md:44,50`) kallade 00:38–00:54-klustret "resolved"
   och VM "no night pushes" — den mätte 5 jun, före gruppspelet.
 - **Åtgärd:** A4-beslutet, plus en explicit produktregel för live-pushar nattetid.
+- **Beslut (Anton, 6 sep):** produktregeln är att **livepushar aldrig tystas**. Servern har
+  redan inga quiet hours (`notification-sender/index.ts:1-22`), så inget kodarbete krävs —
+  men App Store-texten får inte lova "we don't send at 3am", och nattkörningens nyhetspush
+  är fortfarande ett öppet schemabeslut.
 
 ### A26 · Kickoff-push 429 efter JWT-cache-fixen — **historiskt, fixat 10 jul**
 - **Bevis:** `06b` `apns_send` `wc_kickoff:sweden`: 20 jun 18:30 "2 sent, 8 failed of 10", 26 jun
