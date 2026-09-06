@@ -13,11 +13,15 @@
 --     no is_active filter) — cheap while there are no fixtures, but should filter.
 --   * routines (gd-news-wc, gd-insider, gd-season-state, …) use their own team
 --     lists and must be narrowed in the routines dashboard.
---   * the `world_championship` tournament row stays active (its fetch fails daily —
---     decide separately).
+--   * the `world_championship` tournament row is ALSO set inactive (Anton, 2026-09-06 12:4x):
+--     its data-fetcher fetch failed every run since at least 23 Aug (pipeline_health
+--     `tournament | failure`), and the tournament feed is over.
 --
 -- Applied manually to prod 2026-09-06 via audit/2026-09/cleanup_2026_09_06.sql.
--- Reverse for WC 2030: UPDATE teams SET is_active = true WHERE entity_type = 'country';
+-- Reverse for WC 2030: UPDATE teams SET is_active = true WHERE entity_type IN ('country','tournament');
 
 UPDATE teams SET is_active = false WHERE entity_type = 'country' AND is_active;
 -- Expected: UPDATE 48
+
+UPDATE teams SET is_active = false WHERE entity_type = 'tournament' AND is_active;
+-- Expected: UPDATE 1 (world_championship)
