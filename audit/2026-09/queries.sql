@@ -564,3 +564,52 @@ SELECT now() AS now_utc, pg_postmaster_start_time() AS postmaster_start_utc,
        (SELECT stats_reset FROM pg_stat_database WHERE datname=current_database()) AS stats_reset_utc,
        version();
 \o
+
+-- 38 pg_cron: sista körning per jobb (hela historiken) + felmeddelanden senaste 14 d — när dog driften?
+\o out/38_cron_last_run_ever.csv
+SELECT j.jobname, j.active, max(r.start_time) AS last_run_utc,
+       max(r.start_time) AT TIME ZONE 'Europe/Stockholm' AS last_run_sthlm,
+       max(r.start_time) FILTER (WHERE r.status='succeeded') AT TIME ZONE 'Europe/Stockholm' AS last_success_sthlm,
+       count(*) AS runs_total, min(r.start_time) AS first_run_utc
+FROM cron.job j LEFT JOIN cron.job_run_details r USING (jobid)
+GROUP BY 1,2 ORDER BY 3 DESC NULLS LAST;
+\o
+
+\o out/38b_cron_failures_14d.csv
+SELECT j.jobname, left(r.return_message, 200) AS return_message, count(*) AS n,
+       min(r.start_time) AT TIME ZONE 'Europe/Stockholm' AS first_sthlm,
+       max(r.start_time) AT TIME ZONE 'Europe/Stockholm' AS last_sthlm
+FROM cron.job_run_details r JOIN cron.job j USING (jobid)
+WHERE r.status='failed' AND r.start_time > now() - interval '14 days'
+GROUP BY 1,2 ORDER BY 1, n DESC;
+\o
+
+\o out/38c_cron_run_details_size.csv
+SELECT count(*) AS rows, min(start_time) AS oldest_utc, max(start_time) AS newest_utc,
+       pg_size_pretty(pg_total_relation_size('cron.job_run_details')) AS size
+FROM cron.job_run_details;
+\o
+
+-- 39 raw_fetch_logs: bytes per källa × entitetstyp (vad äter TOAST:en, klubbar eller VM-länder?)
+\o out/39_raw_fetch_logs_by_source.csv
+SELECT r.source, t.entity_type, count(*) AS rows,
+       pg_size_pretty(sum(pg_column_size(r.*))::bigint) AS bytes_est, sum(pg_column_size(r.*)) AS bytes,
+       min(r.fetched_at) AS oldest_utc, max(r.fetched_at) AS newest_utc
+FROM raw_fetch_logs r LEFT JOIN teams t ON t.id=r.team_id
+GROUP BY 1,2 ORDER BY 5 DESC;
+\o
+
+-- 40 pg_net-köer (match-watcher skriver hit varje minut)
+\o out/40_pg_net_queues.csv
+SELECT 'net.http_request_queue' AS tbl, count(*) AS rows, pg_size_pretty(pg_total_relation_size('net.http_request_queue')) AS size FROM net.http_request_queue
+UNION ALL
+SELECT 'net._http_response', count(*), pg_size_pretty(pg_total_relation_size('net._http_response')) FROM net._http_response;
+\o
+
+-- 41 Återhämtning efter omstart: cron-körningar senaste 30 min
+\o out/41_cron_runs_last_30min.csv
+SELECT j.jobname, r.status, r.start_time AT TIME ZONE 'Europe/Stockholm' AS start_sthlm,
+       EXTRACT(EPOCH FROM (r.end_time - r.start_time)) AS secs, left(r.return_message,80) AS msg
+FROM cron.job_run_details r JOIN cron.job j USING (jobid)
+WHERE r.start_time > now() - interval '30 minutes' ORDER BY r.start_time;
+\o

@@ -1,0 +1,3 @@
+tbl,rows,size
+net.http_request_queue,0,24 kB
+net._http_response,4,48 kB

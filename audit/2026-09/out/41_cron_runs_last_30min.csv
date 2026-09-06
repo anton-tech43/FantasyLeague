@@ -1,0 +1,8 @@
+jobname,status,start_sthlm,secs,msg
+match-watcher-1min,succeeded,2026-09-06 11:46:08.648435,8.701114,1 row
+match-watcher-1min,failed,2026-09-06 11:47:00,11.427731,job startup timeout
+match-watcher-1min,failed,2026-09-06 11:48:00.000829,10.829811,job startup timeout
+match-watcher-1min,failed,2026-09-06 11:49:00.000262,11.713688,job startup timeout
+match-watcher-1min,succeeded,2026-09-06 11:50:02.323741,0.540944,1 row
+match-watcher-1min,succeeded,2026-09-06 11:51:01.0496,0.496695,1 row
+match-watcher-1min,succeeded,2026-09-06 11:52:01.412136,0.264097,1 row
