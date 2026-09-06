@@ -616,7 +616,7 @@ async function generateFullPage(
   // tournament). Single source of truth — the team's entity_type column.
   const leagueContext = team.entity_type === "country"
     ? "the 2026 World Championship — a national team competing at the tournament in USA, Canada and Mexico from June 11. Group stage runs June 11-27, knockouts June 30 onwards. Players here represent their country, NOT their club. For league_position_label use 'Xst in Group Y' format (look at the Standings data for the group letter and the team's position within that group)."
-    : "Premier League (2025-26 season). League table runs August to May. For league_position_label use 'Xst in the Premier League' format.";
+    : `Premier League (${plSeasonLabel()} season). League table runs August to May. For league_position_label use 'Xst in the Premier League' format.`;
 
   const systemPrompt = TEAM_PAGE_SYSTEM_PROMPT
     .replace(/\{\{team_display_name\}\}/g, team.display_name)
@@ -801,6 +801,34 @@ tab shows empty state, so do NOT skip this field when fixtures exist.`;
 // DYNAMIC-ONLY UPDATE (no Claude, just structured data)
 // ============================================================
 
+/// Current head coach from api_football_coachs snapshots (newest first): the
+/// coach with an OPEN stint (career.end == null) at this club; when the feed
+/// lists several (Chelsea in Sept 2026 had three), the latest start wins.
+/// Walks to older snapshots when the newest is a rate-limit empty response.
+function pickCurrentCoach(
+  snapshots: unknown[],
+  teamApiId: number,
+): { name: string; photo: string | null } | null {
+  for (const snap of snapshots) {
+    const response = (snap as { response?: Array<Record<string, unknown>> })?.response;
+    if (!Array.isArray(response) || response.length === 0) continue;
+    let best: { name: string; photo: string | null; start: string } | null = null;
+    for (const coach of response) {
+      const career = (coach.career as Array<Record<string, unknown>> | undefined) ?? [];
+      for (const c of career) {
+        const t = c.team as Record<string, unknown> | undefined;
+        if ((t?.id as number) !== teamApiId || c.end != null) continue;
+        const start = (c.start as string | null) ?? "";
+        if (!best || start > best.start) {
+          best = { name: coach.name as string, photo: (coach.photo as string | null) ?? null, start };
+        }
+      }
+    }
+    if (best) return { name: best.name, photo: best.photo };
+  }
+  return null;
+}
+
 async function updateDynamicFields(
   supabase: ReturnType<typeof getSupabaseClient>,
   team: Team
@@ -818,15 +846,36 @@ async function updateDynamicFields(
     return;
   }
 
-  // Fetch latest standings
-  const { data: standingsLog } = await supabase
+  // Fetch latest standings (a few rows: buildStandingsCard walks past the
+  // occasional empty payload during API-Football's nightly cache refresh).
+  const { data: standingsLogs } = await supabase
     .from("raw_fetch_logs")
-    .select("data")
+    .select("source, data")
     .eq("team_id", team.id)
     .eq("source", "api_football_standings")
     .order("fetched_at", { ascending: false })
-    .limit(1)
-    .single();
+    .limit(5);
+  const standingsLog = (standingsLogs ?? []).find((l) => {
+    const r = (l.data as { response?: unknown[] })?.response;
+    return Array.isArray(r) && r.length > 0;
+  }) ?? null;
+
+  // Latest coachs snapshot → current head coach (open stint at this club,
+  // latest start wins). Audit 2026-09: manager cards still named last
+  // season's coaches (Iraola at Bournemouth, Marco Silva at Fulham) four
+  // months after the change, because only the paid "full" path ever
+  // rewrote them. Name + photo are data; the prose is the routine's job.
+  const { data: coachLogs } = await supabase
+    .from("raw_fetch_logs")
+    .select("data")
+    .eq("team_id", team.id)
+    .eq("source", "api_football_coachs")
+    .order("fetched_at", { ascending: false })
+    .limit(5);
+  const currentCoach = pickCurrentCoach(
+    (coachLogs ?? []).map((l) => l.data),
+    team.api_football_id,
+  );
 
   // Fetch latest fixtures_next
   const { data: fixturesLog } = await supabase
@@ -877,6 +926,29 @@ async function updateDynamicFields(
         form_summary: (cards.form as Record<string, unknown>)?.form_summary,
       };
     }
+    // Full 20-row table for the iOS Table tab. Until Sept 2026 only the WC
+    // path refreshed this card; PL pages showed May's table all summer.
+    const standingsCard = buildStandingsCard(
+      (standingsLogs ?? []) as RawFetchLog[],
+      team,
+      now,
+    );
+    if (standingsCard) cards.standings = standingsCard;
+  }
+
+  if (currentCoach) {
+    const prev = (cards.manager ?? {}) as Record<string, unknown>;
+    const changed = prev.name !== currentCoach.name;
+    cards.manager = {
+      ...prev,
+      updated_at: now,
+      name: currentCoach.name,
+      ...(currentCoach.photo ? { photo_url: currentCoach.photo } : {}),
+      // A new manager makes the old prose wrong (it described the last one).
+      // Blank it rather than show it; the gd-team-page routine writes fresh
+      // prose and clears summary_stale. iOS keeps showing the card (name only).
+      ...(changed ? { summary: "", talking_point: null, summary_stale: true } : {}),
+    };
   }
 
   // Parse next fixture
@@ -1685,6 +1757,13 @@ function extractNextFixture(
   } catch {
     return null;
   }
+}
+
+/// "2026-27" from today's date (July onwards = new season). Was hardcoded
+/// "2025-26" until Sept 2026.
+function plSeasonLabel(now = new Date()): string {
+  const y = now.getUTCMonth() >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
+  return `${y}-${String(y + 1).slice(2)}`;
 }
 
 function getOrdinal(n: number): string {
