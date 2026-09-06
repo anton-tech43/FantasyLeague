@@ -622,3 +622,34 @@ SELECT j.jobname, (r.start_time AT TIME ZONE 'Europe/Stockholm')::date AS day_st
 FROM cron.job_run_details r LEFT JOIN cron.job j USING (jobid)
 GROUP BY 1,2,3 ORDER BY 2,1,3;
 \o
+
+-- 44 VM hela turneringen (11 jun–20 jul): alla items för länder/turnering med push-tid Stockholm,
+--    kopplade till fixture (preview) för att mäta "push efter avspark" och nattpushar
+\o out/44_wc_items_full.csv
+SELECT c.id, c.team_id, t.entity_type, c.type, c.pipeline_source, c.push_eligible,
+       c.created_at AT TIME ZONE 'Europe/Stockholm' AS created_sthlm,
+       c.pushed_at AT TIME ZONE 'Europe/Stockholm' AS pushed_sthlm,
+       to_char(c.pushed_at AT TIME ZONE 'Europe/Stockholm','HH24') AS pushed_hour_sthlm,
+       c.preview_fixture_id, c.match_id, c.consequence_type,
+       m.kickoff_time AT TIME ZONE 'Europe/Stockholm' AS fixture_kickoff_sthlm,
+       EXTRACT(EPOCH FROM (c.pushed_at - m.kickoff_time))/60 AS pushed_min_after_kickoff,
+       c.push_title, left(c.push_text,120) AS push_text
+FROM content_items c JOIN teams t ON t.id=c.team_id
+LEFT JOIN match_status_state m ON m.fixture_id::text = COALESCE(c.preview_fixture_id::text, c.match_id)
+WHERE t.entity_type IN ('country','tournament') AND c.created_at >= '2026-06-11' AND c.created_at < '2026-07-21'
+ORDER BY c.created_at;
+\o
+
+-- 44b VM live-pushar (apns_send för länder) per timme Stockholm + vad de var (target/message)
+\o out/44b_wc_apns_send_rows.csv
+SELECT ph.created_at AT TIME ZONE 'Europe/Stockholm' AS created_sthlm, ph.team_id, ph.status, ph.target, left(ph.message,160) AS message
+FROM pipeline_health ph JOIN teams t ON t.id=ph.team_id
+WHERE ph.stage='apns_send' AND t.entity_type='country' AND ph.created_at >= '2026-06-11' AND ph.created_at < '2026-07-21'
+ORDER BY ph.created_at;
+\o
+
+-- 44c matchday_reminders_sent — alla rader (VM)
+\o out/44c_matchday_reminders_all.csv
+SELECT r.team_id, r.kickoff_time AT TIME ZONE 'Europe/Stockholm' AS kickoff_sthlm, r.sent_at AT TIME ZONE 'Europe/Stockholm' AS sent_sthlm
+FROM matchday_reminders_sent r ORDER BY r.sent_at;
+\o

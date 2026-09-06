@@ -69,6 +69,19 @@ som "osant"** (juniauditens lärdom om stale spelartrupper). Allt är read-only 
 10. VM-slutspelet: koden hanterar förlängning/straffar och knockout-rundor korrekt; men
     automatiska matchförhandsvisningar landade först 10 juli (R32 + R16 utan), och 28 juni
     postades 48 sunday_briefs manuellt i bulk. (A10, P2)
+11. **VM-timing, uppmätt över hela turneringen (B5-tillägg 6 sep):** **55 % av VM-pusharna
+    (327 av 596) gick ut 22:00–06:59 svensk tid**, 202 av dem kl 00:xx — `gd-news-wc`:s
+    "00:35 UTC" är i själva verket 00:35 Stockholm. Juniauditens "no night pushes" för VM var
+    fel (den mätte före gruppspelet). Live-pushar för USA-nattmatcher (45 av 104 avsparkar
+    00–04 svensk tid) landade 02–07 by design. (A25, P1/policy)
+12. **Kickoff-pushen misslyckades för 8 av 10 Sverige-följare vid alla tre gruppspelsmatcher**
+    (20, 26, 30 jun) med `429 TooManyProviderTokenUpdates` — *efter* mig 064. Mål/HT/FT-pushar
+    minuter senare gick 10/10. Single-flight-fixen landade först 10 jul (`45e62a2`). (A26, P0
+    historiskt, fixad)
+13. **Inga matchdagspåminnelser alls i slutspelet.** `matchday-reminder` läser
+    `team_season_state.next_fixtures`, som routinen skrev **en gång** för länder (24 jun 03:32)
+    med enbart gruppspelsmatcher. 6 påminnelser totalt under VM, sista 27 jun. (A27, P0
+    historiskt → gäller PL i dag via A2/A18)
 
 ---
 
@@ -135,6 +148,9 @@ Filerna `06b_pipeline_health_dump.csv` och `07_match_status_state.csv` är reten
 | **P2** | A23 | `content-audit` ger falskt larm vid säsongsstart: "spurs finished 20/20 → RELEGATED" mot en 2026-27-tabell med 0 spelade (`19`). Kräv `played ≥ 1` innan rank-påståenden lintas. | app |
 | **P2** | A24 | 49 items (45 pushade) i augusti till fem inaktiva klubbar med 0 följare (west_ham 18, wolves 12, southampton 8, leicester 6, burnley 5) — routinekvot i onödan. Följer av A1. | routines |
 | **P2** | A10 | VM-retro-lärdomar → nästa turnering (previews i tid, ingen manuell bulk-postning). | docs |
+| **P1** | A25 | **VM-nattpushar 55 %.** Samma beslut som A4 men större: routine-schemat är Stockholm-tid, inte UTC; live-pushar för nattmatcher kräver ett medvetet val (opt-in "väck mig" eller quiet hours med undantag bara för mål/FT). | routines/app/policy |
+| ✔ hist. | A26 | Kickoff-push 429 efter mig 064 (3 Sverige-matcher, 23/40 misslyckade). Fixad 10 jul (`45e62a2` single-flight + retry). Lärdom: verifiera fixar mot `apns_send`-raderna nästa match, inte mot koden. | — |
+| **P0** | A27 | **Påminnelser bygger på routine-skriven `next_fixtures`** som för länder skrevs en gång (24 jun) → 0 påminnelser i slutspelet. Samma beroende gäller PL (A2/A18). Läs fixtures från API/`match_status_state` deterministiskt (data-fetcher har `fixtures_next` i `raw_fetch_logs` var 2:e timme). | app |
 | **P2** | — | Uppdatera routines `README.md` (säger "6 lag var 6:e timme"). | routines |
 
 **Policyfrågor att ta ställning till (inte buggar):** nattfire 00:30 UTC; quiet hours på server
@@ -284,6 +300,42 @@ per 2026-07-10.
   `32`: 388 VM-items i fönstret (311 news, 48 sunday_brief, 29 matchday), 274 pushade, 37
   `edge_function` (FT-artiklar). `33`: 28 jun-bursten = 48 briefar 11:27–11:30 svensk tid, alla
   pushade inom 4 minuter. `34`: leveransloggen fanns kvar och är nu snapshotad.
+- **Hela turneringen (`44*`, 6 sep):** 1 056 VM-items 11 jun–20 jul (843 news, 165 matchday, 48
+  sunday_brief), 596 pushade. Gruppspel: 70 matcher, HT 70/70, FT_PUSH 70/70, PREKICK 55/70
+  (funktionen landade 12–17 jun). FT-fire-latens median 121 min. Inga färdigspelade matcher utan
+  `fired_finished_at`. Se A25–A27 för det som inte fungerade.
+
+### A25 · VM-nattpushar — **P1 / policy (nytt, B5-tillägg)**
+- **Bevis:** `44`: pushar per timme Stockholm: 00→202, 23→24, 01→21, 02→20, 05→18, 06→16, 03→14,
+  04→12 (= 327 nattpushar, 55 % av 596); dagtid 08→159, 09→27, 11→48. Routine-news skapas kl 00
+  (264) och 08 (253) — två körningar/dygn, inte fyra, och nattkörningen är 00:3x *Stockholm*.
+  `44b`: live-pushar (mål/HT/FT/kickoff) per timme: 00→47, 22→11, 03→9, 23→8, 02→5, 04→6 …
+  `07`: 45 av 104 VM-matcher startade 00–04 svensk tid. Sverige-exempel (8 följare): Japan–Sverige
+  26 jun 01:00: kickoff-push 00:30, HT 01:51, mål 02:17 och 02:23, FT 02:59, FT-artikel 03:15.
+- **Juniauditen** (`CONTENT_PUSH_AUDIT_2026-06.md:44,50`) kallade 00:38–00:54-klustret "resolved"
+  och VM "no night pushes" — den mätte 5 jun, före gruppspelet.
+- **Åtgärd:** A4-beslutet, plus en explicit produktregel för live-pushar nattetid.
+
+### A26 · Kickoff-push 429 efter JWT-cache-fixen — **historiskt, fixat 10 jul**
+- **Bevis:** `06b` `apns_send` `wc_kickoff:sweden`: 20 jun 18:30 "2 sent, 8 failed of 10", 26 jun
+  00:30 "2/8", 30 jun 22:30 "3/7", alla `429 TooManyProviderTokenUpdates`; mål/HT/FT samma matcher
+  10/10. Länder med 1–2 följare påverkades inte (inget burst). FT-artikel-pushar 21 jun 08:15 och
+  26 jun 03:15: "3 sent, 7 failed (429:7)"; 10 jul 13:25 `world_championship` "3/12 (429:12)".
+  Mig 064 (15 jun, `c3d869a`) cachade token i DB men lät N parallella sändningar minta var sin
+  när cachen var kall; single-flight + retry kom 10 jul (`45e62a2`), deploy 10 jul.
+- **Lärdom:** verifiera en push-fix mot nästa matchs `apns_send`-rader (`44b`-frågan), inte mot
+  koden.
+
+### A27 · Påminnelser: `next_fixtures` skrevs en gång för länder — **P0 (nytt, B5-tillägg)**
+- **Bevis:** `44c`: 6 rader totalt (south_africa ×2, sweden ×2, england ×2), 18–27 jun, alla
+  09:00 svensk tid. Prod `team_season_state` för sweden/england/france/south_africa:
+  `generated_at` 2026-06-24 03:32–03:33, `next_fixtures` = enbart de tre gruppspelsmatcherna.
+  `06b`: `post_season_state:<land>` exakt 1 rad per land (24 jun); PL-klubbar 20/dag.
+  `matchday-reminder/index.ts:11-14,84-101` läser bara `next_fixtures` inom 24 h → R32–final
+  (28 jun–19 jul) gav 0 påminnelser, inkl. Frankrike–Sverige 30 jun.
+- **Koppling:** samma mekanism gäller PL i dag: reminder är avstängd för klubbar (A2) och
+  `next_fixtures` för klubbar skrivs av en routine på 2025-26-data (A18). Deterministisk källa
+  finns redan: `raw_fetch_logs` `api_football_fixtures_next` var 2:e timme, eller API direkt.
 
 ### A11 · Retention — **P0 (kör nu)**
 - `003_pg_cron_jobs.sql:67-71` + `043_pipeline_health_retention_sweep.sql` (90 d),
@@ -513,6 +565,7 @@ visar inga `matchday_fire`/`live_brief_fire` för liga 1; API-Football-kvot sjun
 | Kadens | `27`, `28a-d` | **Svar:** sunday_brief 20/söndag (2, 9, 16, 23 aug; **30 aug saknas**), quiz 20/lördag (1–29 aug) — båda på 2025-26-listan. Insider 16–25/dag, 4 dagar/vecka (inkl. 5 inaktiva + coventry/hull). Season-state: 20 `mid_season` men 2025-26-text (A18). |
 | Delad feed, konsekvenser | `29`, `30` | **Svar:** 111/433 items (26 %) `everyone_talking`. `30`: 0 PL-konsekvensrader → A7 ej aktuell. |
 | VM-slutspel | `31`–`34` | **Svar:** 34/34 HT+FT-push, 31/34 prekick, FT-latens median 122/167/174 min (FT/AET/PEN). 28 jun: 48 briefar på 4 min. Godkänt (A10). |
+| VM hela turneringen: timing | `44`, `44b`, `44c`, `07` | **Svar:** 55 % nattpushar (A25); kickoff-push 429 för Sverige ×3 efter mig 064 (A26, fixat 10 jul); 6 påminnelser totalt, 0 i slutspelet (A27); gruppspel HT/FT 70/70, PREKICK 55/70. |
 | Publik | `35`, `36` | **Svar:** 13 aktiva (T2 9, T3 4), 12 följer PL-lag (arsenal 8, liverpool 2, leeds 1), 11 följer land. Registreringar: 1 (16 aug). Churn: 1 (28 aug). |
 | Oberoende facit (B6) | `43` | **Svar:** API-Football Pro (7 500/dag, 537 använda 6 sep). 30 PL-fixtures 21 aug–6 sep; avsparkstider i `07`/`28d` stämmer med API där rader finns. |
 
