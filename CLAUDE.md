@@ -23,6 +23,23 @@ If you're the AI assistant reading this: when a user asks for a "backfill" or "r
 
 ---
 
+---
+
+## ⛔ Hard rule: never trust one feed for a fact a customer would notice
+
+**Read `/DATA_SOURCES.md` before writing code that reads an upstream feed, and before believing a number the app is showing.** It records field by field what API-Football gets right and what it gets wrong, with evidence and dates.
+
+The short version, as of 2026-09-06:
+- **Trusted**: fixtures, events/scorers, standings, squads (match players on SURNAME, names come abbreviated), injuries (but the payload is keyed by fixture, so filter to the latest one and dedupe).
+- **NOT trusted**: `/coachs` for who manages a club — it omits sitting managers entirely and lists assistants as open appointments. The manager lives in `teams.manager_name` (migration 085), human-verified. `/transfers` is a full unordered history, not this summer's signings.
+- **Photos never 404** — both CDNs return a silhouette with HTTP 200. Compare checksums to detect placeholders.
+
+When a feed proves wrong about a field, that field moves into our own table with a `*_verified_at` column and every consumer reads ours. Do not improve the heuristic against a feed that does not have the answer.
+
+The process that keeps this current is the **`stale-data-audit` skill** — run it after every transfer window, season rollover, promotion/relegation change or manager change, and extend it in the same change whenever you add a surface holding manually-maintained data.
+
+---
+
 ## How to write code here (lazy-senior-dev default)
 
 The best code is the code never written. Lazy means efficient, not careless. Before adding code, stop at the first rung that holds:

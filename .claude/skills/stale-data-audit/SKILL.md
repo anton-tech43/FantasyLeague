@@ -19,6 +19,8 @@ This skill is the checklist that catches that. Work through every section. Repor
 
 **The rule that generated this skill:** never trust a single upstream feed for a fact a human would notice being wrong. API-Football is right about scores and squads and wrong about managers. Where a feed cannot be trusted, the truth lives in a column in our database with a `*_verified_at` date, and this skill is what refreshes it.
 
+**`/DATA_SOURCES.md` is the field-by-field record** of what each feed gets right and wrong, with evidence. Read it before this checklist, and update it in the same change whenever a check here uncovers a new upstream failure.
+
 ## 0. Setup
 
 ```bash
