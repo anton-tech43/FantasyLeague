@@ -556,7 +556,10 @@ per 2026-07-10.
   `LiveActivityManager` registrerar klubbar och kan starta aktiviteten i förgrunden för en klubb
   (namn utan flagga, tre bokstäver i Dynamic Island). `post_news.sh` (`965760a`): PL-`matchday`-
   artiklar blir feed-only eftersom FT-pushen nu går deterministiskt vid slutsignalen.
-- **Kvar:** ny app-build för Live Activity på klubbar (befintliga 2.1.1(9) skickar inga `team_ids`;
+- **Verifierat 6 sep 19:28:** Arsenal–Chelsea FT 2-1 → `live_ft:arsenal` 9 skickade / 0 misslyckade
+  inom 2 s; gd-matchday-artiklarna landade 19:31 (chelsea) och 19:32 (arsenal) med `push_eligible=false`
+  och utan `pushed_at` — en FT-push, inte två. Build 2.1.1 (10) med klubb-Live Activity byggd 19:08.
+- **Kvar:** Anton laddar upp build 10 (build 9 skickar inga `team_ids`;
   pusharna fungerar utan ny build). Sena avsparkar (20:00 UK) ger FT-push ~22:00 UK — medvetet
   undantag från quiet hours, Antons beslut om det ska gälla. `goal-push-copy.ts` säger fortfarande
   "he" (240 strängar) och når nu även PL-följare med relation ≠ partner.
