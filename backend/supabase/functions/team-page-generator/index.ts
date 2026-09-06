@@ -936,14 +936,22 @@ async function updateDynamicFields(
     if (standingsCard) cards.standings = standingsCard;
   }
 
-  if (currentCoach) {
+  // teams.manager_name (mig 085) is a human-verified override and always wins:
+  // API-Football's /coachs feed omits several current managers entirely and
+  // lists assistants with open stints, so the pick below is only a fallback.
+  // Keep it in step with the `stale-data-audit` skill after every window.
+  const coach = team.manager_name
+    ? { name: team.manager_name, photo: team.manager_photo_url ?? null }
+    : currentCoach;
+
+  if (coach) {
     const prev = (cards.manager ?? {}) as Record<string, unknown>;
-    const changed = prev.name !== currentCoach.name;
+    const changed = prev.name !== coach.name;
     cards.manager = {
       ...prev,
       updated_at: now,
-      name: currentCoach.name,
-      ...(currentCoach.photo ? { photo_url: currentCoach.photo } : {}),
+      name: coach.name,
+      ...(coach.photo ? { photo_url: coach.photo } : {}),
       // A new manager makes the old prose wrong (it described the last one).
       // Blank it rather than show it; the gd-team-page routine writes fresh
       // prose and clears summary_stale. iOS keeps showing the card (name only).

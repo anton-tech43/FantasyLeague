@@ -154,6 +154,7 @@ Filerna `06b_pipeline_health_dump.csv` och `07_match_status_state.csv` är reten
 | **P0** | A28 | **Routines delar 5-timmarskvot med interaktiva Claude Code-sessioner.** 6 sep föll både HT-brief och FT-artikel för Everton–Man Utd på "session limit" trots att match-watcher fungerade; fire loggas som `success`, ingen retry. Beslut: egen kvot för routines och/eller fire-utan-artikel = fail (§3 A28). | routines/app |
 | **P0** | A29 | **Alla livepushar och Live Activity var hårdkodade till VM-ligan.** `match-watcher` skickade avspark-, mål-, HT- och FT-push samt Live Activity bara när `league_id = 1`; en PL-följare fick ingenting mellan morgonpåminnelsen och FT-artikeln. **Åtgärdat 6 sep 18:45 (v67 + mig 083):** gaten borttagen, klubbar hämtar namn ur `teams.short_name`, `device_tokens.team_ids` matchas, `live_activity_tokens.team_ids` tillagd. Live Activity för klubbar kräver ny app-build (§3 A29). | app/server |
 | **P0** | A30 | **Lagsidorna och truppdatan var från maj.** `team_pages`: säsongskort "two games left, Champions League final", tabell med 36 spelade, tränare Iraola/Marco Silva (bytta i somras), Coventry/Hull utan sida. `players` senast skriven 10 jul: 10–26 spelare saknades per klubb. gd-matchday hittade på "wins over Luton" och "[his name]" gick igenom. **Åtgärdat 6 sep 20:0x:** mig 084 (spelarsynk från squads, daglig cron), team-page-generator v72 (tabell + tränare deterministiskt varannan timme), ny rutin gd-team-page (prosa, veckovis), validatorer i post_news.sh, grounding-regler i MATCHDAY_PROMPT. | server/routines |
+| **P0** | A31 | **API-Football går inte att lita på för tränare.** Webbkontroll mot premierleague.com + khelnow: feeden saknar fyra sittande PL-tränare helt (Rose, Maresca, Jaissle, Glasner står kvar på sin förra klubb i sin egen `/coachs?id`-post) och listar assistenter med öppen `career`-post, så "senaste öppna stint" gav Tindall, Baines och Saltor som huvudtränare. Sex av 18 kort var fel efter A30. **Åtgärdat 6 sep 21:2x:** mig 085 `teams.manager_name/photo/started_on/verified_at`, verifierad mot två källor; Edge, `fetch_team_page.sh` och `post_team_page.sh` läser den kolumnen och avvisar allt annat. Ny skill `stale-data-audit` är processen som håller den färsk. | server/routines |
 | **P2** | — | Uppdatera routines `README.md` (säger "6 lag var 6:e timme"). | routines |
 
 **Policyfrågor att ta ställning till (inte buggar):** nattfire 00:30 UTC; quiet hours på server
@@ -592,6 +593,39 @@ per 2026-07-10.
 - **Kvar:** spelaren "Morgan Rogers (Chelsea forward)" kunde inte verifieras härifrån; ligger nu under
   grounding-regeln. gd-team-page-körningen 6 sep 20:09 verifieras i §7.
 
+### A31 · Tränardatan gick inte att härleda ur feeden — **P0 (åtgärdat 6 sep)**
+- **Bevis (webbkontroll, inte gissning):** klubblistan stämde exakt mot premierleague.com (upp: Coventry,
+  Ipswich, Hull; ner: Wolves, Burnley, West Ham) och iOS `Team`-enumet matchar databasen rad för rad.
+  Tränarna gjorde det inte. Mot `premierleague.com/en/managers` och khelnows 2026-27-lista, plus
+  ESPN/Sky/Al Jazeera för de två största bytena, var sex av 18 kort fel efter A30: Bournemouth
+  (J. Tindall i stället för Marco Rose), Everton (L. Baines / David Moyes), Man City (Guardiola, som
+  slutade i maj / Enzo Maresca), Newcastle (E. Howe / Matthias Jaissle, tillsatt 5 aug), Forest
+  (Postecoglou / Oliver Glasner) och Spurs (Bruno Saltor / Roberto De Zerbi) — Spurs var dessutom en
+  **regression**: kortet var rätt före A30. Två orsaker: (a) `/coachs?team=` saknar Rose, Maresca,
+  Jaissle och Glasner helt, deras egen `/coachs?id=`-post pekar fortfarande på förra klubben; (b) feeden
+  listar assistenter och tillförordnade med `career.end = null`, och Tindall, Baines och Saltor har
+  senare startdatum än den riktige tränaren. Ingen heuristik kan laga det.
+- **Åtgärd (gjord):** mig 085 lägger `manager_name`, `manager_photo_url`, `manager_started_on` och
+  `manager_verified_at` på `teams`, seedade och verifierade mot två oberoende källor per klubb, och
+  skriver in dem i sidorna (byte av namn nollar den gamla prosan och sätter `summary_stale`).
+  `team-page-generator` v73, `fetch_team_page.sh` och `post_team_page.sh` läser kolumnen; postskriptet
+  avvisar en payload som namnger någon annan och skriver alltid den verifierade bilden.
+- **Bilder:** alla 20 tränarbilder och alla 781 spelarbilder svarar 200. Sju tränarbilder är dock
+  API-Footballs generiska siluett (två checksummor delade av Fulham/Ipswich/Man Utd respektive
+  Palace/Hull/Liverpool/Sunderland) — en lucka hos leverantören, inte hos oss, men den syns i appen.
+- **Rättelse till A30:** påståendet att `[his name]` renderades bokstavligt var fel för brödtexten.
+  `ContentDetailView` och korten kör `AppState.personalise`, så `[his name]` i `body`, `talking_points`
+  och `immersive_context` är korrekt husstil. Däremot personaliseras **inte** `push_text`, `push_title`,
+  `headline`, `immersive_headline` eller `everyone_talking_headline` (ContentCard.swift:14,
+  ImmersiveCard.swift:55-57, ClassicFeedView.swift:162, och servern känner aldrig hans namn).
+  `post_news.sh` avvisar nu bara okända bracket-tokens överallt, plus varje placeholder på just de
+  fem opersonaliserade fälten. Testat i båda riktningarna.
+- **Process:** ny skill `.claude/skills/stale-data-audit/SKILL.md` går igenom klubbar, tränare, trupper,
+  bilder, lagsidor, dossierer, säsongsstate, hårdkodade listor, grounding-vakter, butikstext och
+  iOS-konstanter, med en färskhetsfråga per yta. Körs efter varje transferfönster, säsongsskifte,
+  upp/nedflyttning och tränarbyte, och ska utökas så fort en ny yta med manuellt underhållen fakta
+  tillkommer.
+
 ## 4. Checklista — "Pausa VM-läget"
 
 **iOS (kräver build)**
@@ -690,4 +724,5 @@ Verifierat read-only: `country | f | 48`, match-watcher grön varje minut, dagen
 | 6 sep 18:45 | match-watcher v67 + mig 083: kickoff/mål/HT/FT-push och Live Activity för PL-klubbar (A29) |
 | 6 sep 19:28 | Arsenal–Chelsea FT: `live_ft:arsenal` 9/9 skickade; gd-matchday-artiklar 19:31–19:32 feed-only (A29 verifierad) |
 | 6 sep 20:0x | A30: mig 084 spelarsynk, team-page-generator v72, gd-team-page skapad och körd, post_news-validatorer (`3e8b7d8`) |
+| 6 sep 21:2x | A31: webbkontroll av klubbar/tränare/spelare; mig 085 tränar-override, skill `stale-data-audit`, placeholder-vakten rättad |
 | 6 sep | Denna granskning (Spår A + B) + kundgranskning (plan `parsed-chasing-ladybug`): onboarding utan VM-steg, routines på `teams`-tabellen och innevarande säsong, quiet hours, validatorer |

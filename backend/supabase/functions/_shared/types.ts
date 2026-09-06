@@ -145,6 +145,14 @@ export interface Team {
   /// Added in migration 032 to drive per-league data fetches without
   /// hardcoded constants in Edge Functions.
   league_id?: number;
+  /// Human-verified current manager (migration 085). API-Football's /coachs
+  /// feed omits several sitting managers and lists assistants with open
+  /// stints, so this overrides anything derived from it. Refreshed by the
+  /// `stale-data-audit` skill after each transfer window.
+  manager_name?: string | null;
+  manager_photo_url?: string | null;
+  manager_started_on?: string | null;
+  manager_verified_at?: string | null;
 }
 
 export interface DeviceToken {
