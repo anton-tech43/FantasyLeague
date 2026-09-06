@@ -1,0 +1,23 @@
+-- 079_wc_countries_inactive.sql
+-- World Championship 2026 is over (final 19 Jul). Mark the 48 country entities
+-- inactive so the every-2h data-fetcher, content-audit and the team-page-generator
+-- batch skip them (they already filter on teams.is_active, mig 074).
+--
+-- Why (audit 2026-09, A3/A14): countries were 62 % of raw_fetch_logs rows and
+-- ~70 % of data-fetcher work with zero fixtures, on a nano instance that ran out
+-- of Disk IO. Rows are kept (FK from content_items, device_tokens.country_id,
+-- match_status_state) so historical VM content still decodes.
+--
+-- NOT covered by this flag (follow-ups in SJALVRANNSAKAN_2026-09.md §4):
+--   * match-watcher still polls league 1 once a minute (iterates DISTINCT league_id,
+--     no is_active filter) — cheap while there are no fixtures, but should filter.
+--   * routines (gd-news-wc, gd-insider, gd-season-state, …) use their own team
+--     lists and must be narrowed in the routines dashboard.
+--   * the `world_championship` tournament row stays active (its fetch fails daily —
+--     decide separately).
+--
+-- Applied manually to prod 2026-09-06 via audit/2026-09/cleanup_2026_09_06.sql.
+-- Reverse for WC 2030: UPDATE teams SET is_active = true WHERE entity_type = 'country';
+
+UPDATE teams SET is_active = false WHERE entity_type = 'country' AND is_active;
+-- Expected: UPDATE 48

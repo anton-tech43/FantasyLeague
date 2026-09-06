@@ -613,3 +613,12 @@ SELECT j.jobname, r.status, r.start_time AT TIME ZONE 'Europe/Stockholm' AS star
 FROM cron.job_run_details r JOIN cron.job j USING (jobid)
 WHERE r.start_time > now() - interval '30 minutes' ORDER BY r.start_time;
 \o
+
+-- 42 Hela cron-historiken per jobb × dag (tas innan job_run_details gallras 2026-09-06)
+\o out/42_cron_runs_daily_all.csv
+SELECT j.jobname, (r.start_time AT TIME ZONE 'Europe/Stockholm')::date AS day_sthlm, r.status, count(*) AS runs,
+       min(r.start_time) AT TIME ZONE 'Europe/Stockholm' AS first_sthlm, max(r.start_time) AT TIME ZONE 'Europe/Stockholm' AS last_sthlm,
+       left(min(r.return_message) FILTER (WHERE r.status='failed'), 120) AS sample_failure
+FROM cron.job_run_details r LEFT JOIN cron.job j USING (jobid)
+GROUP BY 1,2,3 ORDER BY 2,1,3;
+\o
