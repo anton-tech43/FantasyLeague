@@ -970,6 +970,13 @@ async function updateDynamicFields(
         preview: (cards.next_fixture as Record<string, unknown>)?.preview ?? "",
       };
     }
+    const upcoming = buildUpcomingFixtures(
+      fixturesLog.data,
+      team.api_football_id,
+      new Date(now),
+      cards.upcoming_fixtures as Array<Record<string, unknown>> | undefined,
+    );
+    if (upcoming) cards.upcoming_fixtures = upcoming;
   }
 
   content.cards = cards;
@@ -1714,6 +1721,54 @@ const FIXTURE_PAST_GRACE_MS = 3 * 60 * 60_000; // keep in-progress / just-finish
 /// fixtures_next payload down to WC games only (it also carries that nation's
 /// post-tournament Nations League / qualifier fixtures).
 const WC_LEAGUE_ID = 1;
+
+/// Every upcoming fixture for the iOS Calendar tab, built mechanically from
+/// api_football_fixtures_next. Until Sept 2026 this card was only ever written
+/// by the paid `full` mode, so every club's calendar still showed May's run-in
+/// (Arsenal v Burnley, Ipswich v Luton, Leeds v West Ham — two of those clubs
+/// are no longer in the division). Facts here are copied, never judged:
+/// `importance_label` is the competition, which cannot go out of date. A richer
+/// label already stored for the same fixture is preserved, so anything the
+/// routine wrote by hand survives the 2-hourly refresh.
+function buildUpcomingFixtures(
+  data: unknown,
+  teamApiFootballId: number,
+  now: Date,
+  existing: Array<Record<string, unknown>> | undefined,
+): Array<Record<string, unknown>> | null {
+  const response = (data as Record<string, unknown> | undefined)?.response;
+  if (!Array.isArray(response) || response.length === 0) return null;
+  const floor = now.getTime() - FIXTURE_PAST_GRACE_MS;
+  const priorByKey = new Map<string, Record<string, unknown>>(
+    (existing ?? []).map((f) => [`${String(f.date).slice(0, 10)}|${f.opponent}`, f]),
+  );
+
+  const out: Array<Record<string, unknown>> = [];
+  for (const item of response as Array<Record<string, unknown>>) {
+    const fx = item.fixture as Record<string, unknown> | undefined;
+    const teams = item.teams as Record<string, Record<string, unknown>> | undefined;
+    const league = item.league as Record<string, unknown> | undefined;
+    const date = fx?.date as string | undefined;
+    if (!date || !teams?.home || !teams?.away) continue;
+    const t = Date.parse(date);
+    if (Number.isNaN(t) || t < floor) continue;
+
+    const isHome = (teams.home.id as number | undefined) === teamApiFootballId;
+    const opponent = (isHome ? teams.away.name : teams.home.name) as string;
+    const competition = (league?.name as string | undefined) ?? "Fixture";
+    const prior = priorByKey.get(`${date.slice(0, 10)}|${opponent}`);
+    out.push({
+      date,
+      opponent,
+      venue: isHome ? "home" : "away",
+      // iOS requires both fields (UpcomingFixture is non-optional on each).
+      importance_dots: (prior?.importance_dots as number | undefined) ?? 3,
+      importance_label: (prior?.importance_label as string | undefined) ?? competition.slice(0, 30),
+    });
+    if (out.length === 8) break;
+  }
+  return out.length > 0 ? out : null;
+}
 
 function extractNextFixture(
   data: unknown,

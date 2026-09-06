@@ -620,6 +620,15 @@ per 2026-07-10.
   ImmersiveCard.swift:55-57, ClassicFeedView.swift:162, och servern känner aldrig hans namn).
   `post_news.sh` avvisar nu bara okända bracket-tokens överallt, plus varje placeholder på just de
   fem opersonaliserade fälten. Testat i båda riktningarna.
+- **Kalenderfliken (hittad vid slutkontrollen):** `upcoming_fixtures` skrevs bara av den betalda
+  `full`-vägen, som togs bort (COST-1). Alla 18 sidor visade därför maj: Arsenal mot Burnley, Ipswich mot
+  Luton, Leeds mot West Ham, klubbar som inte längre finns i ligan; Coventry och Hull hade tom kalender.
+  Byggs nu deterministiskt i `dynamic_only` ur `fixtures_next` varannan timme, med tävlingsnamnet som
+  etikett (ett faktum som inte kan bli inaktuellt) och en befintlig rikare etikett bevarad per match.
+  Efter körning: alla 20 klubbar har åtta kommande matcher med start 8 sep.
+- **Tenure-vakt:** modellen daterade Carricks tillträde till augusti 2025 trots att 2026-01-13 låg i
+  payloaden. `post_team_page.sh` jämför nu varje årtal i tränartexten mot `manager_started_on`. Efter
+  omkörningen stämmer alla 20 tränarnamn, bilder och årtal mot den verifierade tabellen.
 - **Process:** ny skill `.claude/skills/stale-data-audit/SKILL.md` går igenom klubbar, tränare, trupper,
   bilder, lagsidor, dossierer, säsongsstate, hårdkodade listor, grounding-vakter, butikstext och
   iOS-konstanter, med en färskhetsfråga per yta. Körs efter varje transferfönster, säsongsskifte,
@@ -724,5 +733,5 @@ Verifierat read-only: `country | f | 48`, match-watcher grön varje minut, dagen
 | 6 sep 18:45 | match-watcher v67 + mig 083: kickoff/mål/HT/FT-push och Live Activity för PL-klubbar (A29) |
 | 6 sep 19:28 | Arsenal–Chelsea FT: `live_ft:arsenal` 9/9 skickade; gd-matchday-artiklar 19:31–19:32 feed-only (A29 verifierad) |
 | 6 sep 20:0x | A30: mig 084 spelarsynk, team-page-generator v72, gd-team-page skapad och körd, post_news-validatorer (`3e8b7d8`) |
-| 6 sep 21:2x | A31: webbkontroll av klubbar/tränare/spelare; mig 085 tränar-override, skill `stale-data-audit`, placeholder-vakten rättad |
+| 6 sep 21:2x | A31: webbkontroll av klubbar/tränare/spelare; mig 085 tränar-override, skill `stale-data-audit`, `DATA_SOURCES.md`, kalenderfliken byggd deterministiskt, placeholder- och tenure-vakter |
 | 6 sep | Denna granskning (Spår A + B) + kundgranskning (plan `parsed-chasing-ladybug`): onboarding utan VM-steg, routines på `teams`-tabellen och innevarande säsong, quiet hours, validatorer |

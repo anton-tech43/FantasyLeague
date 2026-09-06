@@ -119,13 +119,19 @@ Do the same for the 20 manager photos. On 2026-09-06 seven of them shared two pl
 
 | Card | Written by | Cadence | Rots? |
 |---|---|---|---|
-| `form`, `next_fixture`, `standings`, `manager.name`, `manager.photo_url` | `team-page-generator` `dynamic_only` | every 2h via `goaldigger-daily-pipeline` | no |
+| `form`, `next_fixture`, `standings`, `upcoming_fixtures`, `manager.name`, `manager.photo_url` | `team-page-generator` `dynamic_only` | every 2h via `goaldigger-daily-pipeline` | no |
 | `manager.summary`, `form_summary`, `season.summary`, `next_fixture.preview`, `ones_to_know` | `gd-team-page` routine | Mondays 02:30 UTC | yes, this is the section that went five months stale |
 | `basics`, `rivalry` | hand-seeded (migration 004), never overwritten | never | stadium renames, nothing else |
 
 ```bash
 $P "$SUPABASE_DB_URL" -At -F' | ' -c "select c.key, count(*), min(left(c.value->>'updated_at',10)), max(left(c.value->>'updated_at',10)) from team_pages tp join teams t on t.id=tp.team_id, jsonb_each(tp.content->'cards') c where t.league_id=39 and t.is_active group by 1 order by 3"
 $P "$SUPABASE_DB_URL" -At -c "select id from teams where league_id=39 and is_active and id not in (select team_id from team_pages)"
+```
+
+Check the Calendar tab explicitly — its first fixture must be in the future. It was written only by the paid `full` mode until Sept 2026, so every club's calendar sat on May's run-in for four months, naming opponents who had since been relegated:
+
+```bash
+$P "$SUPABASE_DB_URL" -At -F' | ' -c "select tp.team_id, jsonb_array_length(coalesce(tp.content->'cards'->'upcoming_fixtures','[]')), left(tp.content->'cards'->'upcoming_fixtures'->0->>'date',10), tp.content->'cards'->'upcoming_fixtures'->0->>'opponent' from team_pages tp join teams t on t.id=tp.team_id where t.league_id=39 and t.is_active order by 3 nulls first"
 ```
 
 Anything in the prose row older than about six weeks is stale. Fire the routine and watch it:
