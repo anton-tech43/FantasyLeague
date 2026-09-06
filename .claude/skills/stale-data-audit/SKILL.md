@@ -227,6 +227,31 @@ grep -rn "Arsenal, Manchester United, or West Ham\|3am\|spam" APP_STORE_STRATEGY
 
 Club names, club counts, feature claims and screenshots all go stale. Anything the app no longer does must come out of App Store Connect. This one needs Anton; list it, do not edit the listing yourself.
 
+### 9a. The TikTok quiz series
+
+`goaldigger-marketing/account-1-goaldigger/render/src/tiktok/quiz.json` holds 60 hand-written
+football facts, and the whole brand promise is that we explain football correctly. Nothing checks
+them: the lint enforces voice and length, not truth.
+
+```bash
+Q=~/goaldigger-marketing/account-1-goaldigger/render/src/tiktok/quiz.json
+python3 -c "
+import json,sys
+for x in json.load(open(sys.argv[1])):
+    for q in x['questions']: print(x['slug'], '|', q['q'], '->', q['options'][q['correct']])
+" \$Q
+```
+
+Read the list and check it against the current laws and competition rules. The ones that rot are
+anything with a **number** (subs allowed, teams in the league, matches played, points for a win) and
+anything about a **competition format**. One was already caught this way: "a replay happens when the
+tie is drawn" was true when it was written and false by the time it rendered, because the FA Cup
+abolished replays from the first round proper.
+
+A wrong answer here is worse than a stale team page. It is a video, it lives on somebody's phone, and
+it is us being wrong about the one thing we claim to be for. Re-render any quiz you change:
+`cd ~/goaldigger-marketing/account-1-goaldigger/render && npx remotion render Quiz-NN out/tiktok/quiz/NN-<slug>.mp4`
+
 ## 10. iOS constants
 
 ```bash
