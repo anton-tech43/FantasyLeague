@@ -51,12 +51,14 @@ export function dayWord(kickoff: Date, now: Date, tz: string = DEFAULT_TZ): stri
 }
 
 const BODY_VARIANTS: Array<(team: string, opp: string, whenAt: string) => string> = [
-  (team, opp, whenAt) => `${team} face ${opp} ${whenAt}. Good day to ask how he's feeling about it.`,
-  (team, opp, whenAt) => `${team} vs ${opp} ${whenAt}. Get him talking, ask how he thinks they'll do.`,
+  // Pronoun-free on purpose: the reader may follow a partner, parent, sibling
+  // or friend (audit 2026-09, S4). Second person to her, the fan is implied.
+  (team, opp, whenAt) => `${team} face ${opp} ${whenAt}. Good day to ask how the nerves are.`,
+  (team, opp, whenAt) => `${team} vs ${opp} ${whenAt}. Ask for a score prediction before kickoff.`,
   (team, opp, whenAt) => `${team} play ${opp} ${whenAt}. Worth a "big one today?" text to set the tone.`,
-  (team, opp, whenAt) => `${team} are up against ${opp} ${whenAt}. Ask him what he needs to see from them.`,
-  (team, opp, whenAt) => `${team} take on ${opp} ${whenAt}. Drop him a line, he'll be thinking about it.`,
-  (team, opp, whenAt) => `It's ${team} vs ${opp} ${whenAt}. He'll have one eye on it all day.`,
+  (team, opp, whenAt) => `${team} are up against ${opp} ${whenAt}. Ask what a good result looks like.`,
+  (team, opp, whenAt) => `${team} take on ${opp} ${whenAt}. Send a text, this one will be on the mind all day.`,
+  (team, opp, whenAt) => `It's ${team} vs ${opp} ${whenAt}. Expect one eye on the phone all day.`,
 ];
 
 function pick<T>(arr: readonly T[], rng: () => number): T {
@@ -94,11 +96,11 @@ export function renderMatchdayReminder(args: {
 // is never empty in the run-up, even for RSS-starved nations. No em-dashes.
 
 const BUILDUP_TPS: Array<(team: string, opp: string) => string> = [
-  (_t, opp) => `Ask him how he's feeling about the ${opp} game.`,
-  (_t, _o) => `Text him "big one coming up?" and let him run with it.`,
-  (_t, opp) => `Ask him who he wants to see start against ${opp}.`,
-  (_t, opp) => `Ask him if he's quietly nervous about ${opp}.`,
-  (team, _o) => `Ask him what ${team} need to do to get a result here.`,
+  (_t, opp) => `Ask how the nerves are before the ${opp} game.`,
+  (_t, _o) => `Text "big one coming up?" and let the answer run.`,
+  (_t, opp) => `Ask who should start against ${opp}.`,
+  (_t, opp) => `Ask whether ${opp} are a worry or not.`,
+  (team, _o) => `Ask what ${team} need to do to get a result here.`,
 ];
 
 export interface PreMatchBuildup {

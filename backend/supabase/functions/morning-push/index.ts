@@ -168,7 +168,7 @@ serve(async (req) => {
         let b = bodyByTz.get(tz);
         if (!b) {
           b = `${home.display_name} vs ${away.display_name} at ${formatKickoff(fix.kickoff_time, tz)}. ` +
-            `Lineups drop an hour before, good thing to ask him about.`;
+            `Lineups drop an hour before, a good thing to ask about.`;
           bodyByTz.set(tz, b);
         }
         return b;

@@ -1,15 +1,10 @@
 import SwiftUI
 
-/// V2.0 World Cup onboarding — step 5. Asks if he ALSO follows a Premier
-/// League team after the WC country is set. Skippable.
-///
-/// Many WC users won't follow PL at all (especially non-UK audiences arriving
-/// via WC marketing) and shouldn't be forced through a team picker for a
-/// league they don't watch. Equally, existing PL fans should be able to
-/// keep their PL signal alongside their national team.
-///
-/// Skip path → appState.selectedTeam = nil. Add path → sets selectedTeam.
-/// Either way the flow advances to tier selection.
+/// Onboarding step 3: which Premier League club does he follow. Mandatory,
+/// up to 2 clubs. The type name is historical: during the World Championship
+/// (V2.0) this step was optional after a forced country pick. Since Sept 2026
+/// the club is the primary entity again and there is no skip path (audit
+/// 2026-09: a September signup was routed into a dead tournament first).
 struct OptionalPLTeamView: View {
     @Environment(AppState.self) var appState
     @State private var picks: [Team] = []
@@ -37,10 +32,6 @@ struct OptionalPLTeamView: View {
             .sorted { $0.displayName < $1.displayName }
     }
 
-    private var countryShortName: String {
-        appState.selectedCountry?.shortName ?? "\(appState.pPossessive) country"
-    }
-
     var body: some View {
         VStack(spacing: 16) {
             Image(systemName: "shield")
@@ -48,13 +39,13 @@ struct OptionalPLTeamView: View {
                 .foregroundColor(.hotRose.opacity(0.6))
                 .padding(.top, 8)
 
-            GlossaryText(raw: "Does \(appState.hisName.isEmpty ? appState.pSubject : appState.hisName) follow a Premier League team too?")
+            GlossaryText(raw: "Which Premier League team does \(appState.hisName.isEmpty ? appState.pSubject : appState.hisName) follow?")
                 .font(.onboardingTitle)
                 .foregroundColor(.textOnDark)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Layout.screenPadding)
 
-            Text("Skip if not. We'll focus on \(appState.pPossessive) \(countryShortName) squad.")
+            Text("Everything in the app is built around \(appState.pPossessive) club.")
                 .font(.onboardingBody)
                 .foregroundColor(.textOnDark.opacity(0.8))
                 .multilineTextAlignment(.center)
@@ -135,13 +126,6 @@ struct OptionalPLTeamView: View {
                 }
                 .buttonStyle(PrimaryButtonStyle(isEnabled: !picks.isEmpty))
                 .disabled(picks.isEmpty)
-
-                Button("Skip, just \(appState.pPossessive) country") {
-                    appState.selectedTeams = []
-                    onContinue()
-                }
-                .font(.onboardingBody)
-                .foregroundColor(.textOnDark.opacity(0.6))
             }
             .padding(.horizontal, Layout.screenPadding)
 

@@ -46,10 +46,12 @@ struct SettingsView: View {
                         VStack(spacing: Layout.cardSpacing) {
                             yourNameRow
                             hisNameRow
-                            // V2.0: country is the PRIMARY entity (WC) and
-                            // sits above PL club (optional secondary). Order
-                            // mirrors the onboarding flow.
-                            hisCountryRow
+                            // Country only while a tournament is live (same
+                            // gate as the feed switcher). Between tournaments
+                            // the club is the only entity she can change.
+                            if WCSeason.isVisible {
+                                hisCountryRow
+                            }
                             hisTeamRow
                             yourModeRow
                         }
@@ -420,7 +422,7 @@ struct SettingsView: View {
     }
 
     @ViewBuilder private var versionLabel: some View {
-        Text("Version 1.0.0")
+        Text("Version \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"))")
             .font(.jakarta(11, weight: .regular))
             .foregroundColor(.textTertiary.opacity(0.6))
             .padding(.top, 8)

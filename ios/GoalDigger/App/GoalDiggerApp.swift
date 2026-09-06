@@ -93,7 +93,11 @@ struct RootView: View {
     /// onboarding before V2.0 and haven't picked a country yet. Skipped
     /// for new V2.0 users (they pick country during onboarding).
     private var shouldShowWCPrompt: Bool {
-        appState.hasCompletedOnboarding
+        // Season-gated: onboarding no longer picks a country (Sept 2026), so
+        // without the gate every new user would get the "pick a WC country"
+        // sheet on first launch for a tournament that ended in July.
+        WCSeason.isVisible
+          && appState.hasCompletedOnboarding
           && appState.selectedCountry == nil
           && !appState.hasSeenWCPrompt
     }

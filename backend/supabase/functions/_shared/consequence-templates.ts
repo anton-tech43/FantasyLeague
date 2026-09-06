@@ -89,13 +89,13 @@ function pickVariant(n: number): number {
 const TEMPLATES: Record<ConsequenceType, ConsequenceTemplate> = {
   TITLE_WON: {
     push_title: ({ teamName }) => `🏆 ${teamName} are champions`,
-    push_text: ({ trigger }) => `${trigger}. He gets to enjoy this one.`,
+    push_text: ({ trigger }) => `${trigger}. This one is worth celebrating together.`,
     headline: ({ teamName }) => `${teamName} are champions of England.`,
     body: [
       ({ teamName, trigger }) =>
-        `Done. ${trigger} means it's mathematically impossible for anyone to catch them. Trophy presentation comes Sunday — and so does the chat about how long it's been. Just nod and let him have the moment.`,
+        `Done. ${trigger} means it's mathematically impossible for anyone to catch them. Trophy presentation comes Sunday — and so does the chat about how long it's been. Just nod and let the moment land.`,
       ({ teamName, trigger }) =>
-        `${teamName} have won the Premier League. ${trigger}, and the maths now says no one else can reach them. Expect a quiet kind of happy from him this week — the kind that's earned.`,
+        `${teamName} have won the Premier League. ${trigger}, and the maths now says no one else can reach them. Expect a quiet kind of happy this week, the kind that's earned.`,
     ],
     everyone_talking_headline: ({ teamName, trigger }) =>
       `${teamName} crowned Premier League champions after ${trigger}.`,
@@ -139,9 +139,9 @@ const TEMPLATES: Record<ConsequenceType, ConsequenceTemplate> = {
     headline: ({ teamName }) => `${teamName} are down.`,
     body: [
       ({ teamName, trigger }) =>
-        `${trigger} confirmed it — ${teamName} can't escape the bottom three even if they win every remaining game. Next stop: the Championship, where his Saturdays get a lot less prime-time. Be gentle this week.`,
+        `${trigger} confirmed it — ${teamName} can't escape the bottom three even if they win every remaining game. Next stop: the Championship, where Saturdays get a lot less prime-time. Be gentle this week.`,
       ({ teamName, trigger }) =>
-        `${teamName} have been relegated. After ${trigger}, the maths is final. A season of struggle ends with a drop to the second tier — and a summer of rebuilding. He'll want to talk about it, eventually.`,
+        `${teamName} have been relegated. After ${trigger}, the maths is final. A season of struggle ends with a drop to the second tier — and a summer of rebuilding. It will come up in conversation, eventually.`,
     ],
     everyone_talking_headline: ({ teamName }) =>
       `${teamName} relegated from the Premier League.`,
@@ -193,9 +193,9 @@ const TEMPLATES: Record<ConsequenceType, ConsequenceTemplate> = {
       `${teamName} are out of the World Championship.`,
     body: [
       ({ teamName, trigger }) =>
-        `${trigger} ended it. ${teamName} can no longer reach the knockout stage. One game left, but the tournament is effectively over for them — and for him, the focus shifts to whoever's still in.`,
+        `${trigger} ended it. ${teamName} can no longer reach the knockout stage. One game left, but the tournament is effectively over for them — the focus shifts to whoever's still in.`,
       ({ teamName, trigger }) =>
-        `World Championship over for ${teamName}. After ${trigger}, the qualification maths is closed — they can't reach the top two. He'll need a new team to root for in the knockouts.`,
+        `World Championship over for ${teamName}. After ${trigger}, the qualification maths is closed — they can't reach the top two. Time to pick a new team to root for in the knockouts.`,
     ],
     everyone_talking_headline: ({ teamName }) =>
       `${teamName} eliminated from the World Championship group stage.`,
@@ -219,11 +219,11 @@ const TEMPLATES: Record<ConsequenceType, ConsequenceTemplate> = {
     // Safe open prompts only — they never assert what the result MEANS for
     // qualification (that needs the live table, which is on the team page).
     talking_points: [
-      ({ teamName }) => `Ask him what that result does to ${teamName}'s group.`,
-      ({ teamName }) => `Worth asking him how that shifts things for ${teamName}.`,
-      ({ teamName }) => `Ask him if that one helps or hurts ${teamName}.`,
-      ({ teamName }) => `Good moment to ask him where that leaves ${teamName}.`,
-      ({ teamName }) => `Ask him what ${teamName} need from their own game now.`,
+      ({ teamName }) => `Ask what that result does to ${teamName}'s group.`,
+      ({ teamName }) => `Worth asking how that shifts things for ${teamName}.`,
+      ({ teamName }) => `Ask if that one helps or hurts ${teamName}.`,
+      ({ teamName }) => `Good moment to ask where that leaves ${teamName}.`,
+      ({ teamName }) => `Ask what ${teamName} need from their own game now.`,
     ],
   },
 
