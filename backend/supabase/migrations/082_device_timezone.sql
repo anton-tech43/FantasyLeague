@@ -85,6 +85,9 @@ END;
 $function$;
 
 -- Grants do not survive DROP FUNCTION — restore the same set as before (mig 071).
+-- CREATE FUNCTION also grants EXECUTE to PUBLIC by default; revoke it so the
+-- surface stays exactly anon/authenticated/service_role (+ owner).
+REVOKE EXECUTE ON FUNCTION public.register_device_token(text, text[], text[], integer, text, text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.register_device_token(text, text[], text[], integer, text, text)
   TO anon, authenticated, service_role;
 
