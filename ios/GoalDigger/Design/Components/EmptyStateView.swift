@@ -9,11 +9,11 @@ struct EmptyStateView: View {
                 .font(.system(size: 50))
                 .foregroundColor(.textTertiary)
 
-            Text("No updates yet")
+            Text("Quiet on his end.")
                 .font(.feedHeadline)
                 .foregroundColor(.textOnDark.opacity(0.7))
 
-            Text("We'll let you know when something happens with \(teamName).")
+            Text("Nothing from \(teamName) worth reporting. Enjoy it while it lasts.")
                 .font(.onboardingBody)
                 .foregroundColor(.textTertiary)
                 .multilineTextAlignment(.center)

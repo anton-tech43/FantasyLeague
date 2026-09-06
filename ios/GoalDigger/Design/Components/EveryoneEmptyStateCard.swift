@@ -19,7 +19,7 @@ struct EveryoneEmptyStateCard: View {
                 .font(.jakarta(17, weight: .semiBold))
                 .foregroundColor(.charcoal)
 
-            Text("Check back later or see what's new with \(teamName).")
+            Text("Enjoy the quiet. We'll flag it the moment \(teamName) do something.")
                 .font(.jakarta(12, weight: .regular))
                 .foregroundColor(.mutedText)
                 .multilineTextAlignment(.center)

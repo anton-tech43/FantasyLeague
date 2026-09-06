@@ -65,7 +65,7 @@ struct ContentDetailView: View {
             } else {
                 // Empty/error state — never fall through to a blank screen.
                 VStack(spacing: 16) {
-                    Text("Couldn't load this story")
+                    Text("This one didn't load.")
                         .font(.feedHeadline)
                         .foregroundColor(.textOnDark)
                     Text("It might have been removed, or your connection dropped.")

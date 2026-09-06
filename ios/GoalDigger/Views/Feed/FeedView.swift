@@ -594,10 +594,10 @@ struct FeedView: View {
 
     private var errorView: some View {
         VStack(spacing: 16) {
-            Text("Something went wrong")
+            Text("That didn't load.")
                 .font(.feedHeadline)
                 .foregroundColor(.textPrimaryOnCard)
-            Text("We'll try again in a sec.")
+            Text("Probably your connection. Give it another go.")
                 .font(.onboardingBody)
                 .foregroundColor(.textSecondaryOnCard)
             Button {
