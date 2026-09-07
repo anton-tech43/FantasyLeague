@@ -18,7 +18,7 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { deactivateTokens, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
 import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts";
-import { seasonForLeague, FALLBACK_ACTIVE_LEAGUES } from "../_shared/league-helpers.ts";
+import { seasonForLeague, FALLBACK_ACTIVE_LEAGUES, COVERED_CUP_LEAGUES } from "../_shared/league-helpers.ts";
 import { detectConsequences, loadPostResultWcContext, WC_LEAGUE_ID } from "../_shared/detect-consequences.ts";
 import { renderConsequence } from "../_shared/consequence-templates.ts";
 import { buildContentItem } from "../_shared/build-content-item.ts";
@@ -510,11 +510,16 @@ async function handleRequest(req: Request): Promise<Response> {
   // Audit 2026-09 (A3/A17): only active entities drive league polling. With the 48
   // WC countries flipped to is_active=false (mig 079) this stops the every-minute
   // league-1 poll; relegated PL clubs never appear in league-39 fixtures anyway.
+  // Map EVERY known club, active or not. A Champions League tie is
+  // "Napoli v Arsenal": the opponent is not one of our 20, but the fixture is
+  // still Arsenal's night and the followed side needs its kickoff, goal, HT and
+  // FT pushes. Cup opponents live in `teams` with is_active=false, so they
+  // resolve here without entering the follow list, driving league polling, or
+  // receiving content of their own (see activeTeamIds below).
   const { data: teams, error: teamsErr } = await supabase
     .from("teams")
-    .select("id, api_football_id, league_id, short_name")
-    .not("league_id", "is", null)
-    .eq("is_active", true);
+    .select("id, api_football_id, league_id, short_name, is_active")
+    .not("league_id", "is", null);
   if (teamsErr) {
     // A17: this early exit used to be invisible (no pipeline_health row, and the
     // pg_cron "succeeded" only means the HTTP call was queued). Leave a trace.
@@ -527,9 +532,26 @@ async function handleRequest(req: Request): Promise<Response> {
       { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }
-  const activeLeagues: number[] = teams && teams.length > 0
-    ? [...new Set(teams.map((t) => t.league_id as number))]
+  // Which competitions to poll. `active_competition_ids()` (migration 087) is
+  // every active entity's home league PLUS any covered cup our active clubs
+  // actually have a fixture in — derived from the fixture feed, not stored, so
+  // a club going out of Europe stops the polling without anyone editing a row.
+  const { data: comps, error: compsErr } = await supabase.rpc("active_competition_ids");
+  const homeLeagues = teams && teams.length > 0
+    ? [...new Set(teams.filter((t) => t.is_active).map((t) => t.league_id as number))]
     : FALLBACK_ACTIVE_LEAGUES;
+  const activeLeagues: number[] = !compsErr && Array.isArray(comps) && comps.length > 0
+    ? [...new Set((comps as Array<{ league_id: number }>).map((r) => r.league_id))]
+    : homeLeagues;
+  if (compsErr) {
+    console.warn("active_competition_ids() failed, falling back to home leagues:", compsErr.message);
+  }
+
+  // Clubs we actually write for. A cup opponent is in `teams` only so the
+  // fixture resolves; it must never get an article, a team-page card or a push.
+  const activeTeamIds = new Set(
+    (teams ?? []).filter((t) => t.is_active).map((t) => t.id as string),
+  );
   const teamIdMap = new Map<number, string>(
     (teams ?? []).map((t) => [t.api_football_id as number, t.id as string]),
   );
@@ -621,9 +643,48 @@ async function handleRequest(req: Request): Promise<Response> {
     const kickoffTime = fx.fixture.date;
     const fixtureLeagueId = fx.league?.id;
 
+    // A covered cup fixture where one side is ours and the other is a club we
+    // have never seen: register the opponent as an inactive row so the tie
+    // resolves from the next tick. Seeding a list by hand would be wrong within
+    // a season — the Champions League draw changes every round. Sixty seconds
+    // of delay on a match we poll for two hours is a fair price for a list that
+    // maintains itself.
+    if (
+      fixtureLeagueId && COVERED_CUP_LEAGUES.includes(fixtureLeagueId) &&
+      ((homeTeamId && !awayTeamId) || (!homeTeamId && awayTeamId))
+    ) {
+      const unknown = homeTeamId ? fx.teams.away : fx.teams.home;
+      const slug = unknown.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/_+$/, "");
+      const { error: regErr } = await supabase.from("teams").upsert({
+        id: slug,
+        display_name: unknown.name,
+        short_name: unknown.name.slice(0, 14),
+        api_football_id: unknown.id,
+        entity_type: "club",
+        league_id: fixtureLeagueId,
+        is_active: false,
+      }, { onConflict: "id", ignoreDuplicates: true });
+      if (regErr) {
+        console.warn(`could not register cup opponent ${unknown.name}:`, regErr.message);
+      } else {
+        console.log(`registered cup opponent ${slug} (${unknown.name}) for league ${fixtureLeagueId}`);
+      }
+      skippedFixtures++;
+      continue;
+    }
+
     // Defensive: skip fixtures where either team isn't one of our 20.
     // Should never happen for league=39 but cheap to check.
     if (!homeTeamId || !awayTeamId) { skippedFixtures++; continue; }
+
+    // A covered cup round is thirty-odd matches; only the ones our clubs are
+    // playing belong on this path. Bayern v Real Madrid matters to the app, but
+    // as tournament content written from the fixture feed — not as a live state
+    // row and a push nobody subscribes to.
+    if (!activeTeamIds.has(homeTeamId) && !activeTeamIds.has(awayTeamId)) {
+      skippedFixtures++;
+      continue;
+    }
     // V2.0: skip fixtures with no league context — match_status_state.league_id
     // is NOT NULL with no FK, so writing `?? 0` would create ghost rows that
     // pollute diagnostics. A fixture with no league.id is unactionable anyway.
@@ -1105,6 +1166,10 @@ async function handleRequest(req: Request): Promise<Response> {
                 fx.teams.away.name,
               );
               for (const p of playing) {
+                // A cup opponent is in `teams` purely so the fixture resolves.
+                // Writing Napoli an article, or a card on a team page nobody can
+                // open, would be noise in the shared feed and a lie in the data.
+                if (!activeTeamIds.has(p.slug)) continue;
                 const state: PostMatchState = p.won === null ? "draw" : p.won ? "win" : "loss";
                 const isHome = p.slug === homeTeamId;
                 const perspectiveHeadline = pens && state !== "draw" && p.gf === p.ga

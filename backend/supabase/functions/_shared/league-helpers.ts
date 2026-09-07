@@ -23,7 +23,8 @@ export function seasonForLeague(leagueId: number): number {
   const now = new Date();
   const year = now.getUTCFullYear();
   switch (leagueId) {
-    case 39: return now.getUTCMonth() >= 6 ? year : year - 1;
+    case 39:
+    case 2:  return now.getUTCMonth() >= 6 ? year : year - 1;
     case 1:  return 2026;
     default: return year;
   }
@@ -38,4 +39,23 @@ export function seasonForLeague(leagueId: number): number {
  * over this hardcoded list when possible. This constant exists as a
  * fallback / sanity check when the DB query fails.
  */
-export const FALLBACK_ACTIVE_LEAGUES: number[] = [39, 1];
+export const FALLBACK_ACTIVE_LEAGUES: number[] = [39, 2, 1];
+
+/**
+ * Competitions we write content for beyond a club's home league. Used by the
+ * `active_competition_ids()` SQL function (migration 087) and mirrored here so
+ * the Edge side can name them. A club's cup runs are deliberately absent: we
+ * do not cover the League Cup or the FA Cup yet, and polling them would cost
+ * API budget for content nobody writes.
+ */
+export const COVERED_CUP_LEAGUES: number[] = [2]; // 2 = UEFA Champions League
+
+/** Human name for a competition id, for card copy and calendar labels. */
+export function competitionName(leagueId: number): string {
+  switch (leagueId) {
+    case 39: return "Premier League";
+    case 2: return "Champions League";
+    case 1: return "World Championship";
+    default: return "Cup";
+  }
+}
