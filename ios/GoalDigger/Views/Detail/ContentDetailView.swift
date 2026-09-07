@@ -111,6 +111,9 @@ struct ContentDetailView: View {
         }
         .task { await loadItem() }
         .onDisappear { AudioPlayerService.shared.stop() }
+        #if DEBUG
+        .onAppear { if ProcessInfo.processInfo.arguments.contains("-gdShowImpress") { showToImpress = true } }
+        #endif
     }
 
     // MARK: - Listen button
@@ -486,12 +489,18 @@ struct InfoCardView: View {
     let accent: Color
 
     private var label: String {
-        if let t = card.title, !t.isEmpty { return t }
-        switch card.level {
-        case 1: return "The gist"
-        case 2: return "The wider picture"
-        default: return "To impress"
-        }
+        let base: String = {
+            if let t = card.title, !t.isEmpty { return t }
+            switch card.level {
+            case 1: return "The gist"
+            case 2: return "The wider picture"
+            default: return "To impress"
+            }
+        }()
+        // The competition sits in the label, not the crest strip — there it
+        // truncated to "CHAMPIONS…" beside two crests and a kickoff.
+        if let c = card.fixture?.competition, !c.isEmpty { return "\(base) · \(c)" }
+        return base
     }
 
     var body: some View {
@@ -540,13 +549,6 @@ struct InfoCardView: View {
             }
             side(name: f.away, crest: f.awayCrestURL)
             Spacer(minLength: 0)
-            if let c = f.competition, !c.isEmpty {
-                Text(c.uppercased())
-                    .font(.jakarta(10, weight: .semiBold))
-                    .tracking(0.5)
-                    .foregroundColor(.textSecondaryOnCard)
-                    .lineLimit(1)
-            }
         }
         .padding(.vertical, 4)
     }

@@ -133,6 +133,26 @@ struct TeamPageView: View {
         .sheet(item: $presentedPlayer) { player in
             PlayerCardModal(player: player)
         }
+        #if DEBUG
+        .onAppear {
+            // Screenshot harness (see MainTabView): -gdTeamTab calendar|table,
+            // -gdTeamExpand basics|manager|rivalry|season|comingUp.
+            let args = ProcessInfo.processInfo.arguments
+            if let i = args.firstIndex(of: "-gdTeamTab"), i + 1 < args.count {
+                switch args[i + 1] { case "calendar": activeTab = .calendar; case "table": activeTab = .table; default: break }
+            }
+            if let i = args.firstIndex(of: "-gdTeamExpand"), i + 1 < args.count {
+                switch args[i + 1] {
+                case "basics": expandedCard = .basics
+                case "manager": expandedCard = .manager
+                case "rivalry": expandedCard = .rivalry
+                case "season": expandedCard = .season
+                case "comingUp": expandedCard = .comingUp
+                default: break
+                }
+            }
+        }
+        #endif
     }
 
     // MARK: - Header
