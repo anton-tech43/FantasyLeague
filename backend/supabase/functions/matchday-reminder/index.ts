@@ -226,7 +226,11 @@ serve(async (req) => {
           .limit(1)
           .maybeSingle();
         if (!existing) {
-          const { error: insErr } = await supabase.from("content_items").insert(buildContentItem({
+          // As in match-watcher: a copy problem on one build-up card must not
+          // stop the reminder pushes for every other followed team.
+          let buildupItem: Record<string, unknown> | null = null;
+          try {
+            buildupItem = buildContentItem({
             team_id: teamId,
             type: "news",
             match_id: buildupMatchId,
@@ -239,9 +243,16 @@ serve(async (req) => {
             pipeline_source: "edge_function",
             status: "published",
             published_at: new Date().toISOString(),
-          }));
-          if (!insErr) buildupWritten = true;
-          else if (insErr.code !== "23505") {
+            });
+          } catch (e) {
+            console.error(`build-up card for ${teamId} failed validation, skipping it:`, (e as Error).message);
+            results.push({ team_id: teamId, kickoff: kickoff.toISOString(), buildup_error: (e as Error).message });
+          }
+          const insErr = buildupItem
+            ? (await supabase.from("content_items").insert(buildupItem)).error
+            : null;
+          if (buildupItem && !insErr) buildupWritten = true;
+          else if (insErr && insErr.code !== "23505") {
             results.push({ team_id: teamId, kickoff: kickoff.toISOString(), buildup_error: insErr.message });
           }
         }

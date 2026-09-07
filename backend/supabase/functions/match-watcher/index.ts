@@ -913,7 +913,14 @@ async function handleRequest(req: Request): Promise<Response> {
             // cannot. Before this, 412 of 412 edge-written World Cup cards
             // shipped with no immersive_headline and no immersive_context and
             // rendered as half a card — nothing on this side validated anything.
-            const { error } = await supabase.from("content_items").insert(buildContentItem({
+            //
+            // A throw here must never take down the tick. This loop also fires
+            // the goal/FT pushes for every other followed team, and losing
+            // those to a copy problem on one consequence card would be a much
+            // worse trade than losing the card.
+            let item: Record<string, unknown>;
+            try {
+              item = buildContentItem({
               team_id: c.team_id,
               type: "news",
               consequence_type: c.consequence_type,
@@ -953,7 +960,27 @@ async function handleRequest(req: Request): Promise<Response> {
                 : [`Ask him what that changes for ${team.short_name || team.display_name}.`],
               status: "published",
               published_at: new Date().toISOString(),
-            }));
+              });
+            } catch (e) {
+              console.error(
+                `consequence card for ${c.team_id}/${c.consequence_type} failed validation, skipping it:`,
+                (e as Error).message,
+              );
+              await logFire(supabase, {
+                stage: "consequence_fire",
+                teamId: c.team_id,
+                fixtureId,
+                trigger: c.consequence_type,
+                httpStatus: 500,
+                success: false,
+                threw: true,
+                bodyExcerpt: (e as Error).message.slice(0, 200),
+                status: "failure",
+              });
+              continue;
+            }
+
+            const { error } = await supabase.from("content_items").insert(item);
 
             // Postgres unique-violation code 23505 = idempotent no-op
             // (consequence already fired on an earlier match).
