@@ -92,7 +92,10 @@ thin. Found on 2026-09-07, all pre-existing:
   "£43m" each read one character longer than they are, so any push sitting near the 35/90
   cap was rejected for length it did not have. Football copy is full of é, ø, ü, ć and £.
 - **A validator that only rejects teaches the routine to give up.** Replaying the 1,019
-  routine cards from the World Cup through the hard-reject guards published 99 of them.
+  routine cards from the World Cup through the hard-reject guards published **99** of them.
+  Through the repair-first pipeline: **1,012**. The seven that still do not publish are all
+  the same class — a results clause naming a club outside the league — which is the one
+  thing genuinely worse than silence.
 
 **The rule now.** Repair before you judge, and reserve rejection for content that would be
 worse than silence.
