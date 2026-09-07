@@ -61,6 +61,14 @@ with nothing underneath. Three classes account for all of them: rival-result car
 ("X beat Y", pushed into every other team's feed in the group), pre-match fixture cards
 ("algeria face argentina tomorrow at 03:00"), and from 5 July, the Sunday Brief.
 
+> **Correction (2026-09-07).** This section originally read as a writing failure. It is
+> not. Split by pipeline, **all 412 blank cards came from `edge_function` and none from
+> the routine** — 0 of 871 routine news items were missing a headline. The Edge code path
+> simply never wrote `immersive_headline` or `immersive_context`, in three deterministic
+> templates. The 55 blank Sunday Briefs are the one genuine prompt failure in the set.
+> Fixed in `_shared/consequence-templates.ts`, `matchday-reminder`, and a new
+> `_shared/build-content-item.ts` gate.
+
 **Is it relevant? Is the link clear?** Where a headline exists, yes — this is where the
 system is genuinely good. The three-line staccato form does real work:
 
@@ -370,10 +378,14 @@ sentence asserting a habit of the partner; "Did you know"; "football equivalent 
 headline that is not lowercase. Every one of these is mechanically checkable, and the
 prompt alone has now had six weeks to prove it is not enough.
 
-**P2 — kill the partner-assumption pattern at the source.** The prompt should forbid any
-declarative sentence about him that the app cannot know. He can be *offered* a reaction
-("he might have a view on…"), never *assigned* a history. Same change removes the
-"Let him. / Just nod / be ready for a long one" register.
+**P2 — bound the partner-assumption pattern.** ~~Kill it at the source.~~ **Corrected:**
+`PROMPT.md:224` deliberately offers "Anchored-prior-about-him" as one of three allowed TP1
+forms and `post_news.sh` cites it approvingly, so killing it would remove a form that
+produces some of the best TP1s in the product. The real problem is that the rule's own
+qualifier — *"observable behaviour only"* — was unenforced, and `PROMPT.md:390` already
+listed "He's been bored of Spurs being polite" as NEVER SHIP for exactly this reason. He
+can be *offered* a reaction, never *assigned* a history. The eye-roll register needed
+separating from the tender half, which the prompt approves and which should stay.
 
 **P2b — the talking point must be a line, not a question to her.** 54 cards inverted the
 voice, 34 of them pushed. `post_news.sh` can reject any talking point that ends in "?"
@@ -405,3 +417,51 @@ The review also sharpens what the tiers should carry. The best content in this c
 not information, it was *what to do with the moment*: the hug, the food, the minute he
 needs. That is the Deep tier's real differentiator and the thing "group chat prep"
 (§6.6 of `TIERS.md`) should be built around — not more facts, better delivery.
+
+
+---
+
+## Correction and completion, 2026-09-07
+
+Anton's read of this document was that the P0–P4 list did not carry everything the body of
+the review found. That was right, and checking the code as well as the corpus changed three
+conclusions.
+
+**What was already fixed before this review was written.** `post_news.sh` had gained the
+16-word analogy cap, a blank-Sunday-Brief reject, a lowercase check on brief headlines,
+max-one-"Ask him" (which kills the ×107 "Ask him: does he think" pattern on its own) and a
+TP1 broadcast-question ban. `fetch_news.sh` reads the club list from the `teams` table and
+computes the season from the date. Roughly half of P0–P4 was already shipped.
+
+**The prompt was contradicting itself, and the model followed the examples.**
+
+- The girl-ref specificity rule demanded a *named* anchor while 13 of the 19 "Girl ref —
+  SHIP" examples, and the gold-standard list, used none. The rule is now ROLE + MOMENT,
+  which is what actually separates the good analogies from the dead ones.
+- `PROMPT.md` forbade reusing a push-title opener within 72h, then presented 20 canned
+  titles as a menu. **291 cards (25 % of all pushes) reused 25 strings, and 7 of the 8
+  worst were verbatim prompt examples.** Those lists are now marked as burned strings and
+  `post_news.sh` rejects a verbatim match.
+- `SUNDAY_BRIEF_PROMPT.md` said the immersive fields were "optional" where the renderer
+  requires them, and its worked example broke four house rules at once — single-line Title
+  Case headline, a 17-word fixture list in the girl-ref slot, "he'll be insufferable" from
+  the banned crisis-counsellor register, and a "Big …" push title.
+
+**Three surfaces this review never audited.** Push copy, body and the shared "Football"
+feed. Push copy turned out to be the most templated surface in the product: 33 % of
+lock-screen titles open by predicting him, only 753 of 1 163 were distinct, and one card
+shipped a literal `[his name]` to a device. The shared feed rendered the boyfriend-voice
+talking point on 57 cards.
+
+**The failure mode that mattered most was not in this document at all.** Cards that never
+published. Testing the Edge templates found that `UCL_CLINCHED` built a 38-character
+`push_title` against a 35-character CHECK constraint, so **every Champions League
+qualification card was rejected by Postgres and silently never existed**;
+`WC_KNOCKOUT_ELIMINATED` the same at 40–47 characters; `EUROPE_CLINCHED` reached 102
+characters of push text for a long trigger. Nothing watches for cards that fail to appear.
+
+The pipeline now repairs before it judges. `repair_payload.py` trims, lowercases, splits
+and strips; voice violations reject once with a rewrite instruction and publish on the
+second attempt with the violation recorded; only injection, PII and a factually wrong
+results clause never publish at all. A card three characters too long still tells her what
+happened. A card that was never written tells her nothing.
