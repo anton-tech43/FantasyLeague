@@ -75,6 +75,40 @@ The last one is the pattern to watch: **a date or number that is present in the 
 
 The guards live in `post_news.sh` and `post_team_page.sh` and are listed in the skill. **When a new failure gets through, add a guard and a test for it in the same change** — the prompt alone has never been enough.
 
+## The failure nobody was watching: cards that never existed
+
+Every audit this project has run measured the content that shipped. None of them could see
+the content that didn't, and that turned out to be the more expensive problem.
+
+**The pattern.** A field goes a few characters over a cap, the item is rejected, and the
+run moves on. Nothing logs a card that failed to be born, so the feed just looks a bit
+thin. Found on 2026-09-07, all pre-existing:
+
+- **`UCL_CLINCHED` built a 38-character `push_title` against a 35-character CHECK
+  constraint.** Every Champions League qualification card was rejected by Postgres and
+  silently never existed. `WC_KNOCKOUT_ELIMINATED` the same, at 40–47 characters.
+  `EUROPE_CLINCHED` reached 102 characters of push text for a long trigger summary.
+- **`bash ${#var}` counts bytes, not characters, without a UTF-8 locale.** "Touré" and
+  "£43m" each read one character longer than they are, so any push sitting near the 35/90
+  cap was rejected for length it did not have. Football copy is full of é, ø, ü, ć and £.
+- **A validator that only rejects teaches the routine to give up.** Replaying the 1,019
+  routine cards from the World Cup through the hard-reject guards published 99 of them.
+
+**The rule now.** Repair before you judge, and reserve rejection for content that would be
+worse than silence.
+
+1. **Auto-fix** everything mechanical — length, case, headline rows, missing punctuation,
+   bracket tokens, name spelling. `repair_payload.py` on the routine side,
+   `_shared/build-content-item.ts` on the Edge side.
+2. **Voice and craft** reject once with a rewrite instruction, then publish anyway on
+   `POST_NEWS_ATTEMPT=2` with the violation recorded.
+3. **Never publishes, at any attempt**: prompt injection, PII, and a results clause naming
+   a club outside the league. A wrong fact is worse than no card. Everything else is not.
+
+**When you add a guard, ask which of the three it is.** The default answer is 1, then 2.
+A new hard reject needs a reason why shipping the imperfect version would be worse than
+the customer getting nothing.
+
 ## Adding a source
 
 When you wire up a new feed or a new field:
