@@ -267,11 +267,32 @@ export function renderPostMatch(
         talking_point: `Keep it gentle. It is out of their hands now.`,
       };
     }
-    default:
+    default: {
+      // The group is still open. This is by far the most common branch, and it
+      // used to return one fixed sentence — "Ask him what they need from their
+      // next game." — which covered 111 of the 158 matchday cards the 2026
+      // World Cup produced. On the day of the match, to almost everybody.
+      //
+      // It was never a writing problem: the branch already receives the result,
+      // the opponent, the margin and how settled the group is, and used none of
+      // it. No new data, no LLM call — just stop throwing the inputs away.
+      const margin = Math.abs(teamScore - oppScore);
+      const talking_point = state === "win"
+        ? (margin >= 3
+          ? `A win by that margin moves a group. Ask him who he would rather avoid now.`
+          : `Ask him whether that felt comfortable, or closer than the scoreline makes it look.`)
+        : state === "loss"
+        ? (margin >= 3
+          ? `Give him a minute with that one. Then ask what has to change before the next game.`
+          : `A goal in it. Ask him what he would have done differently.`)
+        : (situation.certainty === "soft"
+          ? `A point keeps them alive. Ask him what they need from the last group game.`
+          : `Ask him whether that was a decent night's work or two points dropped.`);
       return {
         state,
         text: `${teamName} ${resultPhrase}. It is still all to play for in the group.`,
-        talking_point: `Ask him what they need from their next game.`,
+        talking_point,
       };
+    }
   }
 }

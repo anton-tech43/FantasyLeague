@@ -137,3 +137,23 @@ Deno.test("just_finished: result-just-in framing, never claims 'first game'", ()
   assert(!/first game/i.test(preview + week.text), "no opener claim");
   assert(noDashes(preview + week.text + week.talking_point), "no em/en dashes");
 });
+
+Deno.test("the open-group branch no longer says one thing to everybody", () => {
+  // 111 of 158 World Cup matchday cards carried the same sentence because this
+  // branch ignored the result it was handed.
+  const base = {
+    teamName: "Sweden",
+    opponentName: "Japan",
+    situation: { state: "in_contention", stakes_level: "decisive", reason: "in_contention", certainty: "soft" },
+  } as unknown as Parameters<typeof renderPostMatch>[0];
+  const seen = new Set<string>();
+  for (const [ts, os, st] of [[3, 0, "win"], [2, 1, "win"], [0, 3, "loss"], [1, 2, "loss"], [1, 1, "draw"]] as const) {
+    seen.add(
+      renderPostMatch({ ...base, teamScore: ts, oppScore: os, state: st }).talking_point,
+    );
+  }
+  assert(seen.size >= 4, `only ${seen.size} distinct talking points across 5 different results`);
+  for (const tp of seen) {
+    assert(tp !== "Ask him what they need from their next game.", "the old catch-all is back");
+  }
+});
