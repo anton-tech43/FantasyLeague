@@ -58,9 +58,9 @@ struct ImmersiveCard: View {
     }
 
     private var contextLine: String? {
-        if case .everyoneTalking = feedContext {
-            return item.displayContext
-        }
+        // Personalise in both contexts. The shared feed has no boyfriend, but a
+        // line that reached it carrying "[his name]" would render the raw token
+        // — personalise() resolves it to the relationship noun instead.
         guard let raw = item.displayContext, !raw.isEmpty else { return nil }
         let personalised = appState.personalise(raw)
         return personalised.isEmpty ? nil : personalised
@@ -68,7 +68,13 @@ struct ImmersiveCard: View {
 
     private var talkingPoint: String {
         if case .everyoneTalking = feedContext {
-            return item.everyoneTalkingTalkingPoints?.first ?? item.regularTalkingPoints.first ?? ""
+            // The shared "Football" feed is not about her partner, so it must
+            // NOT fall back to the personal talking point. 57 World Cup cards
+            // did exactly that and rendered "Ask him what they need from their
+            // next game." to people browsing a neutral feed. An empty zone is
+            // honest; a line addressed to a relationship this feed knows
+            // nothing about is not.
+            return item.everyoneTalkingTalkingPoints?.first ?? ""
         }
         return appState.personalise(item.regularTalkingPoints.first ?? "")
     }
