@@ -59,3 +59,51 @@ export function competitionName(leagueId: number): string {
     default: return "Cup";
   }
 }
+
+/**
+ * How much a fixture matters, 1-5, for the Calendar tab's dots.
+ *
+ * Everything used to be a flat 3, so a Champions League away leg in Naples read
+ * exactly like a League Cup tie at Ipswich. The whole point of the calendar is
+ * that she can see which night is the big one without knowing football.
+ *
+ * Knockout weight comes from the round name, which API-Football gives us
+ * verbatim ("Round of 16", "Quarter-finals", "Semi-finals", "Final").
+ */
+export function fixtureImportance(leagueId: number | undefined, round: string | undefined): number {
+  const r = (round ?? "").toLowerCase();
+  const isFinal = /\bfinal\b/.test(r) && !/semi|quarter|3rd|third/.test(r);
+  const isSemi = /semi/.test(r);
+  const isQuarter = /quarter/.test(r);
+  const isLast16 = /round of 16|1\/8/.test(r);
+
+  if (leagueId === 2) {
+    // Champions League. Even the league phase is a bigger night than a
+    // midtable Saturday, and the knockouts are the biggest nights of his year.
+    if (isFinal) return 5;
+    if (isSemi || isQuarter) return 5;
+    if (isLast16) return 4;
+    return 4;
+  }
+  if (leagueId === 39) return 3; // Premier League
+  if (leagueId === 1) {
+    if (isFinal || isSemi || isQuarter) return 5;
+    return 4;
+  }
+  return 2; // domestic cups we do not cover in depth
+}
+
+/**
+ * Calendar label. Trims the sponsor prefix off the competition name and, for a
+ * knockout tie, says which round — "Champions League semi-final" tells her more
+ * than "UEFA Champions League".
+ */
+export function fixtureLabel(leagueName: string | undefined, leagueId: number | undefined, round: string | undefined): string {
+  const base = (leagueName ?? "Fixture").replace(/^UEFA\s+/i, "").replace(/^FIFA\s+/i, "");
+  const r = (round ?? "").toLowerCase();
+  if (/\bfinal\b/.test(r) && !/semi|quarter|3rd|third/.test(r)) return `${base} final`;
+  if (/semi/.test(r)) return `${base} semi-final`;
+  if (/quarter/.test(r)) return `${base} quarter-final`;
+  if (/round of 16|1\/8/.test(r)) return `${base} last 16`;
+  return base;
+}

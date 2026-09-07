@@ -17,6 +17,7 @@ import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 import { wrapExternalData } from "../_shared/input-sanitizer.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import type { Team } from "../_shared/types.ts";
+import { fixtureImportance, fixtureLabel } from "../_shared/league-helpers.ts";
 import { annotateFixtures, classifyExactPointsOnly, type ExactInfo, type GroupStanding } from "../_shared/stakes-engine.ts";
 import { renderNextFixturePreview, renderOpponentDetail, renderThisWeek } from "../_shared/stakes-templates.ts";
 import { collectFinishedFixtureIds, dropFinished, FINISHED_STATUSES, filterFixturesByLeague } from "../_shared/fixture-rollover.ts";
@@ -1755,15 +1756,33 @@ function buildUpcomingFixtures(
 
     const isHome = (teams.home.id as number | undefined) === teamApiFootballId;
     const opponent = (isHome ? teams.away.name : teams.home.name) as string;
-    const competition = (league?.name as string | undefined) ?? "Fixture";
+    const leagueId = league?.id as number | undefined;
+    const round = league?.round as string | undefined;
     const prior = priorByKey.get(`${date.slice(0, 10)}|${opponent}`);
+    const priorLabel = (prior?.importance_label as string | undefined) ?? "";
+    const machineLabels = new Set([
+      fixtureLabel(league?.name as string | undefined, leagueId, round).slice(0, 30),
+      ((league?.name as string | undefined) ?? "").slice(0, 30),
+      "Fixture",
+    ]);
+    const handWritten = priorLabel.length > 0 && !machineLabels.has(priorLabel);
     out.push({
       date,
       opponent,
       venue: isHome ? "home" : "away",
       // iOS requires both fields (UpcomingFixture is non-optional on each).
-      importance_dots: (prior?.importance_dots as number | undefined) ?? 3,
-      importance_label: (prior?.importance_label as string | undefined) ?? competition.slice(0, 30),
+      // The dots used to be a flat 3, so a Champions League leg in Naples read
+      // like a League Cup tie at Ipswich. Competition and knockout round decide
+      // it now.
+      //
+      // "Anything hand-written wins" still holds, but the old code could not
+      // tell a hand-written label from its own default, so the flat 3 preserved
+      // itself forever. A prior counts as hand-written only when its label says
+      // something the machine would not have said.
+      importance_dots: handWritten ? (prior!.importance_dots as number) : fixtureImportance(leagueId, round),
+      importance_label: handWritten
+        ? (prior!.importance_label as string)
+        : fixtureLabel(league?.name as string | undefined, leagueId, round).slice(0, 30),
     });
     if (out.length === 8) break;
   }
