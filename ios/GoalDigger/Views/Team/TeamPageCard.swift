@@ -9,6 +9,14 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
     let isExpanded: Bool
     let onTap: () -> Void
     var tintColor: Color? = nil
+    /// When the collapsed `primaryText` is a preview of the expanded body
+    /// (season summary, rivalry blurb, post-match text), showing both means
+    /// she reads the same opening twice. Set this and the expanded layout
+    /// shows the body under the title only.
+    var hidePrimaryWhenExpanded: Bool = false
+    /// Optional round image on the right of the header (the manager's
+    /// headshot). Nil = no image, layout unchanged.
+    var leadingImageURL: URL? = nil
     @ViewBuilder let zone1Collapsed: () -> CollapsedContent
     @ViewBuilder let zone1Expanded: () -> ExpandedContent
 
@@ -49,14 +57,20 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
             Color.deepMauve
             if let tintColor { tintColor }
 
-            VStack(alignment: .leading, spacing: 6) {
-                titleRow
-                Text(primaryText)
-                    .font(.jakarta(15, weight: .bold))
-                    .foregroundColor(.warmWhite)
-                    .lineLimit(1)
+            HStack(alignment: .center, spacing: 12) {
+                VStack(alignment: .leading, spacing: 6) {
+                    titleRow
+                    Text(primaryText)
+                        .font(.jakarta(15, weight: .bold))
+                        .foregroundColor(.warmWhite)
+                        .lineLimit(1)
 
-                zone1Collapsed()
+                    zone1Collapsed()
+                }
+                if leadingImageURL != nil {
+                    Spacer(minLength: 0)
+                    headerImage(size: 44)
+                }
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -70,10 +84,20 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
             if let tintColor { tintColor }
 
             VStack(alignment: .leading, spacing: 6) {
-                titleRow
-                Text(primaryText)
-                    .font(.jakarta(15, weight: .bold))
-                    .foregroundColor(.warmWhite)
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        titleRow
+                        if !hidePrimaryWhenExpanded {
+                            Text(primaryText)
+                                .font(.jakarta(15, weight: .bold))
+                                .foregroundColor(.warmWhite)
+                        }
+                    }
+                    if leadingImageURL != nil {
+                        Spacer(minLength: 0)
+                        headerImage(size: 56)
+                    }
+                }
 
                 zone1Expanded()
             }
@@ -81,6 +105,25 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .fixedSize(horizontal: false, vertical: true)
+    }
+
+    /// Circular headshot with the same fallback the player rows use.
+    @ViewBuilder
+    private func headerImage(size: CGFloat) -> some View {
+        ZStack {
+            Circle().fill(Color.hotRose.opacity(0.15))
+            AsyncImage(url: leadingImageURL) { phase in
+                if case .success(let image) = phase {
+                    image.resizable().scaledToFill()
+                } else {
+                    Image(systemName: "person.fill")
+                        .font(.system(size: size * 0.45))
+                        .foregroundColor(.hotRose.opacity(0.7))
+                }
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(Circle())
     }
 
     private var titleRow: some View {

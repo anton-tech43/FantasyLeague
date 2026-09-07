@@ -538,6 +538,18 @@ class APIClient {
 
     // MARK: - Helpers
 
+    /// Raw GET against a REST path, returning the response body. Used by
+    /// services that keep their own decoding (My Turn content, which writes
+    /// the body to disk unchanged).
+    func rawGET(path: String, queryItems: [URLQueryItem]) async throws -> Data {
+        let url = try buildURL(path: path, queryItems: queryItems)
+        var request = makeRequest(url: url)
+        request.timeoutInterval = 15
+        let (data, response) = try await URLSession.shared.data(for: request)
+        try validateResponse(response)
+        return data
+    }
+
     private func buildURL(path: String, queryItems: [URLQueryItem]) throws -> URL {
         guard var components = URLComponents(url: try requireBaseURL().appendingPathComponent(path), resolvingAgainstBaseURL: false) else {
             throw APIError.invalidResponse

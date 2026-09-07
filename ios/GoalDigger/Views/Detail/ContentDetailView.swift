@@ -9,6 +9,8 @@ struct ContentDetailView: View {
     @State private var isLoading: Bool
     @State private var onesToWatch: [PlayerCard] = []
     @State private var isBackstoryExpanded = false
+    /// Level-3 info card ("To impress") is behind a + until she asks for it.
+    @State private var showToImpress = false
 
     /// Preloaded item lets the feed render the detail view instantly without re-fetching.
     /// When opened from a push deep link, `preloadedItem` is nil and `loadItem()` fetches by id.
@@ -32,6 +34,9 @@ struct ContentDetailView: View {
                             headlineSection(item)
                             if let scorers = item.scorers, !scorers.isEmpty {
                                 scorersSection(scorers)
+                            }
+                            if let cards = item.infoCards, !cards.isEmpty {
+                                infoCardsSection(cards)
                             }
                             talkingPointsSection(item)
 
@@ -245,6 +250,58 @@ struct ContentDetailView: View {
         }
     }
 
+    /// What she needs to KNOW, above what she can SAY. Levels 1-2 render
+    /// straight away; level 3 ("To impress") waits behind a +. Neutral facts
+    /// by contract (post_news.sh rejects the sister voice here), so the same
+    /// cards serve the club feed and the shared Football feed.
+    @ViewBuilder
+    private func infoCardsSection(_ cards: [InfoCard]) -> some View {
+        let shown = cards.filter { !$0.isToImpress }
+        let impress = cards.first { $0.isToImpress }
+        VStack(alignment: .leading, spacing: Layout.elementSpacing) {
+            SectionHeaderView(title: "Good to know", icon: "info.circle")
+
+            ForEach(shown) { card in
+                InfoCardView(card: card, accent: .hotRose)
+            }
+
+            if let impress {
+                if showToImpress {
+                    InfoCardView(card: impress, accent: .gold)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                } else {
+                    Button {
+                        withAnimation(.spring(duration: 0.3)) { showToImpress = true }
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("To impress")
+                                .font(.jakarta(14, weight: .semiBold))
+                            Spacer()
+                            Text("one more, for when he's listening")
+                                .font(.jakarta(12, weight: .regular))
+                                .foregroundColor(.gold.opacity(0.8))
+                        }
+                        .foregroundColor(.gold)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(Color.gold.opacity(0.08))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.gold.opacity(0.35), lineWidth: 1)
+                        )
+                        .cornerRadius(12)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Show the to-impress card")
+                }
+            }
+        }
+    }
+
     private func talkingPointsSection(_ item: ContentItem) -> some View {
         VStack(alignment: .leading, spacing: Layout.elementSpacing) {
             SectionHeaderView(title: "Things to say", icon: "bubble.left")
@@ -419,4 +476,95 @@ struct PostMatchCard: View {
         .background(Color.cardBackground)
         .cornerRadius(12)
     }
+}
+
+/// One info card. Level 1-2 rose accent, level 3 gold ("To impress").
+/// A level-3 card with a `fixture` draws the two crests and the kickoff —
+/// the match picture we can render without a photo we do not have.
+struct InfoCardView: View {
+    let card: InfoCard
+    let accent: Color
+
+    private var label: String {
+        if let t = card.title, !t.isEmpty { return t }
+        switch card.level {
+        case 1: return "The gist"
+        case 2: return "The wider picture"
+        default: return "To impress"
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 0) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(accent)
+                .frame(width: 3)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text(label.uppercased())
+                    .font(.feedBadge)
+                    .tracking(1)
+                    .foregroundColor(accent == .gold ? Color(hex: "#9A7B1A") : .textSecondaryOnCard)
+
+                if let fixture = card.fixture {
+                    fixtureStrip(fixture)
+                }
+
+                Text(card.text)
+                    .font(.jakarta(15, weight: .regular))
+                    .foregroundColor(.textPrimaryOnCard)
+                    .lineSpacing(3)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(14)
+        }
+        .background(accent.opacity(0.06))
+        .background(Color.cardBackground)
+        .cornerRadius(12)
+        .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder
+    private func fixtureStrip(_ f: InfoFixture) -> some View {
+        HStack(spacing: 12) {
+            side(name: f.home, crest: f.homeCrestURL)
+            VStack(spacing: 2) {
+                Text("v")
+                    .font(.jakarta(13, weight: .bold))
+                    .foregroundColor(.textSecondaryOnCard)
+                if let k = f.kickoff {
+                    Text(Self.kickoffFmt.string(from: k))
+                        .font(.jakarta(11, weight: .medium))
+                        .foregroundColor(.textSecondaryOnCard)
+                }
+            }
+            side(name: f.away, crest: f.awayCrestURL)
+            Spacer(minLength: 0)
+            if let c = f.competition, !c.isEmpty {
+                Text(c.uppercased())
+                    .font(.jakarta(10, weight: .semiBold))
+                    .tracking(0.5)
+                    .foregroundColor(.textSecondaryOnCard)
+                    .lineLimit(1)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func side(name: String, crest: URL?) -> some View {
+        VStack(spacing: 4) {
+            TeamCrestView(url: crest, size: 34)
+            Text(name)
+                .font(.jakarta(11, weight: .semiBold))
+                .foregroundColor(.textPrimaryOnCard)
+                .lineLimit(1)
+                .frame(width: 72)
+        }
+    }
+
+    private static let kickoffFmt: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "EEE d MMM, HH:mm"
+        return f
+    }()
 }

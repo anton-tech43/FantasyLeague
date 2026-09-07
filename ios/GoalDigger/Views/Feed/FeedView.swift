@@ -293,6 +293,13 @@ struct FeedView: View {
                 RoundedRectangle(cornerRadius: Layout.badgeCornerRadius)
                     .stroke(Color.hotRose, lineWidth: 1)
             )
+            // The badge sits on the pill's corner, outside the outline. A
+            // toolbar item clips to its own frame, so the old +8/-8 offset
+            // pushed half the badge out of existence ("2" read as a sliver).
+            // Reserve the room instead: pad the pill, then overlay the badge
+            // inside the padded frame.
+            .padding(.top, 7)
+            .padding(.trailing, 9)
             .overlay(alignment: .topTrailing) {
                 aggregateUnreadBadge
             }
@@ -344,7 +351,6 @@ struct FeedView: View {
                 .padding(.vertical, 2)
                 .background(Color.hotRose)
                 .clipShape(Capsule())
-                .offset(x: 8, y: -8)
         }
     }
 

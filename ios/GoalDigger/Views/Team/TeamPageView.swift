@@ -87,12 +87,21 @@ struct TeamPageView: View {
     /// Rivalry blurbs from team-page-generator are shaped `"<rivals> — <context>..."`.
     /// Split on the dash to surface just the rival names as a headline.
     private func rivalsHeadline(_ text: String) -> String {
-        let separators: [Character] = ["—", "–", "-"]
-        if let dashIdx = text.firstIndex(where: { separators.contains($0) }) {
-            let head = text[..<dashIdx].trimmingCharacters(in: .whitespaces)
-            if !head.isEmpty && head.count <= 60 { return head }
+        // "<Rival> — the X derby..." or "<Rival>, the X derby..." → the rival.
+        let separators: [Character] = ["—", "–", ",", "."]
+        if let idx = text.firstIndex(where: { separators.contains($0) }) {
+            let head = text[..<idx].trimmingCharacters(in: .whitespaces)
+            if !head.isEmpty && head.count <= 40 && head.split(separator: " ").count <= 4 { return head }
         }
-        return truncateAtWord(text, maxChars: 50)
+        // "X's fiercest rivalry is with <Rival>, ..." → the rival.
+        if let range = text.range(of: " with ") {
+            let tail = text[range.upperBound...]
+            if let end = tail.firstIndex(where: { separators.contains($0) }) {
+                let name = tail[..<end].trimmingCharacters(in: .whitespaces)
+                if !name.isEmpty && name.count <= 40 { return name }
+            }
+        }
+        return "The rivalry"
     }
 
     var body: some View {
@@ -208,12 +217,11 @@ struct TeamPageView: View {
                 isExpanded: expandedCard == .basics,
                 onTap: { toggleCard(.basics) },
                 zone1Collapsed: {
-                    // Stadium when we have one; nickname as a backup
-                    // subtitle for WC countries without a clear single
-                    // home venue. Either way the collapsed card has a
-                    // visible second line — empty subtitle reads as a
-                    // broken state.
-                    Text(basics.stadium ?? basics.nickname)
+                    // The glance line: last season's finish when we have it
+                    // (the fact she is most likely to need first), otherwise
+                    // the stadium, otherwise the nickname — the collapsed card
+                    // always has a visible second line.
+                    Text(basics.lastSeason.map { "Last season: \($0)" } ?? basics.stadium ?? basics.nickname)
                         .font(.jakarta(13, weight: .regular))
                         .foregroundColor(.warmWhite.opacity(0.7))
                         .lineLimit(1)
@@ -223,6 +231,17 @@ struct TeamPageView: View {
                         infoLine(label: "Known as", value: basics.nickname)
                         if let stadium = basics.stadium {
                             infoLine(label: "Home ground", value: stadium)
+                        }
+                        // The three facts that place a club: how long in the
+                        // top flight, last season, last league title.
+                        if let since = basics.plSince {
+                            infoLine(label: "Top flight", value: since)
+                        }
+                        if let last = basics.lastSeason {
+                            infoLine(label: "Last season", value: last)
+                        }
+                        if let title = basics.lastTitle {
+                            infoLine(label: "Last league title", value: title)
                         }
                         Text(appState.personalise(basics.funFact))
                             .font(.jakarta(13, weight: .regular))
@@ -246,6 +265,7 @@ struct TeamPageView: View {
                 isStatic: true,
                 isExpanded: expandedCard == .manager,
                 onTap: { toggleCard(.manager) },
+                leadingImageURL: manager.photoURL.flatMap(URL.init),
                 zone1Collapsed: { EmptyView() },
                 zone1Expanded: {
                     Text(appState.personalise(manager.summary))
@@ -301,12 +321,13 @@ struct TeamPageView: View {
         if let rivalry = cards.rivalry {
             TeamPageCard(
                 title: "The rivalry",
-                primaryText: rivalsHeadline(appState.personalise(rivalry.text)),
+                primaryText: rivalry.rival ?? rivalsHeadline(appState.personalise(rivalry.text)),
                 zone2Label: "Use this:",
                 talkingPoint: rivalry.talkingPoint.map { appState.personalise($0) },
                 isStatic: true,
                 isExpanded: expandedCard == .rivalry,
                 onTap: { toggleCard(.rivalry) },
+                hidePrimaryWhenExpanded: true,
                 zone1Collapsed: { EmptyView() },
                 zone1Expanded: {
                     VStack(alignment: .leading, spacing: 8) {
@@ -355,6 +376,7 @@ struct TeamPageView: View {
                 talkingPoint: season.talkingPoint.map { appState.personalise($0) },
                 isExpanded: expandedCard == .season,
                 onTap: { toggleCard(.season) },
+                hidePrimaryWhenExpanded: true,
                 zone1Collapsed: { EmptyView() },
                 zone1Expanded: {
                     Text(appState.personalise(season.summary))
@@ -382,7 +404,7 @@ struct TeamPageView: View {
         if TierGating.isAvailable(.insiderCard, tier: appState.selectedTier),
            !insiderSet.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
-                Text("THINGS \(appState.pSubjectCap) \(appState.usesHeVoice ? "DOESN'T" : "DON'T") KNOW")
+                Text("Things \(appState.pSubject) \(appState.usesHeVoice ? "doesn't" : "don't") know".uppercased())
                     .font(.sectionHeader)
                     .tracking(1)
                     .foregroundColor(.mutedText)
@@ -413,6 +435,10 @@ struct TeamPageView: View {
 
     @ViewBuilder
     private func comingUpCard(_ fixture: NextFixtureCard) -> some View {
+        // The crest comes from the matching Calendar row (which carries the
+        // opponent's API id); a PL club resolves by name as a fallback.
+        let crest = content?.cards.upcomingFixtures?.first { String($0.date.prefix(10)) == String(fixture.date.prefix(10)) }?.opponentCrestURL
+            ?? UpcomingFixture(date: fixture.date, opponent: fixture.opponent, venue: fixture.venue, importanceDots: 0, importanceLabel: "", opponentApiId: nil).opponentCrestURL
         TeamPageCard(
             title: "Coming up",
             primaryText: "\(fixture.opponent) (\(fixture.venue.uppercased()))",
@@ -420,6 +446,7 @@ struct TeamPageView: View {
             talkingPoint: fixture.talkingPoint.map { appState.personalise($0) },
             isExpanded: expandedCard == .comingUp,
             onTap: { toggleCard(.comingUp) },
+            leadingImageURL: crest,
             zone1Collapsed: {
                 HStack(spacing: 8) {
                     Text(formattedFixtureDate(fixture.date))
@@ -493,6 +520,7 @@ struct TeamPageView: View {
             isExpanded: expandedCard == .comingUp,
             onTap: { toggleCard(.comingUp) },
             tintColor: tintColor,
+            hidePrimaryWhenExpanded: true,
             zone1Collapsed: { EmptyView() },
             zone1Expanded: {
                 Text(appState.personalise(postMatch.text))
@@ -623,7 +651,8 @@ struct TeamPageView: View {
             }
             .frame(width: 70, alignment: .leading)
 
-            // Middle: opponent + venue
+            // Middle: opponent crest + name + venue
+            TeamCrestView(url: f.opponentCrestURL, size: 28)
             VStack(alignment: .leading, spacing: 2) {
                 Text(f.opponent)
                     .font(.feedHeadline).foregroundColor(.warmWhite)
@@ -746,10 +775,16 @@ struct TeamPageView: View {
             Text("\(e.rank)")
                 .font(.jakarta(13, weight: .regular))
                 .frame(width: 24, alignment: .leading)
-            Text(e.teamName)
-                .font(.jakarta(14, weight: isUser ? .bold : .regular))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .lineLimit(1)
+            HStack(spacing: 8) {
+                TeamCrestView(
+                    url: e.teamIdApiFootball.flatMap { URL(string: "https://media.api-sports.io/football/teams/\($0).png") },
+                    size: 20
+                )
+                Text(e.teamName)
+                    .font(.jakarta(14, weight: isUser ? .bold : .regular))
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
             Text("\(e.played)").frame(width: 28, alignment: .trailing)
                 .font(.jakarta(13, weight: .regular))
             Text(formatGd(e.gd)).frame(width: 40, alignment: .trailing)

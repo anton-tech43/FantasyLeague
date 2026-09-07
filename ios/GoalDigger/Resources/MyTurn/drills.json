@@ -1,0 +1,821 @@
+{
+  "contentVersion": "2026-09-07.1",
+  "decks": [
+    {
+      "id": "lines",
+      "label": "Lines",
+      "source": "saythis"
+    },
+    {
+      "id": "terms",
+      "label": "Terms",
+      "source": "lingo"
+    },
+    {
+      "id": "kits",
+      "label": "Kits",
+      "source": "static",
+      "cards": [
+        {
+          "id": "kit-arsenal",
+          "frontType": "kit",
+          "front": {
+            "primary": "#EF0107",
+            "secondary": "#FFFFFF",
+            "pattern": "sleeves",
+            "shorts": "#FFFFFF"
+          },
+          "back": "Arsenal"
+        },
+        {
+          "id": "kit-aston-villa",
+          "frontType": "kit",
+          "front": {
+            "primary": "#670E36",
+            "secondary": "#95BFE5",
+            "pattern": "sleeves",
+            "shorts": "#FFFFFF"
+          },
+          "back": "Aston Villa"
+        },
+        {
+          "id": "kit-bournemouth",
+          "frontType": "kit",
+          "front": {
+            "primary": "#DA291C",
+            "secondary": "#000000",
+            "pattern": "stripes",
+            "shorts": "#000000"
+          },
+          "back": "AFC Bournemouth"
+        },
+        {
+          "id": "kit-brentford",
+          "frontType": "kit",
+          "front": {
+            "primary": "#E30613",
+            "secondary": "#FFFFFF",
+            "pattern": "stripes",
+            "shorts": "#000000"
+          },
+          "back": "Brentford"
+        },
+        {
+          "id": "kit-brighton",
+          "frontType": "kit",
+          "front": {
+            "primary": "#0057B8",
+            "secondary": "#FFFFFF",
+            "pattern": "stripes",
+            "shorts": "#FFFFFF"
+          },
+          "back": "Brighton & Hove Albion"
+        },
+        {
+          "id": "kit-chelsea",
+          "frontType": "kit",
+          "front": {
+            "primary": "#034694",
+            "secondary": "#FFFFFF",
+            "pattern": "plain",
+            "shorts": "#034694"
+          },
+          "back": "Chelsea"
+        },
+        {
+          "id": "kit-coventry",
+          "frontType": "kit",
+          "front": {
+            "primary": "#78D0F5",
+            "secondary": "#FFFFFF",
+            "pattern": "plain",
+            "shorts": "#78D0F5"
+          },
+          "back": "Coventry City"
+        },
+        {
+          "id": "kit-crystal-palace",
+          "frontType": "kit",
+          "front": {
+            "primary": "#C4122E",
+            "secondary": "#1B458F",
+            "pattern": "stripes",
+            "shorts": "#1B458F"
+          },
+          "back": "Crystal Palace"
+        },
+        {
+          "id": "kit-everton",
+          "frontType": "kit",
+          "front": {
+            "primary": "#003399",
+            "secondary": "#FFFFFF",
+            "pattern": "plain",
+            "shorts": "#FFFFFF"
+          },
+          "back": "Everton"
+        },
+        {
+          "id": "kit-fulham",
+          "frontType": "kit",
+          "front": {
+            "primary": "#FFFFFF",
+            "secondary": "#000000",
+            "pattern": "plain",
+            "shorts": "#000000"
+          },
+          "back": "Fulham"
+        },
+        {
+          "id": "kit-hull",
+          "frontType": "kit",
+          "front": {
+            "primary": "#F5A12D",
+            "secondary": "#000000",
+            "pattern": "stripes",
+            "shorts": "#000000"
+          },
+          "back": "Hull City"
+        },
+        {
+          "id": "kit-ipswich",
+          "frontType": "kit",
+          "front": {
+            "primary": "#0E3DA6",
+            "secondary": "#FFFFFF",
+            "pattern": "sleeves",
+            "shorts": "#FFFFFF"
+          },
+          "back": "Ipswich Town"
+        },
+        {
+          "id": "kit-leeds",
+          "frontType": "kit",
+          "front": {
+            "primary": "#FFFFFF",
+            "secondary": "#1D428A",
+            "pattern": "plain",
+            "shorts": "#FFFFFF"
+          },
+          "back": "Leeds United"
+        },
+        {
+          "id": "kit-liverpool",
+          "frontType": "kit",
+          "front": {
+            "primary": "#C8102E",
+            "secondary": "#FFFFFF",
+            "pattern": "plain",
+            "shorts": "#C8102E"
+          },
+          "back": "Liverpool"
+        },
+        {
+          "id": "kit-man-city",
+          "frontType": "kit",
+          "front": {
+            "primary": "#6CABDD",
+            "secondary": "#FFFFFF",
+            "pattern": "plain",
+            "shorts": "#FFFFFF"
+          },
+          "back": "Manchester City"
+        },
+        {
+          "id": "kit-man-utd",
+          "frontType": "kit",
+          "front": {
+            "primary": "#DA291C",
+            "secondary": "#FFFFFF",
+            "pattern": "plain",
+            "shorts": "#FFFFFF"
+          },
+          "back": "Manchester United"
+        },
+        {
+          "id": "kit-newcastle",
+          "frontType": "kit",
+          "front": {
+            "primary": "#241F20",
+            "secondary": "#FFFFFF",
+            "pattern": "stripes",
+            "shorts": "#241F20"
+          },
+          "back": "Newcastle United"
+        },
+        {
+          "id": "kit-nottm-forest",
+          "frontType": "kit",
+          "front": {
+            "primary": "#DD0000",
+            "secondary": "#FFFFFF",
+            "pattern": "plain",
+            "shorts": "#FFFFFF"
+          },
+          "back": "Nottingham Forest"
+        },
+        {
+          "id": "kit-spurs",
+          "frontType": "kit",
+          "front": {
+            "primary": "#FFFFFF",
+            "secondary": "#132257",
+            "pattern": "plain",
+            "shorts": "#132257"
+          },
+          "back": "Tottenham Hotspur"
+        },
+        {
+          "id": "kit-sunderland",
+          "frontType": "kit",
+          "front": {
+            "primary": "#EB172B",
+            "secondary": "#FFFFFF",
+            "pattern": "stripes",
+            "shorts": "#000000"
+          },
+          "back": "Sunderland"
+        }
+      ]
+    },
+    {
+      "id": "badges",
+      "label": "Badges",
+      "source": "static",
+      "cards": [
+        {
+          "id": "badge-arsenal",
+          "frontType": "image",
+          "front": "badges/arsenal.png",
+          "back": "Arsenal"
+        },
+        {
+          "id": "badge-aston-villa",
+          "frontType": "image",
+          "front": "badges/aston-villa.png",
+          "back": "Aston Villa"
+        },
+        {
+          "id": "badge-bournemouth",
+          "frontType": "image",
+          "front": "badges/bournemouth.png",
+          "back": "AFC Bournemouth"
+        },
+        {
+          "id": "badge-brentford",
+          "frontType": "image",
+          "front": "badges/brentford.png",
+          "back": "Brentford"
+        },
+        {
+          "id": "badge-brighton",
+          "frontType": "image",
+          "front": "badges/brighton.png",
+          "back": "Brighton & Hove Albion"
+        },
+        {
+          "id": "badge-chelsea",
+          "frontType": "image",
+          "front": "badges/chelsea.png",
+          "back": "Chelsea"
+        },
+        {
+          "id": "badge-coventry",
+          "frontType": "image",
+          "front": "badges/coventry.png",
+          "back": "Coventry City"
+        },
+        {
+          "id": "badge-crystal-palace",
+          "frontType": "image",
+          "front": "badges/crystal-palace.png",
+          "back": "Crystal Palace"
+        },
+        {
+          "id": "badge-everton",
+          "frontType": "image",
+          "front": "badges/everton.png",
+          "back": "Everton"
+        },
+        {
+          "id": "badge-fulham",
+          "frontType": "image",
+          "front": "badges/fulham.png",
+          "back": "Fulham"
+        },
+        {
+          "id": "badge-hull",
+          "frontType": "image",
+          "front": "badges/hull.png",
+          "back": "Hull City"
+        },
+        {
+          "id": "badge-ipswich",
+          "frontType": "image",
+          "front": "badges/ipswich.png",
+          "back": "Ipswich Town"
+        },
+        {
+          "id": "badge-leeds",
+          "frontType": "image",
+          "front": "badges/leeds.png",
+          "back": "Leeds United"
+        },
+        {
+          "id": "badge-liverpool",
+          "frontType": "image",
+          "front": "badges/liverpool.png",
+          "back": "Liverpool"
+        },
+        {
+          "id": "badge-man-city",
+          "frontType": "image",
+          "front": "badges/man-city.png",
+          "back": "Manchester City"
+        },
+        {
+          "id": "badge-man-utd",
+          "frontType": "image",
+          "front": "badges/man-utd.png",
+          "back": "Manchester United"
+        },
+        {
+          "id": "badge-newcastle",
+          "frontType": "image",
+          "front": "badges/newcastle.png",
+          "back": "Newcastle United"
+        },
+        {
+          "id": "badge-nottm-forest",
+          "frontType": "image",
+          "front": "badges/nottm-forest.png",
+          "back": "Nottingham Forest"
+        },
+        {
+          "id": "badge-spurs",
+          "frontType": "image",
+          "front": "badges/spurs.png",
+          "back": "Tottenham Hotspur"
+        },
+        {
+          "id": "badge-sunderland",
+          "frontType": "image",
+          "front": "badges/sunderland.png",
+          "back": "Sunderland"
+        }
+      ]
+    },
+    {
+      "id": "nicknames",
+      "label": "Nicknames",
+      "source": "static",
+      "cards": [
+        {
+          "id": "nick-arsenal",
+          "frontType": "text",
+          "front": "The Gunners",
+          "back": "Arsenal"
+        },
+        {
+          "id": "nick-aston-villa",
+          "frontType": "text",
+          "front": "The Villans",
+          "back": "Aston Villa"
+        },
+        {
+          "id": "nick-bournemouth",
+          "frontType": "text",
+          "front": "The Cherries",
+          "back": "AFC Bournemouth"
+        },
+        {
+          "id": "nick-brentford",
+          "frontType": "text",
+          "front": "The Bees",
+          "back": "Brentford"
+        },
+        {
+          "id": "nick-brighton",
+          "frontType": "text",
+          "front": "The Seagulls",
+          "back": "Brighton & Hove Albion"
+        },
+        {
+          "id": "nick-chelsea",
+          "frontType": "text",
+          "front": "The Blues",
+          "back": "Chelsea"
+        },
+        {
+          "id": "nick-coventry",
+          "frontType": "text",
+          "front": "The Sky Blues",
+          "back": "Coventry City"
+        },
+        {
+          "id": "nick-crystal-palace",
+          "frontType": "text",
+          "front": "The Eagles",
+          "back": "Crystal Palace"
+        },
+        {
+          "id": "nick-everton",
+          "frontType": "text",
+          "front": "The Toffees",
+          "back": "Everton"
+        },
+        {
+          "id": "nick-fulham",
+          "frontType": "text",
+          "front": "The Cottagers",
+          "back": "Fulham"
+        },
+        {
+          "id": "nick-hull",
+          "frontType": "text",
+          "front": "The Tigers",
+          "back": "Hull City"
+        },
+        {
+          "id": "nick-ipswich",
+          "frontType": "text",
+          "front": "The Tractor Boys",
+          "back": "Ipswich Town"
+        },
+        {
+          "id": "nick-leeds",
+          "frontType": "text",
+          "front": "The Whites",
+          "back": "Leeds United"
+        },
+        {
+          "id": "nick-liverpool",
+          "frontType": "text",
+          "front": "The Reds",
+          "back": "Liverpool"
+        },
+        {
+          "id": "nick-man-city",
+          "frontType": "text",
+          "front": "The Citizens",
+          "back": "Manchester City"
+        },
+        {
+          "id": "nick-man-utd",
+          "frontType": "text",
+          "front": "The Red Devils",
+          "back": "Manchester United"
+        },
+        {
+          "id": "nick-newcastle",
+          "frontType": "text",
+          "front": "The Magpies",
+          "back": "Newcastle United"
+        },
+        {
+          "id": "nick-nottm-forest",
+          "frontType": "text",
+          "front": "The Tricky Trees",
+          "back": "Nottingham Forest"
+        },
+        {
+          "id": "nick-spurs",
+          "frontType": "text",
+          "front": "Spurs",
+          "back": "Tottenham Hotspur"
+        },
+        {
+          "id": "nick-sunderland",
+          "frontType": "text",
+          "front": "The Black Cats",
+          "back": "Sunderland"
+        }
+      ]
+    },
+    {
+      "id": "players",
+      "label": "Players",
+      "source": "static",
+      "cards": [
+        {
+          "id": "player-bukayo-saka",
+          "frontType": "image",
+          "front": "players/bukayo-saka.png",
+          "back": "Bukayo Saka"
+        },
+        {
+          "id": "player-gabriel-magalhaes",
+          "frontType": "image",
+          "front": "players/gabriel-magalhaes.png",
+          "back": "Gabriel Magalhães"
+        },
+        {
+          "id": "player-martin-odegaard",
+          "frontType": "image",
+          "front": "players/martin-odegaard.png",
+          "back": "Martin Ødegaard"
+        },
+        {
+          "id": "player-alejandro-garnacho",
+          "frontType": "image",
+          "front": "players/alejandro-garnacho.png",
+          "back": "Alejandro Garnacho"
+        },
+        {
+          "id": "player-john-mcginn",
+          "frontType": "image",
+          "front": "players/john-mcginn.png",
+          "back": "John McGinn"
+        },
+        {
+          "id": "player-leon-goretzka",
+          "frontType": "image",
+          "front": "players/leon-goretzka.png",
+          "back": "Leon Goretzka"
+        },
+        {
+          "id": "player-david-brooks",
+          "frontType": "image",
+          "front": "players/david-brooks.png",
+          "back": "David Brooks"
+        },
+        {
+          "id": "player-evanilson",
+          "frontType": "image",
+          "front": "players/evanilson.png",
+          "back": "Evanilson"
+        },
+        {
+          "id": "player-justin-kluivert",
+          "frontType": "image",
+          "front": "players/justin-kluivert.png",
+          "back": "Justin Kluivert"
+        },
+        {
+          "id": "player-demarai-ouattara",
+          "frontType": "image",
+          "front": "players/demarai-ouattara.png",
+          "back": "Demarai Ouattara"
+        },
+        {
+          "id": "player-fabio-carvalho",
+          "frontType": "image",
+          "front": "players/fabio-carvalho.png",
+          "back": "Fábio Carvalho"
+        },
+        {
+          "id": "player-kevin-schade",
+          "frontType": "image",
+          "front": "players/kevin-schade.png",
+          "back": "Kevin Schade"
+        },
+        {
+          "id": "player-bart-verbruggen",
+          "frontType": "image",
+          "front": "players/bart-verbruggen.png",
+          "back": "Bart Verbruggen"
+        },
+        {
+          "id": "player-georginio-rutter",
+          "frontType": "image",
+          "front": "players/georginio-rutter.png",
+          "back": "Georginio Rutter"
+        },
+        {
+          "id": "player-jack-hinshelwood",
+          "frontType": "image",
+          "front": "players/jack-hinshelwood.png",
+          "back": "Jack Hinshelwood"
+        },
+        {
+          "id": "player-cole-palmer",
+          "frontType": "image",
+          "front": "players/cole-palmer.png",
+          "back": "Cole Palmer"
+        },
+        {
+          "id": "player-estevao",
+          "frontType": "image",
+          "front": "players/estevao.png",
+          "back": "Estêvão"
+        },
+        {
+          "id": "player-moises-caicedo",
+          "frontType": "image",
+          "front": "players/moises-caicedo.png",
+          "back": "Moisés Caicedo"
+        },
+        {
+          "id": "player-gustavo-hamer",
+          "frontType": "image",
+          "front": "players/gustavo-hamer.png",
+          "back": "Gustavo Hamer"
+        },
+        {
+          "id": "player-taiwo-awoniyi",
+          "frontType": "image",
+          "front": "players/taiwo-awoniyi.png",
+          "back": "Taiwo Awoniyi"
+        },
+        {
+          "id": "player-adam-wharton",
+          "frontType": "image",
+          "front": "players/adam-wharton.png",
+          "back": "Adam Wharton"
+        },
+        {
+          "id": "player-ismaila-sarr",
+          "frontType": "image",
+          "front": "players/ismaila-sarr.png",
+          "back": "Ismaïla Sarr"
+        },
+        {
+          "id": "player-jean-philippe-mateta",
+          "frontType": "image",
+          "front": "players/jean-philippe-mateta.png",
+          "back": "Jean-Philippe Mateta"
+        },
+        {
+          "id": "player-alex-iwobi",
+          "frontType": "image",
+          "front": "players/alex-iwobi.png",
+          "back": "Alex Iwobi"
+        },
+        {
+          "id": "player-antonee-robinson",
+          "frontType": "image",
+          "front": "players/antonee-robinson.png",
+          "back": "Antonee Robinson"
+        },
+        {
+          "id": "player-bernd-leno",
+          "frontType": "image",
+          "front": "players/bernd-leno.png",
+          "back": "Bernd Leno"
+        },
+        {
+          "id": "player-joe-gelhardt",
+          "frontType": "image",
+          "front": "players/joe-gelhardt.png",
+          "back": "Joe Gelhardt"
+        },
+        {
+          "id": "player-abdul-fatawu",
+          "frontType": "image",
+          "front": "players/abdul-fatawu.png",
+          "back": "Abdul Fatawu"
+        },
+        {
+          "id": "player-chuba-akpom",
+          "frontType": "image",
+          "front": "players/chuba-akpom.png",
+          "back": "Chuba Akpom"
+        },
+        {
+          "id": "player-jaden-philogene",
+          "frontType": "image",
+          "front": "players/jaden-philogene.png",
+          "back": "Jaden Philogene"
+        },
+        {
+          "id": "player-brenden-aaronson",
+          "frontType": "image",
+          "front": "players/brenden-aaronson.png",
+          "back": "Brenden Aaronson"
+        },
+        {
+          "id": "player-daniel-james",
+          "frontType": "image",
+          "front": "players/daniel-james.png",
+          "back": "Daniel James"
+        },
+        {
+          "id": "player-dominic-calvert-lewin",
+          "frontType": "image",
+          "front": "players/dominic-calvert-lewin.png",
+          "back": "Dominic Calvert-Lewin"
+        },
+        {
+          "id": "player-alexander-isak",
+          "frontType": "image",
+          "front": "players/alexander-isak.png",
+          "back": "Alexander Isak"
+        },
+        {
+          "id": "player-alexis-mac-allister",
+          "frontType": "image",
+          "front": "players/alexis-mac-allister.png",
+          "back": "Alexis Mac Allister"
+        },
+        {
+          "id": "player-alisson",
+          "frontType": "image",
+          "front": "players/alisson.png",
+          "back": "Alisson"
+        },
+        {
+          "id": "player-erling-haaland",
+          "frontType": "image",
+          "front": "players/erling-haaland.png",
+          "back": "Erling Haaland"
+        },
+        {
+          "id": "player-phil-foden",
+          "frontType": "image",
+          "front": "players/phil-foden.png",
+          "back": "Phil Foden"
+        },
+        {
+          "id": "player-rayan-cherki",
+          "frontType": "image",
+          "front": "players/rayan-cherki.png",
+          "back": "Rayan Cherki"
+        },
+        {
+          "id": "player-amad-diallo",
+          "frontType": "image",
+          "front": "players/amad-diallo.png",
+          "back": "Amad Diallo"
+        },
+        {
+          "id": "player-benjamin-sesko",
+          "frontType": "image",
+          "front": "players/benjamin-sesko.png",
+          "back": "Benjamin Šeško"
+        },
+        {
+          "id": "player-bruno-fernandes",
+          "frontType": "image",
+          "front": "players/bruno-fernandes.png",
+          "back": "Bruno Fernandes"
+        },
+        {
+          "id": "player-anthony-elanga",
+          "frontType": "image",
+          "front": "players/anthony-elanga.png",
+          "back": "Anthony Elanga"
+        },
+        {
+          "id": "player-nick-pope",
+          "frontType": "image",
+          "front": "players/nick-pope.png",
+          "back": "Nick Pope"
+        },
+        {
+          "id": "player-yoane-wissa",
+          "frontType": "image",
+          "front": "players/yoane-wissa.png",
+          "back": "Yoane Wissa"
+        },
+        {
+          "id": "player-liam-delap",
+          "frontType": "image",
+          "front": "players/liam-delap.png",
+          "back": "Liam Delap"
+        },
+        {
+          "id": "player-matz-sels",
+          "frontType": "image",
+          "front": "players/matz-sels.png",
+          "back": "Matz Sels"
+        },
+        {
+          "id": "player-dominic-solanke",
+          "frontType": "image",
+          "front": "players/dominic-solanke.png",
+          "back": "Dominic Solanke"
+        },
+        {
+          "id": "player-james-maddison",
+          "frontType": "image",
+          "front": "players/james-maddison.png",
+          "back": "James Maddison"
+        },
+        {
+          "id": "player-mohammed-kudus",
+          "frontType": "image",
+          "front": "players/mohammed-kudus.png",
+          "back": "Mohammed Kudus"
+        },
+        {
+          "id": "player-brian-brobbey",
+          "frontType": "image",
+          "front": "players/brian-brobbey.png",
+          "back": "Brian Brobbey"
+        },
+        {
+          "id": "player-chris-rigg",
+          "frontType": "image",
+          "front": "players/chris-rigg.png",
+          "back": "Chris Rigg"
+        },
+        {
+          "id": "player-dennis-cirkin",
+          "frontType": "image",
+          "front": "players/dennis-cirkin.png",
+          "back": "Dennis Cirkin"
+        }
+      ]
+    }
+  ]
+}

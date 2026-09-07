@@ -55,6 +55,13 @@ struct ContentItem: Identifiable, Codable {
     /// scoreline. nil for ordinary news.
     let matchResult: String?
 
+    /// What she needs to KNOW, as opposed to `talkingPoints` (what she can
+    /// SAY). Up to three levelled cards; levels 1-2 render above Things to
+    /// say, level 3 ("To impress") sits behind a +. Migration 090. Nil on
+    /// every row written before 2026-09-07 and on Edge-template rows — the
+    /// section hides.
+    let infoCards: [InfoCard]?
+
     enum ContentType: String, Codable {
         case news
         case matchday
@@ -104,6 +111,7 @@ struct ContentItem: Identifiable, Codable {
         // V2.0 WC pre-tournament preview linking — see previewFixtureId
         case previewFixtureId = "preview_fixture_id"
         case matchResult = "match_result"
+        case infoCards = "info_cards"
     }
 
     // Custom decoder for backward compatibility with cached items missing new fields
@@ -136,6 +144,11 @@ struct ContentItem: Identifiable, Codable {
         scorers = try? container.decodeIfPresent([LiveMatchBrief.Scorer].self, forKey: .scorers)
         previewFixtureId = try? container.decodeIfPresent(String.self, forKey: .previewFixtureId)
         matchResult = try? container.decodeIfPresent(String.self, forKey: .matchResult)
+        // Lenient: one malformed card must not take the item down. Decode the
+        // array element by element and keep what parses.
+        infoCards = (try? container.decodeIfPresent([LossyInfoCard].self, forKey: .infoCards))?
+            .compactMap(\.card)
+            .sorted { $0.level < $1.level }
     }
 
     /// The context/analogy line to display on the immersive card.
@@ -166,6 +179,82 @@ struct ContentItem: Identifiable, Codable {
     var matchdayMetadata: MatchdayMetadata? {
         guard case .matchday(let data) = talkingPointsRaw else { return nil }
         return data.metadata
+    }
+}
+
+// MARK: - Info cards (what she needs to know)
+
+/// One levelled fact card. `level` 1 = the gist, 2 = the wider picture,
+/// 3 = to impress. Neutral text — the sister voice lives in talking points.
+struct InfoCard: Codable, Identifiable, Hashable {
+    var id: Int { level }
+    let level: Int
+    let title: String?
+    let text: String
+    /// Level 3 may carry the match it is about, so the card can draw both
+    /// crests and the kickoff instead of a picture we do not have.
+    let fixture: InfoFixture?
+
+    var isToImpress: Bool { level >= 3 }
+}
+
+struct InfoFixture: Codable, Hashable {
+    let home: String
+    let away: String
+    let homeApiId: Int?
+    let awayApiId: Int?
+    let kickoff: Date?
+    let competition: String?
+
+    enum CodingKeys: String, CodingKey {
+        case home, away, kickoff, competition
+        case homeApiId = "home_api_id"
+        case awayApiId = "away_api_id"
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        home = try c.decode(String.self, forKey: .home)
+        away = try c.decode(String.self, forKey: .away)
+        homeApiId = try? c.decodeIfPresent(Int.self, forKey: .homeApiId)
+        awayApiId = try? c.decodeIfPresent(Int.self, forKey: .awayApiId)
+        competition = try? c.decodeIfPresent(String.self, forKey: .competition)
+        // The routine writes ISO 8601 with or without fractional seconds; the
+        // item decoder's date strategy is not applied inside nested strings
+        // decoded here, so parse by hand and tolerate a bad value.
+        if let raw = try? c.decodeIfPresent(String.self, forKey: .kickoff) {
+            let f1 = ISO8601DateFormatter(); f1.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            let f2 = ISO8601DateFormatter(); f2.formatOptions = [.withInternetDateTime]
+            kickoff = f1.date(from: raw) ?? f2.date(from: raw)
+        } else {
+            kickoff = try? c.decodeIfPresent(Date.self, forKey: .kickoff)
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(home, forKey: .home)
+        try c.encode(away, forKey: .away)
+        try c.encodeIfPresent(homeApiId, forKey: .homeApiId)
+        try c.encodeIfPresent(awayApiId, forKey: .awayApiId)
+        try c.encodeIfPresent(competition, forKey: .competition)
+        if let kickoff {
+            let f = ISO8601DateFormatter(); f.formatOptions = [.withInternetDateTime]
+            try c.encode(f.string(from: kickoff), forKey: .kickoff)
+        }
+    }
+
+    /// Crest URLs follow the same CDN shape as `Team.crestURL`.
+    var homeCrestURL: URL? { homeApiId.flatMap { URL(string: "https://media.api-sports.io/football/teams/\($0).png") } }
+    var awayCrestURL: URL? { awayApiId.flatMap { URL(string: "https://media.api-sports.io/football/teams/\($0).png") } }
+}
+
+/// Element-level lossy wrapper: a card that fails to decode becomes nil
+/// instead of failing the whole array.
+private struct LossyInfoCard: Decodable {
+    let card: InfoCard?
+    init(from decoder: Decoder) throws {
+        card = try? InfoCard(from: decoder)
     }
 }
 
@@ -349,6 +438,13 @@ struct BasicsCard: Codable {
     let stadium: String?
     let funFact: String
     let talkingPoint: String?
+    /// The three facts that place a club at a glance (2026-09-07): how long
+    /// they have been in the top flight, where they finished last season,
+    /// and when they last won the league. Hand-maintained in
+    /// `team_pages.cards.basics`; nil for WC countries and pre-rollout rows.
+    let plSince: String?
+    let lastSeason: String?
+    let lastTitle: String?
 
     enum CodingKeys: String, CodingKey {
         case updatedAt = "updated_at"
@@ -356,6 +452,9 @@ struct BasicsCard: Codable {
         case stadium
         case funFact = "fun_fact"
         case talkingPoint = "talking_point"
+        case plSince = "pl_since"
+        case lastSeason = "last_season"
+        case lastTitle = "last_title"
     }
 }
 
@@ -432,11 +531,17 @@ struct RivalryCard: Codable {
     let updatedAt: String?
     let text: String
     let talkingPoint: String?
+    /// The rival's name for the card headline. Before this field the view
+    /// split `text` on a dash and fell back to a 50-character truncation,
+    /// which is how "Coventry's fiercest rivalry is with Birmingham City, the…"
+    /// became a title.
+    let rival: String?
 
     enum CodingKeys: String, CodingKey {
         case updatedAt = "updated_at"
         case text
         case talkingPoint = "talking_point"
+        case rival
     }
 }
 
@@ -536,11 +641,25 @@ struct UpcomingFixture: Codable, Identifiable, Equatable {
     let venue: String                 // "home" | "away"
     let importanceDots: Int           // 1-5
     let importanceLabel: String       // ≤30 chars, statement form
+    /// Opponent's API-Football id, for the crest. Nil on rows written
+    /// before team-page-generator started emitting it (2026-09-07); the
+    /// view then tries to resolve a PL club by name and otherwise shows
+    /// the shield fallback.
+    let opponentApiId: Int?
 
     enum CodingKeys: String, CodingKey {
         case date, opponent, venue
         case importanceDots = "importance_dots"
         case importanceLabel = "importance_label"
+        case opponentApiId = "opponent_api_id"
+    }
+
+    var opponentCrestURL: URL? {
+        if let id = opponentApiId { return URL(string: "https://media.api-sports.io/football/teams/\(id).png") }
+        return Team.allCases.first {
+            $0.displayName.caseInsensitiveCompare(opponent) == .orderedSame
+                || $0.shortName.caseInsensitiveCompare(opponent) == .orderedSame
+        }?.crestURL
     }
 }
 

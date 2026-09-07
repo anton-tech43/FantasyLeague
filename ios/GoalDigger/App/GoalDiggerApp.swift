@@ -162,6 +162,11 @@ struct RootView: View {
             // launch — no-op if the cache is already on the current version.
             CacheService.shared.purgeStaleVersionItems(in: modelContext)
         }
+        .task(id: "myturn-content-refresh") {
+            // Newer My Turn content lands without an app release. Failure is
+            // silent; the bundled files are the floor.
+            await MyTurnContentService.shared.refresh()
+        }
         .task(id: "calendar-autoresync") {
             // Cold-launch fixtures-calendar refresh, so his games stay current
             // even if the app is launched fresh rather than resumed. No-op
@@ -307,14 +312,25 @@ struct MainTabView: View {
             }
             .tag(1)
 
-            // Tab 3: Settings
+            // Tab 3: My Turn — the toolbox. Say This / Lingo / Quiz / Drills.
+            // Static, offline, no live data; everything here is always true,
+            // which is the rule that separates it from the Feed.
+            NavigationStack {
+                MyTurnView()
+            }
+            .tabItem {
+                Label("My Turn", systemImage: "text.book.closed")
+            }
+            .tag(2)
+
+            // Tab 4: Settings
             NavigationStack {
                 SettingsView()
             }
             .tabItem {
                 Label("Settings", systemImage: "gearshape")
             }
-            .tag(2)
+            .tag(3)
         }
         .tint(.hotRose)
         .onChange(of: appState.deepLinkContentId) { _, newId in
@@ -344,6 +360,19 @@ struct MainTabView: View {
                 selectedTab = tab
                 appState.pendingTabAfterPrimer = nil
             }
+            #if DEBUG
+            // Screenshot harness. `xcrun simctl launch <udid> com.goaldigger.app
+            // -gdTab 2 -gdOpenItem <uuid>` lands on a tab or a detail view
+            // without anyone tapping — simctl cannot tap, and a
+            // deterministic starting point is what a visual check needs.
+            let args = ProcessInfo.processInfo.arguments
+            if let i = args.firstIndex(of: "-gdTab"), i + 1 < args.count, let tab = Int(args[i + 1]) {
+                selectedTab = tab
+            }
+            if let i = args.firstIndex(of: "-gdOpenItem"), i + 1 < args.count, let id = UUID(uuidString: args[i + 1]) {
+                appState.deepLinkContentId = id
+            }
+            #endif
             // Cold-launch deep-link catch. If the user tapped a notification
             // while the app was killed, AppDelegate sets deepLinkContentId
             // during launch — which may run BEFORE this view first mounts.

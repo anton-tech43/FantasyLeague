@@ -1263,9 +1263,11 @@ async function updateWcDynamicFields(
   if (group.length > 0 && upcoming.length > 0) {
     const annotated = annotateFixtures(group, team.api_football_id, upcoming, undefined, exactInfo, openerPlayed).slice(0, 8);
 
+    const apiIdByDate = new Map(upcoming.map((f) => [f.date, f.opponentApiId]));
     cards.upcoming_fixtures = annotated.map((s) => ({
       date: s.date,
       opponent: s.opponent,
+      opponent_api_id: (apiIdByDate.get(s.date) ?? -1) > 0 ? apiIdByDate.get(s.date) : undefined,
       venue: s.venue,
       importance_dots: s.importance_dots,
       importance_label: s.importance_label,
@@ -1769,6 +1771,10 @@ function buildUpcomingFixtures(
     out.push({
       date,
       opponent,
+      // The opponent's API-Football id, so the Calendar row can draw their
+      // crest. Until 2026-09-07 the row was a name and a venue — the only
+      // surface in the app without a badge on it.
+      opponent_api_id: (isHome ? teams.away.id : teams.home.id) as number | undefined,
       venue: isHome ? "home" : "away",
       // iOS requires both fields (UpcomingFixture is non-optional on each).
       // The dots used to be a flat 3, so a Champions League leg in Naples read
