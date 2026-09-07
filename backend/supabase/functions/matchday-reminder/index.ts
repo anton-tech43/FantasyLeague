@@ -28,6 +28,7 @@ import { deactivateTokens, getSupabaseClient, isTokenDead } from "../_shared/sup
 import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts";
 import { buildAPNsPayload, sendPushNotification } from "../_shared/apns-client.ts";
 import { renderMatchdayReminder, renderPreMatchBuildup, safeTz } from "../_shared/matchday-reminder-copy.ts";
+import { buildContentItem } from "../_shared/build-content-item.ts";
 import { preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
 import { seasonForLeague } from "../_shared/league-helpers.ts";
 
@@ -225,18 +226,20 @@ serve(async (req) => {
           .limit(1)
           .maybeSingle();
         if (!existing) {
-          const { error: insErr } = await supabase.from("content_items").insert({
+          const { error: insErr } = await supabase.from("content_items").insert(buildContentItem({
             team_id: teamId,
             type: "news",
             match_id: buildupMatchId,
             headline: buildup.headline,
             body: buildup.body,
+            immersive_headline: buildup.immersiveHeadline,
+            immersive_context: buildup.immersiveContext,
             talking_points: [buildup.talkingPoint],
             push_eligible: false,
             pipeline_source: "edge_function",
             status: "published",
             published_at: new Date().toISOString(),
-          });
+          }));
           if (!insErr) buildupWritten = true;
           else if (insErr.code !== "23505") {
             results.push({ team_id: teamId, kickoff: kickoff.toISOString(), buildup_error: insErr.message });

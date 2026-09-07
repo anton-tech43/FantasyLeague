@@ -21,6 +21,7 @@ import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts"
 import { seasonForLeague, FALLBACK_ACTIVE_LEAGUES } from "../_shared/league-helpers.ts";
 import { detectConsequences, loadPostResultWcContext, WC_LEAGUE_ID } from "../_shared/detect-consequences.ts";
 import { renderConsequence } from "../_shared/consequence-templates.ts";
+import { buildContentItem } from "../_shared/build-content-item.ts";
 import type { Team } from "../_shared/types.ts";
 import { groupSituation } from "../_shared/stakes-engine.ts";
 import { renderPostMatch, type PostMatchState } from "../_shared/stakes-templates.ts";
@@ -907,7 +908,12 @@ async function handleRequest(req: Request): Promise<Response> {
 
             const rendered = renderConsequence(c, team);
 
-            const { error } = await supabase.from("content_items").insert({
+            // Every Edge insert goes through buildContentItem: it repairs what
+            // it can (length, case, headline rows) and throws on what it
+            // cannot. Before this, 412 of 412 edge-written World Cup cards
+            // shipped with no immersive_headline and no immersive_context and
+            // rendered as half a card — nothing on this side validated anything.
+            const { error } = await supabase.from("content_items").insert(buildContentItem({
               team_id: c.team_id,
               type: "news",
               consequence_type: c.consequence_type,
@@ -933,10 +939,21 @@ async function handleRequest(req: Request): Promise<Response> {
               // "Your move" prompts. WC_RIVAL_RESULT now ships a safe open
               // talking point so the section is never empty (was []); other
               // consequence types still render none.
-              talking_points: rendered.talking_points,
+              // The card's own headline + girl ref. Without these two the
+              // immersive feed falls back to `headline.lowercased()` with a
+              // blank line under it.
+              immersive_headline: rendered.immersive_headline,
+              immersive_context: rendered.immersive_context,
+              // A consequence type with no prompts of its own still needs zone
+              // 2 to say something — seven World Cup cards rendered it empty,
+              // and they were both semi-finals, the third-place match and the
+              // final.
+              talking_points: rendered.talking_points.length > 0
+                ? rendered.talking_points
+                : [`Ask him what that changes for ${team.short_name || team.display_name}.`],
               status: "published",
               published_at: new Date().toISOString(),
-            });
+            }));
 
             // Postgres unique-violation code 23505 = idempotent no-op
             // (consequence already fired on an earlier match).

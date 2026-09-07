@@ -107,6 +107,12 @@ export interface PreMatchBuildup {
   headline: string;
   body: string;
   talkingPoint: string;
+  /// The immersive feed card's own headline (2 rows, each <=22 chars,
+  /// lowercase) and girl ref. Without them the card renders the plain headline
+  /// lowercased with a blank line under it — which is what every one of these
+  /// build-up cards did through the 2026 World Cup.
+  immersiveHeadline: string;
+  immersiveContext: string;
 }
 
 /// Render the deterministic build-up feed item. `verdict` is the FIFA-rank
@@ -128,9 +134,26 @@ export function renderPreMatchBuildup(args: {
     : verdict === "even"
     ? `The rankings call this one close, it could go either way.`
     : `One to keep half an eye on.`;
+  // Each row renders as its own bold line and truncates past 22 characters, so
+  // build them short and let buildContentItem trim if a name still overruns.
+  const row = (v: string) => v.toLowerCase().slice(0, 22).replace(/[\s,.;:]+$/, "");
+  const immersiveHeadline = [
+    row(`${teamName} play.`),
+    row(`${opponent} away.`),
+    row(hhmm(kickoffUtc) + "."),
+  ].filter(Boolean).slice(0, 3).join("\n");
+
+  const contextByVerdict = verdict === "likely_win"
+    ? "The pub quiz round you are supposed to win, with everyone watching."
+    : verdict === "likely_loss"
+    ? "The interview where the other candidate is genuinely good."
+    : "The second date that quietly decides whether there is a third.";
+
   return {
     headline: `${teamName} face ${opponent} ${whenAt}`,
     body: `${teamName} face ${opponent} ${whenAt}. ${verdictLine}`,
     talkingPoint: pick(BUILDUP_TPS, rng)(teamName, opponent),
+    immersiveHeadline,
+    immersiveContext: contextByVerdict,
   };
 }
