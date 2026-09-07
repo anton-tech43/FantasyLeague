@@ -138,12 +138,16 @@ export interface Team {
   display_name: string;
   api_football_id: number;
   short_name: string;
-  /// 'club' for Premier League sides, 'country' for World Cup national
-  /// teams. Added in migration 032. Defaults to 'club' for back-compat.
-  entity_type?: "club" | "country";
-  /// API-Football league_id: 39 = Premier League, 1 = FIFA World Cup.
-  /// Added in migration 032 to drive per-league data fetches without
-  /// hardcoded constants in Edge Functions.
+  /// 'club' for Premier League sides, 'country' for World Cup national teams,
+  /// 'tournament' for a competition itself (migration 087's champions_league).
+  /// A tournament has no squad, so team-scoped API endpoints are meaningless
+  /// for it — data-fetcher gives it the league-level view instead.
+  /// Added in migration 032. Defaults to 'club' for back-compat.
+  entity_type?: "club" | "country" | "tournament";
+  /// API-Football league_id: 39 = Premier League, 2 = Champions League,
+  /// 1 = FIFA World Cup. Added in migration 032 to drive per-league data
+  /// fetches without hardcoded constants in Edge Functions. For a tournament
+  /// entity, `api_football_id` carries the league id as well.
   league_id?: number;
   /// Human-verified current manager (migration 085). API-Football's /coachs
   /// feed omits several sitting managers and lists assistants with open

@@ -39,7 +39,17 @@ serve(async (req) => {
   const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from("team_season_state")
-    .select("team_id, phase, summary, key_fact, welcome_lines, next_fixture, generated_at")
+    // state_line + feeling_line are the current shape of this surface;
+    // SeasonPrimerView renders those two and falls back only when they are nil.
+    // They were added to the table and to the routine, and the select was never
+    // updated — so the endpoint kept serving the deprecated `summary`, which no
+    // routine has written since the migration. On 2026-09-07 that meant Arsenal
+    // was still described as "top of the Premier League with 79 points from 36
+    // games" in September. The write side moved; the read side did not.
+    .select(
+      "team_id, phase, state_line, feeling_line, next_fixtures, " +
+        "summary, key_fact, welcome_lines, next_fixture, generated_at",
+    )
     .eq("team_id", teamId)
     .maybeSingle();
 
@@ -58,7 +68,22 @@ serve(async (req) => {
     });
   }
 
-  return new Response(JSON.stringify(data), {
+  // next_fixtures is another field the migration left behind: the routine stopped
+  // writing it, so the column still holds whatever was there in May. Offering
+  // her a calendar sync for a fixture that was played four months ago is worse
+  // than offering none, so drop anything already in the past. The live list
+  // lives in team_pages.upcoming_fixtures, which refreshes every two hours.
+  const payload = { ...(data as unknown as Record<string, unknown>) };
+  if (Array.isArray(payload.next_fixtures)) {
+    const now = Date.now();
+    const future = (payload.next_fixtures as Array<Record<string, unknown>>).filter((f) => {
+      const t = Date.parse(String(f?.kickoff_time ?? ""));
+      return !Number.isNaN(t) && t > now;
+    });
+    payload.next_fixtures = future.length > 0 ? future : null;
+  }
+
+  return new Response(JSON.stringify(payload), {
     headers: {
       "Content-Type": "application/json",
       "Cache-Control": "max-age=300, public",

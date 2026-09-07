@@ -53,6 +53,11 @@ interface Team {
   api_football_id: number;
   display_name: string;
   short_name: string;
+  /// 'club' | 'country' | 'tournament'. A tournament has no squad, so it takes
+  /// the league-level fetch branch instead of the team-scoped endpoints.
+  entity_type?: string;
+  /// API-Football league id. Null only for entities we deliberately skip.
+  league_id?: number | null;
 }
 
 // Simple XML RSS parser (extracts title, link, description from items)
@@ -153,6 +158,33 @@ async function fetchAPIFootball(
   // Skip teams with no league_id — pre-V2.0 there was a `?? 39` fallback
   // that silently fetched PL data for any country that lost its league_id.
   // Better to fail loud + log so any future regression is observable.
+  // A tournament entity (champions_league) is a competition, not a squad, so
+  // the team-scoped endpoints are meaningless for it — `?team=2` would ask for
+  // the club whose id happens to be 2. It gets the league-level view instead:
+  // the table, what is coming, and what just happened. That is the data the
+  // tournament content routine reads, and it is the only way the app can say
+  // "Real Madrid went out on Tuesday" for a competition our clubs may not even
+  // be in any more.
+  if (team.entity_type === "tournament") {
+    const tLeague = team.api_football_id; // for a tournament this IS the league id
+    const tSeason = seasonForLeague(tLeague);
+    const tEndpoints = [
+      { name: "standings", path: `/standings?league=${tLeague}&season=${tSeason}` },
+      { name: "fixtures_next", path: `/fixtures?league=${tLeague}&season=${tSeason}&next=20` },
+      { name: "fixtures_last", path: `/fixtures?league=${tLeague}&season=${tSeason}&last=20` },
+    ];
+    for (const ep of tEndpoints) {
+      try {
+        const resp = await fetch(`${API_FOOTBALL_BASE}${ep.path}`, { headers });
+        const json = await resp.json();
+        results.push({ source: `api_football_${ep.name}`, data: json });
+      } catch (e) {
+        console.warn(`data-fetcher: ${team.id} ${ep.name} failed:`, e instanceof Error ? e.message : String(e));
+      }
+    }
+    return results;
+  }
+
   if (!team.league_id) {
     console.warn(`data-fetcher: skipping ${team.id} — no league_id`);
     return results;
