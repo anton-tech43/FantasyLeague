@@ -254,8 +254,11 @@ struct TeamPageView: View {
             TeamPageMoodBanner(mood: mood)
         }
 
-        // THIS WEEK hero
-        if let thisWeek = cards.thisWeek {
+        // THIS WEEK hero. Only when it is not the same fixture the Coming-up
+        // card above has just described in more detail: with Coming up first on
+        // the tab, the two read as the same sentence twice, which reads like a
+        // bug. It still earns its place when there is no next fixture to show.
+        if let thisWeek = cards.thisWeek, cards.nextFixture == nil {
             TeamPageThisWeek(card: thisWeek)
         }
 

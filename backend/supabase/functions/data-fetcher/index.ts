@@ -259,10 +259,11 @@ async function fetchAPIFootball(
   // refresh (`only: ["standings","fixtures"]`) skips squad, transfers, injuries
   // and coachs without a second list to keep in step.
   const endpoints: Array<{ name: string; path: string; scope: FetchOnlyKey }> = [
-    // next=10 — gives team-season-state-generator enough fixtures to populate
-    // the `next_fixtures` array consumed by the onboarding CalendarOptInView
-    // (one-tap calendar sync). Pre-V1.2 this was next=5.
-    { name: "fixtures_next", path: `/fixtures?team=${team.api_football_id}&next=10`, scope: "fixtures" },
+    // next=20 (2026-09-09; was 10). Eight rows of calendar was about four weeks
+    // for a club in Europe, so a January cup tie or the Christmas programme was
+    // invisible until it entered the window. The page caps at 15; the extra
+    // rows are the horizon.
+    { name: "fixtures_next", path: `/fixtures?team=${team.api_football_id}&next=20`, scope: "fixtures" },
     { name: "fixtures_last", path: `/fixtures?team=${team.api_football_id}&last=3`, scope: "fixtures" },
     { name: "injuries", path: `/injuries?team=${team.api_football_id}&season=${season}`, scope: "injuries" },
     { name: "transfers", path: `/transfers?team=${team.api_football_id}`, scope: "transfers" },

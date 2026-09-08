@@ -1096,15 +1096,33 @@ async function updateDynamicFields(
     const nextFixture = extractNextFixture(fixturesLog.data, team.api_football_id, new Date(now));
     if (nextFixture) {
       const prev = (cards.next_fixture ?? {}) as Record<string, unknown>;
-      const table =
-        ((cards.standings as Record<string, unknown> | undefined)?.entries ?? []) as Array<
-          Record<string, unknown>
-        >;
-      const rowFor = (apiId: number | undefined) =>
-        apiId == null ? undefined : table.find((e) => e.team_id_api_football === apiId);
+      type Row = Record<string, unknown>;
+      const leagueTable =
+        ((cards.standings as Record<string, unknown> | undefined)?.entries ?? []) as Row[];
+      // A European night is judged on the competition's own table, not the
+      // domestic one: Arsenal at Napoli is "9th against 14th in the league
+      // phase", and Napoli is in no Premier League table at all. Only once
+      // both have actually played in it — before round one the table is 36
+      // clubs on zero points in alphabetical order, and a favourite drawn from
+      // that would be a favourite drawn from the alphabet.
+      const isEuropean = nextFixture.league_id !== undefined &&
+        [2, 3, 848].includes(nextFixture.league_id);
+      const euroTable =
+        ((cards.europe_standings as Record<string, unknown> | undefined)?.entries ?? []) as Row[];
+      const findIn = (rows: Row[], apiId: number | undefined) =>
+        apiId == null ? undefined : rows.find((e) => e.team_id_api_football === apiId);
+      const euroMine = isEuropean ? findIn(euroTable, team.api_football_id) : undefined;
+      const euroOpp = isEuropean ? findIn(euroTable, nextFixture.opponent_api_id) : undefined;
+      const useEuro = euroMine !== undefined && euroOpp !== undefined &&
+        ((euroMine.played as number) ?? 0) > 0 && ((euroOpp.played as number) ?? 0) > 0;
+      const table = useEuro ? euroTable : leagueTable;
+      const rowFor = (apiId: number | undefined) => findIn(table, apiId);
       const myRow = rowFor(team.api_football_id);
       const oppRow = rowFor(nextFixture.opponent_api_id);
-      const bothInTable = myRow !== undefined && oppRow !== undefined;
+      // Never compare a league position with a cup opponent's: the domestic
+      // table only counts for a domestic fixture, the European one for Europe.
+      const bothInTable = myRow !== undefined && oppRow !== undefined &&
+        (useEuro || !isEuropean);
 
       // Rank: the league position when BOTH clubs are in the same table, which
       // is a number she can go and check on the Table tab. A cup opponent from
@@ -1136,6 +1154,7 @@ async function updateDynamicFields(
           ? competitionProse(nextFixture.league_id)
           : undefined,
         round: roundLabel(nextFixture.round),
+        tableLabel: useEuro ? "in the league phase" : undefined,
         myPosition: bothInTable ? (myRow!.rank as number) : null,
         oppPosition: bothInTable ? (oppRow!.rank as number) : null,
         myPoints: bothInTable ? (myRow!.points as number) : null,

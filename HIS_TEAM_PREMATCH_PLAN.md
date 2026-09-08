@@ -1,6 +1,7 @@
 # His Team: pre game talk, live tables, a calendar that survives the season
 
-**Status:** plan, 2026-09-09. Builds as the next task after the My Turn redesign.
+**Status: SHIPPED 2026-09-09.** Three agents built A–D on disjoint files; integration and
+review fixes on top. See "What shipped" at the end.
 Owner's brief (translated): "Under His Team, the upcoming game should be at the top,
 and instead of 'Tap for more' it should say 'Pre game talk', with info about the match,
 what to expect, who is favourite, useful information before the game. Also review the
@@ -176,3 +177,43 @@ belongs to the pre-match backend agent.
   pre game talk for a league game and for a cup tie; Calendar tab with a postponed row
   and 15 rows; onboarding calendar opt-in with current fixtures.
 - Budget: API calls per day before and after the dedupe from `pipeline_health`.
+
+
+---
+
+# What shipped, 2026-09-09
+
+- **Pre game talk.** Coming up is the first card on the Info tab, its footer reads
+  "Pre game talk ›", and expanded it shows the kickoff line with competition and venue,
+  the favourite chip, a deterministic two-to-four-sentence preview (positions and the
+  points gap, form, favourite in words, and for a cup tie what a win wins), "Their ones to
+  watch" from the opponent's own page, and a talking point under the "Tonight: / This
+  weekend:" label that finally has something to label. All written every two hours and
+  at full time, zero Claude. The Monday routine's sentence rides along only while its
+  recorded fixture id matches. Review fix: a European night is judged on the
+  competition's own league-phase table once both clubs have played in it, never on the
+  domestic one; before that it says less rather than something false. The This Week hero
+  is hidden when Coming up already describes the same fixture.
+- **Tables move at the whistle.** match-watcher calls a scoped data-fetcher for the two
+  clubs that just played (plus the competition entity on a European night), which
+  re-triggers the page. One batched call per tick, at most once per fixture, never
+  blocking the pushes; a failure falls back to the two-hour cron exactly as before. The
+  identical league table is fetched once per run instead of twenty times: 171 calls a
+  day saved, more than the refreshes cost.
+- **Calendar.** `next=20` from the fetcher, 15 rows on the page, covered competitions
+  only, played games dropped against `fixtures_last`, status carried per row: "Postponed"
+  and "Time TBC" render; cancelled ties are not sent. Calendar sync and the onboarding
+  opt-in read the team page and no longer the dead `team_season_state.next_fixtures`;
+  postponed fixtures are not written to EventKit; the competition stays in every title.
+  "Show last games" has club data.
+- **Tests:** 204 Deno cases in `_shared/`.
+
+## Still open
+
+- `teams.strength_rank` is NULL for every club, so a cup opponent from outside the league
+  table gets no favourite chip. Populating it (or deriving it from last season's finish)
+  is a data task.
+- Nothing pre-match survives kickoff as a feed card for clubs; the WC build-up card path
+  is still country-only. Not asked for; the team page now carries it.
+- `FeedView` still reads `team_season_state.fixturesForSync` for the country next fixture
+  (World Championship only, dormant).

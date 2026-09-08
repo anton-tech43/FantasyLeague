@@ -329,6 +329,12 @@ export interface ClubPreMatchContext {
   round?: string;
   /** League positions. Both set ONLY when both clubs are in the same table. */
   myPosition?: number | null;
+  /**
+   * What that table is, in the sentence: "in the table" (default) for the
+   * league, "in the league phase" for a European night, where the positions
+   * come from the competition's own 36-club table rather than the domestic one.
+   */
+  tableLabel?: string;
   oppPosition?: number | null;
   myPoints?: number | null;
   oppPoints?: number | null;
@@ -390,7 +396,7 @@ export function renderClubThisWeek(
 function tableSentence(ctx: ClubPreMatchContext): string | null {
   const { myPosition: mine, oppPosition: theirs } = ctx;
   if (mine == null || theirs == null) return null;
-  const heads = `${ordinal(mine)} against ${ordinal(theirs)} in the table`;
+  const heads = `${ordinal(mine)} against ${ordinal(theirs)} ${ctx.tableLabel ?? "in the table"}`;
   if (ctx.myPoints == null || ctx.oppPoints == null) return `${heads}.`;
   const gap = Math.abs(ctx.myPoints - ctx.oppPoints);
   if (gap === 0) return `${heads}, level on points.`;
