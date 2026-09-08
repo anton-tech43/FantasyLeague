@@ -20,6 +20,9 @@ struct TeamPageView: View {
     @State private var presentedPlayer: PlayerCard?
     @State private var expandedCard: TeamCardType?
     @State private var showLastGames = false
+    /// Which table the Table tab is showing, by competition label. Nil means
+    /// the club's own league, which is the default and the common case.
+    @State private var standingsScope: String? = nil
     @State private var activeTab: TeamTab = .info
 
     private enum TeamCardType: Hashable {
@@ -157,6 +160,10 @@ struct TeamPageView: View {
             let args = ProcessInfo.processInfo.arguments
             if let i = args.firstIndex(of: "-gdTeamTab"), i + 1 < args.count {
                 switch args[i + 1] { case "calendar": activeTab = .calendar; case "table": activeTab = .table; default: break }
+            }
+            // -gdStandingsScope "Europa League" selects the European table.
+            if let i = args.firstIndex(of: "-gdStandingsScope"), i + 1 < args.count {
+                standingsScope = args[i + 1]
             }
             if let i = args.firstIndex(of: "-gdTeamExpand"), i + 1 < args.count {
                 switch args[i + 1] {
@@ -765,17 +772,59 @@ struct TeamPageView: View {
 
     @ViewBuilder
     private func tableTab(_ cards: TeamPageCards) -> some View {
-        if let standings = cards.standings, !standings.entries.isEmpty {
+        // Two tables when the club is in Europe: the league they live in and
+        // the competition they are visiting. Before this the Table tab showed
+        // only the league, so a Champions League night had a Coming-up card,
+        // a calendar row and no table anywhere.
+        let europe = cards.europeStandings.flatMap { $0.entries.isEmpty ? nil : $0 }
+        let league = cards.standings.flatMap { $0.entries.isEmpty ? nil : $0 }
+
+        if league != nil || europe != nil {
             VStack(alignment: .leading, spacing: 8) {
-                Text(standings.competitionLabel.uppercased())
-                    .font(.sectionHeader).tracking(1)
-                    .foregroundColor(.hotRose.opacity(0.7))
-                    .padding(.leading, 14)
-                standingsTable(standings.entries)
+                if let europe, let league {
+                    standingsSwitcher(league: league, europe: europe)
+                } else if let only = league ?? europe {
+                    Text(only.competitionLabel.uppercased())
+                        .font(.sectionHeader).tracking(1)
+                        .foregroundColor(.hotRose.opacity(0.7))
+                        .padding(.leading, 14)
+                    standingsTable(only.entries)
+                }
             }
         } else {
             emptyState(icon: "tablecells", text: "Standings will appear when the data lands.")
         }
+    }
+
+    /// League / Europe switcher. Same visual language as the Info / Calendar /
+    /// Table control above it, one level down and quieter.
+    @ViewBuilder
+    private func standingsSwitcher(league: StandingsCard, europe: StandingsCard) -> some View {
+        HStack(spacing: 0) {
+            ForEach([league, europe], id: \.competitionLabel) { card in
+                let selected = standingsScope == card.competitionLabel
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { standingsScope = card.competitionLabel }
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                } label: {
+                    Text(card.competitionLabel)
+                        .font(.jakarta(13, weight: .semiBold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 34)
+                        .background(selected ? Color.hotRose : Color.clear)
+                        .foregroundColor(selected ? .warmWhite : .warmWhite.opacity(0.6))
+                        .cornerRadius(10)
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? .isSelected : [])
+            }
+        }
+        .padding(.horizontal, 6)
+
+        let shown = standingsScope == europe.competitionLabel ? europe : league
+        standingsTable(shown.entries)
     }
 
     @ViewBuilder

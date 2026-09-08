@@ -17,7 +17,7 @@ import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 import { wrapExternalData } from "../_shared/input-sanitizer.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import type { Team } from "../_shared/types.ts";
-import { competitionProse, COVERED_CUP_LEAGUES, fixtureImportance, fixtureLabel, roundLabel } from "../_shared/league-helpers.ts";
+import { competitionName, competitionProse, COVERED_CUP_LEAGUES, fixtureImportance, fixtureLabel, roundLabel } from "../_shared/league-helpers.ts";
 import { annotateFixtures, classifyExactPointsOnly, type ExactInfo, type GroupStanding } from "../_shared/stakes-engine.ts";
 import { renderNextFixturePreview, renderOpponentDetail, renderThisWeek } from "../_shared/stakes-templates.ts";
 import { collectFinishedFixtureIds, dropFinished, FINISHED_STATUSES, filterFixturesByLeague } from "../_shared/fixture-rollover.ts";
@@ -214,6 +214,9 @@ function buildStandingsCard(
   rawLogs: RawFetchLog[],
   team: Team,
   now: string,
+  /// Set for a competition that is not the club's own league — the European
+  /// league-phase table, whose rows come from the tournament entity's log.
+  labelOverride?: string,
 ): Record<string, unknown> | null {
   // API-Football's /standings occasionally returns empty arrays for a few
   // minutes during their nightly cache refresh. rawLogs is ordered
@@ -255,7 +258,7 @@ function buildStandingsCard(
     }
   } else {
     entries = (allGroups[0] ?? []) as StandingsRow[];
-    competitionLabel = "Premier League";
+    competitionLabel = labelOverride ?? "Premier League";
   }
 
   if (entries.length === 0) return null;
@@ -284,6 +287,27 @@ function buildStandingsCard(
     competition_label: competitionLabel,
     entries: mapped,
   };
+}
+
+/// `teams.id` of the tournament entity that holds a competition's own table.
+const TOURNAMENT_SLUG: Record<number, string> = {
+  2: "champions_league",
+  3: "europa_league",
+  848: "conference_league",
+};
+
+/// Which European competition this club is in, from its own fixture feed.
+/// Nil when it has no European fixture ahead — which is also how a knocked-out
+/// club stops showing a table it is no longer in.
+function detectEuropeanCompetition(fixturesNext: unknown): number | null {
+  const response = (fixturesNext as { response?: unknown[] } | undefined)?.response;
+  if (!Array.isArray(response)) return null;
+  for (const item of response) {
+    const league = (item as Record<string, unknown>).league as Record<string, unknown> | undefined;
+    const id = league?.id as number | undefined;
+    if (id !== undefined && id in TOURNAMENT_SLUG) return id;
+  }
+  return null;
 }
 
 // ============================================================
@@ -935,6 +959,32 @@ async function updateDynamicFields(
       now,
     );
     if (standingsCard) cards.standings = standingsCard;
+
+    // The European league-phase table, for a club that is in one. Which
+    // competition is derived from the club's own fixture feed, so it appears
+    // in September and disappears the moment they are knocked out — the same
+    // rule as the polling (migration 094): never stored, always derived.
+    const europeLeagueId = detectEuropeanCompetition(fixturesLog?.data);
+    if (europeLeagueId) {
+      const { data: euroLogs } = await supabase
+        .from("raw_fetch_logs")
+        .select("source, data")
+        .eq("team_id", TOURNAMENT_SLUG[europeLeagueId])
+        .eq("source", "api_football_standings")
+        .order("fetched_at", { ascending: false })
+        .limit(5);
+      const euroCard = buildStandingsCard(
+        (euroLogs ?? []) as RawFetchLog[],
+        team,
+        now,
+        competitionName(europeLeagueId),
+      );
+      if (euroCard) cards.europe_standings = euroCard;
+    } else {
+      // Out of Europe, or never in it. Leaving last season's table on the page
+      // is the exact failure the Champions League work was cleaning up.
+      delete cards.europe_standings;
+    }
   }
 
   // teams.manager_name (mig 085) is a human-verified override and always wins:

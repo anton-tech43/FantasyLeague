@@ -425,6 +425,11 @@ struct TeamPageCards: Codable {
     /// "last games" section in the Calendar tab. Newest first.
     let recentResults: [RecentResult]?
     let standings: StandingsCard?
+    /// The European league-phase table, for a club in the Champions, Europa or
+    /// Conference League (2026-09-08). Derived from the club's own fixture
+    /// feed, so it appears when they enter and goes when they are knocked out.
+    /// Nil for everyone else, and the Table tab's toggle hides itself.
+    let europeStandings: StandingsCard?
 
     enum CodingKeys: String, CodingKey {
         case basics
@@ -442,6 +447,7 @@ struct TeamPageCards: Codable {
         case upcomingFixtures = "upcoming_fixtures"
         case recentResults = "recent_results"
         case standings
+        case europeStandings = "europe_standings"
     }
 }
 
