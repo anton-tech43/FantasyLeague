@@ -242,24 +242,40 @@ Deno.test("push bodies stay inside the 100-char content CHECK with the longest c
 
 // ── Tiers ────────────────────────────────────────────────────────────────────
 
-Deno.test("minTierForLiveEvent: the base table (TIERS.md §6.3)", () => {
+Deno.test("minTierForLiveEvent: the base table", () => {
   assertEquals(minTierForLiveEvent("kickoff", 39, "Regular Season - 4"), 2);
-  assertEquals(minTierForLiveEvent("goal", 39, "Regular Season - 4"), 3);
   assertEquals(minTierForLiveEvent("ht", 39, "Regular Season - 4"), 2);
   assertEquals(minTierForLiveEvent("ft", 39, "Regular Season - 4"), 1);
 });
 
-Deno.test("minTierForLiveEvent: an early domestic cup round is the result only", () => {
-  for (const ev of ["kickoff", "goal", "ht"] as const) {
+Deno.test("minTierForLiveEvent: a goal is never gated (Anton, 2026-09-08)", () => {
+  // The Live Activity runs for every match a followed club plays and scores as
+  // it goes; a goal push is the same fact by another route. Gating one and not
+  // the other made no sense.
+  const rounds: Array<[number, string]> = [
+    [39, "Regular Season - 4"], [2, "League Stage - 1"], [3, "Quarter-finals"],
+    [848, "League Stage - 2"], [48, "Round of 32"], [48, "Round of 64"],
+    [45, "3rd Round"], [45, "Final"], [1, "Group A - 1"],
+  ];
+  for (const [leagueId, round] of rounds) {
+    assertEquals(minTierForLiveEvent("goal", leagueId, round), 1, `${leagueId} ${round}`);
+  }
+});
+
+Deno.test("minTierForLiveEvent: an early domestic cup round drops the framing pushes only", () => {
+  for (const ev of ["kickoff", "ht"] as const) {
     assertEquals(minTierForLiveEvent(ev, 48, "Round of 32"), TIER_NOBODY, `league cup ${ev}`);
     assertEquals(minTierForLiveEvent(ev, 45, "3rd Round"), TIER_NOBODY, `fa cup ${ev}`);
   }
+  // The match still reaches her: every goal, and the result.
+  assertEquals(minTierForLiveEvent("goal", 48, "Round of 32"), 1);
+  assertEquals(minTierForLiveEvent("goal", 45, "3rd Round"), 1);
   assertEquals(minTierForLiveEvent("ft", 48, "Round of 32"), 1);
   assertEquals(minTierForLiveEvent("ft", 45, "3rd Round"), 1);
 });
 
 Deno.test("minTierForLiveEvent: quarter-finals behave like the league, semis and finals are everyone's", () => {
-  assertEquals(minTierForLiveEvent("goal", 48, "Quarter-finals"), 3);
+  assertEquals(minTierForLiveEvent("goal", 48, "Quarter-finals"), 1);
   assertEquals(minTierForLiveEvent("kickoff", 48, "Quarter-finals"), 2);
   for (const ev of ["kickoff", "goal", "ht", "ft"] as const) {
     assertEquals(minTierForLiveEvent(ev, 48, "Semi-finals"), 1, `semi ${ev}`);
@@ -270,7 +286,7 @@ Deno.test("minTierForLiveEvent: quarter-finals behave like the league, semis and
 
 Deno.test("minTierForLiveEvent: European league phases are not gated as early cup rounds", () => {
   assertEquals(minTierForLiveEvent("kickoff", 2, "League Stage - 1"), 2);
-  assertEquals(minTierForLiveEvent("goal", 3, "League Stage - 2"), 3);
+  assertEquals(minTierForLiveEvent("goal", 3, "League Stage - 2"), 1);
   assertEquals(minTierForLiveEvent("kickoff", 848, "League Stage - 1"), 2);
 });
 

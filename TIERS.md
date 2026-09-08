@@ -199,15 +199,32 @@ we're already living with.
 Replace the ternary at `index.ts:274` with a table keyed on `(type, significance,
 consequence_type)` returning a minimum tier. One function, one unit test per row.
 
-### 6.3 Tier-aware live pushes in `match-watcher` (M)
+### 6.3 Tier-aware live pushes in `match-watcher` — SHIPPED 2026-09-08, with one change
 
-`sendPlayingTeamPush` currently sends kickoff/goal/HT/FT to every follower regardless of
-tier — which is correct for full-time and wrong for goals. The recipient query already
-selects the token rows; add `tier` to the select and filter per label:
-kickoff ≥ 2, goal ≥ 3, HT ≥ 2, FT ≥ 1.
+Built as `_shared/push-tiers.ts` alongside cup coverage. **The goal floor proposed here
+was not adopted.**
 
-This is the single highest-value change in the list: it is what makes Deep feel different
-from Match-fit during the ninety minutes that the whole product is about.
+| event | floor |
+|---|---|
+| kickoff | 2 |
+| goal | **1 — every tier, every competition** |
+| half-time | 2 |
+| full-time | 1 |
+
+The original proposal put goals at Deep only, on the reasoning that Match-fit is either
+watching or will take the result. Anton overruled it the day it shipped, and he is right:
+the **Live Activity runs on the lock screen for every match a followed club plays**,
+regardless of tier, and it updates the score as the goals go in. Withholding the goal
+push while the same fact is already animating on her lock screen is not restraint, it is
+an inconsistency. Goals are ungated.
+
+What still separates the tiers during the ninety minutes is the framing: Match-fit and
+Deep are told the match has started and how the first half went, Light is not.
+
+On top of the table, a competition-and-round floor added by cup coverage: an early
+League Cup or FA Cup round sends no kickoff and no half-time push to anyone (the match
+still reaches her through its goals and its result), and any cup semi-final or final is
+ungated for everyone. See `CUP_COVERAGE_PLAN.md`.
 
 ### 6.4 Lineup drop at T−60 (M)
 

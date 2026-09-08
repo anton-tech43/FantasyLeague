@@ -8,13 +8,19 @@
 // did not choose this hobby. TIERS.md §6.3 designed the gate and nothing
 // implemented it.
 //
-//   Light (1)     result only
-//   Match-fit (2) kickoff, half-time, result — no goal-by-goal (she's watching,
-//                 or she'll take the result)
+//   Light (1)     goals and the result
+//   Match-fit (2) + kickoff and half-time
 //   Deep (3)      everything
 //
-// On top of that, a competition-and-round floor. An early domestic cup round is
-// a result, not an evening; a semi-final or a final is an evening for everyone.
+// **A goal reaches every tier, in every competition** (Anton, 2026-09-08). The
+// Live Activity runs on the lock screen for every match a followed club plays
+// and scores as it goes, so a goal push is the same fact arriving by another
+// route; gating one and not the other was incoherent. TIERS.md §6.3 put
+// goal-by-goal at Deep only, and that call is superseded.
+//
+// On top of that, a competition-and-round floor for the FRAMING pushes only. An
+// early domestic cup round does not need to announce its own kickoff; a
+// semi-final or a final is an evening for everyone.
 
 import { parseRound } from "./league-helpers.ts";
 
@@ -29,7 +35,7 @@ export const DEFAULT_TIER = 2;
 
 const BASE: Record<LiveEvent, number> = {
   kickoff: 2,
-  goal: 3,
+  goal: 1,
   ht: 2,
   ft: 1,
 };
@@ -37,8 +43,11 @@ const BASE: Record<LiveEvent, number> = {
 /**
  * Minimum tier that receives `event` for this fixture.
  *
- * - League Cup before the quarter-finals, FA Cup before the last 16: the result
- *   only, whatever the tier. Nobody needs a goal alert from the last 64.
+ * - A goal is never gated, by tier or by round. It is what the Live Activity
+ *   on her lock screen is already showing her.
+ * - League Cup before the quarter-finals, FA Cup before the last 16: no kickoff
+ *   and no half-time push, whatever the tier. The match still reaches her
+ *   through its goals and its result.
  * - Any cup semi-final or final: everybody gets everything.
  * - Everything else, the Premier League and the World Championship included:
  *   the tier table above.
@@ -48,13 +57,16 @@ export function minTierForLiveEvent(
   leagueId: number | undefined,
   round: string | undefined,
 ): number {
+  // A goal goes to everyone, whatever the competition and whatever the round.
+  if (event === "goal") return 1;
+
   const { stage } = parseRound(round);
 
   // A semi-final or a final, in any competition that has them. stage 0 means a
   // league phase or an unparsed round, which is not a semi-final.
   if (stage === 1 || stage === 2) return 1;
 
-  // Early domestic cup rounds: the result, and nothing else.
+  // Early domestic cup rounds: the goals and the result, no framing pushes.
   const earlyLeagueCup = leagueId === 48 && stage > 4;
   const earlyFaCup = leagueId === 45 && stage > 8;
   if (earlyLeagueCup || earlyFaCup) return event === "ft" ? 1 : TIER_NOBODY;
