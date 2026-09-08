@@ -57,6 +57,15 @@ struct ImmersiveCard: View {
         return item.immersiveHeadline ?? item.headline.lowercased()
     }
 
+    /// The competition, unless the headline already says it. A card reading
+    /// "atletico tomorrow. champions league. 7pm kickoff." does not need a
+    /// CHAMPIONS LEAGUE strap above it; a card reading "out. on penalties."
+    /// does, and that is the one she cannot place.
+    private var competitionLabel: String? {
+        guard let label = item.cupBadgeLabel else { return nil }
+        return headline.localizedCaseInsensitiveContains(label) ? nil : label
+    }
+
     private var contextLine: String? {
         // Personalise in both contexts. The shared feed has no boyfriend, but a
         // line that reached it carrying "[his name]" would render the raw token
@@ -153,6 +162,19 @@ struct ImmersiveCard: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 Spacer()
+
+                // Which competition, when it is not the league. This is the
+                // default feed, and without it "sunderland out. on penalties."
+                // gives no clue whether that was a cup, Europe or a Saturday —
+                // which is the one question cup coverage exists to answer.
+                if let competition = competitionLabel {
+                    Text(competition)
+                        .font(.feedBadge)
+                        .textCase(.uppercase)
+                        .tracking(1)
+                        .foregroundColor(.hotRose)
+                        .padding(.bottom, 10)
+                }
 
                 // Headline
                 Text(headline)

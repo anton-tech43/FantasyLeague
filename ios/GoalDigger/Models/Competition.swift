@@ -31,11 +31,6 @@ enum Competition: Int, CaseIterable, Codable {
         }
     }
 
-    /// The name as it reads in a sentence, with the sponsor name where he uses it.
-    var prose: String {
-        self == .leagueCup ? "League Cup (Carabao Cup)" : name
-    }
-
     /// Feed badge. Uppercased by the badge view, so this is the plain name.
     var badge: String { name }
 

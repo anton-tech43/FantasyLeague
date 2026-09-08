@@ -329,8 +329,13 @@ async function sendPlayingTeamPush(
   },
 ): Promise<number> {
   try {
-    // Suppressed for every tier — do not even ask the database.
-    if (args.minTier >= TIER_NOBODY) return 0;
+    // Suppressed for every tier — do not even ask the database. Log it, or an
+    // audit asking "why did nobody get a kickoff push for that cup tie" finds
+    // silence and cannot tell a deliberate floor from a broken send.
+    if (args.minTier >= TIER_NOBODY) {
+      console.log(`sendPlayingTeamPush ${args.label} fixture=${args.fixtureId}: suppressed for every tier (early cup round)`);
+      return 0;
+    }
     // Match a device that follows either playing team via the legacy scalars
     // (old apps) OR the multi-follow arrays (new apps), country or club. One
     // row per device (UNIQUE apns_token) so a device that follows BOTH playing

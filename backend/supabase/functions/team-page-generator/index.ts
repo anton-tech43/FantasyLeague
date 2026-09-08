@@ -979,7 +979,13 @@ async function updateDynamicFields(
         now,
         competitionName(europeLeagueId),
       );
-      if (euroCard) cards.europe_standings = euroCard;
+      // A league phase before its first round is 36 clubs on zero points in
+      // alphabetical order. That is not a table, it is a list that looks like
+      // a bug, so hold it back until somebody has played.
+      const euroPlayed = ((euroCard?.entries as Array<Record<string, unknown>> | undefined) ?? [])
+        .some((e) => ((e.played as number) ?? 0) > 0);
+      if (euroCard && euroPlayed) cards.europe_standings = euroCard;
+      else delete cards.europe_standings;
     } else {
       // Out of Europe, or never in it. Leaving last season's table on the page
       // is the exact failure the Champions League work was cleaning up.

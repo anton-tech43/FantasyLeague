@@ -134,12 +134,6 @@ export function roundLabel(round: string | undefined): string {
   return parseRound(round).label;
 }
 
-/** A knockout round from the quarter-finals on, where a cup night is a real night. */
-export function isDeepKnockout(round: string | undefined): boolean {
-  const { stage } = parseRound(round);
-  return stage > 0 && stage <= 4;
-}
-
 /**
  * How much a fixture matters, 1-5, for the Calendar tab's dots.
  *
@@ -214,8 +208,15 @@ export function fixtureLabel(
   if (stage === 0 || !label) return base;
   if (stage === 1) return `${base} final`;
   const withRound = `${base} ${label}`;
-  // "Europa League quarter-final 2nd leg" is 35 chars; the caller trims to 30,
-  // so drop the competition rather than the leg, which is the new information.
-  if (leg) return withRound.length + 9 <= 30 ? `${withRound}, leg ${leg}` : `${label}, leg ${leg}`;
+  // The caller trims to 30 chars, and "Europa League quarter-final, leg 2" is
+  // 34. Drop the LEG first, never the competition: a calendar row saying
+  // "quarter-final, leg 2" does not tell her whether that is the Champions
+  // League or the Europa League, which is the whole job of the label.
+  if (leg) {
+    const withLeg = `${withRound}, leg ${leg}`;
+    if (withLeg.length <= 30) return withLeg;
+    const shortLeg = `${base}, leg ${leg}`;
+    if (withRound.length > 30 && shortLeg.length <= 30) return shortLeg;
+  }
   return withRound;
 }

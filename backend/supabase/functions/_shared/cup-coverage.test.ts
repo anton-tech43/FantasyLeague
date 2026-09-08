@@ -9,7 +9,6 @@ import {
   competitionName,
   fixtureImportance,
   fixtureLabel,
-  isDeepKnockout,
   parseRound,
   roundLabel,
   seasonForLeague,
@@ -43,13 +42,6 @@ Deno.test("parseRound: two-legged ties carry the leg", () => {
   assertEquals(parseRound("Quarter-finals - 1st Leg").leg, 1);
   assertEquals(parseRound("Semi-finals - 2nd Leg").leg, 2);
   assertEquals(parseRound("Final").leg, undefined);
-});
-
-Deno.test("isDeepKnockout: quarter-finals and beyond", () => {
-  assertEquals(isDeepKnockout("Quarter-finals"), true);
-  assertEquals(isDeepKnockout("Final"), true);
-  assertEquals(isDeepKnockout("Round of 16"), false);
-  assertEquals(isDeepKnockout("League Stage - 1"), false);
 });
 
 // ── Season ───────────────────────────────────────────────────────────────────
@@ -120,8 +112,9 @@ Deno.test("fixtureLabel: names the round, fits 30 chars", () => {
   assertEquals(fixtureLabel("FA Cup", 45, "Final"), "FA Cup final");
   assertEquals(fixtureLabel("Premier League", 39, "Regular Season - 4"), "Premier League");
   assertEquals(fixtureLabel("UEFA Europa League", 3, "League Stage - 2"), "Europa League");
-  // A leg is the new information, so it survives the trim; the competition does not.
-  assertEquals(fixtureLabel("UEFA Europa League", 3, "Quarter-finals - 2nd Leg"), "quarter-final, leg 2");
+  // The leg is dropped when it does not fit; the competition never is.
+  assertEquals(fixtureLabel("UEFA Europa League", 3, "Quarter-finals - 2nd Leg"), "Europa League quarter-final");
+  assertEquals(fixtureLabel("League Cup", 48, "Semi-finals - 2nd Leg"), "League Cup semi-final, leg 2");
   for (const [name, id, round] of [
     ["UEFA Champions League", 2, "Semi-finals - 1st Leg"],
     ["UEFA Europa Conference League", 848, "Quarter-finals - 2nd Leg"],
@@ -130,6 +123,23 @@ Deno.test("fixtureLabel: names the round, fits 30 chars", () => {
   ] as Array<[string, number, string]>) {
     const label = fixtureLabel(name, id, round);
     assertEquals(label.length <= 30, true, `${label} is ${label.length} chars`);
+  }
+});
+
+Deno.test("fixtureLabel: a two-legged tie never loses the competition", () => {
+  // The competition is the point of the label; the leg is the bonus. Dropping
+  // the competition left "quarter-final, leg 2", which does not say whether
+  // that is a Champions League night or a Europa League one.
+  for (const [name, id, round] of [
+    ["UEFA Europa League", 3, "Quarter-finals - 2nd Leg"],
+    ["UEFA Champions League", 2, "Semi-finals - 1st Leg"],
+    ["UEFA Champions League", 2, "Round of 16 - 2nd Leg"],
+    ["UEFA Europa Conference League", 848, "Quarter-finals - 2nd Leg"],
+    ["League Cup", 48, "Semi-finals - 2nd Leg"],
+  ] as Array<[string, number, string]>) {
+    const label = fixtureLabel(name, id, round);
+    assertEquals(label.length <= 30, true, `${label} is ${label.length} chars`);
+    assertEquals(label.startsWith(competitionName(id)), true, `"${label}" lost the competition`);
   }
 });
 
