@@ -168,6 +168,7 @@ def validate_lingo(d: dict) -> int:
     for name, n in term_names.items():
         if n > 1:
             err(f"lingo: duplicate term '{name}'")
+    level_of = {t.get("id"): t.get("level") for t in terms}
     for t in terms:
         tid = t.get("id", "?")
         if t.get("category") not in ("rules", "tactics", "match_situations", "culture"):
@@ -181,12 +182,30 @@ def validate_lingo(d: dict) -> int:
         check_len(f"lingo/{tid}", "heard", heard)
         check_len(f"lingo/{tid}", "sayIt", say_it)
         check_idiom(f"lingo/{tid}", meaning + " " + heard + " " + say_it)
+        # Progression level, 1 upwards. A word may point one level ahead (the
+        # pair that only makes sense together), never further: seeAlso is
+        # rendered as a link she can follow, and a link into a level she has
+        # not opened yet is the wall this whole thing exists to remove.
+        lvl = t.get("level")
+        if not isinstance(lvl, int) or isinstance(lvl, bool) or lvl < 1:
+            err(f"lingo/{tid}: level must be an integer 1 or higher, not {lvl!r}")
+            lvl = None
         for ref in t.get("seeAlso", []) or []:
             if ref not in ids:
                 err(f"lingo/{tid}: seeAlso '{ref}' does not exist")
             if ref == tid:
                 err(f"lingo/{tid}: seeAlso points at itself")
+            ref_level = level_of.get(ref)
+            if lvl and isinstance(ref_level, int) and ref_level > lvl + 1:
+                err(f"lingo/{tid}: level {lvl} links to '{ref}' at level {ref_level} — a link may go at most one level ahead")
         seen.add(tid)
+    levels = sorted({t["level"] for t in terms if isinstance(t.get("level"), int)})
+    if levels:
+        first = sum(1 for t in terms if t.get("level") == 1)
+        if first != 10:
+            err(f"lingo: level 1 has {first} terms — it is 'the first ten' and must be exactly 10")
+        if levels != list(range(1, levels[-1] + 1)):
+            err(f"lingo: levels must run 1..{levels[-1]} with no gaps, got {levels}")
     if len(terms) < 120:
         err(f"lingo: {len(terms)} terms (launch floor 120)")
     return len(terms)

@@ -7,6 +7,26 @@ struct GoalDiggerApp: App {
     @State private var appState = AppState.shared
     @Environment(\.scenePhase) private var scenePhase
 
+    #if DEBUG
+    /// Screenshot harness. `-gdPresetTeam arsenal` presets a finished
+    /// onboarding on a fresh simulator — a followed club, the two names and a
+    /// tier — and marks the one-time screens seen, so a launch lands on the
+    /// tab being checked instead of on the welcome flow.
+    init() {
+        let args = ProcessInfo.processInfo.arguments
+        guard let i = args.firstIndex(of: "-gdPresetTeam"), i + 1 < args.count,
+              let team = Team(rawValue: args[i + 1]) else { return }
+        let state = AppState.shared
+        state.herName = "Sophie"
+        state.hisName = "Tom"
+        state.selectedTeams = [team]
+        state.selectedTier = 2
+        state.hasCompletedOnboarding = true
+        state.hasSeenSeasonPrimer = true
+        state.hasSeenWCPrompt = true
+    }
+    #endif
+
     var body: some Scene {
         WindowGroup {
             RootView()

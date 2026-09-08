@@ -13,6 +13,7 @@
 		14474256E2DD1E7DA90DA178 /* GlossaryText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1969411F418AE27184440E14 /* GlossaryText.swift */; };
 		159D99B3A0BD1457CA4C4F47 /* LiveMatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCA4D1D232DB07DA5CC85E8B /* LiveMatchSnapshot.swift */; };
 		1958991C7C4BB12F44CFD55F /* LingoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922140CFA2F1A4786CEDC255 /* LingoView.swift */; };
+		1BED15311C3F5F71032B03F8 /* LingoFlashcardsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6EA0D5580F6C805D4572C4 /* LingoFlashcardsView.swift */; };
 		244B4E7A89E82714DCF2F917 /* MatchActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BDA3526673665ADFD98752B /* MatchActivityAttributes.swift */; };
 		25B33D3555E190DC97F79521 /* LiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D73223B9708A1BB7B5EA13D /* LiveActivityManager.swift */; };
 		3D33C7639937879D8C8E619F /* MyTurn in Resources */ = {isa = PBXBuildFile; fileRef = 61B2720C074D85BD2E44091E /* MyTurn */; };
@@ -244,6 +245,7 @@
 		BCDB9E93E3CF813F605541EE /* MatchLiveActivity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MatchLiveActivity.swift; sourceTree = "<group>"; };
 		C94C9314600B101EA7FBA6D9 /* LiveActivityBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityBundle.swift; sourceTree = "<group>"; };
 		C9B7B4A91229A7B66DD56083 /* MyTurnView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyTurnView.swift; sourceTree = "<group>"; };
+		CA6EA0D5580F6C805D4572C4 /* LingoFlashcardsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LingoFlashcardsView.swift; sourceTree = "<group>"; };
 		CCC2F8DAF9A3D770423F8C38 /* InsiderItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InsiderItem.swift; sourceTree = "<group>"; };
 		D5A88D0BF10EC36C829985F7 /* LiveMatchCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveMatchCard.swift; sourceTree = "<group>"; };
 		D8C25D6C48090CD68B903A14 /* InsiderCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InsiderCard.swift; sourceTree = "<group>"; };
@@ -282,6 +284,7 @@
 				1ADF83F8ECC74099BBB0BB27 /* SayThisView.swift */,
 				AA0C75FEEE6727814C8D4456 /* MyTurnPractiseButton.swift */,
 				ED6D8160AFC958A96956341D /* SayThisPractiseView.swift */,
+				CA6EA0D5580F6C805D4572C4 /* LingoFlashcardsView.swift */,
 			);
 			name = MyTurn;
 			path = MyTurn;
@@ -783,6 +786,7 @@
 				DB5039EBD938A4E4B32D5BFC /* Competition.swift in Sources */,
 				9D8349CC509C7124A5EB9F29 /* MyTurnPractiseButton.swift in Sources */,
 				785C14F6B48F7E69523A45EC /* SayThisPractiseView.swift in Sources */,
+				1BED15311C3F5F71032B03F8 /* LingoFlashcardsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

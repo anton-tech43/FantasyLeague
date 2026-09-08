@@ -22,14 +22,14 @@ RULES = [
     ("corner", "Corner", "If a defender puts the ball out behind his own goal, the attackers get to cross it in from the corner of the pitch. Tall players love them.", "\"Corners are as good as a goal\" said hopefully.", "\"Corner. Get everyone in the box.\"", []),
     ("throw-in", "Throw-in", "Ball goes out over the sideline, the other team throws it back in, two hands, from behind the head.", "Rarely. Unless someone has a famously long one.", "\"Long throw. They'll launch it into the box.\"", []),
     ("yellow-card", "Yellow card", "A warning from the referee. Two in one game and you are sent off.", "\"He's on a yellow\" means the player has to be careful now.", "\"He's on a yellow, he needs to calm down.\"", ["red-card"]),
-    ("red-card", "Red card", "Sent off. The player leaves and the team plays the rest of the game one short. A straight red is for one bad act; two yellows also make a red.", "\"Straight red\" means one bad tackle, no warning first.", "\"That's a red. He's off.\"", ["yellow-card", "ten-men", "early-bath"]),
+    ("red-card", "Red card", "Sent off. The player leaves and the team plays the rest of the game one short. A straight red is for one bad act; two yellows also make a red.", "\"Straight red\" means one bad tackle, no warning first.", "\"That's a red. He's off.\"", ["yellow-card", "ten-men"]),
     ("ten-men", "Ten men", "Playing with one fewer after a red card. Teams usually drop back and defend for their lives.", "\"Down to ten men\" said either with dread or delight.", "\"Down to ten men. Just hang on now.\"", ["red-card"]),
-    ("added-time", "Added time", "Minutes added at the end of each half to make up for stoppages: injuries, substitutions, celebrations. Shown on a board by the pitch.", "\"How long has he added?\" the second the board goes up.", "\"How long's he added? Six? Six minutes!\"", ["fergie-time"]),
+    ("added-time", "Added time", "Minutes added at the end of each half to make up for stoppages: injuries, substitutions, celebrations. Shown on a board by the pitch.", "\"How long has he added?\" the second the board goes up.", "\"How long's he added? Six? Six minutes!\"", []),
     ("extra-time", "Extra time", "Two extra fifteen-minute halves when a cup game is level. Not the same as added time. League games never have it; they just end as a draw.", "In knockout games only.", "\"It's going to extra time. Put the kettle on.\"", ["added-time", "penalty-shootout"]),
     ("penalty-shootout", "Penalty shootout", "If extra time is still level: five penalties each, then one at a time until somebody misses. Pure nerves.", "England fans go quiet at the mention of it.", "\"Penalties. I can't watch penalties.\"", ["extra-time", "the-cups"]),
     ("two-legs", "Two legs", "A cup round played as two matches, one at each ground. First leg, second leg. Neither result decides anything on its own; the two added together do.", "\"The second leg is at home\" is good news.", "\"Is this the first leg or the second?\"", ["aggregate"]),
     ("aggregate", "Aggregate", "Over two legs, add the two scores together. Win the first 2-0, lose the second 1-0, and you go through 2-1 on aggregate. The total is what counts.", "European nights. \"They're 3-2 up on aggregate.\"", "\"So what's the aggregate? Who's actually ahead?\"", ["two-legs", "extra-time"]),
-    ("substitution", "Substitution", "Swapping a player on the pitch for one from the bench. Five changes allowed per game since 2022; it used to be three.", "\"Bit early for a sub\" or \"About time.\"", "\"Bit early for a sub, isn't it?\"", ["the-bench", "hooked"]),
+    ("substitution", "Substitution", "Swapping a player on the pitch for one from the bench. Five changes allowed per game since 2022; it used to be three.", "\"Bit early for a sub\" or \"About time.\"", "\"Bit early for a sub, isn't it?\"", ["the-bench"]),
     ("the-bench", "The bench", "The substitutes, sitting beside the pitch waiting to come on. A strong bench means good players in reserve.", "\"He's on the bench\" means not starting, but might play.", "\"He's only on the bench today? Is he injured?\"", ["substitution"]),
     ("starting-eleven", "Starting eleven", "The eleven players who begin the match. Announced about an hour before kick-off, when phones come out.", "\"Team's out\" when the line-up appears on his phone.", "\"Team's out. Who's starting?\"", []),
     ("clean-sheet", "Clean sheet", "Letting in no goals in a match. The goalkeeper's favourite statistic, and a defender's.", "\"Another clean sheet\" said with real pride.", "\"Another clean sheet. The defence has been solid.\"", []),
@@ -40,8 +40,8 @@ RULES = [
     ("fixtures", "Fixtures", "The list of upcoming matches: who plays who, when, and where. Published in June for the whole season.", "\"Have you seen the fixtures?\" in June, when they come out.", "\"What's the next fixture? Home or away?\"", []),
     ("derby", "Derby", "A match between two local rivals, usually from the same city. Pronounced darby. The week is tense before, during and after.", "The week before, the week of, and the week after.", "\"It's the derby this weekend, isn't it? Are you nervous?\"", []),
     ("the-cups", "The cups", "Knockout competitions run alongside the league: the FA Cup and the League Cup. Lose once and you are out of it for the season.", "\"It's only the cup\" when they lose, \"a cup run\" when they win.", "\"Is this the league or the cup?\"", ["fa-cup", "league-cup", "wembley", "extra-time"]),
-    ("fa-cup", "FA Cup", "The oldest cup competition in the world, since 1871. Every club in England can enter, so tiny teams sometimes get to play giants. Final at Wembley in May.", "\"The magic of the cup\" when a small club wins.", "\"FA Cup weekend. Any giant-killings on?\"", ["giant-killing", "the-magic-of-the-cup", "the-third-round", "wembley"]),
-    ("league-cup", "League Cup", "The League Cup (Carabao Cup) is the smaller of the two domestic cups, so it takes the name of whichever sponsor is paying. Semi-finals over two legs, final at Wembley.", "\"Good chance to rest people\" from the manager.", "\"It's only the League Cup. He'll rest half the team.\"", ["the-cups", "rotation", "wembley", "two-legs"]),
+    ("fa-cup", "FA Cup", "The oldest cup competition in the world, since 1871. Every club in England can enter, so tiny teams sometimes get to play giants. Final at Wembley in May.", "\"The magic of the cup\" when a small club wins.", "\"FA Cup weekend. Any giant-killings on?\"", ["the-cups", "wembley"]),
+    ("league-cup", "League Cup", "The League Cup (Carabao Cup) is the smaller of the two domestic cups, so it takes the name of whichever sponsor is paying. Semi-finals over two legs, final at Wembley.", "\"Good chance to rest people\" from the manager.", "\"It's only the League Cup. He'll rest half the team.\"", ["the-cups", "wembley", "two-legs"]),
     ("champions-league", "Champions League", "Europe's top club competition. The best clubs from each country, midweek nights, that anthem before kick-off.", "Tuesday and Wednesday nights, September to May.", "\"Champions League night. What time's kick-off?\"", ["europa-league", "conference-league", "two-legs"]),
     ("europa-league", "Europa League", "Europe's second competition, for clubs that finished just below the Champions League places. Thursday nights.", "\"Thursday night football\" said with a slight sigh.", "\"Thursday night football. Is that the Europa League?\"", ["champions-league", "conference-league"]),
     ("conference-league", "Conference League", "Europe's third competition, below the Champions League and the Europa League. Thursday nights, smaller clubs, and a real trophy for whoever wins it.", "Thursday nights, often alongside the Europa League.", "\"Is that the Europa League or the Conference League?\"", ["europa-league", "champions-league"]),
@@ -89,7 +89,7 @@ TACTICS = [
 
 MATCH_SITUATIONS = [
     ("kick-off", "Kick-off", "The start of the match, and the restart after half-time or a goal.", "\"What time's kick-off?\" about eight times a weekend.", "\"What time's kick-off? I'll come and watch the start.\"", []),
-    ("half-time", "Half-time", "The fifteen-minute break in the middle. Kettle time, and the manager's chance to shout.", "\"Half-time team talk\" when the manager needs to fix things.", "\"Half-time. What did you make of that?\"", ["hairdryer"]),
+    ("half-time", "Half-time", "The fifteen-minute break in the middle. Kettle time, and the manager's chance to shout.", "\"Half-time team talk\" when the manager needs to fix things.", "\"Half-time. What did you make of that?\"", []),
     ("full-time", "Full-time", "The end of the match. The referee blows and it is over, whatever the score.", "\"FT\" in a text. Then either celebration or silence.", "\"Full-time. Right, where does that leave us?\"", []),
     ("nil-nil", "Nil-nil", "No goals for either side. Football says nil, not zero. A dull one is a bore draw.", "\"Bore draw\" if it was dull, \"a tight game\" if he's being kind.", "\"Nil-nil. Bit of a bore draw, that.\"", []),
     ("see-the-game-out", "See the game out", "Hold onto a lead until the final whistle without anything going wrong. The hardest ten minutes in football.", "\"Just see it out\" in the last ten minutes.", "\"Just see the game out now. Nothing silly.\"", ["game-management", "squeaky-bum-time"]),
@@ -173,3 +173,83 @@ CULTURE = [
 ]
 
 TERMS = [("rules", *t) for t in RULES] + [("tactics", *t) for t in TACTICS] + [("match_situations", *t) for t in MATCH_SITUATIONS] + [("culture", *t) for t in CULTURE]
+
+# ---------------------------------------------------------------- levels
+#
+# 157 words at once is a wall. LEVELS is the order she meets them, twelve
+# steps of ten to fourteen. Two rules built the list: a word comes after
+# anything its meaning leans on, and slang comes after the plain word it
+# plays with ("early bath" after "red card", "the lino" after "offside").
+#
+# Level 1 is the first evening on the sofa, and nothing else: the competition
+# they are watching, the three moments that break the game up (kick-off,
+# half-time, full-time), the table he checks, the two decisions that stop
+# play and start an argument (offside, penalty), the screen that follows them
+# (VAR), the compliment paid after every 1-0 (clean sheet), and the reason
+# tonight is louder than last week (derby). Deliberately no cups, no top
+# four, no relegation — those need the table first, so they open level 2.
+#
+# A handful of seeAlso links used to point forward at a word twelve levels
+# away (half-time → hairdryer, fa-cup → giant-killing). They were dropped in
+# that direction only; every one of them still exists on the later word
+# pointing back, which is the direction that helps.
+LEVELS = [
+    # 1 — The first ten.
+    ["premier-league", "kick-off", "half-time", "full-time", "the-table",
+     "offside", "penalty", "var", "clean-sheet", "derby"],
+    # 2 — The rest of the rules she sees in her first few games.
+    ["points", "goal-difference", "relegation", "promotion", "top-four",
+     "the-box", "handball", "free-kick", "corner", "throw-in",
+     "yellow-card", "red-card", "clear-and-obvious"],
+    # 3 — The other competitions, and what happens when the clock runs out.
+    ["championship", "play-offs", "ten-men", "added-time", "extra-time",
+     "penalty-shootout", "the-cups", "fa-cup", "league-cup", "wembley",
+     "champions-league", "europa-league", "conference-league", "fixtures"],
+    # 4 — The match itself: who starts, who comes on, what a goal is called.
+    ["starting-eleven", "substitution", "the-bench", "two-legs", "aggregate",
+     "own-goal", "assist", "brace", "hat-trick", "man-of-the-match",
+     "nil-nil", "set-piece", "formation"],
+    # 5 — Who is on the pitch. Positions, from the back forwards.
+    ["back-four", "centre-back", "full-back", "wing-back", "holding-midfielder",
+     "box-to-box", "number-ten", "playmaker", "winger", "striker",
+     "target-man", "false-nine", "rotation"],
+    # 6 — How a team plays, in the words the commentator uses.
+    ["pressing", "high-press", "low-block", "park-the-bus", "counter-attack",
+     "possession", "tiki-taka", "long-ball", "route-one", "man-marking",
+     "zonal-marking", "overlap", "through-ball"],
+    # 7 — The finer tactical words, and seeing a lead out.
+    ["cutback", "inverted-full-back", "half-space", "xg", "game-management",
+     "see-the-game-out", "squeaky-bum-time", "dark-arts", "on-the-break",
+     "hoof", "row-z", "in-the-mixer", "second-ball"],
+    # 8 — What to call a good moment.
+    ["sitter", "clinical-finish", "screamer", "top-bins", "worldie",
+     "top-drawer", "hit-the-woodwork", "unlucky", "nutmeg", "done-him",
+     "caught-napping", "against-the-run-of-play", "smash-and-grab"],
+    # 9 — What to call a bad one, and the games that decide a season.
+    ["howler", "hospital-ball", "dive", "early-bath", "handbags",
+     "in-the-book", "hooked", "backs-to-the-wall", "game-of-two-halves",
+     "dead-rubber", "six-pointer", "title-race", "relegation-battle"],
+    # 10 — The season around the match: transfers, managers, the telly.
+    ["transfer-window", "deadline-day", "loan", "silly-season", "here-we-go",
+     "sacked", "sack-race", "new-manager-bounce", "the-gaffer", "the-boss",
+     "hairdryer", "bottle-it", "match-of-the-day", "pundit"],
+    # 11 — The ground, and the people in it.
+    ["season-ticket", "away-day", "the-away-end", "terraces", "chant",
+     "kop", "half-and-half-scarf", "the-lads", "banter", "group-chat",
+     "goal-of-the-month", "the-lino", "magic-sponge", "we-go-again"],
+    # 12 — The in-jokes, the myths and the cup romance.
+    ["fergie-time", "giant-killing", "the-third-round", "the-magic-of-the-cup",
+     "hard-man", "class-act", "top-top-player", "plastic-fan", "glory-hunter",
+     "the-boot-room", "the-invincibles", "football-twitter", "fantasy-football",
+     "wags"],
+]
+
+LEVEL_OF = {tid: i + 1 for i, ids in enumerate(LEVELS) for tid in ids}
+
+# The runnable check: every term is placed exactly once, and nothing is placed
+# that does not exist. validate_content.py checks the rest (10 at level 1,
+# no gaps, no seeAlso pointing more than one level ahead).
+_ids = [t[1] for t in TERMS]
+assert len(LEVEL_OF) == sum(len(l) for l in LEVELS), "a term id appears in two levels"
+assert set(LEVEL_OF) == set(_ids), (
+    f"unplaced: {sorted(set(_ids) - set(LEVEL_OF))} / unknown: {sorted(set(LEVEL_OF) - set(_ids))}")
