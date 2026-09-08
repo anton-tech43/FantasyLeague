@@ -119,6 +119,11 @@ struct LingoTerm: Codable, Identifiable, Hashable {
     /// older cached file still decodes.
     let sayIt: String?
     let seeAlso: [String]?
+    /// Progression level, 1 upwards (2026-09-09). Level 1 is the first ten
+    /// words a newcomer meets; the Lingo view shows it open and folds the rest,
+    /// and flashcard practise starts there. Optional so an older cached file
+    /// still decodes; treat nil as the top level.
+    let level: Int?
 }
 
 // MARK: Quiz
