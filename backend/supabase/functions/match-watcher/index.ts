@@ -37,6 +37,12 @@ import { groupSituation } from "../_shared/stakes-engine.ts";
 import { renderPostMatch, type PostMatchState } from "../_shared/stakes-templates.ts";
 import { resultFraming, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
 import { decideMatchdayRetry, MATCHDAY_STALENESS_MS } from "../_shared/matchday-retry.ts";
+import {
+  callFunction,
+  mergeRefreshTargets,
+  PAGE_REFRESH_MARKER,
+  planPageRefresh,
+} from "../_shared/page-refresh.ts";
 import { buildAPNsPayload, sendLiveActivityPush, sendPushNotification } from "../_shared/apns-client.ts";
 import { WC_COUNTRY_META, wcStatusLabel } from "../_shared/wc-countries.ts";
 import {
@@ -662,6 +668,11 @@ async function handleRequest(req: Request): Promise<Response> {
   const upsertErrors: Array<{ fixture_id: number; message: string }> = [];
   const priorErrors: Array<{ fixture_id: number; message: string }> = [];
   let skippedFixtures = 0; // unknown team / no league id — expected, not an anomaly
+  // Full-time page refreshes to run once this tick is done deciding. Collected
+  // rather than fired inline: five of our clubs can whistle inside the same
+  // minute, and an every-minute watcher must not sit through five sequential
+  // data-fetcher calls. One call, one league table. See _shared/page-refresh.ts.
+  const pageRefreshQueue: Array<{ fixtureId: number; teamIds: string[] }> = [];
 
   for (const fx of fixtures) {
     const fixtureId = fx.fixture.id;
@@ -831,6 +842,22 @@ async function handleRequest(req: Request): Promise<Response> {
     // loop below, so polluting it would fire a spurious (billed) routine. These
     // markers only ever land in briefs_fired for the once-per-window guard.
     const pushMarkers: string[] = [];
+    // Full time is an event, not a schedule. The two clubs that just played get
+    // their standings and fixtures re-fetched from the whistle instead of at the
+    // next two-hourly cron slot — which on a Saturday teatime was an hour and
+    // forty minutes of the app pushing a score over a table that disagreed with
+    // it. PAGE_REFRESH lands in briefs_fired alongside the push markers so a
+    // re-observed full time does not buy the table twice.
+    const pageRefreshTargets = planPageRefresh({
+      status,
+      priorStatus: (prior?.status as string | undefined) ?? null,
+      briefsFired,
+      homeTeamId,
+      awayTeamId,
+      activeTeamIds,
+      leagueId: fixtureLeagueId,
+    });
+    const refreshMarkers = pageRefreshTargets.length > 0 ? [PAGE_REFRESH_MARKER] : [];
     // country_id → the just-written FT result article id, so the FT push can
     // deep-link straight to it (the post_match block below populates this a few
     // steps before the push fires, same tick).
@@ -1791,7 +1818,9 @@ async function handleRequest(req: Request): Promise<Response> {
     // within the same trigger window won't re-fire — even if the prior row
     // never existed (first-observation skip case is handled by the
     // `prior !== null` guard on trigger detection above).
-    const updatedBriefsFired = [...new Set([...briefsFired, ...newTriggers, ...pushMarkers])];
+    const updatedBriefsFired = [
+      ...new Set([...briefsFired, ...newTriggers, ...pushMarkers, ...refreshMarkers]),
+    ];
 
     // Upsert state. fired_finished_at is set ONLY when justFinished AND both
     // home and away routine fires succeeded — if one failed, the next tick
@@ -1851,9 +1880,77 @@ async function handleRequest(req: Request): Promise<Response> {
           console.error(`tournament item insert failed for ${fixtureId} (non-fatal):`, tErr.message);
         }
       }
+      // Marker is now durably persisted, so this fixture will not ask again.
+      if (pageRefreshTargets.length > 0) {
+        pageRefreshQueue.push({ fixtureId, teamIds: pageRefreshTargets });
+      }
       for (const p of pendingAlertPushes) {
         const n = await sendPlayingTeamPush(supabase, p.args);
         if (p.isGoal) goalPushSends += n;
+      }
+    }
+  }
+
+  // ─── Full-time page refresh ──────────────────────────────────────────
+  // Everything the whistle invalidated, in one data-fetcher call: the table,
+  // the next fixture and the last three, for the clubs that just played and —
+  // on a European night — the competition entity that holds `europe_standings`.
+  // data-fetcher triggers `team-page-generator dynamic_only` for each id itself,
+  // so the page follows without us knowing anything about how it is built.
+  //
+  // Budget: two fixtures endpoints per entity plus ONE shared league table, so a
+  // Premier League tie is 5 calls and a Champions League tie 8.
+  //
+  // Two rules this must never break: it must not fail the tick (the watcher's
+  // real job is pushes), and it must not fire twice for a fixture. The marker
+  // is already persisted by the time we get here, which makes this at-most-once
+  // — a failed refresh is not retried next minute, it waits for the two-hourly
+  // cron exactly as it did before this change. That is the safe direction to
+  // fail in; the alternative retries a paid fetch every sixty seconds.
+  const refreshTargets = mergeRefreshTargets(pageRefreshQueue);
+  let pageRefresh: Record<string, unknown> | null = null;
+  if (refreshTargets.length > 0) {
+    const startedAt = Date.now();
+    let result = { ok: false, status: 0, body: "not attempted" };
+    try {
+      result = await callFunction("data-fetcher", {
+        team_ids: refreshTargets,
+        only: ["standings", "fixtures"],
+      });
+    } catch (e) {
+      // callFunction swallows its own errors; this is the second layer, so an
+      // unforeseen throw can never take the watcher down with it.
+      result = { ok: false, status: 0, body: e instanceof Error ? e.message : String(e) };
+    }
+    const durationMs = Date.now() - startedAt;
+    pageRefresh = {
+      ok: result.ok,
+      team_ids: refreshTargets,
+      fixtures: pageRefreshQueue.map((r) => r.fixtureId),
+      duration_ms: durationMs,
+    };
+    if (!result.ok) {
+      console.warn(`page refresh failed (${result.status}): ${result.body}`);
+    }
+    // One pipeline_health row per fixture, so "did the table move when Arsenal
+    // finished" is a query and not an archaeology exercise.
+    for (const entry of pageRefreshQueue) {
+      try {
+        await supabase.from("pipeline_health").insert({
+          stage: "page_refresh",
+          status: result.ok ? "success" : "failure",
+          target: `page_refresh:${entry.fixtureId}`,
+          http_status: result.status || null,
+          duration_ms: durationMs,
+          error_class: result.ok ? null : "data_fetcher_call_failed",
+          message: `${entry.teamIds.join(", ")} (batch of ${refreshTargets.length})`,
+          response_excerpt: result.body.slice(0, 500),
+        });
+      } catch (e) {
+        console.warn(
+          "page_refresh health row failed (non-fatal):",
+          e instanceof Error ? e.message : String(e),
+        );
       }
     }
   }
@@ -1872,6 +1969,7 @@ async function handleRequest(req: Request): Promise<Response> {
     date: today,
     active_leagues: activeLeagues,
     league_errors: leagueErrors,
+    page_refresh: pageRefresh,
   };
 
   // A17 (audit 2026-09): leave a trace of the run itself. Not every tick — that

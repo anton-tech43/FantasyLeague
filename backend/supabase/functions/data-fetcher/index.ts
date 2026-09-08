@@ -10,6 +10,13 @@ import { triggerFunction } from "../_shared/trigger.ts";
 import { sanitizeText, wrapExternalData } from "../_shared/input-sanitizer.ts";
 import { seasonForLeague } from "../_shared/league-helpers.ts";
 import {
+  type FetchOnlyKey,
+  type FetchScope,
+  parseFetchScope,
+  StandingsCache,
+  wants,
+} from "../_shared/fetch-scope.ts";
+import {
   isPlayerStatsDue,
   mergePlayerStatPages,
   pagesToFetch,
@@ -147,15 +154,58 @@ async function fetchRSSFeeds(team: Team): Promise<Array<{ source: string; data: 
   return results;
 }
 
+/** How many API-Football requests this run actually put on the wire. */
+interface RunCounters {
+  apiCalls: number;
+}
+
 async function fetchAPIFootball(
   team: Team,
-  apiKey: string
+  apiKey: string,
+  scope: FetchScope,
+  standings: StandingsCache,
+  counters: RunCounters,
 ): Promise<Array<{ source: string; data: unknown }>> {
   const results: Array<{ source: string; data: unknown }> = [];
   const headers = {
     "x-rapidapi-key": apiKey,
     "x-rapidapi-host": "v3.football.api-sports.io",
   };
+
+  /** One GET, with the run's call counter and a timeout. null on any failure. */
+  const get = async (path: string, label: string): Promise<unknown | null> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15_000);
+    counters.apiCalls++;
+    try {
+      const response = await fetch(`${API_FOOTBALL_BASE}${path}`, {
+        headers,
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        console.warn(`API-Football ${label} returned ${response.status}`);
+        return null;
+      }
+      return await response.json();
+    } catch (e) {
+      console.warn(`API-Football ${label} failed:`, e instanceof Error ? e.message : e);
+      return null;
+    } finally {
+      clearTimeout(timeout);
+    }
+  };
+
+  /**
+   * The league table, bought once per (league, season) per run and shared.
+   * Every entity still gets its own raw_fetch_logs row from this payload —
+   * the dedupe is invisible to every consumer downstream.
+   */
+  const getStandings = (leagueId: number, season: number) =>
+    standings.get(
+      leagueId,
+      season,
+      () => get(`/standings?league=${leagueId}&season=${season}`, "standings"),
+    );
 
   // V2.0: parameterise league_id + season per team.
   // PL teams (league_id=39) use season=2025 (the 2025-26 season).
@@ -181,20 +231,18 @@ async function fetchAPIFootball(
     // does not reach the end of it.
     const isKnockoutCup = tLeague === 48 || tLeague === 45;
     const window = isKnockoutCup ? 40 : 20;
-    const tEndpoints = [
-      ...(isKnockoutCup
-        ? []
-        : [{ name: "standings", path: `/standings?league=${tLeague}&season=${tSeason}` }]),
-      { name: "fixtures_next", path: `/fixtures?league=${tLeague}&season=${tSeason}&next=${window}` },
-      { name: "fixtures_last", path: `/fixtures?league=${tLeague}&season=${tSeason}&last=${window}` },
-    ];
-    for (const ep of tEndpoints) {
-      try {
-        const resp = await fetch(`${API_FOOTBALL_BASE}${ep.path}`, { headers });
-        const json = await resp.json();
-        results.push({ source: `api_football_${ep.name}`, data: json });
-      } catch (e) {
-        console.warn(`data-fetcher: ${team.id} ${ep.name} failed:`, e instanceof Error ? e.message : String(e));
+
+    if (!isKnockoutCup && wants(scope, "standings")) {
+      const table = await getStandings(tLeague, tSeason);
+      if (table !== null) results.push({ source: "api_football_standings", data: table });
+    }
+    if (wants(scope, "fixtures")) {
+      for (const ep of [
+        { name: "fixtures_next", path: `/fixtures?league=${tLeague}&season=${tSeason}&next=${window}` },
+        { name: "fixtures_last", path: `/fixtures?league=${tLeague}&season=${tSeason}&last=${window}` },
+      ]) {
+        const json = await get(ep.path, `${team.id} ${ep.name}`);
+        if (json !== null) results.push({ source: `api_football_${ep.name}`, data: json });
       }
     }
     return results;
@@ -207,48 +255,36 @@ async function fetchAPIFootball(
   const leagueId = team.league_id;
   const season = seasonForLeague(leagueId);
 
-  const endpoints = [
+  // Each endpoint carries the scope key that buys it, so a narrow full-time
+  // refresh (`only: ["standings","fixtures"]`) skips squad, transfers, injuries
+  // and coachs without a second list to keep in step.
+  const endpoints: Array<{ name: string; path: string; scope: FetchOnlyKey }> = [
     // next=10 — gives team-season-state-generator enough fixtures to populate
     // the `next_fixtures` array consumed by the onboarding CalendarOptInView
     // (one-tap calendar sync). Pre-V1.2 this was next=5.
-    { name: "fixtures_next", path: `/fixtures?team=${team.api_football_id}&next=10` },
-    { name: "fixtures_last", path: `/fixtures?team=${team.api_football_id}&last=3` },
-    { name: "injuries", path: `/injuries?team=${team.api_football_id}&season=${season}` },
-    { name: "standings", path: `/standings?league=${leagueId}&season=${season}` },
-    { name: "transfers", path: `/transfers?team=${team.api_football_id}` },
-    { name: "squad", path: `/players/squads?team=${team.api_football_id}` },
+    { name: "fixtures_next", path: `/fixtures?team=${team.api_football_id}&next=10`, scope: "fixtures" },
+    { name: "fixtures_last", path: `/fixtures?team=${team.api_football_id}&last=3`, scope: "fixtures" },
+    { name: "injuries", path: `/injuries?team=${team.api_football_id}&season=${season}`, scope: "injuries" },
+    { name: "transfers", path: `/transfers?team=${team.api_football_id}`, scope: "transfers" },
+    { name: "squad", path: `/players/squads?team=${team.api_football_id}`, scope: "squad" },
     // Coaches: API-Football's authoritative manager source. Added 2026-05-11
     // after the team-page-generator was caught producing `<UNKNOWN>` for the
     // three promoted teams' MANAGER card — it had no source for the name
     // and (correctly) refused to confabulate. Now feeds Claude with the
     // real current head coach + their career history.
-    { name: "coachs", path: `/coachs?team=${team.api_football_id}` },
+    { name: "coachs", path: `/coachs?team=${team.api_football_id}`, scope: "coachs" },
   ];
 
+  // Standings first, and through the cache: twenty PL clubs, one table.
+  if (wants(scope, "standings")) {
+    const table = await getStandings(leagueId, season);
+    if (table !== null) results.push({ source: "api_football_standings", data: table });
+  }
+
   for (const endpoint of endpoints) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15_000);
-
-      const response = await fetch(`${API_FOOTBALL_BASE}${endpoint.path}`, {
-        headers,
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-
-      if (!response.ok) {
-        console.warn(`API-Football ${endpoint.name} returned ${response.status}`);
-        continue;
-      }
-
-      const data = await response.json();
-      results.push({ source: `api_football_${endpoint.name}`, data });
-    } catch (e) {
-      console.warn(
-        `API-Football ${endpoint.name} failed:`,
-        e instanceof Error ? e.message : e
-      );
-    }
+    if (!wants(scope, endpoint.scope)) continue;
+    const data = await get(endpoint.path, endpoint.name);
+    if (data !== null) results.push({ source: `api_football_${endpoint.name}`, data });
   }
 
   return results;
@@ -267,6 +303,7 @@ async function fetchPlayerStats(
   team: Team,
   apiKey: string,
   season: number,
+  counters: RunCounters,
 ): Promise<Array<{ source: string; data: unknown }>> {
   const headers = {
     "x-rapidapi-key": apiKey,
@@ -276,6 +313,7 @@ async function fetchPlayerStats(
   const getPage = async (page: number): Promise<PlayerStatsPage | null> => {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15_000);
+    counters.apiCalls++;
     try {
       const url =
         `${API_FOOTBALL_BASE}/players?team=${team.api_football_id}&season=${season}&page=${page}`;
@@ -408,23 +446,34 @@ serve(async (req) => {
   const supabase = getSupabaseClient();
 
   try {
-    // Optional per-team filter. Lets us fan out per-team in parallel from the
-    // outside (curl × N concurrent invocations) when the 60-second Edge
-    // Function CPU cap stops the full-batch run from completing all 70+ teams.
-    // Empty body / missing field falls through to the "all teams" path.
-    let payload: { team_id?: string } = {};
+    // Optional scope. Lets us fan out per-team in parallel from the outside
+    // (curl × N concurrent invocations) when the 60-second Edge Function CPU
+    // cap stops the full-batch run from completing, and lets match-watcher ask
+    // for the cheap full-time refresh: the two clubs that just played, their
+    // table and their fixtures, nothing else. Empty body = today's behaviour.
+    let rawBody: unknown = null;
     try {
-      payload = await req.json();
+      rawBody = await req.json();
     } catch {
       /* no body or invalid JSON — proceed in all-teams mode */
     }
 
+    const parsed = parseFetchScope(rawBody);
+    if (!parsed.ok) {
+      return new Response(JSON.stringify({ error: parsed.error }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const scope = parsed.scope;
+
     // Get teams. is_active=false excludes relegated clubs (mig 074) so we don't
     // burn RSS/API-Football fetches on clubs no longer in the league. An explicit
-    // team_id override still works (e.g. a one-off for a specific club).
+    // team_ids override still works (e.g. a one-off for a specific club, or a
+    // cup opponent that is deliberately inactive).
     let query = supabase.from("teams").select("*");
-    if (payload.team_id) {
-      query = query.eq("id", payload.team_id);
+    if (scope.teamIds) {
+      query = query.in("id", scope.teamIds);
     } else {
       query = query.eq("is_active", true);
     }
@@ -433,6 +482,25 @@ serve(async (req) => {
     if (teamError || !teams) {
       throw new Error(`Failed to fetch teams: ${teamError?.message}`);
     }
+
+    // The id whitelist is the `teams` table itself — a caller naming something
+    // that isn't an entity has a bug, and silently fetching the subset that did
+    // resolve would hide it. 400 with the names, so the caller can see which.
+    if (scope.teamIds) {
+      const found = new Set((teams as Team[]).map((t) => t.id));
+      const unknown = scope.teamIds.filter((id) => !found.has(id));
+      if (unknown.length > 0) {
+        return new Response(
+          JSON.stringify({ error: `unknown team ids: ${unknown.join(", ")}` }),
+          { status: 400, headers: { "Content-Type": "application/json" } },
+        );
+      }
+    }
+
+    // One league table per run, shared across every entity in that league.
+    const standingsCache = new StandingsCache();
+    const counters: RunCounters = { apiCalls: 0 };
+    let logsWritten = 0;
 
     const apiFootballKey = Deno.env.get("API_FOOTBALL_KEY");
     if (!apiFootballKey) {
@@ -446,17 +514,18 @@ serve(async (req) => {
       // Per-player minutes: clubs only (the `players` table is the PL squads),
       // and only when today's fetch has not landed yet. ~40 calls a day rather
       // than 360 — see _shared/player-stats.ts.
-      const wantsPlayerStats = team.entity_type !== "country" &&
+      const wantsPlayerStats = wants(scope, "player_stats") &&
+        team.entity_type !== "country" &&
         team.entity_type !== "tournament" &&
         !!team.league_id &&
         isPlayerStatsDue(await lastPlayerStatsFetch(supabase, team.id));
 
       // Fetch RSS and API-Football in parallel
       const [rssResults, apiResults, statsResults] = await Promise.all([
-        fetchRSSFeeds(team),
-        fetchAPIFootball(team, apiFootballKey),
+        wants(scope, "rss") ? fetchRSSFeeds(team) : Promise.resolve([]),
+        fetchAPIFootball(team, apiFootballKey, scope, standingsCache, counters),
         wantsPlayerStats
-          ? fetchPlayerStats(team, apiFootballKey, seasonForLeague(team.league_id!))
+          ? fetchPlayerStats(team, apiFootballKey, seasonForLeague(team.league_id!), counters)
           : Promise.resolve([]),
       ]);
 
@@ -480,6 +549,7 @@ serve(async (req) => {
         }
 
         fetchLogIds.push(insertedLog.id);
+        logsWritten++;
       }
 
       // Compute team context from standings data
@@ -538,7 +608,25 @@ serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    // `standings_calls_saved` is the whole point of the cache and the budget
+    // line that pays for the full-time refreshes: what the run WOULD have spent
+    // is api_calls + standings_calls_saved.
+    const summary = {
+      success: true,
+      teams: teams.length,
+      scope: {
+        team_ids: scope.teamIds,
+        only: scope.only,
+      },
+      api_calls: counters.apiCalls,
+      logs_written: logsWritten,
+      standings_calls: standingsCache.calls,
+      standings_calls_saved: standingsCache.saved,
+      duration_ms: Date.now() - startTime,
+    };
+    console.log("data-fetcher run:", JSON.stringify(summary));
+
+    return new Response(JSON.stringify(summary), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (e) {
