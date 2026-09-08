@@ -9,6 +9,13 @@ import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 import { triggerFunction } from "../_shared/trigger.ts";
 import { sanitizeText, wrapExternalData } from "../_shared/input-sanitizer.ts";
 import { seasonForLeague } from "../_shared/league-helpers.ts";
+import {
+  isPlayerStatsDue,
+  mergePlayerStatPages,
+  pagesToFetch,
+  PLAYER_STATS_SOURCE,
+  type PlayerStatsPage,
+} from "../_shared/player-stats.ts";
 
 // RSS feed sources
 const RSS_FEEDS = [
@@ -247,6 +254,85 @@ async function fetchAPIFootball(
   return results;
 }
 
+/**
+ * Per-player season stats for one club: appearances and minutes, which are the
+ * only measure we have of who actually plays. Feeds `players.minutes` via
+ * sync_player_stats_from_raw() (mig 095), which is what picks the starting XI
+ * for the Quiz's squad pack and the dossier routine.
+ *
+ * Two pages a club, once a day (see _shared/player-stats.ts for the gate and
+ * why the pages are merged into one row).
+ */
+async function fetchPlayerStats(
+  team: Team,
+  apiKey: string,
+  season: number,
+): Promise<Array<{ source: string; data: unknown }>> {
+  const headers = {
+    "x-rapidapi-key": apiKey,
+    "x-rapidapi-host": "v3.football.api-sports.io",
+  };
+
+  const getPage = async (page: number): Promise<PlayerStatsPage | null> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15_000);
+    try {
+      const url =
+        `${API_FOOTBALL_BASE}/players?team=${team.api_football_id}&season=${season}&page=${page}`;
+      const response = await fetch(url, { headers, signal: controller.signal });
+      if (!response.ok) {
+        console.warn(`API-Football players page ${page} returned ${response.status}`);
+        return null;
+      }
+      return await response.json() as PlayerStatsPage;
+    } catch (e) {
+      console.warn(
+        `API-Football players page ${page} failed:`,
+        e instanceof Error ? e.message : e,
+      );
+      return null;
+    } finally {
+      clearTimeout(timeout);
+    }
+  };
+
+  const first = await getPage(1);
+  if (!first) return [];
+
+  const pages: PlayerStatsPage[] = [first];
+  for (let page = 2; page <= pagesToFetch(first); page++) {
+    const next = await getPage(page);
+    if (!next) break; // partial beats nothing; tomorrow's run refetches
+    pages.push(next);
+  }
+
+  const merged = mergePlayerStatPages(pages);
+  if (merged.results === 0) return [];
+  return [{ source: PLAYER_STATS_SOURCE, data: merged }];
+}
+
+/** Newest stored stats fetch for a club, or null. Drives the once-a-day gate. */
+async function lastPlayerStatsFetch(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  teamId: string,
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("raw_fetch_logs")
+    .select("fetched_at")
+    .eq("team_id", teamId)
+    .eq("source", PLAYER_STATS_SOURCE)
+    .order("fetched_at", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    // Can't tell how old it is → don't fetch. A missed day costs nothing; a
+    // failing query that reads as "never fetched" costs 40 calls every 2 hours.
+    console.warn(`player stats gate query failed for ${teamId}:`, error.message);
+    return new Date().toISOString();
+  }
+  return data?.[0]?.fetched_at ?? null;
+}
+
 async function computeTeamContext(
   supabase: ReturnType<typeof getSupabaseClient>,
   team: Team,
@@ -357,13 +443,24 @@ serve(async (req) => {
       const teamStart = Date.now();
       const fetchLogIds: string[] = [];
 
+      // Per-player minutes: clubs only (the `players` table is the PL squads),
+      // and only when today's fetch has not landed yet. ~40 calls a day rather
+      // than 360 — see _shared/player-stats.ts.
+      const wantsPlayerStats = team.entity_type !== "country" &&
+        team.entity_type !== "tournament" &&
+        !!team.league_id &&
+        isPlayerStatsDue(await lastPlayerStatsFetch(supabase, team.id));
+
       // Fetch RSS and API-Football in parallel
-      const [rssResults, apiResults] = await Promise.all([
+      const [rssResults, apiResults, statsResults] = await Promise.all([
         fetchRSSFeeds(team),
         fetchAPIFootball(team, apiFootballKey),
+        wantsPlayerStats
+          ? fetchPlayerStats(team, apiFootballKey, seasonForLeague(team.league_id!))
+          : Promise.resolve([]),
       ]);
 
-      const allResults = [...rssResults, ...apiResults];
+      const allResults = [...rssResults, ...apiResults, ...statsResults];
 
       for (const result of allResults) {
         // Store raw data unconditionally — keeps an auditable history of every fetch.
