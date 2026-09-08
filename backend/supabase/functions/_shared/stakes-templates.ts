@@ -296,3 +296,222 @@ export function renderPostMatch(
     }
   }
 }
+
+// ============================================================
+// CLUB pre game talk — deterministic, league vocabulary
+//
+// The WC templates above speak group-stage ("Group D", "the last 16"). A
+// Premier League Saturday has no group and no qualification maths, so the
+// facts that matter are different: which competition, home or away, where the
+// two clubs sit in the table and how far apart, how each has been playing,
+// who is favoured, and for a cup tie what a win actually wins.
+//
+// Until September 2026 nothing wrote any of this for a club: `next_fixture`
+// carried the Monday routine's one sentence, verbatim, for up to six days
+// after that fixture had been played (Sunderland's card named Arsenal above a
+// sentence about Hull City). This runs on every 2-hourly dynamic_only refresh,
+// costs nothing, and cannot go stale by more than two hours.
+//
+// House rules: no em-dashes, UK English, and the preview never says "he" or
+// "him" (it is about the two clubs). The talking point is the opposite: it is
+// addressed to her, about him, and is the one line she can use before kickoff.
+// ============================================================
+
+import type { PreMatchVerdict } from "./matchup-verdict.ts";
+
+export interface ClubPreMatchContext {
+  teamName: string;
+  opponentName: string;
+  venue: "home" | "away";
+  /** The competition, already in prose ("Premier League", "League Cup (Carabao Cup)"). */
+  competition?: string;
+  /** The round in words ("last 32"), empty/absent for a league or league-phase game. */
+  round?: string;
+  /** League positions. Both set ONLY when both clubs are in the same table. */
+  myPosition?: number | null;
+  oppPosition?: number | null;
+  myPoints?: number | null;
+  oppPoints?: number | null;
+  /** Last-five form strings ("WWDLW"); either may be missing. */
+  myForm?: string | null;
+  oppForm?: string | null;
+  favorite?: PreMatchVerdict | null;
+  /** For a covered cup tie: `knockoutOutcome(...)`, e.g. "Through to the last 16." */
+  knockoutLine?: string | null;
+}
+
+/**
+ * The pre game talk for a club: two to four sentences of fact, plus the one
+ * line she can say before kickoff. Pure — every input is already-fetched data,
+ * no Claude, no I/O. The caller appends the Monday routine's colour sentence
+ * after a blank line, and only while its fixture id still matches.
+ */
+export function renderClubPreMatch(
+  ctx: ClubPreMatchContext,
+): { preview: string; talking_point: string } {
+  const { teamName: team, opponentName: opp, venue } = ctx;
+  const where = venue === "home" ? `are at home to ${opp}` : `are away at ${opp}`;
+  const comp = ctx.competition
+    ? ` in the ${ctx.competition}${ctx.round ? `, ${ctx.round}` : ""}`
+    : "";
+  const opening = `${team} ${where}${comp}.`;
+
+  const table = tableSentence(ctx);
+  const form = formSentence(ctx);
+  const verdict = verdictSentence(ctx);
+  const stake = stakeSentence(ctx.knockoutLine, team);
+
+  // Two to four sentences. The opening always earns its place and the stake is
+  // the only thing she cannot work out from the rest of the card, so when a
+  // cup tie between two table clubs would run to five, the form goes.
+  let parts = [opening, table, form, verdict, stake].filter((s): s is string => !!s);
+  if (parts.length > 4) parts = parts.filter((s) => s !== form);
+
+  return { preview: parts.join(" "), talking_point: clubTalkingPoint(ctx) };
+}
+
+/** The this_week card in league vocabulary. Mirrors renderThisWeek's shape. */
+export function renderClubThisWeek(
+  ctx: ClubPreMatchContext,
+): { text: string; talking_point: string } {
+  const { teamName: team, opponentName: opp, venue } = ctx;
+  const where = venue === "home" ? `are at home to ${opp}` : `are away at ${opp}`;
+  const head = ctx.competition ? `${ctx.competition} this week` : "This week";
+  const context = tableSentence(ctx) ?? verdictSentence(ctx) ??
+    stakeSentence(ctx.knockoutLine, team);
+  return {
+    text: `${head}: ${team} ${where}.${context ? ` ${context}` : ""}`,
+    // Deliberately not the pre-game talking point: both cards render on the
+    // same tab, and the same sentence twice reads like a bug.
+    talking_point: thisWeekTalkingPoint(ctx),
+  };
+}
+
+function tableSentence(ctx: ClubPreMatchContext): string | null {
+  const { myPosition: mine, oppPosition: theirs } = ctx;
+  if (mine == null || theirs == null) return null;
+  const heads = `${ordinal(mine)} against ${ordinal(theirs)} in the table`;
+  if (ctx.myPoints == null || ctx.oppPoints == null) return `${heads}.`;
+  const gap = Math.abs(ctx.myPoints - ctx.oppPoints);
+  if (gap === 0) return `${heads}, level on points.`;
+  if (gap === 1) return `${heads}, a point between them.`;
+  return `${heads}, ${numberWord(gap)} points between them.`;
+}
+
+function formSentence(ctx: ClubPreMatchContext): string | null {
+  const mine = formClause(ctx.myForm);
+  const theirs = formClause(ctx.oppForm);
+  if (!mine && !theirs) return null;
+  if (mine && theirs) return `${ctx.teamName} come in ${mine}, ${ctx.opponentName} ${theirs}.`;
+  if (mine) return `${ctx.teamName} come in ${mine}.`;
+  return `${ctx.opponentName} come in ${theirs}.`;
+}
+
+/// "with three wins in their last five" from a W/D/L form string. Counts over
+/// however many games there are, so an August page says "last three" rather
+/// than claiming five that have not been played.
+function formClause(form: string | null | undefined): string | null {
+  const letters = (form ?? "").toUpperCase().replace(/[^WDL]/g, "").slice(-5);
+  if (letters.length === 0) return null;
+  const wins = letters.split("").filter((c) => c === "W").length;
+  const played = `their last ${numberWord(letters.length)}`;
+  if (wins === 0) return `without a win in ${played}`;
+  if (wins === letters.length) return `having won all ${numberWord(wins)}`;
+  return `with ${numberWord(wins)} ${wins === 1 ? "win" : "wins"} in ${played}`;
+}
+
+function verdictSentence(ctx: ClubPreMatchContext): string | null {
+  switch (ctx.favorite?.tag) {
+    case "likely_win":
+      return `${ctx.teamName} go into it as the favourites.`;
+    case "likely_loss":
+      return `${ctx.opponentName} go into it as the favourites.`;
+    case "even":
+      return `It is close enough to go either way.`;
+    default:
+      return null;
+  }
+}
+
+/// What a win wins, from `knockoutOutcome`. Null for a league game (empty
+/// line), a league phase, or a first leg the tie does not settle.
+///
+/// Names the club rather than saying "them": in a cup tie between two clubs in
+/// the same table, the sentence before this one has just named the FAVOURITE,
+/// which may be the other side ("Chelsea go into it as the favourites. A win
+/// takes them through" read as Chelsea on Leeds's own page).
+function stakeSentence(
+  knockoutLine: string | null | undefined,
+  teamName: string,
+): string | null {
+  const line = (knockoutLine ?? "").trim();
+  if (!line) return null;
+  const through = line.match(/^Through to (.+)\.$/);
+  if (through) return `A win takes ${teamName} through to ${through[1]}.`;
+  const winners = line.match(/^(.+) winners\.$/);
+  if (winners) return `Win it and ${teamName} are ${winners[1]} winners.`;
+  return null;
+}
+
+/// The round a win reaches ("the last 16"), for the talking point.
+function knockoutTarget(knockoutLine: string | null | undefined): string | null {
+  const m = (knockoutLine ?? "").trim().match(/^Through to (.+)\.$/);
+  return m ? m[1] : null;
+}
+
+function clubTalkingPoint(ctx: ClubPreMatchContext): string {
+  const target = knockoutTarget(ctx.knockoutLine);
+  if (target) return `Ask him what reaching ${target} would mean to them.`;
+  if ((ctx.knockoutLine ?? "").trim().endsWith(" winners.")) {
+    return `Ask him what winning it would mean to him.`;
+  }
+  const bothPlaced = ctx.myPosition != null && ctx.oppPosition != null;
+  switch (ctx.favorite?.tag) {
+    case "likely_win":
+      return bothPlaced
+        ? `Ask him whether ${ordinal(ctx.myPosition!)} against ${ordinal(ctx.oppPosition!)} is as easy as it sounds.`
+        : `Ask him whether this is one they are supposed to win.`;
+    case "likely_loss":
+      return `Ask him what he would settle for against ${ctx.opponentName}.`;
+    case "even":
+      return `Ask him where he thinks the ${ctx.opponentName} game gets decided.`;
+    default:
+      return `Ask him how he is feeling about the ${ctx.opponentName} game.`;
+  }
+}
+
+function thisWeekTalkingPoint(ctx: ClubPreMatchContext): string {
+  if (knockoutTarget(ctx.knockoutLine)) {
+    return `Worth asking him how far he thinks they can go in this one.`;
+  }
+  switch (ctx.favorite?.tag) {
+    case "likely_win":
+      return `Tell him you have seen the table and you fancy them for this one.`;
+    case "likely_loss":
+      return `Tell him you know this is the hard one, then ask what he would take from it.`;
+    case "even":
+      return `Ask him if he has a feeling about this one either way.`;
+    default:
+      return `Ask him what he makes of the ${ctx.opponentName} game.`;
+  }
+}
+
+const NUMBER_WORDS = [
+  "no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+  "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen",
+  "eighteen", "nineteen", "twenty",
+];
+
+/// Small numbers read better as words in a sentence she is about to say out
+/// loud ("nine points between them"). Anything past twenty stays a numeral.
+export function numberWord(n: number): string {
+  return NUMBER_WORDS[n] ?? String(n);
+}
+
+/// "3rd", "12th". Local copy: the team-page generator's own getOrdinal is not
+/// exported and this module has no other reason to import it.
+function ordinal(n: number): string {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}

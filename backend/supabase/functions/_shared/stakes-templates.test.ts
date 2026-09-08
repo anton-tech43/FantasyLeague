@@ -2,12 +2,15 @@
 //   deno test backend/supabase/functions/_shared/stakes-templates.test.ts
 
 import {
+  renderClubPreMatch,
+  renderClubThisWeek,
   renderNextFixturePreview,
   renderOpponentDetail,
   renderPostMatch,
   renderThisWeek,
 } from "./stakes-templates.ts";
 import { type FixtureStakes, groupSituation, type GroupStanding } from "./stakes-engine.ts";
+import { CLUB_FAVORITE_GAP, preMatchVerdict } from "./matchup-verdict.ts";
 
 function assert(c: boolean, m: string): void {
   if (!c) throw new Error("assertion failed: " + m);
@@ -156,4 +159,172 @@ Deno.test("the open-group branch no longer says one thing to everybody", () => {
   for (const tp of seen) {
     assert(tp !== "Ask him what they need from their next game.", "the old catch-all is back");
   }
+});
+
+// ============================================================
+// CLUB pre game talk (renderClubPreMatch / renderClubThisWeek)
+// ============================================================
+
+function eq<T>(a: T, b: T, m: string): void {
+  if (a !== b) throw new Error(`${m}: expected ${JSON.stringify(b)}, got ${JSON.stringify(a)}`);
+}
+
+/// House rules every club string has to pass: no em-dashes, and the preview
+/// talks about two clubs, never about "him".
+function assertHouseRules(preview: string, label: string): void {
+  assert(!/[–—―−]/.test(preview), `${label}: no em/en dashes`);
+  assert(preview.length < 700, `${label}: under 700 chars (was ${preview.length})`);
+  assert(!/\b(he|him|his)\b/i.test(preview), `${label}: the preview never says he/him/his`);
+  assert(preview.trim().endsWith("."), `${label}: ends in a full stop`);
+  const sentences = preview.split(". ").length;
+  assert(sentences >= 2 && sentences <= 4, `${label}: two to four sentences (was ${sentences})`);
+}
+
+Deno.test("renderClubPreMatch: league game, both clubs in the table", () => {
+  const out = renderClubPreMatch({
+    teamName: "Arsenal",
+    opponentName: "Sunderland",
+    venue: "home",
+    competition: "Premier League",
+    round: "",
+    myPosition: 3,
+    oppPosition: 12,
+    myPoints: 20,
+    oppPoints: 11,
+    myForm: "WWDLW",
+    oppForm: "LDLLW",
+    favorite: preMatchVerdict(3, 12, CLUB_FAVORITE_GAP),
+  });
+  assertHouseRules(out.preview, "league");
+  assert(out.preview.includes("in the Premier League"), "names the competition");
+  assert(out.preview.includes("at home to Sunderland"), "names the venue and opponent");
+  assert(
+    out.preview.includes("3rd against 12th in the table, nine points between them"),
+    `positions and the gap in words: ${out.preview}`,
+  );
+  assert(out.preview.includes("Arsenal go into it as the favourites"), "the verdict in words");
+  assert(
+    out.talking_point.includes("3rd against 12th"),
+    `the talking point uses the same fact: ${out.talking_point}`,
+  );
+  assert(/\bhim\b/.test(out.talking_point), "the talking point is addressed to her about him");
+});
+
+Deno.test("renderClubPreMatch: cup tie against a club with no rank", () => {
+  const out = renderClubPreMatch({
+    teamName: "Sunderland",
+    opponentName: "Hull City",
+    venue: "home",
+    competition: "League Cup (Carabao Cup)",
+    round: "last 32",
+    // A club outside the division has no league position and no strength_rank,
+    // so there is no favourite to name and the card must not invent one.
+    myPosition: null,
+    oppPosition: null,
+    myForm: "WWD",
+    favorite: null,
+    knockoutLine: "Through to the last 16.",
+  });
+  assertHouseRules(out.preview, "cup");
+  assert(
+    out.preview.includes("League Cup (Carabao Cup), last 32"),
+    `competition and round: ${out.preview}`,
+  );
+  assert(!/favourite/.test(out.preview), "no favourite claimed without ranks");
+  assert(
+    out.preview.includes("A win takes Sunderland through to the last 16."),
+    `what a win wins: ${out.preview}`,
+  );
+  assert(out.preview.includes("their last three"), "form counts only the games played");
+  assert(
+    out.talking_point.includes("reaching the last 16"),
+    `talking point follows the stake: ${out.talking_point}`,
+  );
+});
+
+Deno.test("renderClubPreMatch: European night, opponent from another league", () => {
+  const out = renderClubPreMatch({
+    teamName: "Arsenal",
+    opponentName: "Napoli",
+    venue: "away",
+    competition: "Champions League",
+    // A league-phase round has no label, and nothing is settled on the night.
+    round: "",
+    myPosition: null,
+    oppPosition: null,
+    myForm: "WWDLW",
+    oppForm: null,
+    favorite: null,
+    knockoutLine: "Champions League.",
+  });
+  assertHouseRules(out.preview, "europe");
+  assert(out.preview.includes("away at Napoli in the Champions League."), out.preview);
+  assert(!/takes them through/.test(out.preview), "a league phase settles nothing");
+  eq(out.talking_point, "Ask him how he is feeling about the Napoli game.", "neutral fallback");
+});
+
+Deno.test("renderClubPreMatch: level on points, and a lone win reads singular", () => {
+  const out = renderClubPreMatch({
+    teamName: "Everton",
+    opponentName: "Brentford",
+    venue: "away",
+    competition: "Premier League",
+    myPosition: 9,
+    oppPosition: 10,
+    myPoints: 14,
+    oppPoints: 14,
+    myForm: "LDLLW",
+    oppForm: "LLLLL",
+    favorite: preMatchVerdict(9, 10, CLUB_FAVORITE_GAP),
+  });
+  assertHouseRules(out.preview, "level");
+  assert(out.preview.includes("level on points"), out.preview);
+  assert(out.preview.includes("with one win in their last five"), out.preview);
+  assert(out.preview.includes("Brentford without a win in their last five"), out.preview);
+  assert(out.preview.includes("close enough to go either way"), out.preview);
+});
+
+Deno.test("renderClubPreMatch: never runs past four sentences", () => {
+  // A cup tie between two clubs in the same table has an opening, a table
+  // sentence, a form sentence, a verdict AND a stake. The form goes.
+  const out = renderClubPreMatch({
+    teamName: "Arsenal",
+    opponentName: "Sunderland",
+    venue: "home",
+    competition: "FA Cup",
+    round: "quarter-final",
+    myPosition: 1,
+    oppPosition: 14,
+    myPoints: 40,
+    oppPoints: 18,
+    myForm: "WWWWW",
+    oppForm: "LLDLL",
+    favorite: preMatchVerdict(1, 14, CLUB_FAVORITE_GAP),
+    knockoutLine: "Through to the semi-finals.",
+  });
+  assertHouseRules(out.preview, "five-fact");
+  assert(!/come in with/.test(out.preview), `form dropped, not the stake: ${out.preview}`);
+  assert(out.preview.includes("A win takes Arsenal through to the semi-finals."), out.preview);
+});
+
+Deno.test("renderClubThisWeek: league vocabulary, its own talking point", () => {
+  const ctx = {
+    teamName: "Arsenal",
+    opponentName: "Sunderland",
+    venue: "home" as const,
+    competition: "Premier League",
+    myPosition: 3,
+    oppPosition: 12,
+    myPoints: 20,
+    oppPoints: 11,
+    favorite: preMatchVerdict(3, 12, CLUB_FAVORITE_GAP),
+  };
+  const week = renderClubThisWeek(ctx);
+  const talk = renderClubPreMatch(ctx);
+  assert(week.text.startsWith("Premier League this week: Arsenal are at home to Sunderland."), week.text);
+  assert(!/[–—―−]/.test(week.text + week.talking_point), "no em dashes");
+  assert(
+    week.talking_point !== talk.talking_point,
+    "the two cards render together, so they must not say the same line twice",
+  );
 });

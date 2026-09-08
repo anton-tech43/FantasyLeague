@@ -19,9 +19,17 @@ import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import type { Team } from "../_shared/types.ts";
 import { competitionName, competitionProse, COVERED_CUP_LEAGUES, fixtureImportance, fixtureLabel, roundLabel } from "../_shared/league-helpers.ts";
 import { annotateFixtures, classifyExactPointsOnly, type ExactInfo, type GroupStanding } from "../_shared/stakes-engine.ts";
-import { renderNextFixturePreview, renderOpponentDetail, renderThisWeek } from "../_shared/stakes-templates.ts";
-import { collectFinishedFixtureIds, dropFinished, FINISHED_STATUSES, filterFixturesByLeague } from "../_shared/fixture-rollover.ts";
-import { preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
+import {
+  type ClubPreMatchContext,
+  renderClubPreMatch,
+  renderClubThisWeek,
+  renderNextFixturePreview,
+  renderOpponentDetail,
+  renderThisWeek,
+} from "../_shared/stakes-templates.ts";
+import { buildUpcomingFixtures, collectFinishedFixtureIds, dropFinished, FINISHED_STATUSES, FIXTURE_PAST_GRACE_MS, filterFixturesByLeague } from "../_shared/fixture-rollover.ts";
+import { knockoutOutcome } from "../_shared/goal-push.ts";
+import { CLUB_FAVORITE_GAP, preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
 import { classifyBestThird, type GroupThirdBounds } from "../_shared/best-third.ts";
 import { classifyExactForTeam, coarseThirdPointsBounds, type GroupTeam, type RemainingGame } from "../_shared/group-scenarios.ts";
 import { guaranteedExactlyThird } from "../_shared/detect-consequences.ts";
@@ -308,6 +316,39 @@ function detectEuropeanCompetition(fixturesNext: unknown): number | null {
     if (id !== undefined && id in TOURNAMENT_SLUG) return id;
   }
   return null;
+}
+
+/// Days a club keeps its European table after its last game in that
+/// competition. The league phase ends in late January and the last 16 starts in
+/// March, so anything under two months takes the table away from a club that is
+/// still in the competition.
+const EUROPE_TABLE_GRACE_DAYS = 60;
+
+/// Which European competition this club has PLAYED in recently. The fixture
+/// feed only reaches about five weeks, so between the league phase and the
+/// knockouts `detectEuropeanCompetition` goes blank while the club is still in
+/// it. Having played in it inside the grace window says the same thing.
+function recentEuropeanCompetition(
+  fixturesLastPayloads: unknown[],
+  now: Date,
+): number | null {
+  const floor = now.getTime() - EUROPE_TABLE_GRACE_DAYS * 86_400_000;
+  let best: { id: number; at: number } | null = null;
+  for (const data of fixturesLastPayloads) {
+    const response = (data as { response?: unknown[] } | undefined)?.response;
+    if (!Array.isArray(response)) continue;
+    for (const item of response) {
+      const rec = item as Record<string, unknown>;
+      const id = (rec.league as Record<string, unknown> | undefined)?.id as number | undefined;
+      if (id === undefined || !(id in TOURNAMENT_SLUG)) continue;
+      const t = Date.parse(
+        ((rec.fixture as Record<string, unknown> | undefined)?.date as string) ?? "",
+      );
+      if (Number.isNaN(t) || t < floor) continue;
+      if (!best || t > best.at) best = { id, at: t };
+    }
+  }
+  return best?.id ?? null;
 }
 
 // ============================================================
@@ -902,15 +943,35 @@ async function updateDynamicFields(
     team.api_football_id,
   );
 
-  // Fetch latest fixtures_next
-  const { data: fixturesLog } = await supabase
+  // Fetch latest fixtures_next. Newest-GOOD-wins, like the standings above:
+  // one empty payload from API-Football's nightly cache refresh used to blank
+  // the next fixture, the calendar and (via detectEuropeanCompetition) the
+  // whole europe_standings card for two hours. `.limit(1).single()` had no way
+  // to walk past it.
+  const { data: fixturesLogs } = await supabase
     .from("raw_fetch_logs")
     .select("data")
     .eq("team_id", team.id)
     .eq("source", "api_football_fixtures_next")
     .order("fetched_at", { ascending: false })
-    .limit(1)
-    .single();
+    .limit(5);
+  const fixturesLog = (fixturesLogs ?? []).find((l) => {
+    const r = (l.data as { response?: unknown[] })?.response;
+    return Array.isArray(r) && r.length > 0;
+  }) ?? null;
+
+  // Recent results, for three things: the authoritative played-fixture set the
+  // calendar filters against, the recent_results card ("Show last games", which
+  // was WC-only), and whether the club has played in Europe lately.
+  const { data: lastLogs } = await supabase
+    .from("raw_fetch_logs")
+    .select("data")
+    .eq("team_id", team.id)
+    .eq("source", "api_football_fixtures_last")
+    .order("fetched_at", { ascending: false })
+    .limit(5);
+  const lastPayloads = (lastLogs ?? []).map((l) => l.data);
+  const finishedIds = collectFinishedFixtureIds(lastPayloads);
 
   const now = new Date().toISOString();
 
@@ -964,7 +1025,14 @@ async function updateDynamicFields(
     // competition is derived from the club's own fixture feed, so it appears
     // in September and disappears the moment they are knocked out — the same
     // rule as the polling (migration 094): never stored, always derived.
-    const europeLeagueId = detectEuropeanCompetition(fixturesLog?.data);
+    //
+    // A fixture in the feed is not the only proof they are still in it. The
+    // feed reaches about five weeks; the gap between the league phase and the
+    // knockouts is longer, so a club sat in the round-of-16 draw lost its table
+    // mid-competition. Having PLAYED in the competition in the last 60 days
+    // says the same thing and covers the gap.
+    const europeLeagueId = detectEuropeanCompetition(fixturesLog?.data) ??
+      recentEuropeanCompetition(lastPayloads, new Date(now));
     if (europeLeagueId) {
       const { data: euroLogs } = await supabase
         .from("raw_fetch_logs")
@@ -1016,24 +1084,138 @@ async function updateDynamicFields(
     };
   }
 
-  // Parse next fixture
+  // ── Pre game talk ────────────────────────────────────────────────────────
+  // Everything a club's Coming-up card can know without an LLM: competition
+  // and round, home or away, both league positions and the points between
+  // them, each side's recent form, who is favoured, and for a cup tie what a
+  // win wins. Written on every 2-hourly refresh, so it cannot name the wrong
+  // opponent. Before this, a club's only pre-match sentence was the Monday
+  // routine's, carried forward verbatim: on 2026-09-08 Sunderland's card said
+  // "Arsenal" above a sentence about a League Cup tie with Hull City.
   if (fixturesLog?.data) {
-    const nextFixture = extractNextFixture(fixturesLog.data, team.api_football_id, new Date());
+    const nextFixture = extractNextFixture(fixturesLog.data, team.api_football_id, new Date(now));
     if (nextFixture) {
+      const prev = (cards.next_fixture ?? {}) as Record<string, unknown>;
+      const table =
+        ((cards.standings as Record<string, unknown> | undefined)?.entries ?? []) as Array<
+          Record<string, unknown>
+        >;
+      const rowFor = (apiId: number | undefined) =>
+        apiId == null ? undefined : table.find((e) => e.team_id_api_football === apiId);
+      const myRow = rowFor(team.api_football_id);
+      const oppRow = rowFor(nextFixture.opponent_api_id);
+      const bothInTable = myRow !== undefined && oppRow !== undefined;
+
+      // Rank: the league position when BOTH clubs are in the same table, which
+      // is a number she can go and check on the Table tab. A cup opponent from
+      // outside the division has no comparable one, so fall back to
+      // teams.strength_rank only when both sides have it, and otherwise show no
+      // chip at all. Guessing a favourite is worse than not naming one.
+      let myRank = bothInTable ? (myRow!.rank as number) : null;
+      let oppRank = bothInTable ? (oppRow!.rank as number) : null;
+      if (!bothInTable && nextFixture.opponent_api_id) {
+        const { data: rankRows } = await supabase
+          .from("teams")
+          .select("id, api_football_id, strength_rank")
+          .or(`id.eq.${team.id},api_football_id.eq.${nextFixture.opponent_api_id}`);
+        const mine = rankRows?.find((r) => r.id === team.id)?.strength_rank as number | null;
+        const theirs = rankRows?.find((r) =>
+          r.api_football_id === nextFixture.opponent_api_id
+        )?.strength_rank as number | null;
+        myRank = mine ?? null;
+        oppRank = theirs ?? null;
+      }
+      const favorite = preMatchVerdict(myRank, oppRank, CLUB_FAVORITE_GAP);
+
+      const standingsData = standingsLog?.data as Record<string, unknown> | undefined;
+      const preMatchCtx: ClubPreMatchContext = {
+        teamName: team.display_name,
+        opponentName: nextFixture.opponent,
+        venue: nextFixture.venue === "away" ? "away" : "home",
+        competition: nextFixture.league_id !== undefined
+          ? competitionProse(nextFixture.league_id)
+          : undefined,
+        round: roundLabel(nextFixture.round),
+        myPosition: bothInTable ? (myRow!.rank as number) : null,
+        oppPosition: bothInTable ? (oppRow!.rank as number) : null,
+        myPoints: bothInTable ? (myRow!.points as number) : null,
+        oppPoints: bothInTable ? (oppRow!.points as number) : null,
+        myForm: standingsData ? extractRecentForm(standingsData, team.api_football_id) : null,
+        oppForm: standingsData && nextFixture.opponent_api_id
+          ? extractRecentForm(standingsData, nextFixture.opponent_api_id)
+          : null,
+        favorite,
+        // What a win wins, for a covered cup tie. Empty for the league and for
+        // a European league phase, where nothing is settled on the night.
+        knockoutLine: nextFixture.league_id !== undefined &&
+            COVERED_CUP_LEAGUES.includes(nextFixture.league_id)
+          ? knockoutOutcome(nextFixture.league_id, nextFixture.round, true)
+          : null,
+      };
+      const talk = renderClubPreMatch(preMatchCtx);
+
+      // The Monday routine's colour sentence rides along ONLY while it is
+      // about this fixture. It used to be `preview` itself, so it survived the
+      // game it described by up to six days.
+      const colour = ((prev.preview_colour as string | undefined) ?? "").trim();
+      const colourFixtureId = prev.preview_fixture_id as number | undefined;
+      const keepColour = colour.length > 0 && colourFixtureId != null &&
+        nextFixture.fixture_id != null && colourFixtureId === nextFixture.fixture_id;
+
       cards.next_fixture = {
         updated_at: now,
         ...nextFixture,
-        // Keep existing preview (requires Claude to regenerate)
-        preview: (cards.next_fixture as Record<string, unknown>)?.preview ?? "",
+        preview: keepColour ? `${talk.preview}\n\n${colour}` : talk.preview,
+        talking_point: talk.talking_point,
+        ...(favorite ? { favorite } : {}),
+        ...(keepColour ? { preview_colour: colour, preview_fixture_id: colourFixtureId } : {}),
       };
+
+      cards.this_week = renderClubThisWeek(preMatchCtx);
+
+      // "Their ones to watch" from the OPPONENT's own curated page. Zero
+      // Claude, always in step with the schedule, and omitted for a cup
+      // opponent we have no page for.
+      const opponentInfo = nextFixture.opponent_api_id
+        ? await loadOpponentCardInfo(supabase, nextFixture.opponent_api_id)
+        : null;
+      if (cards.ones_to_know) {
+        const otk = cards.ones_to_know as Record<string, unknown>;
+        if (opponentInfo && opponentInfo.players.length > 0) {
+          otk.opponent = {
+            team_name: opponentInfo.teamName,
+            venue: nextFixture.venue,
+            players: opponentInfo.players,
+          };
+        } else {
+          delete otk.opponent;
+        }
+      }
     }
     const upcoming = buildUpcomingFixtures(
       fixturesLog.data,
       team.api_football_id,
       new Date(now),
       cards.upcoming_fixtures as Array<Record<string, unknown>> | undefined,
+      finishedIds,
     );
     if (upcoming) cards.upcoming_fixtures = upcoming;
+  }
+
+  // recent_results: the Calendar tab's "Show last games" row was WC-only, so a
+  // PL user tapped it and got nothing. Newest-good-wins over the same logs.
+  for (const payload of lastPayloads) {
+    const results = parseRecentResults(payload, team.api_football_id);
+    if (results.length > 0) {
+      cards.recent_results = results.slice(0, 3).map((r) => ({
+        date: r.date,
+        opponent: r.opponentName,
+        venue: r.venue,
+        team_score: r.teamScore,
+        opp_score: r.oppScore,
+      }));
+      break;
+    }
   }
 
   content.cards = cards;
@@ -1774,82 +1956,11 @@ function extractRecentForm(
   return form ? form.slice(-5) : null; // Last 5 results
 }
 
-const FIXTURE_PAST_GRACE_MS = 3 * 60 * 60_000; // keep in-progress / just-finished games
-
 /// API-Football league id for the FIFA World Cup. Used to filter a country's
 /// fixtures_next payload down to WC games only (it also carries that nation's
 /// post-tournament Nations League / qualifier fixtures).
 const WC_LEAGUE_ID = 1;
 
-/// Every upcoming fixture for the iOS Calendar tab, built mechanically from
-/// api_football_fixtures_next. Until Sept 2026 this card was only ever written
-/// by the paid `full` mode, so every club's calendar still showed May's run-in
-/// (Arsenal v Burnley, Ipswich v Luton, Leeds v West Ham — two of those clubs
-/// are no longer in the division). Facts here are copied, never judged:
-/// `importance_label` is the competition, which cannot go out of date. A richer
-/// label already stored for the same fixture is preserved, so anything the
-/// routine wrote by hand survives the 2-hourly refresh.
-function buildUpcomingFixtures(
-  data: unknown,
-  teamApiFootballId: number,
-  now: Date,
-  existing: Array<Record<string, unknown>> | undefined,
-): Array<Record<string, unknown>> | null {
-  const response = (data as Record<string, unknown> | undefined)?.response;
-  if (!Array.isArray(response) || response.length === 0) return null;
-  const floor = now.getTime() - FIXTURE_PAST_GRACE_MS;
-  const priorByKey = new Map<string, Record<string, unknown>>(
-    (existing ?? []).map((f) => [`${String(f.date).slice(0, 10)}|${f.opponent}`, f]),
-  );
-
-  const out: Array<Record<string, unknown>> = [];
-  for (const item of response as Array<Record<string, unknown>>) {
-    const fx = item.fixture as Record<string, unknown> | undefined;
-    const teams = item.teams as Record<string, Record<string, unknown>> | undefined;
-    const league = item.league as Record<string, unknown> | undefined;
-    const date = fx?.date as string | undefined;
-    if (!date || !teams?.home || !teams?.away) continue;
-    const t = Date.parse(date);
-    if (Number.isNaN(t) || t < floor) continue;
-
-    const isHome = (teams.home.id as number | undefined) === teamApiFootballId;
-    const opponent = (isHome ? teams.away.name : teams.home.name) as string;
-    const leagueId = league?.id as number | undefined;
-    const round = league?.round as string | undefined;
-    const prior = priorByKey.get(`${date.slice(0, 10)}|${opponent}`);
-    const priorLabel = (prior?.importance_label as string | undefined) ?? "";
-    const machineLabels = new Set([
-      fixtureLabel(league?.name as string | undefined, leagueId, round).slice(0, 30),
-      ((league?.name as string | undefined) ?? "").slice(0, 30),
-      "Fixture",
-    ]);
-    const handWritten = priorLabel.length > 0 && !machineLabels.has(priorLabel);
-    out.push({
-      date,
-      opponent,
-      // The opponent's API-Football id, so the Calendar row can draw their
-      // crest. Until 2026-09-07 the row was a name and a venue — the only
-      // surface in the app without a badge on it.
-      opponent_api_id: (isHome ? teams.away.id : teams.home.id) as number | undefined,
-      venue: isHome ? "home" : "away",
-      // iOS requires both fields (UpcomingFixture is non-optional on each).
-      // The dots used to be a flat 3, so a Champions League leg in Naples read
-      // like a League Cup tie at Ipswich. Competition and knockout round decide
-      // it now.
-      //
-      // "Anything hand-written wins" still holds, but the old code could not
-      // tell a hand-written label from its own default, so the flat 3 preserved
-      // itself forever. A prior counts as hand-written only when its label says
-      // something the machine would not have said.
-      importance_dots: handWritten ? (prior!.importance_dots as number) : fixtureImportance(leagueId, round),
-      importance_label: handWritten
-        ? (prior!.importance_label as string)
-        : fixtureLabel(league?.name as string | undefined, leagueId, round).slice(0, 30),
-    });
-    if (out.length === 8) break;
-  }
-  return out.length > 0 ? out : null;
-}
 
 function extractNextFixture(
   data: unknown,
@@ -1859,6 +1970,7 @@ function extractNextFixture(
   opponent: string;
   date: string;
   venue: string;
+  fixture_id?: number;
   opponent_api_id?: number;
   league_id?: number;
   round?: string;
@@ -1912,6 +2024,9 @@ function extractNextFixture(
       opponent,
       date: fixtureInfo.date as string,
       venue,
+      // The fixture id is what lets the Monday routine's colour sentence be
+      // dropped the moment it is about a game that has been played.
+      fixture_id: fixtureInfo.id as number | undefined,
       opponent_api_id: (isHome ? away.id : home.id) as number | undefined,
       league_id: leagueId,
       round,

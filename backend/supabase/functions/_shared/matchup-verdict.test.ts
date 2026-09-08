@@ -43,6 +43,21 @@ Deno.test("preMatchVerdict: clubs use the smaller league-position gap", () => {
   assertEquals(preMatchVerdict(8, 11, CLUB_FAVORITE_GAP)?.tag, "even");
 });
 
+Deno.test("preMatchVerdict: league positions, the pre game talk's cases", () => {
+  // 3rd v 12th, the plan's worked example: a nine-place edge on a 20-place
+  // scale is a favourite.
+  assertEquals(preMatchVerdict(3, 12, CLUB_FAVORITE_GAP)?.tag, "likely_win");
+  // 9th v 10th: mid-table neighbours are never a favourite.
+  assertEquals(preMatchVerdict(9, 10, CLUB_FAVORITE_GAP)?.tag, "even");
+  // 17th away at 2nd: the underdog is named as such, not hidden.
+  assertEquals(preMatchVerdict(17, 2, CLUB_FAVORITE_GAP)?.tag, "likely_loss");
+  // A cup opponent from outside the division has no position, so no chip at
+  // all rather than a guessed one.
+  assertEquals(preMatchVerdict(4, null, CLUB_FAVORITE_GAP), null);
+  // The WC gap would call 3rd v 12th even, which is why clubs have their own.
+  assertEquals(preMatchVerdict(3, 12)?.tag, "even");
+});
+
 Deno.test("resultFraming: favourite winning is as expected", () => {
   assertEquals(resultFraming(2, 67, 3, 0)?.framing, "as_expected");
 });
