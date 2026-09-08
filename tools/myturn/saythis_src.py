@@ -64,6 +64,13 @@ SITUATIONS = [
         ("3", "He's gone in two-footed.", "Both feet off the ground in a tackle. Usually a red, and rightly.", "bold", "red-card"),
         ("4", "Ref's going to have a word.", "When the referee calls a player over. Safe, and it's what happens next.", "safe", None),
     ]),
+    ("cup-night", "moments", "It's a cup night", [
+        ("1", "It's only the League Cup.", "An early round with half the team rested. The line every fan reaches for first.", "safe", "league-cup"),
+        ("2", "Any giant-killings on tonight?", "Cup rounds where small clubs are playing big ones. Giant-killing is the upset.", "safe", "giant-killing"),
+        ("3", "Cup run! Who've we got next?", "After a win. The draw is the bit he enjoys, so let him tell you about it.", "safe", "the-cups"),
+        ("4", "Win this and it's a trip to Wembley.", "A semi-final. A trip to Wembley is fan shorthand for a cup run gone deep.", "bold", "wembley"),
+        ("5", "Do they actually want this one?", "When he shrugs at the line-up. Gets him onto which competition matters and why.", "bold", "rotation"),
+    ]),
     ("sideways", "how_its_going", "They keep passing it sideways", [
         ("1", "There's no urgency.", "When the ball has gone across the back four three times in a row.", "safe", None),
         ("2", "Someone needs to run at them.", "The other team is sitting deep and nobody is dribbling.", "bold", None),

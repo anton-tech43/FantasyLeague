@@ -45,8 +45,10 @@ Fetched every 2 hours per club by the `data-fetcher` Edge Function into `raw_fet
 
 ### Also worth knowing
 
-- **Season is the starting year.** 2026-27 is `season=2026`. Compute it from the date (July onwards is the new season), never hardcode it — a pinned `2025` served the previous season's table for the first month of 2026-27.
-- **Quota is shared** with `match-watcher`'s per-minute polling. Prefer reading `raw_fetch_logs` (at most 2 hours old) over a fresh call.
+- **Season is the starting year.** 2026-27 is `season=2026`. Compute it from the date (July onwards is the new season), never hardcode it — a pinned `2025` served the previous season's table for the first month of 2026-27. **This applies to the cups too**: the 2026-27 FA Cup third round is played in January 2027 and is still `season=2026`, so a helper that falls back to the calendar year is right in December and wrong in January (`seasonForLeague`, fixed 2026-09-08).
+- **Quota is shared** with `match-watcher`'s per-minute polling, and per-minute polling is the whole budget. One polled league costs 1,440 calls a day against a Pro cap of 7,500; the data-fetcher takes about 1,300 of the rest. Six covered competitions cannot all be polled all day, which is why `poll_leagues()` (migration 094) polls a league only while one of our clubs is about to kick off or is still playing. Prefer reading `raw_fetch_logs` (at most 2 hours old) over a fresh call.
+- **A club's fixture endpoints are not league-filtered.** `?team=<id>&next=N` and `&last=N` return every competition: league, both domestic cups, Europe. Two consequences. Anything that counts ("three wins in a row", "unbeaten") must filter by `league.id` first or it will state a total nobody can reproduce. And anything that reads "the next fixture" gets the next fixture in ANY competition, which is correct for a Coming-up card and wrong for a league table claim.
+- **A knockout cup has no standings.** `/standings?league=48` and `league=45` return an empty response, permanently. That is the competition, not an outage; do not request it and do not treat the empty payload as a failed fetch.
 
 ## RSS news feeds
 

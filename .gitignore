@@ -32,3 +32,8 @@ DerivedData/
 .build/
 Packages/
 __pycache__/
+
+# Agent worktrees: local scratch clones, never part of the repo
+.claude/worktrees/
+# Xcode per-user state
+**/xcuserdata/

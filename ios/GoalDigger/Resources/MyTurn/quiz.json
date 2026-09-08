@@ -1,5 +1,5 @@
 {
-  "contentVersion": "2026-09-08.2",
+  "contentVersion": "2026-09-08.3",
   "packs": [
     {
       "id": "the-basics",
@@ -412,6 +412,108 @@
           "why": "Saying \"two-zero\" marks you as a newcomer faster than anything else.",
           "useType": "say",
           "use": "\"Two-nil. Comfortable, that.\""
+        },
+        {
+          "id": "the-basics-25",
+          "difficulty": 1,
+          "verified": true,
+          "question": "Which two domestic cup competitions do English clubs enter?",
+          "options": [
+            "The FA Cup and the Champions League",
+            "The FA Cup and the Europa League",
+            "The League Cup and the play-offs",
+            "The FA Cup and the League Cup"
+          ],
+          "answer": 3,
+          "explanation": "The FA Cup and the League Cup (Carabao Cup). Both are knockouts run alongside the league; the European competitions are separate again.",
+          "why": "He will switch between three competitions in a single week and assume you know which is which.",
+          "useType": "ask",
+          "use": "Ask him: \"Is this the league or one of the cups?\""
+        },
+        {
+          "id": "the-basics-26",
+          "difficulty": 1,
+          "verified": true,
+          "question": "What happens to a team that loses a cup match?",
+          "options": [
+            "They drop a division",
+            "They lose three points",
+            "They are out of that competition",
+            "They play a replay next week"
+          ],
+          "answer": 2,
+          "explanation": "Cups are knockouts: lose once and that competition is finished for the season. In the league a defeat costs points and you carry on.",
+          "why": "It explains why a cup defeat lands harder than a league one, even against a small club.",
+          "useType": "say",
+          "use": "\"That's them out, then. No second chance in the cup.\""
+        },
+        {
+          "id": "the-basics-27",
+          "difficulty": 1,
+          "verified": true,
+          "question": "What is Wembley?",
+          "options": [
+            "The Premier League trophy",
+            "A London club's training ground",
+            "England's national stadium",
+            "A cup competition"
+          ],
+          "answer": 2,
+          "explanation": "England's national stadium, in north London. Both domestic cup finals are played there, along with the FA Cup semi-finals and England's home games.",
+          "why": "\"A trip to Wembley\" is how fans describe a cup run that has gone deep, and it comes up every spring.",
+          "useType": "ask",
+          "use": "Ask him: \"Have you ever been to a game at Wembley?\""
+        },
+        {
+          "id": "the-basics-28",
+          "difficulty": 2,
+          "verified": true,
+          "question": "Why do big clubs often pick a weaker side in the early League Cup rounds?",
+          "options": [
+            "To save money on wages",
+            "Their best players are banned",
+            "It is a rule of the competition",
+            "To rest players for bigger games"
+          ],
+          "answer": 3,
+          "explanation": "Rotation. With league games and European nights stacked up, a manager rests his first-choice players and hands the young ones a game instead.",
+          "why": "It stops a weak line-up looking like a disaster and gets you into the argument about priorities.",
+          "useType": "impress",
+          "use": "\"He's rotated for this. The league game at the weekend is the priority.\""
+        },
+        {
+          "id": "the-basics-29",
+          "difficulty": 2,
+          "verified": true,
+          "question": "Which is Europe's third club competition, below the Europa League?",
+          "options": [
+            "The Community Shield",
+            "The Championship",
+            "The Conference League",
+            "The Super Cup"
+          ],
+          "answer": 2,
+          "explanation": "The Conference League, played on Thursday nights like the Europa League. Smaller trophy, same format, and a European away day either way.",
+          "why": "European nights come in three varieties and he will not say which one he means.",
+          "useType": "ask",
+          "use": "Ask him: \"Is that the Europa League or the Conference League?\""
+        },
+        {
+          "id": "the-basics-30",
+          "difficulty": 2,
+          "verified": true,
+          "question": "In a two-legged cup round, where is the second leg played?",
+          "options": [
+            "At a neutral ground",
+            "At the same ground as the first",
+            "At the other team's ground",
+            "Wherever the winner chooses"
+          ],
+          "answer": 2,
+          "explanation": "One match at each ground, so both sides get a home game. The two scores are added together and the aggregate decides who goes through.",
+          "why": "European knockout nights make no sense until you know that both matches count as one.",
+          "useType": "say",
+          "use": "\"Second leg at home. They just need to keep it tight.\""
         }
       ]
     },

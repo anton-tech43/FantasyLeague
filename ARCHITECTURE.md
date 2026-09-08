@@ -39,14 +39,25 @@ Voice = warm, cheeky best-friend. The live voice spec is the routine prompts in 
 
 - **20 Premier League clubs** (`Models/Team.swift`) + **48 World Cup 2026 countries**
   (`Models/Country.swift`). Not "3 teams" (that's stale PRD).
-- One polymorphic `teams` table: `entity_type` ∈ {club, country}, `league_id` 39=PL /
-  1=WC (migration 032). `team_id` everywhere is a lowercase slug (`^[a-z_]{2,32}$`) and
-  is the FK to `teams(id)` — it can be a club slug OR a country slug.
+- One polymorphic `teams` table: `entity_type` ∈ {club, country, tournament},
+  `league_id` 39=PL / 1=WC (migrations 032, 076). `team_id` everywhere is a lowercase
+  slug (`^[a-z_]{2,32}$`) and is the FK to `teams(id)` — a club slug, a country slug,
+  or a competition slug.
 - ~71 `team_pages` rows (20 clubs + 48 countries + promoted carryover).
+- **Six competitions, not one** (2026-09-08, `CUP_COVERAGE_PLAN.md`): Premier League
+  (39), Champions League (2), Europa League (3), Conference League (848), League Cup
+  (48), FA Cup (45), plus the World Championship (1). Each non-league competition also
+  has a `tournament` row in `teams` holding its own table and fixture feed, and its own
+  slug as a `team_id` for shared-feed cards. **Which of our clubs is in which is never
+  stored** — it is derived from the fixture feed, because it changes every August and
+  again on any knockout night (migration 087, extended by 094's `poll_leagues()`).
+  Cup opponents outside the 20 live in `teams` as `is_active=false`, registered on
+  first sighting, so a tie resolves without them entering the follow list.
 - **House copy rule:** app-visible text says **"World Championship"**, never "World
-  Cup" (the App Store *listing* may say "World Cup"). **No em/en dashes** in generated
-  or campaign copy. Cross-team LLM work must be a claude.ai routine, never a paid API
-  loop (see §10).
+  Cup" (the App Store *listing* may say "World Cup"), and **"League Cup (Carabao Cup)"**
+  on first mention, "League Cup" after, never "Carabao Cup" alone. **No em/en dashes**
+  in generated or campaign copy. Cross-team LLM work must be a claude.ai routine, never
+  a paid API loop (see §10).
 
 ## 3. Multi-team follow model (V2.2 — the newest subsystem)
 

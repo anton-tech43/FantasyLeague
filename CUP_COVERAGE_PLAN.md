@@ -1,8 +1,12 @@
 # Cup coverage plan — League Cup, FA Cup, Europa League, Conference League
 
-**Status:** plan only, nothing built (2026-09-08). Supersedes `V2.1_DESIGN_FA_CUP.md`,
-whose stored `competitions` column was the approach migration 087 deliberately rejected
-(who is in what changes every August and every knockout night; derive it from fixtures).
+**Status: SHIPPED 2026-09-08.** Phases 0-3 are live; see "What shipped" at the
+bottom for what was built, what was deliberately not, and what is left. The plan
+text below is kept as written so the reasoning survives the diff.
+
+Supersedes `V2.1_DESIGN_FA_CUP.md`, whose stored `competitions` column was the
+approach migration 087 deliberately rejected (who is in what changes every
+August and every knockout night; derive it from fixtures).
 
 **Goal, in the product's words:** she knows when it is cup time, which cup, how big the
 night is, and how to follow his team through it — without knowing what "last 32" means.
@@ -323,3 +327,71 @@ D tier floors once §8 is decided.
 - Routine quota: one combined `gd-europe` run replaces `gd-champions-league`;
   `gd-domestic-cups` adds roughly ten runs a season. gd-matchday fires grow by the number
   of cup ties our clubs play — 19 tonight and tomorrow, which is a normal PL weekend.
+
+
+---
+
+# What shipped, 2026-09-08
+
+Anton's decisions on the plan: build everything now; push floors per round as
+proposed; Conference League gets club-night coverage only; giant-killings reach
+the Football feed when the match is big; house copy is "League Cup (Carabao
+Cup)" in prose and "LEAGUE CUP" in a badge.
+
+## Live
+
+**Polling** — `poll_leagues()` (migration 094) replaced "which competitions is
+somebody in" with "what is kicking off or still being played". Six always-on
+leagues would have been 8,640 API calls a day against a 7,500 cap; the busiest
+realistic day is now about 1,000 and a quiet morning is zero, because the
+Premier League stopped polling on days it has no game. It also owns the poll
+date, which subsumed match-watcher's hangover query. Migration 093 was the
+30-minute version that covered the same evening while 094 was written.
+
+**Competition as data** — `content_items.league_id` (both Edge insert paths plus
+the routines), the gd-matchday trigger payload, `next_fixture`, the three live
+push bodies, the 07:00 reminder, the morning push, the Live Activity strap.
+
+**Live Activity** — `live-match-current` returns team names, so the app's local
+fallback no longer abandons an activity for a club outside its compiled enums.
+That had silently killed the widget for every cup tie.
+
+**Tier floors** — TIERS.md §6.3, implemented: kickoff 2, goal 3, half-time 2,
+result 1, with early League Cup and FA Cup rounds cut to the result for every
+tier and semi-finals and finals open to all.
+
+**Surfaces** — calendar dots and labels by competition and round; the Table tab
+gained a Premier League / Europe switcher fed by `europe_standings` (nine clubs
+have one today); the feed and detail badge a cup card by competition; calendar
+sync titles carry it; seven glossary terms.
+
+**Content** — `fetch_competition.sh <slug>` and `COMPETITION_PROMPT.md` replace
+the Champions-League-only pair, with the round-start, draw and stage-change
+cards and the giant-killing rule. `gd-champions-league` became `gd-europe`
+(Tue-Fri); `gd-domestic-cups` is new. `SEASON_STATE_PROMPT.md` and
+`TEAM_PAGE_PROMPT.md` stopped pretending cups do not exist. My Turn gained four
+Lingo terms, a "cup night" Say This situation and six quiz questions.
+
+**Tests** — 23 Deno cases on rounds, seasons across the January boundary, the
+importance table, the poll plan, push clauses and tiers; `test_guards.sh` at 75.
+
+## Deliberately not built
+
+- **Cup consequence templates** (`CUP_THROUGH`, `CUP_OUT`, …). The deterministic
+  post-match block is World-Championship-only, so nothing would have fired them,
+  and a card there would duplicate the gd-matchday article. The cup outcome is
+  delivered by the full-time push body and the matchday card instead.
+- **Aggregate in the trigger payload.** No two-legged tie exists until the
+  European knockouts in February. `MATCHDAY_PROMPT.md` tells the routine to add
+  the first leg up from `match_form.json` instead of promising a field that is
+  not there.
+
+## Still open
+
+- The season-state source for calendar sync carries no competition, so an event
+  title gets one only when the team page is the source. Worth fixing when
+  `team_season_state.next_fixtures` next changes shape.
+- A cup card's feed badge has not been seen on a real row yet: the first cup
+  `content_items` land after tonight's full-time whistles.
+- `significance` is still not read by `notification-sender`'s tier gate
+  (TIERS.md §6.2) — unchanged by this work, still Anton's call.

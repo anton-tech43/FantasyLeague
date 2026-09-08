@@ -14,7 +14,7 @@ sys.path.insert(0, HERE)
 from lingo_src import TERMS  # noqa: E402
 
 OUT = os.path.join(HERE, "..", "..", "ios", "GoalDigger", "Resources", "MyTurn", "lingo.json")
-VERSION = "2026-09-08.1"
+VERSION = "2026-09-08.2"
 
 terms = []
 for category, tid, term, meaning, heard, say_it, see_also in TERMS:

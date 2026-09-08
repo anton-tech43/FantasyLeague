@@ -9,7 +9,7 @@ sys.path.insert(0, HERE)
 from saythis_src import SITUATIONS  # noqa: E402
 
 OUT = os.path.join(HERE, "..", "..", "ios", "GoalDigger", "Resources", "MyTurn", "saythis.json")
-VERSION = "2026-09-08.1"
+VERSION = "2026-09-08.2"
 
 situations = []
 for sid, group, label, lines in SITUATIONS:

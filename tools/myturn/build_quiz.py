@@ -25,7 +25,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 OUT = os.path.join(HERE, "..", "..", "ios", "GoalDigger", "Resources", "MyTurn", "quiz.json")
-VERSION = "2026-09-08.2"
+VERSION = "2026-09-08.3"
 
 MODULES = ["quiz_src.general", "quiz_src.clubs_a", "quiz_src.clubs_b", "quiz_src.clubs_c", "quiz_src.clubs_d"]
 
