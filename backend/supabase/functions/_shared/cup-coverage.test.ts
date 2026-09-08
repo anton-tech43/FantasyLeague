@@ -17,6 +17,7 @@ import {
 import { buildPollPairs } from "./poll-plan.ts";
 import { competitionSuffix, knockoutOutcome } from "./goal-push.ts";
 import { minTierForLiveEvent, TIER_NOBODY, tierReceives } from "./push-tiers.ts";
+import { renderMatchdayReminder } from "./matchday-reminder-copy.ts";
 
 // ── Rounds ────────────────────────────────────────────────────────────────────
 
@@ -270,6 +271,45 @@ Deno.test("tierReceives: an unset tier is treated as Match-fit", () => {
   assertEquals(tierReceives(1, 2), false);
   assertEquals(tierReceives(3, 3), true);
   assertEquals(tierReceives(3, TIER_NOBODY), false);
+});
+
+// ── The 07:00 reminder ───────────────────────────────────────────────────────
+
+Deno.test("renderMatchdayReminder: silent about the league, explicit about a cup", () => {
+  const kickoff = new Date("2026-09-15T19:00:00Z");
+  const now = new Date("2026-09-15T07:00:00Z");
+
+  const league = renderMatchdayReminder({
+    teamName: "Arsenal", opponent: "Chelsea", kickoffUtc: kickoff, now, rng: () => 0,
+  });
+  assertEquals(league.title, "Arsenal play today");
+  assertEquals(league.body.includes("League Cup"), false);
+
+  const cup = renderMatchdayReminder({
+    teamName: "Leeds United", opponent: "Chelsea", kickoffUtc: kickoff, now,
+    competition: "League Cup (Carabao Cup), last 32", rng: () => 0,
+  });
+  // The title carries the competition without the round; the body opens with
+  // the full prose form, because a cup morning read like any other Tuesday.
+  assertEquals(cup.title, "Leeds United: League Cup (Carabao Cup) today");
+  assertEquals(cup.body.startsWith("League Cup (Carabao Cup), last 32. "), true);
+  assertEquals(cup.body.includes("Chelsea"), true);
+});
+
+Deno.test("renderMatchdayReminder: an empty competition changes nothing", () => {
+  const args = {
+    teamName: "Arsenal", opponent: "Chelsea",
+    kickoffUtc: new Date("2026-09-15T19:00:00Z"), now: new Date("2026-09-15T07:00:00Z"),
+    rng: () => 0,
+  };
+  assertEquals(
+    renderMatchdayReminder({ ...args, competition: "" }),
+    renderMatchdayReminder(args),
+  );
+  assertEquals(
+    renderMatchdayReminder({ ...args, competition: null }),
+    renderMatchdayReminder(args),
+  );
 });
 
 Deno.test("roundLabel: the words a card uses", () => {
