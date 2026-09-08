@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# publish_content.sh — push the four My Turn content files to Supabase so the
+# publish_content.sh — push the three My Turn content files to Supabase so the
 # app picks them up without a release.
 #
 # Runs the validator first and refuses to publish anything that fails it. The
@@ -21,7 +21,7 @@ python3 tools/myturn/validate_content.py --quiet
 PSQL=${PSQL:-/opt/homebrew/opt/libpq/bin/psql}
 DIR=ios/GoalDigger/Resources/MyTurn
 
-for module in saythis lingo quiz drills; do
+for module in saythis lingo quiz; do
   file="$DIR/$module.json"
   version=$(jq -r .contentVersion "$file")
   # Pass the JSON through a psql variable so quoting is never an issue.

@@ -2,8 +2,7 @@ import Foundation
 
 // MARK: - My Turn content models
 //
-// Four static, versioned JSON files: saythis.json, lingo.json, quiz.json,
-// drills.json. Bundled with the app (Resources/MyTurn) so the tab works
+// Three static, versioned JSON files: saythis.json, lingo.json, quiz.json. Bundled with the app (Resources/MyTurn) so the tab works
 // offline, and refreshed from `my_turn_content` when a newer contentVersion
 // exists (see MyTurnContentService). The shapes below are the spec's data
 // model, decoded strictly — the files are validated in CI by
@@ -11,10 +10,12 @@ import Foundation
 // not a content bug.
 
 enum MyTurnModule: String, CaseIterable, Identifiable, Codable {
-    case sayThis = "saythis"
-    case lingo
+    // Order is the segment order. Quiz first (2026-09-09): it is the module a
+    // newcomer can use before she knows anything, and the one that teaches the
+    // faces and names the other two assume.
     case quiz
-    case drills
+    case lingo
+    case sayThis = "saythis"
 
     var id: String { rawValue }
 
@@ -22,14 +23,22 @@ enum MyTurnModule: String, CaseIterable, Identifiable, Codable {
     /// "Lines" at the largest accessibility sizes rather than truncating.
     var label: String {
         switch self {
-        case .sayThis: return "Say This"
-        case .lingo:   return "Lingo"
         case .quiz:    return "Quiz"
-        case .drills:  return "Drills"
+        case .lingo:   return "Lingo"
+        case .sayThis: return "Say This"
         }
     }
 
     var shortLabel: String { self == .sayThis ? "Lines" : label }
+
+    /// Tolerant decoding. `MyTurnStore` persists the last module inside one
+    /// JSON blob with everything else she has starred and scored; a value this
+    /// enum no longer has ("drills", retired 2026-09-09) must not throw and take
+    /// her whole state down with it.
+    init(from decoder: Decoder) throws {
+        let raw = try decoder.singleValueContainer().decode(String.self)
+        self = MyTurnModule(rawValue: raw) ?? .quiz
+    }
 }
 
 // MARK: Say This
@@ -166,70 +175,4 @@ struct MyTurnQuestion: Codable, Identifiable, Hashable {
         self.options = options; self.answer = answer; self.explanation = explanation
         self.why = why; self.use = use; self.useType = useType; self.image = image
     }
-}
-
-// MARK: Drills
-
-struct DrillsContent: Codable {
-    let contentVersion: String
-    let decks: [DrillDeck]
-}
-
-enum DeckSource: String, Codable {
-    case saythis, lingo
-    case staticCards = "static"
-}
-
-struct DrillDeck: Codable, Identifiable, Hashable {
-    let id: String
-    let label: String
-    let source: DeckSource
-    let cards: [DrillCard]?
-}
-
-enum DrillFrontType: String, Codable {
-    case image, text, kit
-}
-
-/// A home kit as colour + pattern. The app draws it (KitView) so all twenty
-/// shirts share one silhouette — the spec's one hard rule for the Kits deck.
-struct KitSpec: Codable, Hashable {
-    let primary: String
-    let secondary: String
-    let pattern: KitPattern
-    let shorts: String?
-}
-
-enum KitPattern: String, Codable {
-    case plain, stripes, hoops, halves, sash, sleeves, pinstripes, quarters
-}
-
-/// `front` is a string for text/image cards and an object for kit cards.
-enum DrillFront: Codable, Hashable {
-    case text(String)
-    case kit(KitSpec)
-
-    init(from decoder: Decoder) throws {
-        let c = try decoder.singleValueContainer()
-        if let s = try? c.decode(String.self) { self = .text(s); return }
-        self = .kit(try c.decode(KitSpec.self))
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var c = encoder.singleValueContainer()
-        switch self {
-        case .text(let s): try c.encode(s)
-        case .kit(let k):  try c.encode(k)
-        }
-    }
-
-    var string: String? { if case .text(let s) = self { return s } else { return nil } }
-    var kit: KitSpec? { if case .kit(let k) = self { return k } else { return nil } }
-}
-
-struct DrillCard: Codable, Identifiable, Hashable {
-    let id: String
-    let frontType: DrillFrontType
-    let front: DrillFront
-    let back: String
 }

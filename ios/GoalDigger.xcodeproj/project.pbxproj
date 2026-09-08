@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		003F6A856B6B334723F84F32 /* MatchLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCDB9E93E3CF813F605541EE /* MatchLiveActivity.swift */; };
-		032887A37CBD03318F930B5E /* KitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC92554CE8AA05ACAD77F8F9 /* KitView.swift */; };
 		0A758A8D47CD4DF9A356EB6C /* WCNextMatchCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 912013703FAF48AC8F477692 /* WCNextMatchCard.swift */; };
 		11668C80EB1ED7F740D84481 /* TierGating.swift in Sources */ = {isa = PBXBuildFile; fileRef = 427A2A492E809AB52CDF85A0 /* TierGating.swift */; };
 		14474256E2DD1E7DA90DA178 /* GlossaryText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1969411F418AE27184440E14 /* GlossaryText.swift */; };
@@ -28,7 +27,7 @@
 		73A1A94EF89C814DE83C183E /* LiveClubPack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D8F505623CCED3CAAB391AA /* LiveClubPack.swift */; };
 		7AE5C40C19D72FA48BC51F30 /* SaturdayQuiz.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BC4A29F62D389F4A4751E27 /* SaturdayQuiz.swift */; };
 		8DF6B51D2AE83FB59CD63041 /* SaturdayQuizCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD5B3A073E49AF5B5862F38 /* SaturdayQuizCard.swift */; };
-		943981C98435F0D664C27833 /* DrillsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D368D699BBD5A6E3570316C7 /* DrillsView.swift */; };
+		9D8349CC509C7124A5EB9F29 /* MyTurnPractiseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0C75FEEE6727814C8D4456 /* MyTurnPractiseButton.swift */; };
 		AA000001 /* GoalDiggerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001 /* GoalDiggerApp.swift */; };
 		AA000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002 /* AppDelegate.swift */; };
 		AA000003 /* Team.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003 /* Team.swift */; };
@@ -166,6 +165,7 @@
 		912013703FAF48AC8F477692 /* WCNextMatchCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WCNextMatchCard.swift; sourceTree = "<group>"; };
 		922140CFA2F1A4786CEDC255 /* LingoView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LingoView.swift; sourceTree = "<group>"; };
 		9D73223B9708A1BB7B5EA13D /* LiveActivityManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityManager.swift; sourceTree = "<group>"; };
+		AA0C75FEEE6727814C8D4456 /* MyTurnPractiseButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyTurnPractiseButton.swift; sourceTree = "<group>"; };
 		AB000001 /* GoalDiggerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalDiggerApp.swift; sourceTree = "<group>"; };
 		AB000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		AB000003 /* Team.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Team.swift; sourceTree = "<group>"; };
@@ -243,9 +243,7 @@
 		BCDB9E93E3CF813F605541EE /* MatchLiveActivity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MatchLiveActivity.swift; sourceTree = "<group>"; };
 		C94C9314600B101EA7FBA6D9 /* LiveActivityBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityBundle.swift; sourceTree = "<group>"; };
 		C9B7B4A91229A7B66DD56083 /* MyTurnView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyTurnView.swift; sourceTree = "<group>"; };
-		CC92554CE8AA05ACAD77F8F9 /* KitView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KitView.swift; sourceTree = "<group>"; };
 		CCC2F8DAF9A3D770423F8C38 /* InsiderItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InsiderItem.swift; sourceTree = "<group>"; };
-		D368D699BBD5A6E3570316C7 /* DrillsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DrillsView.swift; sourceTree = "<group>"; };
 		D5A88D0BF10EC36C829985F7 /* LiveMatchCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveMatchCard.swift; sourceTree = "<group>"; };
 		D8C25D6C48090CD68B903A14 /* InsiderCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InsiderCard.swift; sourceTree = "<group>"; };
 		DCA4D1D232DB07DA5CC85E8B /* LiveMatchSnapshot.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveMatchSnapshot.swift; sourceTree = "<group>"; };
@@ -276,12 +274,11 @@
 		430BEFCC585335D42A45315D /* MyTurn */ = {
 			isa = PBXGroup;
 			children = (
-				D368D699BBD5A6E3570316C7 /* DrillsView.swift */,
-				CC92554CE8AA05ACAD77F8F9 /* KitView.swift */,
 				922140CFA2F1A4786CEDC255 /* LingoView.swift */,
 				C9B7B4A91229A7B66DD56083 /* MyTurnView.swift */,
 				4DEDD7BB48436C1F2CEE9515 /* QuizView.swift */,
 				1ADF83F8ECC74099BBB0BB27 /* SayThisView.swift */,
+				AA0C75FEEE6727814C8D4456 /* MyTurnPractiseButton.swift */,
 			);
 			name = MyTurn;
 			path = MyTurn;
@@ -775,14 +772,13 @@
 				F2301FB9ED3DC5D4B9693246 /* ErrorReporter.swift in Sources */,
 				53B18C2E8D0E9CA715D82926 /* MyTurnContentService.swift in Sources */,
 				E1306FD7172C8AD374F812D2 /* MyTurnStore.swift in Sources */,
-				943981C98435F0D664C27833 /* DrillsView.swift in Sources */,
-				032887A37CBD03318F930B5E /* KitView.swift in Sources */,
 				1958991C7C4BB12F44CFD55F /* LingoView.swift in Sources */,
 				CA7E9F3D568141E95151BC0C /* MyTurnView.swift in Sources */,
 				4C683AC53EDFF9D0E6AFD948 /* QuizView.swift in Sources */,
 				F9D3BF1239833859BA1EFD4D /* SayThisView.swift in Sources */,
 				73A1A94EF89C814DE83C183E /* LiveClubPack.swift in Sources */,
 				DB5039EBD938A4E4B32D5BFC /* Competition.swift in Sources */,
+				9D8349CC509C7124A5EB9F29 /* MyTurnPractiseButton.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

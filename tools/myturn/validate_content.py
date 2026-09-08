@@ -255,74 +255,20 @@ def validate_quiz(d: dict) -> tuple[int, int]:
     return len(packs), total
 
 
-# ----------------------------------------------------------------- drills
-def validate_drills(d: dict, lingo_ok: bool, saythis_ok: bool) -> int:
-    decks = d.get("decks", [])
-    check_ids("drills decks", [x.get("id", "") for x in decks])
-    for deck in decks:
-        did = deck.get("id", "?")
-        src = deck.get("source")
-        if src not in ("saythis", "lingo", "static"):
-            err(f"drills/{did}: source '{src}' invalid")
-        if not deck.get("label"):
-            err(f"drills/{did}: no label")
-        if src != "static":
-            if deck.get("cards"):
-                err(f"drills/{did}: a {src}-sourced deck must not carry its own cards")
-            continue
-        cards = deck.get("cards", [])
-        if len(cards) < 10:
-            err(f"drills/{did}: {len(cards)} cards (a session is 10 cards)")
-        check_ids(f"drills/{did}", [c.get("id", "") for c in cards])
-        for c in cards:
-            cid = c.get("id", "?")
-            ft = c.get("frontType")
-            if ft not in ("image", "text", "kit"):
-                err(f"drills/{cid}: frontType '{ft}' invalid")
-            back = c.get("back", "")
-            if not back:
-                err(f"drills/{cid}: back is required")
-            if ft == "image":
-                path = os.path.join(ROOT, str(c.get("front", "")))
-                if not os.path.isfile(path):
-                    err(f"drills/{cid}: image '{c.get('front')}' is not in the bundle")
-            elif ft == "kit":
-                kit = c.get("front")
-                if not isinstance(kit, dict):
-                    err(f"drills/{cid}: a kit front is an object")
-                    continue
-                for k in ("primary", "secondary"):
-                    if not re.match(r"^#[0-9A-Fa-f]{6}$", str(kit.get(k, ""))):
-                        err(f"drills/{cid}: kit.{k} must be a #RRGGBB colour")
-                if kit.get("pattern") not in ("plain", "stripes", "hoops", "halves", "sash", "sleeves", "pinstripes", "quarters"):
-                    err(f"drills/{cid}: kit.pattern '{kit.get('pattern')}' invalid")
-                if kit.get("shorts") is not None and not re.match(r"^#[0-9A-Fa-f]{6}$", str(kit.get("shorts"))):
-                    err(f"drills/{cid}: kit.shorts must be a #RRGGBB colour")
-            elif not c.get("front"):
-                err(f"drills/{cid}: front is required")
-            # The back of a Players card is the name only — never "plays for X".
-            if did == "players" and re.search(r"\b(plays for|at [A-Z]|of [A-Z])", back):
-                err(f"drills/{cid}: a Players back is the name only, never a club — clubs change")
-    return len(decks)
-
-
 def main() -> int:
     quiet = "--quiet" in sys.argv
     saythis = load("saythis.json")
     lingo = load("lingo.json")
     quiz = load("quiz.json")
-    drills = load("drills.json")
     n_terms = validate_lingo(lingo) if lingo else 0
     lingo_ids = {t.get("id") for t in lingo.get("terms", [])} if lingo else set()
     n_sit, n_lines = validate_saythis(saythis, lingo_ids) if saythis else (0, 0)
     n_packs, n_q = validate_quiz(quiz) if quiz else (0, 0)
-    n_decks = validate_drills(drills, bool(lingo), bool(saythis)) if drills else 0
 
     if not quiet:
         print(f"saythis: {n_sit} situations, {n_lines} lines")
         print(f"lingo:   {n_terms} terms")
         print(f"quiz:    {n_packs} packs, {n_q} questions")
-        print(f"drills:  {n_decks} decks")
     for w in warnings:
         print(f"warn: {w}")
     for e in errors:

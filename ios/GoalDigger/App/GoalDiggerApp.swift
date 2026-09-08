@@ -312,7 +312,7 @@ struct MainTabView: View {
             }
             .tag(1)
 
-            // Tab 3: My Turn — the toolbox. Say This / Lingo / Quiz / Drills.
+            // Tab 3: My Turn — the toolbox. Quiz / Lingo / Say This.
             // Static, offline, no live data; everything here is always true,
             // which is the rule that separates it from the Feed.
             NavigationStack {

@@ -1,7 +1,7 @@
 import Foundation
 import Observation
 
-/// Loads the four My Turn content files and keeps them current.
+/// Loads the three My Turn content files and keeps them current.
 ///
 /// Order of precedence for each module:
 ///   1. a cached download in Application Support/MyTurn/<module>.json whose
@@ -23,7 +23,6 @@ final class MyTurnContentService {
     private(set) var sayThis: SayThisContent
     private(set) var lingo: LingoContent
     private(set) var quiz: QuizContent
-    private(set) var drills: DrillsContent
 
     private let decoder = JSONDecoder()
     private var lastRefresh: Date?
@@ -34,7 +33,6 @@ final class MyTurnContentService {
         sayThis = Self.loadBest("saythis") ?? SayThisContent(contentVersion: "0", situations: [])
         lingo   = Self.loadBest("lingo")   ?? LingoContent(contentVersion: "0", terms: [])
         quiz    = Self.loadBest("quiz")    ?? QuizContent(contentVersion: "0", packs: [])
-        drills  = Self.loadBest("drills")  ?? DrillsContent(contentVersion: "0", decks: [])
     }
 
     // MARK: Loading
@@ -74,21 +72,9 @@ final class MyTurnContentService {
         return nil
     }
 
-    /// Resolves an image path from drills.json to a bundle URL. Remote content
-    /// can only reference images the app ships with; anything else renders as
-    /// the card's back text instead.
-    static func imageURL(_ relativePath: String) -> URL? {
-        let parts = relativePath.split(separator: "/").map(String.init)
-        guard let file = parts.last else { return nil }
-        let name = (file as NSString).deletingPathExtension
-        let ext = (file as NSString).pathExtension
-        let sub = "MyTurn" + (parts.count > 1 ? "/" + parts.dropLast().joined(separator: "/") : "")
-        return Bundle.main.url(forResource: name, withExtension: ext, subdirectory: sub)
-    }
-
     var currentVersions: [String: String] {
         ["saythis": sayThis.contentVersion, "lingo": lingo.contentVersion,
-         "quiz": quiz.contentVersion, "drills": drills.contentVersion]
+         "quiz": quiz.contentVersion]
     }
 
     // MARK: Refresh
@@ -171,9 +157,6 @@ final class MyTurnContentService {
         case "quiz":
             guard let c = try? decoder.decode(QuizContent.self, from: data) else { return }
             store(module, data); quiz = c
-        case "drills":
-            guard let c = try? decoder.decode(DrillsContent.self, from: data) else { return }
-            store(module, data); drills = c
         default:
             return
         }

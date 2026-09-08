@@ -47,7 +47,7 @@ final class MyTurnStore {
     }
 
     private struct Persisted: Codable {
-        var lastModule: MyTurnModule = .sayThis
+        var lastModule: MyTurnModule = .quiz
         var starredLineIds: [String] = []
         var hasSeenRiskExplainer: Bool = false
         var sayThisSituationId: String? = nil
@@ -181,7 +181,12 @@ final class MyTurnStore {
 
     func endRound() { state.quizRound = nil }
 
-    // MARK: Drills
+    // MARK: Flashcards
+    //
+    // The three-bucket engine (new / learning / known) that Drills used to own.
+    // Drills went as a tab on 2026-09-09; Lingo's flashcard practise keeps the
+    // engine, keyed by deck id, and the persisted field names stay so nothing
+    // she has already learned is lost.
 
     func bucket(deckId: String, cardId: String) -> Bucket {
         state.drillBuckets[deckId]?[cardId] ?? .new

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The toolbox tab. One segmented control, four modules, exactly one visible.
+/// The toolbox tab. One segmented control, three modules, exactly one visible.
 ///
 /// All four module views stay mounted (opacity-switched) so scroll position,
 /// search text and an open situation survive a switch without any plumbing;
@@ -31,9 +31,6 @@ struct MyTurnView: View {
                     QuizView(content: content.quiz, store: store, clubId: appState.selectedTeam?.rawValue, livePack: live.pack)
                         .opacity(store.lastModule == .quiz ? 1 : 0)
                         .allowsHitTesting(store.lastModule == .quiz)
-                    DrillsView(store: store)
-                        .opacity(store.lastModule == .drills ? 1 : 0)
-                        .allowsHitTesting(store.lastModule == .drills)
                 }
             }
         }
@@ -56,7 +53,7 @@ struct MyTurnView: View {
     #if DEBUG
     /// Screenshot harness, see MainTabView. `-gdMyTurnModule quiz`,
     /// `-gdMyTurnSituation sideways`, `-gdMyTurnPack legends`,
-    /// `-gdMyTurnDeck kits`, `-gdLingoQuery offside`.
+    /// `-gdLingoQuery offside`.
     private func applyLaunchArguments() {
         let args = ProcessInfo.processInfo.arguments
         func value(_ flag: String) -> String? {
@@ -73,15 +70,6 @@ struct MyTurnView: View {
         if let p = value("-gdMyTurnPack"), let pack = content.quiz.packs.first(where: { $0.id == p }) {
             store.startRound(pack: pack)
             applyQuizAnswerArgument(pack: pack)
-        }
-        if let d = value("-gdMyTurnDeck"), let deck = content.drills.decks.first(where: { $0.id == d }) {
-            let ids: [String]
-            switch deck.source {
-            case .saythis: ids = content.sayThis.situations.flatMap { $0.lines.map(\.id) }
-            case .lingo: ids = content.lingo.terms.map(\.id)
-            case .staticCards: ids = (deck.cards ?? []).map(\.id)
-            }
-            store.startDrill(deckId: deck.id, cardIds: ids)
         }
     }
 
@@ -109,7 +97,7 @@ struct MyTurnView: View {
     }
     #endif
 
-    /// Four fixed segments, full width, no horizontal scroll. Same visual
+    /// Three fixed segments, full width, no horizontal scroll. Same visual
     /// language as the team page's Info / Calendar / Table control: the
     /// selected segment is a rose pill, the rest are recessed text.
     private var segmentedControl: some View {
