@@ -13,12 +13,8 @@ struct LingoFlashcardsView: View {
     let content: LingoContent
     @Bindable var store: MyTurnStore
 
-    /// How many she knew in this session. It belongs in the session, but
-    /// `MyTurnStore` is not this change's to edit, and a `@State` counter
-    /// would read zero after a cold start mid-session.
-    // ponytail: one UserDefaults key instead of a field on DrillSession. If
-    // the store ever gains `knew`, delete this and read it from the session.
-    @AppStorage(LingoDrill.knewKey) private var knew = 0
+    /// How many she knew this session, from the session itself.
+    private var knew: Int { store.drillSession?.knew ?? 0 }
 
     private var session: MyTurnStore.DrillSession? {
         guard let s = store.drillSession, s.deckId == LingoDrill.deckId else { return nil }
@@ -280,7 +276,6 @@ struct LingoFlashcardsView: View {
 /// what she knew, and the level she is on.
 enum LingoDrill {
     static let deckId = "lingo"
-    static let knewKey = "lingoDrillKnew"
     static let cardsPerSession = 10
     /// Know eight of a level's words and the next level becomes the one she
     /// is offered. Eight of ten to fourteen, so it is reachable in a sitting
@@ -289,14 +284,10 @@ enum LingoDrill {
 
     @MainActor static func start(_ store: MyTurnStore, ids: [String]) {
         guard !ids.isEmpty else { return }
-        UserDefaults.standard.set(0, forKey: knewKey)
         store.startDrill(deckId: deckId, cardIds: ids)
     }
 
     @MainActor static func grade(_ store: MyTurnStore, knewIt: Bool) {
-        if knewIt {
-            UserDefaults.standard.set(UserDefaults.standard.integer(forKey: knewKey) + 1, forKey: knewKey)
-        }
         store.grade(knewIt: knewIt)
     }
 

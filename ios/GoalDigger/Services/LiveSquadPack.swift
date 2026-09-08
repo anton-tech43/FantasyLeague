@@ -25,6 +25,15 @@ enum LiveSquadPack {
         let position: String?
         let photo_url: String?
         let number: Int?
+        /// This club, this season, all competitions (migration 095). Nil until
+        /// the daily stats sync has run; 0 for a squad member yet to play.
+        let appearances: Int?
+        let minutes: Int?
+
+        /// A man who has not played this season. The templated lines that
+        /// assume he matters ("Everything goes through Dowman") are wrong for
+        /// him; the honest line is a question about whether he will.
+        var isFringe: Bool { (appearances ?? 0) == 0 }
     }
 
     // MARK: His squad
@@ -55,19 +64,25 @@ enum LiveSquadPack {
                 let sameShirt = named.filter { $0.position == p.position && $0.name != p.name }
                     .map { LiveClubPack.shortName($0.name) }
                 qs += LiveClubPack.question(
-                    id: "squad-photo-\(p.api_player_id)", difficulty: 2,
+                    id: "squad-photo-\(p.api_player_id)", difficulty: p.isFringe ? 3 : 2,
                     question: "Who is this?",
                     answer: short,
                     distractors: sameShirt.count >= 3 ? sameShirt : allNames,
                     explanation: who,
-                    why: "Faces come before names. Once you know his, the commentary starts to make sense.",
+                    why: p.isFringe
+                        ? "One of the squad players. If he comes on late, you will be the one who knows the name."
+                        : "Faces come before names. Once you know his, the commentary starts to make sense.",
                     useType: .say,
                     use: "When the camera finds him: " + LiveClubPack.quote("There's \(short)."),
                     image: photo, player: person
                 )
             }
 
-            if let n = p.number {
+            // API-Football carries stale numbers for some fringe players, so a
+            // squad payload can show three men on 1. Asking what number X wears
+            // is still answerable, but the fact itself is suspect when shared,
+            // so only ask it about a number one man holds.
+            if let n = p.number, named.filter({ $0.number == n }).count == 1 {
                 qs += LiveClubPack.question(
                     id: "squad-number-\(p.api_player_id)", difficulty: 3,
                     question: "What number does \(short) wear?",
@@ -82,15 +97,22 @@ enum LiveSquadPack {
             }
 
             if p.position != nil {
+                // "Everything goes through Dowman" is the right line for a man
+                // who plays every week and a strange one for a sixteen-year-old
+                // who has not. A fringe player gets the honest question instead.
                 qs += LiveClubPack.question(
-                    id: "squad-pos-\(p.api_player_id)", difficulty: 1,
+                    id: "squad-pos-\(p.api_player_id)", difficulty: p.isFringe ? 3 : 1,
                     question: "What position does \(short) play?",
                     answer: label,
                     distractors: LiveClubPack.positionDistractors(for: label),
                     explanation: who,
-                    why: "He'll say the surname and expect you to know the job that comes with it.",
-                    useType: LiveClubPack.positionUseType(label),
-                    use: LiveClubPack.positionUse(label, short: short),
+                    why: p.isFringe
+                        ? "Squad players come and go from the bench. Knowing the name is enough."
+                        : "He'll say the surname and expect you to know the job that comes with it.",
+                    useType: p.isFringe ? .ask : LiveClubPack.positionUseType(label),
+                    use: p.isFringe
+                        ? LiveClubPack.quote("Is \(short) going to get a run this season?")
+                        : LiveClubPack.positionUse(label, short: short),
                     player: person
                 )
             }

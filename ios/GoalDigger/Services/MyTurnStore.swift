@@ -44,6 +44,27 @@ final class MyTurnStore {
         var flipped: Bool = false
         var done: Int = 0
         var finished: Bool = false
+        /// Cards graded "Knew it" this session, for the end screen.
+        var knew: Int = 0
+
+        init(deckId: String, queue: [String]) {
+            self.deckId = deckId
+            self.queue = queue
+        }
+
+        /// Tolerant: this struct sits inside the one JSON blob that holds every
+        /// starred line and quiz score, so a field added later (`knew`, 2026-09-09)
+        /// must decode as its default rather than throw and reset her state.
+        init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            deckId = try c.decode(String.self, forKey: .deckId)
+            queue = try c.decode([String].self, forKey: .queue)
+            index = try c.decodeIfPresent(Int.self, forKey: .index) ?? 0
+            flipped = try c.decodeIfPresent(Bool.self, forKey: .flipped) ?? false
+            done = try c.decodeIfPresent(Int.self, forKey: .done) ?? 0
+            finished = try c.decodeIfPresent(Bool.self, forKey: .finished) ?? false
+            knew = try c.decodeIfPresent(Int.self, forKey: .knew) ?? 0
+        }
     }
 
     private struct Persisted: Codable {
@@ -224,6 +245,7 @@ final class MyTurnStore {
         var deck = state.drillBuckets[s.deckId] ?? [:]
         let current = deck[cardId] ?? .new
         if knewIt {
+            s.knew += 1
             deck[cardId] = current == .new ? .learning : .known
             if current == .learning || current == .known { deck[cardId] = .known }
         } else {
