@@ -293,7 +293,11 @@ class AppState {
                      "calendarSyncEnabled", "hasSeenSeasonPrimer", "hasSeenWCPrompt"]
         keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
         UnreadTracker.shared.clearAll()
-        Task { @MainActor in MyTurnStore.shared.clearAll(); LiveClubPackService.shared.clear() }
+        Task { @MainActor in
+            MyTurnStore.shared.clearAll()
+            LiveClubPackService.shared.clear()
+            LiveSquadService.shared.clear()
+        }
     }
 }
 
