@@ -168,10 +168,18 @@ async function fetchAPIFootball(
   if (team.entity_type === "tournament") {
     const tLeague = team.api_football_id; // for a tournament this IS the league id
     const tSeason = seasonForLeague(tLeague);
+    // A knockout cup has no table, and asking for one logs an empty response
+    // every two hours. A knockout ROUND, on the other hand, is played in a
+    // single evening — the League Cup last 32 is sixteen ties — so 20 fixtures
+    // does not reach the end of it.
+    const isKnockoutCup = tLeague === 48 || tLeague === 45;
+    const window = isKnockoutCup ? 40 : 20;
     const tEndpoints = [
-      { name: "standings", path: `/standings?league=${tLeague}&season=${tSeason}` },
-      { name: "fixtures_next", path: `/fixtures?league=${tLeague}&season=${tSeason}&next=20` },
-      { name: "fixtures_last", path: `/fixtures?league=${tLeague}&season=${tSeason}&last=20` },
+      ...(isKnockoutCup
+        ? []
+        : [{ name: "standings", path: `/standings?league=${tLeague}&season=${tSeason}` }]),
+      { name: "fixtures_next", path: `/fixtures?league=${tLeague}&season=${tSeason}&next=${window}` },
+      { name: "fixtures_last", path: `/fixtures?league=${tLeague}&season=${tSeason}&last=${window}` },
     ];
     for (const ep of tEndpoints) {
       try {

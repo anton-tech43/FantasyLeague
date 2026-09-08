@@ -7,6 +7,11 @@ struct LiveMatchSnapshot: Codable {
     let fixtureId: Int
     let homeTeamId: String   // slug, e.g. "mexico"
     let awayTeamId: String   // slug, e.g. "south_africa"
+    /// Display names resolved server-side from `teams`, so a cup opponent the
+    /// app has never compiled in (Lincoln, Napoli) still gets a Live Activity.
+    /// Nil against an older backend; the enums are the fallback.
+    let homeName: String?
+    let awayName: String?
     let homeGoals: Int
     let awayGoals: Int
     let status: String       // API-Football short: "NS","1H","HT","2H","ET","FT",…
@@ -17,6 +22,8 @@ struct LiveMatchSnapshot: Codable {
         case fixtureId = "fixture_id"
         case homeTeamId = "home_team_id"
         case awayTeamId = "away_team_id"
+        case homeName = "home_name"
+        case awayName = "away_name"
         case homeGoals = "home_goals"
         case awayGoals = "away_goals"
         case status

@@ -108,6 +108,7 @@
 		CCD1E4EDA6BD470832977407 /* InsiderItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCC2F8DAF9A3D770423F8C38 /* InsiderItem.swift */; };
 		CEE0AA64A8A71768C7DAE896 /* AudioPlayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36F66AB00E15F67DAA68C18A /* AudioPlayerService.swift */; };
 		DACB60FB5B8E068045070D2F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F288B1DCFB01F70EA2722C7 /* Foundation.framework */; };
+		DB5039EBD938A4E4B32D5BFC /* Competition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C6A674DCE8CC6E44C5136A /* Competition.swift */; };
 		DF1EDE6C6A0AA125869C7F8D /* InsiderCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C25D6C48090CD68B903A14 /* InsiderCard.swift */; };
 		E1306FD7172C8AD374F812D2 /* MyTurnStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B8C8BE4CFA3444C2C316A0 /* MyTurnStore.swift */; };
 		F2301FB9ED3DC5D4B9693246 /* ErrorReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4421111DA5D3319C08E1C4C /* ErrorReporter.swift */; };
@@ -161,6 +162,7 @@
 		7053F7511B38A308FC409BEB /* MyTurnContent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyTurnContent.swift; sourceTree = "<group>"; };
 		7239C9DAC195717215AC20F2 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		842AE9AEAF418CB78FA4589A /* glossary.json */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json; path = glossary.json; sourceTree = "<group>"; };
+		87C6A674DCE8CC6E44C5136A /* Competition.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Competition.swift; sourceTree = "<group>"; };
 		912013703FAF48AC8F477692 /* WCNextMatchCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WCNextMatchCard.swift; sourceTree = "<group>"; };
 		922140CFA2F1A4786CEDC255 /* LingoView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LingoView.swift; sourceTree = "<group>"; };
 		9D73223B9708A1BB7B5EA13D /* LiveActivityManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityManager.swift; sourceTree = "<group>"; };
@@ -446,6 +448,7 @@
 				0E9B40C83CE30947DD4E9AB4 /* LiveMatchBrief.swift */,
 				1BC4A29F62D389F4A4751E27 /* SaturdayQuiz.swift */,
 				7053F7511B38A308FC409BEB /* MyTurnContent.swift */,
+				87C6A674DCE8CC6E44C5136A /* Competition.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -779,6 +782,7 @@
 				4C683AC53EDFF9D0E6AFD948 /* QuizView.swift in Sources */,
 				F9D3BF1239833859BA1EFD4D /* SayThisView.swift in Sources */,
 				73A1A94EF89C814DE83C183E /* LiveClubPack.swift in Sources */,
+				DB5039EBD938A4E4B32D5BFC /* Competition.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

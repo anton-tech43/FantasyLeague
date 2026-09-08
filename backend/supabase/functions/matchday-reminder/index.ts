@@ -30,7 +30,7 @@ import { buildAPNsPayload, sendPushNotification } from "../_shared/apns-client.t
 import { renderMatchdayReminder, renderPreMatchBuildup, safeTz } from "../_shared/matchday-reminder-copy.ts";
 import { buildContentItem } from "../_shared/build-content-item.ts";
 import { preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
-import { seasonForLeague } from "../_shared/league-helpers.ts";
+import { competitionProse, COVERED_CUP_LEAGUES, roundLabel, seasonForLeague } from "../_shared/league-helpers.ts";
 
 const WINDOW_MS = 24 * 60 * 60 * 1000;
 const API_FOOTBALL_BASE = "https://v3.football.api-sports.io";
@@ -42,10 +42,20 @@ interface Candidate {
   opponentId: string | null;
   kickoff: Date;
   source: "api_football" | "match_status_state";
+  /// "League Cup (Carabao Cup), last 32". Empty for the Premier League, where
+  /// naming the competition tells the reader nothing she does not assume.
+  competition?: string;
+}
+
+/// The competition in the words the push uses. Silent for a home league.
+function fixtureCompetition(leagueId: number, round: string | undefined): string {
+  if (!COVERED_CUP_LEAGUES.includes(leagueId)) return "";
+  return [competitionProse(leagueId), roundLabel(round)].filter(Boolean).join(", ");
 }
 
 interface ApiFixtureLite {
   fixture: { id: number; date: string; status?: { short?: string } };
+  league?: { id?: number; round?: string };
   teams: { home: { id: number; name: string }; away: { id: number; name: string } };
 }
 
@@ -118,7 +128,10 @@ serve(async (req) => {
   const idByApiId = new Map<number, string>(
     teams.filter((t) => t.api_football_id != null).map((t) => [t.api_football_id as number, t.id]),
   );
-  const leagueIds = [...new Set(teams.map((t) => t.league_id))];
+  // Home leagues plus every cup we cover: a club's League Cup tie is not in
+  // league 39, so until now the 07:00 heads-up skipped cup mornings entirely.
+  // One API call per league per day, so five more leagues costs five calls.
+  const leagueIds = [...new Set([...teams.map((t) => t.league_id), ...COVERED_CUP_LEAGUES])];
   if (teams.length === 0) return json({ reminders_sent: 0, note: "no active entities" });
 
   // Only bother with entities that actually have a follower — no point
@@ -156,11 +169,12 @@ serve(async (req) => {
         const awayId = idByApiId.get(fx.teams.away.id) ?? null;
         // One candidate per OUR team in the fixture (a PL derby yields two —
         // each side's followers get their own reminder).
+        const competition = fixtureCompetition(leagueId, fx.league?.round);
         if (homeId) {
-          candidates.push({ teamId: homeId, opponent: awayId ? (nameById.get(awayId) ?? fx.teams.away.name) : fx.teams.away.name, opponentId: awayId, kickoff, source: "api_football" });
+          candidates.push({ teamId: homeId, opponent: awayId ? (nameById.get(awayId) ?? fx.teams.away.name) : fx.teams.away.name, opponentId: awayId, kickoff, source: "api_football", competition });
         }
         if (awayId) {
-          candidates.push({ teamId: awayId, opponent: homeId ? (nameById.get(homeId) ?? fx.teams.home.name) : fx.teams.home.name, opponentId: homeId, kickoff, source: "api_football" });
+          candidates.push({ teamId: awayId, opponent: homeId ? (nameById.get(homeId) ?? fx.teams.home.name) : fx.teams.home.name, opponentId: homeId, kickoff, source: "api_football", competition });
         }
       }
       continue;
@@ -178,8 +192,10 @@ serve(async (req) => {
       const kickoff = new Date(r.kickoff_time as string);
       const homeId = r.home_team_id as string;
       const awayId = r.away_team_id as string;
-      if (nameById.has(homeId)) candidates.push({ teamId: homeId, opponent: nameById.get(awayId) ?? awayId, opponentId: awayId, kickoff, source: "match_status_state" });
-      if (nameById.has(awayId)) candidates.push({ teamId: awayId, opponent: nameById.get(homeId) ?? homeId, opponentId: homeId, kickoff, source: "match_status_state" });
+      // match_status_state carries no round, so the competition is named alone.
+      const competition = fixtureCompetition(leagueId, undefined);
+      if (nameById.has(homeId)) candidates.push({ teamId: homeId, opponent: nameById.get(awayId) ?? awayId, opponentId: awayId, kickoff, source: "match_status_state", competition });
+      if (nameById.has(awayId)) candidates.push({ teamId: awayId, opponent: nameById.get(homeId) ?? homeId, opponentId: homeId, kickoff, source: "match_status_state", competition });
     }
   }
 
@@ -189,7 +205,7 @@ serve(async (req) => {
   for (const cand of candidates) {
     const teamId = cand.teamId;
     const teamName = nameById.get(teamId) ?? teamId;
-    const fx = { opponent: cand.opponent };
+    const fx = { opponent: cand.opponent, competition: cand.competition ?? "" };
     const kickoff = cand.kickoff;
     {
 
@@ -261,7 +277,7 @@ serve(async (req) => {
       // ── Reminder PUSH — followed entities only ───────────────────────────
       const isFollowed = followed.has(teamId);
       // Default-zone copy for the dry-run report; real sends render per zone below.
-      const copy = renderMatchdayReminder({ teamName, opponent: fx.opponent, kickoffUtc: kickoff, now });
+      const copy = renderMatchdayReminder({ teamName, opponent: fx.opponent, kickoffUtc: kickoff, now, competition: fx.competition });
 
       if (dryRun) {
         results.push({
@@ -312,7 +328,7 @@ serve(async (req) => {
         const tz = safeTz(tzRaw);
         let p = payloadByTz.get(tz);
         if (!p) {
-          const c = renderMatchdayReminder({ teamName, opponent: fx.opponent, kickoffUtc: kickoff, now, tz });
+          const c = renderMatchdayReminder({ teamName, opponent: fx.opponent, kickoffUtc: kickoff, now, tz, competition: fx.competition });
           p = buildAPNsPayload(
             "", // teamShortName fallback unused — pushTitle is set below
             c.body, // headline fallback

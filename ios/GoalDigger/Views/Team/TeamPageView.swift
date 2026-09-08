@@ -109,14 +109,31 @@ struct TeamPageView: View {
             Color.appBackground.ignoresSafeArea()
 
             if let content {
-                ScrollView {
-                    VStack(spacing: 12) {
-                        headerSection
-                        tabSelector
-                        tabContent(content.cards)
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(spacing: 12) {
+                            headerSection
+                            tabSelector
+                            tabContent(content.cards)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 40)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 40)
+                    #if DEBUG
+                    // The screenshot harness cannot scroll, so a card below the
+                    // fold is unverifiable without this. -gdTeamExpand also
+                    // scrolls to the card it opens.
+                    .onAppear {
+                        let args = ProcessInfo.processInfo.arguments
+                        var target = expandedCard
+                        if let i = args.firstIndex(of: "-gdTeamScrollTo"), i + 1 < args.count,
+                           args[i + 1] == "comingUp" { target = .comingUp }
+                        guard let target else { return }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                            withAnimation { proxy.scrollTo(target, anchor: .top) }
+                        }
+                    }
+                    #endif
                 }
             } else if isLoading {
                 teamPageLoadingView
@@ -410,7 +427,7 @@ struct TeamPageView: View {
         if showPostMatch, let postMatch = content?.cards.postMatch {
             postMatchCard(postMatch)
         } else if let fixture = cards.nextFixture {
-            comingUpCard(fixture)
+            comingUpCard(fixture).id(TeamCardType.comingUp)
         }
 
         // Card 8 (T2+ only): "Things he doesn't know" — 4 niche items
@@ -473,6 +490,17 @@ struct TeamPageView: View {
                         .font(.jakarta(13, weight: .regular))
                         .foregroundColor(.warmWhite.opacity(0.7))
                         .lineLimit(1)
+                    // Which competition. "Hull City, home" on a League Cup
+                    // night was indistinguishable from a league Saturday.
+                    if let competition = fixture.competitionShort {
+                        Text(competition)
+                            .font(.jakarta(11, weight: .bold))
+                            .foregroundColor(.warmWhite.opacity(0.85))
+                            .lineLimit(1)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Capsule().fill(Color.warmWhite.opacity(0.12)))
+                    }
                     if let favorite = fixture.favorite {
                         Text(favorite.label)
                             .font(.jakarta(11, weight: .bold))
@@ -999,11 +1027,14 @@ struct TeamPageView: View {
             .foregroundColor(.hotRose)
     }
 
+    /// "Tue 8 Sep, 8:45pm" for the collapsed Coming-up row. The weekday was
+    /// spelled out until a competition chip joined it on the same line and the
+    /// time started truncating; the Calendar tab abbreviates it too.
     private func formattedFixtureDate(_ isoDate: String) -> String {
         guard let date = Self.isoFormatter.date(from: isoDate) else { return isoDate }
 
         let display = DateFormatter()
-        display.dateFormat = "EEEE d MMM, h:mma"
+        display.dateFormat = "EEE d MMM, h:mma"
         display.amSymbol = "am"
         display.pmSymbol = "pm"
         return display.string(from: date)

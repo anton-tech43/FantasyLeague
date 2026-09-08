@@ -118,8 +118,8 @@ final class LiveActivityManager {
             return
         }
 
-        guard let home = Self.side(snap.homeTeamId),
-              let away = Self.side(snap.awayTeamId) else { return }
+        guard let home = Self.side(snap.homeTeamId, serverName: snap.homeName),
+              let away = Self.side(snap.awayTeamId, serverName: snap.awayName) else { return }
 
         let attributes = MatchActivityAttributes(
             fixtureId: snap.fixtureId,
@@ -136,7 +136,15 @@ final class LiveActivityManager {
 
     /// Display side for a country or club slug. Mirrors the backend's liveMeta:
     /// countries carry an emoji flag, clubs an empty one (the widget hides it).
-    private static func side(_ id: String) -> (name: String, flag: String)? {
+    ///
+    /// `serverName` wins when present. Before it existed this resolved only the
+    /// compiled `Country` / `Team` enums and returned nil for anything else, so
+    /// the caller's guard silently abandoned the whole activity — which is what
+    /// a cup tie is: "Napoli v Arsenal", "Sunderland v Lincoln". One of the two
+    /// sides is a club the app has never heard of.
+    private static func side(_ id: String, serverName: String? = nil) -> (name: String, flag: String)? {
+        let flag = Country(rawValue: id)?.flagEmoji ?? ""
+        if let serverName, !serverName.isEmpty { return (serverName, flag) }
         if let c = Country(rawValue: id) { return (c.shortName, c.flagEmoji) }
         if let t = Team(rawValue: id) { return (t.shortName, "") }
         return nil

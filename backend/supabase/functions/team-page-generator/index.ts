@@ -17,7 +17,7 @@ import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 import { wrapExternalData } from "../_shared/input-sanitizer.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import type { Team } from "../_shared/types.ts";
-import { fixtureImportance, fixtureLabel } from "../_shared/league-helpers.ts";
+import { competitionProse, COVERED_CUP_LEAGUES, fixtureImportance, fixtureLabel, roundLabel } from "../_shared/league-helpers.ts";
 import { annotateFixtures, classifyExactPointsOnly, type ExactInfo, type GroupStanding } from "../_shared/stakes-engine.ts";
 import { renderNextFixturePreview, renderOpponentDetail, renderThisWeek } from "../_shared/stakes-templates.ts";
 import { collectFinishedFixtureIds, dropFinished, FINISHED_STATUSES, filterFixturesByLeague } from "../_shared/fixture-rollover.ts";
@@ -1799,7 +1799,15 @@ function extractNextFixture(
   data: unknown,
   teamApiFootballId: number,
   skipPastBefore?: Date,
-): { opponent: string; date: string; venue: string } | null {
+): {
+  opponent: string;
+  date: string;
+  venue: string;
+  opponent_api_id?: number;
+  league_id?: number;
+  round?: string;
+  competition?: string;
+} | null {
   try {
     const response = (data as Record<string, unknown>).response as unknown[];
     if (!Array.isArray(response) || response.length === 0) return null;
@@ -1837,10 +1845,26 @@ function extractNextFixture(
     const opponent = isHome ? (away.name as string) : (home.name as string);
     const venue = isHome ? "home" : "away";
 
+    // The competition was available here all along and thrown away, so the
+    // Coming-up card said "Hull City, home" on a League Cup night with nothing
+    // to say which competition it was. buildUpcomingFixtures a few hundred
+    // lines up has read `item.league` since the Champions League work.
+    const league = fixture.league as Record<string, unknown> | undefined;
+    const leagueId = league?.id as number | undefined;
+    const round = league?.round as string | undefined;
     return {
       opponent,
       date: fixtureInfo.date as string,
       venue,
+      opponent_api_id: (isHome ? away.id : home.id) as number | undefined,
+      league_id: leagueId,
+      round,
+      // Prose form, so the card can print it: "League Cup (Carabao Cup), last 32".
+      // Only for a cup: every Premier League card would otherwise carry a
+      // "Premier League" chip, which is the one thing the reader assumes.
+      competition: leagueId !== undefined && COVERED_CUP_LEAGUES.includes(leagueId)
+        ? [competitionProse(leagueId), roundLabel(round)].filter(Boolean).join(", ")
+        : undefined,
     };
   } catch {
     return null;

@@ -23,8 +23,17 @@ export function seasonForLeague(leagueId: number): number {
   const now = new Date();
   const year = now.getUTCFullYear();
   switch (leagueId) {
+    // Every club competition follows the August-to-May season, so the cups
+    // share the PL's July cutoff. The `default` branch below returns the
+    // calendar year, which is right for a cup until 31 December and wrong
+    // from 1 January — the 2026-27 FA Cup is season 2026 in API-Football.
     case 39:
-    case 2:  return now.getUTCMonth() >= 6 ? year : year - 1;
+    case 2:   // Champions League
+    case 3:   // Europa League
+    case 848: // Conference League
+    case 45:  // FA Cup
+    case 48:  // League Cup
+      return now.getUTCMonth() >= 6 ? year : year - 1;
     case 1:  return 2026;
     default: return year;
   }
@@ -42,22 +51,93 @@ export function seasonForLeague(leagueId: number): number {
 export const FALLBACK_ACTIVE_LEAGUES: number[] = [39, 2, 1];
 
 /**
- * Competitions we write content for beyond a club's home league. Used by the
- * `active_competition_ids()` SQL function (migration 087) and mirrored here so
- * the Edge side can name them. A club's cup runs are deliberately absent: we
- * do not cover the League Cup or the FA Cup yet, and polling them would cost
- * API budget for content nobody writes.
+ * Competitions we cover beyond a club's home league (CUP_COVERAGE_PLAN.md,
+ * 2026-09-08). Mirrored in the `active_competition_ids()` / `poll_leagues()`
+ * SQL functions, which decide what match-watcher polls. Which of OUR clubs is
+ * in which cup is never stored — it is derived from the fixture feed.
  */
-export const COVERED_CUP_LEAGUES: number[] = [2]; // 2 = UEFA Champions League
+export const COVERED_CUP_LEAGUES: number[] = [
+  2,   // UEFA Champions League
+  3,   // UEFA Europa League
+  848, // UEFA Europa Conference League
+  48,  // League Cup (Carabao Cup)
+  45,  // FA Cup
+];
 
-/** Human name for a competition id, for card copy and calendar labels. */
-export function competitionName(leagueId: number): string {
-  switch (leagueId) {
-    case 39: return "Premier League";
-    case 2: return "Champions League";
-    case 1: return "World Championship";
-    default: return "Cup";
-  }
+/** Competition names, keyed by API-Football league id. One table, many callers. */
+export const COMPETITION_NAMES: Record<number, string> = {
+  39: "Premier League",
+  2: "Champions League",
+  3: "Europa League",
+  848: "Conference League",
+  48: "League Cup",
+  45: "FA Cup",
+  1: "World Championship",
+};
+
+/** Human name for a competition id, for card copy, badges and calendar labels. */
+export function competitionName(leagueId: number | undefined): string {
+  return (leagueId !== undefined && COMPETITION_NAMES[leagueId]) || "Cup";
+}
+
+/**
+ * The competition as it reads in a sentence. House copy (Anton, 2026-09-08):
+ * "League Cup (Carabao Cup)" in prose, plain "League Cup" in a badge.
+ */
+export function competitionProse(leagueId: number | undefined): string {
+  return leagueId === 48 ? "League Cup (Carabao Cup)" : competitionName(leagueId);
+}
+
+/**
+ * How far into a knockout competition a round is. API-Football gives the round
+ * verbatim ("Round of 32", "Quarter-finals", "Semi-finals", "Final", and for
+ * league phases "League Stage - 3" / "Regular Season - 4").
+ *
+ * `stage` is the sortable part: 0 = league phase or an early round, then 16, 8,
+ * 4, 2, 1 for the last 16 down to the final. Callers weight nights and gate
+ * pushes off it rather than each re-parsing the string.
+ */
+export interface RoundInfo {
+  stage: number;
+  /** Two-legged European knockout ties: which leg, when the round says. */
+  leg?: 1 | 2;
+  label: string;
+}
+
+export function parseRound(round: string | undefined): RoundInfo {
+  const r = (round ?? "").toLowerCase();
+  const leg = /2nd leg|second leg/.test(r) ? 2 : /1st leg|first leg/.test(r) ? 1 : undefined;
+
+  // "3rd Place Final" is not a final. Neither is "Semi-finals".
+  const isFinal = /\bfinal\b/.test(r) && !/semi|quarter|3rd|third/.test(r);
+  if (isFinal) return { stage: 1, leg, label: "final" };
+  if (/semi/.test(r)) return { stage: 2, leg, label: "semi-final" };
+  if (/quarter/.test(r)) return { stage: 4, leg, label: "quarter-final" };
+  if (/round of 16|1\/8|last 16/.test(r)) return { stage: 8, leg, label: "last 16" };
+  if (/round of 32|1\/16|last 32/.test(r)) return { stage: 16, leg, label: "last 32" };
+  if (/round of 64|last 64/.test(r)) return { stage: 32, leg, label: "last 64" };
+  if (/play-?off|playoff/.test(r)) return { stage: 24, leg, label: "play-off" };
+
+  // Numbered domestic-cup rounds ("3rd Round", "4th Round") and league phases.
+  const numbered = r.match(/(\d+)(?:st|nd|rd|th)?\s+round/);
+  if (numbered) return { stage: 40, leg, label: `${numbered[1]}${ordinalSuffix(Number(numbered[1]))} round` };
+  return { stage: 0, leg, label: "" };
+}
+
+function ordinalSuffix(n: number): string {
+  if (n % 100 >= 11 && n % 100 <= 13) return "th";
+  return ["th", "st", "nd", "rd"][n % 10] ?? "th";
+}
+
+/** The round in words, for copy: "last 32", "quarter-final", "" for a league phase. */
+export function roundLabel(round: string | undefined): string {
+  return parseRound(round).label;
+}
+
+/** A knockout round from the quarter-finals on, where a cup night is a real night. */
+export function isDeepKnockout(round: string | undefined): boolean {
+  const { stage } = parseRound(round);
+  return stage > 0 && stage <= 4;
 }
 
 /**
@@ -65,45 +145,77 @@ export function competitionName(leagueId: number): string {
  *
  * Everything used to be a flat 3, so a Champions League away leg in Naples read
  * exactly like a League Cup tie at Ipswich. The whole point of the calendar is
- * that she can see which night is the big one without knowing football.
+ * that she can see which night is the big one without knowing football, and a
+ * cup makes that sharper still: a League Cup Tuesday in September and the
+ * League Cup final are the same competition and nothing like the same evening.
  *
- * Knockout weight comes from the round name, which API-Football gives us
- * verbatim ("Round of 16", "Quarter-finals", "Semi-finals", "Final").
+ * `opponentIsTopFlight` lifts an early FA Cup round — a third-round tie against
+ * a Premier League club is a proper afternoon, one against a League Two side is
+ * a formality until it is not.
  */
-export function fixtureImportance(leagueId: number | undefined, round: string | undefined): number {
-  const r = (round ?? "").toLowerCase();
-  const isFinal = /\bfinal\b/.test(r) && !/semi|quarter|3rd|third/.test(r);
-  const isSemi = /semi/.test(r);
-  const isQuarter = /quarter/.test(r);
-  const isLast16 = /round of 16|1\/8/.test(r);
+export function fixtureImportance(
+  leagueId: number | undefined,
+  round: string | undefined,
+  opponentIsTopFlight?: boolean,
+): number {
+  const { stage } = parseRound(round);
+  const isFinal = stage === 1;
+  const isSemi = stage === 2;
+  const isQuarter = stage === 4;
+  const isLast16 = stage === 8;
 
-  if (leagueId === 2) {
-    // Champions League. Even the league phase is a bigger night than a
-    // midtable Saturday, and the knockouts are the biggest nights of his year.
-    if (isFinal) return 5;
-    if (isSemi || isQuarter) return 5;
-    if (isLast16) return 4;
-    return 4;
+  switch (leagueId) {
+    case 2: // Champions League — the knockouts are the biggest nights of his year.
+      if (isFinal || isSemi || isQuarter) return 5;
+      return 4; // last 16 and league phase both beat a midtable Saturday
+    case 3: // Europa League
+      if (isFinal) return 5;
+      if (isSemi || isQuarter) return 4;
+      return 3;
+    case 848: // Conference League
+      if (isFinal) return 4;
+      if (isSemi || isQuarter) return 3;
+      return 2;
+    case 45: // FA Cup — semi-finals and the final are at Wembley.
+      if (isFinal || isSemi) return 5;
+      if (isQuarter) return 4;
+      if (isLast16) return 3;
+      return opponentIsTopFlight ? 3 : 2;
+    case 48: // League Cup — a two-dot Tuesday until it is Wembley.
+      if (isFinal) return 5;
+      if (isSemi) return 4;
+      if (isQuarter) return 3;
+      return 2;
+    case 39:
+      return 3; // Premier League
+    case 1:
+      if (isFinal || isSemi || isQuarter) return 5;
+      return 4;
+    default:
+      return 2;
   }
-  if (leagueId === 39) return 3; // Premier League
-  if (leagueId === 1) {
-    if (isFinal || isSemi || isQuarter) return 5;
-    return 4;
-  }
-  return 2; // domestic cups we do not cover in depth
 }
 
 /**
- * Calendar label. Trims the sponsor prefix off the competition name and, for a
- * knockout tie, says which round — "Champions League semi-final" tells her more
- * than "UEFA Champions League".
+ * Calendar label, capped at 30 chars by the caller. Trims the sponsor prefix
+ * off the competition name and names the round — "Champions League semi-final"
+ * tells her more than "UEFA Champions League". Two-legged European ties say
+ * which leg, because "why are they playing them again" is the actual question.
  */
-export function fixtureLabel(leagueName: string | undefined, leagueId: number | undefined, round: string | undefined): string {
-  const base = (leagueName ?? "Fixture").replace(/^UEFA\s+/i, "").replace(/^FIFA\s+/i, "");
-  const r = (round ?? "").toLowerCase();
-  if (/\bfinal\b/.test(r) && !/semi|quarter|3rd|third/.test(r)) return `${base} final`;
-  if (/semi/.test(r)) return `${base} semi-final`;
-  if (/quarter/.test(r)) return `${base} quarter-final`;
-  if (/round of 16|1\/8/.test(r)) return `${base} last 16`;
-  return base;
+export function fixtureLabel(
+  leagueName: string | undefined,
+  leagueId: number | undefined,
+  round: string | undefined,
+): string {
+  const base = leagueId !== undefined && leagueId in COMPETITION_NAMES
+    ? COMPETITION_NAMES[leagueId]
+    : (leagueName ?? "Fixture").replace(/^UEFA\s+/i, "").replace(/^FIFA\s+/i, "");
+  const { stage, leg, label } = parseRound(round);
+  if (stage === 0 || !label) return base;
+  if (stage === 1) return `${base} final`;
+  const withRound = `${base} ${label}`;
+  // "Europa League quarter-final 2nd leg" is 35 chars; the caller trims to 30,
+  // so drop the competition rather than the leg, which is the new information.
+  if (leg) return withRound.length + 9 <= 30 ? `${withRound}, leg ${leg}` : `${label}, leg ${leg}`;
+  return withRound;
 }

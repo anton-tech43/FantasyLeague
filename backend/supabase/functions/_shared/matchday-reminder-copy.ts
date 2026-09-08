@@ -79,15 +79,21 @@ export function renderMatchdayReminder(args: {
   kickoffUtc: Date;
   now: Date;
   tz?: string | null;
+  /// "League Cup (Carabao Cup), last 32" — omitted for the league, where the
+  /// competition is not news. A cup morning without it reads like any other
+  /// Tuesday, which is exactly the thing she is meant to be told.
+  competition?: string | null;
   rng?: () => number;
 }): MatchdayReminderCopy {
-  const { teamName, opponent, kickoffUtc, now, rng = Math.random } = args;
+  const { teamName, opponent, kickoffUtc, now, competition, rng = Math.random } = args;
   const tz = safeTz(args.tz);
   const when = dayWord(kickoffUtc, now, tz);
   const whenAt = `${when} at ${hhmm(kickoffUtc, tz)}`;
+  const comp = (competition ?? "").trim();
+  const body = pick(BODY_VARIANTS, rng)(teamName, opponent, whenAt);
   return {
-    title: `${teamName} play ${when}`,
-    body: pick(BODY_VARIANTS, rng)(teamName, opponent, whenAt),
+    title: comp ? `${teamName}: ${comp.split(",")[0]} ${when}` : `${teamName} play ${when}`,
+    body: comp ? `${comp}. ${body}` : body,
   };
 }
 

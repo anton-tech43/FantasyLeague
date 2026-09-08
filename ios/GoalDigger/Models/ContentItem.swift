@@ -54,6 +54,22 @@ struct ContentItem: Identifiable, Codable {
     /// ranks by the gd-wc-preview routine). For a result item it carries the
     /// scoreline. nil for ordinary news.
     let matchResult: String?
+    /// API-Football league id of the competition this card is about (migration
+    /// 094). Nil on rows written before 2026-09-08 and on cards that are not
+    /// about one match; the badge then falls back to the card type alone.
+    let leagueId: Int?
+
+    /// The competition, when the card records one.
+    var competition: Competition? { leagueId.flatMap(Competition.init(rawValue:)) }
+
+    /// Badge label for a cup card: "LEAGUE CUP" says more than "MATCH DAY" on a
+    /// Tuesday in September, which is the whole reason the column exists. Nil
+    /// for the Premier League and the World Championship, where the card type
+    /// is the more useful of the two, and for rows with no competition.
+    var cupBadgeLabel: String? {
+        guard let competition, competition.isCup else { return nil }
+        return competition.badge
+    }
 
     /// What she needs to KNOW, as opposed to `talkingPoints` (what she can
     /// SAY). Up to three levelled cards; levels 1-2 render above Things to
@@ -111,6 +127,7 @@ struct ContentItem: Identifiable, Codable {
         // V2.0 WC pre-tournament preview linking — see previewFixtureId
         case previewFixtureId = "preview_fixture_id"
         case matchResult = "match_result"
+        case leagueId = "league_id"
         case infoCards = "info_cards"
     }
 
@@ -144,6 +161,7 @@ struct ContentItem: Identifiable, Codable {
         scorers = try? container.decodeIfPresent([LiveMatchBrief.Scorer].self, forKey: .scorers)
         previewFixtureId = try? container.decodeIfPresent(String.self, forKey: .previewFixtureId)
         matchResult = try? container.decodeIfPresent(String.self, forKey: .matchResult)
+        leagueId = try? container.decodeIfPresent(Int.self, forKey: .leagueId)
         // Lenient: one malformed card must not take the item down. Decode the
         // array element by element and keep what parses.
         infoCards = (try? container.decodeIfPresent([LossyInfoCard].self, forKey: .infoCards))?
@@ -582,6 +600,13 @@ struct NextFixtureCard: Codable {
     let venue: String
     let preview: String
     let talkingPoint: String?
+    /// "League Cup (Carabao Cup), last 32" — written by team-page-generator
+    /// from the fixture's own league (2026-09-08). Nil for a Premier League
+    /// game, where naming the competition tells the reader nothing, and on
+    /// rows written before the cups were covered.
+    let competition: String?
+    let leagueId: Int?
+    let round: String?
     /// Deterministic pre-game verdict from FIFA ranks (B2). nil when either
     /// side's strength_rank is unknown — render nothing in that case.
     let favorite: FavoriteVerdict?
@@ -594,6 +619,20 @@ struct NextFixtureCard: Codable {
         case preview
         case talkingPoint = "talking_point"
         case favorite
+        case competition
+        case leagueId = "league_id"
+        case round
+    }
+
+    /// The competition without the sponsor parenthetical, for the narrow chip
+    /// on the collapsed card: "League Cup (Carabao Cup), last 32" is a sentence
+    /// and truncated to "League Cup (Caraba…" in a chip. The full prose form
+    /// still reads in the expanded card's preview line.
+    var competitionShort: String? {
+        guard let competition, !competition.isEmpty else { return nil }
+        let stripped = competition.replacingOccurrences(
+            of: " *\\([^)]*\\)", with: "", options: .regularExpression)
+        return stripped.isEmpty ? nil : stripped
     }
 }
 

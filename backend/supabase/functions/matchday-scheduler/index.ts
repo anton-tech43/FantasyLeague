@@ -7,7 +7,7 @@ import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { triggerFunction } from "../_shared/trigger.ts";
 import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
-import { seasonForLeague, FALLBACK_ACTIVE_LEAGUES } from "../_shared/league-helpers.ts";
+import { seasonForLeague, FALLBACK_ACTIVE_LEAGUES, COVERED_CUP_LEAGUES } from "../_shared/league-helpers.ts";
 
 const API_FOOTBALL_BASE = "https://v3.football.api-sports.io";
 const SEND_LEAD_TIME_MS = 90 * 60 * 1000; // 90 minutes before kickoff
@@ -56,9 +56,11 @@ serve(async (req) => {
       .from("teams")
       .select("league_id")
       .not("league_id", "is", null);
+    // Plus every cup we cover: a club's League Cup or FA Cup tie is not in
+    // league 39, so a cup day scheduled nothing. One call per league per day.
     const activeLeagues: number[] = leagueRows
-      ? [...new Set(leagueRows.map((r) => r.league_id as number))]
-      : FALLBACK_ACTIVE_LEAGUES;
+      ? [...new Set([...leagueRows.map((r) => r.league_id as number), ...COVERED_CUP_LEAGUES])]
+      : [...new Set([...FALLBACK_ACTIVE_LEAGUES, ...COVERED_CUP_LEAGUES])];
 
     // Fetch today's fixtures across all active leagues
     const fixtures: Fixture[] = [];

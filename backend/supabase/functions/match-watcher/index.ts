@@ -18,10 +18,20 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { deactivateTokens, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
 import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts";
-import { seasonForLeague, FALLBACK_ACTIVE_LEAGUES, COVERED_CUP_LEAGUES } from "../_shared/league-helpers.ts";
+import {
+  seasonForLeague,
+  FALLBACK_ACTIVE_LEAGUES,
+  COVERED_CUP_LEAGUES,
+  competitionName,
+  competitionProse,
+  roundLabel,
+} from "../_shared/league-helpers.ts";
 import { detectConsequences, loadPostResultWcContext, WC_LEAGUE_ID } from "../_shared/detect-consequences.ts";
 import { renderConsequence } from "../_shared/consequence-templates.ts";
 import { buildContentItem } from "../_shared/build-content-item.ts";
+import { buildPollPairs } from "../_shared/poll-plan.ts";
+import { competitionSuffix, knockoutOutcome } from "../_shared/goal-push.ts";
+import { type LiveEvent, minTierForLiveEvent, tierReceives, TIER_NOBODY } from "../_shared/push-tiers.ts";
 import type { Team } from "../_shared/types.ts";
 import { groupSituation } from "../_shared/stakes-engine.ts";
 import { renderPostMatch, type PostMatchState } from "../_shared/stakes-templates.ts";
@@ -290,8 +300,11 @@ async function logFire(
 /// consequence content_items, which wait on notification-sender's hourly sweep
 /// (5-75 min), these fire immediately from the tick that observed the event,
 /// since a goal alert is worthless an hour late. Recipients: device_tokens
-/// following either playing team (country_id/country_ids or team_id/team_ids);
-/// sent to ALL tiers. The body is the follower's perspective (copy.bodies keyed
+/// following either playing team (country_id/country_ids or team_id/team_ids)
+/// whose tier reaches `minTier` (TIERS.md §6.3 — Light gets the result, Match-fit
+/// adds kickoff and half-time, Deep gets the goals; an early domestic cup round
+/// is the result only, a semi-final or final is everyone's). The body is the
+/// follower's perspective (copy.bodies keyed
 /// by team slug); the title is shared. content_id is a non-UUID sentinel so an
 /// app tap just opens the app (AppDelegate only deep-links when content_id
 /// parses as a UUID). Returns the number of pushes successfully dispatched.
@@ -306,6 +319,9 @@ async function sendPlayingTeamPush(
     category: string;
     fixtureId: number;
     label: string; // "goal" | "ht" | "ft" — content_id discriminator + logs
+    /// Lowest device tier that receives this push, from minTierForLiveEvent().
+    /// TIER_NOBODY suppresses it entirely (an early cup round's goal alerts).
+    minTier: number;
     // Optional country_id → content_item UUID. When present for a follower's
     // country, the push deep-links to that article (FT result); otherwise the
     // content_id is a non-UUID sentinel and the tap just opens the app.
@@ -313,6 +329,8 @@ async function sendPlayingTeamPush(
   },
 ): Promise<number> {
   try {
+    // Suppressed for every tier — do not even ask the database.
+    if (args.minTier >= TIER_NOBODY) return 0;
     // Match a device that follows either playing team via the legacy scalars
     // (old apps) OR the multi-follow arrays (new apps), country or club. One
     // row per device (UNIQUE apns_token) so a device that follows BOTH playing
@@ -320,7 +338,7 @@ async function sendPlayingTeamPush(
     const playing = `${args.homeTeamId},${args.awayTeamId}`;
     const { data: tokens } = await supabase
       .from("device_tokens")
-      .select("apns_token, country_id, country_ids, team_id, team_ids, apns_environment")
+      .select("apns_token, tier, country_id, country_ids, team_id, team_ids, apns_environment")
       .or(
         `country_id.in.(${playing}),country_ids.ov.{${playing}},` +
           `team_id.in.(${playing}),team_ids.ov.{${playing}}`,
@@ -346,7 +364,9 @@ async function sendPlayingTeamPush(
       env: "development" | "production";
     };
     const recipients: Recipient[] = [];
+    let tierSkipped = 0;
     for (const t of tokens ?? []) {
+      if (!tierReceives(t.tier as number | null, args.minTier)) { tierSkipped++; continue; }
       // Which of THIS device's followed teams is in the match decides the
       // perspective copy. Prefer home when a device follows both sides (they
       // play each other) so the single push is deterministic.
@@ -383,6 +403,9 @@ async function sendPlayingTeamPush(
 
     // Tally per country (for the per-country pipeline_health rows) and collect
     // every dead token for ONE batched deactivation instead of an UPDATE each.
+    if (tierSkipped > 0) {
+      console.log(`sendPlayingTeamPush ${args.label} fixture=${args.fixtureId}: ${tierSkipped} device(s) below tier ${args.minTier}`);
+    }
     const stats = new Map<string, { sent: number; failed: number; reason?: string; status?: number }>();
     let sent = 0;
     const deadTokens: string[] = [];
@@ -532,17 +555,17 @@ async function handleRequest(req: Request): Promise<Response> {
       { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }
-  // Which competitions to poll. `active_competition_ids()` (migration 087) is
-  // every active entity's home league PLUS any covered cup our active clubs
-  // actually have a fixture in — derived from the fixture feed, not stored, so
-  // a club going out of Europe stops the polling without anyone editing a row.
-  const { data: comps, error: compsErr } = await supabase.rpc("active_competition_ids");
+  // What to poll, and on which date. `poll_leagues()` (migration 094) answers
+  // "what is kicking off or still being played", not "which competitions is
+  // somebody in" — every polled league costs 1 440 API calls a day (one a
+  // minute) against a 7 500 cap, and with five cups covered the old answer no
+  // longer fits. It also decides the DATE, which subsumes the hangover query
+  // that used to live below: a 23:00 kickoff still in play after UTC midnight
+  // comes back under yesterday's date.
+  const { data: comps, error: compsErr } = await supabase.rpc("poll_leagues");
   const homeLeagues = teams && teams.length > 0
     ? [...new Set(teams.filter((t) => t.is_active).map((t) => t.league_id as number))]
     : FALLBACK_ACTIVE_LEAGUES;
-  const activeLeagues: number[] = !compsErr && Array.isArray(comps) && comps.length > 0
-    ? [...new Set((comps as Array<{ league_id: number }>).map((r) => r.league_id))]
-    : homeLeagues;
   if (compsErr) {
     console.warn("active_competition_ids() failed, falling back to home leagues:", compsErr.message);
   }
@@ -563,6 +586,16 @@ async function handleRequest(req: Request): Promise<Response> {
   const shortNameById = new Map<string, string>(
     (teams ?? []).map((t) => [t.id as string, (t.short_name as string | null) ?? (t.id as string)]),
   );
+  // "LEAGUE CUP" / "CHAMPIONS LEAGUE SEMI-FINAL" for the Live Activity strap.
+  // A World Championship group is still labelled by detect-consequences' own
+  // group logic, so leave league 1 alone.
+  const competitionLabelForActivity = (leagueId: number | undefined, round: string | undefined): string => {
+    if (leagueId === WC_LEAGUE_ID) return "";
+    const rl = roundLabel(round);
+    const name = competitionName(leagueId);
+    return rl && leagueId !== 39 ? `${name} ${rl}` : name;
+  };
+
   const liveMeta = (teamId: string): { name: string; flag: string } | null => {
     const wc = WC_COUNTRY_META[teamId];
     if (wc) return wc;
@@ -570,27 +603,21 @@ async function handleRequest(req: Request): Promise<Response> {
     return name ? { name, flag: "" } : null;
   };
 
-  // Poll plan: every active league polls `today` (UTC). Additionally, while a
-  // fixture dated YESTERDAY (UTC) is still in a non-terminal status — a
-  // 22:00-23:30 UTC kickoff running past midnight — poll yesterday's date too,
-  // so the game stays visible through FT. Guaranteed-known: such a fixture was
-  // polled all day under its own date, so its state row exists; once it goes
-  // terminal the extra poll stops. Query failure degrades to today-only
-  // (current behavior). Skipped under ?date= override (operator intent).
-  const pollPairs: Array<{ leagueId: number; date: string }> =
-    activeLeagues.map((leagueId) => ({ leagueId, date: today }));
-  if (!dateOverride) {
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    const { data: hangover } = await supabase
-      .from("match_status_state")
-      .select("league_id")
-      .gte("kickoff_time", `${yesterday}T00:00:00Z`)
-      .lt("kickoff_time", `${today}T00:00:00Z`)
-      .not("status", "in", "(FT,AET,PEN,PST,CANC,ABD,AWD,WO)");
-    for (const leagueId of new Set((hangover ?? []).map((r) => r.league_id as number))) {
-      if (activeLeagues.includes(leagueId)) pollPairs.push({ leagueId, date: yesterday });
-    }
+  // Poll plan. Under ?date= the operator wants that date looked at whatever the
+  // schedule says, so fan out across every league we cover. Otherwise take the
+  // (league, date) pairs poll_leagues() returned; an RPC failure degrades to
+  // the old always-on behaviour for home leagues rather than going quiet.
+  const pollPairs: Array<{ leagueId: number; date: string }> = buildPollPairs({
+    rpcRows: comps as Array<{ league_id: number; poll_date: string }> | null,
+    rpcFailed: Boolean(compsErr),
+    dateOverride,
+    today,
+    homeLeagues,
+  });
+  if (compsErr) {
+    console.warn("poll_leagues() failed, falling back to home leagues:", compsErr.message);
   }
+  const activeLeagues = [...new Set(pollPairs.map((p) => p.leagueId))];
 
   // Fetch fixtures for each (league, date) pair, combine into one array. Per-
   // pair errors are logged but don't abort the whole run — a WC API
@@ -872,7 +899,21 @@ async function handleRequest(req: Request): Promise<Response> {
         const score = isHome
           ? `${homeGoals}-${awayGoals}`
           : `${awayGoals}-${homeGoals}`;
-        const text = `team_id=${teamId}; fixture_id=${fixtureId}; status=finished; opponent=${opponent}; score=${score}; kickoff_time=${kickoffTime}`;
+        // The competition travels with the trigger. Without it gd-matchday
+        // curled the Premier League table for a League Cup tie and had no way
+        // to name the round it had just been won or lost.
+        const roundRaw = fx.league?.round ?? "";
+        const text = [
+          `team_id=${teamId}`,
+          `fixture_id=${fixtureId}`,
+          `status=finished`,
+          `opponent=${opponent}`,
+          `score=${score}`,
+          `kickoff_time=${kickoffTime}`,
+          `league_id=${fixtureLeagueId}`,
+          `competition=${competitionName(fixtureLeagueId)}`,
+          roundRaw ? `round=${roundRaw}` : null,
+        ].filter(Boolean).join("; ");
 
         let matchdayHttpStatus: number | null = null;
         let matchdayBodyExcerpt: string | null = null;
@@ -991,6 +1032,9 @@ async function handleRequest(req: Request): Promise<Response> {
               // excludes WC_RIVAL_RESULT (migration 060) so each matchday's
               // rival result lands. Math consequences keep match_id null.
               match_id: c.consequence_type === "WC_RIVAL_RESULT" ? String(fixtureId) : null,
+              // Which competition the card is about, so the feed can badge it
+              // instead of leaving the reader to infer it from the club names.
+              league_id: fixtureLeagueId,
               headline: rendered.headline,
               body: rendered.body,
               push_text: rendered.push_text,
@@ -1258,6 +1302,7 @@ async function handleRequest(req: Request): Promise<Response> {
                     team_id: p.slug,
                     type: "matchday",
                     match_id: String(fixtureId),
+                    league_id: fixtureLeagueId,
                     match_result: perspectiveHeadline,
                     headline: perspectiveHeadline,
                     body: resultBody,
@@ -1488,6 +1533,9 @@ async function handleRequest(req: Request): Promise<Response> {
               awayName: awayMeta.name,
               homeFlag: homeMeta.flag,
               awayFlag: awayMeta.flag,
+              // The widget renders this above the score. A Lock Screen saying
+              // "LEAGUE CUP" answers the question a live score alone raises.
+              groupLabel: competitionLabelForActivity(fixtureLeagueId, fx.league?.round),
             },
             contentState,
             alert: { title: `${homeMeta.name} v ${awayMeta.name}`, body: "It's kicked off." },
@@ -1524,6 +1572,12 @@ async function handleRequest(req: Request): Promise<Response> {
       if (homeMeta && awayMeta) {
         const homeTeam = { id: homeTeamId, name: homeMeta.name, flag: homeMeta.flag };
         const awayTeam = { id: awayTeamId, name: awayMeta.name, flag: awayMeta.flag };
+        // "League Cup, last 32." — empty for the league and the World
+        // Championship, whose pushes already read unambiguously. A cup
+        // scoreline in September does not: she has not been told which
+        // competition this is, and neither had the push until now.
+        const fixtureRound = fx.league?.round;
+        const competitionClause = competitionSuffix(fixtureLeagueId, fixtureRound);
 
         // 30-MINUTES-TO-KICKOFF — the "it's about to start" nudge. Fire once
         // when the fixture is still NS and kickoff is within the next 30 min.
@@ -1536,7 +1590,7 @@ async function handleRequest(req: Request): Promise<Response> {
           status === "NS" && minsToKickoff > 0 && minsToKickoff <= 30 &&
           !briefsFired.includes("PREKICK_PUSH")
         ) {
-          const copy = renderKickoffSoonPush({ home: homeTeam, away: awayTeam });
+          const copy = renderKickoffSoonPush({ home: homeTeam, away: awayTeam, competition: competitionClause });
           pendingAlertPushes.push({
             args: {
               homeTeamId,
@@ -1545,6 +1599,7 @@ async function handleRequest(req: Request): Promise<Response> {
               category: "WC_KICKOFF_SOON",
               fixtureId,
               label: "kickoff",
+              minTier: minTierForLiveEvent("kickoff", fixtureLeagueId, fixtureRound),
             },
             isGoal: false,
           });
@@ -1599,6 +1654,7 @@ async function handleRequest(req: Request): Promise<Response> {
                 category: "WC_GOAL",
                 fixtureId,
                 label: "goal",
+              minTier: minTierForLiveEvent("goal", fixtureLeagueId, fixtureRound),
               },
               isGoal: true,
             });
@@ -1641,6 +1697,7 @@ async function handleRequest(req: Request): Promise<Response> {
             away: awayTeam,
             homeGoals: homeGoals ?? 0,
             awayGoals: awayGoals ?? 0,
+            competition: competitionClause,
           });
           pendingAlertPushes.push({
             args: {
@@ -1650,6 +1707,7 @@ async function handleRequest(req: Request): Promise<Response> {
               category: "WC_HALFTIME",
               fixtureId,
               label: "ht",
+              minTier: minTierForLiveEvent("ht", fixtureLeagueId, fixtureRound),
             },
             isGoal: false,
           });
@@ -1671,11 +1729,32 @@ async function handleRequest(req: Request): Promise<Response> {
           // has a winner — pass the shootout score so the winner's followers
           // never get "drew 1-1" copy.
           const ftPen = fx.score?.penalty;
+          // Who goes through. Only stated when THIS match settles the tie: a
+          // single-leg cup game with a winner (including after extra time or
+          // penalties). A first leg, or a league-phase night, says nothing —
+          // "Out of the League Cup" would be a lie in both cases.
+          const penWinnerHome = typeof ftPen?.home === "number" && typeof ftPen?.away === "number" &&
+            ftPen.home !== ftPen.away
+            ? ftPen.home > ftPen.away
+            : null;
+          const settles = COVERED_CUP_LEAGUES.includes(fixtureLeagueId) &&
+            !/leg/i.test(fixtureRound ?? "") &&
+            (penWinnerHome !== null || (homeGoals ?? 0) !== (awayGoals ?? 0));
+          const homeThrough = !settles
+            ? null
+            : penWinnerHome !== null
+            ? penWinnerHome
+            : (homeGoals ?? 0) > (awayGoals ?? 0);
+          const competitionBySide = {
+            [homeTeamId]: knockoutOutcome(fixtureLeagueId, fixtureRound, homeThrough),
+            [awayTeamId]: knockoutOutcome(fixtureLeagueId, fixtureRound, homeThrough === null ? null : !homeThrough),
+          };
           const copy = renderFullTimePush({
             home: homeTeam,
             away: awayTeam,
             homeGoals: homeGoals ?? 0,
             awayGoals: awayGoals ?? 0,
+            competitionBySide,
             pens: status === "PEN" &&
                 typeof ftPen?.home === "number" && typeof ftPen?.away === "number" &&
                 ftPen.home !== ftPen.away
@@ -1690,6 +1769,7 @@ async function handleRequest(req: Request): Promise<Response> {
               category: "WC_RESULT",
               fixtureId,
               label: "ft",
+              minTier: minTierForLiveEvent("ft", fixtureLeagueId, fixtureRound),
               // Deep-link each follower to their team's just-written result
               // article (populated in the post_match block above, same tick).
               contentIdByCountry: wcResultItemIds,

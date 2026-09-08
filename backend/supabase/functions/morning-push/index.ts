@@ -24,6 +24,7 @@
 // No content_items row is created — this is push-only, the team page's
 // Calendar tab is where the user goes to see the fixture details.
 
+import { competitionProse, COVERED_CUP_LEAGUES } from "../_shared/league-helpers.ts";
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { deactivateTokens, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
@@ -34,6 +35,7 @@ import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 
 interface Fixture {
   fixture_id: number;
+  league_id: number | null;
   home_team_id: string;
   away_team_id: string;
   kickoff_time: string;
@@ -71,7 +73,7 @@ serve(async (req) => {
 
     const { data: fixtures, error } = await supabase
       .from("match_status_state")
-      .select("fixture_id, home_team_id, away_team_id, kickoff_time")
+      .select("fixture_id, league_id, home_team_id, away_team_id, kickoff_time")
       .gte("kickoff_time", now.toISOString())
       .lte("kickoff_time", windowEnd.toISOString())
       .order("kickoff_time", { ascending: true })
@@ -167,7 +169,13 @@ serve(async (req) => {
         const tz = safeTz(tzRaw);
         let b = bodyByTz.get(tz);
         if (!b) {
-          b = `${home.display_name} vs ${away.display_name} at ${formatKickoff(fix.kickoff_time, tz)}. ` +
+          // The competition, when it is not the league. A cup morning read
+          // exactly like a Premier League Saturday before this, which is the
+          // one thing this push exists to tell her.
+          const comp = COVERED_CUP_LEAGUES.includes(fix.league_id as number)
+            ? `${competitionProse(fix.league_id as number)}. `
+            : "";
+          b = `${comp}${home.display_name} vs ${away.display_name} at ${formatKickoff(fix.kickoff_time, tz)}. ` +
             `Lineups drop an hour before, a good thing to ask about.`;
           bodyByTz.set(tz, b);
         }

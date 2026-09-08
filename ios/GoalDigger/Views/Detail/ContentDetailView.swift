@@ -139,7 +139,7 @@ struct ContentDetailView: View {
     @ViewBuilder
     private func headerSection(_ item: ContentItem) -> some View {
         HStack {
-            BadgeView(type: item.type)
+            BadgeView(type: item.type, customLabel: item.cupBadgeLabel)
             Spacer()
             Text(item.publishedAt.relativeTimestamp)
                 .font(.feedTimestamp)

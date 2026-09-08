@@ -123,7 +123,11 @@ final class CalendarSyncService {
             // `fixture.venue` is just the literal "home"/"away" enum (no stadium
             // name), so the Location field would surface "home"/"away" as the
             // event location, which is confusing in iOS Calendar.
-            event.title = "\(shortName) vs \(fixture.opponent)\(venueSuffix(fixture.venue))"
+            // The competition earns its place in a calendar title: an entry
+            // that just says "Sunderland vs Hull City (H)" gives no clue it is
+            // a cup night.
+            let competition = fixture.competition.map { " · \($0)" } ?? ""
+            event.title = "\(shortName) vs \(fixture.opponent)\(venueSuffix(fixture.venue))\(competition)"
             event.startDate = fixture.kickoffTime
             event.endDate = fixture.kickoffTime.addingTimeInterval(2 * 60 * 60)
             event.notes = "Match day. Open GoalDigger for prep."
@@ -206,12 +210,14 @@ final class CalendarSyncService {
                 reachedASource = true
                 let upcoming = (page.cards.upcomingFixtures ?? []).compactMap { f -> GDFixture? in
                     guard let kickoff = isoFormatter.date(from: f.date), kickoff >= liveWindowStart else { return nil }
-                    return GDFixture(opponent: f.opponent, kickoffTime: kickoff, venue: f.venue)
+                    return GDFixture(opponent: f.opponent, kickoffTime: kickoff, venue: f.venue,
+                                     competition: calendarCompetition(f.importanceLabel))
                 }
                 if !upcoming.isEmpty { return upcoming }
                 if let next = page.cards.nextFixture,
                    let kickoff = isoFormatter.date(from: next.date), kickoff >= liveWindowStart {
-                    return [GDFixture(opponent: next.opponent, kickoffTime: kickoff, venue: next.venue)]
+                    return [GDFixture(opponent: next.opponent, kickoffTime: kickoff, venue: next.venue,
+                                      competition: calendarCompetition(next.competition))]
                 }
             } else {
                 reachedASource = true
@@ -237,4 +243,20 @@ struct GDFixture {
     let opponent: String
     let kickoffTime: Date
     let venue: String?
+    /// Competition and round, short form ("League Cup last 32"). Nil for a
+    /// Premier League game and for the season-state source, which does not
+    /// record one. Empty and nil both mean "say nothing".
+    var competition: String? = nil
+}
+
+/// Trim a competition label for a calendar title: no sponsor parenthetical, no
+/// bare "Premier League" (every entry would carry it and none would need it).
+private func calendarCompetition(_ raw: String?) -> String? {
+    guard var label = raw?.trimmingCharacters(in: .whitespaces), !label.isEmpty else { return nil }
+    if let paren = label.firstIndex(of: "(") {
+        label = String(label[..<paren]).trimmingCharacters(in: .whitespaces)
+    }
+    label = label.trimmingCharacters(in: CharacterSet(charactersIn: ","))
+    if label.isEmpty || label == "Premier League" || label == "Fixture" { return nil }
+    return label
 }

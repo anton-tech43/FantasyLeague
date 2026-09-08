@@ -12,6 +12,7 @@
 // renderGoalPush), and match-watcher delivers bodies[token.country_id] per
 // device. No em-dashes (campaign rule).
 
+import { competitionName, parseRound, roundLabel } from "./league-helpers.ts";
 import {
   FT_DRAW,
   FT_LOSS,
@@ -243,6 +244,44 @@ export function pickLatestGoalForTeam(
   return best;
 }
 
+/// A short competition clause for a push body. Empty for the Premier League and
+/// the World Championship, whose pushes already read unambiguously; a cup tie
+/// does not, because "Sunderland 2-0 Hull" in September is a competition she has
+/// not been told about. "League Cup, last 32." No sponsor name in a push.
+export function competitionSuffix(leagueId: number | undefined, round: string | undefined): string {
+  if (leagueId === undefined || leagueId === 39 || leagueId === 1) return "";
+  const name = competitionName(leagueId);
+  const rl = roundLabel(round);
+  return rl ? `${name}, ${rl}.` : `${name}.`;
+}
+
+/// What a finished knockout tie means for one side. `through` is null when the
+/// tie is not decided by this match (a first leg), and the clause falls back to
+/// naming the competition. Never guesses: match-watcher passes null unless it
+/// can see the result settled it.
+export function knockoutOutcome(
+  leagueId: number | undefined,
+  round: string | undefined,
+  through: boolean | null,
+): string {
+  const suffix = competitionSuffix(leagueId, round);
+  if (through === null) return suffix;
+  const { stage, label } = parseRound(round);
+  if (stage === 0) return suffix;
+  const name = competitionName(leagueId);
+  if (!through) return `Out of the ${name}.`;
+  if (stage === 1) return `${name} winners.`;
+  const nextRound: Record<number, string> = { 2: "the final", 4: "the semi-finals", 8: "the quarter-finals", 16: "the last 16", 32: "the last 32" };
+  const next = nextRound[stage] ?? (label ? `the next round` : "the next round");
+  return `Through to ${next}.`;
+}
+
+/// Append a clause as its own sentence, skipping empties and double spaces.
+function appendClause(body: string, clause: string | null | undefined): string {
+  const c = (clause ?? "").trim();
+  return c ? `${body} ${c}` : body;
+}
+
 export interface GoalPushCopy {
   title: string;
   /// Push body per follower country (keyed by country slug).
@@ -325,14 +364,16 @@ export function renderGoalPush(args: {
 export function renderKickoffSoonPush(args: {
   home: GoalPushTeam;
   away: GoalPushTeam;
+  /// Competition clause, from competitionSuffix(). Empty for the league.
+  competition?: string;
   rng?: () => number;
 }): GoalPushCopy {
-  const { home, away, rng = Math.random } = args;
+  const { home, away, competition, rng = Math.random } = args;
   return {
     title: `Kickoff soon: ${home.name} v ${away.name}`,
     bodies: {
-      [home.id]: interpolate(pick(KICKOFF_SOON, rng), { team: home.name, opp: away.name }),
-      [away.id]: interpolate(pick(KICKOFF_SOON, rng), { team: away.name, opp: home.name }),
+      [home.id]: appendClause(interpolate(pick(KICKOFF_SOON, rng), { team: home.name, opp: away.name }), competition),
+      [away.id]: appendClause(interpolate(pick(KICKOFF_SOON, rng), { team: away.name, opp: home.name }), competition),
     },
   };
 }
@@ -345,14 +386,15 @@ export function renderHalfTimePush(args: {
   away: GoalPushTeam;
   homeGoals: number;
   awayGoals: number;
+  competition?: string;
   rng?: () => number;
 }): GoalPushCopy {
-  const { home, away, homeGoals, awayGoals, rng = Math.random } = args;
+  const { home, away, homeGoals, awayGoals, competition, rng = Math.random } = args;
   return {
     title: `Half-time: ${home.name} ${homeGoals}-${awayGoals} ${away.name}`,
     bodies: {
-      [home.id]: periodBody(HT_AHEAD, HT_BEHIND, HT_LEVEL, homeGoals, awayGoals, home.name, rng),
-      [away.id]: periodBody(HT_AHEAD, HT_BEHIND, HT_LEVEL, awayGoals, homeGoals, away.name, rng),
+      [home.id]: appendClause(periodBody(HT_AHEAD, HT_BEHIND, HT_LEVEL, homeGoals, awayGoals, home.name, rng), competition),
+      [away.id]: appendClause(periodBody(HT_AHEAD, HT_BEHIND, HT_LEVEL, awayGoals, homeGoals, away.name, rng), competition),
     },
   };
 }
@@ -371,9 +413,12 @@ export function renderFullTimePush(args: {
   homeGoals: number;
   awayGoals: number;
   pens?: { home: number; away: number } | null;
+  /// Per-side closing clause: "Through to the last 16." for one, "Out of the
+  /// League Cup." for the other. Keyed by team slug; missing means no clause.
+  competitionBySide?: Record<string, string>;
   rng?: () => number;
 }): GoalPushCopy {
-  const { home, away, homeGoals, awayGoals, pens, rng = Math.random } = args;
+  const { home, away, homeGoals, awayGoals, pens, competitionBySide, rng = Math.random } = args;
   const title = pens
     ? `Full-time: ${home.name} ${homeGoals}-${awayGoals} ${away.name} (${pens.home}-${pens.away} on pens)`
     : `Full-time: ${home.name} ${homeGoals}-${awayGoals} ${away.name}`;
@@ -381,8 +426,8 @@ export function renderFullTimePush(args: {
   return {
     title,
     bodies: {
-      [home.id]: periodBody(FT_WIN, FT_LOSS, FT_DRAW, h, a, home.name, rng),
-      [away.id]: periodBody(FT_WIN, FT_LOSS, FT_DRAW, a, h, away.name, rng),
+      [home.id]: appendClause(periodBody(FT_WIN, FT_LOSS, FT_DRAW, h, a, home.name, rng), competitionBySide?.[home.id]),
+      [away.id]: appendClause(periodBody(FT_WIN, FT_LOSS, FT_DRAW, a, h, away.name, rng), competitionBySide?.[away.id]),
     },
   };
 }

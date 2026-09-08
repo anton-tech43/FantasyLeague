@@ -7,8 +7,9 @@ struct MatchDayCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Tag
-            Text("MATCH DAY")
+            // Tag. A cup tie names the competition instead: "MATCH DAY" on a
+            // League Cup night is the one thing she already knows.
+            Text(item.cupBadgeLabel ?? "MATCH DAY")
                 .font(.feedBadge)
                 .textCase(.uppercase)
                 .tracking(0.5)

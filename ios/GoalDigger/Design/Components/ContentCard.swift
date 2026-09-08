@@ -24,7 +24,8 @@ struct ContentCard: View {
     }
 
     private var badgeLabel: String? {
-        isEveryoneContext ? "FOOTBALL" : nil
+        if isEveryoneContext { return "FOOTBALL" }
+        return item.cupBadgeLabel
     }
 
     var body: some View {

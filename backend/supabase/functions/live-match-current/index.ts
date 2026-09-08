@@ -12,6 +12,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { WC_LEAGUE_ID } from "../_shared/detect-consequences.ts";
+import { competitionName } from "../_shared/league-helpers.ts";
 
 const PRE_KICKOFF_BUFFER_MS = 10 * 60 * 1000;   // 10 min before kickoff
 const POST_KICKOFF_BUFFER_MS = 130 * 60 * 1000; // 130 min after kickoff
@@ -53,7 +54,7 @@ serve(async (req) => {
   const isWc = countryId === "world_championship";
   let stateQuery = supabase
     .from("match_status_state")
-    .select("fixture_id, home_team_id, away_team_id, home_goals, away_goals, status")
+    .select("fixture_id, league_id, home_team_id, away_team_id, home_goals, away_goals, status")
     .gte("kickoff_time", windowStartIso)
     .lte("kickoff_time", windowEndIso)
     .in("status", LIVE_STATUSES);
@@ -75,15 +76,38 @@ serve(async (req) => {
   }
 
   const r = rows[0];
+
+  // Team NAMES, not just slugs. The app's local Live Activity fallback resolved
+  // a side through its compiled Country/Team enums and gave up when neither
+  // matched, so a cup tie against Lincoln, or Napoli v Arsenal, started no
+  // activity at all. Cup opponents live in `teams` (is_active=false, registered
+  // by match-watcher on first sighting), so the name is one lookup away.
+  const slugs = [r.home_team_id as string, r.away_team_id as string];
+  const { data: nameRows } = await supabase
+    .from("teams")
+    .select("id, short_name, display_name")
+    .in("id", slugs);
+  const nameById = new Map(
+    (nameRows ?? []).map((t) => [t.id as string, (t.short_name as string) || (t.display_name as string)]),
+  );
+
   const snapshot = {
     fixture_id: r.fixture_id,
     home_team_id: r.home_team_id,
     away_team_id: r.away_team_id,
+    home_name: nameById.get(r.home_team_id as string) ?? null,
+    away_name: nameById.get(r.away_team_id as string) ?? null,
     home_goals: r.home_goals ?? 0,
     away_goals: r.away_goals ?? 0,
     status: r.status,
-    // elapsed + group_label are not tracked in match_status_state; the client
-    // decodes them as optional and the status label is period-based anyway.
+    // The widget renders group_label above the score. For a World Championship
+    // group match match-watcher's own group logic owns it, so leave it unset;
+    // for a club match the competition is the useful thing to say.
+    group_label: (r.league_id as number | null) === WC_LEAGUE_ID
+      ? null
+      : competitionName(r.league_id as number | undefined),
+    // elapsed is not tracked in match_status_state; the client decodes it as
+    // optional and the status label is period-based anyway.
   };
 
   return new Response(JSON.stringify(snapshot), {
