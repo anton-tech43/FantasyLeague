@@ -2,15 +2,28 @@ import SwiftUI
 
 /// Module 1 — Say This. A bank of lines sorted by what is happening.
 ///
-/// Two levels, switched in place (no push, no back button in the nav bar):
-/// level 1 lists situations in three groups with "Your lines" pinned on top;
-/// level 2 shows the lines for one situation. Built for the four-second,
-/// one-hand look during a match, so the line is the biggest thing in the row.
+/// Practise is the top of the screen: ten situations come up one at a time and
+/// Reveal shows the lines, so the words are not brand new when the match is on.
+/// Under it the bank stays, switched in place (no push, no back button in the
+/// nav bar): level 1 lists situations in three groups with "Your lines" pinned
+/// on top; level 2 shows the lines for one situation. Built for the
+/// four-second, one-hand look during a match, so the line is the biggest thing
+/// in the row.
 struct SayThisView: View {
     let content: SayThisContent
     /// For the "Lingo" chip on a line that leans on a real saying.
     let lingo: LingoContent
     @Bindable var store: MyTurnStore
+
+    /// The practise session. `@State`, not `MyTurnStore`: the module views stay
+    /// mounted while the app runs, so it survives a segment switch, and a
+    /// half-finished round is not worth restoring after a relaunch.
+    ///
+    /// Stopping keeps the session and drops back to the bank, so "Continue · 4
+    /// of 10" is waiting on the button; only finishing (or "Back to all
+    /// situations") clears it.
+    @State private var practise: SayThisPractiseSession?
+    @State private var showingPractise = false
 
     private var lingoById: [String: LingoTerm] {
         Dictionary(uniqueKeysWithValues: lingo.terms.map { ($0.id, $0) })
@@ -34,7 +47,17 @@ struct SayThisView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Layout.cardSpacing) {
-                if let situation = selected {
+                if showingPractise, let session = Binding($practise) {
+                    SayThisPractiseView(
+                        situations: content.situations,
+                        lingoById: lingoById,
+                        store: store,
+                        session: session,
+                        onStop: { showingPractise = false },
+                        onFinishedExit: { practise = nil; showingPractise = false },
+                        onRestart: { practise = SayThisPractiseSession(situations: content.situations) }
+                    )
+                } else if let situation = selected {
                     linesLevel(situation)
                 } else {
                     situationsLevel
@@ -45,12 +68,48 @@ struct SayThisView: View {
             .padding(.bottom, 40)
         }
         .animation(.easeInOut(duration: 0.2), value: store.sayThisSituationId)
+        .animation(.easeInOut(duration: 0.2), value: practise?.index)
+        .animation(.easeInOut(duration: 0.2), value: practise?.revealed)
+        #if DEBUG
+        .onAppear(perform: applyPractiseArguments)
+        #endif
     }
+
+    #if DEBUG
+    /// Screenshot harness. `-gdSayPractise` opens a session (`-gdSaySeed N` to
+    /// fix the draw), `-gdSayReveal` reveals the first situation's lines,
+    /// `-gdSayDone` jumps to the end of the ten, `-gdSayPaused` leaves the
+    /// session open but drops back to the bank ("Continue · N of 10").
+    private func applyPractiseArguments() {
+        let args = ProcessInfo.processInfo.arguments
+        guard args.contains("-gdSayPractise") else { return }
+        let seed = args.firstIndex(of: "-gdSaySeed").flatMap { $0 + 1 < args.count ? UInt64(args[$0 + 1]) : nil } ?? 7
+        var session = SayThisPractiseSession(situations: content.situations, seed: seed)
+        session.revealed = args.contains("-gdSayReveal")
+        if args.contains("-gdSayDone") { session.index = session.ids.count - 1; session.finished = true }
+        if let i = args.firstIndex(of: "-gdSayPaused"), i + 1 < args.count, let at = Int(args[i + 1]) {
+            session.index = min(max(0, at - 1), session.ids.count - 1)
+        }
+        practise = session
+        showingPractise = !args.contains("-gdSayPaused")
+    }
+    #endif
 
     // MARK: Level 1
 
     @ViewBuilder
     private var situationsLevel: some View {
+        // The one thing to press. Everything else on this screen is a bank to
+        // look something up in; this is the way in for someone who does not yet
+        // know what she is looking for.
+        MyTurnPractiseButton(
+            title: "Practise",
+            subtitle: practise.map { "Continue · \($0.positionLabel)" } ?? "10 situations, then the lines for each"
+        ) {
+            if practise == nil { practise = SayThisPractiseSession(situations: content.situations) }
+            showingPractise = true
+        }
+
         // Your lines — the starred ones, one tap from the top of the tab.
         MyTurnSectionLabel(text: "Your lines")
         if starred.isEmpty {
@@ -65,11 +124,13 @@ struct SayThisView: View {
             }
         }
 
+        // Then the bank itself, in the order she meets a match: the moments,
+        // then how it is going, then what he asks her.
         ForEach(SituationGroup.allCases, id: \.self) { group in
             let sits = content.situations.filter { $0.group == group }
             if !sits.isEmpty {
                 MyTurnSectionLabel(text: group.title)
-                    .padding(.top, 12)
+                    .padding(.top, 20)
                 ForEach(sits) { s in
                     Button {
                         store.sayThisSituationId = s.id
@@ -142,9 +203,21 @@ struct SayThisView: View {
         .cornerRadius(12)
     }
 
-    /// The line itself is set larger than everything else in the row: it is
-    /// what gets read on a glance.
     private func lineRow(_ line: SayLine, situationLabel: String?) -> some View {
+        SayThisLineRow(line: line, situationLabel: situationLabel,
+                       lingoTerm: line.lingo.flatMap { lingoById[$0] }, store: store)
+    }
+}
+
+/// One line, as it looks in the bank and in practise. The line itself is set
+/// larger than everything else in the row: it is what gets read on a glance.
+struct SayThisLineRow: View {
+    let line: SayLine
+    let situationLabel: String?
+    let lingoTerm: LingoTerm?
+    @Bindable var store: MyTurnStore
+
+    var body: some View {
         HStack(alignment: .top, spacing: 12) {
             RoundedRectangle(cornerRadius: 2)
                 .fill(line.risk == .bold ? Color.gold : Color.hotRose)
@@ -173,7 +246,7 @@ struct SayThisView: View {
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
                         .background(Capsule().fill((line.risk == .bold ? Color.gold : Color.hotRose).opacity(0.12)))
-                    if let term = line.lingo.flatMap({ lingoById[$0] }) {
+                    if let term = lingoTerm {
                         // One tap to the phrase's Lingo entry: the saying is
                         // taught, not just quoted.
                         Button {

@@ -171,6 +171,24 @@ class AppState {
         } else if let team = self.selectedTeam {
             self.activeContext = .team(team)
         }
+
+        #if DEBUG
+        // Screenshot harness. `-gdPresetTeam arsenal` puts a fresh simulator
+        // straight past onboarding and the season primer, so simctl (which
+        // cannot tap) can land on any tab. Applied here, before the first body
+        // evaluation, so the onboarding flow never flashes.
+        let args = ProcessInfo.processInfo.arguments
+        if let i = args.firstIndex(of: "-gdPresetTeam"), i + 1 < args.count, let team = Team(rawValue: args[i + 1]) {
+            self.selectedTeams = [team]
+            self.activeContext = .team(team)
+            self.hisName = "Tom"
+            self.herName = "Sophie"
+            self.selectedTier = 2
+            self.hasCompletedOnboarding = true
+            self.hasSeenSeasonPrimer = true
+            self.hasSeenWCPrompt = true
+        }
+        #endif
     }
 
     /// Replace [his name] and [her name] placeholders in server-generated content at display time.

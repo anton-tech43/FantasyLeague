@@ -25,6 +25,7 @@
 		6CA1FD4A864451C12D212143 /* LiveMatchCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A88D0BF10EC36C829985F7 /* LiveMatchCard.swift */; };
 		6DB27580A7465723CA70926A /* LiveMatchBrief.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9B40C83CE30947DD4E9AB4 /* LiveMatchBrief.swift */; };
 		73A1A94EF89C814DE83C183E /* LiveClubPack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D8F505623CCED3CAAB391AA /* LiveClubPack.swift */; };
+		785C14F6B48F7E69523A45EC /* SayThisPractiseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED6D8160AFC958A96956341D /* SayThisPractiseView.swift */; };
 		7AE5C40C19D72FA48BC51F30 /* SaturdayQuiz.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BC4A29F62D389F4A4751E27 /* SaturdayQuiz.swift */; };
 		8DF6B51D2AE83FB59CD63041 /* SaturdayQuizCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD5B3A073E49AF5B5862F38 /* SaturdayQuizCard.swift */; };
 		9D8349CC509C7124A5EB9F29 /* MyTurnPractiseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0C75FEEE6727814C8D4456 /* MyTurnPractiseButton.swift */; };
@@ -249,6 +250,7 @@
 		DCA4D1D232DB07DA5CC85E8B /* LiveMatchSnapshot.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveMatchSnapshot.swift; sourceTree = "<group>"; };
 		E4421111DA5D3319C08E1C4C /* ErrorReporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ErrorReporter.swift; sourceTree = "<group>"; };
 		E5B6B4EAC55CB925992D81ED /* ShareableCardRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareableCardRenderer.swift; sourceTree = "<group>"; };
+		ED6D8160AFC958A96956341D /* SayThisPractiseView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SayThisPractiseView.swift; sourceTree = "<group>"; };
 		FFF77F3DBF5A4E6FED9FA92D /* MyTurnContentService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyTurnContentService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -279,6 +281,7 @@
 				4DEDD7BB48436C1F2CEE9515 /* QuizView.swift */,
 				1ADF83F8ECC74099BBB0BB27 /* SayThisView.swift */,
 				AA0C75FEEE6727814C8D4456 /* MyTurnPractiseButton.swift */,
+				ED6D8160AFC958A96956341D /* SayThisPractiseView.swift */,
 			);
 			name = MyTurn;
 			path = MyTurn;
@@ -779,6 +782,7 @@
 				73A1A94EF89C814DE83C183E /* LiveClubPack.swift in Sources */,
 				DB5039EBD938A4E4B32D5BFC /* Competition.swift in Sources */,
 				9D8349CC509C7124A5EB9F29 /* MyTurnPractiseButton.swift in Sources */,
+				785C14F6B48F7E69523A45EC /* SayThisPractiseView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
