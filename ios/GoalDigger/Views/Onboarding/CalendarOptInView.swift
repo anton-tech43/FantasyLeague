@@ -8,14 +8,12 @@ import SwiftUI
 /// onboarding. Permission strings live in Info.plist
 /// (`NSCalendarsFullAccessUsageDescription`); no plist work required.
 ///
-/// Data flow: tries three sources in order so we always have SOMETHING to
-/// sync if any are populated:
-///   1. `team_season_state.next_fixtures` (array — V1.2 migration 031,
-///      written by the gd-season-state routine)
-///   2. `team_season_state.next_fixture`  (singular — pre-V1.2 column)
-///   3. `team_pages.cards.next_fixture`   (singular, ISO string — the
-///      source SettingsView already uses today; populated for every team
-///      that has a team_page row, which is "all 20 PL clubs")
+/// Data flow: the same one the sync itself uses,
+/// `CalendarSyncService.loadFixtures` — the team page's `upcoming_fixtures`,
+/// falling back to its singular `next_fixture`, future games only. The old
+/// `team_season_state.next_fixtures` read went unfiltered by date against a
+/// column nothing has written since May 2026, so onboarding could offer to
+/// add last season's matches.
 ///
 /// On "Yes, add them": requests calendar permission, then syncs. On "Not
 /// now": sets `calendarSyncEnabled = false` and advances. Either way the
@@ -24,7 +22,7 @@ struct CalendarOptInView: View {
     @Environment(AppState.self) var appState
     let onComplete: () -> Void
 
-    @State private var fixtures: [TeamSeasonState.NextFixture] = []
+    @State private var fixtures: [GDFixture] = []
     @State private var isLoadingFixtures: Bool = true
     @State private var isSyncing: Bool = false
     @State private var syncErrorMessage: String?
@@ -138,45 +136,11 @@ struct CalendarOptInView: View {
             isLoadingFixtures = false
             return
         }
-        // Try season-state first (richer — up to 10 fixtures once migration
-        // 031 is live and routine has run). If that yields nothing, fall
-        // back to the team page's singular next_fixture — the source
-        // SettingsView uses today and which is reliably populated for all
-        // 20 PL clubs.
-        do {
-            if let state = try await APIClient.shared.fetchTeamSeasonState(teamId: teamId) {
-                fixtures = state.fixturesForSync
-            }
-        } catch {
-            #if DEBUG
-            print("⚠️ CalendarOptIn season-state fetch failed: \(error)")
-            #endif
-        }
-
-        if fixtures.isEmpty {
-            // Fall back to team_pages.cards.next_fixture (uses ISO string,
-            // shape differs from TeamSeasonState.NextFixture — parse here).
-            if let page = (try? await APIClient.shared.fetchTeamPage(teamId: teamId)),
-               let raw = page.cards.nextFixture,
-               let kickoff = Self.fixtureDateFormatter.date(from: raw.date) {
-                fixtures = [
-                    TeamSeasonState.NextFixture(
-                        opponent: raw.opponent,
-                        kickoffTime: kickoff,
-                        venue: raw.venue.capitalized
-                    )
-                ]
-            }
-        }
-
+        // Exactly what the sync will write, so the count in the copy and the
+        // events she gets are the same list.
+        fixtures = await CalendarSyncService.loadFixtures(teamId: teamId) ?? []
         isLoadingFixtures = false
     }
-
-    private static let fixtureDateFormatter: ISO8601DateFormatter = {
-        let f = ISO8601DateFormatter()
-        f.formatOptions = [.withInternetDateTime]
-        return f
-    }()
 
     // MARK: - Permission + sync
 

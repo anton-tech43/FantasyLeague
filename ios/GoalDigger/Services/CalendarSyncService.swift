@@ -177,56 +177,47 @@ final class CalendarSyncService {
         }
     }
 
-    /// Authoritative upcoming fixtures for one entity (club or country).
-    /// Returns `nil` when NEITHER source could be reached (so callers skip
-    /// rather than wipe), and `[]` when a source responded but has no upcoming
-    /// games (so callers clear out stale events). Future fixtures only.
+    /// Authoritative upcoming fixtures for one entity (club or country): the
+    /// team page's `upcoming_fixtures`, else its singular `next_fixture`.
+    ///
+    /// `team_season_state.next_fixtures` used to be tried first. Nothing has
+    /// written that column since May 2026, and it carries neither the
+    /// competition nor a status, so it only ever put a stale, unlabelled
+    /// fixture in the user's calendar ahead of the live one. It is gone.
+    ///
+    /// Returns `nil` when the source could not be reached (so callers skip
+    /// rather than wipe), and `[]` when it responded but has no upcoming
+    /// games (so callers clear out stale events). Future fixtures only, and
+    /// never a postponed or time-TBD one: a calendar entry is a promise about
+    /// a time, so a game without a real kickoff stays off the calendar until
+    /// it is rescheduled. It still shows on the app's Calendar tab.
     static func loadFixtures(teamId: String) async -> [GDFixture]? {
-        let now = Date()
         // Keep a game that has already kicked off (within a ~3h grace covering
         // 90 mins + stoppage + extra time) so an in-progress match doesn't
         // vanish from the calendar the instant it starts. Older games fall off.
-        let liveWindowStart = now.addingTimeInterval(-3 * 60 * 60)
-        var reachedASource = false
+        let liveWindowStart = Date().addingTimeInterval(-3 * 60 * 60)
 
-        // 1. Season state (richer — up to ~10 fixtures).
         do {
-            if let state = try await APIClient.shared.fetchTeamSeasonState(teamId: teamId) {
-                reachedASource = true
-                let fx = state.fixturesForSync
-                    .filter { $0.kickoffTime >= liveWindowStart }
-                    .map { GDFixture(opponent: $0.opponent, kickoffTime: $0.kickoffTime, venue: $0.venue) }
-                if !fx.isEmpty { return fx }
-            } else {
-                reachedASource = true // responded, just no row
+            guard let page = try await APIClient.shared.fetchTeamPage(teamId: teamId) else {
+                return [] // responded, just no row
             }
-        } catch {
-            // network/availability failure — fall through to the page source
-        }
-
-        // 2. Team page fallback (full upcoming list, else the singular next).
-        do {
-            if let page = try await APIClient.shared.fetchTeamPage(teamId: teamId) {
-                reachedASource = true
-                let upcoming = (page.cards.upcomingFixtures ?? []).compactMap { f -> GDFixture? in
-                    guard let kickoff = isoFormatter.date(from: f.date), kickoff >= liveWindowStart else { return nil }
-                    return GDFixture(opponent: f.opponent, kickoffTime: kickoff, venue: f.venue,
-                                     competition: calendarCompetition(f.importanceLabel))
-                }
-                if !upcoming.isEmpty { return upcoming }
-                if let next = page.cards.nextFixture,
-                   let kickoff = isoFormatter.date(from: next.date), kickoff >= liveWindowStart {
-                    return [GDFixture(opponent: next.opponent, kickoffTime: kickoff, venue: next.venue,
-                                      competition: calendarCompetition(next.competition))]
-                }
-            } else {
-                reachedASource = true
+            let upcoming = (page.cards.upcomingFixtures ?? []).compactMap { f -> GDFixture? in
+                guard !f.isPostponed, !f.isTimeTBC,
+                      let kickoff = isoFormatter.date(from: f.date), kickoff >= liveWindowStart
+                else { return nil }
+                return GDFixture(opponent: f.opponent, kickoffTime: kickoff, venue: f.venue,
+                                 competition: calendarCompetition(f.importanceLabel))
             }
+            if !upcoming.isEmpty { return upcoming }
+            if let next = page.cards.nextFixture,
+               let kickoff = isoFormatter.date(from: next.date), kickoff >= liveWindowStart {
+                return [GDFixture(opponent: next.opponent, kickoffTime: kickoff, venue: next.venue,
+                                  competition: calendarCompetition(next.competition))]
+            }
+            return []
         } catch {
-            // network/availability failure
+            return nil // network/availability failure — caller leaves events alone
         }
-
-        return reachedASource ? [] : nil
     }
 
     private static let isoFormatter: ISO8601DateFormatter = {
@@ -244,8 +235,8 @@ struct GDFixture {
     let kickoffTime: Date
     let venue: String?
     /// Competition and round, short form ("League Cup last 32"). Nil for a
-    /// Premier League game and for the season-state source, which does not
-    /// record one. Empty and nil both mean "say nothing".
+    /// Premier League game, where every entry would carry it and none would
+    /// need it. Empty and nil both mean "say nothing".
     var competition: String? = nil
 }
 

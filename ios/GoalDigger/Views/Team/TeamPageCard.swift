@@ -17,6 +17,11 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
     /// Optional round image on the right of the header (the manager's
     /// headshot). Nil = no image, layout unchanged.
     var leadingImageURL: URL? = nil
+    /// The collapsed footer. Nil, the default, teases the talking point and
+    /// falls back to "Tap for more ›". A card that opens onto something
+    /// specific names it instead ("Pre game talk ›") and goes on naming it
+    /// once it has a talking point to show inside.
+    var footerLabel: String? = nil
     @ViewBuilder let zone1Collapsed: () -> CollapsedContent
     @ViewBuilder let zone1Expanded: () -> ExpandedContent
 
@@ -151,16 +156,10 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
 
     private var zone2CollapsedContent: some View {
         HStack {
-            if let point = talkingPoint {
-                Text(point)
-                    .font(.jakarta(13, weight: .regular))
-                    .foregroundColor(.warmWhite)
-                    .lineLimit(1)
-            } else {
-                Text("Tap for more ›")
-                    .font(.jakarta(13, weight: .regular))
-                    .foregroundColor(.warmWhite)
-            }
+            Text(footerLabel ?? talkingPoint ?? "Tap for more ›")
+                .font(.jakarta(13, weight: .regular))
+                .foregroundColor(.warmWhite)
+                .lineLimit(1)
             Spacer()
         }
         .padding(.horizontal, 16)

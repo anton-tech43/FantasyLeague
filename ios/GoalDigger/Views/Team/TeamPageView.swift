@@ -240,6 +240,15 @@ struct TeamPageView: View {
 
     @ViewBuilder
     private func cardsSection(_ cards: TeamPageCards) -> some View {
+        // Card 1: the next game. It is the reason she opened the page, so it
+        // sits above everything else; after the whistle the post-match card
+        // takes the same slot until it expires.
+        if showPostMatch, let postMatch = content?.cards.postMatch {
+            postMatchCard(postMatch)
+        } else if let fixture = cards.nextFixture {
+            comingUpCard(fixture).id(TeamCardType.comingUp)
+        }
+
         // Mood banner
         if let mood = cards.mood {
             TeamPageMoodBanner(mood: mood)
@@ -430,13 +439,6 @@ struct TeamPageView: View {
             )
         }
 
-        // Card 7: Coming up / Post-match
-        if showPostMatch, let postMatch = content?.cards.postMatch {
-            postMatchCard(postMatch)
-        } else if let fixture = cards.nextFixture {
-            comingUpCard(fixture).id(TeamCardType.comingUp)
-        }
-
         // Card 8 (T2+ only): "Things he doesn't know" — 4 niche items
         // (latest of each type: stat / history / oddity / anecdote)
         // refreshed by the gd-insider cloud routine. Headlines only,
@@ -479,10 +481,14 @@ struct TeamPageView: View {
 
     @ViewBuilder
     private func comingUpCard(_ fixture: NextFixtureCard) -> some View {
-        // The crest comes from the matching Calendar row (which carries the
-        // opponent's API id); a PL club resolves by name as a fallback.
-        let crest = content?.cards.upcomingFixtures?.first { String($0.date.prefix(10)) == String(fixture.date.prefix(10)) }?.opponentCrestURL
-            ?? UpcomingFixture(date: fixture.date, opponent: fixture.opponent, venue: fixture.venue, importanceDots: 0, importanceLabel: "", opponentApiId: nil).opponentCrestURL
+        // The opponent's own API id when the fixture carries one, else the
+        // matching Calendar row's, else a PL club resolved by name.
+        let crest = fixture.opponentApiId.flatMap { URL(string: "https://media.api-sports.io/football/teams/\($0).png") }
+            ?? content?.cards.upcomingFixtures?.first { String($0.date.prefix(10)) == String(fixture.date.prefix(10)) }?.opponentCrestURL
+            ?? Team.allCases.first {
+                $0.displayName.caseInsensitiveCompare(fixture.opponent) == .orderedSame
+                    || $0.shortName.caseInsensitiveCompare(fixture.opponent) == .orderedSame
+            }?.crestURL
         TeamPageCard(
             title: "Coming up",
             primaryText: "\(fixture.opponent) (\(fixture.venue.uppercased()))",
@@ -491,6 +497,7 @@ struct TeamPageView: View {
             isExpanded: expandedCard == .comingUp,
             onTap: { toggleCard(.comingUp) },
             leadingImageURL: crest,
+            footerLabel: "Pre game talk ›",
             zone1Collapsed: {
                 HStack(spacing: 8) {
                     Text(formattedFixtureDate(fixture.date))
@@ -519,25 +526,42 @@ struct TeamPageView: View {
                 }
             },
             zone1Expanded: {
-                VStack(alignment: .leading, spacing: 6) {
-                    TeamPageCountdown(targetDate: fixture.date)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(kickoffLine(fixture))
+                        .font(.jakarta(13, weight: .bold))
+                        .foregroundColor(.warmWhite.opacity(0.7))
 
-                    // When we can render the opponent's ones-to-know
-                    // structurally below (bold names, positions, photos), show
-                    // only the stakes line from the preview (its first
-                    // paragraph). Otherwise show the full preview text, which
-                    // already includes the opponent detail (older content / no
-                    // opponent block).
+                    if let favorite = fixture.favorite {
+                        Text(favorite.label)
+                            .font(.jakarta(11, weight: .bold))
+                            .foregroundColor(.hotRose)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Capsule().fill(Color.hotRose.opacity(0.12)))
+                    }
+
+                    // The preview is the deterministic paragraph, then
+                    // optionally a blank line and one sentence of colour from
+                    // the Monday routine. Older WC previews run to many
+                    // paragraphs and carry the opponent detail inline, so they
+                    // keep today's rule: whole text unless the opponent block
+                    // below is going to say it structurally.
                     let opponent = content?.cards.onesToKnow?.opponent
                     let hasStructuredOpponent = !(opponent?.players.isEmpty ?? true)
-                    let previewText = hasStructuredOpponent
-                        ? (fixture.preview.components(separatedBy: "\n\n").first ?? fixture.preview)
+                    let paragraphs = fixture.preview.components(separatedBy: "\n\n")
+                    let colour = paragraphs.count == 2 ? paragraphs[1] : nil
+                    let previewText = (hasStructuredOpponent || colour != nil)
+                        ? (paragraphs.first ?? fixture.preview)
                         : fixture.preview
                     if !previewText.isEmpty {
                         Text(appState.personalise(previewText))
                             .font(.jakarta(14, weight: .regular))
                             .foregroundColor(.warmWhite.opacity(0.9))
-                            .padding(.top, 2)
+                    }
+                    if let colour, !colour.isEmpty {
+                        Text(appState.personalise(colour))
+                            .font(.jakarta(13, weight: .regular))
+                            .foregroundColor(.warmWhite.opacity(0.6))
                     }
                     if let opponent, !opponent.players.isEmpty {
                         opponentSection(opponent)
@@ -546,6 +570,32 @@ struct TeamPageView: View {
             }
         )
     }
+
+    /// "Tue 16 Sep, 8pm · Europa League · home". The competition chip on the
+    /// collapsed card already strips the sponsor parenthetical; a league game
+    /// has no competition recorded, and saying "Premier League" is friendlier
+    /// than leaving a gap.
+    private func kickoffLine(_ fixture: NextFixtureCard) -> String {
+        var parts: [String] = []
+        if let date = Self.isoFormatter.date(from: fixture.date) {
+            // "8pm" reads better than "8:00pm"; a 19:45 kickoff keeps both.
+            parts.append(Self.kickoffLineFmt.string(from: date)
+                .replacingOccurrences(of: ":00", with: ""))
+        }
+        // A cup competition already carries its round ("League Cup, last 32");
+        // a league round is "Regular Season - 4", which says nothing.
+        let round = fixture.round.flatMap { $0.hasPrefix("Regular Season") ? nil : $0 }
+        parts.append(fixture.competitionShort ?? round ?? "Premier League")
+        parts.append(fixture.venue.lowercased())
+        return parts.joined(separator: " · ")
+    }
+
+    private static let kickoffLineFmt: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "EEE d MMM, h:mma"
+        f.amSymbol = "am"; f.pmSymbol = "pm"
+        return f
+    }()
 
     // MARK: - Post-match card
 
@@ -589,7 +639,10 @@ struct TeamPageView: View {
 
     @ViewBuilder
     private func calendarTab(_ cards: TeamPageCards) -> some View {
-        let fixtures = cards.upcomingFixtures ?? []
+        // 15 rows is roughly to the end of the next block of the season; the
+        // server sends no more, the cap is here so a longer list can never
+        // turn the tab into an endless scroll.
+        let fixtures = Array((cards.upcomingFixtures ?? []).prefix(15))
         let recent = cards.recentResults ?? []
         return VStack(spacing: Layout.cardSpacing) {
             if fixtures.isEmpty {
@@ -701,8 +754,12 @@ struct TeamPageView: View {
                     .foregroundColor(.hotRose)
                 Text(parsed.map { Self.dayMonth($0) } ?? f.date)
                     .font(.feedHeadline).foregroundColor(.warmWhite)
-                Text(parsed.map { Self.kickoffTime($0) } ?? "")
-                    .font(.feedTimestamp).foregroundColor(.warmWhite.opacity(0.6))
+                // A postponed game has no kickoff to show, and a TBD one has a
+                // placeholder time that would be a lie if we printed it.
+                if !f.isPostponed {
+                    Text(f.isTimeTBC ? "Time TBC" : (parsed.map { Self.kickoffTime($0) } ?? ""))
+                        .font(.feedTimestamp).foregroundColor(.warmWhite.opacity(0.6))
+                }
             }
             .frame(width: 70, alignment: .leading)
 
@@ -719,14 +776,17 @@ struct TeamPageView: View {
             // Right: dots + label (+ chevron hint when the row is tappable)
             VStack(alignment: .trailing, spacing: 4) {
                 HStack(spacing: 3) {
+                    // A postponed game gets one dot: it is still on the list,
+                    // but it is not something to plan the evening around.
+                    let dots = f.isPostponed ? 1 : f.importanceDots
                     ForEach(1...5, id: \.self) { dot in
                         Circle()
-                            .fill(dot <= f.importanceDots ? Color.hotRose : Color.mutedText.opacity(0.3))
+                            .fill(dot <= dots ? Color.hotRose : Color.mutedText.opacity(0.3))
                             .frame(width: 6, height: 6)
                     }
                 }
                 HStack(spacing: 4) {
-                    Text(f.importanceLabel)
+                    Text(f.isPostponed ? "Postponed" : f.importanceLabel)
                         .font(.feedTimestamp).foregroundColor(.hotRose)
                         .lineLimit(1)
                     if hasPreview {
@@ -1173,6 +1233,21 @@ struct TeamPageView: View {
     private func loadTeamPage() async {
         isLoading = true
         hasError = false
+
+        #if DEBUG
+        // Screenshot harness: render a `team_pages.content` document read from
+        // a file instead of the network, so a payload the backend has not
+        // started writing yet can still be reviewed on a real screen.
+        // -gdTeamPageJSON /path/to/page.json
+        let args = ProcessInfo.processInfo.arguments
+        if let i = args.firstIndex(of: "-gdTeamPageJSON"), i + 1 < args.count,
+           let data = FileManager.default.contents(atPath: args[i + 1]),
+           let stub = try? JSONDecoder().decode(TeamPageContent.self, from: data) {
+            content = stub
+            isLoading = false
+            return
+        }
+        #endif
 
         // Check cache first
         if let cached = TeamPageCache.load(teamId: teamId) {

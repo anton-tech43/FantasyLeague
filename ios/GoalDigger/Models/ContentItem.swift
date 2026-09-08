@@ -613,6 +613,8 @@ struct NextFixtureCard: Codable {
     let competition: String?
     let leagueId: Int?
     let round: String?
+    /// Opponent's API-Football id, for the crest.
+    let opponentApiId: Int?
     /// Deterministic pre-game verdict from FIFA ranks (B2). nil when either
     /// side's strength_rank is unknown — render nothing in that case.
     let favorite: FavoriteVerdict?
@@ -628,6 +630,7 @@ struct NextFixtureCard: Codable {
         case competition
         case leagueId = "league_id"
         case round
+        case opponentApiId = "opponent_api_id"
     }
 
     /// The competition without the sponsor parenthetical, for the narrow chip
@@ -691,13 +694,28 @@ struct UpcomingFixture: Codable, Identifiable, Equatable {
     /// view then tries to resolve a PL club by name and otherwise shows
     /// the shield fallback.
     let opponentApiId: Int?
+    /// API-Football fixture id. Nil on rows written before the calendar
+    /// carried one.
+    let fixtureId: Int?
+    /// API-Football short status: "NS" (not started), "TBD" (date known,
+    /// kickoff time not), "PST" (postponed). Cancelled and abandoned games
+    /// are dropped server-side and never arrive here. Nil means "assume a
+    /// normal scheduled game", which is how every pre-status row behaves.
+    let status: String?
 
     enum CodingKeys: String, CodingKey {
-        case date, opponent, venue
+        case date, opponent, venue, status
         case importanceDots = "importance_dots"
         case importanceLabel = "importance_label"
         case opponentApiId = "opponent_api_id"
+        case fixtureId = "fixture_id"
     }
+
+    /// Postponed: no kickoff time to show, and the row says so instead of
+    /// carrying an importance verdict about a game that is not happening.
+    var isPostponed: Bool { status == "PST" }
+    /// Date is known, kickoff time is a placeholder (TV picks pending).
+    var isTimeTBC: Bool { status == "TBD" }
 
     var opponentCrestURL: URL? {
         if let id = opponentApiId { return URL(string: "https://media.api-sports.io/football/teams/\(id).png") }
