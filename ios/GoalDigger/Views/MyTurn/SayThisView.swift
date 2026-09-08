@@ -8,7 +8,13 @@ import SwiftUI
 /// one-hand look during a match, so the line is the biggest thing in the row.
 struct SayThisView: View {
     let content: SayThisContent
+    /// For the "Lingo" chip on a line that leans on a real saying.
+    let lingo: LingoContent
     @Bindable var store: MyTurnStore
+
+    private var lingoById: [String: LingoTerm] {
+        Dictionary(uniqueKeysWithValues: lingo.terms.map { ($0.id, $0) })
+    }
 
     private var selected: Situation? {
         guard let id = store.sayThisSituationId else { return nil }
@@ -159,13 +165,37 @@ struct SayThisView: View {
                     .font(.jakarta(13, weight: .regular))
                     .foregroundColor(.textSecondaryOnCard)
                     .fixedSize(horizontal: false, vertical: true)
-                Text(line.risk.label.uppercased())
-                    .font(.jakarta(10, weight: .bold))
-                    .tracking(1)
-                    .foregroundColor(line.risk == .bold ? Color(hex: "#9A7B1A") : .hotRose)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(Capsule().fill((line.risk == .bold ? Color.gold : Color.hotRose).opacity(0.12)))
+                HStack(spacing: 8) {
+                    Text(line.risk.label.uppercased())
+                        .font(.jakarta(10, weight: .bold))
+                        .tracking(1)
+                        .foregroundColor(line.risk == .bold ? Color(hex: "#9A7B1A") : .hotRose)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Capsule().fill((line.risk == .bold ? Color.gold : Color.hotRose).opacity(0.12)))
+                    if let term = line.lingo.flatMap({ lingoById[$0] }) {
+                        // One tap to the phrase's Lingo entry: the saying is
+                        // taught, not just quoted.
+                        Button {
+                            store.lingoQuery = ""
+                            store.lingoExpandedId = term.id
+                            withAnimation(.spring(duration: 0.25)) { store.lastModule = .lingo }
+                        } label: {
+                            HStack(spacing: 3) {
+                                Image(systemName: "book")
+                                    .font(.system(size: 9, weight: .semibold))
+                                Text(term.term)
+                                    .font(.jakarta(10, weight: .bold))
+                            }
+                            .foregroundColor(.textSecondaryOnCard)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Capsule().stroke(Color.textSecondaryOnCard.opacity(0.4), lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("What \(term.term) means")
+                    }
+                }
             }
 
             Spacer(minLength: 0)

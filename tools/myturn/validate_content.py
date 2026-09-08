@@ -22,7 +22,7 @@ from collections import Counter, defaultdict
 ROOT = os.path.join(os.path.dirname(__file__), "..", "..", "ios", "GoalDigger", "Resources", "MyTurn")
 ID_RE = re.compile(r"^[a-z0-9-]+$")
 
-LIMITS = {"text": 60, "usage": 90, "meaning": 140, "heard": 90, "question": 100, "option": 40, "explanation": 120}
+LIMITS = {"text": 60, "usage": 100, "meaning": 170, "heard": 90, "sayIt": 100, "question": 100, "option": 40, "explanation": 170, "why": 110, "use": 140}
 
 # UK idiom banlist. Generated football English drifts American. Word-boundary,
 # case-insensitive; "field" and "tie" are banned outright because the validator
@@ -41,6 +41,18 @@ BANNED = {
     r"\bfavorite\b": "favorite → favourite",
     r"\bcenter\b": "center → centre",
 }
+
+# Superlatives tied to the present. The first batch called 2006 Arsenal's "only"
+# Champions League final; they played the 2026 final. The writer has a knowledge
+# cut-off and this script cannot see the present, so the words that go stale
+# are banned outright. Write the dated fact instead. "last-minute" is allowed.
+SUPERLATIVE = re.compile(
+    r"\b(the|their|its|his|club's) only\b"            # "their only final" — the exact shape that went stale
+    r"|\bonly (club|team|player|manager|time|final|title|trophy|english|one)\b"
+    r"|\b(the|their|its|his) last\b(?! (minute|kick|second|three minutes|game of|day of))|\blast time\b|\bmost recent\b"
+    r"|\bmost\b|(?<!world-)(?<!world )\brecord\b(?! at the time)|\b(latest|newest|all-time)\b|more than any other"
+    r"|\bstill\b|\bnever\b(?! walk alone)",
+    re.I)
 
 errors: list[str] = []
 warnings: list[str] = []
@@ -97,7 +109,7 @@ def first_word(s: str) -> str:
 
 
 # ---------------------------------------------------------------- saythis
-def validate_saythis(d: dict) -> tuple[int, int]:
+def validate_saythis(d: dict, lingo_ids: set) -> tuple[int, int]:
     sits = d.get("situations", [])
     check_ids("saythis", [s.get("id", "") for s in sits])
     all_lines: list[str] = []
@@ -125,6 +137,9 @@ def validate_saythis(d: dict) -> tuple[int, int]:
             check_idiom(f"saythis/{lid}", text + " " + usage)
             if ln.get("risk") not in ("safe", "bold"):
                 err(f"saythis/{lid}: risk '{ln.get('risk')}' invalid")
+            lref = ln.get("lingo")
+            if lref is not None and lref not in lingo_ids:
+                err(f"saythis/{lid}: lingo '{lref}' does not exist in lingo.json")
             all_lines.append(text)
             starts[first_word(text)] += 1
         for w, n in starts.items():
@@ -157,12 +172,15 @@ def validate_lingo(d: dict) -> int:
         tid = t.get("id", "?")
         if t.get("category") not in ("rules", "tactics", "match_situations", "culture"):
             err(f"lingo/{tid}: category '{t.get('category')}' invalid")
-        meaning, heard = t.get("meaning", ""), t.get("heard", "")
+        meaning, heard, say_it = t.get("meaning", ""), t.get("heard", ""), t.get("sayIt", "")
         if not t.get("term") or not meaning or not heard:
             err(f"lingo/{tid}: term, meaning and heard are all required")
+        if not say_it:
+            err(f"lingo/{tid}: sayIt is required — a definition without a line to say is not a tool")
         check_len(f"lingo/{tid}", "meaning", meaning)
         check_len(f"lingo/{tid}", "heard", heard)
-        check_idiom(f"lingo/{tid}", meaning + " " + heard)
+        check_len(f"lingo/{tid}", "sayIt", say_it)
+        check_idiom(f"lingo/{tid}", meaning + " " + heard + " " + say_it)
         for ref in t.get("seeAlso", []) or []:
             if ref not in ids:
                 err(f"lingo/{tid}: seeAlso '{ref}' does not exist")
@@ -213,9 +231,20 @@ def validate_quiz(d: dict) -> tuple[int, int]:
             if not expl:
                 err(f"quiz/{qid}: explanation is required — it is where the learning happens")
             check_len(f"quiz/{qid}", "explanation", expl)
-            check_idiom(f"quiz/{qid}", question + " " + " ".join(opts) + " " + expl)
+            why, use, use_type = q.get("why", ""), q.get("use", ""), q.get("useType")
+            if not why or not use:
+                err(f"quiz/{qid}: why and use are required — a fact with no use is not a question (CONTENT_PRINCIPLES.md §1)")
+            check_len(f"quiz/{qid}", "why", why)
+            check_len(f"quiz/{qid}", "use", use)
+            if use_type not in ("say", "ask", "impress"):
+                err(f"quiz/{qid}: useType must be say, ask or impress")
+            check_idiom(f"quiz/{qid}", question + " " + " ".join(opts) + " " + expl + " " + why + " " + use)
+            for field, text in (("question", question), ("explanation", expl), ("why", why), ("use", use)):
+                m = SUPERLATIVE.search(text)
+                if m:
+                    err(f"quiz/{qid}: {field} has a superlative that can go stale ('{m.group(0)}') — write the dated fact: {text[:60]}")
             # Static content must not age: no "current", "this season", "now".
-            if re.search(r"\b(this season|currently|right now|current manager|current captain|this year)\b", question, re.I):
+            if re.search(r"\b(this season|currently|right now|current manager|current captain|this year)\b", question + " " + expl, re.I):
                 err(f"quiz/{qid}: asks about the present — static content must be finished history: {question}")
         total += len(qs)
         if qs and max(answers.values()) > len(qs) * 0.5:
@@ -283,8 +312,9 @@ def main() -> int:
     lingo = load("lingo.json")
     quiz = load("quiz.json")
     drills = load("drills.json")
-    n_sit, n_lines = validate_saythis(saythis) if saythis else (0, 0)
     n_terms = validate_lingo(lingo) if lingo else 0
+    lingo_ids = {t.get("id") for t in lingo.get("terms", [])} if lingo else set()
+    n_sit, n_lines = validate_saythis(saythis, lingo_ids) if saythis else (0, 0)
     n_packs, n_q = validate_quiz(quiz) if quiz else (0, 0)
     n_decks = validate_drills(drills, bool(lingo), bool(saythis)) if drills else 0
 

@@ -70,6 +70,10 @@ struct SayLine: Codable, Identifiable, Hashable {
     let text: String
     let usage: String
     let risk: LineRisk
+    /// Optional Lingo id when the line leans on a real football saying
+    /// ("Clinical." → clinical-finish). The row shows the term as a chip that
+    /// jumps to its Lingo entry, so the phrase is taught, not just quoted.
+    let lingo: String?
 }
 
 // MARK: Lingo
@@ -101,6 +105,10 @@ struct LingoTerm: Codable, Identifiable, Hashable {
     let term: String
     let meaning: String
     let heard: String
+    /// A sentence she can say that uses the term — turns a definition into a
+    /// tool. Required by the validator since 2026-09-08; optional here so an
+    /// older cached file still decodes.
+    let sayIt: String?
     let seeAlso: [String]?
 }
 
@@ -121,6 +129,19 @@ struct QuizPack: Codable, Identifiable, Hashable {
     var isClubPack: Bool { id.hasPrefix("club-") }
 }
 
+/// What the line under a question is for. The app labels it accordingly.
+enum QuestionUseType: String, Codable {
+    case say, ask, impress
+
+    var label: String {
+        switch self {
+        case .say:     return "Say it"
+        case .ask:     return "Ask him"
+        case .impress: return "To impress"
+        }
+    }
+}
+
 struct MyTurnQuestion: Codable, Identifiable, Hashable {
     let id: String
     let difficulty: Int
@@ -128,7 +149,23 @@ struct MyTurnQuestion: Codable, Identifiable, Hashable {
     let question: String
     let options: [String]
     let answer: Int
+    /// The fact, with the context a non-fan lacks (who this person is).
     let explanation: String
+    /// Why she would ever need this — one line. CONTENT_PRINCIPLES.md §1.
+    let why: String?
+    /// The line: something to say, ask or impress with.
+    let use: String?
+    let useType: QuestionUseType?
+    /// Optional photo URL for "Who is this?" questions. Only the live club
+    /// pack sets it; static content ships no images.
+    let image: String?
+
+    init(id: String, difficulty: Int, verified: Bool = true, question: String, options: [String], answer: Int,
+         explanation: String, why: String? = nil, use: String? = nil, useType: QuestionUseType? = nil, image: String? = nil) {
+        self.id = id; self.difficulty = difficulty; self.verified = verified; self.question = question
+        self.options = options; self.answer = answer; self.explanation = explanation
+        self.why = why; self.use = use; self.useType = useType; self.image = image
+    }
 }
 
 // MARK: Drills

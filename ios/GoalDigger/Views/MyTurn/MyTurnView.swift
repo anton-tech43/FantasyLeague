@@ -8,6 +8,7 @@ import SwiftUI
 struct MyTurnView: View {
     @State private var store = MyTurnStore.shared
     @State private var content = MyTurnContentService.shared
+    @State private var live = LiveClubPackService.shared
     @Environment(AppState.self) var appState
 
     var body: some View {
@@ -21,13 +22,13 @@ struct MyTurnView: View {
                     .padding(.bottom, 4)
 
                 ZStack {
-                    SayThisView(content: content.sayThis, store: store)
+                    SayThisView(content: content.sayThis, lingo: content.lingo, store: store)
                         .opacity(store.lastModule == .sayThis ? 1 : 0)
                         .allowsHitTesting(store.lastModule == .sayThis)
                     LingoView(content: content.lingo, store: store)
                         .opacity(store.lastModule == .lingo ? 1 : 0)
                         .allowsHitTesting(store.lastModule == .lingo)
-                    QuizView(content: content.quiz, store: store, clubId: appState.selectedTeam?.rawValue)
+                    QuizView(content: content.quiz, store: store, clubId: appState.selectedTeam?.rawValue, livePack: live.pack)
                         .opacity(store.lastModule == .quiz ? 1 : 0)
                         .allowsHitTesting(store.lastModule == .quiz)
                     DrillsView(store: store)
@@ -40,6 +41,13 @@ struct MyTurnView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(Color.appBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
+        .task(id: appState.selectedTeam?.rawValue) {
+            let personalise = appState.personalise
+            await live.refresh(team: appState.selectedTeam, personalise: personalise)
+            #if DEBUG
+            applyLivePackArguments()
+            #endif
+        }
         #if DEBUG
         .onAppear(perform: applyLaunchArguments)
         #endif
@@ -55,11 +63,16 @@ struct MyTurnView: View {
             guard let i = args.firstIndex(of: flag), i + 1 < args.count else { return nil }
             return args[i + 1]
         }
+        // `-gdResetMyTurn` wipes the persisted My Turn state first, so a
+        // round from an earlier launch cannot shadow the screen being checked.
+        if args.contains("-gdResetMyTurn") { store.clearAll() }
         if let m = value("-gdMyTurnModule").flatMap(MyTurnModule.init(rawValue:)) { store.lastModule = m }
         if let s = value("-gdMyTurnSituation") { store.sayThisSituationId = s }
         if let q = value("-gdLingoQuery") { store.lingoQuery = q }
+        if let e = value("-gdLingoExpand") { store.lingoExpandedId = e }
         if let p = value("-gdMyTurnPack"), let pack = content.quiz.packs.first(where: { $0.id == p }) {
             store.startRound(pack: pack)
+            applyQuizAnswerArgument(pack: pack)
         }
         if let d = value("-gdMyTurnDeck"), let deck = content.drills.decks.first(where: { $0.id == d }) {
             let ids: [String]
@@ -70,6 +83,29 @@ struct MyTurnView: View {
             }
             store.startDrill(deckId: deck.id, cardIds: ids)
         }
+    }
+
+    /// `-gdMyTurnPack live-club` waits for the live pack; `-gdQuizAnswer N`
+    /// answers the first question with option N so the feedback renders.
+    private func applyLivePackArguments() {
+        let args = ProcessInfo.processInfo.arguments
+        guard let i = args.firstIndex(of: "-gdMyTurnPack"), i + 1 < args.count,
+              args[i + 1] == LiveClubPack.packId, let pack = live.pack, store.quizRound == nil else { return }
+        // `-gdMyTurnQuestion <id>` starts a one-question round, for screenshots
+        // of a specific question (the photo ones).
+        if let j = args.firstIndex(of: "-gdMyTurnQuestion"), j + 1 < args.count {
+            store.startRetryRound(pack: pack, missedIds: [args[j + 1]])
+        } else {
+            store.startRound(pack: pack)
+        }
+        applyQuizAnswerArgument(pack: pack)
+    }
+
+    private func applyQuizAnswerArgument(pack: QuizPack) {
+        let args = ProcessInfo.processInfo.arguments
+        guard let i = args.firstIndex(of: "-gdQuizAnswer"), i + 1 < args.count, let a = Int(args[i + 1]),
+              let round = store.quizRound, let q = pack.questions.first(where: { $0.id == round.questionIds[0] }) else { return }
+        store.answer(a, correct: a == q.answer, questionId: q.id)
     }
     #endif
 

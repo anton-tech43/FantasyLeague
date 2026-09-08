@@ -1,134 +1,1584 @@
 {
-  "contentVersion": "2026-09-07.1",
+  "contentVersion": "2026-09-08.1",
   "terms": [
-    { "id": "premier-league", "category": "rules", "term": "Premier League", "meaning": "England's top division. Twenty clubs, each plays the other nineteen twice, August to May.", "heard": "Constantly. It is the whole thing." },
-    { "id": "points", "category": "rules", "term": "Points", "meaning": "Three for a win, one for a draw, none for a loss. The table is just points added up.", "heard": "\"Three points is three points\" after any ugly win.", "seeAlso": ["the-table"] },
-    { "id": "the-table", "category": "rules", "term": "The table", "meaning": "The league standings. Top wins the title, bottom three go down.", "heard": "\"Where are we in the table?\" He knows. He wants to say it.", "seeAlso": ["relegation", "goal-difference"] },
-    { "id": "goal-difference", "category": "rules", "term": "Goal difference", "meaning": "Goals scored minus goals let in. Splits teams that are level on points.", "heard": "Late in the season when two teams are neck and neck.", "seeAlso": ["the-table"] },
-    { "id": "relegation", "category": "rules", "term": "Relegation", "meaning": "The bottom three at the end of the season drop down to the Championship.", "heard": "\"Relegation battle\" from about February onwards.", "seeAlso": ["championship", "promotion"] },
-    { "id": "promotion", "category": "rules", "term": "Promotion", "meaning": "Going up a division. Three come up from the Championship each summer.", "heard": "In May, usually with someone crying on a pitch.", "seeAlso": ["championship", "play-offs"] },
-    { "id": "championship", "category": "rules", "term": "The Championship", "meaning": "The second division, one below the Premier League. Not to be confused with a championship.", "heard": "\"They'll be in the Championship next year\" said unkindly." },
-    { "id": "play-offs", "category": "rules", "term": "Play-offs", "meaning": "In the Championship, the top two go up automatically and the next four fight for the last place.", "heard": "Late May. The final is called the richest game in football.", "seeAlso": ["promotion"] },
-    { "id": "offside", "category": "rules", "term": "Offside", "meaning": "You can't be nearer the goal than the last defender at the moment the ball is played to you.", "heard": "Every time a flag goes up and someone on the sofa groans.", "seeAlso": ["var"] },
-    { "id": "var", "category": "rules", "term": "VAR", "meaning": "Video Assistant Referee. Someone in a room checks goals, penalties and red cards on replay.", "heard": "\"VAR is checking\" followed by two minutes of silence.", "seeAlso": ["clear-and-obvious"] },
-    { "id": "clear-and-obvious", "category": "rules", "term": "Clear and obvious", "meaning": "VAR is only meant to overturn a decision that was clearly wrong. In practice, opinions differ.", "heard": "\"If it takes that long it isn't clear and obvious.\"", "seeAlso": ["var"] },
-    { "id": "handball", "category": "rules", "term": "Handball", "meaning": "Touching the ball with your hand or arm on purpose, or with your arm making you bigger. Goalkeepers are exempt in their box.", "heard": "\"That's handball all day\" about a ball that brushed a shoulder." },
-    { "id": "penalty", "category": "rules", "term": "Penalty", "meaning": "A free shot from twelve yards, only the keeper to beat, given for a foul or handball in the box.", "heard": "A gasp, then nobody speaks until it's taken.", "seeAlso": ["the-box"] },
-    { "id": "the-box", "category": "rules", "term": "The box", "meaning": "The big rectangle in front of each goal. Fouls in there are penalties.", "heard": "\"Get it in the box!\" whenever a cross is coming.", "seeAlso": ["penalty"] },
-    { "id": "free-kick", "category": "rules", "term": "Free kick", "meaning": "A stopped-ball restart after a foul. Direct ones can be shot at goal; indirect ones can't.", "heard": "\"That's a free kick every day of the week.\"" },
-    { "id": "corner", "category": "rules", "term": "Corner", "meaning": "When the defending side puts the ball out behind their own goal line, the attackers cross it in from the corner.", "heard": "\"Corners are as good as a goal\" said hopefully." },
-    { "id": "throw-in", "category": "rules", "term": "Throw-in", "meaning": "Ball goes out over the sideline, the other team throws it back in with both hands.", "heard": "Rarely. Unless someone has a famously long one." },
-    { "id": "yellow-card", "category": "rules", "term": "Yellow card", "meaning": "A warning. Two in one game and you're off.", "heard": "\"He's on a yellow\" means the player has to be careful now.", "seeAlso": ["red-card"] },
-    { "id": "red-card", "category": "rules", "term": "Red card", "meaning": "Sent off. The team plays the rest of the game a player short.", "heard": "\"Straight red\" means one bad tackle, no warning first.", "seeAlso": ["yellow-card", "ten-men"] },
-    { "id": "ten-men", "category": "rules", "term": "Ten men", "meaning": "Playing with one fewer after a red card. Teams often sit deep and defend.", "heard": "\"Down to ten men\" said either with dread or delight.", "seeAlso": ["red-card"] },
-    { "id": "added-time", "category": "rules", "term": "Added time", "meaning": "Minutes tacked on at the end of each half for stoppages. Also called injury time or stoppage time.", "heard": "\"How long has he added?\" the second the board goes up.", "seeAlso": ["fergie-time"] },
-    { "id": "extra-time", "category": "rules", "term": "Extra time", "meaning": "Two extra fifteen-minute halves in a cup game that's level. Not the same as added time.", "heard": "In knockout games only. League games just end level.", "seeAlso": ["added-time", "penalty-shootout"] },
-    { "id": "penalty-shootout", "category": "rules", "term": "Penalty shootout", "meaning": "If extra time is still level, five penalties each, then one at a time until someone misses.", "heard": "England fans go quiet at the mention of it.", "seeAlso": ["extra-time"] },
-    { "id": "aggregate", "category": "rules", "term": "Aggregate", "meaning": "In a two-leg cup match, the two scores added together decide who goes through.", "heard": "European nights. \"They're 3-2 up on aggregate.\"", "seeAlso": ["two-legs"] },
-    { "id": "two-legs", "category": "rules", "term": "Two legs", "meaning": "Playing the same opponent home and away in a cup round, one game at each ground.", "heard": "\"The second leg is at home\" is good news.", "seeAlso": ["aggregate"] },
-    { "id": "substitution", "category": "rules", "term": "Substitution", "meaning": "Swapping a player on the pitch for one on the bench. Five allowed per game.", "heard": "\"Bit early for a sub\" or \"About time.\"", "seeAlso": ["the-bench"] },
-    { "id": "the-bench", "category": "rules", "term": "The bench", "meaning": "The substitutes, sitting beside the pitch waiting to come on.", "heard": "\"He's on the bench\" means not starting, but might play.", "seeAlso": ["substitution"] },
-    { "id": "starting-eleven", "category": "rules", "term": "Starting eleven", "meaning": "The eleven players who begin the match. Announced about an hour before kick-off.", "heard": "\"Team's out\" when the line-up appears on his phone." },
-    { "id": "clean-sheet", "category": "rules", "term": "Clean sheet", "meaning": "Letting in no goals. A goalkeeper's favourite stat.", "heard": "\"Another clean sheet\" said with real pride." },
-    { "id": "own-goal", "category": "rules", "term": "Own goal", "meaning": "Putting the ball in your own net. Counts for the other team.", "heard": "A pained \"oh no\" from the whole room." },
-    { "id": "hat-trick", "category": "rules", "term": "Hat-trick", "meaning": "Three goals by one player in one match. They get to keep the ball.", "heard": "For days afterwards.", "seeAlso": ["brace"] },
-    { "id": "brace", "category": "rules", "term": "Brace", "meaning": "Two goals by the same player in one game.", "heard": "\"He got a brace\" in the match report.", "seeAlso": ["hat-trick"] },
-    { "id": "assist", "category": "rules", "term": "Assist", "meaning": "The pass that leads directly to a goal.", "heard": "\"Goals and assists\" when he's rating a player." },
-    { "id": "fixtures", "category": "rules", "term": "Fixtures", "meaning": "The list of upcoming matches. Who plays who, and when.", "heard": "\"Have you seen the fixtures?\" in June, when they come out." },
-    { "id": "derby", "category": "rules", "term": "Derby", "meaning": "A match between two rivals, usually from the same city or area. Pronounced darby.", "heard": "The week before, the week of, and the week after." },
-    { "id": "the-cups", "category": "rules", "term": "The cups", "meaning": "Knockout competitions run alongside the league: the FA Cup and the League Cup.", "heard": "\"It's only the cup\" when they lose, \"a cup run\" when they win.", "seeAlso": ["fa-cup", "league-cup"] },
-    { "id": "fa-cup", "category": "rules", "term": "FA Cup", "meaning": "The oldest cup competition in the world. Every club in England can enter, so tiny teams sometimes play giants.", "heard": "\"The magic of the cup\" when a small club wins.", "seeAlso": ["giant-killing"] },
-    { "id": "league-cup", "category": "rules", "term": "League Cup", "meaning": "The smaller cup, named after its sponsor most years. Big clubs often play their reserves.", "heard": "\"Good chance to rest people\" from the manager." },
-    { "id": "champions-league", "category": "rules", "term": "Champions League", "meaning": "Europe's top club competition. The best clubs from each country, midweek nights, a famous anthem.", "heard": "Tuesday and Wednesday nights, September to May.", "seeAlso": ["europa-league"] },
-    { "id": "europa-league", "category": "rules", "term": "Europa League", "meaning": "Europe's second competition, for clubs that finish just below the Champions League places.", "heard": "\"Thursday night football\" said with a slight sigh.", "seeAlso": ["champions-league"] },
-    { "id": "transfer-window", "category": "rules", "term": "Transfer window", "meaning": "The only times clubs can buy and sell players: the summer, and the month of January.", "heard": "\"Deadline day\" on the last day, with a countdown clock.", "seeAlso": ["deadline-day"] },
-    { "id": "deadline-day", "category": "rules", "term": "Deadline day", "meaning": "The last day of the transfer window. Deals get done at midnight and reporters stand outside stadiums.", "heard": "Someone shouting \"here we go\" at a phone.", "seeAlso": ["transfer-window"] },
-    { "id": "loan", "category": "rules", "term": "Loan", "meaning": "Borrowing a player from another club for a season. Common for young players getting experience.", "heard": "\"He's out on loan\" about a promising kid." },
-    { "id": "formation", "category": "tactics", "term": "Formation", "meaning": "How the ten outfield players are arranged, read from the back. 4-3-3 is four defenders, three midfielders, three attackers.", "heard": "\"They've gone 4-4-2\" as if it explains everything.", "seeAlso": ["back-four"] },
-    { "id": "back-four", "category": "tactics", "term": "Back four", "meaning": "The four defenders across the pitch in front of the goalkeeper. Two centre-backs and two full-backs.", "heard": "\"The back four were solid\" is high praise.", "seeAlso": ["full-back", "centre-back"] },
-    { "id": "centre-back", "category": "tactics", "term": "Centre-back", "meaning": "The two big defenders in the middle. Heading, tackling, organising.", "heard": "\"He's a proper centre-back\" means old-fashioned and tough." },
-    { "id": "full-back", "category": "tactics", "term": "Full-back", "meaning": "The defenders on either side who also run forward to attack. Busiest job on the pitch.", "heard": "\"The full-backs were up and down all day.\"" },
-    { "id": "wing-back", "category": "tactics", "term": "Wing-back", "meaning": "A full-back who plays higher up the pitch, in a team with three centre-backs behind him.", "heard": "When a team plays with a back three.", "seeAlso": ["full-back", "back-four"] },
-    { "id": "holding-midfielder", "category": "tactics", "term": "Holding midfielder", "meaning": "The midfielder who stays back to protect the defence rather than running forward.", "heard": "\"The six\" or \"the number six\", after the shirt number they used to wear.", "seeAlso": ["box-to-box"] },
-    { "id": "box-to-box", "category": "tactics", "term": "Box-to-box", "meaning": "A midfielder who runs from his own penalty area to theirs all game long.", "heard": "\"Proper box-to-box midfielder\" said admiringly.", "seeAlso": ["holding-midfielder"] },
-    { "id": "number-ten", "category": "tactics", "term": "Number ten", "meaning": "The creative player who plays just behind the striker and makes the clever passes.", "heard": "\"He's a classic ten\" about someone who can't be bothered to defend.", "seeAlso": ["playmaker"] },
-    { "id": "playmaker", "category": "tactics", "term": "Playmaker", "meaning": "The player the team's attacks go through. Sees passes others don't.", "heard": "\"He makes them tick\" is the phrase.", "seeAlso": ["number-ten"] },
-    { "id": "winger", "category": "tactics", "term": "Winger", "meaning": "An attacker who plays wide near the touchline, dribbles past defenders and crosses.", "heard": "\"Get it wide to the winger!\"" },
-    { "id": "striker", "category": "tactics", "term": "Striker", "meaning": "The player whose whole job is scoring. Also called a forward or a number nine.", "heard": "\"They need a striker\" about half the clubs in the league.", "seeAlso": ["false-nine", "target-man"] },
-    { "id": "target-man", "category": "tactics", "term": "Target man", "meaning": "A big striker the team aims long balls at. He holds it up and brings others into play.", "heard": "\"Get it up to the big man\" when a team is desperate.", "seeAlso": ["striker"] },
-    { "id": "false-nine", "category": "tactics", "term": "False nine", "meaning": "A striker who drops back into midfield instead of staying up front, pulling defenders out of position.", "heard": "In clever tactical chats. Sounds fancier than it is.", "seeAlso": ["striker"] },
-    { "id": "pressing", "category": "tactics", "term": "Pressing", "meaning": "Chasing the other team the moment they have the ball, high up the pitch, to force mistakes.", "heard": "\"They press really well\" about energetic teams.", "seeAlso": ["high-press", "low-block"] },
-    { "id": "high-press", "category": "tactics", "term": "High press", "meaning": "Pressing right up near the other team's goal, so they can't even pass out from the back.", "heard": "When a team wins the ball near the corner flag and scores.", "seeAlso": ["pressing"] },
-    { "id": "low-block", "category": "tactics", "term": "Low block", "meaning": "The whole team sitting deep near their own goal, letting the other side have the ball.", "heard": "\"They've sat in a low block\" about a team defending a lead.", "seeAlso": ["park-the-bus"] },
-    { "id": "park-the-bus", "category": "tactics", "term": "Park the bus", "meaning": "Defending with everyone, no attacking at all. As if a bus were parked across the goal.", "heard": "Usually as an insult about a boring opponent.", "seeAlso": ["low-block"] },
-    { "id": "counter-attack", "category": "tactics", "term": "Counter-attack", "meaning": "Winning the ball and racing forward fast before the other team can get back.", "heard": "\"Dangerous on the counter\" about quick teams." },
-    { "id": "possession", "category": "tactics", "term": "Possession", "meaning": "How much of the game a team has the ball. Shown as a percentage on screen.", "heard": "\"Sixty percent possession and nothing to show for it.\"", "seeAlso": ["tiki-taka"] },
-    { "id": "tiki-taka", "category": "tactics", "term": "Tiki-taka", "meaning": "Lots of short, quick passes to keep the ball. Made famous by Barcelona and Spain.", "heard": "Half in praise, half in mockery.", "seeAlso": ["possession"] },
-    { "id": "long-ball", "category": "tactics", "term": "Long ball", "meaning": "Kicking it high and far up the pitch instead of passing it along the ground.", "heard": "\"Route one\" is the same idea, said more rudely.", "seeAlso": ["target-man"] },
-    { "id": "man-marking", "category": "tactics", "term": "Man marking", "meaning": "A defender following one particular attacker everywhere, rather than guarding a space.", "heard": "\"Who's marking him?\" after a free header." },
-    { "id": "zonal-marking", "category": "tactics", "term": "Zonal marking", "meaning": "Defenders each guard an area at corners and free kicks, instead of a person.", "heard": "Blamed for every goal from a corner.", "seeAlso": ["man-marking"] },
-    { "id": "set-piece", "category": "tactics", "term": "Set piece", "meaning": "Any restart from a stopped ball: corners, free kicks, throw-ins. Teams rehearse them.", "heard": "\"Strong from set pieces\" about tall teams.", "seeAlso": ["corner", "free-kick"] },
-    { "id": "overlap", "category": "tactics", "term": "Overlap", "meaning": "A full-back running past the winger on the outside to give him a passing option.", "heard": "\"Great overlap\" from a co-commentator.", "seeAlso": ["full-back"] },
-    { "id": "through-ball", "category": "tactics", "term": "Through ball", "meaning": "A pass slid between defenders for a teammate to run onto.", "heard": "\"What a ball\" when it works." },
-    { "id": "cutback", "category": "tactics", "term": "Cutback", "meaning": "Getting to the byline and passing the ball back across goal for someone to tap in.", "heard": "Modern teams score half their goals this way." },
-    { "id": "inverted-full-back", "category": "tactics", "term": "Inverted full-back", "meaning": "A full-back who moves into midfield when his team has the ball, making an extra passer.", "heard": "Guardiola fans. Sounds very clever.", "seeAlso": ["full-back"] },
-    { "id": "half-space", "category": "tactics", "term": "Half-space", "meaning": "The gaps between the middle and the wings where clever attackers like to receive the ball.", "heard": "Tactics podcasts. Nod if you hear it." },
-    { "id": "xg", "category": "tactics", "term": "xG", "meaning": "Expected goals. A number for how good a chance was: a tap-in is nearly 1, a long shot is nearly 0.", "heard": "\"The xG was 2.5 and we lost 1-0\" as a complaint." },
-    { "id": "game-management", "category": "tactics", "term": "Game management", "meaning": "Slowing the match down when you're winning: passing it about, taking your time, no risks.", "heard": "\"Good game management\" or \"cynical\", depending on who's winning.", "seeAlso": ["see-the-game-out"] },
-    { "id": "see-the-game-out", "category": "match_situations", "term": "See the game out", "meaning": "Hold onto a lead until the final whistle without anything going wrong.", "heard": "\"Just see it out\" in the last ten minutes.", "seeAlso": ["game-management"] },
-    { "id": "kick-off", "category": "match_situations", "term": "Kick-off", "meaning": "The start of the match, or the start of each half.", "heard": "\"What time's kick-off?\" about eight times a weekend." },
-    { "id": "half-time", "category": "match_situations", "term": "Half-time", "meaning": "The fifteen-minute break in the middle. Kettle time.", "heard": "\"Half-time team talk\" when the manager needs to fix things." },
-    { "id": "full-time", "category": "match_situations", "term": "Full-time", "meaning": "The end of the match. The referee blows and it's over.", "heard": "\"FT\" in a text. Then either celebration or silence." },
-    { "id": "nil-nil", "category": "match_situations", "term": "Nil-nil", "meaning": "No goals for either side. Nil is football's word for zero.", "heard": "\"Bore draw\" if it was dull, \"a tight game\" if he's being kind." },
-    { "id": "six-pointer", "category": "match_situations", "term": "Six-pointer", "meaning": "A match between two teams fighting for the same thing, so winning gains three and denies the other three.", "heard": "Relegation battles in spring, title races in April." },
-    { "id": "top-four", "category": "match_situations", "term": "Top four", "meaning": "Finishing in the first four places, which earns a Champions League spot for next season.", "heard": "\"Top four is the aim\" from big clubs that won't win the title.", "seeAlso": ["champions-league"] },
-    { "id": "title-race", "category": "match_situations", "term": "Title race", "meaning": "Two or more teams close at the top of the table with a few games left.", "heard": "\"It's a proper title race\" once March arrives." },
-    { "id": "relegation-battle", "category": "match_situations", "term": "Relegation battle", "meaning": "Several clubs near the bottom fighting to avoid the last three places.", "heard": "In spring, with a lot of stress.", "seeAlso": ["relegation", "six-pointer"] },
-    { "id": "sitter", "category": "match_situations", "term": "Sitter", "meaning": "An easy chance that should have been a goal and wasn't.", "heard": "\"How has he missed that?\"" },
-    { "id": "screamer", "category": "match_situations", "term": "Screamer", "meaning": "A spectacular goal, usually from far out and hit very hard.", "heard": "\"What a screamer\" and then the replay, twice.", "seeAlso": ["top-bins"] },
-    { "id": "top-bins", "category": "match_situations", "term": "Top bins", "meaning": "The top corner of the goal. The hardest place to save, the nicest place to score.", "heard": "\"Top bins!\" with real joy.", "seeAlso": ["screamer"] },
-    { "id": "nutmeg", "category": "match_situations", "term": "Nutmeg", "meaning": "Poking the ball between a defender's legs and running round him. Humiliating for the defender.", "heard": "A cheer that has nothing to do with a goal." },
-    { "id": "worldie", "category": "match_situations", "term": "Worldie", "meaning": "A world-class goal. Short for world-class.", "heard": "Only for the very best ones.", "seeAlso": ["screamer"] },
-    { "id": "howler", "category": "match_situations", "term": "Howler", "meaning": "A terrible, obvious mistake. Usually by a goalkeeper or a defender.", "heard": "\"Absolute howler\" about a ball rolling under someone's foot." },
-    { "id": "in-the-mixer", "category": "match_situations", "term": "In the mixer", "meaning": "Launching the ball into the crowded penalty box and hoping. Late-game desperation.", "heard": "\"Just get it in the mixer\" in the last minute.", "seeAlso": ["the-box"] },
-    { "id": "route-one", "category": "match_situations", "term": "Route one", "meaning": "The simplest way to attack: hoof it long and chase it.", "heard": "As an insult about direct teams.", "seeAlso": ["long-ball"] },
-    { "id": "on-the-break", "category": "match_situations", "term": "On the break", "meaning": "Attacking fast right after winning the ball. Same thing as a counter-attack.", "heard": "\"They caught them on the break.\"", "seeAlso": ["counter-attack"] },
-    { "id": "smash-and-grab", "category": "match_situations", "term": "Smash and grab", "meaning": "Winning a game you were being outplayed in, with one late goal.", "heard": "Said by whichever side lost." },
-    { "id": "gone-to-sleep", "category": "match_situations", "term": "Gone to sleep", "meaning": "A defender losing concentration for a second and letting an attacker get free.", "heard": "\"He's gone to sleep there\" after a goal against." },
-    { "id": "dead-rubber", "category": "match_situations", "term": "Dead rubber", "meaning": "A match that no longer matters because everything has already been decided.", "heard": "Last group game of a tournament, or the final league game." },
-    { "id": "giant-killing", "category": "match_situations", "term": "Giant-killing", "meaning": "A small club knocking a big one out of a cup.", "heard": "FA Cup weekends in January and February.", "seeAlso": ["fa-cup"] },
-    { "id": "hairdryer", "category": "match_situations", "term": "The hairdryer", "meaning": "A manager screaming at players at half-time, so close their hair moves. Named for Alex Ferguson.", "heard": "\"They'll be getting the hairdryer\" after a bad first half." },
-    { "id": "man-of-the-match", "category": "match_situations", "term": "Man of the match", "meaning": "The best player on the day, picked by the broadcaster or a sponsor.", "heard": "\"Who's your man of the match?\" is a safe question every time." },
-    { "id": "fergie-time", "category": "culture", "term": "Fergie time", "meaning": "Generous added time that seems to appear when a big club needs a goal. Named for Alex Ferguson's Manchester United.", "heard": "Sarcastically, by fans of every other club.", "seeAlso": ["added-time"] },
-    { "id": "the-gaffer", "category": "culture", "term": "The gaffer", "meaning": "The manager. Old British slang for the boss.", "heard": "\"The gaffer's got them playing\" from players and pundits alike." },
-    { "id": "the-boss", "category": "culture", "term": "The boss", "meaning": "Also the manager. Players say it so they don't have to say his name.", "heard": "Post-match interviews. \"The boss said to keep going.\"", "seeAlso": ["the-gaffer"] },
-    { "id": "top-top-player", "category": "culture", "term": "Top, top player", "meaning": "Pundit-speak for very good. Two tops is better than one.", "heard": "Match of the Day, any week." },
-    { "id": "match-of-the-day", "category": "culture", "term": "Match of the Day", "meaning": "The BBC's Saturday night highlights show. Been going since 1964.", "heard": "\"Just watching MOTD\" at 10.30pm on a Saturday." },
-    { "id": "pundit", "category": "culture", "term": "Pundit", "meaning": "An ex-player who talks about the match on TV. Often blamed for having opinions.", "heard": "\"He's a pundit now\" about a player who retired." },
-    { "id": "the-lads", "category": "culture", "term": "The lads", "meaning": "The team. How players and fans refer to their own side.", "heard": "\"Proud of the lads\" after a hard game." },
-    { "id": "bottle-it", "category": "culture", "term": "Bottle it", "meaning": "To lose your nerve at the crucial moment and throw away something you should have won.", "heard": "Cruelly, about title races that collapsed." },
-    { "id": "banter", "category": "culture", "term": "Banter", "meaning": "Teasing between fans. Mostly friendly, occasionally not.", "heard": "\"It's just banter\" after a text that went slightly too far." },
-    { "id": "group-chat", "category": "culture", "term": "The group chat", "meaning": "Where his mates react to every goal in real time. Louder than the stadium.", "heard": "His phone buzzing eleven times in a row after a goal." },
-    { "id": "season-ticket", "category": "culture", "term": "Season ticket", "meaning": "A pass for every home league game. Waiting lists at big clubs can be years long.", "heard": "\"I've had a season ticket since I was eight.\"" },
-    { "id": "away-day", "category": "culture", "term": "Away day", "meaning": "Travelling to watch the team play at another ground. Trains, pubs, singing.", "heard": "\"Big away day\" when it's somewhere far or somewhere fun." },
-    { "id": "away-end", "category": "culture", "term": "The away end", "meaning": "The section of the stadium where travelling fans sit. Usually the loudest.", "heard": "\"Listen to the away end\" when the home fans have gone quiet.", "seeAlso": ["away-day"] },
-    { "id": "kop", "category": "culture", "term": "The Kop", "meaning": "Liverpool's famous home stand, where the loudest fans sing. Other grounds borrowed the name.", "heard": "Anfield nights on TV." },
-    { "id": "terraces", "category": "culture", "term": "The terraces", "meaning": "The old standing areas at football grounds. Now mostly seats, but the word stuck for the fans.", "heard": "\"Terrace chant\" about a song the crowd sings." },
-    { "id": "chant", "category": "culture", "term": "Chant", "meaning": "A song sung by the crowd, usually to a pop tune with new words about a player.", "heard": "Him humming one in the kitchen." },
-    { "id": "half-and-half-scarf", "category": "culture", "term": "Half-and-half scarf", "meaning": "A souvenir scarf with both teams' colours. Proper fans find them embarrassing.", "heard": "Mocked outside every big game." },
-    { "id": "plastic-fan", "category": "culture", "term": "Plastic fan", "meaning": "Someone accused of supporting a team only because it's successful.", "heard": "Thrown at fans of whoever is winning." },
-    { "id": "glory-hunter", "category": "culture", "term": "Glory hunter", "meaning": "A fan who picked a team for its trophies rather than any real connection.", "heard": "\"Typical glory hunter\" about a mate who supports a club far away.", "seeAlso": ["plastic-fan"] },
-    { "id": "the-boot-room", "category": "culture", "term": "The boot room", "meaning": "Liverpool's old coaching room where managers were quietly promoted from within. Now means a club that grows its own.", "heard": "History chats about how Liverpool used to run things." },
-    { "id": "the-invincibles", "category": "culture", "term": "The Invincibles", "meaning": "Arsenal's 2003-04 team, who went the whole league season without losing.", "heard": "From every Arsenal fan, about twice a year." },
-    { "id": "sack-race", "category": "culture", "term": "Sack race", "meaning": "The unofficial contest for which manager gets fired first each season.", "heard": "\"He's favourite in the sack race\" after three losses." },
-    { "id": "new-manager-bounce", "category": "culture", "term": "New manager bounce", "meaning": "The short burst of good results a team often gets right after changing manager.", "heard": "\"Just the bounce\" when a new manager wins his first two.", "seeAlso": ["sack-race"] },
-    { "id": "silly-season", "category": "culture", "term": "Silly season", "meaning": "The summer, when there's no football and every transfer rumour gets printed.", "heard": "\"Ignore it, it's silly season\" about a wild headline.", "seeAlso": ["transfer-window"] },
-    { "id": "here-we-go", "category": "culture", "term": "Here we go", "meaning": "Transfer reporter Fabrizio Romano's phrase for a deal that is definitely happening.", "heard": "Screenshot in the group chat with several exclamation marks.", "seeAlso": ["deadline-day"] },
-    { "id": "ftbl-twitter", "category": "culture", "term": "Football Twitter", "meaning": "The online corner where fans argue about everything, all day, forever.", "heard": "\"Football Twitter is going mad\" about anything at all." },
-    { "id": "fantasy-football", "category": "culture", "term": "Fantasy football", "meaning": "An online game where you pick real players and score points from their real performances.", "heard": "\"He's in my fantasy team\" about a player he's suddenly cheering for." },
-    { "id": "wags", "category": "culture", "term": "WAGs", "meaning": "Old tabloid slang for players' wives and girlfriends. Mostly retired now, thankfully.", "heard": "In stories about the 2006 World Cup." },
-    { "id": "the-magic-sponge", "category": "culture", "term": "The magic sponge", "meaning": "The old joke about physios fixing any injury with a wet sponge. Players got up instantly.", "heard": "Ironically, when a player recovers very quickly." },
-    { "id": "goal-of-the-month", "category": "culture", "term": "Goal of the month", "meaning": "Match of the Day's pick of the best goal, voted by viewers.", "heard": "\"That's goal of the month\" about any long-range strike.", "seeAlso": ["match-of-the-day"] },
-    { "id": "the-magic-of-the-cup", "category": "culture", "term": "The magic of the cup", "meaning": "The idea that anything can happen in the FA Cup. A small team beating a big one proves it.", "heard": "Commentators, the moment a non-league side scores.", "seeAlso": ["fa-cup", "giant-killing"] }
+    {
+      "id": "premier-league",
+      "category": "rules",
+      "term": "Premier League",
+      "meaning": "England's top division. Twenty clubs, each plays the other nineteen twice, August to May.",
+      "heard": "Constantly. It is the whole thing.",
+      "sayIt": "\"Is that a Premier League game or one of the cups?\""
+    },
+    {
+      "id": "points",
+      "category": "rules",
+      "term": "Points",
+      "meaning": "Three for a win, one for a draw, none for a loss. Add them up and that is the table.",
+      "heard": "\"Three points is three points\" after any ugly win.",
+      "sayIt": "\"Ugly, but it's three points.\"",
+      "seeAlso": [
+        "the-table"
+      ]
+    },
+    {
+      "id": "the-table",
+      "category": "rules",
+      "term": "The table",
+      "meaning": "The league standings, top to bottom. Top wins the title, the bottom three go down.",
+      "heard": "\"Where are we in the table?\" He knows. He wants to say it.",
+      "sayIt": "\"Where does that leave them in the table?\"",
+      "seeAlso": [
+        "relegation",
+        "goal-difference"
+      ]
+    },
+    {
+      "id": "goal-difference",
+      "category": "rules",
+      "term": "Goal difference",
+      "meaning": "Goals scored minus goals let in. Two teams level on points are split by it. A 3-0 win is worth more than a 1-0 win for this reason.",
+      "heard": "Late in the season when two teams are neck and neck.",
+      "sayIt": "\"Level on points, so it'll come down to goal difference.\"",
+      "seeAlso": [
+        "the-table"
+      ]
+    },
+    {
+      "id": "relegation",
+      "category": "rules",
+      "term": "Relegation",
+      "meaning": "The bottom three at the end of the season drop down a division, to the Championship. Losing money, players and pride in one go.",
+      "heard": "\"Relegation battle\" from about February onwards.",
+      "sayIt": "\"They're in a relegation battle, aren't they?\"",
+      "seeAlso": [
+        "championship",
+        "promotion"
+      ]
+    },
+    {
+      "id": "promotion",
+      "category": "rules",
+      "term": "Promotion",
+      "meaning": "Going up a division. Three clubs come up from the Championship each summer to replace the three that went down.",
+      "heard": "In May, usually with someone crying on a pitch.",
+      "sayIt": "\"Who came up this year?\"",
+      "seeAlso": [
+        "championship",
+        "play-offs"
+      ]
+    },
+    {
+      "id": "championship",
+      "category": "rules",
+      "term": "The Championship",
+      "meaning": "The second division, one below the Premier League. Confusing name: winning it does not make you champions of anything much.",
+      "heard": "\"They'll be in the Championship next year\" said unkindly.",
+      "sayIt": "\"Is that a Championship side? So they came up recently.\""
+    },
+    {
+      "id": "play-offs",
+      "category": "rules",
+      "term": "Play-offs",
+      "meaning": "In the Championship the top two go up automatically. The next four play a mini knockout for the third place. One final, one winner, one very rich club.",
+      "heard": "Late May. The final is called the richest game in football.",
+      "sayIt": "\"Did they go up automatically or through the play-offs?\"",
+      "seeAlso": [
+        "promotion"
+      ]
+    },
+    {
+      "id": "offside",
+      "category": "rules",
+      "term": "Offside",
+      "meaning": "When the ball is passed to you, you can't already be nearer the goal than the last defender. If you are, the flag goes up and the goal doesn't count.",
+      "heard": "Every time a flag goes up and someone on the sofa groans.",
+      "sayIt": "\"Was he offside? He looked level to me.\"",
+      "seeAlso": [
+        "var"
+      ]
+    },
+    {
+      "id": "var",
+      "category": "rules",
+      "term": "VAR",
+      "meaning": "Video Assistant Referee. Someone in a room checks goals, penalties and red cards on replay and tells the referee if he got it badly wrong.",
+      "heard": "\"VAR is checking\" followed by two minutes of silence.",
+      "sayIt": "\"Hang on, VAR's checking it. Don't celebrate yet.\"",
+      "seeAlso": [
+        "clear-and-obvious"
+      ]
+    },
+    {
+      "id": "clear-and-obvious",
+      "category": "rules",
+      "term": "Clear and obvious",
+      "meaning": "VAR is only meant to overturn a decision that was obviously wrong, not one that is debatable. The longer the check, the less obvious it was.",
+      "heard": "\"If it takes that long it isn't clear and obvious.\"",
+      "sayIt": "\"If it takes this long it's not clear and obvious, is it?\"",
+      "seeAlso": [
+        "var"
+      ]
+    },
+    {
+      "id": "handball",
+      "category": "rules",
+      "term": "Handball",
+      "meaning": "Touching the ball with your hand or arm on purpose, or with an arm stuck out making you bigger. Goalkeepers can use their hands, but only inside their own box.",
+      "heard": "\"That's handball all day\" about a ball that brushed a shoulder.",
+      "sayIt": "\"His arm was out. That's handball.\"",
+      "seeAlso": [
+        "the-box"
+      ]
+    },
+    {
+      "id": "penalty",
+      "category": "rules",
+      "term": "Penalty",
+      "meaning": "A free shot from twelve yards with only the goalkeeper to beat. Given for a foul or handball inside the box. Scored about three times in four.",
+      "heard": "A gasp, then nobody speaks until it's taken.",
+      "sayIt": "\"Penalty! Who takes them for us?\"",
+      "seeAlso": [
+        "the-box"
+      ]
+    },
+    {
+      "id": "the-box",
+      "category": "rules",
+      "term": "The box",
+      "meaning": "The big rectangle in front of each goal, eighteen yards deep. A foul in there is a penalty. Also called the penalty area.",
+      "heard": "\"Get it in the box!\" whenever a cross is coming.",
+      "sayIt": "\"Get it in the box, someone!\"",
+      "seeAlso": [
+        "penalty"
+      ]
+    },
+    {
+      "id": "free-kick",
+      "category": "rules",
+      "term": "Free kick",
+      "meaning": "A restart after a foul: the ball is put down and kicked from where the foul happened. Near the goal, it is a chance to score.",
+      "heard": "\"That's a free kick every day of the week.\"",
+      "sayIt": "\"That's a free kick all day long.\""
+    },
+    {
+      "id": "corner",
+      "category": "rules",
+      "term": "Corner",
+      "meaning": "If a defender puts the ball out behind his own goal, the attackers get to cross it in from the corner of the pitch. Tall players love them.",
+      "heard": "\"Corners are as good as a goal\" said hopefully.",
+      "sayIt": "\"Corner. Get everyone in the box.\""
+    },
+    {
+      "id": "throw-in",
+      "category": "rules",
+      "term": "Throw-in",
+      "meaning": "Ball goes out over the sideline, the other team throws it back in, two hands, from behind the head.",
+      "heard": "Rarely. Unless someone has a famously long one.",
+      "sayIt": "\"Long throw. They'll launch it into the box.\""
+    },
+    {
+      "id": "yellow-card",
+      "category": "rules",
+      "term": "Yellow card",
+      "meaning": "A warning from the referee. Two in one game and you are sent off.",
+      "heard": "\"He's on a yellow\" means the player has to be careful now.",
+      "sayIt": "\"He's on a yellow, he needs to calm down.\"",
+      "seeAlso": [
+        "red-card"
+      ]
+    },
+    {
+      "id": "red-card",
+      "category": "rules",
+      "term": "Red card",
+      "meaning": "Sent off. The player leaves and the team plays the rest of the game one short. A straight red is for one bad act; two yellows also make a red.",
+      "heard": "\"Straight red\" means one bad tackle, no warning first.",
+      "sayIt": "\"That's a red. He's off.\"",
+      "seeAlso": [
+        "yellow-card",
+        "ten-men",
+        "early-bath"
+      ]
+    },
+    {
+      "id": "ten-men",
+      "category": "rules",
+      "term": "Ten men",
+      "meaning": "Playing with one fewer after a red card. Teams usually drop back and defend for their lives.",
+      "heard": "\"Down to ten men\" said either with dread or delight.",
+      "sayIt": "\"Down to ten men. Just hang on now.\"",
+      "seeAlso": [
+        "red-card"
+      ]
+    },
+    {
+      "id": "added-time",
+      "category": "rules",
+      "term": "Added time",
+      "meaning": "Minutes added at the end of each half to make up for stoppages: injuries, substitutions, celebrations. Shown on a board by the pitch.",
+      "heard": "\"How long has he added?\" the second the board goes up.",
+      "sayIt": "\"How long's he added? Six? Six minutes!\"",
+      "seeAlso": [
+        "fergie-time"
+      ]
+    },
+    {
+      "id": "extra-time",
+      "category": "rules",
+      "term": "Extra time",
+      "meaning": "Two extra fifteen-minute halves when a cup game is level. Not the same as added time. League games never have it; they just end as a draw.",
+      "heard": "In knockout games only.",
+      "sayIt": "\"It's going to extra time. Put the kettle on.\"",
+      "seeAlso": [
+        "added-time",
+        "penalty-shootout"
+      ]
+    },
+    {
+      "id": "penalty-shootout",
+      "category": "rules",
+      "term": "Penalty shootout",
+      "meaning": "If extra time is still level: five penalties each, then one at a time until somebody misses. Pure nerves.",
+      "heard": "England fans go quiet at the mention of it.",
+      "sayIt": "\"Penalties. I can't watch penalties.\"",
+      "seeAlso": [
+        "extra-time"
+      ]
+    },
+    {
+      "id": "two-legs",
+      "category": "rules",
+      "term": "Two legs",
+      "meaning": "A cup round played as two matches, one at each team's ground. First leg, second leg.",
+      "heard": "\"The second leg is at home\" is good news.",
+      "sayIt": "\"Is this the first leg or the second?\"",
+      "seeAlso": [
+        "aggregate"
+      ]
+    },
+    {
+      "id": "aggregate",
+      "category": "rules",
+      "term": "Aggregate",
+      "meaning": "Over two legs, add the two scores together. Win the first 2-0, lose the second 1-0, and you go through 2-1 on aggregate. Only the total counts.",
+      "heard": "European nights. \"They're 3-2 up on aggregate.\"",
+      "sayIt": "\"So what's the aggregate? Who's actually ahead?\"",
+      "seeAlso": [
+        "two-legs"
+      ]
+    },
+    {
+      "id": "substitution",
+      "category": "rules",
+      "term": "Substitution",
+      "meaning": "Swapping a player on the pitch for one from the bench. Five changes allowed per game since 2022; it used to be three.",
+      "heard": "\"Bit early for a sub\" or \"About time.\"",
+      "sayIt": "\"Bit early for a sub, isn't it?\"",
+      "seeAlso": [
+        "the-bench",
+        "hooked"
+      ]
+    },
+    {
+      "id": "the-bench",
+      "category": "rules",
+      "term": "The bench",
+      "meaning": "The substitutes, sitting beside the pitch waiting to come on. A strong bench means good players in reserve.",
+      "heard": "\"He's on the bench\" means not starting, but might play.",
+      "sayIt": "\"He's only on the bench today? Is he injured?\"",
+      "seeAlso": [
+        "substitution"
+      ]
+    },
+    {
+      "id": "starting-eleven",
+      "category": "rules",
+      "term": "Starting eleven",
+      "meaning": "The eleven players who begin the match. Announced about an hour before kick-off, when phones come out.",
+      "heard": "\"Team's out\" when the line-up appears on his phone.",
+      "sayIt": "\"Team's out. Who's starting?\""
+    },
+    {
+      "id": "clean-sheet",
+      "category": "rules",
+      "term": "Clean sheet",
+      "meaning": "Letting in no goals in a match. The goalkeeper's favourite statistic, and a defender's.",
+      "heard": "\"Another clean sheet\" said with real pride.",
+      "sayIt": "\"Another clean sheet. The defence has been solid.\""
+    },
+    {
+      "id": "own-goal",
+      "category": "rules",
+      "term": "Own goal",
+      "meaning": "Putting the ball into your own net. It counts for the other team, and it follows the player around for years.",
+      "heard": "A pained \"oh no\" from the whole room.",
+      "sayIt": "\"Oh no. Own goal. Poor lad.\""
+    },
+    {
+      "id": "brace",
+      "category": "rules",
+      "term": "Brace",
+      "meaning": "Two goals by the same player in one match. Three is a hat-trick. There is no special word for four.",
+      "heard": "\"He got a brace\" in the match report.",
+      "sayIt": "\"That's his brace. One more for a hat-trick.\"",
+      "seeAlso": [
+        "hat-trick"
+      ]
+    },
+    {
+      "id": "hat-trick",
+      "category": "rules",
+      "term": "Hat-trick",
+      "meaning": "Three goals by one player in one match. Two is a brace. The player traditionally keeps the match ball.",
+      "heard": "For days afterwards.",
+      "sayIt": "\"Hat-trick! He's taking the ball home.\"",
+      "seeAlso": [
+        "brace"
+      ]
+    },
+    {
+      "id": "assist",
+      "category": "rules",
+      "term": "Assist",
+      "meaning": "The pass that leads directly to a goal. The scorer gets the headline, the assist gets the credit from people who know.",
+      "heard": "\"Goals and assists\" when he's rating a player.",
+      "sayIt": "\"Lovely assist. The pass was the best bit.\""
+    },
+    {
+      "id": "fixtures",
+      "category": "rules",
+      "term": "Fixtures",
+      "meaning": "The list of upcoming matches: who plays who, when, and where. Published in June for the whole season.",
+      "heard": "\"Have you seen the fixtures?\" in June, when they come out.",
+      "sayIt": "\"What's the next fixture? Home or away?\""
+    },
+    {
+      "id": "derby",
+      "category": "rules",
+      "term": "Derby",
+      "meaning": "A match between two local rivals, usually from the same city. Pronounced darby. The week is tense before, during and after.",
+      "heard": "The week before, the week of, and the week after.",
+      "sayIt": "\"It's the derby this weekend, isn't it? Are you nervous?\""
+    },
+    {
+      "id": "the-cups",
+      "category": "rules",
+      "term": "The cups",
+      "meaning": "Knockout competitions run alongside the league: the FA Cup and the League Cup. Lose once and you are out.",
+      "heard": "\"It's only the cup\" when they lose, \"a cup run\" when they win.",
+      "sayIt": "\"Is this the league or the cup?\"",
+      "seeAlso": [
+        "fa-cup",
+        "league-cup"
+      ]
+    },
+    {
+      "id": "fa-cup",
+      "category": "rules",
+      "term": "FA Cup",
+      "meaning": "The oldest cup competition in the world, since 1871. Every club in England can enter, so tiny teams sometimes get to play giants. Final at Wembley in May.",
+      "heard": "\"The magic of the cup\" when a small club wins.",
+      "sayIt": "\"FA Cup weekend. Any giant-killings on?\"",
+      "seeAlso": [
+        "giant-killing",
+        "the-magic-of-the-cup"
+      ]
+    },
+    {
+      "id": "league-cup",
+      "category": "rules",
+      "term": "League Cup",
+      "meaning": "The smaller of the two cups, named after whichever sponsor is paying. Big clubs often rest their best players in it.",
+      "heard": "\"Good chance to rest people\" from the manager.",
+      "sayIt": "\"It's only the League Cup. He'll rest half the team.\""
+    },
+    {
+      "id": "champions-league",
+      "category": "rules",
+      "term": "Champions League",
+      "meaning": "Europe's top club competition. The best clubs from each country, midweek nights, that anthem before kick-off.",
+      "heard": "Tuesday and Wednesday nights, September to May.",
+      "sayIt": "\"Champions League night. What time's kick-off?\"",
+      "seeAlso": [
+        "europa-league"
+      ]
+    },
+    {
+      "id": "europa-league",
+      "category": "rules",
+      "term": "Europa League",
+      "meaning": "Europe's second competition, for clubs that finished just below the Champions League places. Thursday nights.",
+      "heard": "\"Thursday night football\" said with a slight sigh.",
+      "sayIt": "\"Thursday night football. Is that the Europa League?\"",
+      "seeAlso": [
+        "champions-league"
+      ]
+    },
+    {
+      "id": "transfer-window",
+      "category": "rules",
+      "term": "Transfer window",
+      "meaning": "The only times clubs can buy and sell players: the summer, and the month of January. Outside those, nothing moves.",
+      "heard": "\"Deadline day\" on the last day, with a countdown clock.",
+      "sayIt": "\"Window shuts Monday. Are they buying anyone?\"",
+      "seeAlso": [
+        "deadline-day"
+      ]
+    },
+    {
+      "id": "deadline-day",
+      "category": "rules",
+      "term": "Deadline day",
+      "meaning": "The last day of the transfer window. Deals get done at midnight and reporters stand outside stadiums in the cold.",
+      "heard": "Someone shouting \"here we go\" at a phone.",
+      "sayIt": "\"Deadline day. Anything happening?\"",
+      "seeAlso": [
+        "transfer-window",
+        "here-we-go"
+      ]
+    },
+    {
+      "id": "loan",
+      "category": "rules",
+      "term": "Loan",
+      "meaning": "Borrowing a player from another club for a season, or lending one out. Common for young players who need games.",
+      "heard": "\"He's out on loan\" about a promising kid.",
+      "sayIt": "\"Is he ours or on loan?\""
+    },
+    {
+      "id": "sacked",
+      "category": "rules",
+      "term": "Sacked",
+      "meaning": "Fired. Managers get the sack when results go bad; players never do, they get sold or loaned out.",
+      "heard": "\"He'll be sacked by Christmas\" after three defeats.",
+      "sayIt": "\"If they lose this, is he getting sacked?\"",
+      "seeAlso": [
+        "sack-race"
+      ]
+    },
+    {
+      "id": "formation",
+      "category": "tactics",
+      "term": "Formation",
+      "meaning": "How the ten outfield players line up, read from the back. 4-3-3 means four defenders, three midfielders, three attackers. The goalkeeper is never counted.",
+      "heard": "\"They've gone 4-4-2\" as if it explains everything.",
+      "sayIt": "\"What formation are they playing? Looks like a back three.\"",
+      "seeAlso": [
+        "back-four"
+      ]
+    },
+    {
+      "id": "back-four",
+      "category": "tactics",
+      "term": "Back four",
+      "meaning": "The four defenders in a line in front of the goalkeeper: two centre-backs in the middle, a full-back on each side.",
+      "heard": "\"The back four were solid\" is high praise.",
+      "sayIt": "\"The back four have been solid today.\"",
+      "seeAlso": [
+        "full-back",
+        "centre-back"
+      ]
+    },
+    {
+      "id": "centre-back",
+      "category": "tactics",
+      "term": "Centre-back",
+      "meaning": "The two big defenders in the middle. Heading, tackling, shouting at everyone else.",
+      "heard": "\"He's a proper centre-back\" means old-fashioned and tough.",
+      "sayIt": "\"He's a proper centre-back. Wins every header.\""
+    },
+    {
+      "id": "full-back",
+      "category": "tactics",
+      "term": "Full-back",
+      "meaning": "The defenders on the left and right who also sprint forward to attack. Busiest job on the pitch.",
+      "heard": "\"The full-backs were up and down all day.\"",
+      "sayIt": "\"The full-backs have been up and down all game.\""
+    },
+    {
+      "id": "wing-back",
+      "category": "tactics",
+      "term": "Wing-back",
+      "meaning": "A full-back who plays higher up the pitch, almost as a winger, because there are three centre-backs behind him.",
+      "heard": "When a team plays with a back three.",
+      "sayIt": "\"They're playing wing-backs today, so it's a back three.\"",
+      "seeAlso": [
+        "full-back",
+        "back-four"
+      ]
+    },
+    {
+      "id": "holding-midfielder",
+      "category": "tactics",
+      "term": "Holding midfielder",
+      "meaning": "The midfielder who stays back and protects the defence instead of running forward. Unglamorous, essential.",
+      "heard": "\"The six\" or \"the number six\", after the shirt number they used to wear.",
+      "sayIt": "\"Who's playing the holding role? He's not getting forward.\"",
+      "seeAlso": [
+        "box-to-box"
+      ]
+    },
+    {
+      "id": "box-to-box",
+      "category": "tactics",
+      "term": "Box-to-box",
+      "meaning": "A midfielder who runs from his own penalty area to the other one all game. Defends, attacks, never stops.",
+      "heard": "\"Proper box-to-box midfielder\" said admiringly.",
+      "sayIt": "\"He's a proper box-to-box player. Everywhere.\"",
+      "seeAlso": [
+        "holding-midfielder"
+      ]
+    },
+    {
+      "id": "number-ten",
+      "category": "tactics",
+      "term": "Number ten",
+      "meaning": "The creative player just behind the striker who makes the clever passes. Named after the shirt number the best of them wore.",
+      "heard": "\"He's a classic ten\" about someone who can't be bothered to defend.",
+      "sayIt": "\"He's playing as the ten today, just behind the striker.\"",
+      "seeAlso": [
+        "playmaker"
+      ]
+    },
+    {
+      "id": "playmaker",
+      "category": "tactics",
+      "term": "Playmaker",
+      "meaning": "The player everything goes through. Sees passes nobody else sees. Stop him and you stop the team.",
+      "heard": "\"He makes them tick\" is the phrase.",
+      "sayIt": "\"He's the one who makes them tick.\"",
+      "seeAlso": [
+        "number-ten"
+      ]
+    },
+    {
+      "id": "winger",
+      "category": "tactics",
+      "term": "Winger",
+      "meaning": "An attacker who plays out wide near the touchline, runs at defenders and crosses the ball in.",
+      "heard": "\"Get it wide to the winger!\"",
+      "sayIt": "\"Get it out wide! The winger's in space.\""
+    },
+    {
+      "id": "striker",
+      "category": "tactics",
+      "term": "Striker",
+      "meaning": "The player whose whole job is scoring goals. Also called a forward, a centre-forward or a number nine.",
+      "heard": "\"They need a striker\" about half the clubs in the league.",
+      "sayIt": "\"They need a proper striker, don't they?\"",
+      "seeAlso": [
+        "false-nine",
+        "target-man"
+      ]
+    },
+    {
+      "id": "target-man",
+      "category": "tactics",
+      "term": "Target man",
+      "meaning": "A big striker the team aims long balls at. He holds the ball up and brings others into play.",
+      "heard": "\"Get it up to the big man\" when a team is desperate.",
+      "sayIt": "\"Just get it up to the big man.\"",
+      "seeAlso": [
+        "striker",
+        "long-ball"
+      ]
+    },
+    {
+      "id": "false-nine",
+      "category": "tactics",
+      "term": "False nine",
+      "meaning": "A striker who drops back into midfield instead of staying up front, so the defenders don't know who to mark.",
+      "heard": "In clever tactical chats. Sounds fancier than it is.",
+      "sayIt": "\"He's playing as a false nine, dropping into midfield.\"",
+      "seeAlso": [
+        "striker"
+      ]
+    },
+    {
+      "id": "pressing",
+      "category": "tactics",
+      "term": "Pressing",
+      "meaning": "Chasing the opponent the moment he gets the ball, all over the pitch, to force a mistake. Exhausting when it works and when it doesn't.",
+      "heard": "\"They press really well\" about energetic teams.",
+      "sayIt": "\"They press so well. Nobody gets a second on the ball.\"",
+      "seeAlso": [
+        "high-press",
+        "low-block"
+      ]
+    },
+    {
+      "id": "high-press",
+      "category": "tactics",
+      "term": "High press",
+      "meaning": "Pressing right up near the other team's goal, so they can't even pass the ball out from their own defence.",
+      "heard": "When a team wins the ball near the corner flag and scores.",
+      "sayIt": "\"The high press won them that. Forced the mistake.\"",
+      "seeAlso": [
+        "pressing"
+      ]
+    },
+    {
+      "id": "low-block",
+      "category": "tactics",
+      "term": "Low block",
+      "meaning": "The whole team sitting deep near their own goal, letting the other side have the ball and hoping to hit them on the counter.",
+      "heard": "\"They've sat in a low block\" about a team defending a lead.",
+      "sayIt": "\"They're sitting in a low block. Someone needs to unlock it.\"",
+      "seeAlso": [
+        "park-the-bus",
+        "counter-attack"
+      ]
+    },
+    {
+      "id": "park-the-bus",
+      "category": "tactics",
+      "term": "Park the bus",
+      "meaning": "Defending with everyone and attacking with nobody, as if a bus were parked across the goal. Usually to protect a lead.",
+      "heard": "Usually as an insult about a boring opponent.",
+      "sayIt": "\"They've parked the bus. This'll be hard work.\"",
+      "seeAlso": [
+        "low-block"
+      ]
+    },
+    {
+      "id": "counter-attack",
+      "category": "tactics",
+      "term": "Counter-attack",
+      "meaning": "Winning the ball and racing up the pitch fast before the other team can get back into position.",
+      "heard": "\"Dangerous on the counter\" about quick teams.",
+      "sayIt": "\"They're dangerous on the counter. Don't push too many forward.\"",
+      "seeAlso": [
+        "on-the-break"
+      ]
+    },
+    {
+      "id": "possession",
+      "category": "tactics",
+      "term": "Possession",
+      "meaning": "How much of the game a team has the ball, shown as a percentage. Having it is nice; scoring is better.",
+      "heard": "\"Sixty percent possession and nothing to show for it.\"",
+      "sayIt": "\"All that possession and nothing to show for it.\"",
+      "seeAlso": [
+        "tiki-taka"
+      ]
+    },
+    {
+      "id": "tiki-taka",
+      "category": "tactics",
+      "term": "Tiki-taka",
+      "meaning": "Lots of short, quick passes to keep the ball and wear the other team out. Barcelona and Spain made it famous.",
+      "heard": "Half in praise, half in mockery.",
+      "sayIt": "\"Bit of tiki-taka there. Nobody can get near them.\"",
+      "seeAlso": [
+        "possession"
+      ]
+    },
+    {
+      "id": "long-ball",
+      "category": "tactics",
+      "term": "Long ball",
+      "meaning": "Kicking the ball high and far up the pitch instead of passing it along the ground. Simple, direct, unloved.",
+      "heard": "\"Route one\" is the same idea, said more rudely.",
+      "sayIt": "\"Long ball again. Not pretty, but it works.\"",
+      "seeAlso": [
+        "target-man",
+        "route-one",
+        "hoof"
+      ]
+    },
+    {
+      "id": "man-marking",
+      "category": "tactics",
+      "term": "Man marking",
+      "meaning": "A defender following one particular attacker everywhere he goes, rather than guarding an area.",
+      "heard": "\"Who's marking him?\" after a free header.",
+      "sayIt": "\"Who was marking him? He was completely free.\""
+    },
+    {
+      "id": "zonal-marking",
+      "category": "tactics",
+      "term": "Zonal marking",
+      "meaning": "At corners and free kicks, each defender guards a patch of ground instead of a person. Blamed for every goal from a corner.",
+      "heard": "Blamed for every goal from a corner.",
+      "sayIt": "\"Zonal marking. Nobody's actually on anyone.\"",
+      "seeAlso": [
+        "man-marking"
+      ]
+    },
+    {
+      "id": "set-piece",
+      "category": "tactics",
+      "term": "Set piece",
+      "meaning": "Any restart from a dead ball: corners, free kicks, throw-ins. Teams rehearse them in training all week.",
+      "heard": "\"Strong from set pieces\" about tall teams.",
+      "sayIt": "\"They're strong from set pieces. Watch the corners.\"",
+      "seeAlso": [
+        "corner",
+        "free-kick"
+      ]
+    },
+    {
+      "id": "overlap",
+      "category": "tactics",
+      "term": "Overlap",
+      "meaning": "A full-back running past the winger on the outside to give him someone to pass to.",
+      "heard": "\"Great overlap\" from a co-commentator.",
+      "sayIt": "\"Lovely overlap from the full-back there.\"",
+      "seeAlso": [
+        "full-back"
+      ]
+    },
+    {
+      "id": "through-ball",
+      "category": "tactics",
+      "term": "Through ball",
+      "meaning": "A pass slid between the defenders for a teammate to run onto. When it works it looks like magic.",
+      "heard": "\"What a ball\" when it works.",
+      "sayIt": "\"What a ball! Straight through them.\""
+    },
+    {
+      "id": "cutback",
+      "category": "tactics",
+      "term": "Cutback",
+      "meaning": "Getting to the byline and passing the ball back across the goal for someone to tap in. Modern teams score half their goals this way.",
+      "heard": "Modern teams score half their goals this way.",
+      "sayIt": "\"Cut it back! Don't shoot from there.\""
+    },
+    {
+      "id": "inverted-full-back",
+      "category": "tactics",
+      "term": "Inverted full-back",
+      "meaning": "A full-back who steps into midfield when his team has the ball, to give them an extra passer in the middle.",
+      "heard": "Guardiola fans. Sounds very clever.",
+      "sayIt": "\"The full-back's inverting. He's basically a midfielder now.\"",
+      "seeAlso": [
+        "full-back"
+      ]
+    },
+    {
+      "id": "half-space",
+      "category": "tactics",
+      "term": "Half-space",
+      "meaning": "The gap between the middle of the pitch and the wing, where clever attackers like to get the ball because nobody is quite sure who marks them.",
+      "heard": "Tactics podcasts. Nod if you hear it.",
+      "sayIt": "\"He keeps finding space in the half-space. Nobody picks him up.\""
+    },
+    {
+      "id": "xg",
+      "category": "tactics",
+      "term": "xG",
+      "meaning": "Expected goals. A number for how good a chance was: a tap-in is nearly 1, a shot from forty yards is nearly 0. Add them up to see who deserved to win.",
+      "heard": "\"The xG was 2.5 and we lost 1-0\" as a complaint.",
+      "sayIt": "\"What was the xG? Felt like they should've scored three.\""
+    },
+    {
+      "id": "game-management",
+      "category": "tactics",
+      "term": "Game management",
+      "meaning": "Slowing the match down when you are winning: keeping the ball, taking your time, no risks. Called clever by the winners and cynical by the losers.",
+      "heard": "\"Good game management\" or \"cynical\", depending on who's winning.",
+      "sayIt": "\"Good game management. Just keep the ball now.\"",
+      "seeAlso": [
+        "see-the-game-out"
+      ]
+    },
+    {
+      "id": "dark-arts",
+      "category": "tactics",
+      "term": "The dark arts",
+      "meaning": "The sneaky side of winning: time-wasting, little fouls, winding opponents up. Fans hate it from the other team and defend it from their own.",
+      "heard": "\"Bit of the dark arts\" said with grudging respect.",
+      "sayIt": "\"Bit of the dark arts there. Fair play, it's working.\"",
+      "seeAlso": [
+        "game-management"
+      ]
+    },
+    {
+      "id": "kick-off",
+      "category": "match_situations",
+      "term": "Kick-off",
+      "meaning": "The start of the match, and the restart after half-time or a goal.",
+      "heard": "\"What time's kick-off?\" about eight times a weekend.",
+      "sayIt": "\"What time's kick-off? I'll come and watch the start.\""
+    },
+    {
+      "id": "half-time",
+      "category": "match_situations",
+      "term": "Half-time",
+      "meaning": "The fifteen-minute break in the middle. Kettle time, and the manager's chance to shout.",
+      "heard": "\"Half-time team talk\" when the manager needs to fix things.",
+      "sayIt": "\"Half-time. What did you make of that?\"",
+      "seeAlso": [
+        "hairdryer"
+      ]
+    },
+    {
+      "id": "full-time",
+      "category": "match_situations",
+      "term": "Full-time",
+      "meaning": "The end of the match. The referee blows and it is over, whatever the score.",
+      "heard": "\"FT\" in a text. Then either celebration or silence.",
+      "sayIt": "\"Full-time. Right, where does that leave us?\""
+    },
+    {
+      "id": "nil-nil",
+      "category": "match_situations",
+      "term": "Nil-nil",
+      "meaning": "No goals for either side. Football says nil, not zero. A dull one is a bore draw.",
+      "heard": "\"Bore draw\" if it was dull, \"a tight game\" if he's being kind.",
+      "sayIt": "\"Nil-nil. Bit of a bore draw, that.\""
+    },
+    {
+      "id": "see-the-game-out",
+      "category": "match_situations",
+      "term": "See the game out",
+      "meaning": "Hold onto a lead until the final whistle without anything going wrong. The hardest ten minutes in football.",
+      "heard": "\"Just see it out\" in the last ten minutes.",
+      "sayIt": "\"Just see the game out now. Nothing silly.\"",
+      "seeAlso": [
+        "game-management",
+        "squeaky-bum-time"
+      ]
+    },
+    {
+      "id": "squeaky-bum-time",
+      "category": "match_situations",
+      "term": "Squeaky bum time",
+      "meaning": "The nervous final minutes when your team is only just ahead and the other lot are pushing. Fans shift about in plastic seats, hence the squeak. Alex Ferguson's phrase.",
+      "heard": "The last ten minutes of anything close.",
+      "sayIt": "\"Right, squeaky bum time. I can't watch.\"",
+      "seeAlso": [
+        "see-the-game-out",
+        "added-time"
+      ]
+    },
+    {
+      "id": "six-pointer",
+      "category": "match_situations",
+      "term": "Six-pointer",
+      "meaning": "A match between two teams chasing the same thing. Win it and you gain three points and stop your rival getting three: six points swing.",
+      "heard": "Relegation battles in spring, title races in April.",
+      "sayIt": "\"This is a proper six-pointer, isn't it?\"",
+      "seeAlso": [
+        "relegation-battle",
+        "title-race"
+      ]
+    },
+    {
+      "id": "top-four",
+      "category": "match_situations",
+      "term": "Top four",
+      "meaning": "Finishing in the first four places, which earns a Champions League spot for next season. The realistic target for clubs who won't win the title.",
+      "heard": "\"Top four is the aim\" from big clubs that won't win the title.",
+      "sayIt": "\"Top four is the aim this year, surely?\"",
+      "seeAlso": [
+        "champions-league"
+      ]
+    },
+    {
+      "id": "title-race",
+      "category": "match_situations",
+      "term": "Title race",
+      "meaning": "Two or more teams close at the top with a few games left. Every result matters, every weekend.",
+      "heard": "\"It's a proper title race\" once March arrives.",
+      "sayIt": "\"It's a proper title race now. Who do you think cracks first?\"",
+      "seeAlso": [
+        "bottle-it"
+      ]
+    },
+    {
+      "id": "relegation-battle",
+      "category": "match_situations",
+      "term": "Relegation battle",
+      "meaning": "Several clubs near the bottom fighting to stay out of the three places that go down. Miserable and gripping.",
+      "heard": "In spring, with a lot of stress.",
+      "sayIt": "\"They're in a relegation battle. Every point counts now.\"",
+      "seeAlso": [
+        "relegation",
+        "six-pointer"
+      ]
+    },
+    {
+      "id": "sitter",
+      "category": "match_situations",
+      "term": "Sitter",
+      "meaning": "An easy chance that should have been a goal and wasn't. The kind you would score yourself, you tell him.",
+      "heard": "\"How has he missed that?\"",
+      "sayIt": "\"That's a sitter. How has he missed that?\""
+    },
+    {
+      "id": "clinical-finish",
+      "category": "match_situations",
+      "term": "Clinical finish",
+      "meaning": "A cool, precise shot that goes exactly where it should. Nothing spectacular, nothing wasted. The scorer is a clinical finisher.",
+      "heard": "Commentators, about a striker who never seems to miss.",
+      "sayIt": "\"Clinical. Absolutely clinical finish.\"",
+      "seeAlso": [
+        "sitter"
+      ]
+    },
+    {
+      "id": "screamer",
+      "category": "match_situations",
+      "term": "Screamer",
+      "meaning": "A spectacular goal, usually hit very hard from a long way out. Followed by a replay, then another.",
+      "heard": "\"What a screamer\" and then the replay, twice.",
+      "sayIt": "\"What a screamer! Show me that again.\"",
+      "seeAlso": [
+        "top-bins",
+        "worldie"
+      ]
+    },
+    {
+      "id": "top-bins",
+      "category": "match_situations",
+      "term": "Top bins",
+      "meaning": "The top corner of the goal. The hardest place for a keeper to reach and the nicest place to score.",
+      "heard": "\"Top bins!\" with real joy.",
+      "sayIt": "\"Top bins! Keeper had no chance.\"",
+      "seeAlso": [
+        "screamer"
+      ]
+    },
+    {
+      "id": "worldie",
+      "category": "match_situations",
+      "term": "Worldie",
+      "meaning": "A world-class goal. Short for world-class. Save it for the truly special ones or it loses its power.",
+      "heard": "Only for the very best ones.",
+      "sayIt": "\"That's a worldie. Goal of the season, that.\"",
+      "seeAlso": [
+        "screamer"
+      ]
+    },
+    {
+      "id": "hit-the-woodwork",
+      "category": "match_situations",
+      "term": "Hit the woodwork",
+      "meaning": "The ball strikes the post or the crossbar and stays out. Close enough to hurt.",
+      "heard": "\"Off the woodwork\" with a groan from the whole room.",
+      "sayIt": "\"Off the woodwork! So close.\"",
+      "seeAlso": [
+        "sitter"
+      ]
+    },
+    {
+      "id": "row-z",
+      "category": "match_situations",
+      "term": "Row Z",
+      "meaning": "The back row of the stand. Where a shot goes when it is blazed miles over, or where a defender deliberately hoofs the ball to safety.",
+      "heard": "\"That's in Row Z\" about a shot that nearly hit the roof.",
+      "sayIt": "\"Row Z. He's ballooned that.\"",
+      "seeAlso": [
+        "hoof"
+      ]
+    },
+    {
+      "id": "howler",
+      "category": "match_situations",
+      "term": "Howler",
+      "meaning": "A terrible, obvious mistake, usually by a goalkeeper or defender: a ball through the hands, a pass straight to the opposition. Everyone saw it.",
+      "heard": "\"Absolute howler\" about a ball rolling under someone's foot.",
+      "sayIt": "\"That's a howler from the keeper. He'll not sleep tonight.\"",
+      "seeAlso": [
+        "own-goal"
+      ]
+    },
+    {
+      "id": "hospital-ball",
+      "category": "match_situations",
+      "term": "Hospital ball",
+      "meaning": "A careless pass that lands between two players from opposite sides, so both go for it and somebody gets hurt.",
+      "heard": "\"That's a hospital ball\" when a pass leaves a teammate exposed.",
+      "sayIt": "\"Hospital ball, that. He's left him in trouble.\""
+    },
+    {
+      "id": "hoof",
+      "category": "match_situations",
+      "term": "Hoof it",
+      "meaning": "Kick the ball as hard and far as you can with no real aim, usually to get it away from danger. Not elegant. Sometimes exactly right.",
+      "heard": "\"Just hoof it!\" from the sofa when the defence is under pressure.",
+      "sayIt": "\"Just hoof it! Get it out of there.\"",
+      "seeAlso": [
+        "long-ball",
+        "row-z"
+      ]
+    },
+    {
+      "id": "dive",
+      "category": "match_situations",
+      "term": "Dive",
+      "meaning": "Falling over on purpose to trick the referee into giving a foul or a penalty. Cheating, technically. Very common, technically.",
+      "heard": "\"He dived!\" whenever an opponent goes down.",
+      "sayIt": "\"He's dived. Nobody touched him.\""
+    },
+    {
+      "id": "early-bath",
+      "category": "match_situations",
+      "term": "Early bath",
+      "meaning": "Being sent off. The player heads to the showers while everyone else is still playing.",
+      "heard": "\"He's off for an early bath\" after a red card.",
+      "sayIt": "\"Early bath for him. That was a proper tackle.\"",
+      "seeAlso": [
+        "red-card"
+      ]
+    },
+    {
+      "id": "handbags",
+      "category": "match_situations",
+      "term": "Handbags",
+      "meaning": "A pushing and shoving scuffle between players that looks angry but never becomes a proper fight. Nobody gets hurt.",
+      "heard": "\"Handbags\" when two players square up and do nothing.",
+      "sayIt": "\"Handbags. Nothing in that.\""
+    },
+    {
+      "id": "in-the-book",
+      "category": "match_situations",
+      "term": "In the book",
+      "meaning": "Booked. The referee writes the player's name in his notebook when he gives a yellow card.",
+      "heard": "\"He's in the book\" after a yellow card.",
+      "sayIt": "\"He's in the book now. He'll have to be careful.\"",
+      "seeAlso": [
+        "yellow-card"
+      ]
+    },
+    {
+      "id": "hooked",
+      "category": "match_situations",
+      "term": "Hooked",
+      "meaning": "Substituted, usually because you were playing badly. Taken off, not rested.",
+      "heard": "\"He's been hooked\" about a player having a bad day.",
+      "sayIt": "\"He's been hooked. Not his day.\"",
+      "seeAlso": [
+        "substitution"
+      ]
+    },
+    {
+      "id": "nutmeg",
+      "category": "match_situations",
+      "term": "Nutmeg",
+      "meaning": "Poking the ball between a defender's legs and running round him to collect it. Humiliating for the defender, hilarious for everyone else.",
+      "heard": "A cheer that has nothing to do with a goal.",
+      "sayIt": "\"Nutmeg! He'll never live that down.\"",
+      "seeAlso": [
+        "done-him"
+      ]
+    },
+    {
+      "id": "done-him",
+      "category": "match_situations",
+      "term": "Done him",
+      "meaning": "Got past a defender so completely he was left standing. Skinned him and left him for dead mean the same.",
+      "heard": "\"He's done him\" after a dribble.",
+      "sayIt": "\"He's done him there. Left him for dead.\"",
+      "seeAlso": [
+        "nutmeg"
+      ]
+    },
+    {
+      "id": "caught-napping",
+      "category": "match_situations",
+      "term": "Caught napping",
+      "meaning": "A defender switching off for a second and letting an attacker get free. Also called going to sleep.",
+      "heard": "\"Caught napping\" or \"gone to sleep\" after a goal against.",
+      "sayIt": "\"They were caught napping there. Nobody was awake.\""
+    },
+    {
+      "id": "against-the-run-of-play",
+      "category": "match_situations",
+      "term": "Against the run of play",
+      "meaning": "A goal for the team that has been playing worse. They were being battered, then scored anyway.",
+      "heard": "Commentators, when the wrong team scores.",
+      "sayIt": "\"That's against the run of play. They've been terrible.\"",
+      "seeAlso": [
+        "smash-and-grab"
+      ]
+    },
+    {
+      "id": "smash-and-grab",
+      "category": "match_situations",
+      "term": "Smash and grab",
+      "meaning": "Winning a game you were outplayed in, with one late goal. A burglary, football-style.",
+      "heard": "Said by whichever side lost.",
+      "sayIt": "\"Smash and grab, that. They didn't deserve it.\"",
+      "seeAlso": [
+        "against-the-run-of-play"
+      ]
+    },
+    {
+      "id": "game-of-two-halves",
+      "category": "match_situations",
+      "term": "A game of two halves",
+      "meaning": "The oldest cliché in football: a match that changed completely after half-time. Said half-jokingly, always.",
+      "heard": "Pundits, with a straight face.",
+      "sayIt": "\"Game of two halves, this. Completely different after the break.\"",
+      "seeAlso": [
+        "half-time"
+      ]
+    },
+    {
+      "id": "backs-to-the-wall",
+      "category": "match_situations",
+      "term": "Backs to the wall",
+      "meaning": "Defending desperately with everyone behind the ball because the other team has all the pressure.",
+      "heard": "\"Backs to the wall\" in the last twenty minutes of a close game.",
+      "sayIt": "\"Backs to the wall now. Just hang on.\"",
+      "seeAlso": [
+        "low-block"
+      ]
+    },
+    {
+      "id": "in-the-mixer",
+      "category": "match_situations",
+      "term": "In the mixer",
+      "meaning": "Launching the ball into the crowded penalty box and hoping. Late-game desperation, and sometimes it works.",
+      "heard": "\"Just get it in the mixer\" in the last minute.",
+      "sayIt": "\"Get it in the mixer! Anything now.\"",
+      "seeAlso": [
+        "the-box"
+      ]
+    },
+    {
+      "id": "route-one",
+      "category": "match_situations",
+      "term": "Route one",
+      "meaning": "The simplest way to attack: kick it long and chase it. Named after the most direct road.",
+      "heard": "As an insult about direct teams.",
+      "sayIt": "\"Route one. Not pretty, is it?\"",
+      "seeAlso": [
+        "long-ball"
+      ]
+    },
+    {
+      "id": "on-the-break",
+      "category": "match_situations",
+      "term": "On the break",
+      "meaning": "Attacking fast right after winning the ball, the same as a counter-attack.",
+      "heard": "\"They caught them on the break.\"",
+      "sayIt": "\"They got caught on the break there.\"",
+      "seeAlso": [
+        "counter-attack"
+      ]
+    },
+    {
+      "id": "dead-rubber",
+      "category": "match_situations",
+      "term": "Dead rubber",
+      "meaning": "A match that no longer matters because everything has already been decided. Nobody tries very hard.",
+      "heard": "Last group game of a tournament, or the final league game.",
+      "sayIt": "\"It's a dead rubber. Nothing riding on it.\""
+    },
+    {
+      "id": "giant-killing",
+      "category": "match_situations",
+      "term": "Giant-killing",
+      "meaning": "A small club knocking a big one out of a cup. The FA Cup's whole reputation rests on it.",
+      "heard": "FA Cup weekends in January and February.",
+      "sayIt": "\"Any giant-killings this weekend?\"",
+      "seeAlso": [
+        "fa-cup"
+      ]
+    },
+    {
+      "id": "hairdryer",
+      "category": "match_situations",
+      "term": "The hairdryer",
+      "meaning": "A manager screaming at players at half-time from so close their hair moves. Named for Alex Ferguson, who was famous for it.",
+      "heard": "\"They'll be getting the hairdryer\" after a bad first half.",
+      "sayIt": "\"They'll be getting the hairdryer at half-time.\"",
+      "seeAlso": [
+        "half-time"
+      ]
+    },
+    {
+      "id": "man-of-the-match",
+      "category": "match_situations",
+      "term": "Man of the match",
+      "meaning": "The best player on the day, picked by the broadcaster or a sponsor. A safe question to ask any fan.",
+      "heard": "\"Who's your man of the match?\" is a safe question every time.",
+      "sayIt": "\"Who's your man of the match?\""
+    },
+    {
+      "id": "top-drawer",
+      "category": "match_situations",
+      "term": "Top drawer",
+      "meaning": "Excellent. A top-drawer pass, a top-drawer save. Pundit English for very, very good.",
+      "heard": "Pundits, about anything they liked.",
+      "sayIt": "\"Top drawer, that. Absolute quality.\"",
+      "seeAlso": [
+        "worldie"
+      ]
+    },
+    {
+      "id": "second-ball",
+      "category": "match_situations",
+      "term": "Second ball",
+      "meaning": "After a header or a clearance, the loose ball that drops. Winning the second ball means reacting quickest to it.",
+      "heard": "\"They won the second ball\" as praise for hard work.",
+      "sayIt": "\"They keep winning the second ball. That's why they're on top.\""
+    },
+    {
+      "id": "unlucky",
+      "category": "match_situations",
+      "term": "Unlucky",
+      "meaning": "What fans shout at a player who has just missed. Means nothing and everything.",
+      "heard": "Shouted at a player who has just missed.",
+      "sayIt": "\"Unlucky! Keep going.\"",
+      "seeAlso": [
+        "sitter"
+      ]
+    },
+    {
+      "id": "fergie-time",
+      "category": "culture",
+      "term": "Fergie time",
+      "meaning": "Generous added time that seems to appear whenever a big club needs a goal. Named for Alex Ferguson's Manchester United, who scored a lot of late winners.",
+      "heard": "Sarcastically, by fans of every other club.",
+      "sayIt": "\"Fergie time. Of course they've added six minutes.\"",
+      "seeAlso": [
+        "added-time"
+      ]
+    },
+    {
+      "id": "the-gaffer",
+      "category": "culture",
+      "term": "The gaffer",
+      "meaning": "The manager. Old British slang for the boss, still used by players and fans.",
+      "heard": "\"The gaffer's got them playing\" from players and pundits alike.",
+      "sayIt": "\"What's the gaffer like? Do the players rate him?\"",
+      "seeAlso": [
+        "the-boss"
+      ]
+    },
+    {
+      "id": "the-boss",
+      "category": "culture",
+      "term": "The boss",
+      "meaning": "Also the manager. Players say it so they don't have to use his name in interviews.",
+      "heard": "Post-match interviews. \"The boss said to keep going.\"",
+      "sayIt": "\"The boss won't be happy with that.\"",
+      "seeAlso": [
+        "the-gaffer"
+      ]
+    },
+    {
+      "id": "hard-man",
+      "category": "culture",
+      "term": "Hard man",
+      "meaning": "A player famous for tough, physical, slightly frightening football. Tackles first, apologises never.",
+      "heard": "\"Proper hard man\" about a centre-back or a midfielder who scares people.",
+      "sayIt": "\"He's a proper hard man. You wouldn't want to cross him.\"",
+      "seeAlso": [
+        "centre-back"
+      ]
+    },
+    {
+      "id": "class-act",
+      "category": "culture",
+      "term": "Class act",
+      "meaning": "A player or manager admired for how they behave as much as how they play. Good on the pitch, better off it.",
+      "heard": "About a player who does charity work or handles a loss with grace.",
+      "sayIt": "\"He's a class act, that one. On and off the pitch.\""
+    },
+    {
+      "id": "top-top-player",
+      "category": "culture",
+      "term": "Top, top player",
+      "meaning": "Pundit-speak for very good. Two tops is better than one, and nobody knows why.",
+      "heard": "Match of the Day, any week.",
+      "sayIt": "\"Top, top player. Genuinely.\"",
+      "seeAlso": [
+        "top-drawer"
+      ]
+    },
+    {
+      "id": "match-of-the-day",
+      "category": "culture",
+      "term": "Match of the Day",
+      "meaning": "The BBC's Saturday night highlights show, running since 1964. The theme tune alone makes fans sit up.",
+      "heard": "\"Just watching MOTD\" at 10.30pm on a Saturday.",
+      "sayIt": "\"Are we watching Match of the Day tonight?\"",
+      "seeAlso": [
+        "goal-of-the-month"
+      ]
+    },
+    {
+      "id": "pundit",
+      "category": "culture",
+      "term": "Pundit",
+      "meaning": "An ex-player who talks about the match on TV. Paid to have opinions, blamed for having them.",
+      "heard": "\"He's a pundit now\" about a player who retired.",
+      "sayIt": "\"What did the pundits say about it?\"",
+      "seeAlso": [
+        "match-of-the-day"
+      ]
+    },
+    {
+      "id": "the-lads",
+      "category": "culture",
+      "term": "The lads",
+      "meaning": "The team. How players and fans refer to their own side.",
+      "heard": "\"Proud of the lads\" after a hard game.",
+      "sayIt": "\"The lads did well today.\""
+    },
+    {
+      "id": "bottle-it",
+      "category": "culture",
+      "term": "Bottle it",
+      "meaning": "To lose your nerve at the crucial moment and throw away something you should have won. The cruellest word in a title race.",
+      "heard": "Cruelly, about title races that collapsed.",
+      "sayIt": "\"Do you think they'll bottle it?\"",
+      "seeAlso": [
+        "title-race"
+      ]
+    },
+    {
+      "id": "banter",
+      "category": "culture",
+      "term": "Banter",
+      "meaning": "Teasing between fans. Mostly friendly, occasionally not, always defended as \"just banter\".",
+      "heard": "\"It's just banter\" after a text that went slightly too far.",
+      "sayIt": "\"Is that banter or are you actually annoyed?\""
+    },
+    {
+      "id": "group-chat",
+      "category": "culture",
+      "term": "The group chat",
+      "meaning": "Where his mates react to every goal in real time. Louder than the stadium and less forgiving.",
+      "heard": "His phone buzzing eleven times in a row after a goal.",
+      "sayIt": "\"What's the group chat saying?\"",
+      "seeAlso": [
+        "banter"
+      ]
+    },
+    {
+      "id": "season-ticket",
+      "category": "culture",
+      "term": "Season ticket",
+      "meaning": "A pass for every home league game. Waiting lists at big clubs can be years long, and people inherit them.",
+      "heard": "\"I've had a season ticket since I was eight.\"",
+      "sayIt": "\"Have you ever had a season ticket?\""
+    },
+    {
+      "id": "away-day",
+      "category": "culture",
+      "term": "Away day",
+      "meaning": "Travelling to watch the team at another ground. Trains, pubs, singing, and a long journey home if they lose.",
+      "heard": "\"Big away day\" when it's somewhere far or somewhere fun.",
+      "sayIt": "\"Is it an away day? Who are you going with?\"",
+      "seeAlso": [
+        "the-away-end"
+      ]
+    },
+    {
+      "id": "the-away-end",
+      "category": "culture",
+      "term": "The away end",
+      "meaning": "The section of the stadium where the travelling fans sit. Usually the loudest part of the ground.",
+      "heard": "\"Listen to the away end\" when the home fans have gone quiet.",
+      "sayIt": "\"Listen to the away end. They're louder than the home fans.\"",
+      "seeAlso": [
+        "away-day"
+      ]
+    },
+    {
+      "id": "kop",
+      "category": "culture",
+      "term": "The Kop",
+      "meaning": "Liverpool's famous home stand at Anfield, where the loudest fans sing. Other grounds borrowed the name for their own big stand.",
+      "heard": "Anfield nights on TV.",
+      "sayIt": "\"Is that the Kop end? It's so loud.\""
+    },
+    {
+      "id": "terraces",
+      "category": "culture",
+      "term": "The terraces",
+      "meaning": "The old standing areas at football grounds. Mostly seats now, but the word stuck for the fans and their songs.",
+      "heard": "\"Terrace chant\" about a song the crowd sings.",
+      "sayIt": "\"That's a proper terrace chant, that.\"",
+      "seeAlso": [
+        "chant"
+      ]
+    },
+    {
+      "id": "chant",
+      "category": "culture",
+      "term": "Chant",
+      "meaning": "A song sung by the crowd, usually to a pop tune with new words about a player or the manager.",
+      "heard": "Him humming one in the kitchen.",
+      "sayIt": "\"What's that chant they're singing? What are the words?\"",
+      "seeAlso": [
+        "terraces"
+      ]
+    },
+    {
+      "id": "half-and-half-scarf",
+      "category": "culture",
+      "term": "Half-and-half scarf",
+      "meaning": "A souvenir scarf with both teams' colours on it. Proper fans find them deeply embarrassing.",
+      "heard": "Mocked outside every big game.",
+      "sayIt": "\"Please tell me you've never owned a half-and-half scarf.\""
+    },
+    {
+      "id": "plastic-fan",
+      "category": "culture",
+      "term": "Plastic fan",
+      "meaning": "Someone accused of supporting a club only because it wins. The insult of choice between fans.",
+      "heard": "Thrown at fans of whoever is winning.",
+      "sayIt": "\"Is he a real fan or a plastic?\"",
+      "seeAlso": [
+        "glory-hunter"
+      ]
+    },
+    {
+      "id": "glory-hunter",
+      "category": "culture",
+      "term": "Glory hunter",
+      "meaning": "A fan who picked a team for its trophies rather than any real connection to it.",
+      "heard": "\"Typical glory hunter\" about a mate who supports a club far away.",
+      "sayIt": "\"Why does he support them? Bit of a glory hunter?\"",
+      "seeAlso": [
+        "plastic-fan"
+      ]
+    },
+    {
+      "id": "the-boot-room",
+      "category": "culture",
+      "term": "The boot room",
+      "meaning": "Liverpool's old coaching room where the next manager was quietly promoted from within. Now means any club that grows its own.",
+      "heard": "History chats about how Liverpool used to run things.",
+      "sayIt": "\"Is that a boot room appointment, promoted from inside?\""
+    },
+    {
+      "id": "the-invincibles",
+      "category": "culture",
+      "term": "The Invincibles",
+      "meaning": "Arsenal's 2003-04 team, who went the whole league season without losing a game. Arsenal fans mention it roughly twice a year.",
+      "heard": "From every Arsenal fan, about twice a year.",
+      "sayIt": "\"Were the Invincibles as good as everyone says?\""
+    },
+    {
+      "id": "sack-race",
+      "category": "culture",
+      "term": "Sack race",
+      "meaning": "The unofficial contest for which manager gets fired first each season. Bookmakers take bets on it.",
+      "heard": "\"He's favourite in the sack race\" after three losses.",
+      "sayIt": "\"Is he favourite in the sack race now?\"",
+      "seeAlso": [
+        "sacked",
+        "new-manager-bounce"
+      ]
+    },
+    {
+      "id": "new-manager-bounce",
+      "category": "culture",
+      "term": "New manager bounce",
+      "meaning": "The short burst of good results a team often gets right after changing manager. It rarely lasts.",
+      "heard": "\"Just the bounce\" when a new manager wins his first two.",
+      "sayIt": "\"Is that just the new manager bounce, or is he actually good?\"",
+      "seeAlso": [
+        "sack-race"
+      ]
+    },
+    {
+      "id": "silly-season",
+      "category": "culture",
+      "term": "Silly season",
+      "meaning": "The summer, when there is no football and every transfer rumour gets printed as if it were true.",
+      "heard": "\"Ignore it, it's silly season\" about a wild headline.",
+      "sayIt": "\"Is that real or is it just silly season?\"",
+      "seeAlso": [
+        "transfer-window"
+      ]
+    },
+    {
+      "id": "here-we-go",
+      "category": "culture",
+      "term": "Here we go",
+      "meaning": "Transfer reporter Fabrizio Romano's phrase for a deal that is definitely happening. Fans wait for it like a verdict.",
+      "heard": "Screenshot in the group chat with several exclamation marks.",
+      "sayIt": "\"Has Romano said here we go yet?\"",
+      "seeAlso": [
+        "deadline-day"
+      ]
+    },
+    {
+      "id": "football-twitter",
+      "category": "culture",
+      "term": "Football Twitter",
+      "meaning": "The online corner where fans argue about everything, all day, forever. Not a place for the calm.",
+      "heard": "\"Football Twitter is going mad\" about anything at all.",
+      "sayIt": "\"What's Football Twitter saying? Actually, don't tell me.\"",
+      "seeAlso": [
+        "banter"
+      ]
+    },
+    {
+      "id": "fantasy-football",
+      "category": "culture",
+      "term": "Fantasy football",
+      "meaning": "An online game where you pick real players and score points from their real performances. Explains why he cheers for players he hates.",
+      "heard": "\"He's in my fantasy team\" about a player he's suddenly cheering for.",
+      "sayIt": "\"Is that a fantasy football thing, or do you actually like him?\""
+    },
+    {
+      "id": "we-go-again",
+      "category": "culture",
+      "term": "We go again",
+      "meaning": "What players and fans say after a bad result. Move on, next match. Half slogan, half coping mechanism.",
+      "heard": "Player interviews after a defeat, and his text the morning after.",
+      "sayIt": "\"One of those days. We go again.\""
+    },
+    {
+      "id": "the-lino",
+      "category": "culture",
+      "term": "The lino",
+      "meaning": "The linesman, now officially an assistant referee. The one with the flag who decides offsides.",
+      "heard": "\"Lino!\" shouted at a flag that went up or stayed down.",
+      "sayIt": "\"The lino's flagged. Offside.\"",
+      "seeAlso": [
+        "offside"
+      ]
+    },
+    {
+      "id": "wags",
+      "category": "culture",
+      "term": "WAGs",
+      "meaning": "Old tabloid slang for players' wives and girlfriends, from the 2006 World Cup era. Mostly retired now, thankfully.",
+      "heard": "In stories about the 2006 World Cup.",
+      "sayIt": "\"Please tell me nobody says WAGs any more.\""
+    },
+    {
+      "id": "magic-sponge",
+      "category": "culture",
+      "term": "The magic sponge",
+      "meaning": "The old joke about physios curing any injury with a wet sponge. Players hop up as if nothing happened.",
+      "heard": "Ironically, when a player recovers very quickly.",
+      "sayIt": "\"Give him the magic sponge, he'll be fine.\""
+    },
+    {
+      "id": "goal-of-the-month",
+      "category": "culture",
+      "term": "Goal of the month",
+      "meaning": "Match of the Day's pick of the best goal, voted by viewers. Long-range strikes usually win.",
+      "heard": "\"That's goal of the month\" about any long-range strike.",
+      "sayIt": "\"That's goal of the month, surely?\"",
+      "seeAlso": [
+        "match-of-the-day",
+        "worldie"
+      ]
+    },
+    {
+      "id": "the-magic-of-the-cup",
+      "category": "culture",
+      "term": "The magic of the cup",
+      "meaning": "The idea that anything can happen in the FA Cup, proved every year by a small club beating a big one.",
+      "heard": "Commentators, the moment a non-league side scores.",
+      "sayIt": "\"That's the magic of the cup, isn't it?\"",
+      "seeAlso": [
+        "fa-cup",
+        "giant-killing"
+      ]
+    }
   ]
 }

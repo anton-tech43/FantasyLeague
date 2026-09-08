@@ -1,15 +1,37 @@
 {
-  "contentVersion": "2026-09-07.1",
+  "contentVersion": "2026-09-08.1",
   "situations": [
     {
       "id": "goal-for-us",
       "group": "moments",
       "label": "His team just scored",
       "lines": [
-        { "id": "goal-for-us-1", "text": "Get in. Where did that come from?", "usage": "Straight after the celebration, while he is still on his feet.", "risk": "safe" },
-        { "id": "goal-for-us-2", "text": "That's been coming for ten minutes.", "usage": "If they had a few chances before it went in.", "risk": "bold" },
-        { "id": "goal-for-us-3", "text": "Who set that up? The pass was the best bit.", "usage": "When someone passed it in rather than a solo run.", "risk": "bold" },
-        { "id": "goal-for-us-4", "text": "Right, now don't do anything silly.", "usage": "When they go one goal up and there is a long way to go.", "risk": "safe" }
+        {
+          "id": "goal-for-us-1",
+          "text": "Get in!",
+          "usage": "The only correct reaction to a goal. Loud, immediate, no explanation needed.",
+          "risk": "safe"
+        },
+        {
+          "id": "goal-for-us-2",
+          "text": "Clinical. Absolutely clinical.",
+          "usage": "A calm, precise finish rather than a scramble. He'll agree and repeat it.",
+          "risk": "bold",
+          "lingo": "clinical-finish"
+        },
+        {
+          "id": "goal-for-us-3",
+          "text": "That's been coming.",
+          "usage": "If they'd had chances before it went in. Sounds like you were watching properly.",
+          "risk": "safe"
+        },
+        {
+          "id": "goal-for-us-4",
+          "text": "Top bins!",
+          "usage": "Only when it's in the top corner. Anywhere else and it's just loud.",
+          "risk": "bold",
+          "lingo": "top-bins"
+        }
       ]
     },
     {
@@ -17,10 +39,33 @@
       "group": "moments",
       "label": "The other lot just scored",
       "lines": [
-        { "id": "goal-against-1", "text": "Nobody picked him up there.", "usage": "When a player was left unmarked. Works nearly every time.", "risk": "bold" },
-        { "id": "goal-against-2", "text": "Loads of time left. Loads.", "usage": "Before the hour mark. Not in the last ten minutes.", "risk": "safe" },
-        { "id": "goal-against-3", "text": "Was that offside? Wait for the check.", "usage": "If the flag stayed down but the defenders are complaining.", "risk": "bold" },
-        { "id": "goal-against-4", "text": "Well, that's annoying.", "usage": "The honest one. Fits every goal against.", "risk": "safe" }
+        {
+          "id": "goal-against-1",
+          "text": "Nobody picked him up.",
+          "usage": "A player was left unmarked. True nearly every time a goal goes in.",
+          "risk": "bold",
+          "lingo": "caught-napping"
+        },
+        {
+          "id": "goal-against-2",
+          "text": "That's a howler from the keeper.",
+          "usage": "Only if the goalkeeper clearly dropped it or let it through. Otherwise it's cruel.",
+          "risk": "bold",
+          "lingo": "howler"
+        },
+        {
+          "id": "goal-against-3",
+          "text": "Against the run of play, that.",
+          "usage": "When his team had been the better side. The consolation he wants to hear.",
+          "risk": "bold",
+          "lingo": "against-the-run-of-play"
+        },
+        {
+          "id": "goal-against-4",
+          "text": "Loads of time left. Loads.",
+          "usage": "Before the hour mark. In the last ten minutes it sounds desperate.",
+          "risk": "safe"
+        }
       ]
     },
     {
@@ -28,10 +73,33 @@
       "group": "moments",
       "label": "VAR is checking something",
       "lines": [
-        { "id": "var-check-1", "text": "Here we go. Grab a drink.", "usage": "The moment the referee puts a hand to his ear.", "risk": "safe" },
-        { "id": "var-check-2", "text": "If it takes this long it's not clear and obvious.", "usage": "After about a minute of waiting. He will agree.", "risk": "bold" },
-        { "id": "var-check-3", "text": "They're drawing lines. It'll be his armpit.", "usage": "An offside check. Lines on the screen means it is tight.", "risk": "bold" },
-        { "id": "var-check-4", "text": "I miss when they just got it wrong quickly.", "usage": "Any long check. Half the country says this weekly.", "risk": "safe" }
+        {
+          "id": "var-check-1",
+          "text": "Here we go. Grab a drink.",
+          "usage": "The moment the referee puts a hand to his ear. This will take a while.",
+          "risk": "safe",
+          "lingo": "var"
+        },
+        {
+          "id": "var-check-2",
+          "text": "If it takes this long it's not clear and obvious.",
+          "usage": "After about a minute. It's the rule VAR is meant to follow, and he'll nod.",
+          "risk": "bold",
+          "lingo": "clear-and-obvious"
+        },
+        {
+          "id": "var-check-3",
+          "text": "They're drawing lines. It'll be an armpit.",
+          "usage": "An offside check. Lines on the screen means it's down to millimetres.",
+          "risk": "bold",
+          "lingo": "offside"
+        },
+        {
+          "id": "var-check-4",
+          "text": "Just give it. Nobody's got a clue.",
+          "usage": "Any long check. Half the country is saying the same thing.",
+          "risk": "safe"
+        }
       ]
     },
     {
@@ -39,10 +107,32 @@
       "group": "moments",
       "label": "Someone got sent off",
       "lines": [
-        { "id": "red-card-1", "text": "You can't complain about that one.", "usage": "A clear one: two feet, a punch, last man pulling a shirt.", "risk": "bold" },
-        { "id": "red-card-2", "text": "Yellow at most. That's soft.", "usage": "A tackle that looked more clumsy than nasty.", "risk": "bold" },
-        { "id": "red-card-3", "text": "Ten men for half an hour. Park the bus.", "usage": "When it is his team down to ten and they are ahead or level.", "risk": "safe" },
-        { "id": "red-card-4", "text": "He knew the second he did it.", "usage": "When the player walks off without arguing.", "risk": "safe" }
+        {
+          "id": "red-card-1",
+          "text": "Early bath for him.",
+          "usage": "Any red card. Football's phrase for being sent off; he'll like that you know it.",
+          "risk": "bold",
+          "lingo": "early-bath"
+        },
+        {
+          "id": "red-card-2",
+          "text": "Yellow at most. That's soft.",
+          "usage": "A tackle that looked more clumsy than nasty. If he disagrees, ask what made it a red.",
+          "risk": "bold"
+        },
+        {
+          "id": "red-card-3",
+          "text": "Ten men. Park the bus.",
+          "usage": "When it's his team down to ten and ahead or level. Defend, don't attack.",
+          "risk": "safe",
+          "lingo": "park-the-bus"
+        },
+        {
+          "id": "red-card-4",
+          "text": "He knew the second he did it.",
+          "usage": "When the player walks off without arguing.",
+          "risk": "safe"
+        }
       ]
     },
     {
@@ -50,10 +140,31 @@
       "group": "moments",
       "label": "Penalty",
       "lines": [
-        { "id": "penalty-1", "text": "Don't look. Just tell me.", "usage": "If it is his team taking it. Hands over eyes is optional.", "risk": "safe" },
-        { "id": "penalty-2", "text": "Keeper's gone early. He'll get booked.", "usage": "If the goalkeeper is bouncing off his line before the kick.", "risk": "bold" },
-        { "id": "penalty-3", "text": "Stutter run-up. I hate a stutter run-up.", "usage": "When the taker slows down mid run. Strong opinion, widely shared.", "risk": "bold" },
-        { "id": "penalty-4", "text": "Bottom corner, please.", "usage": "Just before the kick. Low and to a side is the safe finish.", "risk": "safe" }
+        {
+          "id": "penalty-1",
+          "text": "Don't look. Just tell me.",
+          "usage": "If it's his team taking it. Hands over eyes is optional.",
+          "risk": "safe",
+          "lingo": "penalty"
+        },
+        {
+          "id": "penalty-2",
+          "text": "Keeper's gone early.",
+          "usage": "If the goalkeeper is bouncing off his line before the kick. He can be booked for it.",
+          "risk": "bold"
+        },
+        {
+          "id": "penalty-3",
+          "text": "Stutter run-up. I hate a stutter run-up.",
+          "usage": "When the taker slows down mid-run. A strong opinion that many fans share.",
+          "risk": "bold"
+        },
+        {
+          "id": "penalty-4",
+          "text": "Bottom corner, please.",
+          "usage": "Just before the kick. Low and to a side is the safe finish, and he knows it.",
+          "risk": "safe"
+        }
       ]
     },
     {
@@ -61,9 +172,31 @@
       "group": "moments",
       "label": "The keeper made a big save",
       "lines": [
-        { "id": "big-save-1", "text": "How has he kept that out?", "usage": "Anything from close range that looked in.", "risk": "safe" },
-        { "id": "big-save-2", "text": "That's worth a goal, that.", "usage": "A save late on, or when it is tight. He says this too.", "risk": "safe" },
-        { "id": "big-save-3", "text": "Strong hand. Didn't just parry it.", "usage": "When the keeper pushed it wide or over rather than back into play.", "risk": "bold" }
+        {
+          "id": "big-save-1",
+          "text": "How has he kept that out?",
+          "usage": "Anything from close range that looked in.",
+          "risk": "safe"
+        },
+        {
+          "id": "big-save-2",
+          "text": "Worth a goal, that.",
+          "usage": "A save late on or when it's tight. He says this too.",
+          "risk": "safe"
+        },
+        {
+          "id": "big-save-3",
+          "text": "Strong hands. Didn't just parry it.",
+          "usage": "When the keeper pushed it wide or over rather than back into play.",
+          "risk": "bold"
+        },
+        {
+          "id": "big-save-4",
+          "text": "Keeper's earning his money today.",
+          "usage": "After the second or third save. Works for either team's keeper.",
+          "risk": "safe",
+          "lingo": "clean-sheet"
+        }
       ]
     },
     {
@@ -71,10 +204,33 @@
       "group": "moments",
       "label": "They're making a substitution",
       "lines": [
-        { "id": "subs-1", "text": "Bit early for that?", "usage": "A change before the hour when nobody is injured.", "risk": "bold" },
-        { "id": "subs-2", "text": "Fresh legs. Makes sense.", "usage": "Any change after seventy minutes.", "risk": "safe" },
-        { "id": "subs-3", "text": "Taking him off? He's been the best player.", "usage": "Only if the player coming off had been good. Ask if unsure.", "risk": "bold" },
-        { "id": "subs-4", "text": "Who's this coming on?", "usage": "The gentle way to get him talking about the squad.", "risk": "safe" }
+        {
+          "id": "subs-1",
+          "text": "Bit early for that?",
+          "usage": "A change before the hour when nobody is injured.",
+          "risk": "bold",
+          "lingo": "substitution"
+        },
+        {
+          "id": "subs-2",
+          "text": "Fresh legs. Makes sense.",
+          "usage": "Any change after seventy minutes.",
+          "risk": "safe"
+        },
+        {
+          "id": "subs-3",
+          "text": "He's been hooked. Not his day.",
+          "usage": "When the player coming off has had a poor game. Hooked means taken off for playing badly.",
+          "risk": "bold",
+          "lingo": "hooked"
+        },
+        {
+          "id": "subs-4",
+          "text": "Who's this coming on?",
+          "usage": "The gentle way to get him talking about the squad.",
+          "risk": "safe",
+          "lingo": "the-bench"
+        }
       ]
     },
     {
@@ -82,9 +238,101 @@
       "group": "moments",
       "label": "A player is down injured",
       "lines": [
-        { "id": "injury-1", "text": "That doesn't look good. He's not getting up.", "usage": "When the player stays down and the physio runs on.", "risk": "safe" },
-        { "id": "injury-2", "text": "Hamstring. You can tell by the grab.", "usage": "When a player pulls up running and holds the back of his thigh.", "risk": "bold" },
-        { "id": "injury-3", "text": "Fine, he's up. Milking it a bit.", "usage": "When they roll around and then jog off. Say it after, not before.", "risk": "bold" }
+        {
+          "id": "injury-1",
+          "text": "That doesn't look good.",
+          "usage": "When the player stays down and the physio runs on.",
+          "risk": "safe"
+        },
+        {
+          "id": "injury-2",
+          "text": "Hamstring. You can tell by the grab.",
+          "usage": "When a player pulls up running and holds the back of his thigh. Nine times in ten you're right.",
+          "risk": "bold"
+        },
+        {
+          "id": "injury-3",
+          "text": "Give him the magic sponge.",
+          "usage": "When it looks minor. The old joke about physios curing everything with a wet sponge.",
+          "risk": "safe",
+          "lingo": "magic-sponge"
+        },
+        {
+          "id": "injury-4",
+          "text": "Milking it a bit.",
+          "usage": "When they roll around and then jog off. Say it after, not before.",
+          "risk": "bold",
+          "lingo": "dive"
+        }
+      ]
+    },
+    {
+      "id": "near-miss",
+      "group": "moments",
+      "label": "So close",
+      "lines": [
+        {
+          "id": "near-miss-1",
+          "text": "Off the woodwork! So close.",
+          "usage": "The ball hit the post or the bar. The whole room groans.",
+          "risk": "safe",
+          "lingo": "hit-the-woodwork"
+        },
+        {
+          "id": "near-miss-2",
+          "text": "Row Z. He's ballooned that.",
+          "usage": "A shot that went miles over. Row Z is the back of the stand.",
+          "risk": "bold",
+          "lingo": "row-z"
+        },
+        {
+          "id": "near-miss-3",
+          "text": "That's a sitter.",
+          "usage": "An easy chance missed. The one you would have scored, you tell him.",
+          "risk": "bold",
+          "lingo": "sitter"
+        },
+        {
+          "id": "near-miss-4",
+          "text": "Unlucky. Keep going.",
+          "usage": "What fans shout after any miss. Means nothing, always fits.",
+          "risk": "safe",
+          "lingo": "unlucky"
+        }
+      ]
+    },
+    {
+      "id": "scuffle",
+      "group": "moments",
+      "label": "A nasty tackle or a scuffle",
+      "lines": [
+        {
+          "id": "scuffle-1",
+          "text": "Handbags. Nothing in it.",
+          "usage": "Players pushing and shoving but nobody swinging. It'll be over in ten seconds.",
+          "risk": "bold",
+          "lingo": "handbags"
+        },
+        {
+          "id": "scuffle-2",
+          "text": "That's a booking all day long.",
+          "usage": "A late or cynical tackle. He'll be in the book.",
+          "risk": "bold",
+          "lingo": "in-the-book"
+        },
+        {
+          "id": "scuffle-3",
+          "text": "He's gone in two-footed.",
+          "usage": "Both feet off the ground in a tackle. Usually a red, and rightly.",
+          "risk": "bold",
+          "lingo": "red-card"
+        },
+        {
+          "id": "scuffle-4",
+          "text": "Ref's going to have a word.",
+          "usage": "When the referee calls a player over. Safe, and it's what happens next.",
+          "risk": "safe"
+        }
       ]
     },
     {
@@ -92,10 +340,31 @@
       "group": "how_its_going",
       "label": "They keep passing it sideways",
       "lines": [
-        { "id": "sideways-1", "text": "There's no urgency here.", "usage": "When the ball has gone across the back four three times in a row.", "risk": "safe" },
-        { "id": "sideways-2", "text": "Someone needs to run at them.", "usage": "The other team is sitting deep and nobody is dribbling.", "risk": "bold" },
-        { "id": "sideways-3", "text": "Nice possession. Not scoring though.", "usage": "When the stats show lots of the ball and no chances.", "risk": "safe" },
-        { "id": "sideways-4", "text": "They're playing in front of them, not through them.", "usage": "The ball stays in front of the defence and never goes past it.", "risk": "bold" }
+        {
+          "id": "sideways-1",
+          "text": "There's no urgency.",
+          "usage": "When the ball has gone across the back four three times in a row.",
+          "risk": "safe"
+        },
+        {
+          "id": "sideways-2",
+          "text": "Someone needs to run at them.",
+          "usage": "The other team is sitting deep and nobody is dribbling.",
+          "risk": "bold"
+        },
+        {
+          "id": "sideways-3",
+          "text": "All possession, no penetration.",
+          "usage": "Lots of the ball, no chances. The stat on screen will back you up.",
+          "risk": "bold",
+          "lingo": "possession"
+        },
+        {
+          "id": "sideways-4",
+          "text": "They're playing in front of them, not through them.",
+          "usage": "The ball stays in front of the defence and never goes past it. Pundit-level.",
+          "risk": "bold"
+        }
       ]
     },
     {
@@ -103,10 +372,32 @@
       "group": "how_its_going",
       "label": "His team can't get out of their half",
       "lines": [
-        { "id": "under-pressure-1", "text": "They're pinned in. Need to clear their heads.", "usage": "When the other team has all the ball and a few corners in a row.", "risk": "safe" },
-        { "id": "under-pressure-2", "text": "Just get a foot on it. Slow it down.", "usage": "Everything is frantic and every clearance comes straight back.", "risk": "safe" },
-        { "id": "under-pressure-3", "text": "A goal against feels like it's coming.", "usage": "Say it quietly. If it comes, you called it. If not, no harm.", "risk": "bold" },
-        { "id": "under-pressure-4", "text": "Half-time can't come quick enough.", "usage": "From about the fortieth minute when they are hanging on.", "risk": "safe" }
+        {
+          "id": "under-pressure-1",
+          "text": "Backs to the wall.",
+          "usage": "The other team has all the ball and a few corners in a row.",
+          "risk": "safe",
+          "lingo": "backs-to-the-wall"
+        },
+        {
+          "id": "under-pressure-2",
+          "text": "Just get a foot on it.",
+          "usage": "Everything is frantic and every clearance comes straight back.",
+          "risk": "safe"
+        },
+        {
+          "id": "under-pressure-3",
+          "text": "Hoof it if you have to.",
+          "usage": "When passing out isn't working. Ugly clearances are allowed now.",
+          "risk": "bold",
+          "lingo": "hoof"
+        },
+        {
+          "id": "under-pressure-4",
+          "text": "Half-time can't come quick enough.",
+          "usage": "From about the fortieth minute when they're hanging on.",
+          "risk": "safe"
+        }
       ]
     },
     {
@@ -114,10 +405,32 @@
       "group": "how_its_going",
       "label": "They're winning comfortably",
       "lines": [
-        { "id": "cruising-1", "text": "Job done. Take a couple off.", "usage": "Two or more up with twenty minutes left.", "risk": "safe" },
-        { "id": "cruising-2", "text": "Don't go to sleep now.", "usage": "The classic. Cover for a lead that could still be thrown away.", "risk": "safe" },
-        { "id": "cruising-3", "text": "This is the most relaxed I've seen you all week.", "usage": "About him, not the match. Lands well.", "risk": "bold" },
-        { "id": "cruising-4", "text": "Get the young lad on for ten minutes.", "usage": "When the game is safe and there are kids on the bench.", "risk": "bold" }
+        {
+          "id": "cruising-1",
+          "text": "Job done. Take a couple off.",
+          "usage": "Two or more up with twenty minutes left.",
+          "risk": "safe"
+        },
+        {
+          "id": "cruising-2",
+          "text": "Don't go to sleep now.",
+          "usage": "The classic. Cover for a lead that could still be thrown away.",
+          "risk": "safe",
+          "lingo": "caught-napping"
+        },
+        {
+          "id": "cruising-3",
+          "text": "Game management now. Keep the ball.",
+          "usage": "Slow it down, no risks. He'll approve of the phrase.",
+          "risk": "bold",
+          "lingo": "game-management"
+        },
+        {
+          "id": "cruising-4",
+          "text": "Get the young lad on.",
+          "usage": "When the game is safe and there are kids on the bench.",
+          "risk": "bold"
+        }
       ]
     },
     {
@@ -125,10 +438,32 @@
       "group": "how_its_going",
       "label": "Nothing is happening",
       "lines": [
-        { "id": "boring-1", "text": "Both of them are happy with a point here.", "usage": "A goalless game where nobody is pushing. Especially late on.", "risk": "bold" },
-        { "id": "boring-2", "text": "Someone score, please. Anyone.", "usage": "Any dull stretch. Neutral and honest.", "risk": "safe" },
-        { "id": "boring-3", "text": "It's a proper midweek game, this.", "usage": "Low energy and half-empty stands. Even if it is Saturday.", "risk": "bold" },
-        { "id": "boring-4", "text": "One goal changes this whole game.", "usage": "The line that is always true and always sounds wise.", "risk": "safe" }
+        {
+          "id": "boring-1",
+          "text": "Both happy with a point here.",
+          "usage": "A goalless game where nobody is pushing. Especially late on.",
+          "risk": "bold",
+          "lingo": "nil-nil"
+        },
+        {
+          "id": "boring-2",
+          "text": "Someone score, please.",
+          "usage": "Any dull stretch. Neutral and honest.",
+          "risk": "safe"
+        },
+        {
+          "id": "boring-3",
+          "text": "Game of two halves, hopefully.",
+          "usage": "A dull first half. The oldest cliché in football, said with a smile.",
+          "risk": "bold",
+          "lingo": "game-of-two-halves"
+        },
+        {
+          "id": "boring-4",
+          "text": "One goal changes this.",
+          "usage": "The line that is always true and always sounds wise.",
+          "risk": "safe"
+        }
       ]
     },
     {
@@ -136,10 +471,33 @@
       "group": "how_its_going",
       "label": "It's the last ten minutes and it's close",
       "lines": [
-        { "id": "late-drama-1", "text": "I can't watch this.", "usage": "Any tight finish. You are allowed to mean it.", "risk": "safe" },
-        { "id": "late-drama-2", "text": "How long has the ref added?", "usage": "As soon as the board goes up. He will tell you to the second.", "risk": "safe" },
-        { "id": "late-drama-3", "text": "Keep the ball in the corner. Kill it.", "usage": "If his team is a goal up. Boring is good now.", "risk": "bold" },
-        { "id": "late-drama-4", "text": "Throw the keeper up. Nothing to lose.", "usage": "If his team is a goal down. The last-minute chaos option.", "risk": "bold" }
+        {
+          "id": "late-drama-1",
+          "text": "Squeaky bum time.",
+          "usage": "One goal in it, minutes left. Alex Ferguson's phrase, and everyone knows it.",
+          "risk": "bold",
+          "lingo": "squeaky-bum-time"
+        },
+        {
+          "id": "late-drama-2",
+          "text": "How long has he added?",
+          "usage": "As soon as the board goes up. He will tell you to the second.",
+          "risk": "safe",
+          "lingo": "added-time"
+        },
+        {
+          "id": "late-drama-3",
+          "text": "Keep it in the corner. Kill it.",
+          "usage": "If his team is a goal up. Boring is good now.",
+          "risk": "bold",
+          "lingo": "see-the-game-out"
+        },
+        {
+          "id": "late-drama-4",
+          "text": "I can't watch this.",
+          "usage": "Any tight finish. You are allowed to mean it.",
+          "risk": "safe"
+        }
       ]
     },
     {
@@ -147,20 +505,66 @@
       "group": "how_its_going",
       "label": "The referee is having a bad day",
       "lines": [
-        { "id": "ref-bad-1", "text": "He's lost control of this.", "usage": "Lots of arguing, players surrounding him, cards flying.", "risk": "safe" },
-        { "id": "ref-bad-2", "text": "That's a foul every time in the other half.", "usage": "When a tackle near the box went unpunished.", "risk": "bold" },
-        { "id": "ref-bad-3", "text": "Book him, then. Be consistent.", "usage": "When one side gets a yellow for something the other got away with.", "risk": "bold" },
-        { "id": "ref-bad-4", "text": "Nobody came to watch the ref.", "usage": "When the referee is the story. Never wrong.", "risk": "safe" }
+        {
+          "id": "ref-bad-1",
+          "text": "He's lost control of this.",
+          "usage": "Lots of arguing, players surrounding him, cards flying.",
+          "risk": "safe"
+        },
+        {
+          "id": "ref-bad-2",
+          "text": "That's a foul every day of the week.",
+          "usage": "When a tackle near the box went unpunished.",
+          "risk": "bold",
+          "lingo": "free-kick"
+        },
+        {
+          "id": "ref-bad-3",
+          "text": "Book him then. Be consistent.",
+          "usage": "When one side gets a yellow for something the other got away with.",
+          "risk": "bold",
+          "lingo": "yellow-card"
+        },
+        {
+          "id": "ref-bad-4",
+          "text": "Nobody came to watch the ref.",
+          "usage": "When the referee is the story. Never wrong.",
+          "risk": "safe"
+        }
       ]
     },
     {
-      "id": "new-signing",
+      "id": "other-lot-winning-ugly",
       "group": "how_its_going",
-      "label": "A new signing is playing",
+      "label": "The other team is winning ugly",
       "lines": [
-        { "id": "new-signing-1", "text": "He looks like he's played here for years.", "usage": "If the new player is doing well and fitting in.", "risk": "safe" },
-        { "id": "new-signing-2", "text": "Give him time. It's a different league.", "usage": "If he is struggling and came from abroad.", "risk": "safe" },
-        { "id": "new-signing-3", "text": "Was that money well spent, then?", "usage": "Ask it lightly. He has had this argument with himself already.", "risk": "bold" }
+        {
+          "id": "other-lot-winning-ugly-1",
+          "text": "Smash and grab, this.",
+          "usage": "They've had one chance and scored it while his team did everything else.",
+          "risk": "bold",
+          "lingo": "smash-and-grab"
+        },
+        {
+          "id": "other-lot-winning-ugly-2",
+          "text": "They've parked the bus.",
+          "usage": "Everyone behind the ball, no attacking at all. The classic complaint.",
+          "risk": "safe",
+          "lingo": "park-the-bus"
+        },
+        {
+          "id": "other-lot-winning-ugly-3",
+          "text": "Dark arts. Fair play to them.",
+          "usage": "Time-wasting, little fouls, winding people up. Grudging respect is the correct tone.",
+          "risk": "bold",
+          "lingo": "dark-arts"
+        },
+        {
+          "id": "other-lot-winning-ugly-4",
+          "text": "Ref, get on with it.",
+          "usage": "When the goalkeeper takes forty seconds over every goal kick.",
+          "risk": "safe"
+        }
       ]
     },
     {
@@ -168,10 +572,31 @@
       "group": "when_he_asks",
       "label": "Half-time and he asks what you think",
       "lines": [
-        { "id": "half-time-1", "text": "What did you make of it?", "usage": "The best tool in this app. Hand the question straight back.", "risk": "safe" },
-        { "id": "half-time-2", "text": "Better than I expected, honestly.", "usage": "If his team is level or ahead against a decent side.", "risk": "safe" },
-        { "id": "half-time-3", "text": "Need to be braver in the second half.", "usage": "If they have been cautious. Vague enough to be true.", "risk": "bold" },
-        { "id": "half-time-4", "text": "The manager will be saying a few words.", "usage": "If they were poor. Everyone pictures the dressing room.", "risk": "safe" }
+        {
+          "id": "half-time-1",
+          "text": "What did you make of it?",
+          "usage": "The best tool in this app. Hand the question straight back.",
+          "risk": "safe"
+        },
+        {
+          "id": "half-time-2",
+          "text": "Better than I expected, honestly.",
+          "usage": "If his team is level or ahead against a decent side.",
+          "risk": "safe"
+        },
+        {
+          "id": "half-time-3",
+          "text": "Need to be braver in the second half.",
+          "usage": "If they've been cautious. Vague enough to be true.",
+          "risk": "bold"
+        },
+        {
+          "id": "half-time-4",
+          "text": "They'll be getting the hairdryer.",
+          "usage": "If they were poor. The manager shouting at half-time; Ferguson's speciality.",
+          "risk": "safe",
+          "lingo": "hairdryer"
+        }
       ]
     },
     {
@@ -179,10 +604,33 @@
       "group": "when_he_asks",
       "label": "Full-time, they won",
       "lines": [
-        { "id": "full-time-win-1", "text": "Deserved that. Never really in doubt.", "usage": "A comfortable win. Even if it was a bit in doubt.", "risk": "safe" },
-        { "id": "full-time-win-2", "text": "Won ugly, but three points is three points.", "usage": "A scrappy win. He has been saying this since he was twelve.", "risk": "bold" },
-        { "id": "full-time-win-3", "text": "Who gets your man of the match?", "usage": "Keeps him talking about it in a good mood.", "risk": "safe" },
-        { "id": "full-time-win-4", "text": "Right, where are we in the table now?", "usage": "He knows already. He wants to be asked.", "risk": "safe" }
+        {
+          "id": "full-time-win-1",
+          "text": "Deserved that. Never in doubt.",
+          "usage": "A comfortable win. Even if it was a bit in doubt.",
+          "risk": "safe"
+        },
+        {
+          "id": "full-time-win-2",
+          "text": "Won ugly, but three points is three points.",
+          "usage": "A scrappy win. He's been saying this since he was twelve.",
+          "risk": "bold",
+          "lingo": "points"
+        },
+        {
+          "id": "full-time-win-3",
+          "text": "Who's your man of the match?",
+          "usage": "Keeps him talking about it in a good mood.",
+          "risk": "safe",
+          "lingo": "man-of-the-match"
+        },
+        {
+          "id": "full-time-win-4",
+          "text": "Where are we in the table now?",
+          "usage": "He knows already. He wants to be asked.",
+          "risk": "safe",
+          "lingo": "the-table"
+        }
       ]
     },
     {
@@ -190,10 +638,31 @@
       "group": "when_he_asks",
       "label": "Full-time, they lost",
       "lines": [
-        { "id": "full-time-loss-1", "text": "That one stings.", "usage": "Short and sympathetic. Then leave a pause.", "risk": "safe" },
-        { "id": "full-time-loss-2", "text": "Didn't deserve to lose that.", "usage": "If they had the better chances. Check the mood first.", "risk": "bold" },
-        { "id": "full-time-loss-3", "text": "One of those days. Next week.", "usage": "The universal reset button.", "risk": "safe" },
-        { "id": "full-time-loss-4", "text": "The result's harsh but the performance wasn't there.", "usage": "If they were bad. Sounds like a pundit, in a good way.", "risk": "bold" }
+        {
+          "id": "full-time-loss-1",
+          "text": "That one stings.",
+          "usage": "Short and sympathetic. Then leave a pause.",
+          "risk": "safe"
+        },
+        {
+          "id": "full-time-loss-2",
+          "text": "Robbed. Absolutely robbed.",
+          "usage": "Only if a decision went against them. He'll take it from there.",
+          "risk": "bold"
+        },
+        {
+          "id": "full-time-loss-3",
+          "text": "One of those days. We go again.",
+          "usage": "The universal reset button, in the words players use.",
+          "risk": "safe",
+          "lingo": "we-go-again"
+        },
+        {
+          "id": "full-time-loss-4",
+          "text": "The performance wasn't there.",
+          "usage": "If they were bad. Sounds like a pundit, in a good way.",
+          "risk": "bold"
+        }
       ]
     },
     {
@@ -201,9 +670,26 @@
       "group": "when_he_asks",
       "label": "Full-time, it was a draw",
       "lines": [
-        { "id": "full-time-draw-1", "text": "Feels like two points dropped.", "usage": "If they were the better team or were winning late on.", "risk": "bold" },
-        { "id": "full-time-draw-2", "text": "Take the point and move on.", "usage": "If they were hanging on at the end.", "risk": "safe" },
-        { "id": "full-time-draw-3", "text": "Nobody's happy with that, are they?", "usage": "A flat nil-nil. Safe because it is always true.", "risk": "safe" }
+        {
+          "id": "full-time-draw-1",
+          "text": "Two points dropped.",
+          "usage": "If they were the better team or were winning late on.",
+          "risk": "bold",
+          "lingo": "points"
+        },
+        {
+          "id": "full-time-draw-2",
+          "text": "Take the point and move on.",
+          "usage": "If they were hanging on at the end.",
+          "risk": "safe"
+        },
+        {
+          "id": "full-time-draw-3",
+          "text": "Nobody's happy with that, are they?",
+          "usage": "A flat nil-nil. Safe because it is always true.",
+          "risk": "safe",
+          "lingo": "nil-nil"
+        }
       ]
     },
     {
@@ -211,10 +697,32 @@
       "group": "when_he_asks",
       "label": "He asks who you thought played well",
       "lines": [
-        { "id": "who-was-good-1", "text": "The keeper. Kept them in it.", "usage": "If the score was close and the keeper made a few saves.", "risk": "safe" },
-        { "id": "who-was-good-2", "text": "Whoever was running the midfield. He never stopped.", "usage": "There is always one. Ask him to name him and agree.", "risk": "bold" },
-        { "id": "who-was-good-3", "text": "Honestly, the full-backs. Up and down all day.", "usage": "The wide defenders. A slightly expert-sounding pick.", "risk": "bold" },
-        { "id": "who-was-good-4", "text": "You tell me. You watched it properly.", "usage": "Hand it back with a compliment attached.", "risk": "safe" }
+        {
+          "id": "who-was-good-1",
+          "text": "The keeper. Kept them in it.",
+          "usage": "If the score was close and the keeper made a few saves.",
+          "risk": "safe"
+        },
+        {
+          "id": "who-was-good-2",
+          "text": "Whoever was running the midfield.",
+          "usage": "There is always one. Ask him to name him and agree.",
+          "risk": "bold",
+          "lingo": "box-to-box"
+        },
+        {
+          "id": "who-was-good-3",
+          "text": "Honestly, the full-backs. Up and down all day.",
+          "usage": "The wide defenders. A slightly expert-sounding pick.",
+          "risk": "bold",
+          "lingo": "full-back"
+        },
+        {
+          "id": "who-was-good-4",
+          "text": "You tell me. You watched it properly.",
+          "usage": "Hand it back with a compliment attached.",
+          "risk": "safe"
+        }
       ]
     },
     {
@@ -222,10 +730,33 @@
       "group": "when_he_asks",
       "label": "He asks what you think of the manager",
       "lines": [
-        { "id": "manager-question-1", "text": "He needs a run of games to judge him properly.", "usage": "A newish manager. Fair and unfalsifiable.", "risk": "safe" },
-        { "id": "manager-question-2", "text": "The players seem to be playing for him.", "usage": "If they look like they are trying hard. Check first.", "risk": "bold" },
-        { "id": "manager-question-3", "text": "His subs are always a bit late, aren't they?", "usage": "A common complaint about most managers. Low risk of being wrong.", "risk": "bold" },
-        { "id": "manager-question-4", "text": "Do you actually rate him or do you just want him gone?", "usage": "When he has been moaning. Makes him decide.", "risk": "bold" }
+        {
+          "id": "manager-question-1",
+          "text": "He needs a run of games to judge him properly.",
+          "usage": "A newish manager. Fair and unfalsifiable.",
+          "risk": "safe",
+          "lingo": "new-manager-bounce"
+        },
+        {
+          "id": "manager-question-2",
+          "text": "The players seem to be playing for him.",
+          "usage": "If they look like they're trying hard. Check first.",
+          "risk": "bold"
+        },
+        {
+          "id": "manager-question-3",
+          "text": "His subs are always a bit late, aren't they?",
+          "usage": "A common complaint about nearly every manager. Low risk of being wrong.",
+          "risk": "bold",
+          "lingo": "substitution"
+        },
+        {
+          "id": "manager-question-4",
+          "text": "Do you actually rate him or do you just want him gone?",
+          "usage": "When he's been moaning. Makes him decide.",
+          "risk": "bold",
+          "lingo": "sack-race"
+        }
       ]
     },
     {
@@ -233,9 +764,32 @@
       "group": "when_he_asks",
       "label": "He mentions a big game coming up",
       "lines": [
-        { "id": "big-game-tomorrow-1", "text": "Who's out injured for it?", "usage": "There is always somebody. He will know the whole list.", "risk": "safe" },
-        { "id": "big-game-tomorrow-2", "text": "A draw would be fine, wouldn't it?", "usage": "If it is away against a bigger team.", "risk": "bold" },
-        { "id": "big-game-tomorrow-3", "text": "What time is it on? I'll watch the start with you.", "usage": "Small offer, big impact.", "risk": "safe" }
+        {
+          "id": "big-game-tomorrow-1",
+          "text": "Who's out injured for it?",
+          "usage": "There is always somebody. He'll know the whole list.",
+          "risk": "safe"
+        },
+        {
+          "id": "big-game-tomorrow-2",
+          "text": "A draw would be fine, wouldn't it?",
+          "usage": "If it's away against a bigger team.",
+          "risk": "bold"
+        },
+        {
+          "id": "big-game-tomorrow-3",
+          "text": "What time is it on? I'll watch the start with you.",
+          "usage": "Small offer, big impact.",
+          "risk": "safe",
+          "lingo": "kick-off"
+        },
+        {
+          "id": "big-game-tomorrow-4",
+          "text": "Proper six-pointer, this.",
+          "usage": "Only when both teams are chasing the same thing: the title, top four, survival.",
+          "risk": "bold",
+          "lingo": "six-pointer"
+        }
       ]
     }
   ]

@@ -2,15 +2,30 @@
 
 The spec says a question ships only after a human has checked its fact against
 a source, and the validator breaks the build on `verified: false`. Every question
-in the 2026-09-07 batch (24 packs, 513 questions) carries `verified: true`, and
-that flag was set by Claude on the strength of its own knowledge of settled
-football history — **not by a person**. Anton: this file is the list of what to
-spot-check before the tab ships to the App Store.
+in the 2026-09-08 batch (24 packs, 490 questions, content version 2026-09-08.2)
+carries `verified: true`, and that flag was set by Claude on the strength of its
+own knowledge of settled football history — **not by a person**. Anton: this
+file is the list of what to spot-check before the tab ships to the App Store.
 
-## What was deliberately excluded
+## What changed on 2026-09-08 (Anton's review of the first batch)
+
+- Every question now carries `why`, `use` and `useType` — see
+  `CONTENT_PRINCIPLES.md`. The app shows the why in italics and the use line in
+  a labelled box (SAY IT / ASK HIM / TO IMPRESS) under the explanation.
+- Superlatives tied to the present are banned by the validator after the "only
+  Champions League final was 2006" mistake (they played the 2026 final).
+- **"His club, right now"** is built in the app (`LiveClubPack.swift`) from the
+  team page: who manages them, "Who is this?" with manager and ones-to-know
+  photos, positions, which of these plays for them, last season, last title,
+  nickname, ground, rival. Nothing in the static files names a current person.
+- 23 questions were cut for having no honest answer to "when does she say this?"
+  (513 → 490).
+
+## What was deliberately excluded from the static files
 
 - Anything about the present: current manager, current captain, "this season",
-  league position. Static content cannot age, so it must not be ageable.
+  league position. Static content cannot age, so it must not be ageable. The
+  live pack covers it from data.
 - Anything after mid-2025 except results that are already final and widely
   reported (see the list below).
 

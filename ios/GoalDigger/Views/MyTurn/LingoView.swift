@@ -121,6 +121,23 @@ struct LingoView: View {
                             .foregroundColor(.textSecondaryOnCard)
                             .fixedSize(horizontal: false, vertical: true)
                     }
+                    if let sayIt = term.sayIt {
+                        // The definition becomes a tool: one line she can say.
+                        HStack(alignment: .top, spacing: 6) {
+                            Image(systemName: "quote.bubble")
+                                .font(.system(size: 12))
+                                .foregroundColor(.hotRose)
+                                .padding(.top, 2)
+                            Text(sayIt)
+                                .font(.jakarta(14, weight: .semiBold))
+                                .foregroundColor(.textPrimaryOnCard)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.hotRose.opacity(0.08))
+                        .cornerRadius(10)
+                    }
                     if let refs = term.seeAlso?.compactMap({ byId[$0] }), !refs.isEmpty {
                         HStack(alignment: .firstTextBaseline, spacing: 6) {
                             Text("Not to be confused with")

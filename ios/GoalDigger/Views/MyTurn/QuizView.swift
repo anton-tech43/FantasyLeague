@@ -9,19 +9,23 @@ struct QuizView: View {
     /// His Team's selected club (Team.rawValue, snake_case). Nil hides the
     /// "His Club" pack entirely rather than showing an empty one.
     let clubId: String?
+    /// "His club, right now", built on the device from the team page
+    /// (LiveClubPack). Nil until the page has loaded or when no club is picked.
+    let livePack: QuizPack?
+
+    private var allPacks: [QuizPack] { content.packs + (livePack.map { [$0] } ?? []) }
 
     private var visiblePacks: [QuizPack] {
         let general = content.packs.filter { !$0.isClubPack }
         guard let clubId else { return general }
+        var his: [QuizPack] = livePack.map { [$0] } ?? []
         let kebab = "club-" + clubId.replacingOccurrences(of: "_", with: "-")
-        if let his = content.packs.first(where: { $0.id == kebab }) {
-            return general + [his]
-        }
-        return general
+        if let history = content.packs.first(where: { $0.id == kebab }) { his.append(history) }
+        return his + general
     }
 
     private var round: MyTurnStore.QuizRound? { store.quizRound }
-    private var roundPack: QuizPack? { round.flatMap { r in content.packs.first { $0.id == r.packId } } }
+    private var roundPack: QuizPack? { round.flatMap { r in allPacks.first { $0.id == r.packId } } }
 
     var body: some View {
         ScrollView {
@@ -29,9 +33,16 @@ struct QuizView: View {
                 if let round, let pack = roundPack {
                     if round.finished {
                         resultView(round, pack: pack)
-                    } else {
+                    } else if pack.questions.contains(where: { $0.id == round.questionIds[round.index] }) {
                         questionView(round, pack: pack)
+                    } else {
+                        staleRound
                     }
+                } else if round != nil, livePack == nil, round?.packId == LiveClubPack.packId {
+                    // The live pack is still building; keep the round.
+                    MyTurnEmptyText(text: "Loading his club…")
+                } else if round != nil {
+                    staleRound
                 } else {
                     packList
                 }
@@ -44,20 +55,48 @@ struct QuizView: View {
         .animation(.easeInOut(duration: 0.2), value: round?.finished)
     }
 
+    /// A round whose pack or question no longer exists — the live pack was
+    /// rebuilt after the team page changed, or the content was updated.
+    @ViewBuilder
+    private var staleRound: some View {
+        MyTurnEmptyText(text: "That pack has been refreshed since you started. Pick it again.")
+        Button { store.endRound() } label: {
+            Text("Back to packs")
+                .font(.jakarta(16, weight: .semiBold))
+                .foregroundColor(.hotRose)
+                .frame(maxWidth: .infinity)
+                .frame(height: 48)
+                .overlay(RoundedRectangle(cornerRadius: Layout.buttonCornerRadius).stroke(Color.hotRose, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+    }
+
     // MARK: Pack list
+
+    private func packTitle(_ pack: QuizPack) -> String {
+        if pack.id == LiveClubPack.packId { return pack.label }
+        return pack.isClubPack ? "His club, the history" : pack.label
+    }
+
+    private func packSubtitle(_ pack: QuizPack) -> String {
+        let progress = store.progress(for: pack.id)
+        if progress.played > 0 { return "Best: \(progress.best) / 10" }
+        if pack.id == LiveClubPack.packId { return "Manager, players, last season. Updates with his team page." }
+        if pack.isClubPack { return "\(pack.label) · \(pack.questions.count) questions" }
+        return "\(pack.questions.count) questions"
+    }
 
     @ViewBuilder
     private var packList: some View {
         MyTurnSectionLabel(text: "Pick a pack")
         ForEach(visiblePacks) { pack in
-            let progress = store.progress(for: pack.id)
             Button {
                 store.startRound(pack: pack)
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
             } label: {
                 MyTurnRow(
-                    title: pack.isClubPack ? "His Club: \(pack.label)" : pack.label,
-                    subtitle: progress.played == 0 ? "\(pack.questions.count) questions" : "Best: \(progress.best) / 10"
+                    title: packTitle(pack),
+                    subtitle: packSubtitle(pack)
                 ) {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12, weight: .semibold))
@@ -86,6 +125,25 @@ struct QuizView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.bottom, 4)
 
+            if let image = q.image.flatMap(URL.init(string:)) {
+                AsyncImage(url: image) { phase in
+                    if let img = phase.image {
+                        img.resizable().scaledToFill()
+                    } else {
+                        Image(systemName: "person.fill")
+                            .font(.system(size: 44))
+                            .foregroundColor(.warmWhite.opacity(0.4))
+                    }
+                }
+                .frame(width: 140, height: 140)
+                .background(Color.warmWhite.opacity(0.08))
+                .clipShape(Circle())
+                .overlay(Circle().stroke(Color.hotRose.opacity(0.5), lineWidth: 2))
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 8)
+                .accessibilityLabel("Photo to identify")
+            }
+
             ForEach(Array(q.options.enumerated()), id: \.offset) { idx, option in
                 optionButton(idx: idx, text: option, question: q, selected: round.selected)
             }
@@ -101,6 +159,16 @@ struct QuizView: View {
                         .foregroundColor(.warmWhite.opacity(0.9))
                         .lineSpacing(3)
                         .fixedSize(horizontal: false, vertical: true)
+                    if let why = q.why {
+                        Text(why)
+                            .font(.jakarta(13, weight: .italic))
+                            .foregroundColor(.warmWhite.opacity(0.65))
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.top, 2)
+                    }
+                    if let use = q.use {
+                        useLine(use, type: q.useType)
+                    }
                     Button {
                         store.nextQuestion()
                     } label: {
@@ -121,6 +189,27 @@ struct QuizView: View {
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
         }
+    }
+
+    /// The take-away: labelled with what it is for, set apart from the fact.
+    /// This is the line she actually leaves the question with.
+    private func useLine(_ use: String, type: QuestionUseType?) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text((type?.label ?? "Use it").uppercased())
+                .font(.jakarta(10, weight: .bold))
+                .tracking(1)
+                .foregroundColor(.hotRose)
+            Text(use)
+                .font(.jakarta(15, weight: .semiBold))
+                .foregroundColor(.warmWhite)
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.hotRose.opacity(0.12))
+        .cornerRadius(10)
+        .padding(.top, 2)
     }
 
     private func optionButton(idx: Int, text: String, question: MyTurnQuestion, selected: Int?) -> some View {
@@ -187,6 +276,13 @@ struct QuizView: View {
                         Text(q.options[q.answer])
                             .font(.jakarta(14, weight: .regular))
                             .foregroundColor(.hotRose)
+                        if let use = q.use {
+                            Text(use)
+                                .font(.jakarta(13, weight: .semiBold))
+                                .foregroundColor(.textPrimaryOnCard)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.top, 2)
+                        }
                     }
                     .padding(14)
                     .frame(maxWidth: .infinity, alignment: .leading)
