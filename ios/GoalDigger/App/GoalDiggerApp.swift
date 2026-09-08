@@ -126,6 +126,25 @@ struct RootView: View {
     // storefront before download. PurchaseManager + PaywallView are kept in the
     // codebase but unreferenced; can be re-wired if we add an IAP later
     // (e.g. World Cup pass).
+    #if DEBUG
+    /// Screenshot harness. `-gdPresetTeam arsenal` puts a fresh simulator
+    /// straight past onboarding with a club followed, because simctl cannot tap
+    /// its way through the flow. DEBUG only.
+    private func applyPresetTeamArgument() {
+        let args = ProcessInfo.processInfo.arguments
+        guard let i = args.firstIndex(of: "-gdPresetTeam"), i + 1 < args.count,
+              let team = Team(rawValue: args[i + 1]) else { return }
+        appState.selectedTeams = [team]
+        appState.activeContext = .team(team)
+        if appState.hisName.isEmpty { appState.hisName = "Tom" }
+        if appState.herName.isEmpty { appState.herName = "Sophie" }
+        appState.selectedTier = 2
+        appState.hasSeenSeasonPrimer = true
+        appState.hasSeenWCPrompt = true
+        appState.hasCompletedOnboarding = true
+    }
+    #endif
+
     var body: some View {
         Group {
             if !appState.hasCompletedOnboarding {
@@ -175,6 +194,9 @@ struct RootView: View {
                     }
             }
         }
+        #if DEBUG
+        .onAppear(perform: applyPresetTeamArgument)
+        #endif
         .task(id: "cache-schema-purge") {
             // Drop cached rows from a previous app version with an older
             // CacheService.cacheSchemaVersion. Prevents decoding crashes when

@@ -9,6 +9,7 @@ struct MyTurnView: View {
     @State private var store = MyTurnStore.shared
     @State private var content = MyTurnContentService.shared
     @State private var live = LiveClubPackService.shared
+    @State private var squad = LiveSquadService.shared
     @Environment(AppState.self) var appState
 
     var body: some View {
@@ -28,7 +29,8 @@ struct MyTurnView: View {
                     LingoView(content: content.lingo, store: store)
                         .opacity(store.lastModule == .lingo ? 1 : 0)
                         .allowsHitTesting(store.lastModule == .lingo)
-                    QuizView(content: content.quiz, store: store, clubId: appState.selectedTeam?.rawValue, livePack: live.pack)
+                    QuizView(content: content.quiz, store: store, clubId: appState.selectedTeam?.rawValue,
+                             livePack: live.pack, squadPack: squad.pack, leaguePack: live.leaguePack)
                         .opacity(store.lastModule == .quiz ? 1 : 0)
                         .allowsHitTesting(store.lastModule == .quiz)
                 }
@@ -40,7 +42,9 @@ struct MyTurnView: View {
         .toolbarBackground(.visible, for: .navigationBar)
         .task(id: appState.selectedTeam?.rawValue) {
             let personalise = appState.personalise
-            await live.refresh(team: appState.selectedTeam, personalise: personalise)
+            async let club: Void = live.refresh(team: appState.selectedTeam, personalise: personalise)
+            async let squadRefresh: Void = squad.refresh(team: appState.selectedTeam, personalise: personalise)
+            _ = await (club, squadRefresh)
             #if DEBUG
             applyLivePackArguments()
             #endif
@@ -73,12 +77,14 @@ struct MyTurnView: View {
         }
     }
 
-    /// `-gdMyTurnPack live-club` waits for the live pack; `-gdQuizAnswer N`
-    /// answers the first question with option N so the feedback renders.
+    /// `-gdMyTurnPack live-club|live-squad|live-league` waits for the pack that
+    /// is built on the device; `-gdQuizAnswer N` answers the first question with
+    /// option N so the feedback renders.
     private func applyLivePackArguments() {
         let args = ProcessInfo.processInfo.arguments
+        let built = [live.pack, squad.pack, live.leaguePack].compactMap { $0 }
         guard let i = args.firstIndex(of: "-gdMyTurnPack"), i + 1 < args.count,
-              args[i + 1] == LiveClubPack.packId, let pack = live.pack, store.quizRound == nil else { return }
+              let pack = built.first(where: { $0.id == args[i + 1] }), store.quizRound == nil else { return }
         // `-gdMyTurnQuestion <id>` starts a one-question round, for screenshots
         // of a specific question (the photo ones).
         if let j = args.firstIndex(of: "-gdMyTurnQuestion"), j + 1 < args.count {

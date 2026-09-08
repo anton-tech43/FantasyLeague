@@ -12,25 +12,44 @@ struct QuizView: View {
     /// "His club, right now", built on the device from the team page
     /// (LiveClubPack). Nil until the page has loaded or when no club is picked.
     let livePack: QuizPack?
+    /// "His squad" and "The league's big names", built on the device from the
+    /// `players` table and the league-wide team-page slices. Either may be nil.
+    let squadPack: QuizPack?
+    let leaguePack: QuizPack?
 
-    private var allPacks: [QuizPack] { content.packs + (livePack.map { [$0] } ?? []) }
+    /// A round in progress that she has stepped away from to look at the pack
+    /// list. Deliberately not persisted: the round itself is (in MyTurnStore),
+    /// and a relaunch should drop her back into the question, not the list.
+    @State private var paused = false
+    @State private var sheetPlayer: QuizPlayer?
 
+    private var livePacks: [QuizPack] { [livePack, squadPack, leaguePack].compactMap { $0 } }
+    private var allPacks: [QuizPack] { content.packs + livePacks }
+
+    /// His squad, his club now, the basics, his club's history, the league,
+    /// then everything else. The two that teach her the faces come first.
     private var visiblePacks: [QuizPack] {
         let general = content.packs.filter { !$0.isClubPack }
-        guard let clubId else { return general }
-        var his: [QuizPack] = livePack.map { [$0] } ?? []
-        let kebab = "club-" + clubId.replacingOccurrences(of: "_", with: "-")
-        if let history = content.packs.first(where: { $0.id == kebab }) { his.append(history) }
-        return his + general
+        let basics = general.first { $0.id == "the-basics" }
+        let rest = general.filter { $0.id != "the-basics" }
+        let history = clubId.flatMap { id in
+            content.packs.first { $0.id == "club-" + id.replacingOccurrences(of: "_", with: "-") }
+        }
+        guard clubId != nil else { return [basics, leaguePack].compactMap { $0 } + rest }
+        return [squadPack, livePack, basics, history, leaguePack].compactMap { $0 } + rest
     }
 
     private var round: MyTurnStore.QuizRound? { store.quizRound }
     private var roundPack: QuizPack? { round.flatMap { r in allPacks.first { $0.id == r.packId } } }
+    private var currentQuestion: MyTurnQuestion? {
+        guard let round, !round.finished, let pack = roundPack, round.index < round.questionIds.count else { return nil }
+        return pack.questions.first { $0.id == round.questionIds[round.index] }
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Layout.cardSpacing) {
-                if let round, let pack = roundPack {
+                if let round, let pack = roundPack, !paused {
                     if round.finished {
                         resultView(round, pack: pack)
                     } else if pack.questions.contains(where: { $0.id == round.questionIds[round.index] }) {
@@ -38,12 +57,13 @@ struct QuizView: View {
                     } else {
                         staleRound
                     }
-                } else if round != nil, livePack == nil, round?.packId == LiveClubPack.packId {
-                    // The live pack is still building; keep the round.
+                } else if let round, roundPack == nil, Self.liveIds.contains(round.packId) {
+                    // The pack she is mid-round on is still building; keep it.
                     MyTurnEmptyText(text: "Loading his club…")
-                } else if round != nil {
+                } else if round != nil, roundPack == nil {
                     staleRound
                 } else {
+                    practiseButton
                     packList
                 }
             }
@@ -53,6 +73,51 @@ struct QuizView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: round?.index)
         .animation(.easeInOut(duration: 0.2), value: round?.finished)
+        .sheet(item: $sheetPlayer) { person in
+            PlayerCardModal(
+                player: PlayerCard(teamId: clubId, playerName: person.name, position: person.position,
+                                   age: person.age, summary: person.summary ?? "",
+                                   vibe: person.vibe, form: nil),
+                number: person.number, photoURL: person.photoURL, gated: false
+            )
+        }
+        #if DEBUG
+        // `-gdQuizPause` lands on the pack list with the round still going, for
+        // the screenshot simctl cannot tap its way to.
+        .onAppear { if ProcessInfo.processInfo.arguments.contains("-gdQuizPause") { paused = true } }
+        // `-gdQuizPlayer` opens the "Who he is" sheet as soon as a question has
+        // been answered, for the screenshot harness.
+        .task(id: round?.selected) {
+            if round?.selected != nil, ProcessInfo.processInfo.arguments.contains("-gdQuizPlayer") {
+                sheetPlayer = currentQuestion?.player
+            }
+        }
+        #endif
+    }
+
+    // MARK: The one thing to press
+
+    /// Continue where she left off, or start on his squad. Never a score, never
+    /// a streak: just the next ten questions.
+    @ViewBuilder
+    private var practiseButton: some View {
+        if let round, let pack = roundPack, !round.finished {
+            MyTurnPractiseButton(
+                title: "Continue",
+                subtitle: "\(packTitle(pack)) · question \(round.index + 1) of \(round.questionIds.count)",
+                systemImage: "arrow.right"
+            ) { paused = false }
+        } else if let first = squadPack ?? visiblePacks.first {
+            MyTurnPractiseButton(
+                title: squadPack != nil ? "Learn his squad" : "Start a round",
+                subtitle: squadPack != nil
+                    ? "Ten questions on the men in his team"
+                    : "Ten questions from \(packTitle(first))"
+            ) {
+                paused = false
+                store.startRound(pack: first)
+            }
+        }
     }
 
     /// A round whose pack or question no longer exists — the live pack was
@@ -73,25 +138,41 @@ struct QuizView: View {
 
     // MARK: Pack list
 
+    static let liveIds = [LiveClubPack.packId, LiveSquadPack.packId, LiveSquadPack.leaguePackId]
+
     private func packTitle(_ pack: QuizPack) -> String {
-        if pack.id == LiveClubPack.packId { return pack.label }
+        if Self.liveIds.contains(pack.id) { return pack.label }
         return pack.isClubPack ? "His club, the history" : pack.label
     }
 
     private func packSubtitle(_ pack: QuizPack) -> String {
+        // A round she has stepped away from says so, above anything else.
+        if let round, round.packId == pack.id, !round.finished {
+            return "Continue · question \(round.index + 1) of \(round.questionIds.count)"
+        }
         let progress = store.progress(for: pack.id)
         if progress.played > 0 { return "Best: \(progress.best) / 10" }
-        if pack.id == LiveClubPack.packId { return "Manager, players, last season. Updates with his team page." }
+        switch pack.id {
+        case LiveSquadPack.packId:      return "Faces, numbers and positions, all the way down the squad."
+        case LiveClubPack.packId:       return "Manager, players, last season. Updates with his team page."
+        case LiveSquadPack.leaguePackId: return "The names he'll mention who don't play for his club."
+        default: break
+        }
         if pack.isClubPack { return "\(pack.label) · \(pack.questions.count) questions" }
         return "\(pack.questions.count) questions"
     }
 
     @ViewBuilder
     private var packList: some View {
-        MyTurnSectionLabel(text: "Pick a pack")
+        MyTurnSectionLabel(text: "Or pick a pack")
         ForEach(visiblePacks) { pack in
             Button {
-                store.startRound(pack: pack)
+                if round?.packId == pack.id, round?.finished == false {
+                    paused = false
+                } else {
+                    paused = false
+                    store.startRound(pack: pack)
+                }
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
             } label: {
                 MyTurnRow(
@@ -113,8 +194,21 @@ struct QuizView: View {
     private func questionView(_ round: MyTurnStore.QuizRound, pack: QuizPack) -> some View {
         let qid = round.questionIds[round.index]
         if let q = pack.questions.first(where: { $0.id == qid }) {
-            // No pause button: leaving the tab, or the app, keeps the round
-            // exactly here. Only "Next pack" on the result screen ends it.
+            // Back, not stop. The round stays exactly where it is — as it does
+            // when she leaves the tab or the app. Only "Next pack" on the
+            // result screen ends one.
+            Button { paused = true } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: "chevron.left").font(.system(size: 13, weight: .semibold))
+                    Text("Packs").font(.jakarta(15, weight: .medium))
+                }
+                .foregroundColor(.warmWhite.opacity(0.75))
+                .padding(.vertical, 4)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Back to the packs. Your round stays where it is.")
+
             Text("Question \(round.index + 1) of \(round.questionIds.count)")
                 .font(.sectionHeader).tracking(1)
                 .foregroundColor(.mutedText)
@@ -168,6 +262,21 @@ struct QuizView: View {
                     }
                     if let use = q.use {
                         useLine(use, type: q.useType)
+                    }
+                    if let person = q.player {
+                        Button { sheetPlayer = person } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "person.crop.circle")
+                                    .font(.system(size: 14, weight: .semibold))
+                                Text("Who he is")
+                                    .font(.jakarta(14, weight: .semiBold))
+                            }
+                            .foregroundColor(.hotRose)
+                            .padding(.vertical, 4)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Who \(person.name) is")
                     }
                     Button {
                         store.nextQuestion()

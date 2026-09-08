@@ -2,6 +2,12 @@ import SwiftUI
 
 struct PlayerCardModal: View {
     let player: PlayerCard
+    /// Quiz context. She has just answered a question about him, so the sheet
+    /// carries his shirt number and face, and is not gated: a locked sheet
+    /// there would be a dead end in the middle of a round.
+    var number: Int? = nil
+    var photoURL: String? = nil
+    var gated: Bool = true
     @Environment(AppState.self) var appState
     @Environment(\.dismiss) var dismiss
 
@@ -12,9 +18,15 @@ struct PlayerCardModal: View {
     private enum Mode { case locked, empty, full }
 
     private var mode: Mode {
-        if !TierGating.isAvailable(.playerDossier, tier: appState.selectedTier) { return .locked }
+        if gated, !TierGating.isAvailable(.playerDossier, tier: appState.selectedTier) { return .locked }
         if player.summary.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return .empty }
         return .full
+    }
+
+    /// "Number 8 · 27" under the position, when the facts are there.
+    private var facts: String? {
+        let bits = [number.map { "Number \($0)" }, player.age.map { "\($0) years old" }].compactMap { $0 }
+        return bits.isEmpty ? nil : bits.joined(separator: " · ")
     }
 
     var body: some View {
@@ -22,6 +34,22 @@ struct PlayerCardModal: View {
             Color.cardBackground.ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 10) {
+                if let photoURL, let url = URL(string: photoURL) {
+                    AsyncImage(url: url) { phase in
+                        if let img = phase.image {
+                            img.resizable().scaledToFill()
+                        } else {
+                            Image(systemName: "person.fill")
+                                .font(.system(size: 26))
+                                .foregroundColor(.textSecondaryOnCard)
+                        }
+                    }
+                    .frame(width: 76, height: 76)
+                    .background(Color.softBlush)
+                    .clipShape(Circle())
+                    .accessibilityHidden(true)
+                }
+
                 Text(player.playerName)
                     .font(.detailTitle)
                     .foregroundColor(.textPrimaryOnCard)
@@ -31,6 +59,12 @@ struct PlayerCardModal: View {
                     .textCase(.uppercase)
                     .tracking(0.5)
                     .foregroundColor(.hotRose)
+
+                if let facts {
+                    Text(facts)
+                        .font(.feedTimestamp)
+                        .foregroundColor(.textSecondaryOnCard)
+                }
 
                 switch mode {
                 case .locked:
@@ -109,11 +143,16 @@ struct PlayerCardModal: View {
     /// "lands Sunday" copy so she knows it's coming, not broken.
     @ViewBuilder
     private var emptyBody: some View {
-        Text("\(player.playerName)'s dossier lands Sunday evening.")
+        // From the quiz there is no Sunday routine to promise: only fifteen or
+        // so players a club have a dossier, by design. Say so plainly rather
+        // than implying something is missing.
+        Text(gated ? "\(player.playerName)'s dossier lands Sunday evening."
+                   : "No dossier on him yet.")
             .font(.detailBody)
             .foregroundColor(.textPrimaryOnCard)
 
-        Text("Fresh details every week so you always know who's who.")
+        Text(gated ? "Fresh details every week so you always know who's who."
+                   : "The facts above are all we can vouch for.")
             .font(.feedTimestamp)
             .foregroundColor(.textSecondaryOnCard)
             .padding(.top, 2)

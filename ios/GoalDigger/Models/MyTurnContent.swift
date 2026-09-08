@@ -156,6 +156,20 @@ enum QuestionUseType: String, Codable {
     }
 }
 
+/// The person a question is about, for the "Who he is" sheet under the answer.
+/// Only the device-built packs (`live-squad`, `live-league`) set it; static
+/// content ships none, so every field past the name is optional.
+struct QuizPlayer: Codable, Hashable, Identifiable {
+    var id: String { name }
+    let name: String
+    let position: String
+    let number: Int?
+    let age: Int?
+    let photoURL: String?
+    let summary: String?
+    let vibe: String?
+}
+
 struct MyTurnQuestion: Codable, Identifiable, Hashable {
     let id: String
     let difficulty: Int
@@ -173,11 +187,14 @@ struct MyTurnQuestion: Codable, Identifiable, Hashable {
     /// Optional photo URL for "Who is this?" questions. Only the live club
     /// pack sets it; static content ships no images.
     let image: String?
+    /// Who the question is about, when it is about a person.
+    let player: QuizPlayer?
 
     init(id: String, difficulty: Int, verified: Bool = true, question: String, options: [String], answer: Int,
-         explanation: String, why: String? = nil, use: String? = nil, useType: QuestionUseType? = nil, image: String? = nil) {
+         explanation: String, why: String? = nil, use: String? = nil, useType: QuestionUseType? = nil,
+         image: String? = nil, player: QuizPlayer? = nil) {
         self.id = id; self.difficulty = difficulty; self.verified = verified; self.question = question
         self.options = options; self.answer = answer; self.explanation = explanation
-        self.why = why; self.use = use; self.useType = useType; self.image = image
+        self.why = why; self.use = use; self.useType = useType; self.image = image; self.player = player
     }
 }

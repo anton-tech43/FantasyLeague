@@ -235,10 +235,11 @@ enum LiveClubPack {
 
     /// One question, or nothing if fewer than three distinct distractors exist.
     /// Options are shuffled with a generator seeded from the id so the order is
-    /// stable across launches and re-renders.
-    private static func question(id: String, difficulty: Int, question: String, answer: String,
-                                 distractors: [String], explanation: String, why: String,
-                                 useType: QuestionUseType, use: String, image: String? = nil) -> [MyTurnQuestion] {
+    /// stable across launches and re-renders. Shared with `LiveSquadPack`.
+    static func question(id: String, difficulty: Int, question: String, answer: String,
+                         distractors: [String], explanation: String, why: String,
+                         useType: QuestionUseType, use: String, image: String? = nil,
+                         player: QuizPlayer? = nil) -> [MyTurnQuestion] {
         var seen: Set<String> = [answer.lowercased()]
         var picks: [String] = []
         var rng = SeededGenerator(seed: id)
@@ -251,7 +252,7 @@ enum LiveClubPack {
         options.shuffle(using: &rng)
         return [MyTurnQuestion(id: id, difficulty: difficulty, question: question, options: options,
                                answer: options.firstIndex(of: answer)!, explanation: explanation,
-                               why: why, use: use, useType: useType, image: image)]
+                               why: why, use: use, useType: useType, image: image, player: player)]
     }
 
     // MARK: Text helpers
@@ -311,11 +312,11 @@ enum LiveClubPack {
         }
     }
 
-    private static func positionUseType(_ label: String) -> QuestionUseType {
+    static func positionUseType(_ label: String) -> QuestionUseType {
         label == "Defender" ? .ask : .say
     }
 
-    private static func positionUse(_ label: String, short: String) -> String {
+    static func positionUse(_ label: String, short: String) -> String {
         switch label {
         case "Goalkeeper": return "When one goes in: " + quote("Nothing \(short) could do about that.")
         case "Defender":   return quote("Is \(short) the one organising the back line?")
@@ -368,6 +369,9 @@ final class LiveClubPackService {
     static let shared = LiveClubPackService()
 
     private(set) var pack: QuizPack?
+    /// "The league's big names" — the other clubs' ones-to-know, built from the
+    /// same slices the pack above uses for distractors, so it costs no request.
+    private(set) var leaguePack: QuizPack?
     private(set) var teamId: String?
 
     private static let sourcesKey = "myTurnLiveSources.v1"
@@ -386,13 +390,28 @@ final class LiveClubPackService {
     }
 
     func clear() {
-        pack = nil; teamId = nil; sources = nil
+        pack = nil; leaguePack = nil; teamId = nil; sources = nil
         UserDefaults.standard.removeObject(forKey: Self.sourcesKey)
     }
 
     func refresh(team: Team?, personalise: @escaping (String) -> String) async {
-        guard let team else { pack = nil; teamId = nil; return }
-        teamId = team.rawValue
+        teamId = team?.rawValue
+        if team == nil { pack = nil }
+
+        // League-wide sources, at most once a day. They also carry the league
+        // pack, which is worth having whether or not she follows a club.
+        if sources == nil || sources!.isStale {
+            if let fresh = try? await Self.fetchSources() {
+                var merged = fresh
+                merged.silhouettes = sources?.silhouettes ?? []
+                sources = merged
+            }
+        }
+        guard var src = sources else { return }
+        leaguePack = LiveSquadPack.buildLeague(slices: src.slices, excluding: team?.rawValue,
+                                               personalise: personalise)
+
+        guard let team else { return }
 
         // Team page: the cache His Team already keeps, refreshed when stale.
         var page = TeamPageCache.load(teamId: team.rawValue)
@@ -403,16 +422,6 @@ final class LiveClubPackService {
             }
         }
         guard let content = page?.content else { return }
-
-        // League-wide sources, at most once a day.
-        if sources == nil || sources!.isStale {
-            if let fresh = try? await Self.fetchSources() {
-                var merged = fresh
-                merged.silhouettes = sources?.silhouettes ?? []
-                sources = merged
-            }
-        }
-        guard var src = sources else { return }
 
         // Manager photo: check the bytes once per URL. Player photos are not
         // checked — all 60 PL ones-to-know photos were real on 2026-09-08.
