@@ -272,3 +272,16 @@ The rationale: live HT/75' briefs are reactive content for users who are already
 **Future tickets:** If we want goal-time pushes (currently flagged as v1.1.1 in `LIVE_BRIEF_PROMPT.md`), they need a new pipeline: either a new content_item type or a separate goal-trigger Edge Function that writes to content_items. The `live_match_briefs` table won't reach the push path.
 
 **Sources:** May 17 confusion during Everton-Sunderland match, captured in real time.
+
+## 17. Testing Dynamic Type in the simulator can crash SpringBoard
+
+`xcrun simctl spawn <udid> defaults write -g UIPreferredContentSizeCategoryName <value>` is
+the only way to force a text size without tapping. The value MUST be one of the exact UIKit
+constants (`UICTContentSizeCategoryXS`, `S`, `M`, `L`, `XL`, `XXL`, `XXXL`,
+`UICTContentSizeCategoryAccessibilityM`, `AccessibilityL`, `AccessibilityXL`, `AccessibilityXXL`,
+`AccessibilityXXXL`). Anything else (`AccessibilityXXXL` without the prefix, a typo) makes
+SpringBoard assert in `UIContentSizeCategoryCompareToCategory` every time the lock screen is
+drawn: "SpringBoard quit unexpectedly" ten times in a morning (2026-09-09, a review agent's
+simulator). Always `defaults delete -g UIPreferredContentSizeCategoryName` when done, and do
+it on a throwaway simulator, never on the one Anton uses.
+
