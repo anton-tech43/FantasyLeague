@@ -22,7 +22,9 @@ struct CalendarOptInView: View {
     @Environment(AppState.self) var appState
     let onComplete: () -> Void
 
-    @State private var fixtures: [GDFixture] = []
+    /// Nil until the fetch settles, and nil again if it failed — which is not
+    /// the same as an empty list, and must not read as "no matches scheduled".
+    @State private var fixtures: [GDFixture]?
     @State private var isLoadingFixtures: Bool = true
     @State private var isSyncing: Bool = false
     @State private var syncErrorMessage: String?
@@ -72,7 +74,7 @@ struct CalendarOptInView: View {
             Spacer()
 
             VStack(spacing: 12) {
-                if fixtures.isEmpty && !isLoadingFixtures {
+                if fixtures?.isEmpty == true && !isLoadingFixtures {
                     // No fixtures known (pre-season / off-season / brand-new
                     // team). Asking for calendar permission and then syncing
                     // nothing would be confusing — she grants access, opens
@@ -115,9 +117,14 @@ struct CalendarOptInView: View {
     // MARK: - Derived copy
 
     private var bodyText: String {
-        let count = fixtures.count
         if isLoadingFixtures {
             return "We'll add \(appState.pPossessive) upcoming matches so you know when \(appState.pWill) be glued to the TV."
+        }
+        guard let count = fixtures?.count else {
+            // The fetch failed. Saying "no matches scheduled" would be a claim
+            // about his season we can't make, so say what we know and let her
+            // switch it on anyway — the sync retries on every launch.
+            return "Couldn't load \(appState.pPossessive) fixtures right now. Turn this on and we'll add them as soon as they land."
         }
         if count == 0 {
             return "No matches scheduled yet. We'll add them automatically once the fixture list drops, just flip the calendar switch in Settings when you're ready."
@@ -133,12 +140,13 @@ struct CalendarOptInView: View {
     @MainActor
     private func loadFixtures() async {
         guard let teamId = appState.selectedTeam?.rawValue else {
+            fixtures = [] // no team picked: genuinely nothing to add, not a failure
             isLoadingFixtures = false
             return
         }
         // Exactly what the sync will write, so the count in the copy and the
         // events she gets are the same list.
-        fixtures = await CalendarSyncService.loadFixtures(teamId: teamId) ?? []
+        fixtures = await CalendarSyncService.loadFixtures(teamId: teamId)
         isLoadingFixtures = false
     }
 

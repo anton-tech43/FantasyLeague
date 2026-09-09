@@ -80,7 +80,9 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(height: 84)
+        // minHeight, not height: at accessibility text sizes a hard 84 clipped
+        // the title, the primary line and the chips against the card border.
+        .frame(minHeight: 84)
     }
 
     private var zone1ExpandedLayout: some View {
@@ -150,7 +152,7 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
                 zone2CollapsedContent
             }
         }
-        .frame(height: isExpanded ? nil : 36)
+        .frame(minHeight: isExpanded ? nil : 36)
         .fixedSize(horizontal: false, vertical: isExpanded)
     }
 

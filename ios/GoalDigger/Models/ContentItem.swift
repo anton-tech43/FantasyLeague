@@ -164,8 +164,8 @@ struct ContentItem: Identifiable, Codable {
         leagueId = try? container.decodeIfPresent(Int.self, forKey: .leagueId)
         // Lenient: one malformed card must not take the item down. Decode the
         // array element by element and keep what parses.
-        infoCards = (try? container.decodeIfPresent([LossyInfoCard].self, forKey: .infoCards))?
-            .compactMap(\.card)
+        infoCards = (try? container.decodeIfPresent([Lossy<InfoCard>].self, forKey: .infoCards))?
+            .compactMap(\.value)
             .sorted { $0.level < $1.level }
     }
 
@@ -267,12 +267,12 @@ struct InfoFixture: Codable, Hashable {
     var awayCrestURL: URL? { awayApiId.flatMap { URL(string: "https://media.api-sports.io/football/teams/\($0).png") } }
 }
 
-/// Element-level lossy wrapper: a card that fails to decode becomes nil
-/// instead of failing the whole array.
-private struct LossyInfoCard: Decodable {
-    let card: InfoCard?
+/// Element-level lossy wrapper: a value that fails to decode becomes nil
+/// instead of failing the whole array (or, for a single card, the whole page).
+private struct Lossy<T: Decodable>: Decodable {
+    let value: T?
     init(from decoder: Decoder) throws {
-        card = try? InfoCard(from: decoder)
+        value = try? T(from: decoder)
     }
 }
 
@@ -449,6 +449,34 @@ struct TeamPageCards: Codable {
         case standings
         case europeStandings = "europe_standings"
     }
+
+    /// Decode every card on its own. The synthesised decoder threw the moment
+    /// one card was present but incomplete — a `next_fixture` written without
+    /// a `preview` took the whole team page down to "Couldn't load his team
+    /// right now". A card that won't parse is nil, the rest of the page still
+    /// renders, and a bad row inside an array is dropped rather than losing
+    /// the array.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        basics = try? c.decodeIfPresent(BasicsCard.self, forKey: .basics)
+        manager = try? c.decodeIfPresent(ManagerCard.self, forKey: .manager)
+        onesToKnow = try? c.decodeIfPresent(OnesToKnowCard.self, forKey: .onesToKnow)
+        rivalry = try? c.decodeIfPresent(RivalryCard.self, forKey: .rivalry)
+        form = try? c.decodeIfPresent(FormCard.self, forKey: .form)
+        season = try? c.decodeIfPresent(SeasonCard.self, forKey: .season)
+        nextFixture = try? c.decodeIfPresent(NextFixtureCard.self, forKey: .nextFixture)
+        mood = try? c.decodeIfPresent(MoodCard.self, forKey: .mood)
+        thisWeek = try? c.decodeIfPresent(ThisWeekCard.self, forKey: .thisWeek)
+        rivalryIntensity = try? c.decodeIfPresent(Double.self, forKey: .rivalryIntensity)
+        postMatch = try? c.decodeIfPresent(TeamPostMatchCard.self, forKey: .postMatch)
+        freshnessText = try? c.decodeIfPresent(String.self, forKey: .freshnessText)
+        upcomingFixtures = (try? c.decodeIfPresent([Lossy<UpcomingFixture>].self, forKey: .upcomingFixtures))?
+            .compactMap(\.value)
+        recentResults = (try? c.decodeIfPresent([Lossy<RecentResult>].self, forKey: .recentResults))?
+            .compactMap(\.value)
+        standings = try? c.decodeIfPresent(StandingsCard.self, forKey: .standings)
+        europeStandings = try? c.decodeIfPresent(StandingsCard.self, forKey: .europeStandings)
+    }
 }
 
 struct BasicsCard: Codable {
@@ -604,7 +632,9 @@ struct NextFixtureCard: Codable {
     let opponent: String
     let date: String
     let venue: String
-    let preview: String
+    /// Optional: a fixture card written before the preview pass has run still
+    /// has a date, an opponent and a venue worth showing.
+    let preview: String?
     let talkingPoint: String?
     /// "League Cup (Carabao Cup), last 32" — written by team-page-generator
     /// from the fixture's own league (2026-09-08). Nil for a Premier League
@@ -702,6 +732,10 @@ struct UpcomingFixture: Codable, Identifiable, Equatable {
     /// are dropped server-side and never arrive here. Nil means "assume a
     /// normal scheduled game", which is how every pre-status row behaves.
     let status: String?
+    /// API-Football league id, so a consumer never has to read the competition
+    /// out of `importanceLabel` free text ("Survival fight at the Emirates").
+    /// Nil on rows written before the backend started emitting it.
+    let leagueId: Int?
 
     enum CodingKeys: String, CodingKey {
         case date, opponent, venue, status
@@ -709,6 +743,7 @@ struct UpcomingFixture: Codable, Identifiable, Equatable {
         case importanceLabel = "importance_label"
         case opponentApiId = "opponent_api_id"
         case fixtureId = "fixture_id"
+        case leagueId = "league_id"
     }
 
     /// Postponed: no kickoff time to show, and the row says so instead of
@@ -768,6 +803,15 @@ struct StandingsCard: Codable, Equatable {
         case updatedAt = "updated_at"
         case competitionLabel = "competition_label"
         case entries
+    }
+
+    /// One malformed row must not cost the whole table.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        updatedAt = try? c.decodeIfPresent(String.self, forKey: .updatedAt)
+        competitionLabel = try c.decode(String.self, forKey: .competitionLabel)
+        entries = (try? c.decode([Lossy<StandingsEntry>].self, forKey: .entries))?
+            .compactMap(\.value) ?? []
     }
 }
 

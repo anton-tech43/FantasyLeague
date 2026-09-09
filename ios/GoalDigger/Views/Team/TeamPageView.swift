@@ -24,6 +24,14 @@ struct TeamPageView: View {
     /// the club's own league, which is the default and the common case.
     @State private var standingsScope: String? = nil
     @State private var activeTab: TeamTab = .info
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    /// Calendar-row columns. Fixed points clipped the date stack and the
+    /// importance label the moment Dynamic Type went up, so both scale — and
+    /// both stop growing before they would starve the club name in the middle.
+    @ScaledMetric(relativeTo: .footnote) private var dateColumnScale: CGFloat = 70
+    @ScaledMetric(relativeTo: .footnote) private var importanceColumnScale: CGFloat = 110
+    private var dateColumnWidth: CGFloat { min(dateColumnScale, 110) }
+    private var importanceColumnWidth: CGFloat { min(importanceColumnScale, 150) }
 
     private enum TeamCardType: Hashable {
         case basics, manager, onesToKnow, rivalry, form, season, comingUp
@@ -551,11 +559,12 @@ struct TeamPageView: View {
                     // below is going to say it structurally.
                     let opponent = content?.cards.onesToKnow?.opponent
                     let hasStructuredOpponent = !(opponent?.players.isEmpty ?? true)
-                    let paragraphs = fixture.preview.components(separatedBy: "\n\n")
+                    let preview = fixture.preview ?? ""
+                    let paragraphs = preview.components(separatedBy: "\n\n")
                     let colour = paragraphs.count == 2 ? paragraphs[1] : nil
                     let previewText = (hasStructuredOpponent || colour != nil)
-                        ? (paragraphs.first ?? fixture.preview)
-                        : fixture.preview
+                        ? (paragraphs.first ?? preview)
+                        : preview
                     if !previewText.isEmpty {
                         Text(appState.personalise(previewText))
                             .font(.jakarta(14, weight: .regular))
@@ -580,10 +589,14 @@ struct TeamPageView: View {
     /// than leaving a gap.
     private func kickoffLine(_ fixture: NextFixtureCard) -> String {
         var parts: [String] = []
-        if let date = Self.isoFormatter.date(from: fixture.date) {
-            // "8pm" reads better than "8:00pm"; a 19:45 kickoff keeps both.
-            parts.append(Self.kickoffLineFmt.string(from: date)
-                .replacingOccurrences(of: ":00", with: ""))
+        if let date = Self.parseISO(fixture.date) {
+            // "8pm" reads better than "8:00pm"; a 19:45 kickoff keeps both. On a
+            // 24-hour device the same trim would make "21:00" read "21", so it
+            // only applies when the clock actually printed am/pm.
+            let s = Self.kickoffLineFmt.string(from: date)
+            let is12Hour = s.localizedCaseInsensitiveContains(Self.kickoffLineFmt.pmSymbol)
+                || s.localizedCaseInsensitiveContains(Self.kickoffLineFmt.amSymbol)
+            parts.append(is12Hour ? s.replacingOccurrences(of: ":00", with: "") : s)
         }
         // A cup competition already carries its round ("League Cup, last 32");
         // a league round is "Regular Season - 4", which says nothing.
@@ -593,9 +606,11 @@ struct TeamPageView: View {
         return parts.joined(separator: " · ")
     }
 
+    /// Template, not a hard format: a device on a 24-hour clock shows "21:00"
+    /// instead of an out-of-place "9:00pm".
     private static let kickoffLineFmt: DateFormatter = {
         let f = DateFormatter()
-        f.dateFormat = "EEE d MMM, h:mma"
+        f.setLocalizedDateFormatFromTemplate("EEE d MMM jm")
         f.amSymbol = "am"; f.pmSymbol = "pm"
         return f
     }()
@@ -695,7 +710,7 @@ struct TeamPageView: View {
 
     @ViewBuilder
     private func lastGameRow(_ r: RecentResult) -> some View {
-        let parsed = Self.isoFormatter.date(from: r.date)
+        let parsed = Self.parseISO(r.date)
         HStack(alignment: .center, spacing: 14) {
             Text(r.outcome)
                 .font(.feedHeadline)
@@ -748,58 +763,30 @@ struct TeamPageView: View {
 
     @ViewBuilder
     private func calendarRowBody(_ f: UpcomingFixture, hasPreview: Bool) -> some View {
-        let parsed = Self.isoFormatter.date(from: f.date)
-        HStack(alignment: .top, spacing: 14) {
-            // Left: date stack
-            VStack(alignment: .leading, spacing: 2) {
-                Text(parsed.map { Self.dayOfWeek($0) } ?? "")
-                    .font(.sectionHeader).tracking(1)
-                    .foregroundColor(.hotRose)
-                Text(parsed.map { Self.dayMonth($0) } ?? f.date)
-                    .font(.feedHeadline).foregroundColor(.warmWhite)
-                // A postponed game has no kickoff to show, and a TBD one has a
-                // placeholder time that would be a lie if we printed it.
-                if !f.isPostponed {
-                    Text(f.isTimeTBC ? "Time TBC" : (parsed.map { Self.kickoffTime($0) } ?? ""))
-                        .font(.feedTimestamp).foregroundColor(.warmWhite.opacity(0.6))
+        Group {
+            // Three columns side by side leave the club name a sliver at
+            // accessibility text sizes — "Wolverhampton Wanderers" came out as
+            // one letter per line. Above the accessibility threshold the row
+            // stacks instead and every part gets the full width.
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 10) {
+                    calendarDateColumn(f)
+                    calendarOpponentColumn(f)
+                    calendarImportanceColumn(f, hasPreview: hasPreview)
+                }
+            } else {
+                HStack(alignment: .top, spacing: 14) {
+                    calendarDateColumn(f)
+                        .frame(width: dateColumnWidth, alignment: .leading)
+                    calendarOpponentColumn(f)
+                        // Priority 1 so the club name gets the width it needs
+                        // before the importance label does.
+                        .layoutPriority(1)
+                    Spacer(minLength: 0)
+                    calendarImportanceColumn(f, hasPreview: hasPreview)
+                        .frame(maxWidth: importanceColumnWidth, alignment: .trailing)
                 }
             }
-            .frame(width: 70, alignment: .leading)
-
-            // Middle: opponent crest + name + venue
-            TeamCrestView(url: f.opponentCrestURL, size: 28)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(f.opponent)
-                    .font(.feedHeadline).foregroundColor(.warmWhite)
-                Text(f.venue.capitalized)
-                    .font(.feedTimestamp).foregroundColor(.warmWhite.opacity(0.6))
-            }
-            Spacer(minLength: 0)
-
-            // Right: dots + label (+ chevron hint when the row is tappable)
-            VStack(alignment: .trailing, spacing: 4) {
-                HStack(spacing: 3) {
-                    // A postponed game gets one dot: it is still on the list,
-                    // but it is not something to plan the evening around.
-                    let dots = f.isPostponed ? 1 : f.importanceDots
-                    ForEach(1...5, id: \.self) { dot in
-                        Circle()
-                            .fill(dot <= dots ? Color.hotRose : Color.mutedText.opacity(0.3))
-                            .frame(width: 6, height: 6)
-                    }
-                }
-                HStack(spacing: 4) {
-                    Text(f.isPostponed ? "Postponed" : f.importanceLabel)
-                        .font(.feedTimestamp).foregroundColor(.hotRose)
-                        .lineLimit(1)
-                    if hasPreview {
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundColor(.hotRose.opacity(0.7))
-                    }
-                }
-            }
-            .frame(width: 110, alignment: .trailing)
         }
         .padding(Layout.cardPadding)
         .frame(maxWidth: .infinity, alignment: .topLeading)
@@ -809,6 +796,66 @@ struct TeamPageView: View {
             RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
                 .stroke(Color.hotRose.opacity(0.15), lineWidth: 1)
         )
+    }
+
+    private func calendarDateColumn(_ f: UpcomingFixture) -> some View {
+        let parsed = Self.parseISO(f.date)
+        return VStack(alignment: .leading, spacing: 2) {
+            Text(parsed.map { Self.dayOfWeek($0) } ?? "")
+                .font(.sectionHeader).tracking(1)
+                .foregroundColor(.hotRose)
+            Text(parsed.map { Self.dayMonth($0) } ?? f.date)
+                .font(.feedHeadline).foregroundColor(.warmWhite)
+                // "2 Jan 2027" shrinks rather than wrapping onto two lines.
+                .lineLimit(1).minimumScaleFactor(0.7)
+            // A postponed game has no kickoff to show, and a TBD one has a
+            // placeholder time that would be a lie if we printed it.
+            if !f.isPostponed {
+                Text(f.isTimeTBC ? "Time TBC" : (parsed.map { Self.kickoffTime($0) } ?? ""))
+                    .font(.feedTimestamp).foregroundColor(.warmWhite.opacity(0.6))
+            }
+        }
+    }
+
+    private func calendarOpponentColumn(_ f: UpcomingFixture) -> some View {
+        HStack(alignment: .top, spacing: 14) {
+            TeamCrestView(url: f.opponentCrestURL, size: 28)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(f.opponent)
+                    .font(.feedHeadline).foregroundColor(.warmWhite)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(f.venue.capitalized)
+                    .font(.feedTimestamp).foregroundColor(.warmWhite.opacity(0.6))
+            }
+        }
+    }
+
+    /// Dots + label (+ chevron hint when the row is tappable).
+    private func calendarImportanceColumn(_ f: UpcomingFixture, hasPreview: Bool) -> some View {
+        VStack(alignment: .trailing, spacing: 4) {
+            HStack(spacing: 3) {
+                // A postponed game gets one dot: it is still on the list,
+                // but it is not something to plan the evening around.
+                let dots = f.isPostponed ? 1 : f.importanceDots
+                ForEach(1...5, id: \.self) { dot in
+                    Circle()
+                        .fill(dot <= dots ? Color.hotRose : Color.mutedText.opacity(0.3))
+                        .frame(width: 6, height: 6)
+                }
+            }
+            HStack(spacing: 4) {
+                Text(f.isPostponed ? "Postponed" : f.importanceLabel)
+                    .font(.feedTimestamp).foregroundColor(.hotRose)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+                    .multilineTextAlignment(.trailing)
+                if hasPreview {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(.hotRose.opacity(0.7))
+                }
+            }
+        }
     }
 
     // Cached formatters — DateFormatter() init is expensive (locale/calendar
@@ -822,13 +869,22 @@ struct TeamPageView: View {
     }()
     private static let kickoffTimeFmt: DateFormatter = {
         let f = DateFormatter()
-        f.dateFormat = "h:mma"
+        f.setLocalizedDateFormatFromTemplate("jm")
         f.amSymbol = "am"; f.pmSymbol = "pm"
         return f
     }()
 
     private static func dayOfWeek(_ d: Date) -> String { dayOfWeekFmt.string(from: d).uppercased() }
-    private static func dayMonth(_ d: Date) -> String { dayMonthFmt.string(from: d) }
+
+    /// "16 Sep", and "16 Sep 2027" once the fixture belongs to another calendar
+    /// year — a January game in a list read in December otherwise looked like
+    /// it was three weeks ago.
+    private static func dayMonth(_ d: Date) -> String {
+        let cal = Calendar.current
+        let year = cal.component(.year, from: d)
+        let text = dayMonthFmt.string(from: d)
+        return year == cal.component(.year, from: Date()) ? text : "\(text) \(year)"
+    }
     private static func kickoffTime(_ d: Date) -> String { kickoffTimeFmt.string(from: d) }
 
     // MARK: - Table tab
@@ -863,9 +919,12 @@ struct TeamPageView: View {
     /// Table control above it, one level down and quieter.
     @ViewBuilder
     private func standingsSwitcher(league: StandingsCard, europe: StandingsCard) -> some View {
+        // No explicit choice yet means the league table, which is what the tab
+        // shows. Comparing the raw nil highlighted neither half of the switcher.
+        let scope = standingsScope ?? league.competitionLabel
         HStack(spacing: 0) {
             ForEach([league, europe], id: \.competitionLabel) { card in
-                let selected = standingsScope == card.competitionLabel
+                let selected = scope == card.competitionLabel
                 Button {
                     withAnimation(.easeInOut(duration: 0.2)) { standingsScope = card.competitionLabel }
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -886,7 +945,7 @@ struct TeamPageView: View {
         }
         .padding(.horizontal, 6)
 
-        let shown = standingsScope == europe.competitionLabel ? europe : league
+        let shown = scope == europe.competitionLabel ? europe : league
         standingsTable(shown.entries)
     }
 
@@ -1012,9 +1071,16 @@ struct TeamPageView: View {
 
     private var showPostMatch: Bool {
         guard let pm = content?.cards.postMatch,
-              let expires = Self.isoFormatter.date(from: pm.expiresAt)
+              let expires = Self.parseISO(pm.expiresAt)
         else { return false }
         return Date() < expires
+    }
+
+    /// The routine writes ISO 8601 with or without fractional seconds. A
+    /// `.withInternetDateTime`-only parser printed the raw string back at her —
+    /// a calendar row reading "2026-09-20T15:00:00.000Z" where a date belongs.
+    private static func parseISO(_ raw: String) -> Date? {
+        isoFormatter.date(from: raw) ?? isoFractionalFormatter.date(from: raw)
     }
 
     private static let isoFormatter: ISO8601DateFormatter = {
@@ -1023,8 +1089,14 @@ struct TeamPageView: View {
         return f
     }()
 
+    private static let isoFractionalFormatter: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
+
     private func comingUpLabel(for dateString: String) -> String {
-        guard let date = Self.isoFormatter.date(from: dateString) else { return "Coming up:" }
+        guard let date = Self.parseISO(dateString) else { return "Coming up:" }
 
         if Calendar.current.isDateInToday(date) {
             let hour = Calendar.current.component(.hour, from: date)
@@ -1143,13 +1215,8 @@ struct TeamPageView: View {
     /// spelled out until a competition chip joined it on the same line and the
     /// time started truncating; the Calendar tab abbreviates it too.
     private func formattedFixtureDate(_ isoDate: String) -> String {
-        guard let date = Self.isoFormatter.date(from: isoDate) else { return isoDate }
-
-        let display = DateFormatter()
-        display.dateFormat = "EEE d MMM, h:mma"
-        display.amSymbol = "am"
-        display.pmSymbol = "pm"
-        return display.string(from: date)
+        guard let date = Self.parseISO(isoDate) else { return isoDate }
+        return Self.kickoffLineFmt.string(from: date)
     }
 
     // MARK: - Loading state

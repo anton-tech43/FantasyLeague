@@ -67,12 +67,21 @@ final class CalendarSyncService {
         }
         try store.commit()
 
-        // 2. Refresh each followed entity from authoritative fixtures.
+        // 2. Refresh each followed entity from authoritative fixtures. Each one
+        //    stands alone: an unwritable country calendar used to throw out of
+        //    the loop and his club never got its games.
         for entity in followed {
-            guard let fixtures = await Self.loadFixtures(teamId: entity.teamId) else {
+            let alreadySynced = existingCalendar(entity.shortName)
+                .map { !store.events(matching: fullWindowPredicate($0)).isEmpty } ?? false
+            guard let fixtures = await Self.loadFixtures(teamId: entity.teamId,
+                                                        hasSyncedEvents: alreadySynced) else {
                 continue // fetch failed — leave existing events intact this round
             }
-            try writeCalendar(shortName: entity.shortName, fixtures: fixtures)
+            do {
+                try writeCalendar(shortName: entity.shortName, fixtures: fixtures)
+            } catch {
+                continue
+            }
         }
     }
 
@@ -106,17 +115,10 @@ final class CalendarSyncService {
     private func writeCalendar(shortName: String, fixtures: [GDFixture]) throws {
         let calendar = try findOrCreateCalendar(title: calendarTitle(shortName))
 
-        let cal = Calendar.current
-        let now = Date()
-        let start = cal.date(byAdding: .year, value: -1, to: now) ?? now
-        let end = cal.date(byAdding: .year, value: 1, to: now) ?? now
-        let predicate = store.predicateForEvents(withStart: start, end: end, calendars: [calendar])
-        for event in store.events(matching: predicate) {
-            try? store.remove(event, span: .thisEvent, commit: false)
-        }
-        try store.commit()
-
-        for fixture in fixtures {
+        // Build the new events first, then swap the whole calendar in ONE
+        // commit. The old order committed the deletes on their own, so a single
+        // failing insert left her looking at an empty calendar.
+        let newEvents: [EKEvent] = fixtures.map { fixture in
             let event = EKEvent(eventStore: store)
             event.calendar = calendar
             // Encode home/away into the title rather than event.location:
@@ -130,12 +132,42 @@ final class CalendarSyncService {
             event.title = "\(shortName) vs \(fixture.opponent)\(venueSuffix(fixture.venue))\(competition)"
             event.startDate = fixture.kickoffTime
             event.endDate = fixture.kickoffTime.addingTimeInterval(2 * 60 * 60)
+            // Without an explicit zone EventKit files the event in the calendar's
+            // default zone, so a kickoff shifted by an hour after travel.
+            event.timeZone = TimeZone.current
             event.notes = "Match day. Open GoalDigger for prep."
-            // Propagate save failures (a silent failure here is exactly the
-            // "it doesn't add" symptom).
-            try store.save(event, span: .thisEvent, commit: false)
+            return event
         }
-        try store.commit()
+
+        do {
+            for event in store.events(matching: fullWindowPredicate(calendar)) {
+                try? store.remove(event, span: .thisEvent, commit: false)
+            }
+            for event in newEvents {
+                // Propagate save failures (a silent failure here is exactly the
+                // "it doesn't add" symptom).
+                try store.save(event, span: .thisEvent, commit: false)
+            }
+            try store.commit()
+        } catch {
+            store.reset() // drop the pending deletes; she keeps the games she had
+            throw error
+        }
+    }
+
+    private func existingCalendar(_ shortName: String) -> EKCalendar? {
+        store.calendars(for: .event).first { $0.title == calendarTitle(shortName) }
+    }
+
+    /// Everything we could ever have written into one of our calendars: a year
+    /// either side of now. Wiping the past too is what clears the stale,
+    /// finished games the old future-only wipe left stranded.
+    private func fullWindowPredicate(_ calendar: EKCalendar) -> NSPredicate {
+        let cal = Calendar.current
+        let now = Date()
+        let start = cal.date(byAdding: .year, value: -1, to: now) ?? now
+        let end = cal.date(byAdding: .year, value: 1, to: now) ?? now
+        return store.predicateForEvents(withStart: start, end: end, calendars: [calendar])
     }
 
     private func venueSuffix(_ venue: String?) -> String {
@@ -191,7 +223,14 @@ final class CalendarSyncService {
     /// never a postponed or time-TBD one: a calendar entry is a promise about
     /// a time, so a game without a real kickoff stays off the calendar until
     /// it is rescheduled. It still shows on the app's Calendar tab.
-    static func loadFixtures(teamId: String) async -> [GDFixture]? {
+    ///
+    /// `hasSyncedEvents` says whether this entity's calendar already holds
+    /// games. When it does, an empty `upcoming_fixtures` with a lone
+    /// `next_fixture` means the page is half-written, not that the season came
+    /// down to one match — collapsing to that single event wiped the other
+    /// fourteen. Nothing synced yet (onboarding), and the single fixture is
+    /// still better than an empty calendar.
+    static func loadFixtures(teamId: String, hasSyncedEvents: Bool = false) async -> [GDFixture]? {
         // Keep a game that has already kicked off (within a ~3h grace covering
         // 90 mins + stoppage + extra time) so an in-progress match doesn't
         // vanish from the calendar the instant it starts. Older games fall off.
@@ -203,26 +242,43 @@ final class CalendarSyncService {
             }
             let upcoming = (page.cards.upcomingFixtures ?? []).compactMap { f -> GDFixture? in
                 guard !f.isPostponed, !f.isTimeTBC,
-                      let kickoff = isoFormatter.date(from: f.date), kickoff >= liveWindowStart
+                      let kickoff = parseISO(f.date), kickoff >= liveWindowStart
                 else { return nil }
                 return GDFixture(opponent: f.opponent, kickoffTime: kickoff, venue: f.venue,
-                                 competition: calendarCompetition(f.importanceLabel))
+                                 competition: calendarCompetition(leagueId: f.leagueId,
+                                                                  label: f.importanceLabel))
             }
             if !upcoming.isEmpty { return upcoming }
-            if let next = page.cards.nextFixture,
-               let kickoff = isoFormatter.date(from: next.date), kickoff >= liveWindowStart {
-                return [GDFixture(opponent: next.opponent, kickoffTime: kickoff, venue: next.venue,
-                                  competition: calendarCompetition(next.competition))]
-            }
-            return []
+            guard let next = page.cards.nextFixture,
+                  let kickoff = parseISO(next.date), kickoff >= liveWindowStart
+            else { return [] } // nothing upcoming at all: season over, clear it out
+            // An empty upcoming list alongside a next fixture is a half-written
+            // page, not a one-match season. Keep what she has.
+            if hasSyncedEvents { return nil }
+            return [GDFixture(opponent: next.opponent, kickoffTime: kickoff, venue: next.venue,
+                              competition: calendarCompetition(leagueId: next.leagueId,
+                                                               label: next.competition))]
         } catch {
             return nil // network/availability failure — caller leaves events alone
         }
     }
 
-    private static let isoFormatter: ISO8601DateFormatter = {
+    /// The routine writes ISO 8601 with or without fractional seconds; a
+    /// `.withInternetDateTime`-only parser silently dropped every fixture whose
+    /// timestamp carried milliseconds. Same two-formatter dance as `InfoFixture`.
+    private static func parseISO(_ raw: String) -> Date? {
+        isoFractional.date(from: raw) ?? isoPlain.date(from: raw)
+    }
+
+    private static let isoPlain: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime]
+        return f
+    }()
+
+    private static let isoFractional: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return f
     }()
 }
@@ -238,6 +294,18 @@ struct GDFixture {
     /// Premier League game, where every entry would carry it and none would
     /// need it. Empty and nil both mean "say nothing".
     var competition: String? = nil
+}
+
+/// The competition for a calendar title. The league id is the contract and
+/// wins; the label is a fallback that only earns its place when it actually
+/// names a competition we know — `importance_label` is routine prose
+/// ("Survival fight at the Emirates", "Full time"), not a competition.
+private func calendarCompetition(leagueId: Int?, label: String?) -> String? {
+    if let leagueId, let competition = Competition(rawValue: leagueId) {
+        return competition == .premierLeague ? nil : competition.name
+    }
+    guard let trimmed = calendarCompetition(label) else { return nil }
+    return Competition.allCases.contains { $0.name == trimmed } ? trimmed : nil
 }
 
 /// Trim a competition label for a calendar title: no sponsor parenthetical, no
