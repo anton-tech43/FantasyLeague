@@ -331,11 +331,16 @@ final class MyTurnStore {
 
     /// One line she has not seen from this category, marked as seen. Returns
     /// nil only when the category is empty (a bad publish, or an old bundle).
-    func hypeLine(_ category: HypeCategory, from pool: [String]) -> String? {
+    /// `excluding` drops lines that do not fit the moment: a streak line that
+    /// says "three" is wrong at six and nine.
+    func hypeLine(_ category: HypeCategory, from pool: [String],
+                  excluding: (String) -> Bool = { _ in false }) -> String? {
         guard !pool.isEmpty else { return nil }
+        let eligible = (0..<pool.count).filter { !excluding(pool[$0]) }
+        guard !eligible.isEmpty else { return nil }
         var seen = Set((state.hypeSeen?[category.rawValue] ?? []).filter { $0 < pool.count })
-        if seen.count >= pool.count { seen = [] }
-        guard let pick = (0..<pool.count).filter({ !seen.contains($0) }).randomElement() else { return nil }
+        if eligible.allSatisfy({ seen.contains($0) }) { seen.subtract(eligible) }
+        guard let pick = eligible.filter({ !seen.contains($0) }).randomElement() else { return nil }
         seen.insert(pick)
         var all = state.hypeSeen ?? [:]
         all[category.rawValue] = seen.sorted()

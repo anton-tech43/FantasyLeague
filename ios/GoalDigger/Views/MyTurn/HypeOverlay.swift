@@ -45,7 +45,11 @@ enum HypeCategory: String {
 enum Hype {
     @MainActor
     static func line(_ category: HypeCategory, store: MyTurnStore) -> String? {
-        store.hypeLine(category, from: MyTurnContentService.shared.hype.lines(category))
+        // Past three in a row, a line that says "three" is a lie.
+        let streak = store.quizRound?.streak ?? 0
+        let pastThree = category == .streak && streak > 3
+        return store.hypeLine(category, from: MyTurnContentService.shared.hype.lines(category),
+                              excluding: { pastThree && $0.lowercased().contains("three") })
     }
 }
 
