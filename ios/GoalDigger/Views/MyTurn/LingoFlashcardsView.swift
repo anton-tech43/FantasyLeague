@@ -12,6 +12,9 @@ import SwiftUI
 struct LingoFlashcardsView: View {
     let content: LingoContent
     @Bindable var store: MyTurnStore
+    /// The end-screen hype line, picked once when the session finishes. View
+    /// state, not session state: the end screen does not outlive the tab.
+    @State private var hype: String?
 
     /// How many she knew this session, from the session itself.
     private var knew: Int { store.drillSession?.knew ?? 0 }
@@ -235,7 +238,13 @@ struct LingoFlashcardsView: View {
                 .font(.jakarta(26, weight: .bold))
                 .foregroundColor(.warmWhite)
                 .padding(.top, 30)
-            Text("You knew \(knew) of \(LingoDrill.cardsPerSession). The ones you didn't come round again next time.")
+            // Same bands as a quiz round, graded on what she knew.
+            HypeCard(scoreLine: "You knew \(knew) of \(LingoDrill.cardsPerSession).", hype: hype)
+                .task(id: s.finished) {
+                    guard hype == nil else { return }
+                    hype = Hype.line(HypeCategory.band(score: knew, of: LingoDrill.cardsPerSession), store: store)
+                }
+            Text("The ones you didn't come round again next time.")
                 .font(.jakarta(15, weight: .regular))
                 .foregroundColor(.warmWhite.opacity(0.75))
                 .multilineTextAlignment(.center)

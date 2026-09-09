@@ -85,6 +85,9 @@ struct SayThisPractiseView: View {
     let lingoById: [String: LingoTerm]
     @Bindable var store: MyTurnStore
     @Binding var session: SayThisPractiseSession
+    /// Picked once when the session ends; the session itself is @State in the
+    /// parent and does not outlive the tab, so this does not need to either.
+    @State private var hype: String?
     /// Stop mid-session: keeps the round, drops back to the bank.
     let onStop: () -> Void
     /// Done with the ten: clears the round.
@@ -181,7 +184,13 @@ struct SayThisPractiseView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 48)
-        .padding(.bottom, 28)
+        .padding(.bottom, 20)
+
+        // Nothing is marked right or wrong here, so there is no score to show
+        // and no band to work out: she gets a strong-band line.
+        HypeCard(hype: hype)
+            .task { if hype == nil { hype = Hype.line(.strong, store: store) } }
+            .padding(.bottom, 20)
 
         bigButton("Go again", icon: "arrow.clockwise", action: onRestart)
 

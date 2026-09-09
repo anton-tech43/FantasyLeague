@@ -105,6 +105,7 @@
 		B864567C90FBF5CFB72B37CD /* MatchActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BDA3526673665ADFD98752B /* MatchActivityAttributes.swift */; };
 		BFC33C9E2EEBFADD73924600 /* MyTurnContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7053F7511B38A308FC409BEB /* MyTurnContent.swift */; };
 		C6106E6CA3714FF9402A1F68 /* TeamSeasonState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19D7EA257F3133FF29F0A866 /* TeamSeasonState.swift */; };
+		C6D2D393CC5FB544D3BF3492 /* HypeOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DCB2A4C5C03D80779E498AA /* HypeOverlay.swift */; };
 		C7B8DACE2D719CBF1D50DE0A /* LiveActivityBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94C9314600B101EA7FBA6D9 /* LiveActivityBundle.swift */; };
 		C8D06CD38DF3FEBE15567E43 /* SeasonPrimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B5B3A50DCC8E9B41626BB81 /* SeasonPrimerView.swift */; };
 		CA7E9F3D568141E95151BC0C /* MyTurnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B7B4A91229A7B66DD56083 /* MyTurnView.swift */; };
@@ -162,6 +163,7 @@
 		4D8F505623CCED3CAAB391AA /* LiveClubPack.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveClubPack.swift; sourceTree = "<group>"; };
 		4DEDD7BB48436C1F2CEE9515 /* QuizView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuizView.swift; sourceTree = "<group>"; };
 		5D5FD984EA8B545ADF846F1C /* PlayerHooks.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlayerHooks.swift; sourceTree = "<group>"; };
+		5DCB2A4C5C03D80779E498AA /* HypeOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HypeOverlay.swift; sourceTree = "<group>"; };
 		61B2720C074D85BD2E44091E /* MyTurn */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; path = MyTurn; sourceTree = "<group>"; };
 		7053F7511B38A308FC409BEB /* MyTurnContent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyTurnContent.swift; sourceTree = "<group>"; };
 		7239C9DAC195717215AC20F2 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -289,6 +291,7 @@
 				AA0C75FEEE6727814C8D4456 /* MyTurnPractiseButton.swift */,
 				ED6D8160AFC958A96956341D /* SayThisPractiseView.swift */,
 				CA6EA0D5580F6C805D4572C4 /* LingoFlashcardsView.swift */,
+				5DCB2A4C5C03D80779E498AA /* HypeOverlay.swift */,
 			);
 			name = MyTurn;
 			path = MyTurn;
@@ -795,6 +798,7 @@
 				1BED15311C3F5F71032B03F8 /* LingoFlashcardsView.swift in Sources */,
 				754DEA162AF85F46038029EC /* LiveSquadPack.swift in Sources */,
 				17B1A6C8E309B3DB90A2F28E /* PlayerHooks.swift in Sources */,
+				C6D2D393CC5FB544D3BF3492 /* HypeOverlay.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

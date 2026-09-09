@@ -33,6 +33,33 @@ final class MyTurnStore {
         /// means the explanation is showing and "Next" is the only way on.
         var selected: Int? = nil
         var finished: Bool = false
+        /// Correct answers in a row, reset by any miss. Drives the hype card
+        /// at three, six and nine; not a score, not persisted as one.
+        var streak: Int = 0
+        /// The hype line for this round's result screen, picked once when the
+        /// round finished so the card does not reshuffle on every redraw.
+        var hypeLine: String? = nil
+
+        init(packId: String, questionIds: [String]) {
+            self.packId = packId
+            self.questionIds = questionIds
+        }
+
+        /// Tolerant, for the same reason `DrillSession` is: a round she paused
+        /// under the previous build has to survive the fields added since
+        /// (`streak`, `hypeLine`, 2026-09-10) rather than throw and take every
+        /// quiz score in the blob down with it.
+        init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            packId = try c.decode(String.self, forKey: .packId)
+            questionIds = try c.decode([String].self, forKey: .questionIds)
+            index = try c.decodeIfPresent(Int.self, forKey: .index) ?? 0
+            score = try c.decodeIfPresent(Int.self, forKey: .score) ?? 0
+            missedIds = try c.decodeIfPresent([String].self, forKey: .missedIds) ?? []
+            selected = try c.decodeIfPresent(Int.self, forKey: .selected)
+            finished = try c.decodeIfPresent(Bool.self, forKey: .finished) ?? false
+            streak = try c.decodeIfPresent(Int.self, forKey: .streak) ?? 0
+        }
     }
 
     enum Bucket: String, Codable { case new, learning, known }
@@ -77,6 +104,11 @@ final class MyTurnStore {
         var quizRound: QuizRound? = nil
         var drillBuckets: [String: [String: Bucket]] = [:]
         var drillSession: DrillSession? = nil
+        /// Hype lines already shown, category -> indices into that category.
+        /// Optional so a blob written before hype existed still decodes: the
+        /// synthesised decoder throws on a missing non-optional key, and this
+        /// blob holds every score she has.
+        var hypeSeen: [String: [Int]]? = nil
     }
 
     private var state: Persisted {
@@ -92,6 +124,9 @@ final class MyTurnStore {
         } else {
             state = Persisted()
         }
+        #if DEBUG
+        myTurnTolerantDecodeSelfCheck()
+        #endif
     }
 
     private func persist() {
@@ -183,7 +218,19 @@ final class MyTurnStore {
     func answer(_ option: Int, correct: Bool, questionId: String) {
         guard var round = state.quizRound, round.selected == nil else { return }
         round.selected = option
-        if correct { round.score += 1 } else { round.missedIds.append(questionId) }
+        if correct {
+            round.score += 1
+            round.streak += 1
+            // Three, six and nine. Not every question, or it stops meaning
+            // anything, and never on the last one: the result card is the
+            // moment there, and two rose cards at once is noise.
+            if round.streak % 3 == 0, round.streak <= 9, round.index + 1 < round.questionIds.count {
+                streakTick += 1
+            }
+        } else {
+            round.missedIds.append(questionId)
+            round.streak = 0
+        }
         state.quizRound = round
     }
 
@@ -271,4 +318,47 @@ final class MyTurnStore {
     }
 
     func endDrill() { state.drillSession = nil }
+
+    // MARK: Hype
+    //
+    // The lines themselves are content (Resources/MyTurn/hype.json); the store
+    // only remembers which ones she has already been shown, so nothing repeats
+    // until the category runs out.
+
+    /// Bumped at three, six and nine correct in a row. Transient: a streak is
+    /// a moment, not a trophy, and it should not survive a relaunch.
+    var streakTick: Int = 0
+
+    /// One line she has not seen from this category, marked as seen. Returns
+    /// nil only when the category is empty (a bad publish, or an old bundle).
+    func hypeLine(_ category: HypeCategory, from pool: [String]) -> String? {
+        guard !pool.isEmpty else { return nil }
+        var seen = Set((state.hypeSeen?[category.rawValue] ?? []).filter { $0 < pool.count })
+        if seen.count >= pool.count { seen = [] }
+        guard let pick = (0..<pool.count).filter({ !seen.contains($0) }).randomElement() else { return nil }
+        seen.insert(pick)
+        var all = state.hypeSeen ?? [:]
+        all[category.rawValue] = seen.sorted()
+        state.hypeSeen = all
+        return pool[pick]
+    }
 }
+
+#if DEBUG
+/// A paused round written by the build before hype existed has none of the new
+/// keys. If `QuizRound` ever loses its tolerant `init(from:)` the synthesised
+/// one throws here, the whole `Persisted` blob fails to decode, and she loses
+/// every score in it. One assert, fired once per launch from `MyTurnStore`.
+@MainActor
+func myTurnTolerantDecodeSelfCheck() {
+    let old = Data("""
+    {"packId":"the-basics","questionIds":["a","b"],"index":1,"score":1,"missedIds":[],"finished":false}
+    """.utf8)
+    guard let round = try? JSONDecoder().decode(MyTurnStore.QuizRound.self, from: old) else {
+        assertionFailure("QuizRound lost its tolerant init(from:) — a paused round now resets her scores")
+        return
+    }
+    assert(round.streak == 0 && round.hypeLine == nil && round.index == 1,
+           "QuizRound tolerant decode gave the wrong defaults")
+}
+#endif

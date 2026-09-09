@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """validate_content.py — the CI gate for My Turn content.
 
-The four JSON files under ios/GoalDigger/Resources/MyTurn are generated, and
+The JSON files under ios/GoalDigger/Resources/MyTurn are generated, and
 generated text drifts: it runs long, it clumps into one sentence shape, it
 slides into American football English, and it asserts facts. Every rule in
 the spec's "Validering" section is here, and the build breaks on any of them.
@@ -274,20 +274,71 @@ def validate_quiz(d: dict) -> tuple[int, int]:
     return len(packs), total
 
 
+# ------------------------------------------------------------------- hype
+# The lines the app says back to her when a round ends. She did not pick this
+# hobby, so the register is a friend on the sofa, never a scoreboard: the
+# vocabulary below is what turns hype into a points system, and it is banned.
+HYPE_CATEGORIES = ("perfect", "strong", "mid", "rough", "streak")
+HYPE_MIN_PER_CATEGORY = 12
+HYPE_CAP = 90
+GAMIFICATION = re.compile(
+    r"\b(level up|levelled up|leveled up|awesome|amazing|streak|streaks|xp|badge|badges"
+    r"|unlock|unlocked|unlocks|achievement|achievements|congrats|congratulations)\b", re.I)
+
+
+def validate_hype(d: dict) -> int:
+    cats = d.get("categories", {})
+    if not isinstance(cats, dict):
+        err("hype: categories must be an object of category -> [line]")
+        return 0
+    for extra in sorted(set(cats) - set(HYPE_CATEGORIES)):
+        err(f"hype/{extra}: unknown category (the app only asks for {', '.join(HYPE_CATEGORIES)})")
+    total = 0
+    for cat in HYPE_CATEGORIES:
+        lines = cats.get(cat)
+        if not isinstance(lines, list):
+            err(f"hype/{cat}: missing — the app falls back to a bare score without it")
+            continue
+        if len(lines) < HYPE_MIN_PER_CATEGORY:
+            err(f"hype/{cat}: {len(lines)} lines (need at least {HYPE_MIN_PER_CATEGORY}, or she sees repeats)")
+        dupes = [t for t, n in Counter(lines).items() if n > 1]
+        for t in dupes:
+            err(f"hype/{cat}: duplicate line '{t}'")
+        for line in lines:
+            if not isinstance(line, str) or not line.strip():
+                err(f"hype/{cat}: a line is empty")
+                continue
+            if len(line) > HYPE_CAP:
+                err(f"hype/{cat}: {len(line)} chars (cap {HYPE_CAP}): {line[:50]}…")
+            if "—" in line or "–" in line:
+                err(f"hype/{cat}: em-dash, write two sentences: {line}")
+            if line.count("!") > 1:
+                err(f"hype/{cat}: more than one exclamation mark: {line}")
+            m = GAMIFICATION.search(line)
+            if m:
+                err(f"hype/{cat}: '{m.group(0)}' is app-points language, not a friend on the sofa: {line}")
+            check_idiom(f"hype/{cat}", line)
+        total += len(lines)
+    return total
+
+
 def main() -> int:
     quiet = "--quiet" in sys.argv
     saythis = load("saythis.json")
     lingo = load("lingo.json")
     quiz = load("quiz.json")
+    hype = load("hype.json")
     n_terms = validate_lingo(lingo) if lingo else 0
     lingo_ids = {t.get("id") for t in lingo.get("terms", [])} if lingo else set()
     n_sit, n_lines = validate_saythis(saythis, lingo_ids) if saythis else (0, 0)
     n_packs, n_q = validate_quiz(quiz) if quiz else (0, 0)
+    n_hype = validate_hype(hype) if hype else 0
 
     if not quiet:
         print(f"saythis: {n_sit} situations, {n_lines} lines")
         print(f"lingo:   {n_terms} terms")
         print(f"quiz:    {n_packs} packs, {n_q} questions")
+        print(f"hype:    {n_hype} lines")
     for w in warnings:
         print(f"warn: {w}")
     for e in errors:

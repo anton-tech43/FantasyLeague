@@ -377,9 +377,19 @@ struct QuizView: View {
 
     @ViewBuilder
     private func resultView(_ round: MyTurnStore.QuizRound, pack: QuizPack) -> some View {
-        Text("\(round.score) out of \(round.questionIds.count).")
-            .font(.jakarta(30, weight: .bold))
-            .foregroundColor(.warmWhite)
+        // The score with a friend's voice attached, in place of the bare
+        // number that used to sit here. Picked once, when the round ends, so
+        // it does not reshuffle underneath her on the next redraw.
+        HypeCard(scoreLine: "\(round.score) out of \(round.questionIds.count).", hype: round.hypeLine)
+            .task(id: round.finished) {
+                // Read the round back out of the store rather than trusting the
+                // one this body was built from: the debug harness finishes a
+                // round after the body has been evaluated, and a stale snapshot
+                // there would band the wrong score.
+                guard let r = store.quizRound, r.finished, r.hypeLine == nil else { return }
+                let band = HypeCategory.band(score: r.score, of: r.questionIds.count)
+                store.quizRound?.hypeLine = Hype.line(band, store: store)
+            }
 
         if !round.missedIds.isEmpty {
             MyTurnSectionLabel(text: "The ones you missed")
@@ -422,10 +432,6 @@ struct QuizView: View {
             }
             .buttonStyle(.plain)
             .padding(.top, 8)
-        } else {
-            Text("Every single one. He's got competition.")
-                .font(.jakarta(15, weight: .regular))
-                .foregroundColor(.warmWhite.opacity(0.8))
         }
 
         Button {

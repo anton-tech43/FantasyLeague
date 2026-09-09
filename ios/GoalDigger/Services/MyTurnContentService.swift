@@ -1,7 +1,7 @@
 import Foundation
 import Observation
 
-/// Loads the three My Turn content files and keeps them current.
+/// Loads the My Turn content files and keeps them current.
 ///
 /// Order of precedence for each module:
 ///   1. a cached download in Application Support/MyTurn/<module>.json whose
@@ -23,6 +23,9 @@ final class MyTurnContentService {
     private(set) var sayThis: SayThisContent
     private(set) var lingo: LingoContent
     private(set) var quiz: QuizContent
+    /// Not a module in the tab bar: the lines the app says back to her when a
+    /// round ends. `MyTurnModule` deliberately stays at three cases.
+    private(set) var hype: HypeContent
 
     private let decoder = JSONDecoder()
     private var lastRefresh: Date?
@@ -33,6 +36,7 @@ final class MyTurnContentService {
         sayThis = Self.loadBest("saythis") ?? SayThisContent(contentVersion: "0", situations: [])
         lingo   = Self.loadBest("lingo")   ?? LingoContent(contentVersion: "0", terms: [])
         quiz    = Self.loadBest("quiz")    ?? QuizContent(contentVersion: "0", packs: [])
+        hype    = Self.loadBest("hype")    ?? HypeContent(contentVersion: "0", categories: [:])
     }
 
     // MARK: Loading
@@ -74,7 +78,7 @@ final class MyTurnContentService {
 
     var currentVersions: [String: String] {
         ["saythis": sayThis.contentVersion, "lingo": lingo.contentVersion,
-         "quiz": quiz.contentVersion]
+         "quiz": quiz.contentVersion, "hype": hype.contentVersion]
     }
 
     // MARK: Refresh
@@ -157,6 +161,9 @@ final class MyTurnContentService {
         case "quiz":
             guard let c = try? decoder.decode(QuizContent.self, from: data) else { return }
             store(module, data); quiz = c
+        case "hype":
+            guard let c = try? decoder.decode(HypeContent.self, from: data) else { return }
+            store(module, data); hype = c
         default:
             return
         }

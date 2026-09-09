@@ -34,6 +34,10 @@ struct MyTurnView: View {
                              livePack: live.pack, squadPack: squad.pack, leaguePack: live.leaguePack)
                         .opacity(store.lastModule == .quiz ? 1 : 0)
                         .allowsHitTesting(store.lastModule == .quiz)
+
+                    // Above the module content, so three in a row is seen
+                    // wherever she is when it happens.
+                    HypeStreakOverlay(store: store)
                 }
             }
         }
@@ -58,7 +62,7 @@ struct MyTurnView: View {
     #if DEBUG
     /// Screenshot harness, see MainTabView. `-gdMyTurnModule quiz`,
     /// `-gdMyTurnSituation sideways`, `-gdMyTurnPack legends`,
-    /// `-gdLingoQuery offside`.
+    /// `-gdLingoQuery offside`, `-gdLingoFinish 8`.
     private func applyLaunchArguments() {
         let args = ProcessInfo.processInfo.arguments
         func value(_ flag: String) -> String? {
@@ -72,6 +76,15 @@ struct MyTurnView: View {
         if let s = value("-gdMyTurnSituation") { store.sayThisSituationId = s }
         if let q = value("-gdLingoQuery") { store.lingoQuery = q }
         if let e = value("-gdLingoExpand") { store.lingoExpandedId = e }
+        // `-gdLingoFinish N` plays a whole flashcard session knowing N of the
+        // ten, which is the only way to reach the end screen without tapping.
+        if let n = value("-gdLingoFinish").flatMap(Int.init) {
+            LingoDrill.start(store, ids: content.lingo.terms(atLevel: content.lingo.currentLevel(store: store)).map(\.id))
+            for i in 0..<LingoDrill.cardsPerSession {
+                store.flip()
+                LingoDrill.grade(store, knewIt: i < n)
+            }
+        }
         if let p = value("-gdMyTurnPack"), let pack = content.quiz.packs.first(where: { $0.id == p }) {
             store.startRound(pack: pack)
             applyQuizAnswerArgument(pack: pack)
@@ -80,7 +93,8 @@ struct MyTurnView: View {
 
     /// `-gdMyTurnPack live-club|live-squad|live-league` waits for the pack that
     /// is built on the device; `-gdQuizAnswer N` answers the first question with
-    /// option N so the feedback renders.
+    /// option N so the feedback renders, `-gdQuizAutoCorrect N` answers the
+    /// first N correctly, `-gdQuizFinish N` plays a whole round to a score of N.
     private func applyLivePackArguments() {
         let args = ProcessInfo.processInfo.arguments
         let built = [live.pack, squad.pack, live.leaguePack].compactMap { $0 }
@@ -98,9 +112,34 @@ struct MyTurnView: View {
 
     private func applyQuizAnswerArgument(pack: QuizPack) {
         let args = ProcessInfo.processInfo.arguments
-        guard let i = args.firstIndex(of: "-gdQuizAnswer"), i + 1 < args.count, let a = Int(args[i + 1]),
-              let round = store.quizRound, let q = pack.questions.first(where: { $0.id == round.questionIds[0] }) else { return }
-        store.answer(a, correct: a == q.answer, questionId: q.id)
+        func intValue(_ flag: String) -> Int? {
+            guard let i = args.firstIndex(of: flag), i + 1 < args.count else { return nil }
+            return Int(args[i + 1])
+        }
+        if let a = intValue("-gdQuizAnswer"), let round = store.quizRound,
+           let q = pack.questions.first(where: { $0.id == round.questionIds[0] }) {
+            store.answer(a, correct: a == q.answer, questionId: q.id)
+        }
+        // `-gdQuizAutoCorrect 3` answers the first three correctly and stops on
+        // the third, which is where the streak card appears; `-gdQuizFinish 8`
+        // plays the whole round to a score of eight, for the result card.
+        // Neither is reachable with simctl, which cannot tap.
+        let byId = Dictionary(pack.questions.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
+        func play(_ count: Int, correct: (Int) -> Bool, advanceLast: Bool) {
+            guard let ids = store.quizRound?.questionIds else { return }
+            for i in 0..<min(count, ids.count) {
+                guard let q = byId[ids[i]] else { continue }
+                let right = correct(i)
+                let option = right ? q.answer : (q.answer + 1) % max(q.options.count, 1)
+                store.answer(option, correct: right, questionId: q.id)
+                if advanceLast || i < count - 1 { store.nextQuestion() }
+            }
+        }
+        if let n = intValue("-gdQuizAutoCorrect") {
+            play(n, correct: { _ in true }, advanceLast: false)
+        } else if let target = intValue("-gdQuizFinish"), let total = store.quizRound?.questionIds.count {
+            play(total, correct: { $0 < target }, advanceLast: true)
+        }
     }
     #endif
 
