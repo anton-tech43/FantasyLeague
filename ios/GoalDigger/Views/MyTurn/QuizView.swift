@@ -43,7 +43,8 @@ struct QuizView: View {
     private var roundPack: QuizPack? { round.flatMap { r in allPacks.first { $0.id == r.packId } } }
     private var currentQuestion: MyTurnQuestion? {
         guard let round, !round.finished, let pack = roundPack, round.index < round.questionIds.count else { return nil }
-        return pack.questions.first { $0.id == round.questionIds[round.index] }
+        guard let qid = round.questionIds[safe: round.index] else { return nil }
+        return pack.questions.first { $0.id == qid }
     }
 
     var body: some View {
@@ -52,7 +53,7 @@ struct QuizView: View {
                 if let round, let pack = roundPack, !paused {
                     if round.finished {
                         resultView(round, pack: pack)
-                    } else if pack.questions.contains(where: { $0.id == round.questionIds[round.index] }) {
+                    } else if currentQuestion != nil {
                         questionView(round, pack: pack)
                     } else {
                         staleRound
@@ -192,8 +193,7 @@ struct QuizView: View {
 
     @ViewBuilder
     private func questionView(_ round: MyTurnStore.QuizRound, pack: QuizPack) -> some View {
-        let qid = round.questionIds[round.index]
-        if let q = pack.questions.first(where: { $0.id == qid }) {
+        if let q = currentQuestion {
             // Back, not stop. The round stays exactly where it is — as it does
             // when she leaves the tab or the app. Only "Next pack" on the
             // result screen ends one.
@@ -382,7 +382,7 @@ struct QuizView: View {
                             .font(.jakarta(14, weight: .semiBold))
                             .foregroundColor(.textPrimaryOnCard)
                             .fixedSize(horizontal: false, vertical: true)
-                        Text(q.options[q.answer])
+                        Text(q.options[safe: q.answer] ?? "")
                             .font(.jakarta(14, weight: .regular))
                             .foregroundColor(.hotRose)
                         if let use = q.use {
@@ -436,4 +436,9 @@ struct QuizView: View {
         let w = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
         return (1...10).contains(n) ? w[n] : "\(n)"
     }
+}
+
+/// A remote publish we did not write is the one place an index can be wrong.
+extension Array {
+    subscript(safe i: Int) -> Element? { indices.contains(i) ? self[i] : nil }
 }

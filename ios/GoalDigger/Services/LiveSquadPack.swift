@@ -29,11 +29,29 @@ enum LiveSquadPack {
         /// the daily stats sync has run; 0 for a squad member yet to play.
         let appearances: Int?
         let minutes: Int?
+        /// Set once per cache fill: api-sports answers 200 with a silhouette
+        /// for a player it has no photo of. Absent from the feed, so it decodes
+        /// as nil on the first fetch and is filled in before the pack is built.
+        var photoIsPlaceholder: Bool? = nil
 
-        /// A man who has not played this season. The templated lines that
-        /// assume he matters ("Everything goes through Dowman") are wrong for
-        /// him; the honest line is a question about whether he will.
-        var isFringe: Bool { (appearances ?? 0) == 0 }
+        /// Where he stands in the squad. Nil appearances is *unknown*, not
+        /// zero: Saliba's stats had not synced, and "Is Saliba going to get a
+        /// run this season?" is the wrong question about a first-choice
+        /// centre-back. Unknown gets neither the fringe line nor the line that
+        /// assumes everything goes through him.
+        enum Standing { case fringe, regular, unknown }
+        static func standing(appearances: Int?) -> Standing {
+            guard let appearances else { return .unknown }
+            return appearances == 0 ? .fringe : .regular
+        }
+        var standing: Standing { Self.standing(appearances: appearances) }
+        var isFringe: Bool { standing == .fringe }
+
+        /// A usable photo, or nil for the CDN silhouette.
+        var photo: String? {
+            guard photoIsPlaceholder != true, let p = photo_url, !p.isEmpty else { return nil }
+            return p
+        }
     }
 
     // MARK: His squad
@@ -42,27 +60,53 @@ enum LiveSquadPack {
                       personalise: (String) -> String) -> QuizPack? {
         let club = team.shortName
         let named = players.filter { !$0.name.isEmpty }
-        let allNames = named.map { LiveClubPack.shortName($0.name) }
+        #if DEBUG
+        // Nil is unknown, not zero.
+        assert(Player.standing(appearances: 0) == .fringe
+            && Player.standing(appearances: 4) == .regular
+            && Player.standing(appearances: nil) == .unknown)
+        #endif
+
+        // A surname is a name only when one man in the squad has it —
+        // Bournemouth field R. and Z. Christie, and a question whose answer is
+        // "Christie" is a question about neither of them. Where it is shared,
+        // the feed's name is used whole; where the feed itself repeats a name
+        // (Spurs list "T. Hall" twice) nothing we can print separates them, so
+        // he is skipped entirely.
+        var shortCounts: [String: Int] = [:], fullCounts: [String: Int] = [:]
+        for p in named {
+            shortCounts[LiveClubPack.shortName(p.name), default: 0] += 1
+            fullCounts[p.name, default: 0] += 1
+        }
+        func display(_ p: Player) -> String {
+            let s = LiveClubPack.shortName(p.name)
+            return shortCounts[s] == 1 ? s : p.name
+        }
+        let allNames = named.filter { fullCounts[$0.name] == 1 }.map(display)
         var qs: [MyTurnQuestion] = []
 
-        for p in named {
-            let short = LiveClubPack.shortName(p.name)
+        for p in named where fullCounts[p.name] == 1 {
+            let short = display(p)
             let label = LiveClubPack.positionLabel(p.position ?? "")
-            let card = match(short, in: cards)
-            let person = QuizPlayer(name: short, position: label, number: p.number,
-                                    age: card?.age, photoURL: p.photo_url,
-                                    summary: card.map { personalise($0.summary) }, vibe: card?.vibe)
-            let who = whoHeIs(short: short, club: club, label: label, number: p.number,
-                              age: card?.age, summary: card.map { personalise($0.summary) })
+            let card = match(p.name, in: cards)
+            let summary = card.map { personalise($0.summary) }
+            // API-Football carries stale numbers for some fringe players, so a
+            // squad payload can show three men on 1. A number several men wear
+            // is not a fact about any of them: it is left out of the
+            // explanation and the player card as well as the question.
+            let number = p.number.flatMap { n in named.filter { $0.number == n }.count == 1 ? n : nil }
+            let person = QuizPlayer(name: short, position: label, number: number,
+                                    age: card?.age, photoURL: p.photo,
+                                    summary: summary, vibe: card?.vibe)
+            let who = whoHeIs(short: short, club: club, label: label, number: number,
+                              age: card?.age, summary: summary)
 
-            // A photo is the only question that cannot be asked without one.
-            // The rare CDN silhouette gets through: checking the bytes would be
-            // one request per player, and there are forty of them.
-            // ponytail: accepts a silhouette rather than 40 HEADs. Upgrade path
-            // is the backfill nulling photo_url for placeholder checksums.
-            if let photo = p.photo_url, !photo.isEmpty {
-                let sameShirt = named.filter { $0.position == p.position && $0.name != p.name }
-                    .map { LiveClubPack.shortName($0.name) }
+            // A photo is the only question that cannot be asked without one,
+            // and a silhouette is not one: "Who is this?" over the grey figure
+            // api-sports serves for a player it has no photo of is unanswerable.
+            if let photo = p.photo {
+                let sameShirt = named.filter { $0.position == p.position && $0.name != p.name && fullCounts[$0.name] == 1 }
+                    .map(display)
                 qs += LiveClubPack.question(
                     id: "squad-photo-\(p.api_player_id)", difficulty: p.isFringe ? 3 : 2,
                     question: "Who is this?",
@@ -78,11 +122,7 @@ enum LiveSquadPack {
                 )
             }
 
-            // API-Football carries stale numbers for some fringe players, so a
-            // squad payload can show three men on 1. Asking what number X wears
-            // is still answerable, but the fact itself is suspect when shared,
-            // so only ask it about a number one man holds.
-            if let n = p.number, named.filter({ $0.number == n }).count == 1 {
+            if let n = number {
                 qs += LiveClubPack.question(
                     id: "squad-number-\(p.api_player_id)", difficulty: 3,
                     question: "What number does \(short) wear?",
@@ -99,20 +139,30 @@ enum LiveSquadPack {
             if p.position != nil {
                 // "Everything goes through Dowman" is the right line for a man
                 // who plays every week and a strange one for a sixteen-year-old
-                // who has not. A fringe player gets the honest question instead.
+                // who has not. A fringe player gets the honest question; a man
+                // whose stats have not synced gets neither line.
+                let (why, useType, use): (String, QuestionUseType, String)
+                switch p.standing {
+                case .fringe:
+                    why = "Squad players come and go from the bench. Knowing the name is enough."
+                    useType = .ask
+                    use = LiveClubPack.quote("Is \(short) going to get a run this season?")
+                case .regular:
+                    why = "He'll say the surname and expect you to know the job that comes with it."
+                    useType = LiveClubPack.positionUseType(label)
+                    use = LiveClubPack.positionUse(label, short: short)
+                case .unknown:
+                    why = "He'll say the surname and expect you to know the job that comes with it."
+                    useType = .ask
+                    use = LiveClubPack.quote("Is \(short) playing this weekend?")
+                }
                 qs += LiveClubPack.question(
                     id: "squad-pos-\(p.api_player_id)", difficulty: p.isFringe ? 3 : 1,
                     question: "What position does \(short) play?",
                     answer: label,
                     distractors: LiveClubPack.positionDistractors(for: label),
                     explanation: who,
-                    why: p.isFringe
-                        ? "Squad players come and go from the bench. Knowing the name is enough."
-                        : "He'll say the surname and expect you to know the job that comes with it.",
-                    useType: p.isFringe ? .ask : LiveClubPack.positionUseType(label),
-                    use: p.isFringe
-                        ? LiveClubPack.quote("Is \(short) going to get a run this season?")
-                        : LiveClubPack.positionUse(label, short: short),
+                    why: why, useType: useType, use: use,
                     player: person
                 )
             }
@@ -122,33 +172,47 @@ enum LiveSquadPack {
         return QuizPack(id: packId, label: "His squad", questions: qs)
     }
 
-    /// "Ødegaard plays as a midfielder for Arsenal, in the number 8 shirt.
-    /// He's 27. <dossier>" — facts first, so a player with no dossier still
-    /// gets a real answer.
+    /// With a dossier, the dossier is the sentence: the template only says the
+    /// position again ("Saka plays as a forward for Arsenal. Saka is Arsenal's
+    /// right-winger."). Without one, the template is all she gets, so it keeps
+    /// the club and the role. Number and age are facts either way.
     private static func whoHeIs(short: String, club: String, label: String,
                                 number: Int?, age: Int?, summary: String?) -> String {
+        var s: String
+        if let summary, !summary.isEmpty {
+            s = LiveClubPack.clip(summary, 160)
+            if let number { s += " Number \(number)." }
+            if let age { s += " He's \(age)." }
+            return s
+        }
         let role = label == "Goalkeeper" ? "is \(club)'s goalkeeper" : "plays as a \(label.lowercased()) for \(club)"
-        var s = "\(short) \(role)"
+        s = "\(short) \(role)"
         if let number { s += ", in the number \(number) shirt" }
         s += "."
         if let age { s += " He's \(age)." }
-        if let summary, !summary.isEmpty { s += " " + LiveClubPack.clip(summary, 160) }
         return s
     }
 
     /// `players.name` comes abbreviated ("M. Ødegaard"); `player_cards` is
-    /// written long ("Martin Ødegaard"). Match on the surname, folded, per
-    /// DATA_SOURCES.md.
-    static func match(_ short: String, in cards: [PlayerCard]) -> PlayerCard? {
-        let key = surname(short)
+    /// written long ("Martin Ødegaard"). Prefer the whole name folded, and fall
+    /// back to the surname only when one card carries it — Brentford have a
+    /// Dango and a Demarai Ouattara, and the wrong dossier is worse than none.
+    static func match(_ name: String, in cards: [PlayerCard]) -> PlayerCard? {
+        let whole = fold(name)
+        if !whole.isEmpty, let exact = cards.first(where: { fold($0.playerName) == whole }) { return exact }
+        let key = surname(name)
         guard !key.isEmpty else { return nil }
-        return cards.first { surname($0.playerName) == key }
+        let hits = cards.filter { surname($0.playerName) == key }
+        return hits.count == 1 ? hits[0] : nil
+    }
+
+    private static func fold(_ s: String) -> String {
+        s.folding(options: [.diacriticInsensitive, .caseInsensitive],
+                  locale: .init(identifier: "en")).lowercased()
     }
 
     private static func surname(_ name: String) -> String {
-        let folded = name.folding(options: [.diacriticInsensitive, .caseInsensitive],
-                                 locale: .init(identifier: "en")).lowercased()
-        return folded.split(separator: " ").last.map(String.init) ?? ""
+        fold(name).split(separator: " ").last.map(String.init) ?? ""
     }
 
     // MARK: The league's big names
@@ -264,12 +328,31 @@ final class LiveSquadService {
                 try? JSONDecoder().decode([LiveSquadPack.Player].self, from: $0)
             } ?? []
             if !players.isEmpty {
-                cache = Cache(teamId: team.rawValue, players: players,
+                cache = Cache(teamId: team.rawValue, players: await Self.flagPlaceholders(players),
                               cards: (try? await dossiers) ?? [], fetchedAt: Date())
             }
         }
         guard let cache else { pack = nil; return }
         pack = LiveSquadPack.build(team: team, players: cache.players, cards: cache.cards,
                                    personalise: personalise)
+    }
+
+    /// api-sports answers 200 with a grey silhouette for a player it has no
+    /// photo of (four of Arsenal's squad on 2026-09-08), so the bytes are the
+    /// only test. Thirty parallel 150x150 PNGs, once per cache fill — not once
+    /// per launch — and the verdict is stored on the cached row.
+    private static func flagPlaceholders(_ players: [LiveSquadPack.Player]) async -> [LiveSquadPack.Player] {
+        await withTaskGroup(of: (Int, Bool).self) { group in
+            for (i, p) in players.enumerated() {
+                guard let s = p.photo_url, !s.isEmpty, let url = URL(string: s) else { continue }
+                group.addTask {
+                    let data = try? await URLSession.shared.data(from: url).0
+                    return (i, data.map(LiveClubPack.isSilhouette) ?? false)
+                }
+            }
+            var out = players
+            for await (i, isPlaceholder) in group { out[i].photoIsPlaceholder = isPlaceholder }
+            return out
+        }
     }
 }

@@ -51,7 +51,8 @@ enum LiveClubPack {
 
     /// api-sports returns HTTP 200 with a silhouette for a missing photo, so
     /// the only test is the bytes. Two coach variants seen on 2026-09-08 (7 of
-    /// 20 PL managers) plus the "unknown id" image.
+    /// 20 PL managers), the "unknown id" image, and the player silhouette
+    /// (2026-09-09: four of Arsenal's squad).
     // ponytail: hash list, not a classifier. Extend when a new silhouette shows
     // up (compare md5 of a known-bad URL) — or move the check server-side into
     // the team-page routine so photo_url is null for placeholders.
@@ -59,6 +60,7 @@ enum LiveClubPack {
         "3e52d4ec4bb65b0a2019236c4dabd3fc",
         "f512b984f93ca6915dd623351b93b531",
         "0e3bde19a08632f2e893bc2a835598bc",
+        "430d67fd79ad0a355b212d5780886e34",
     ]
 
     static func isSilhouette(_ data: Data) -> Bool {

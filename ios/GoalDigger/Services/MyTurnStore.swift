@@ -72,7 +72,6 @@ final class MyTurnStore {
         var starredLineIds: [String] = []
         var hasSeenRiskExplainer: Bool = false
         var sayThisSituationId: String? = nil
-        var lingoQuery: String = ""
         var lingoExpandedId: String? = nil
         var quizProgress: [String: PackProgress] = [:]
         var quizRound: QuizRound? = nil
@@ -104,6 +103,7 @@ final class MyTurnStore {
     /// Called from Settings → Delete My Data alongside the other stores.
     func clearAll() {
         state = Persisted()
+        lingoQuery = ""
         UserDefaults.standard.removeObject(forKey: Self.key)
     }
 
@@ -136,10 +136,11 @@ final class MyTurnStore {
 
     // MARK: Lingo
 
-    var lingoQuery: String {
-        get { state.lingoQuery }
-        set { state.lingoQuery = newValue }
-    }
+    /// The search box, deliberately not persisted: every keystroke would
+    /// re-encode the whole blob — scores, starred lines, the paused round —
+    /// and write it to UserDefaults on the main thread. Nothing is lost by
+    /// coming back to an empty search field.
+    var lingoQuery: String = ""
     var lingoExpandedId: String? {
         get { state.lingoExpandedId }
         set { state.lingoExpandedId = newValue }
@@ -164,7 +165,10 @@ final class MyTurnStore {
             pool = pack.questions
             var p = progress(for: pack.id); p.seenQuestionIds = []; state.quizProgress[pack.id] = p
         }
+        // A pack that arrived empty from a bad publish would otherwise start a
+        // round of nothing, and the question screen indexes into it.
         let picked = Array(pool.shuffled().prefix(10)).sorted { $0.difficulty < $1.difficulty }
+        guard !picked.isEmpty else { return }
         state.quizRound = QuizRound(packId: pack.id, questionIds: picked.map(\.id))
     }
 

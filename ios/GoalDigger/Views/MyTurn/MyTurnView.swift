@@ -11,6 +11,7 @@ struct MyTurnView: View {
     @State private var live = LiveClubPackService.shared
     @State private var squad = LiveSquadService.shared
     @Environment(AppState.self) var appState
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         ZStack {
@@ -113,20 +114,24 @@ struct MyTurnView: View {
                     withAnimation(.spring(duration: 0.25)) { store.lastModule = module }
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 } label: {
-                    // "Say This" is the longest label. At the largest
-                    // accessibility sizes it becomes "Lines" rather than
-                    // truncating or scrolling.
-                    ViewThatFits(in: .horizontal) {
-                        Text(module.label)
-                        Text(module.shortLabel)
-                    }
-                    .font(.jakarta(15, weight: .medium))
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 40)
-                    .background(store.lastModule == module ? Color.hotRose : Color.clear)
-                    .foregroundColor(store.lastModule == module ? .warmWhite : .warmWhite.opacity(0.6))
-                    .cornerRadius(12)
+                    // Three segments share the width, so every label needs a
+                    // way down at the largest accessibility sizes: "Say This"
+                    // becomes "Lines", and any of the three will shrink to 60%
+                    // before it truncates. The pill is clipped so a label that
+                    // still cannot fit does not run over its neighbour.
+                    // ViewThatFits does not help here — inside an HStack of
+                    // three flexible children it is proposed the ideal width
+                    // and always takes the first rung.
+                    Text(typeSize.isAccessibilitySize ? module.shortLabel : module.label)
+                        .font(.jakarta(15, weight: .medium))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .background(store.lastModule == module ? Color.hotRose : Color.clear)
+                        .foregroundColor(store.lastModule == module ? .warmWhite : .warmWhite.opacity(0.6))
+                        .cornerRadius(12)
+                        .clipped()
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(module.label)
