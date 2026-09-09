@@ -10,7 +10,7 @@ import {
   renderThisWeek,
 } from "./stakes-templates.ts";
 import { type FixtureStakes, groupSituation, type GroupStanding } from "./stakes-engine.ts";
-import { CLUB_FAVORITE_GAP, preMatchVerdict } from "./matchup-verdict.ts";
+import { CLUB_FAVORITE_GAP, clubPreMatchVerdict, preMatchVerdict } from "./matchup-verdict.ts";
 
 function assert(c: boolean, m: string): void {
   if (!c) throw new Error("assertion failed: " + m);
@@ -327,4 +327,52 @@ Deno.test("renderClubThisWeek: league vocabulary, its own talking point", () => 
     week.talking_point !== talk.talking_point,
     "the two cards render together, so they must not say the same line twice",
   );
+});
+
+Deno.test("renderClubPreMatch: a domestic cup tie says which table, and one point is no favourite", () => {
+  // Chelsea v Leeds, League Cup last 32, 2026-09-09: the live card read "4th
+  // against 9th in the table, a point between them. Chelsea go into it as the
+  // favourites." Two errors in two sentences.
+  const out = renderClubPreMatch({
+    teamName: "Chelsea",
+    opponentName: "Leeds United",
+    venue: "home",
+    competition: "League Cup (Carabao Cup)",
+    round: "last 32",
+    tableLabel: "in the league",
+    myPosition: 4,
+    oppPosition: 9,
+    myPoints: 6,
+    oppPoints: 5,
+    myForm: "WDL",
+    oppForm: "LWD",
+    favorite: clubPreMatchVerdict(4, 9, 6, 5),
+    knockoutLine: "Through to the last 16.",
+  });
+  assertHouseRules(out.preview, "cup-two-tables");
+  assert(out.preview.includes("4th against 9th in the league, a point between them"), out.preview);
+  assert(!/favourite/.test(out.preview), `no favourite on one point: ${out.preview}`);
+  assert(out.preview.includes("close enough to go either way"), out.preview);
+});
+
+Deno.test("renderClubPreMatch: form is labelled as league form", () => {
+  // Bournemouth, 2026-09-09: PL form DDL, a 4-0 League Cup win the night before.
+  const out = renderClubPreMatch({
+    teamName: "AFC Bournemouth",
+    opponentName: "Brentford",
+    venue: "home",
+    competition: "Premier League",
+    myPosition: 15,
+    oppPosition: 5,
+    myPoints: 2,
+    oppPoints: 5,
+    myForm: "DDL",
+    oppForm: "WWD",
+    favorite: clubPreMatchVerdict(15, 5, 2, 5),
+  });
+  assert(
+    out.preview.includes("without a win in their last three league games"),
+    `the window is named: ${out.preview}`,
+  );
+  assert(!/favourite/.test(out.preview), `three points, ten places: still no favourite: ${out.preview}`);
 });

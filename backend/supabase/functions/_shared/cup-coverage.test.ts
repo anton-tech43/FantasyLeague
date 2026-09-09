@@ -12,6 +12,7 @@ import {
   parseRound,
   roundLabel,
   seasonForLeague,
+  isSingleLegTie,
 } from "./league-helpers.ts";
 import { buildPollPairs } from "./poll-plan.ts";
 import { competitionSuffix, knockoutOutcome } from "./goal-push.ts";
@@ -57,20 +58,9 @@ Deno.test("seasonForLeague: cups follow the club season, not the calendar", () =
     ["2027-06-30T12:00:00Z", 2026],
     ["2027-07-01T12:00:00Z", 2027],
   ];
-  const realDate = Date;
   for (const leagueId of [39, 2, 3, 848, 48, 45]) {
     for (const [iso, expected] of cases) {
-      // deno-lint-ignore no-explicit-any
-      (globalThis as any).Date = class extends realDate {
-        constructor() { super(iso); }
-        static now() { return new realDate(iso).getTime(); }
-      };
-      try {
-        assertEquals(seasonForLeague(leagueId), expected, `league ${leagueId} at ${iso}`);
-      } finally {
-        // deno-lint-ignore no-explicit-any
-        (globalThis as any).Date = realDate;
-      }
+      assertEquals(seasonForLeague(leagueId, new Date(iso)), expected, `league ${leagueId} at ${iso}`);
     }
   }
 });
@@ -341,4 +331,70 @@ Deno.test("renderMatchdayReminder: an empty competition changes nothing", () => 
 Deno.test("roundLabel: the words a card uses", () => {
   assertEquals(roundLabel("Round of 32"), "last 32");
   assertEquals(roundLabel("League Stage - 1"), "");
+});
+
+// ── 2026-09-09 review: what the feed really sends ────────────────────────────
+
+Deno.test("isSingleLegTie: only rounds known to be one match settle a tie", () => {
+  // The strings API-Football actually sent for leagues 2/3/45/48/848 over three
+  // days: none carries "leg", so absence of the word proves nothing.
+  assertEquals(isSingleLegTie(2, "Play-offs"), false);
+  assertEquals(isSingleLegTie(2, "Round of 16"), false);
+  assertEquals(isSingleLegTie(2, "League Stage - 1"), false);
+  assertEquals(isSingleLegTie(2, "Final"), true);
+  assertEquals(isSingleLegTie(3, "Quarter-finals"), false);
+  assertEquals(isSingleLegTie(48, "Round of 32"), true);
+  assertEquals(isSingleLegTie(48, "Quarter-finals"), true);
+  assertEquals(isSingleLegTie(48, "Semi-finals"), false);
+  assertEquals(isSingleLegTie(48, "Final"), true);
+  assertEquals(isSingleLegTie(45, "3rd Round"), true);
+  assertEquals(isSingleLegTie(45, "Semi-finals"), true);
+  assertEquals(isSingleLegTie(45, "Quarter-finals - 1st Leg"), false);
+  assertEquals(isSingleLegTie(39, "Regular Season - 4"), false);
+  assertEquals(isSingleLegTie(undefined, "Final"), false);
+});
+
+Deno.test("parseRound: the League Cup first round and the FA Cup's numbered rounds", () => {
+  assertEquals(parseRound("Round of 128", 48).stage, 64);
+  assertEquals(parseRound("Round of 128", 48).label, "first round");
+  // FA Cup: 3rd round is the last 64, 4th the last 32, 5th the last 16.
+  assertEquals(parseRound("3rd Round", 45).stage, 32);
+  assertEquals(parseRound("4th Round", 45).stage, 16);
+  assertEquals(parseRound("5th Round", 45).stage, 8);
+  assertEquals(parseRound("5th Round", 45).label, "5th round");
+  assertEquals(parseRound("1st Round Qualifying", 45).stage, 40);
+  // Without the league the generic numbered-round stage still applies.
+  assertEquals(parseRound("3rd Round").stage, 40);
+});
+
+Deno.test("minTierForLiveEvent: the first round is quieter than the last 32, not louder", () => {
+  assertEquals(minTierForLiveEvent("kickoff", 48, "Round of 128"), TIER_NOBODY);
+  assertEquals(minTierForLiveEvent("ht", 48, "Round of 64"), TIER_NOBODY);
+  assertEquals(minTierForLiveEvent("goal", 48, "Round of 128"), 1);
+  assertEquals(minTierForLiveEvent("ft", 48, "Round of 128"), 1);
+  // An unparsed domestic cup round is treated as early, never as a league phase.
+  assertEquals(minTierForLiveEvent("kickoff", 45, "Something New"), TIER_NOBODY);
+  // The FA Cup 5th round is the last 16 and gets the framing pushes back.
+  assertEquals(minTierForLiveEvent("kickoff", 45, "5th Round"), 2);
+  assertEquals(minTierForLiveEvent("kickoff", 45, "4th Round"), TIER_NOBODY);
+});
+
+Deno.test("knockoutOutcome: the FA Cup counts rounds, the League Cup has a second round", () => {
+  assertEquals(knockoutOutcome(45, "3rd Round", true), "Through to the fourth round.");
+  assertEquals(knockoutOutcome(45, "4th Round", true), "Through to the fifth round.");
+  assertEquals(knockoutOutcome(45, "5th Round", true), "Through to the quarter-finals.");
+  assertEquals(knockoutOutcome(48, "Round of 128", true), "Through to the second round.");
+  assertEquals(knockoutOutcome(48, "Round of 64", true), "Through to the last 32.");
+});
+
+Deno.test("fixtureImportance: FA Cup 5th round is the last 16, and a top-flight opponent lifts the 3rd", () => {
+  assertEquals(fixtureImportance(45, "5th Round"), 3);
+  assertEquals(fixtureImportance(45, "4th Round"), 2);
+  assertEquals(fixtureImportance(45, "4th Round", true), 3);
+});
+
+Deno.test("seasonForLeague: the season of the date asked about, not of today", () => {
+  assertEquals(seasonForLeague(45, new Date("2026-01-10T15:00:00Z")), 2025);
+  assertEquals(seasonForLeague(45, new Date("2026-08-10T15:00:00Z")), 2026);
+  assertEquals(seasonForLeague(39, new Date("2027-05-20T15:00:00Z")), 2026);
 });

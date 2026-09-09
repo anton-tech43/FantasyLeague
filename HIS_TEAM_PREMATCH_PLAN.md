@@ -208,6 +208,39 @@ belongs to the pre-match backend agent.
   "Show last games" has club data.
 - **Tests:** 204 Deno cases in `_shared/`.
 
+## Review, 2026-09-09 (adversarial pass with five reviewers)
+
+What was wrong on live cards the morning after shipping, and what changed:
+
+- **A favourite on one point.** Chelsea v Leeds, League Cup: "4th against 9th in the table,
+  a point between them. Chelsea go into it as the favourites." The verdict read league
+  position only; five places in September is one goal of goal difference. `clubPreMatchVerdict`
+  now needs a points gap of four as well (`CLUB_FAVORITE_POINTS_GAP`), else "close enough
+  to go either way".
+- **Which table.** A domestic cup tie between two league clubs says "in the league", a
+  European night "in the league phase", a league game "in the table".
+- **Which form.** The standings form string counts league games only, and Bournemouth's
+  card said "without a win in their last three" the morning after a 4-0 League Cup win
+  listed two cards below it. The clause now says "league games".
+- **Two names for one club.** "AFC Bournemouth are at home to Brentford" on one page,
+  "Brentford are away at Bournemouth" on the other. The opponent is named as our `teams`
+  row names them when they are one of ours.
+- **Coming up and the Calendar disagreeing.** `extractNextFixture` now skips fixtures the
+  `fixtures_last` feed already records as finished, the same set `buildUpcomingFixtures`
+  uses, so a played game cannot sit in Coming up inside the 3-hour grace.
+- **The full-time refresh was at-most-once even when it failed.** The marker was persisted
+  before the call. It is now written after: success is final, a failure counts an attempt,
+  three attempts at most (`pageRefreshMarker`), then the two-hourly cron.
+- **Calendar rows carry `league_id`** so the iOS calendar sync names the competition from
+  the id rather than from `importance_label`, which can hold the routine's own prose.
+- **Tests:** 214 Deno cases; regression cases for each of the above in
+  `stakes-templates.test.ts`, `matchup-verdict.test.ts`, `page-refresh.test.ts`.
+
+Not changed, deliberately: the European night before round two has no favourite and a
+generic talking point ("Ask him how he is feeling about the Napoli game"), because the only
+table is alphabetical. The `preview_colour` sentence is appended as a second paragraph, not
+styled differently; the commit that claimed a lighter style overstated it.
+
 ## Still open
 
 - `teams.strength_rank` is NULL for every club, so a cup opponent from outside the league

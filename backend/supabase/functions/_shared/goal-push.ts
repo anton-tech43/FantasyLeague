@@ -251,7 +251,7 @@ export function pickLatestGoalForTeam(
 export function competitionSuffix(leagueId: number | undefined, round: string | undefined): string {
   if (leagueId === undefined || leagueId === 39 || leagueId === 1) return "";
   const name = competitionName(leagueId);
-  const rl = roundLabel(round);
+  const rl = roundLabel(round, leagueId);
   return rl ? `${name}, ${rl}.` : `${name}.`;
 }
 
@@ -266,14 +266,16 @@ export function knockoutOutcome(
 ): string {
   const suffix = competitionSuffix(leagueId, round);
   if (through === null) return suffix;
-  const { stage, label } = parseRound(round);
+  const { stage } = parseRound(round, leagueId);
   if (stage === 0) return suffix;
   const name = competitionName(leagueId);
   if (!through) return `Out of the ${name}.`;
   if (stage === 1) return `${name} winners.`;
-  const nextRound: Record<number, string> = { 2: "the final", 4: "the semi-finals", 8: "the quarter-finals", 16: "the last 16", 32: "the last 32" };
-  const next = nextRound[stage] ?? (label ? `the next round` : "the next round");
-  return `Through to ${next}.`;
+  // The FA Cup counts rounds, so "the fourth round" rather than "the last 32".
+  const nextRound: Record<number, string> = leagueId === 45
+    ? { 2: "the final", 4: "the semi-finals", 8: "the quarter-finals", 16: "the fifth round", 32: "the fourth round", 40: "the next round" }
+    : { 2: "the final", 4: "the semi-finals", 8: "the quarter-finals", 16: "the last 16", 32: "the last 32", 64: "the second round" };
+  return `Through to ${nextRound[stage] ?? "the next round"}.`;
 }
 
 /// Append a clause as its own sentence, skipping empties and double spaces.

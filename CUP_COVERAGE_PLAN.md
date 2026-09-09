@@ -386,6 +386,47 @@ importance table, the poll plan, push clauses and tiers; `test_guards.sh` at 75.
   the first leg up from `match_form.json` instead of promising a field that is
   not there.
 
+## Review, 2026-09-09 (adversarial pass)
+
+Found the morning after the first League Cup night, fixed the same day:
+
+- **"Out of the Champions League" after a first leg.** The FT push decided a tie was
+  settled when the round string did not contain "leg". API-Football's round strings never
+  do ("Play-offs", "Semi-finals", checked over three days of raw logs), so a first-leg
+  defeat would have read as elimination. `isSingleLegTie` is an allowlist of rounds known
+  to be one match: every FA Cup round; every League Cup round except the semi-finals; the
+  European finals. Anything else names the competition and claims nothing.
+- **Round of 128 parsed to stage 0**, so the League Cup first round was pushed like a
+  league phase, the loudest tier of the season for the smallest tie. Mapped to stage 64,
+  label "first round", "Through to the second round". An unparsed domestic-cup round is
+  now treated as early, not as a league phase.
+- **FA Cup rounds by number.** "5th Round" is the last 16; it parsed as a generic numbered
+  round and was gated as early while "Round of 16" was not. `parseRound` takes the league
+  id and maps 3rd/4th/5th to last 64/32/16. `knockoutOutcome` says "the fourth round", not
+  "the last 32", for the FA Cup.
+- **`poll_leagues()` read the Champions League tournament row's fixture feed** (league_id 2
+  on that row defeated the `IS NOT NULL` exclusion), so it polled at 16:30 for Barcelona v
+  Feyenoord. Migration 098 excludes tournaments by `entity_type` and drops the dead
+  `active_competition_ids()`. A rolled-back SQL check lives in
+  `backend/supabase/tests/poll_leagues_check.sql`.
+- **The RPC fallback** now excludes the tournament row's league and writes a
+  `pipeline_health` failure row instead of a `console.warn`.
+- **Replay season.** `?date=2026-01-10` fetched season 2026; `seasonForLeague` takes the
+  date being polled.
+- **Live Activity strap** says the competition only, on both the push-to-start path and
+  `live-match-current`, which has no round column; the two used to differ for one match.
+- **Cup opponents' short names** were cut at 14 characters ("Atletico Madri"); the whole
+  name is kept up to 20, and the three existing rows were repaired.
+- **`opponentIsTopFlight`** was tested and never passed; `buildUpcomingFixtures` now passes
+  it from the league table on the page, so an FA Cup third-round tie against a Premier
+  League club gets its third dot.
+- **A failed `device_tokens` query** inside a live push is now a `pipeline_health` failure
+  row rather than a silent zero.
+- **Tests:** 214 Deno cases, 77 guard cases, `poll_leagues_check.sql`.
+
+Not changed: goal pushes to everyone on every round (Anton's decision); a 5-3 tie is eight
+goal pushes and a full-time push. No per-match cap exists and nothing measures the volume.
+
 ## Still open
 
 - The season-state source for calendar sync carries no competition, so an event

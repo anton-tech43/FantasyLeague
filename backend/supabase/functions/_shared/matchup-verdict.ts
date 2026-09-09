@@ -22,6 +22,11 @@ export interface PreMatchVerdict {
 // League positions only span 1-20, so clubs use a smaller gap. Both tunable.
 export const WC_FAVORITE_GAP = 12;
 export const CLUB_FAVORITE_GAP = 5;
+// Five places in a September table can be one goal on goal difference: on
+// 2026-09-09 Chelsea (4th, 6 pts) and Leeds (9th, 5 pts) were five places and
+// one point apart, and the card called Chelsea favourites a sentence after
+// saying "a point between them". A club favourite needs the points as well.
+export const CLUB_FAVORITE_POINTS_GAP = 4;
 
 /// Pre-game verdict from MY rank vs the OPPONENT's. Returns null when either
 /// rank is unknown (so the caller simply shows no tag rather than guessing).
@@ -35,6 +40,25 @@ export function preMatchVerdict(
   if (diff >= gap) return { tag: "likely_win", label: "Likely win" };
   if (diff <= -gap) return { tag: "likely_loss", label: "Likely loss" };
   return { tag: "even", label: "Could go either way" };
+}
+
+/// The club verdict: league position AND points. Positions alone are the
+/// ranking; the points gap is what stops a goal-difference ordering from being
+/// read as a gulf. Unknown points fall back to positions alone (strength_rank
+/// callers), unknown positions to no verdict.
+export function clubPreMatchVerdict(
+  myRank: number | null | undefined,
+  oppRank: number | null | undefined,
+  myPoints?: number | null,
+  oppPoints?: number | null,
+): PreMatchVerdict | null {
+  const byRank = preMatchVerdict(myRank, oppRank, CLUB_FAVORITE_GAP);
+  if (!byRank || byRank.tag === "even") return byRank;
+  if (myPoints == null || oppPoints == null) return byRank;
+  if (Math.abs(myPoints - oppPoints) < CLUB_FAVORITE_POINTS_GAP) {
+    return { tag: "even", label: "Could go either way" };
+  }
+  return byRank;
 }
 
 export type ResultFraming =

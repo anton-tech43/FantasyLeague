@@ -8,6 +8,21 @@
 // time to the minute; this decides what to re-fetch when it sees one.
 
 export const PAGE_REFRESH_MARKER = "PAGE_REFRESH";
+/** One of these per failed attempt; after PAGE_REFRESH_MAX_ATTEMPTS the fixture stops asking. */
+export const PAGE_REFRESH_FAIL_PREFIX = "PAGE_REFRESH_FAIL_";
+export const PAGE_REFRESH_MAX_ATTEMPTS = 3;
+
+/**
+ * The marker to persist after an attempt: success is final; a failure counts
+ * one more attempt, so the next tick retries until the cap. Before this the
+ * success marker was written BEFORE the call, so a 15-second timeout at 22:05
+ * left the table wrong until the 06:00 cron.
+ */
+export function pageRefreshMarker(briefsFired: readonly string[], ok: boolean): string {
+  if (ok) return PAGE_REFRESH_MARKER;
+  const fails = briefsFired.filter((m) => m.startsWith(PAGE_REFRESH_FAIL_PREFIX)).length;
+  return `${PAGE_REFRESH_FAIL_PREFIX}${fails + 1}`;
+}
 
 /**
  * Covered competitions that HAVE a table, and the `teams` row that holds it.
@@ -55,6 +70,8 @@ export function planPageRefresh(input: PageRefreshInput): string[] {
   if (!FINISHED.has(input.status)) return [];
   if (input.priorStatus === null) return []; // never fire on first sight
   if (input.briefsFired.includes(PAGE_REFRESH_MARKER)) return [];
+  const fails = input.briefsFired.filter((m) => m.startsWith(PAGE_REFRESH_FAIL_PREFIX)).length;
+  if (fails >= PAGE_REFRESH_MAX_ATTEMPTS) return [];
 
   const ours = [input.homeTeamId, input.awayTeamId].filter((id) =>
     input.activeTeamIds.has(id)

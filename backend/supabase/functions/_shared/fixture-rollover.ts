@@ -134,6 +134,8 @@ export function buildUpcomingFixtures(
   now: Date,
   existing: Array<Record<string, unknown>> | undefined,
   finishedIds: Set<number> = new Set(),
+  /** API-Football ids of the top-flight clubs, so an early FA Cup tie against one of them weighs more. */
+  topFlightApiIds: Set<number> = new Set(),
 ): Array<Record<string, unknown>> | null {
   const response = (data as Record<string, unknown> | undefined)?.response;
   if (!Array.isArray(response) || response.length === 0) return null;
@@ -159,6 +161,8 @@ export function buildUpcomingFixtures(
 
     const isHome = (teams.home.id as number | undefined) === teamApiFootballId;
     const opponent = (isHome ? teams.away.name : teams.home.name) as string;
+    const opponentApiId = (isHome ? teams.away.id : teams.home.id) as number | undefined;
+    const opponentIsTopFlight = opponentApiId != null && topFlightApiIds.has(opponentApiId);
     const leagueId = league?.id as number | undefined;
     const round = league?.round as string | undefined;
     const prior = priorByKey.get(`${date.slice(0, 10)}|${opponent}`);
@@ -177,6 +181,9 @@ export function buildUpcomingFixtures(
       // surface in the app without a badge on it.
       opponent_api_id: (isHome ? teams.away.id : teams.home.id) as number | undefined,
       ...(fixtureId != null ? { fixture_id: fixtureId } : {}),
+      // So the calendar sync can name the competition from the id rather than
+      // from importance_label, which may hold the routine's own prose.
+      ...(leagueId != null ? { league_id: leagueId } : {}),
       status,
       venue: isHome ? "home" : "away",
       // iOS requires both fields (UpcomingFixture is non-optional on each).
@@ -188,7 +195,9 @@ export function buildUpcomingFixtures(
       // tell a hand-written label from its own default, so the flat 3 preserved
       // itself forever. A prior counts as hand-written only when its label says
       // something the machine would not have said.
-      importance_dots: handWritten ? (prior!.importance_dots as number) : fixtureImportance(leagueId, round),
+      importance_dots: handWritten
+        ? (prior!.importance_dots as number)
+        : fixtureImportance(leagueId, round, opponentIsTopFlight),
       importance_label: handWritten
         ? (prior!.importance_label as string)
         : fixtureLabel(league?.name as string | undefined, leagueId, round).slice(0, 30),

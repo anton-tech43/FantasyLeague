@@ -1,7 +1,9 @@
 import { assertEquals } from "https://deno.land/std@0.177.0/testing/asserts.ts";
 import {
   mergeRefreshTargets,
+  PAGE_REFRESH_FAIL_PREFIX,
   PAGE_REFRESH_MARKER,
+  pageRefreshMarker,
   planPageRefresh,
   TOURNAMENTS_WITH_A_TABLE,
 } from "./page-refresh.ts";
@@ -115,4 +117,25 @@ Deno.test("a Saturday of finishes collapses into one call", () => {
   ]);
   assertEquals(targets, ["arsenal", "chelsea", "liverpool", "everton", "champions_league"]);
   assertEquals(mergeRefreshTargets([]), []);
+});
+
+Deno.test("a failed refresh is retried next tick, up to three times", () => {
+  assertEquals(pageRefreshMarker([], false), `${PAGE_REFRESH_FAIL_PREFIX}1`);
+  assertEquals(pageRefreshMarker([`${PAGE_REFRESH_FAIL_PREFIX}1`], false), `${PAGE_REFRESH_FAIL_PREFIX}2`);
+  assertEquals(pageRefreshMarker([`${PAGE_REFRESH_FAIL_PREFIX}1`], true), PAGE_REFRESH_MARKER);
+  // Two failures: still asks.
+  assertEquals(
+    planPageRefresh({ ...base, briefsFired: [`${PAGE_REFRESH_FAIL_PREFIX}1`, `${PAGE_REFRESH_FAIL_PREFIX}2`] }).length,
+    2,
+  );
+  // Three: gives up until the two-hourly cron.
+  assertEquals(
+    planPageRefresh({
+      ...base,
+      briefsFired: [`${PAGE_REFRESH_FAIL_PREFIX}1`, `${PAGE_REFRESH_FAIL_PREFIX}2`, `${PAGE_REFRESH_FAIL_PREFIX}3`],
+    }),
+    [],
+  );
+  // A success after failures is final.
+  assertEquals(planPageRefresh({ ...base, briefsFired: [`${PAGE_REFRESH_FAIL_PREFIX}2`, PAGE_REFRESH_MARKER] }), []);
 });

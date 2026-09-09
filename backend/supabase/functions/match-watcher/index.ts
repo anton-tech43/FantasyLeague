@@ -24,7 +24,7 @@ import {
   COVERED_CUP_LEAGUES,
   competitionName,
   competitionProse,
-  roundLabel,
+  isSingleLegTie,
 } from "../_shared/league-helpers.ts";
 import { detectConsequences, loadPostResultWcContext, WC_LEAGUE_ID } from "../_shared/detect-consequences.ts";
 import { renderConsequence } from "../_shared/consequence-templates.ts";
@@ -40,7 +40,7 @@ import { decideMatchdayRetry, MATCHDAY_STALENESS_MS } from "../_shared/matchday-
 import {
   callFunction,
   mergeRefreshTargets,
-  PAGE_REFRESH_MARKER,
+  pageRefreshMarker,
   planPageRefresh,
 } from "../_shared/page-refresh.ts";
 import { buildAPNsPayload, sendLiveActivityPush, sendPushNotification } from "../_shared/apns-client.ts";
@@ -347,7 +347,7 @@ async function sendPlayingTeamPush(
     // row per device (UNIQUE apns_token) so a device that follows BOTH playing
     // teams still appears once → one push.
     const playing = `${args.homeTeamId},${args.awayTeamId}`;
-    const { data: tokens } = await supabase
+    const { data: tokens, error: tokensErr } = await supabase
       .from("device_tokens")
       .select("apns_token, tier, country_id, country_ids, team_id, team_ids, apns_environment")
       .or(
@@ -355,6 +355,21 @@ async function sendPlayingTeamPush(
           `team_id.in.(${playing}),team_ids.ov.{${playing}}`,
       )
       .eq("is_active", true);
+    if (tokensErr) {
+      // The fired marker is already persisted, so this push is lost, not
+      // retried. Say so where an audit looks: a silent zero here is
+      // indistinguishable from "nobody follows either club".
+      console.error(`sendPlayingTeamPush ${args.label} fixture=${args.fixtureId}: device_tokens query failed:`, tokensErr.message);
+      await supabase.from("pipeline_health").insert({
+        team_id: args.homeTeamId,
+        stage: "apns_send",
+        status: "failure",
+        target: `live_${args.label}:${args.fixtureId}`,
+        error_class: "device_tokens_query_failed",
+        message: `live ${args.label}: recipients unknown, push not sent: ${tokensErr.message}`.slice(0, 400),
+      }).then(({ error }) => error && console.warn("pipeline_health insert failed:", error.message));
+      return 0;
+    }
 
     // Per-country tallies so we can write one apns_send pipeline_health row per
     // playing team — the live goal/HT/FT/kickoff pushes were previously invisible
@@ -552,7 +567,7 @@ async function handleRequest(req: Request): Promise<Response> {
   // receiving content of their own (see activeTeamIds below).
   const { data: teams, error: teamsErr } = await supabase
     .from("teams")
-    .select("id, api_football_id, league_id, short_name, is_active")
+    .select("id, api_football_id, league_id, short_name, is_active, entity_type")
     .not("league_id", "is", null);
   if (teamsErr) {
     // A17: this early exit used to be invisible (no pipeline_health row, and the
@@ -574,11 +589,25 @@ async function handleRequest(req: Request): Promise<Response> {
   // that used to live below: a 23:00 kickoff still in play after UTC midnight
   // comes back under yesterday's date.
   const { data: comps, error: compsErr } = await supabase.rpc("poll_leagues");
+  // Clubs and countries only: the champions_league tournament row carries
+  // league_id 2, and a fallback that polled it would spend 1 440 calls a day on
+  // every European club's fixtures.
   const homeLeagues = teams && teams.length > 0
-    ? [...new Set(teams.filter((t) => t.is_active).map((t) => t.league_id as number))]
+    ? [...new Set(
+      teams.filter((t) => t.is_active && t.entity_type !== "tournament" && t.league_id != null)
+        .map((t) => t.league_id as number),
+    )]
     : FALLBACK_ACTIVE_LEAGUES;
   if (compsErr) {
-    console.warn("active_competition_ids() failed, falling back to home leagues:", compsErr.message);
+    console.error("poll_leagues() failed, falling back to always-on home leagues:", compsErr.message);
+    await supabase.from("pipeline_health").insert({
+      team_id: null,
+      stage: "match_watcher",
+      status: "failure",
+      target: "poll_leagues",
+      error_class: "rpc_failed",
+      message: `poll_leagues() failed, polling home leagues all day: ${compsErr.message}`.slice(0, 400),
+    }).then(({ error }) => error && console.warn("pipeline_health insert failed:", error.message));
   }
 
   // Clubs we actually write for. A cup opponent is in `teams` only so the
@@ -600,11 +629,13 @@ async function handleRequest(req: Request): Promise<Response> {
   // "LEAGUE CUP" / "CHAMPIONS LEAGUE SEMI-FINAL" for the Live Activity strap.
   // A World Championship group is still labelled by detect-consequences' own
   // group logic, so leave league 1 alone.
-  const competitionLabelForActivity = (leagueId: number | undefined, round: string | undefined): string => {
+  // Competition only, no round: live-match-current builds the same strap from
+  // match_status_state, which has no round column, and the two must agree or
+  // a push-to-start activity and the app's own fallback for one match read
+  // differently. The round is on the Coming-up card.
+  const competitionLabelForActivity = (leagueId: number | undefined): string => {
     if (leagueId === WC_LEAGUE_ID) return "";
-    const rl = roundLabel(round);
-    const name = competitionName(leagueId);
-    return rl && leagueId !== 39 ? `${name} ${rl}` : name;
+    return competitionName(leagueId);
   };
 
   const liveMeta = (teamId: string): { name: string; flag: string } | null => {
@@ -636,7 +667,9 @@ async function handleRequest(req: Request): Promise<Response> {
   const fixtures: ApiFixture[] = [];
   const leagueErrors: Array<{ league_id: number; message: string }> = [];
   for (const { leagueId, date: pollDate } of pollPairs) {
-    const season = seasonForLeague(leagueId);
+    // The season of the DATE being polled, not of today: a ?date= replay of a
+    // January fixture in the following August is the previous season.
+    const season = seasonForLeague(leagueId, new Date(`${pollDate}T12:00:00Z`));
     try {
       const resp = await fetch(
         `${API_FOOTBALL_BASE}/fixtures?league=${leagueId}&season=${season}&date=${pollDate}`,
@@ -701,7 +734,9 @@ async function handleRequest(req: Request): Promise<Response> {
       const { error: regErr } = await supabase.from("teams").upsert({
         id: slug,
         display_name: unknown.name,
-        short_name: unknown.name.slice(0, 14),
+        // The Live Activity and the FT push show this. "Atletico Madri" was
+        // the 14-char slice; the whole name fits the strap up to about 20.
+        short_name: unknown.name.length <= 20 ? unknown.name : unknown.name.split(" ")[0],
         api_football_id: unknown.id,
         entity_type: "club",
         league_id: fixtureLeagueId,
@@ -857,7 +892,8 @@ async function handleRequest(req: Request): Promise<Response> {
       activeTeamIds,
       leagueId: fixtureLeagueId,
     });
-    const refreshMarkers = pageRefreshTargets.length > 0 ? [PAGE_REFRESH_MARKER] : [];
+    // The marker is written AFTER the refresh call at the end of the tick
+    // (success is final, a failure counts an attempt), not here.
     // country_id → the just-written FT result article id, so the FT push can
     // deep-link straight to it (the post_match block below populates this a few
     // steps before the push fires, same tick).
@@ -1567,7 +1603,7 @@ async function handleRequest(req: Request): Promise<Response> {
               awayFlag: awayMeta.flag,
               // The widget renders this above the score. A Lock Screen saying
               // "LEAGUE CUP" answers the question a live score alone raises.
-              groupLabel: competitionLabelForActivity(fixtureLeagueId, fx.league?.round),
+              groupLabel: competitionLabelForActivity(fixtureLeagueId),
             },
             contentState,
             alert: { title: `${homeMeta.name} v ${awayMeta.name}`, body: "It's kicked off." },
@@ -1769,8 +1805,11 @@ async function handleRequest(req: Request): Promise<Response> {
             ftPen.home !== ftPen.away
             ? ftPen.home > ftPen.away
             : null;
-          const settles = COVERED_CUP_LEAGUES.includes(fixtureLeagueId) &&
-            !/leg/i.test(fixtureRound ?? "") &&
+          // Positive evidence only: API-Football's round strings never say
+          // "leg" ("Play-offs", "Semi-finals"), so the absence of the word
+          // proved nothing and a first-leg defeat read "Out of the Champions
+          // League".
+          const settles = isSingleLegTie(fixtureLeagueId, fixtureRound) &&
             (penWinnerHome !== null || (homeGoals ?? 0) !== (awayGoals ?? 0));
           const homeThrough = !settles
             ? null
@@ -1819,7 +1858,7 @@ async function handleRequest(req: Request): Promise<Response> {
     // never existed (first-observation skip case is handled by the
     // `prior !== null` guard on trigger detection above).
     const updatedBriefsFired = [
-      ...new Set([...briefsFired, ...newTriggers, ...pushMarkers, ...refreshMarkers]),
+      ...new Set([...briefsFired, ...newTriggers, ...pushMarkers]),
     ];
 
     // Upsert state. fired_finished_at is set ONLY when justFinished AND both
@@ -1880,7 +1919,6 @@ async function handleRequest(req: Request): Promise<Response> {
           console.error(`tournament item insert failed for ${fixtureId} (non-fatal):`, tErr.message);
         }
       }
-      // Marker is now durably persisted, so this fixture will not ask again.
       if (pageRefreshTargets.length > 0) {
         pageRefreshQueue.push({ fixtureId, teamIds: pageRefreshTargets });
       }
@@ -1902,11 +1940,11 @@ async function handleRequest(req: Request): Promise<Response> {
   // Premier League tie is 5 calls and a Champions League tie 8.
   //
   // Two rules this must never break: it must not fail the tick (the watcher's
-  // real job is pushes), and it must not fire twice for a fixture. The marker
-  // is already persisted by the time we get here, which makes this at-most-once
-  // — a failed refresh is not retried next minute, it waits for the two-hourly
-  // cron exactly as it did before this change. That is the safe direction to
-  // fail in; the alternative retries a paid fetch every sixty seconds.
+  // real job is pushes), and it must not fire twice for a fixture once it has
+  // worked. The marker is written after the call: success is final, a failure
+  // counts one attempt and the next tick tries again, three times at most
+  // (page-refresh.ts). A 15-second timeout at 22:05 used to leave the table
+  // wrong until the 06:00 cron.
   const refreshTargets = mergeRefreshTargets(pageRefreshQueue);
   let pageRefresh: Record<string, unknown> | null = null;
   if (refreshTargets.length > 0) {
@@ -1935,6 +1973,20 @@ async function handleRequest(req: Request): Promise<Response> {
     // One pipeline_health row per fixture, so "did the table move when Arsenal
     // finished" is a query and not an archaeology exercise.
     for (const entry of pageRefreshQueue) {
+      try {
+        const { data: row } = await supabase
+          .from("match_status_state")
+          .select("briefs_fired")
+          .eq("fixture_id", entry.fixtureId)
+          .maybeSingle();
+        const fired = ((row?.briefs_fired as string[] | null) ?? []);
+        await supabase
+          .from("match_status_state")
+          .update({ briefs_fired: [...new Set([...fired, pageRefreshMarker(fired, result.ok)])] })
+          .eq("fixture_id", entry.fixtureId);
+      } catch (e) {
+        console.warn("page_refresh marker write failed (non-fatal):", e instanceof Error ? e.message : String(e));
+      }
       try {
         await supabase.from("pipeline_health").insert({
           stage: "page_refresh",

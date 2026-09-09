@@ -60,15 +60,17 @@ export function minTierForLiveEvent(
   // A goal goes to everyone, whatever the competition and whatever the round.
   if (event === "goal") return 1;
 
-  const { stage } = parseRound(round);
+  const { stage } = parseRound(round, leagueId);
 
   // A semi-final or a final, in any competition that has them. stage 0 means a
   // league phase or an unparsed round, which is not a semi-final.
   if (stage === 1 || stage === 2) return 1;
 
   // Early domestic cup rounds: the goals and the result, no framing pushes.
-  const earlyLeagueCup = leagueId === 48 && stage > 4;
-  const earlyFaCup = leagueId === 45 && stage > 8;
+  // A domestic cup has no league phase, so an unparsed round (stage 0) there
+  // is an early or unknown one and gets the quiet treatment, not the loud one.
+  const earlyLeagueCup = leagueId === 48 && (stage === 0 || stage > 4);
+  const earlyFaCup = leagueId === 45 && (stage === 0 || stage > 8);
   if (earlyLeagueCup || earlyFaCup) return event === "ft" ? 1 : TIER_NOBODY;
 
   return BASE[event];

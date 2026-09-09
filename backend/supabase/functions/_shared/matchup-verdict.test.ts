@@ -1,6 +1,7 @@
 import { assertEquals } from "https://deno.land/std@0.177.0/testing/asserts.ts";
 import {
   CLUB_FAVORITE_GAP,
+  clubPreMatchVerdict,
   preMatchVerdict,
   resultFraming,
   WC_FAVORITE_GAP,
@@ -94,4 +95,17 @@ Deno.test("resultFraming: unknown rank => null", () => {
 
 Deno.test("WC and CLUB gap constants are distinct and sane", () => {
   assertEquals(WC_FAVORITE_GAP > CLUB_FAVORITE_GAP, true);
+});
+
+Deno.test("clubPreMatchVerdict: five places on one point is not a favourite", () => {
+  // Chelsea 4th (6) v Leeds 9th (5), 2026-09-09: the live card's mistake.
+  assertEquals(clubPreMatchVerdict(4, 9, 6, 5)?.tag, "even");
+  // After matchweek one every winner is on three points, ordered by goals.
+  assertEquals(clubPreMatchVerdict(1, 7, 3, 3)?.tag, "even");
+  // Four points and five places is a favourite either way round.
+  assertEquals(clubPreMatchVerdict(3, 12, 20, 11)?.tag, "likely_win");
+  assertEquals(clubPreMatchVerdict(17, 2, 3, 12)?.tag, "likely_loss");
+  // Points unknown (strength_rank callers): positions alone still decide.
+  assertEquals(clubPreMatchVerdict(3, 12)?.tag, "likely_win");
+  assertEquals(clubPreMatchVerdict(4, null, 6, null), null);
 });

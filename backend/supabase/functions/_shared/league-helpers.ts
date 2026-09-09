@@ -19,8 +19,8 @@
  * fallback for cup competitions but the table should explicitly map every
  * league we actually run.
  */
-export function seasonForLeague(leagueId: number): number {
-  const now = new Date();
+export function seasonForLeague(leagueId: number, at: Date = new Date()): number {
+  const now = at;
   const year = now.getUTCFullYear();
   switch (leagueId) {
     // Every club competition follows the August-to-May season, so the cups
@@ -104,9 +104,23 @@ export interface RoundInfo {
   label: string;
 }
 
-export function parseRound(round: string | undefined): RoundInfo {
+export function parseRound(round: string | undefined, leagueId?: number): RoundInfo {
   const r = (round ?? "").toLowerCase();
   const leg = /2nd leg|second leg/.test(r) ? 2 : /1st leg|first leg/.test(r) ? 1 : undefined;
+
+  // The FA Cup names its rounds by number and API-Football sends them that way
+  // ("3rd Round", "5th Round"). The 5th round IS the last 16, so it takes the
+  // last-16 stage rather than the generic numbered-round one: the tier floor
+  // and the calendar weight both key off stage, and before this a "5th Round"
+  // tie was gated as an early round while a hypothetical "Round of 16" was not.
+  if (leagueId === 45) {
+    const n = r.match(/(\d+)(?:st|nd|rd|th)?\s+round/);
+    if (n && !/qualifying|replay/.test(r)) {
+      const k = Number(n[1]);
+      const stage = k === 5 ? 8 : k === 4 ? 16 : k === 3 ? 32 : 40;
+      return { stage, leg, label: `${k}${ordinalSuffix(k)} round` };
+    }
+  }
 
   // "3rd Place Final" is not a final. Neither is "Semi-finals".
   const isFinal = /\bfinal\b/.test(r) && !/semi|quarter|3rd|third/.test(r);
@@ -116,6 +130,11 @@ export function parseRound(round: string | undefined): RoundInfo {
   if (/round of 16|1\/8|last 16/.test(r)) return { stage: 8, leg, label: "last 16" };
   if (/round of 32|1\/16|last 32/.test(r)) return { stage: 16, leg, label: "last 32" };
   if (/round of 64|last 64/.test(r)) return { stage: 32, leg, label: "last 64" };
+  // League Cup first round (August, 70 clubs, none of ours until round two
+  // and only the non-European ones then). Unmapped, this fell through to stage
+  // 0 and was pushed like a league phase: the smallest tie of the season sent
+  // the most pushes.
+  if (/round of 128|last 128/.test(r)) return { stage: 64, leg, label: "first round" };
   if (/play-?off|playoff/.test(r)) return { stage: 24, leg, label: "play-off" };
 
   // Numbered domestic-cup rounds ("3rd Round", "4th Round") and league phases.
@@ -130,8 +149,41 @@ function ordinalSuffix(n: number): string {
 }
 
 /** The round in words, for copy: "last 32", "quarter-final", "" for a league phase. */
-export function roundLabel(round: string | undefined): string {
-  return parseRound(round).label;
+export function roundLabel(round: string | undefined, leagueId?: number): string {
+  return parseRound(round, leagueId).label;
+}
+
+/**
+ * Is this cup tie decided on the night? The FT push says "Through to the last
+ * 16" or "Out of the League Cup" only when it is. API-Football's round strings
+ * never carry a leg marker in practice ("Play-offs", "Semi-finals" — checked
+ * against three days of raw logs on 2026-09-09), so this is an allowlist of
+ * rounds KNOWN to be one match, never the absence of the word "leg":
+ *
+ *   - FA Cup: every round (replays were abolished from the first round proper
+ *     in 2024-25; a drawn qualifying-round tie is not ours to cover).
+ *   - League Cup: every round except the semi-finals, which are two legs.
+ *   - European competitions: the final only. The league phase settles nothing
+ *     on the night and every knockout round is two-legged.
+ *
+ * Anything else — unknown competition, unparsed round — returns false and the
+ * push names the competition without claiming a result.
+ */
+export function isSingleLegTie(leagueId: number | undefined, round: string | undefined): boolean {
+  const { stage, leg } = parseRound(round, leagueId);
+  if (leg !== undefined) return false;
+  switch (leagueId) {
+    case 45:
+      return stage !== 0;
+    case 48:
+      return stage !== 0 && stage !== 2;
+    case 2:
+    case 3:
+    case 848:
+      return stage === 1;
+    default:
+      return false;
+  }
 }
 
 /**
@@ -152,7 +204,7 @@ export function fixtureImportance(
   round: string | undefined,
   opponentIsTopFlight?: boolean,
 ): number {
-  const { stage } = parseRound(round);
+  const { stage } = parseRound(round, leagueId);
   const isFinal = stage === 1;
   const isSemi = stage === 2;
   const isQuarter = stage === 4;
@@ -204,7 +256,7 @@ export function fixtureLabel(
   const base = leagueId !== undefined && leagueId in COMPETITION_NAMES
     ? COMPETITION_NAMES[leagueId]
     : (leagueName ?? "Fixture").replace(/^UEFA\s+/i, "").replace(/^FIFA\s+/i, "");
-  const { stage, leg, label } = parseRound(round);
+  const { stage, leg, label } = parseRound(round, leagueId);
   if (stage === 0 || !label) return base;
   if (stage === 1) return `${base} final`;
   const withRound = `${base} ${label}`;

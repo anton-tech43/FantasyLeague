@@ -330,9 +330,11 @@ export interface ClubPreMatchContext {
   /** League positions. Both set ONLY when both clubs are in the same table. */
   myPosition?: number | null;
   /**
-   * What that table is, in the sentence: "in the table" (default) for the
-   * league, "in the league phase" for a European night, where the positions
-   * come from the competition's own 36-club table rather than the domestic one.
+   * What that table is, in the sentence: "in the table" (default) for a league
+   * game, "in the league" for a domestic cup tie between two league clubs (the
+   * positions are still the league's, and the card must say so), "in the
+   * league phase" for a European night, where the positions come from the
+   * competition's own 36-club table rather than the domestic one.
    */
   tableLabel?: string;
   oppPosition?: number | null;
@@ -413,16 +415,19 @@ function formSentence(ctx: ClubPreMatchContext): string | null {
   return `${ctx.opponentName} come in ${theirs}.`;
 }
 
-/// "with three wins in their last five" from a W/D/L form string. Counts over
-/// however many games there are, so an August page says "last three" rather
-/// than claiming five that have not been played.
+/// "with three wins in their last five league games" from a W/D/L form string.
+/// Counts over however many games there are, so an August page says "last
+/// three" rather than claiming five that have not been played. Says "league
+/// games" because that is what the standings form string counts: on
+/// 2026-09-09 Bournemouth's card read "without a win in their last three" the
+/// morning after a 4-0 League Cup win listed two cards below it.
 function formClause(form: string | null | undefined): string | null {
   const letters = (form ?? "").toUpperCase().replace(/[^WDL]/g, "").slice(-5);
   if (letters.length === 0) return null;
   const wins = letters.split("").filter((c) => c === "W").length;
-  const played = `their last ${numberWord(letters.length)}`;
+  const played = `their last ${numberWord(letters.length)} league games`;
   if (wins === 0) return `without a win in ${played}`;
-  if (wins === letters.length) return `having won all ${numberWord(wins)}`;
+  if (wins === letters.length) return `having won ${played}`;
   return `with ${numberWord(wins)} ${wins === 1 ? "win" : "wins"} in ${played}`;
 }
 

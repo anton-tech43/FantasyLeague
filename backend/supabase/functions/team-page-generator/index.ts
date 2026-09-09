@@ -29,7 +29,7 @@ import {
 } from "../_shared/stakes-templates.ts";
 import { buildUpcomingFixtures, collectFinishedFixtureIds, dropFinished, FINISHED_STATUSES, FIXTURE_PAST_GRACE_MS, filterFixturesByLeague } from "../_shared/fixture-rollover.ts";
 import { knockoutOutcome } from "../_shared/goal-push.ts";
-import { CLUB_FAVORITE_GAP, preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
+import { clubPreMatchVerdict, preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
 import { classifyBestThird, type GroupThirdBounds } from "../_shared/best-third.ts";
 import { classifyExactForTeam, coarseThirdPointsBounds, type GroupTeam, type RemainingGame } from "../_shared/group-scenarios.ts";
 import { guaranteedExactlyThird } from "../_shared/detect-consequences.ts";
@@ -1093,7 +1093,12 @@ async function updateDynamicFields(
   // routine's, carried forward verbatim: on 2026-09-08 Sunderland's card said
   // "Arsenal" above a sentence about a League Cup tie with Hull City.
   if (fixturesLog?.data) {
-    const nextFixture = extractNextFixture(fixturesLog.data, team.api_football_id, new Date(now));
+    const nextFixture = extractNextFixture(
+      fixturesLog.data,
+      team.api_football_id,
+      new Date(now),
+      finishedIds,
+    );
     if (nextFixture) {
       const prev = (cards.next_fixture ?? {}) as Record<string, unknown>;
       type Row = Record<string, unknown>;
@@ -1143,18 +1148,38 @@ async function updateDynamicFields(
         myRank = mine ?? null;
         oppRank = theirs ?? null;
       }
-      const favorite = preMatchVerdict(myRank, oppRank, CLUB_FAVORITE_GAP);
+      // Position AND points: five places in September can be one goal of
+      // goal difference, and the card must not call a favourite a sentence
+      // after saying "a point between them".
+      const favorite = clubPreMatchVerdict(
+        myRank,
+        oppRank,
+        bothInTable ? (myRow!.points as number) : null,
+        bothInTable ? (oppRow!.points as number) : null,
+      );
+
+      // The opponent as the app names them elsewhere, when they are one of
+      // ours: "Brentford are away at Bournemouth" on one page and "AFC
+      // Bournemouth are at home to Brentford" on the other is two names for
+      // one club. Also the source of "their ones to watch" below.
+      const opponentInfo = nextFixture.opponent_api_id
+        ? await loadOpponentCardInfo(supabase, nextFixture.opponent_api_id)
+        : null;
 
       const standingsData = standingsLog?.data as Record<string, unknown> | undefined;
       const preMatchCtx: ClubPreMatchContext = {
         teamName: team.display_name,
-        opponentName: nextFixture.opponent,
+        opponentName: opponentInfo?.teamName ?? nextFixture.opponent,
         venue: nextFixture.venue === "away" ? "away" : "home",
         competition: nextFixture.league_id !== undefined
           ? competitionProse(nextFixture.league_id)
           : undefined,
-        round: roundLabel(nextFixture.round),
-        tableLabel: useEuro ? "in the league phase" : undefined,
+        round: roundLabel(nextFixture.round, nextFixture.league_id),
+        tableLabel: useEuro
+          ? "in the league phase"
+          : nextFixture.league_id !== undefined && nextFixture.league_id !== 39
+          ? "in the league"
+          : undefined,
         myPosition: bothInTable ? (myRow!.rank as number) : null,
         oppPosition: bothInTable ? (oppRow!.rank as number) : null,
         myPoints: bothInTable ? (myRow!.points as number) : null,
@@ -1192,12 +1217,9 @@ async function updateDynamicFields(
 
       cards.this_week = renderClubThisWeek(preMatchCtx);
 
-      // "Their ones to watch" from the OPPONENT's own curated page. Zero
-      // Claude, always in step with the schedule, and omitted for a cup
-      // opponent we have no page for.
-      const opponentInfo = nextFixture.opponent_api_id
-        ? await loadOpponentCardInfo(supabase, nextFixture.opponent_api_id)
-        : null;
+      // "Their ones to watch" from the OPPONENT's own curated page (loaded
+      // above). Zero Claude, always in step with the schedule, and omitted for
+      // a cup opponent we have no page for.
       if (cards.ones_to_know) {
         const otk = cards.ones_to_know as Record<string, unknown>;
         if (opponentInfo && opponentInfo.players.length > 0) {
@@ -1211,12 +1233,20 @@ async function updateDynamicFields(
         }
       }
     }
+    // The league table on the page is the list of top-flight clubs, so an FA
+    // Cup third-round tie against one of them gets its third dot.
+    const topFlightApiIds = new Set(
+      (((cards.standings as Record<string, unknown> | undefined)?.entries ?? []) as Array<Record<string, unknown>>)
+        .map((e) => e.team_id_api_football as number | undefined)
+        .filter((id): id is number => typeof id === "number"),
+    );
     const upcoming = buildUpcomingFixtures(
       fixturesLog.data,
       team.api_football_id,
       new Date(now),
       cards.upcoming_fixtures as Array<Record<string, unknown>> | undefined,
       finishedIds,
+      topFlightApiIds,
     );
     if (upcoming) cards.upcoming_fixtures = upcoming;
   }
@@ -1985,6 +2015,7 @@ function extractNextFixture(
   data: unknown,
   teamApiFootballId: number,
   skipPastBefore?: Date,
+  finishedIds: Set<number> = new Set(),
 ): {
   opponent: string;
   date: string;
@@ -2006,8 +2037,13 @@ function extractNextFixture(
     let fixture: Record<string, unknown> | undefined;
     if (skipPastBefore) {
       const floor = skipPastBefore.getTime() - FIXTURE_PAST_GRACE_MS;
+      // Also skip anything fixtures_last already records as finished: within
+      // the 3h grace a played game is otherwise "coming up" here while the
+      // Calendar tab (buildUpcomingFixtures, same set) has dropped it.
       fixture = response.find((item) => {
         const fi = (item as Record<string, unknown>).fixture as Record<string, unknown> | undefined;
+        const id = fi?.id as number | undefined;
+        if (id != null && finishedIds.has(id)) return false;
         const t = Date.parse((fi?.date as string) ?? "");
         return Number.isNaN(t) || t >= floor;
       }) as Record<string, unknown> | undefined;
