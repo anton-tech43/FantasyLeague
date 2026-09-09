@@ -26,8 +26,8 @@ struct QuizView: View {
     private var livePacks: [QuizPack] { [livePack, squadPack, leaguePack].compactMap { $0 } }
     private var allPacks: [QuizPack] { content.packs + livePacks }
 
-    /// His squad, his club now, the basics, his club's history, the league,
-    /// then everything else. The two that teach her the faces come first.
+    /// The basics first: it is the only pack that assumes nothing. Then his
+    /// squad, his club now, his club's history, the league, then the rest.
     private var visiblePacks: [QuizPack] {
         let general = content.packs.filter { !$0.isClubPack }
         let basics = general.first { $0.id == "the-basics" }
@@ -36,7 +36,15 @@ struct QuizView: View {
             content.packs.first { $0.id == "club-" + id.replacingOccurrences(of: "_", with: "-") }
         }
         guard clubId != nil else { return [basics, leaguePack].compactMap { $0 } + rest }
-        return [squadPack, livePack, basics, history, leaguePack].compactMap { $0 } + rest
+        return [basics, squadPack, livePack, history, leaguePack].compactMap { $0 } + rest
+    }
+
+    /// What the big button starts. The basics until she has a score on them,
+    /// his squad after that.
+    private var defaultPack: QuizPack? {
+        let basics = visiblePacks.first { $0.id == "the-basics" }
+        if let basics, store.progress(for: basics.id).played == 0 { return basics }
+        return squadPack ?? basics ?? visiblePacks.first
     }
 
     private var round: MyTurnStore.QuizRound? { store.quizRound }
@@ -79,7 +87,8 @@ struct QuizView: View {
                 player: PlayerCard(teamId: clubId, playerName: person.name, position: person.position,
                                    age: person.age, summary: person.summary ?? "",
                                    vibe: person.vibe, form: nil),
-                number: person.number, photoURL: person.photoURL, gated: false
+                number: person.number, photoURL: person.photoURL,
+                stats: person.statsLine, hook: person.hook, gated: false
             )
         }
         #if DEBUG
@@ -108,10 +117,10 @@ struct QuizView: View {
                 subtitle: "\(packTitle(pack)) · question \(round.index + 1) of \(round.questionIds.count)",
                 systemImage: "arrow.right"
             ) { paused = false }
-        } else if let first = squadPack ?? visiblePacks.first {
+        } else if let first = defaultPack {
             MyTurnPractiseButton(
-                title: squadPack != nil ? "Learn his squad" : "Start a round",
-                subtitle: squadPack != nil
+                title: first.id == LiveSquadPack.packId ? "Learn his squad" : "Start a round",
+                subtitle: first.id == LiveSquadPack.packId
                     ? "Ten questions on the men in his team"
                     : "Ten questions from \(packTitle(first))"
             ) {
@@ -154,8 +163,8 @@ struct QuizView: View {
         let progress = store.progress(for: pack.id)
         if progress.played > 0 { return "Best: \(progress.best) / 10" }
         switch pack.id {
-        case LiveSquadPack.packId:      return "Faces, numbers and positions, all the way down the squad."
-        case LiveClubPack.packId:       return "Manager, players, last season. Updates with his team page."
+        case LiveSquadPack.packId:      return "Faces, numbers, and what each one is for."
+        case LiveClubPack.packId:       return "The table, the last result, the next one."
         case LiveSquadPack.leaguePackId: return "The names he'll mention who don't play for his club."
         default: break
         }

@@ -12,6 +12,7 @@
 		11668C80EB1ED7F740D84481 /* TierGating.swift in Sources */ = {isa = PBXBuildFile; fileRef = 427A2A492E809AB52CDF85A0 /* TierGating.swift */; };
 		14474256E2DD1E7DA90DA178 /* GlossaryText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1969411F418AE27184440E14 /* GlossaryText.swift */; };
 		159D99B3A0BD1457CA4C4F47 /* LiveMatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCA4D1D232DB07DA5CC85E8B /* LiveMatchSnapshot.swift */; };
+		17B1A6C8E309B3DB90A2F28E /* PlayerHooks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D5FD984EA8B545ADF846F1C /* PlayerHooks.swift */; };
 		1958991C7C4BB12F44CFD55F /* LingoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922140CFA2F1A4786CEDC255 /* LingoView.swift */; };
 		1BED15311C3F5F71032B03F8 /* LingoFlashcardsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6EA0D5580F6C805D4572C4 /* LingoFlashcardsView.swift */; };
 		244B4E7A89E82714DCF2F917 /* MatchActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BDA3526673665ADFD98752B /* MatchActivityAttributes.swift */; };
@@ -160,6 +161,7 @@
 		427A2A492E809AB52CDF85A0 /* TierGating.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TierGating.swift; sourceTree = "<group>"; };
 		4D8F505623CCED3CAAB391AA /* LiveClubPack.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveClubPack.swift; sourceTree = "<group>"; };
 		4DEDD7BB48436C1F2CEE9515 /* QuizView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuizView.swift; sourceTree = "<group>"; };
+		5D5FD984EA8B545ADF846F1C /* PlayerHooks.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlayerHooks.swift; sourceTree = "<group>"; };
 		61B2720C074D85BD2E44091E /* MyTurn */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; path = MyTurn; sourceTree = "<group>"; };
 		7053F7511B38A308FC409BEB /* MyTurnContent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyTurnContent.swift; sourceTree = "<group>"; };
 		7239C9DAC195717215AC20F2 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -474,6 +476,7 @@
 				07B8C8BE4CFA3444C2C316A0 /* MyTurnStore.swift */,
 				4D8F505623CCED3CAAB391AA /* LiveClubPack.swift */,
 				EC063CF34EB46623A471C9F6 /* LiveSquadPack.swift */,
+				5D5FD984EA8B545ADF846F1C /* PlayerHooks.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -791,6 +794,7 @@
 				785C14F6B48F7E69523A45EC /* SayThisPractiseView.swift in Sources */,
 				1BED15311C3F5F71032B03F8 /* LingoFlashcardsView.swift in Sources */,
 				754DEA162AF85F46038029EC /* LiveSquadPack.swift in Sources */,
+				17B1A6C8E309B3DB90A2F28E /* PlayerHooks.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

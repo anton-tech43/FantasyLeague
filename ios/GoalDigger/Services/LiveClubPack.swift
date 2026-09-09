@@ -29,6 +29,21 @@ enum LiveClubPack {
         let players: [TopPlayer]?
         let basics: BasicsCard?
         let rival: String?
+        /// Who this club play next, for "Who's next?" distractors. Nil on a page
+        /// written before the fixture was known.
+        var next: String? = nil
+    }
+
+    /// Who leads a club's scoring, and whether anyone is level with him. A tie
+    /// is never called "top scorer", so the question is skipped instead.
+    struct TopScorer: Codable, Hashable {
+        let team_id: String
+        let name: String
+        let goals: Int
+        let tied: Bool
+        /// Squad-mates, most-played first, for the question's wrong answers.
+        /// Same source as `name`, so they are printed the same way.
+        var rivals: [String] = []
     }
 
     struct ClubManager: Codable {
@@ -45,6 +60,11 @@ enum LiveClubPack {
         /// Photo URLs verified as CDN silhouettes; a "Who is this?" on one of
         /// these would be a photo of nobody.
         var silhouettes: [String] = []
+        /// Two men per club, chosen and photo-checked at fetch time, for the
+        /// league pack. Only the survivors are kept, so this is forty rows.
+        var leaguePicks: [LiveSquadPack.Player] = []
+        /// Every club's leading scorer, keyed by team id.
+        var topScorers: [String: TopScorer] = [:]
 
         var isStale: Bool { Date().timeIntervalSince(fetchedAt) > 24 * 60 * 60 }
     }
@@ -98,61 +118,107 @@ enum LiveClubPack {
                 useType: tp == nil ? .ask : .say,
                 use: tp.map { quote($0) } ?? quote("Is \(m.name) under pressure yet?")
             )
-            if let photo = m.photoURL, !sources.silhouettes.contains(photo) {
+        }
+
+        // The state of the club, right now. Every one of these changes on a
+        // Saturday, which is the point: the people live in the squad pack.
+        let mine = cards.standings?.entries.first {
+            $0.teamIdApiFootball == team.apiFootballId || $0.teamName == team.displayName
+        }
+        if let row = mine, row.rank > 0 {
+            let nearby = [-3, -2, -1, 1, 2, 3, 4].map { row.rank + $0 }.filter { (1...20).contains($0) }
+            qs += question(
+                id: "live-table-position", difficulty: 2,
+                question: "Where are \(club) in the table right now?",
+                answer: ordinal(row.rank), distractors: nearby.map(ordinal),
+                explanation: "\(club) are \(ordinal(row.rank)) with \(points(row.points)) from \(row.played) games.",
+                why: "The table is the first thing he checks, and it moves every weekend.",
+                useType: .ask,
+                use: quote("Are \(club) still \(ordinal(row.rank))?")
+            )
+            qs += question(
+                id: "live-points", difficulty: 3,
+                question: "How many points do \(club) have?",
+                answer: "\(row.points)",
+                distractors: [3, -3, 6, -6, 1, -1].map { row.points + $0 }.filter { $0 >= 0 }.map(String.init),
+                explanation: "\(points(row.points)) from \(row.played) games, which has them \(ordinal(row.rank)) as of today.",
+                why: "Three for a win, one for a draw. The number is the whole season in one figure.",
+                useType: .impress,
+                use: quote("\(points(row.points)) from \(row.played). That's a decent start.")
+            )
+        }
+
+        // The last game. She is expected to know the result, not just the name
+        // of the opponent, so the wrong answers keep the opponent and change
+        // the outcome.
+        let recent = cards.recentResults ?? []
+        if let last = recent.first {
+            var wrong = [resultLine(last, flip: .loss), resultLine(last, flip: .draw), resultLine(last, flip: .win)]
+            for r in recent.dropFirst() { wrong += [resultLine(r), resultLine(r, flip: .loss)] }
+            qs += question(
+                id: "live-last-result", difficulty: 2,
+                question: "Who did \(club) play last, and how did it go?",
+                answer: resultLine(last), distractors: wrong,
+                explanation: "\(club) played \(clubShort(last.opponent)) \(last.venue == "home" ? "at home" : "away") and it finished \(last.teamScore)-\(last.oppScore). That is the game he is still talking about.",
+                why: "The last result decides what kind of week he has had.",
+                useType: .ask,
+                use: quote("Have you got over the \(clubShort(last.opponent)) game yet?")
+            )
+        }
+
+        if let next = cards.nextFixture {
+            let opponent = clubShort(next.opponent)
+            qs += question(
+                id: "live-next-opponent", difficulty: 2,
+                question: "Who do \(club) play next?",
+                answer: opponent,
+                distractors: (others.compactMap(\.next).map(clubShort) + Team.allCases.map(\.shortName))
+                    .filter { $0 != club },
+                explanation: [
+                    "\(club) play \(opponent) \(next.venue.lowercased() == "away" ? "away" : "at home")",
+                    next.competition.map { "in the \($0)" },
+                ].compactMap { $0 }.joined(separator: " ") + ". That is the next one in the diary.",
+                why: "Whatever the plan was for that afternoon, this is what it is now.",
+                useType: .ask,
+                use: quote("Is the \(opponent) game on the telly?")
+            )
+        }
+
+        // How they have been playing: five letters on the team page, in words.
+        if let f = cards.form {
+            let letters = f.recentForm.uppercased().filter { "WDL".contains($0) }
+            let w = letters.filter { $0 == "W" }.count
+            let d = letters.filter { $0 == "D" }.count
+            let l = letters.filter { $0 == "L" }.count
+            if letters.count >= 3 {
+                let answer = formLabel(w, d, l)
+                let wrong = [(w + 1, d - 1, l), (w - 1, d + 1, l), (w, d + 1, l - 1),
+                             (w, d - 1, l + 1), (w - 1, d, l + 1), (w + 1, d, l - 1)]
+                    .filter { $0.0 >= 0 && $0.1 >= 0 && $0.2 >= 0 }
+                    .map { formLabel($0.0, $0.1, $0.2) }
                 qs += question(
-                    id: "live-manager-photo", difficulty: 2,
-                    question: "Who is this?",
-                    answer: m.name, distractors: rivalsManagers,
-                    explanation: "\(m.name), \(club)'s manager. \(clip(personalise(m.summary), 120))",
-                    why: "He's on screen every couple of minutes during a match, arms folded.",
-                    useType: .say,
-                    use: "Point at the screen: " + quote("That's \(m.name), isn't it?"),
-                    image: photo
+                    id: "live-form", difficulty: 2,
+                    question: "How have \(club) been playing?",
+                    answer: answer, distractors: wrong,
+                    explanation: "\(answer), as of today. \(clip(personalise(f.formSummary), 110))",
+                    why: "Form is the mood. It explains why he is fine or unbearable this week.",
+                    useType: .ask,
+                    use: quote("Are \(club) actually playing well, or just winning?")
                 )
             }
         }
 
-        // Ones to know — position, face, and which club.
-        let players = cards.onesToKnow?.players ?? []
-        let awayPlayers = others.flatMap { $0.players ?? [] }.map(\.name)
-        for p in players {
-            let label = positionLabel(p.position)
-            let short = shortName(p.name)
-            let liner = clip(personalise(p.oneLiner ?? ""), 150)
-            let role = label == "Goalkeeper" ? "is the goalkeeper" : "plays as a \(label.lowercased())"
+        // Who has the goals. Skipped on a tie: "joint top scorer" is not a
+        // question with one right answer.
+        if let scorer = sources.topScorers[team.rawValue], !scorer.tied, scorer.goals > 0 {
             qs += question(
-                id: "live-pos-" + slug(p.name), difficulty: 1,
-                question: "What position does \(p.name) play?",
-                answer: label, distractors: positionDistractors(for: label),
-                explanation: liner.isEmpty ? "\(short) \(role) for \(club)." : "\(short) \(role). \(liner)",
-                why: "He'll say \"\(short)\" and nothing else, and expect you to know the job.",
-                useType: positionUseType(label),
-                use: positionUse(label, short: short)
-            )
-            if let photo = p.photoURL, !sources.silhouettes.contains(photo) {
-                let names = players.map(\.name).filter { $0 != p.name } + awayPlayers
-                qs += question(
-                    id: "live-photo-" + slug(p.name), difficulty: 2,
-                    question: "Who is this?",
-                    answer: p.name, distractors: names,
-                    explanation: "\(p.name), \(club)'s \(label.lowercased()). \(liner)",
-                    why: "Faces are how you follow a match. The names come after.",
-                    useType: .say,
-                    use: "Casually, when the camera finds him: " + quote("There's \(short)."),
-                    image: photo
-                )
-            }
-        }
-        if let p = players.first, awayPlayers.count >= 3 {
-            let short = shortName(p.name)
-            qs += question(
-                id: "live-plays-for", difficulty: 2,
-                question: "Which of these plays for \(club)?",
-                answer: p.name, distractors: awayPlayers,
-                explanation: clip(personalise(p.oneLiner ?? "\(p.name) is one of \(club)'s key players."), 170),
-                why: "Knowing one name is the difference between watching and following.",
-                useType: .ask,
-                use: quote("Is \(short) fit for the weekend?")
+                id: "live-top-scorer", difficulty: 2,
+                question: "Who's scored most for \(club) this season?",
+                answer: shortName(scorer.name), distractors: scorer.rivals.map(shortName),
+                explanation: "\(shortName(scorer.name)) has \(scorer.goals) \(scorer.goals == 1 ? "goal" : "goals") for \(club) this season, more than anyone else in the squad.",
+                why: "When the ball goes in, this is the name the room shouts most often.",
+                useType: .say,
+                use: "When they win a corner: " + quote("Watch \(shortName(scorer.name)) here.")
             )
         }
 
@@ -260,6 +326,48 @@ enum LiveClubPack {
     // MARK: Text helpers
 
     static func quote(_ s: String) -> String { "\u{201C}\(s)\u{201D}" }
+
+    /// 1 → "1st", 2 → "2nd", 11 → "11th".
+    static func ordinal(_ n: Int) -> String {
+        let suffix = (11...13).contains(n % 100) ? "th"
+            : n % 10 == 1 ? "st" : n % 10 == 2 ? "nd" : n % 10 == 3 ? "rd" : "th"
+        return "\(n)\(suffix)"
+    }
+
+    static func points(_ n: Int) -> String { n == 1 ? "1 point" : "\(n) points" }
+
+    /// "Wolverhampton Wanderers" → "Wolves", so a result line fits the forty
+    /// characters an option gets. Anything we do not recognise is left alone.
+    static func clubShort(_ name: String) -> String {
+        Team.allCases.first {
+            $0.displayName.caseInsensitiveCompare(name) == .orderedSame
+                || $0.shortName.caseInsensitiveCompare(name) == .orderedSame
+        }?.shortName ?? name
+    }
+
+    enum Flip { case win, draw, loss }
+
+    /// "Beat Chelsea 2-1 (home)". `flip` rewrites the outcome for a distractor:
+    /// same opponent, same afternoon, a result that did not happen.
+    static func resultLine(_ r: RecentResult, flip: Flip? = nil) -> String {
+        let opp = clubShort(r.opponent)
+        let where_ = r.venue.lowercased() == "away" ? "away" : "home"
+        let hi = max(r.teamScore, r.oppScore), lo = min(r.teamScore, r.oppScore)
+        switch flip ?? (r.outcome == "W" ? .win : r.outcome == "L" ? .loss : .draw) {
+        // A 1-1 cannot be flipped to "Beat them 1-1", so a level score gains
+        // a goal for the win and loss variants.
+        case .win:  return "Beat \(opp) \(hi == lo ? hi + 1 : hi)-\(lo) (\(where_))"
+        case .loss: return "Lost \(lo)-\(hi == lo ? hi + 1 : hi) to \(opp) (\(where_))"
+        case .draw: return "Drew \(hi)-\(hi) with \(opp) (\(where_))"
+        }
+    }
+
+    /// "Won 3, drew 1, lost 1 of the last five".
+    static func formLabel(_ w: Int, _ d: Int, _ l: Int) -> String {
+        let words = ["", "one", "two", "three", "four", "five", "six"]
+        let n = w + d + l
+        return "Won \(w), drew \(d), lost \(l) of the last \(words[safe: n] ?? "\(n)")"
+    }
 
     /// Cut at a sentence end under the cap; else at a word, with an ellipsis.
     static func clip(_ text: String, _ cap: Int) -> String {
@@ -371,12 +479,12 @@ final class LiveClubPackService {
     static let shared = LiveClubPackService()
 
     private(set) var pack: QuizPack?
-    /// "The league's big names" — the other clubs' ones-to-know, built from the
-    /// same slices the pack above uses for distractors, so it costs no request.
+    /// "The league's big names" — two men from every other club, built from
+    /// the same daily `players` fetch that gives this pack its top scorer.
     private(set) var leaguePack: QuizPack?
     private(set) var teamId: String?
 
-    private static let sourcesKey = "myTurnLiveSources.v1"
+    private static let sourcesKey = "myTurnLiveSources.v2"
     private var sources: LiveClubPack.Sources? {
         didSet {
             if let sources, let data = try? JSONEncoder().encode(sources) {
@@ -410,8 +518,10 @@ final class LiveClubPackService {
             }
         }
         guard var src = sources else { return }
-        leaguePack = LiveSquadPack.buildLeague(slices: src.slices, excluding: team?.rawValue,
-                                               personalise: personalise)
+        leaguePack = LiveSquadPack.buildLeague(
+            picks: src.leaguePicks, topScorers: src.topScorers,
+            liners: Dictionary(src.slices.map { ($0.team_id, $0.players ?? []) }, uniquingKeysWith: { a, _ in a }),
+            excluding: team?.rawValue, personalise: personalise)
 
         guard let team else { return }
 
@@ -444,7 +554,7 @@ final class LiveClubPackService {
     private static func fetchSources() async throws -> LiveClubPack.Sources {
         let ids = Team.allCases.map(\.rawValue).joined(separator: ",")
         let slicesData = try await APIClient.shared.rawGET(path: "team_pages", queryItems: [
-            URLQueryItem(name: "select", value: "team_id,manager:content->cards->manager,players:content->cards->ones_to_know->players,basics:content->cards->basics,rival:content->cards->rivalry->>rival"),
+            URLQueryItem(name: "select", value: "team_id,manager:content->cards->manager,players:content->cards->ones_to_know->players,basics:content->cards->basics,rival:content->cards->rivalry->>rival,next:content->cards->next_fixture->>opponent"),
             URLQueryItem(name: "team_id", value: "in.(\(ids))"),
         ])
         let managersData = try await APIClient.shared.rawGET(path: "teams", queryItems: [
@@ -452,11 +562,28 @@ final class LiveClubPackService {
             URLQueryItem(name: "is_active", value: "eq.true"),
             URLQueryItem(name: "league_id", value: "eq.39"),
         ])
+        // Every active club's squad, once a day. `select=*` rather than a column
+        // list for the same reason the squad fetch uses it: naming a column
+        // PostgREST does not have yet is a 400 for the whole request, and the
+        // stats columns are still arriving.
+        let playersData = try await APIClient.shared.rawGET(path: "players", queryItems: [
+            URLQueryItem(name: "select", value: "*"),
+            URLQueryItem(name: "team_id", value: "in.(\(ids))"),
+            URLQueryItem(name: "order", value: "minutes.desc"),
+            URLQueryItem(name: "limit", value: "1500"),
+        ])
         let decoder = JSONDecoder()
+        let rows = (try? decoder.decode([LiveSquadPack.Player].self, from: playersData)) ?? []
+
+        // Pick a handful per club, then spend the photo checks only on those.
+        // Whoever comes back a silhouette drops out and the next man stands in.
+        let checked = await LiveSquadService.flagPlaceholders(LiveSquadPack.leagueCandidates(from: rows))
         return LiveClubPack.Sources(
             managers: try decoder.decode([LiveClubPack.ClubManager].self, from: managersData),
             slices: try decoder.decode([LiveClubPack.Slice].self, from: slicesData),
-            fetchedAt: Date()
+            fetchedAt: Date(),
+            leaguePicks: LiveSquadPack.leaguePicks(from: checked),
+            topScorers: LiveSquadPack.topScorers(from: rows)
         )
     }
 }

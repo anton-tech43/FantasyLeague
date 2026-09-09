@@ -7,6 +7,10 @@ struct PlayerCardModal: View {
     /// there would be a dead end in the middle of a round.
     var number: Int? = nil
     var photoURL: String? = nil
+    /// "5 goals · 2 assists · 4 starts" from the quiz's `QuizPlayer`, and the
+    /// one line worth remembering him for. Both nil outside the quiz.
+    var stats: String? = nil
+    var hook: String? = nil
     var gated: Bool = true
     @Environment(AppState.self) var appState
     @Environment(\.dismiss) var dismiss
@@ -64,6 +68,20 @@ struct PlayerCardModal: View {
                     Text(facts)
                         .font(.feedTimestamp)
                         .foregroundColor(.textSecondaryOnCard)
+                }
+
+                if let stats {
+                    Text(stats)
+                        .font(.feedTimestamp)
+                        .foregroundColor(.textSecondaryOnCard)
+                }
+
+                if let hook {
+                    Text(hook)
+                        .font(.detailBody)
+                        .foregroundColor(.textPrimaryOnCard)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 2)
                 }
 
                 switch mode {

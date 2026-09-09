@@ -168,6 +168,23 @@ struct QuizPlayer: Codable, Hashable, Identifiable {
     let photoURL: String?
     let summary: String?
     let vibe: String?
+    /// This club, this season (migration 100). Nil until the stats sync has
+    /// run, and nil for every static-content question.
+    var goals: Int? = nil
+    var assists: Int? = nil
+    var starts: Int? = nil
+    var nationality: String? = nil
+    /// The one sentence worth remembering him for, from `PlayerHooks`.
+    var hook: String? = nil
+
+    /// "5 goals · 2 assists · 4 starts", leaving out whatever is unknown.
+    /// Nil when nothing has synced, so the sheet shows no empty row.
+    var statsLine: String? {
+        let bits = [goals.map { "\($0) \($0 == 1 ? "goal" : "goals")" },
+                    assists.map { "\($0) \($0 == 1 ? "assist" : "assists")" },
+                    starts.map { "\($0) \($0 == 1 ? "start" : "starts")" }].compactMap { $0 }
+        return bits.isEmpty ? nil : bits.joined(separator: " · ")
+    }
 }
 
 struct MyTurnQuestion: Codable, Identifiable, Hashable {
