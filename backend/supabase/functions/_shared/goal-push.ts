@@ -95,14 +95,29 @@ export function formatScorerLine(ev: GoalEvent | null | undefined): string | nul
   const minute = formatMinute(ev.minute, ev.extra);
   if (ev.isOwnGoal) {
     // Player belongs to the OTHER team; omit the name, keep it honest.
-    return minute ? `⚽ Own goal ${minute}` : "⚽ Own goal";
+    return minute ? `Own goal ${minute}.` : "Own goal.";
   }
   const name = (ev.playerName ?? "").trim();
   const suffix = ev.isPenalty ? " (pen)" : "";
-  if (name && minute) return `⚽ ${name} ${minute}${suffix}`;
-  if (name) return `⚽ ${name}${suffix}`;
-  if (minute) return `⚽ Goal ${minute}${suffix}`;
+  if (name && minute) return `${name} ${minute}${suffix}.`;
+  if (name) return `${name}${suffix}.`;
+  if (minute) return `Goal ${minute}${suffix}.`;
   return null;
+}
+
+/// A deterministic rng (mulberry32) so a fixture's goals draw DIFFERENT lines
+/// from the pool without two ticks ever disagreeing about which: seed on
+/// fixture id and score. Math.random gave the same "he's buzzing" twice in one
+/// evening and could not be reproduced in a test.
+export function seededRng(seed: number): () => number {
+  let a = (seed >>> 0) || 1;
+  return () => {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 }
 
 /// One goal as persisted on match_status_state.goal_events for the live box.
@@ -311,10 +326,13 @@ export function interpolate(template: string, vars: Record<string, string>): str
 /// pool line is untouched; a blank/absent line is a no-op. The scorer line is
 /// the SAME factual fact for both perspectives (who scored, when), so it is
 /// appended identically to the scorer's and conceder's bodies.
+/// The scorer and minute LEAD the body: "Ødegaard 71'. Arsenal lead 0-1 and he
+/// knows it." A push is read in one glance, and who and when is the fact she
+/// wants; the reaction is the colour.
 function appendScorerLine(body: string, scorerLine: string | null | undefined): string {
   const line = (scorerLine ?? "").trim();
   if (!line) return body;
-  return `${body} ${line}`;
+  return `${line} ${body}`;
 }
 
 /// Goal push for the two PLAYING countries' followers. Title carries the

@@ -54,6 +54,7 @@ import {
   pickLatestGoalForTeam,
   renderFullTimePush,
   renderGoalPush,
+  seededRng,
   renderHalfTimePush,
   renderKickoffSoonPush,
   formatScorers,
@@ -173,10 +174,14 @@ async function fetchGoalEvents(fixtureId: number, apiKey: string): Promise<GoalE
 /// tick can store an anonymous entry (player/id null). A later tick must
 /// re-fetch to back-fill it, or the scorer stays "Goal" with no face forever
 /// (seen live 2026-07-10: Merino's 88' vs Belgium).
-function hasUnresolvedScorer(events: unknown): boolean {
-  return Array.isArray(events) &&
-    events.some((e) => e != null && typeof e === "object" &&
-      (e as StoredGoalEvent).playerApiId == null);
+function hasUnresolvedScorer(events: unknown, goalsOnBoard = 0): boolean {
+  if (!Array.isArray(events)) return goalsOnBoard > 0;
+  // Fewer stored goals than the score says: the events feed was empty when the
+  // goal was detected (Napoli 0-1 Arsenal, 2026-09-09: goal_events stayed []
+  // all night because an empty list has nothing "unresolved" in it).
+  if (events.length < goalsOnBoard) return true;
+  return events.some((e) => e != null && typeof e === "object" &&
+    (e as StoredGoalEvent).playerApiId == null);
 }
 
 /// One players lookup by provider id, stamping photo URLs onto stored events.
@@ -211,7 +216,6 @@ async function resolveScorers(
   homeApiId: number,
   awayApiId: number,
 ): Promise<StoredGoalEvent[] | null> {
-  if (!hasUnresolvedScorer(priorEvents)) return priorEvents ?? null;
   const fresh = toStoredGoalEvents(await fetchGoalEvents(fixtureId, apiKey), homeApiId, awayApiId);
   if (fresh.length === 0) return priorEvents ?? null;
   return await enrichPhotos(supabase, fresh);
@@ -328,6 +332,11 @@ async function sendPlayingTeamPush(
     /// Lowest device tier that receives this push, from minTierForLiveEvent().
     /// TIER_NOBODY suppresses it entirely (an early cup round's goal alerts).
     minTier: number;
+    /// Once-only key in match_status_state.briefs_fired ("PREKICK_PUSH",
+    /// "GOAL_PUSH:0-1", "HT_PUSH", "FT_PUSH"), claimed atomically in the
+    /// database right before sending (migration 103). Two overlapping ticks
+    /// cannot both win it.
+    marker: string;
     // Optional country_id → content_item UUID. When present for a follower's
     // country, the push deep-links to that article (FT result); otherwise the
     // content_id is a non-UUID sentinel and the tap just opens the app.
@@ -346,6 +355,16 @@ async function sendPlayingTeamPush(
     // (old apps) OR the multi-follow arrays (new apps), country or club. One
     // row per device (UNIQUE apns_token) so a device that follows BOTH playing
     // teams still appears once → one push.
+    const { data: claimed, error: claimErr } = await supabase.rpc("claim_fixture_marker", {
+      p_fixture_id: args.fixtureId,
+      p_marker: args.marker,
+    });
+    if (claimErr) {
+      console.warn(`sendPlayingTeamPush ${args.label} fixture=${args.fixtureId}: marker claim failed, sending anyway:`, claimErr.message);
+    } else if (claimed === false) {
+      console.log(`sendPlayingTeamPush ${args.label} fixture=${args.fixtureId}: ${args.marker} already sent, skipping`);
+      return 0;
+    }
     const playing = `${args.homeTeamId},${args.awayTeamId}`;
     const { data: tokens, error: tokensErr } = await supabase
       .from("device_tokens")
@@ -516,6 +535,23 @@ async function handleRequest(req: Request): Promise<Response> {
   // cron sends no params so today's London date is computed below.
   const url = new URL(req.url);
   const dateOverride = url.searchParams.get("date");
+
+  // One tick per UTC minute (migration 103). pg_cron stalled for seven minutes
+  // on 2026-09-09 and then ran eight queued ticks inside three seconds; every
+  // one read the state before any had written a marker, and one phone got
+  // eight kickoff pushes. The first caller of a minute inserts the minute and
+  // runs, the rest return here. A replay (?date=) is exempt.
+  if (!dateOverride) {
+    const { data: won, error: leaseErr } = await supabase.rpc("claim_match_watcher_tick");
+    if (leaseErr) {
+      console.warn("claim_match_watcher_tick failed, running unlocked:", leaseErr.message);
+    } else if (won === false) {
+      return new Response(
+        JSON.stringify({ skipped: "another tick already ran this minute" }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }
+  }
 
   const apiFootballKey = Deno.env.get("API_FOOTBALL_KEY");
   const routineUrl = Deno.env.get("MATCHDAY_ROUTINE_URL");
@@ -876,7 +912,10 @@ async function handleRequest(req: Request): Promise<Response> {
     // from newTriggers: newTriggers drives the paid gd-live-brief routine fire
     // loop below, so polluting it would fire a spurious (billed) routine. These
     // markers only ever land in briefs_fired for the once-per-window guard.
-    const pushMarkers: string[] = [];
+    // Markers that describe STATE (a goal waiting for its scorer), written with
+    // the upsert. Push markers are no longer written here: each push claims its
+    // own in the database at send time (claim_fixture_marker, migration 103).
+    const stateMarkers: string[] = [];
     // Full time is an event, not a schedule. The two clubs that just played get
     // their standings and fixtures re-fetched from the whistle instead of at the
     // next two-hourly cron slot — which on a Saturday teatime was an hour and
@@ -1658,7 +1697,12 @@ async function handleRequest(req: Request): Promise<Response> {
           status === "NS" && minsToKickoff > 0 && minsToKickoff <= 30 &&
           !briefsFired.includes("PREKICK_PUSH")
         ) {
-          const copy = renderKickoffSoonPush({ home: homeTeam, away: awayTeam, competition: competitionClause });
+          const copy = renderKickoffSoonPush({
+            home: homeTeam,
+            away: awayTeam,
+            competition: competitionClause,
+            rng: seededRng(fixtureId * 7 + 1),
+          });
           pendingAlertPushes.push({
             args: {
               homeTeamId,
@@ -1668,10 +1712,10 @@ async function handleRequest(req: Request): Promise<Response> {
               fixtureId,
               label: "kickoff",
               minTier: minTierForLiveEvent("kickoff", fixtureLeagueId, fixtureRound),
+              marker: "PREKICK_PUSH",
             },
             isGoal: false,
           });
-          pushMarkers.push("PREKICK_PUSH");
         }
 
         // GOAL — the score rose since the last observed tick. `prior !== null`
@@ -1681,38 +1725,28 @@ async function handleRequest(req: Request): Promise<Response> {
         // home_goals/away_goals, so next tick detectGoal sees no change.
         if (isLive && prior !== null) {
           const side = detectGoal(prior.home_goals, prior.away_goals, homeGoals, awayGoals);
-          if (side) {
-            // Scorer + minute enrichment (A2). Fetch the fixture's events ONLY
-            // now, on a real goal — never every poll (quota). The full parsed
-            // list is also stored on the row (068) so the in-app live box can
-            // show who scored and when without re-hitting the API on its 60s
-            // read poll. When BOTH sides scored in one tick (side === "both")
-            // we can't honestly name a single scorer for the PUSH, so we skip
-            // the scorer line there and keep the rotating copy — but we still
-            // store the list. The scoring side's API team id (home vs away)
-            // tells pickLatest... which goal to surface; the latest (highest
-            // minute) is the one that just landed. Anything missing → scorerLine
-            // null → clean fallback to the existing copy with no extra line.
-            const events = await fetchGoalEvents(fixtureId, apiFootballKey);
-            // Scorer photos (077): stamped by enrichPhotos (one players lookup
-            // by provider id, CDN-URL fallback) so the live box and the FT
-            // articles that copy this list render faces with no join.
-            goalEventsStored = await enrichPhotos(
-              supabase,
-              toStoredGoalEvents(events, homeApiId, awayApiId),
-            );
-            let scorerLine: string | null = null;
-            if (side !== "both") {
-              const scoringApiId = side === "home" ? homeApiId : awayApiId;
-              scorerLine = formatScorerLine(pickLatestGoalForTeam(events, scoringApiId));
-            }
+          const score = `${homeGoals ?? 0}-${awayGoals ?? 0}`;
+          const goalMarker = `GOAL_PUSH:${score}`;
+          // A goal detected LAST tick whose scorer the events feed had not
+          // published yet (GOAL_WAIT:<score>:<side>, written below).
+          const waiting = briefsFired.find((m) => m.startsWith(`GOAL_WAIT:${score}:`));
+          const waitingSide = waiting?.split(":")[2] as "home" | "away" | undefined;
+
+          const scorerFor = (events: GoalEvent[], goalSide: "home" | "away" | "both") =>
+            goalSide === "both"
+              ? null
+              : formatScorerLine(pickLatestGoalForTeam(events, goalSide === "home" ? homeApiId : awayApiId));
+          const queueGoalPush = (goalSide: "home" | "away" | "both", scorerLine: string | null) => {
             const copy = renderGoalPush({
               home: homeTeam,
               away: awayTeam,
               homeGoals: homeGoals ?? 0,
               awayGoals: awayGoals ?? 0,
-              side,
+              side: goalSide,
               scorerLine,
+              // Seeded on fixture and score: the second goal of the night draws
+              // a different line from the first, and a replayed tick draws the same.
+              rng: seededRng(fixtureId * 100 + (homeGoals ?? 0) * 10 + (awayGoals ?? 0)),
             });
             pendingAlertPushes.push({
               args: {
@@ -1722,10 +1756,47 @@ async function handleRequest(req: Request): Promise<Response> {
                 category: "WC_GOAL",
                 fixtureId,
                 label: "goal",
-              minTier: minTierForLiveEvent("goal", fixtureLeagueId, fixtureRound),
+                minTier: minTierForLiveEvent("goal", fixtureLeagueId, fixtureRound),
+                marker: goalMarker,
               },
               isGoal: true,
             });
+          };
+
+          if (side) {
+            // Scorer + minute enrichment (A2). Fetch the fixture's events ONLY
+            // now, on a real goal — never every poll (quota). The full parsed
+            // list is also stored on the row (068) so the in-app live box can
+            // show who scored and when without re-hitting the API on its 60s
+            // read poll. When BOTH sides scored in one tick (side === "both")
+            // we can't honestly name a single scorer for the PUSH.
+            //
+            // The events feed lags the score by seconds to a couple of minutes,
+            // and a goal push without the scorer is the one Anton screenshotted
+            // ("Arsenal find a goal, 0-1!"). So: one retry after four seconds,
+            // and if the name is still missing the push waits ONE tick
+            // (GOAL_WAIT marker) and goes out next minute with the name if the
+            // feed has it by then, without it if not. Never later than that.
+            let events = await fetchGoalEvents(fixtureId, apiFootballKey);
+            let scorerLine = scorerFor(events, side);
+            if (side !== "both" && scorerLine === null) {
+              await new Promise((r) => setTimeout(r, 4000));
+              events = await fetchGoalEvents(fixtureId, apiFootballKey);
+              scorerLine = scorerFor(events, side);
+            }
+            // Scorer photos (077): stamped by enrichPhotos (one players lookup
+            // by provider id, CDN-URL fallback) so the live box and the FT
+            // articles that copy this list render faces with no join.
+            goalEventsStored = await enrichPhotos(
+              supabase,
+              toStoredGoalEvents(events, homeApiId, awayApiId),
+            );
+            if (side !== "both" && scorerLine === null && !waiting) {
+              stateMarkers.push(`GOAL_WAIT:${score}:${side}`);
+              console.log(`goal ${score} fixture=${fixtureId}: scorer not in events yet, push waits one tick`);
+            } else {
+              queueGoalPush(side, scorerLine);
+            }
 
             // NOTE: goals deliberately do NOT create per-goal tournament feed
             // rows. The in-feed LiveMatchCard (live-brief-current, 60s poll)
@@ -1734,11 +1805,20 @@ async function handleRequest(req: Request): Promise<Response> {
             // "GOAL! x-y" rows just duplicated it and cluttered the feed. The
             // goal PUSH above still fires; the FT result row (below) carries the
             // final scorers for the post-match feed.
-          } else if (hasUnresolvedScorer(prior.goal_events)) {
-            // No new goal this tick, but a prior goal is still anonymous
-            // (API-Football hadn't published its scorer when it was detected).
-            // Re-fetch to back-fill so the live box resolves "Goal" → the name
-            // within a minute, and the persisted list is correct before FT.
+          } else if (waiting && waitingSide && !briefsFired.includes(goalMarker)) {
+            // The score has not moved since the goal was detected: send now,
+            // with the scorer if the feed has caught up, without if not.
+            const events = await fetchGoalEvents(fixtureId, apiFootballKey);
+            if (events.length > 0) {
+              goalEventsStored = await enrichPhotos(supabase, toStoredGoalEvents(events, homeApiId, awayApiId));
+            }
+            queueGoalPush(waitingSide, scorerFor(events, waitingSide));
+          } else if (hasUnresolvedScorer(prior.goal_events, (homeGoals ?? 0) + (awayGoals ?? 0))) {
+            // No new goal this tick, but the stored list is short or anonymous
+            // (API-Football hadn't published the scorer when it was detected, or
+            // the list was empty). Re-fetch to back-fill so the live box resolves
+            // "Goal" → the name within a minute, and the persisted list is
+            // correct before FT.
             goalEventsStored = await resolveScorers(
               supabase,
               fixtureId,
@@ -1766,6 +1846,7 @@ async function handleRequest(req: Request): Promise<Response> {
             homeGoals: homeGoals ?? 0,
             awayGoals: awayGoals ?? 0,
             competition: competitionClause,
+            rng: seededRng(fixtureId * 7 + 2),
           });
           pendingAlertPushes.push({
             args: {
@@ -1776,10 +1857,10 @@ async function handleRequest(req: Request): Promise<Response> {
               fixtureId,
               label: "ht",
               minTier: minTierForLiveEvent("ht", fixtureLeagueId, fixtureRound),
+              marker: "HT_PUSH",
             },
             isGoal: false,
           });
-          pushMarkers.push("HT_PUSH");
         }
 
         // FULL-TIME own-result — the gap that left tonight silent. Fire once
@@ -1826,6 +1907,7 @@ async function handleRequest(req: Request): Promise<Response> {
             homeGoals: homeGoals ?? 0,
             awayGoals: awayGoals ?? 0,
             competitionBySide,
+            rng: seededRng(fixtureId * 7 + 3),
             pens: status === "PEN" &&
                 typeof ftPen?.home === "number" && typeof ftPen?.away === "number" &&
                 ftPen.home !== ftPen.away
@@ -1844,10 +1926,10 @@ async function handleRequest(req: Request): Promise<Response> {
               // Deep-link each follower to their team's just-written result
               // article (populated in the post_match block above, same tick).
               contentIdByCountry: wcResultItemIds,
+              marker: "FT_PUSH",
             },
             isGoal: false,
           });
-          pushMarkers.push("FT_PUSH");
         }
       }
     }
@@ -1858,7 +1940,7 @@ async function handleRequest(req: Request): Promise<Response> {
     // never existed (first-observation skip case is handled by the
     // `prior !== null` guard on trigger detection above).
     const updatedBriefsFired = [
-      ...new Set([...briefsFired, ...newTriggers, ...pushMarkers]),
+      ...new Set([...briefsFired, ...newTriggers, ...stateMarkers]),
     ];
 
     // Upsert state. fired_finished_at is set ONLY when justFinished AND both

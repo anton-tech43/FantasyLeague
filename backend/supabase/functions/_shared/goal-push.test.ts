@@ -14,6 +14,7 @@ import {
   renderGoalPush,
   renderHalfTimePush,
   renderKickoffSoonPush,
+  seededRng,
   toStoredGoalEvents,
 } from "./goal-push.ts";
 import {
@@ -303,13 +304,13 @@ Deno.test("formatMinute: plain, stoppage, and unknown", () => {
 });
 
 Deno.test("formatScorerLine: normal goal names player + minute", () => {
-  eq(formatScorerLine(ev({ playerName: "Pedri", minute: 47 })), "⚽ Pedri 47'", "normal goal");
+  eq(formatScorerLine(ev({ playerName: "Pedri", minute: 47 })), "Pedri 47'.", "normal goal");
 });
 
 Deno.test("formatScorerLine: penalty tagged (pen)", () => {
   eq(
     formatScorerLine(ev({ playerName: "H. Kane", minute: 90, extra: 3, isPenalty: true })),
-    "⚽ H. Kane 90+3' (pen)",
+    "H. Kane 90+3' (pen).",
     "penalty in stoppage",
   );
 });
@@ -319,15 +320,15 @@ Deno.test("formatScorerLine: own goal omits the (opposing-team) player name", ()
   // on the celebrating side's push would mislead. Label only.
   eq(
     formatScorerLine(ev({ playerName: "J. Stones", minute: 23, isOwnGoal: true })),
-    "⚽ Own goal 23'",
+    "Own goal 23'.",
     "own goal labelled, player dropped",
   );
-  eq(formatScorerLine(ev({ minute: null, isOwnGoal: true })), "⚽ Own goal", "own goal, no minute");
+  eq(formatScorerLine(ev({ minute: null, isOwnGoal: true })), "Own goal.", "own goal, no minute");
 });
 
 Deno.test("formatScorerLine: graceful partials and null", () => {
-  eq(formatScorerLine(ev({ playerName: "Vinicius", minute: null })), "⚽ Vinicius", "name only");
-  eq(formatScorerLine(ev({ playerName: null, minute: 60 })), "⚽ Goal 60'", "minute only");
+  eq(formatScorerLine(ev({ playerName: "Vinicius", minute: null })), "Vinicius.", "name only");
+  eq(formatScorerLine(ev({ playerName: null, minute: 60 })), "Goal 60'.", "minute only");
   eq(formatScorerLine(ev({ playerName: "  ", minute: null })), null, "no fact → null");
   eq(formatScorerLine(null), null, "null event → null");
 });
@@ -413,21 +414,59 @@ Deno.test("formatScorers: own goal drops the (wrong-side) photo with the name", 
   eq(scorers[0].photo, null, "photo dropped for own goal");
 });
 
-Deno.test("renderGoalPush: scorerLine appended to both bodies, additive", () => {
+Deno.test("renderGoalPush: scorerLine LEADS both bodies, additive", () => {
   const withScorer = renderGoalPush({
-    home: MEX, away: RSA, homeGoals: 1, awayGoals: 0, side: "home", scorerLine: "⚽ Pedri 47'", rng: zero,
+    home: MEX, away: RSA, homeGoals: 1, awayGoals: 0, side: "home", scorerLine: "Pedri 47'.", rng: zero,
   });
   const without = renderGoalPush({
     home: MEX, away: RSA, homeGoals: 1, awayGoals: 0, side: "home", rng: zero,
   });
-  // The scorer line is appended after the unchanged rotating-copy body.
-  assert(withScorer.bodies.mexico.startsWith(without.bodies.mexico), "scorer body keeps rotating copy");
-  assert(withScorer.bodies.mexico.endsWith("⚽ Pedri 47'"), "scorer body ends with the fact");
-  assert(withScorer.bodies.south_africa.endsWith("⚽ Pedri 47'"), "conceder body also carries the fact");
+  // The scorer line leads; the rotating-copy body follows unchanged.
+  assert(withScorer.bodies.mexico.endsWith(without.bodies.mexico), "scorer body keeps rotating copy");
+  assert(withScorer.bodies.mexico.startsWith("Pedri 47'. "), "scorer body opens with the fact");
+  assert(withScorer.bodies.south_africa.startsWith("Pedri 47'. "), "conceder body also opens with the fact");
   // Null / empty scorerLine is a clean no-op (fallback path).
   eq(
     renderGoalPush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 0, side: "home", scorerLine: null, rng: zero }).bodies.mexico,
     without.bodies.mexico,
     "null scorerLine = unchanged copy",
   );
+});
+
+// ============================================================
+// 2026-09-09: eight pushes, one phone; "he's buzzing" three times a night
+// ============================================================
+
+Deno.test("GOAL pools: no phrase repeats, every line leaves room for the scorer lead", () => {
+  for (const [name, pool] of [["GOAL_SCORED", GOAL_SCORED], ["GOAL_CONCEDED", GOAL_CONCEDED]] as const) {
+    assert(pool.length >= 40, `${name} has 40+ lines`);
+    const seen = new Set<string>();
+    for (const line of pool) {
+      assert(!seen.has(line), `${name}: duplicate line ${line}`);
+      seen.add(line);
+      // Longest realistic lead: "Calvert-Lewin 90+3' (pen). " is 27 chars, so a
+      // 60-char reaction plus the longest club name and a two-digit score fits 90.
+      // The longest active club short_name is 13 chars ("Nottm Forest" class);
+      // the longest lead is "Calvert-Lewin 90+3' (pen). " at 27, and 27 + 63 = 90.
+      const rendered = interpolate(line, { team: "Crystal Palace", score: "10-9" });
+      assert(rendered.length <= 63, `${name}: ${rendered.length} chars is too long for a lead: ${line}`);
+    }
+    const buzzing = pool.filter((l) => /buzzing/i.test(l)).length;
+    assert(buzzing <= 1, `${name}: "buzzing" appears ${buzzing} times`);
+    const textHim = pool.filter((l) => /text him|drop him a/i.test(l)).length;
+    assert(textHim <= 2, `${name}: the text-him nudge appears ${textHim} times`);
+  }
+});
+
+Deno.test("seededRng: the same fixture and score draw the same line, the next goal draws another", () => {
+  const a = renderGoalPush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 0, side: "home", rng: seededRng(4200 * 100 + 10) });
+  const b = renderGoalPush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 0, side: "home", rng: seededRng(4200 * 100 + 10) });
+  const c = renderGoalPush({ home: MEX, away: RSA, homeGoals: 2, awayGoals: 0, side: "home", rng: seededRng(4200 * 100 + 20) });
+  eq(a.bodies.mexico, b.bodies.mexico, "deterministic for one (fixture, score)");
+  assert(a.bodies.mexico.replace("1-0", "") !== c.bodies.mexico.replace("2-0", ""), "the second goal reads differently");
+  const r = seededRng(7);
+  for (let i = 0; i < 1000; i++) {
+    const x = r();
+    assert(x >= 0 && x < 1, "in [0,1)");
+  }
 });
