@@ -15,6 +15,7 @@ RULES = [
     ("offside", "Offside", "When the ball is passed to you, you can't already be nearer the goal than the last defender. If you are, the flag goes up and the goal doesn't count.", "Every time a flag goes up and someone on the sofa groans.", "\"Was he offside? He looked level to me.\"", ["var"]),
     ("var", "VAR", "Video Assistant Referee. Someone in a room checks goals, penalties and red cards on replay and tells the referee if he got it badly wrong.", "\"VAR is checking\" followed by two minutes of silence.", "\"Hang on, VAR's checking it. Don't celebrate yet.\"", ["clear-and-obvious"]),
     ("clear-and-obvious", "Clear and obvious", "VAR is only meant to overturn a decision that was obviously wrong, not one that is debatable. The longer the check, the less obvious it was.", "\"If it takes that long it isn't clear and obvious.\"", "\"If it takes this long it's not clear and obvious, is it?\"", ["var"]),
+    ("foul", "Foul", "Kicking, tripping, pushing or holding another player. The referee blows, the other team gets a free kick, and if it was bad enough a card follows.", "\"That's a foul!\", shouted most often by the side that has just lost the ball.", "\"That's a foul, surely. He went straight through him.\"", ["free-kick", "yellow-card"]),
     ("handball", "Handball", "Touching the ball with your hand or arm on purpose, or with an arm stuck out making you bigger. Goalkeepers can use their hands, but only inside their own box.", "\"That's handball all day\" about a ball that brushed a shoulder.", "\"His arm was out. That's handball.\"", ["the-box"]),
     ("penalty", "Penalty", "A free shot from twelve yards with only the goalkeeper to beat. Given for a foul or handball inside the box. Scored about three times in four.", "A gasp, then nobody speaks until it's taken.", "\"Penalty! Who takes them for us?\"", ["the-box"]),
     ("the-box", "The box", "The big rectangle in front of each goal, eighteen yards deep. A foul in there is a penalty. Also called the penalty area.", "\"Get it in the box!\" whenever a cross is coming.", "\"Get it in the box, someone!\"", ["penalty"]),
@@ -185,9 +186,11 @@ TERMS = [("rules", *t) for t in RULES] + [("tactics", *t) for t in TACTICS] + [(
 # they are watching, the three moments that break the game up (kick-off,
 # half-time, full-time), the table he checks, the two decisions that stop
 # play and start an argument (offside, penalty), the screen that follows them
-# (VAR), the compliment paid after every 1-0 (clean sheet), and the reason
-# tonight is louder than last week (derby). Deliberately no cups, no top
-# four, no relegation — those need the table first, so they open level 2.
+# (VAR), and the two cards, because a booking happens in every game she will
+# ever watch and a derby does not (2026-09-09 review: clean sheet and derby
+# moved to level 2, where "foul" and "ten men" now sit with the cards' cousins).
+# Deliberately no cups, no top four, no relegation — those need the table
+# first, so they open level 2.
 #
 # A handful of seeAlso links used to point forward at a word twelve levels
 # away (half-time → hairdryer, fa-cup → giant-killing). They were dropped in
@@ -196,13 +199,13 @@ TERMS = [("rules", *t) for t in RULES] + [("tactics", *t) for t in TACTICS] + [(
 LEVELS = [
     # 1 — The first ten.
     ["premier-league", "kick-off", "half-time", "full-time", "the-table",
-     "offside", "penalty", "var", "clean-sheet", "derby"],
+     "offside", "penalty", "var", "yellow-card", "red-card"],
     # 2 — The rest of the rules she sees in her first few games.
     ["points", "goal-difference", "relegation", "promotion", "top-four",
-     "the-box", "handball", "free-kick", "corner", "throw-in",
-     "yellow-card", "red-card", "clear-and-obvious"],
+     "the-box", "foul", "handball", "free-kick", "corner", "throw-in",
+     "ten-men", "clean-sheet", "derby", "clear-and-obvious"],
     # 3 — The other competitions, and what happens when the clock runs out.
-    ["championship", "play-offs", "ten-men", "added-time", "extra-time",
+    ["championship", "play-offs", "added-time", "extra-time",
      "penalty-shootout", "the-cups", "fa-cup", "league-cup", "wembley",
      "champions-league", "europa-league", "conference-league", "fixtures"],
     # 4 — The match itself: who starts, who comes on, what a goal is called.

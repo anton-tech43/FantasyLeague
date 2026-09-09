@@ -15,7 +15,7 @@ sys.path.insert(0, HERE)
 from lingo_src import LEVEL_OF, LEVELS, TERMS  # noqa: E402
 
 OUT = os.path.join(HERE, "..", "..", "ios", "GoalDigger", "Resources", "MyTurn", "lingo.json")
-VERSION = "2026-09-09.1"
+VERSION = "2026-09-09.2"
 
 ORDER = {tid: i for i, tid in enumerate(t for level in LEVELS for t in level)}
 

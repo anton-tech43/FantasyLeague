@@ -1,5 +1,5 @@
 {
-  "contentVersion": "2026-09-09.1",
+  "contentVersion": "2026-09-09.2",
   "terms": [
     {
       "id": "premier-league",
@@ -87,22 +87,29 @@
       ]
     },
     {
-      "id": "clean-sheet",
+      "id": "yellow-card",
       "category": "rules",
-      "term": "Clean sheet",
-      "meaning": "Letting in no goals in a match. The goalkeeper's favourite statistic, and a defender's.",
-      "heard": "\"Another clean sheet\" said with real pride.",
-      "sayIt": "\"Another clean sheet. The defence has been solid.\"",
-      "level": 1
+      "term": "Yellow card",
+      "meaning": "A warning from the referee. Two in one game and you are sent off.",
+      "heard": "\"He's on a yellow\" means the player has to be careful now.",
+      "sayIt": "\"He's on a yellow, he needs to calm down.\"",
+      "level": 1,
+      "seeAlso": [
+        "red-card"
+      ]
     },
     {
-      "id": "derby",
+      "id": "red-card",
       "category": "rules",
-      "term": "Derby",
-      "meaning": "A match between two local rivals, usually from the same city. Pronounced darby. The week is tense before, during and after.",
-      "heard": "The week before, the week of, and the week after.",
-      "sayIt": "\"It's the derby this weekend, isn't it? Are you nervous?\"",
-      "level": 1
+      "term": "Red card",
+      "meaning": "Sent off. The player leaves and the team plays the rest of the game one short. A straight red is for one bad act; two yellows also make a red.",
+      "heard": "\"Straight red\" means one bad tackle, no warning first.",
+      "sayIt": "\"That's a red. He's off.\"",
+      "level": 1,
+      "seeAlso": [
+        "yellow-card",
+        "ten-men"
+      ]
     },
     {
       "id": "points",
@@ -179,6 +186,19 @@
       ]
     },
     {
+      "id": "foul",
+      "category": "rules",
+      "term": "Foul",
+      "meaning": "Kicking, tripping, pushing or holding another player. The referee blows, the other team gets a free kick, and if it was bad enough a card follows.",
+      "heard": "\"That's a foul!\", shouted most often by the side that has just lost the ball.",
+      "sayIt": "\"That's a foul, surely. He went straight through him.\"",
+      "level": 2,
+      "seeAlso": [
+        "free-kick",
+        "yellow-card"
+      ]
+    },
+    {
       "id": "handball",
       "category": "rules",
       "term": "Handball",
@@ -218,29 +238,34 @@
       "level": 2
     },
     {
-      "id": "yellow-card",
+      "id": "ten-men",
       "category": "rules",
-      "term": "Yellow card",
-      "meaning": "A warning from the referee. Two in one game and you are sent off.",
-      "heard": "\"He's on a yellow\" means the player has to be careful now.",
-      "sayIt": "\"He's on a yellow, he needs to calm down.\"",
+      "term": "Ten men",
+      "meaning": "Playing with one fewer after a red card. Teams usually drop back and defend for their lives.",
+      "heard": "\"Down to ten men\" said either with dread or delight.",
+      "sayIt": "\"Down to ten men. Just hang on now.\"",
       "level": 2,
       "seeAlso": [
         "red-card"
       ]
     },
     {
-      "id": "red-card",
+      "id": "clean-sheet",
       "category": "rules",
-      "term": "Red card",
-      "meaning": "Sent off. The player leaves and the team plays the rest of the game one short. A straight red is for one bad act; two yellows also make a red.",
-      "heard": "\"Straight red\" means one bad tackle, no warning first.",
-      "sayIt": "\"That's a red. He's off.\"",
-      "level": 2,
-      "seeAlso": [
-        "yellow-card",
-        "ten-men"
-      ]
+      "term": "Clean sheet",
+      "meaning": "Letting in no goals in a match. The goalkeeper's favourite statistic, and a defender's.",
+      "heard": "\"Another clean sheet\" said with real pride.",
+      "sayIt": "\"Another clean sheet. The defence has been solid.\"",
+      "level": 2
+    },
+    {
+      "id": "derby",
+      "category": "rules",
+      "term": "Derby",
+      "meaning": "A match between two local rivals, usually from the same city. Pronounced darby. The week is tense before, during and after.",
+      "heard": "The week before, the week of, and the week after.",
+      "sayIt": "\"It's the derby this weekend, isn't it? Are you nervous?\"",
+      "level": 2
     },
     {
       "id": "clear-and-obvious",
@@ -273,18 +298,6 @@
       "level": 3,
       "seeAlso": [
         "promotion"
-      ]
-    },
-    {
-      "id": "ten-men",
-      "category": "rules",
-      "term": "Ten men",
-      "meaning": "Playing with one fewer after a red card. Teams usually drop back and defend for their lives.",
-      "heard": "\"Down to ten men\" said either with dread or delight.",
-      "sayIt": "\"Down to ten men. Just hang on now.\"",
-      "level": 3,
-      "seeAlso": [
-        "red-card"
       ]
     },
     {
