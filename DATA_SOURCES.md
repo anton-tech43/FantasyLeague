@@ -56,10 +56,29 @@ Fetched every 2 hours per club by the `data-fetcher` Edge Function into `raw_fet
 
 ## RSS news feeds
 
-Twelve feeds pulled by `fetch_news.sh`. Individually unreliable and that is fine: they are raw material for a model to filter, never a fact of record. Two operational notes:
+Two layers, both pulled by `fetch_news.sh`. Twelve **national** feeds (BBC, Sky, Guardian, Mirror, Mail, Standard, Independent, Telegraph, ESPN, Goal, Football365, TeamTalk) catch what is not about one club. **Per-club** feeds live in `team_news_sources` (migration 102), verified by curl on 2026-09-09 and re-checked by `verify_feeds.sh`; `fetch_news.sh` writes them into each club's file as `club_rss`, parsed to title/link/pubDate/description.
+
+Every source carries a `trust` word, and it is the only thing the guards read: **record** may carry a fact alone, **colour** may not.
+
+| kind | coverage | trust | what to know |
+|---|---|---|---|
+| `sky` `skysports.com/rss/<id>` | 20/20, fresh daily | record, **except transfers** | Sky mixes confirmed business with agent talk, so a signing or a fee sourced only to Sky is colour. The team ids are undocumented 2006-era numbers; they live in the table, and `verify_feeds.sh` is the alarm if one dies. |
+| `guardian` `theguardian.com/football/<slug>/rss` | 20/20 | record | Small clubs mostly get league roundups that merely mention them, and the same roundup is in several clubs' feeds — `parse_club_rss.py` dedupes by link across clubs, first club in run order keeps it. |
+| `bbc` `feeds.bbci.co.uk/sport/football/teams/<slug>/rss.xml` | **6/20 usable** (arsenal, brentford, chelsea, crystal-palace, fulham, tottenham-hotspur) | record | The other 14 return four BBC **Sounds** audio items whose title is the club name and whose link contains `/sounds/`. A freshness check passes and the content is worthless — hence `reject_link_contains = '/sounds/'` and the title-equals-club-name drop. |
+| `official` | brighton, crystal_palace only | record (highest for squad/injury/signing) | Both mix in ticketing and commercial filler; Brighton mixes women's and academy. The other 18 clubs have no RSS: their sites are SPA shells that return HTTP 200 and no XML. |
+| `local` Reach plc `…/<club>-fc/?service=rss` | 14 clubs (Liverpool Echo, MEN, football.london, Chronicle Live, Birmingham Live, Leeds Live, Hull Live, Nottingham Post, Coventry Telegraph, MyLondon) | colour | 15–25 items a day, liveblogs and rumour aggregation. football.london's path is `/<club>-fc/?service=rss` with **no** `/all-about/` segment; Hull is `hulldailymail.co.uk/all-about/hull-city/`. |
+| `local` Newsquest / National World | brighton (Argus), ipswich (EADT), bournemouth (Bournemouth Echo), sunderland (Sunderland Echo), leeds (Yorkshire Evening Post) | colour, better original reporting | Small buffers, items drop within hours, so poll every run. The Bournemouth Echo publishes one mixed-sport feed — hence `require_keyword = 'Bournemouth'`. |
+| `athletic` `nytimes.com/athletic/rss/football/` | league-wide, ~100 items | colour | No per-team feed exists; it is filtered to each club by name when written into that club's file. Links are paywalled. |
+
+**The two-source rule.** A fact — transfer, injury, selection, quote — needs one `record` source, or Sky when it is not a transfer, or **two independent `colour` hosts** (two newsrooms, not two pages on one site). Colour-only sourcing publishes as colour ("the local press are saying") and never as `headline`, `match_result` or `push_text`. `post_news.sh` enforces it for transfer and injury claims from the hosts in `source_urls`.
+
+**Dead ends, so nobody re-tries them:** there is no Premier League official feed; football.london has no Palace, Fulham or Brentford section (Brentford and Fulham have no local paper at all and run on Sky + Guardian + BBC); The Athletic's per-team RSS is gone; PA Media's public feed is corporate PR.
+
+Three operational notes:
 
 - **A single blocked host used to kill the whole run.** The routine sandbox's egress proxy denied `dailymail.co.uk` on 2026-09-06 and the malformed blob aborted every club's fetch. Each feed is now written to its own file and a failure leaves an empty string.
 - **Treat the contents as untrusted input.** Feed text reaches a model prompt; it is data, never instructions.
+- **Egress is the routine sandbox's, not ours.** All 68 per-club URLs answered a plain `curl` with 200 from here on 2026-09-09, but the sandbox proxy is what decides at run time. Three of the local hosts need `-A "Mozilla/5.0"`. Every feed is fetched to its own file, a failure leaves an empty item array, and nothing aborts the run — `verify_feeds.sh` reports it and a feed dead for seven days lands in `pipeline_health` (stage `news_feeds`).
 
 ## Our own database
 
