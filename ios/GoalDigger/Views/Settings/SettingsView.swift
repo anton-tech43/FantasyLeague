@@ -386,7 +386,11 @@ struct SettingsView: View {
     @ViewBuilder private var privacyRow: some View {
         settingsRow {
             Button {
-                if let url = URL(string: "https://getgoaldigger.com/privacy") {
+                // The carrd page, not getgoaldigger.com/privacy: the custom
+                // domain has never resolved (TLS handshake failure over https,
+                // 409 from Cloudflare over http), so the link App Review clicks
+                // was dead in every shipped build. 2026-09-16.
+                if let url = URL(string: "https://getgoaldigger.carrd.co") {
                     UIApplication.shared.open(url)
                 }
             } label: {
