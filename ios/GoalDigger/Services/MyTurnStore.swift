@@ -221,10 +221,10 @@ final class MyTurnStore {
         if correct {
             round.score += 1
             round.streak += 1
-            // Three, six and nine. Not every question, or it stops meaning
-            // anything, and never on the last one: the result card is the
-            // moment there, and two rose cards at once is noise.
-            if round.streak % 3 == 0, round.streak <= 9, round.index + 1 < round.questionIds.count {
+            // Four and eight (Anton, 2026-09-16: three came too easily). Never
+            // on the last question: the result card is the moment there, and
+            // two rose cards at once is noise.
+            if round.streak % 4 == 0, round.streak <= 8, round.index + 1 < round.questionIds.count {
                 streakTick += 1
             }
         } else {
@@ -325,7 +325,7 @@ final class MyTurnStore {
     // only remembers which ones she has already been shown, so nothing repeats
     // until the category runs out.
 
-    /// Bumped at three, six and nine correct in a row. Transient: a streak is
+    /// Bumped at four and eight correct in a row. Transient: a streak is
     /// a moment, not a trophy, and it should not survive a relaunch.
     var streakTick: Int = 0
 

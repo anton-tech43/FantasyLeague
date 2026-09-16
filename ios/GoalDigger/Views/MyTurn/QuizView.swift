@@ -95,6 +95,9 @@ struct QuizView: View {
         // `-gdQuizPause` lands on the pack list with the round still going, for
         // the screenshot simctl cannot tap its way to.
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-gdQuizPause") { paused = true } }
+        // Leaving the My Turn tab lands her back on the pack list when she
+        // returns; the round itself is kept and one tap resumes it.
+        .onDisappear { paused = true }
         // `-gdQuizPlayer` opens the "Who he is" sheet as soon as a question has
         // been answered, for the screenshot harness.
         .task(id: round?.selected) {

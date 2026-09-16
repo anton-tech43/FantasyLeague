@@ -35,7 +35,7 @@ struct MyTurnView: View {
                         .opacity(store.lastModule == .quiz ? 1 : 0)
                         .allowsHitTesting(store.lastModule == .quiz)
 
-                    // Above the module content, so three in a row is seen
+                    // Above the module content, so four in a row is seen
                     // wherever she is when it happens.
                     HypeStreakOverlay(store: store)
                 }

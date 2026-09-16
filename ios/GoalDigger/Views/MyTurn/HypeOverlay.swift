@@ -45,11 +45,11 @@ enum HypeCategory: String {
 enum Hype {
     @MainActor
     static func line(_ category: HypeCategory, store: MyTurnStore) -> String? {
-        // Past three in a row, a line that says "three" is a lie.
+        // Past four in a row, a line that says "four" is a lie.
         let streak = store.quizRound?.streak ?? 0
-        let pastThree = category == .streak && streak > 3
+        let pastFour = category == .streak && streak > 4
         return store.hypeLine(category, from: MyTurnContentService.shared.hype.lines(category),
-                              excluding: { pastThree && $0.lowercased().contains("three") })
+                              excluding: { pastFour && $0.lowercased().contains("four") })
     }
 }
 
@@ -107,8 +107,10 @@ enum HypeHaptic {
 // MARK: - The streak overlay
 
 /// Sits above the module content in `MyTurnView`'s ZStack. Watches
-/// `store.streakTick`, which the store bumps at three, six and nine correct in
-/// a row, and shows one line for 2.2 s. Tapping it takes it away early.
+/// `store.streakTick`, which the store bumps at four and eight correct in a
+/// row, and shows one line for 2.2 s. Tapping it takes it away early. The tick
+/// is cleared once shown: it used to survive a tab switch, so opening My Turn
+/// an hour after a run replayed the card (2026-09-16).
 struct HypeStreakOverlay: View {
     @Bindable var store: MyTurnStore
     @State private var line: String?
@@ -140,5 +142,6 @@ struct HypeStreakOverlay: View {
 
     private func dismiss() {
         withAnimation(.spring(duration: 0.35, bounce: 0.2)) { line = nil }
+        store.streakTick = 0
     }
 }

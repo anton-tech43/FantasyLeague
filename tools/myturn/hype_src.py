@@ -86,19 +86,20 @@ ROUGH = [
     "Bad round, easy fix. They're all in the list below.",
 ]
 
-# streak — three, six or nine correct in a row, mid-round.
+# streak — four or eight correct in a row, mid-round. Lines that say "four"
+# are only drawn at four (HypeOverlay filters them past that).
 STREAK = [
-    "Three in a row. Who's the fan now.",
+    "Four in a row. Who's the fan now.",
     "You're on a run. Don't tell him.",
-    "Three straight. Keep going, quietly.",
+    "Four straight. Keep going, quietly.",
     "Nobody's stopping you. Next.",
-    "Three on the bounce. Suspicious.",
+    "Four on the bounce. Suspicious.",
     "That's a run. Ride it.",
-    "Back to back to back. Casual.",
+    "Back to back to back to back. Casual.",
     "You're just doing these now.",
-    "Three clean. He'd be annoyed.",
+    "Four clean. He'd be annoyed.",
     "On a roll. Don't look down.",
-    "Three right. Someone's been paying attention.",
+    "Four right. Someone's been paying attention.",
     "Rolling. Next one's yours as well.",
 ]
 

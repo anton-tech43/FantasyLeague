@@ -286,6 +286,11 @@ struct FeedView: View {
                     .font(.system(size: 10, weight: .medium))
                     .foregroundColor(.textOnDark.opacity(0.6))
                     .rotationEffect(.degrees(appState.isContextSwitcherOpen ? 180 : 0))
+                // Inside the pill, after the chevron. It sat on the pill's
+                // corner for four months and was clipped by the navigation bar
+                // in every build ("9+" read as a sliver, 2026-09-16); nothing
+                // inside the outline can be clipped.
+                aggregateUnreadBadge
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
@@ -293,16 +298,7 @@ struct FeedView: View {
                 RoundedRectangle(cornerRadius: Layout.badgeCornerRadius)
                     .stroke(Color.hotRose, lineWidth: 1)
             )
-            // The badge sits on the pill's corner, outside the outline. A
-            // toolbar item clips to its own frame, so the old +8/-8 offset
-            // pushed half the badge out of existence ("2" read as a sliver).
-            // Reserve the room instead: pad the pill, then overlay the badge
-            // inside the padded frame.
-            .padding(.top, 7)
-            .padding(.trailing, 9)
-            .overlay(alignment: .topTrailing) {
-                aggregateUnreadBadge
-            }
+
         }
     }
 
@@ -351,6 +347,7 @@ struct FeedView: View {
                 .padding(.vertical, 2)
                 .background(Color.hotRose)
                 .clipShape(Capsule())
+                .fixedSize()
         }
     }
 
