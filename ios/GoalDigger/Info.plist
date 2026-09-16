@@ -63,5 +63,38 @@
 	<true/>
 	<key>NSSupportsLiveActivitiesFrequentUpdates</key>
 	<true/>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>This lets us see which ads brought you here, so we can keep the app free to try. Nothing else changes.</string>
+	<key>FacebookAppID</key>
+	<string>920070997769781</string>
+	<key>FacebookClientToken</key>
+	<string>842954293aec297f924aac8071250426</string>
+	<key>FacebookDisplayName</key>
+	<string>GoalDigger</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fb920070997769781</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>fbapi</string>
+		<string>fb-messenger-share-api</string>
+	</array>
+	<key>SKAdNetworkItems</key>
+	<array>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>v9wttpbfk9.skadnetwork</string>
+		</dict>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>n38lu8286q.skadnetwork</string>
+		</dict>
+	</array>
 </dict>
 </plist>

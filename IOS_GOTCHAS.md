@@ -285,3 +285,42 @@ drawn: "SpringBoard quit unexpectedly" ten times in a morning (2026-09-09, a rev
 simulator). Always `defaults delete -g UIPreferredContentSizeCategoryName` when done, and do
 it on a throwaway simulator, never on the one Anton uses.
 
+
+---
+
+## 18. The Meta SDK: `FacebookCore` (SPM) vs `FBSDKCoreKit` (the module), and ATT timing
+
+Added 2026-09-16 for app-install ads: Meta locks a campaign to iOS ≤ 14.4 unless the app
+carries the SDK **and** `SKAdNetworkItems`. Five things that bite:
+
+1. **Add the package with the script, never by hand.** `ios/scripts/add_facebook_sdk.rb`
+   (xcodeproj gem, idempotent) owns the `XCRemoteSwiftPackageReference`, the
+   `XCSwiftPackageProductDependency` and the Frameworks-phase link, plus the version bump.
+   Hand-editing `project.pbxproj` for SPM is how you get a project that opens but doesn't link.
+   Re-run it, then `xcodebuild -resolvePackageDependencies`, and commit `Package.resolved`.
+2. **The SPM product is `FacebookCore`; the module you import is `FBSDKCoreKit`.** They don't
+   match, and `import FacebookCore` doesn't compile. `FacebookAEM` is bundled inside
+   `FacebookCore` — don't add it separately, and don't add `FacebookLogin` (we have no login).
+   The product goes on the **app target only** — never on `GoalDiggerLiveActivity`.
+3. **Never call `AppEvents.shared.activateApp()`.** `Settings.shared.isAutoLogAppEventsEnabled`
+   (we set it explicitly) makes the SDK log `fb_mobile_activate_app` itself on
+   `applicationDidBecomeActive`. Calling it too *double-logs* every install/session and
+   corrupts the ad metrics you added the SDK for.
+4. **ATT only while the app is `.active`.** `ATTrackingManager.requestTrackingAuthorization`
+   is silently denied if the app isn't frontmost. `Attribution.requestTrackingIfNeeded()`
+   waits 1.5 s after `MainTabView` appears, asks once per install (`attPrompted`), and never
+   runs during onboarding — the notification prompt is already there, and two system sheets
+   back to back get both declined. `syncTrackingStatus()` re-tells the SDK the standing answer
+   on every launch; the SDK does not remember it across relaunches.
+   `-gdSkipATT`/`-gdPresetTeam` skip the prompt (the screenshot harness must stay
+   deterministic), `-gdForceATT` bypasses every gate to prove the sheet still appears.
+5. **The client token in `Info.plist` is public, the app secret is not.** `FacebookClientToken`
+   is designed to ship in the binary (it's in every Meta app's plist), so it lives in the repo
+   rather than in the gitignored `Configuration.xcconfig` — one less thing a fresh checkout
+   has to fill in. The **app secret must never** reach the app, an xcconfig, or this repo.
+
+v18 exposes no public `isSDKInitialized`; the only public proof the launch path ran is the
+`Bool` returned by `ApplicationDelegate.shared.application(_:didFinishLaunchingWithOptions:)`
+(`false` when it has already run). That's what `Attribution.sdkLaunched` stores, and what
+`Attribution.selfCheck()` asserts alongside the Info.plist keys — launch with
+`-gdCheckFBSDK` and grep the device log for `[FBSDK]`.

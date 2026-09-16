@@ -1,10 +1,25 @@
 import UIKit
 import UserNotifications
+import FBSDKCoreKit
 
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        // Meta SDK first, before anything else Facebook-related (app events +
+        // SKAdNetwork; no Login). Auto-logging handles `fb_mobile_activate_app`
+        // itself on applicationDidBecomeActive — never also call
+        // AppEvents.shared.activateApp(), that double-logs. IOS_GOTCHAS §18.
+        Attribution.sdkLaunched = ApplicationDelegate.shared.application(
+            application, didFinishLaunchingWithOptions: launchOptions
+        )
+        Settings.shared.isAutoLogAppEventsEnabled = true
+        Settings.shared.isAdvertiserIDCollectionEnabled = true
+        Attribution.syncTrackingStatus()
+        #if DEBUG
+        Attribution.selfCheck()
+        #endif
+
         UNUserNotificationCenter.current().delegate = self
 
         // V2.0: image cache for AsyncImage. The CountrySelectionView (48
@@ -87,6 +102,14 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         #if DEBUG
         print("⚠️ APNs registration failed: \(error)")
         #endif
+    }
+
+    // Facebook `fb<app-id>://` callbacks (deferred app links / ad attribution).
+    // The SwiftUI scene has no other URL consumer, so forwarding here is enough.
+    func application(_ app: UIApplication,
+                     open url: URL,
+                     options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+        ApplicationDelegate.shared.application(app, open: url, options: options)
     }
 
     // Notification tapped

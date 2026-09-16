@@ -15,7 +15,14 @@ Configuration.xcconfig
 # Xcode
 *.xcuserdata
 *.xcworkspace
+# ...except the resolved SPM pins, which must ship so every checkout and CI
+# builds against the same Facebook SDK revision.
+!ios/GoalDigger.xcodeproj/project.xcworkspace/
+!ios/GoalDigger.xcodeproj/project.xcworkspace/xcshareddata/
+!ios/GoalDigger.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+!ios/GoalDigger.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 build/
+.dd/
 DerivedData/
 *.pbxuser
 *.mode1v3

@@ -17,6 +17,7 @@
 		1BED15311C3F5F71032B03F8 /* LingoFlashcardsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6EA0D5580F6C805D4572C4 /* LingoFlashcardsView.swift */; };
 		244B4E7A89E82714DCF2F917 /* MatchActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BDA3526673665ADFD98752B /* MatchActivityAttributes.swift */; };
 		25B33D3555E190DC97F79521 /* LiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D73223B9708A1BB7B5EA13D /* LiveActivityManager.swift */; };
+		278CC3CBDBD9D8A556C88764 /* AttributionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7DE4A791829215579567567 /* AttributionService.swift */; };
 		3D33C7639937879D8C8E619F /* MyTurn in Resources */ = {isa = PBXBuildFile; fileRef = 61B2720C074D85BD2E44091E /* MyTurn */; };
 		4C683AC53EDFF9D0E6AFD948 /* QuizView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DEDD7BB48436C1F2CEE9515 /* QuizView.swift */; };
 		4F7EFB5C35390135CD067439 /* GoalDiggerLiveActivity.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2C3E6B0D62430537E6511905 /* GoalDiggerLiveActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, CodeSignOnCopy, ); }; };
@@ -111,6 +112,7 @@
 		CA7E9F3D568141E95151BC0C /* MyTurnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B7B4A91229A7B66DD56083 /* MyTurnView.swift */; };
 		CCD1E4EDA6BD470832977407 /* InsiderItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCC2F8DAF9A3D770423F8C38 /* InsiderItem.swift */; };
 		CEE0AA64A8A71768C7DAE896 /* AudioPlayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36F66AB00E15F67DAA68C18A /* AudioPlayerService.swift */; };
+		D4278299EF3D809F6F3EF08B /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; productRef = D256F901F573FE34821B1F3B /* FacebookCore */; };
 		DACB60FB5B8E068045070D2F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F288B1DCFB01F70EA2722C7 /* Foundation.framework */; };
 		DB5039EBD938A4E4B32D5BFC /* Competition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C6A674DCE8CC6E44C5136A /* Competition.swift */; };
 		DF1EDE6C6A0AA125869C7F8D /* InsiderCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C25D6C48090CD68B903A14 /* InsiderCard.swift */; };
@@ -247,6 +249,7 @@
 		AB000309 /* InsiderHeadlineRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InsiderHeadlineRow.swift; sourceTree = "<group>"; };
 		AB000310 /* CollapsibleSection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CollapsibleSection.swift; sourceTree = "<group>"; };
 		AB000311 /* AffectedTeamsHeader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AffectedTeamsHeader.swift; sourceTree = "<group>"; };
+		B7DE4A791829215579567567 /* AttributionService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AttributionService.swift; sourceTree = "<group>"; };
 		BCDB9E93E3CF813F605541EE /* MatchLiveActivity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MatchLiveActivity.swift; sourceTree = "<group>"; };
 		C94C9314600B101EA7FBA6D9 /* LiveActivityBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityBundle.swift; sourceTree = "<group>"; };
 		C9B7B4A91229A7B66DD56083 /* MyTurnView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyTurnView.swift; sourceTree = "<group>"; };
@@ -275,6 +278,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D4278299EF3D809F6F3EF08B /* FacebookCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -480,6 +484,7 @@
 				4D8F505623CCED3CAAB391AA /* LiveClubPack.swift */,
 				EC063CF34EB46623A471C9F6 /* LiveSquadPack.swift */,
 				5D5FD984EA8B545ADF846F1C /* PlayerHooks.swift */,
+				B7DE4A791829215579567567 /* AttributionService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -624,6 +629,9 @@
 				B49859D075866BFE9AB20E81 /* PBXTargetDependency */,
 			);
 			name = GoalDigger;
+			packageProductDependencies = (
+				D256F901F573FE34821B1F3B /* FacebookCore */,
+			);
 			productName = GoalDigger;
 			productReference = AB000099 /* GoalDigger.app */;
 			productType = "com.apple.product-type.application";
@@ -652,6 +660,9 @@
 				Base,
 			);
 			mainGroup = AC000001;
+			packageReferences = (
+				4088D1B50105E174165F24C8 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */,
+			);
 			productRefGroup = AC000099 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -799,6 +810,7 @@
 				754DEA162AF85F46038029EC /* LiveSquadPack.swift in Sources */,
 				17B1A6C8E309B3DB90A2F28E /* PlayerHooks.swift in Sources */,
 				C6D2D393CC5FB544D3BF3492 /* HypeOverlay.swift in Sources */,
+				278CC3CBDBD9D8A556C88764 /* AttributionService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -820,7 +832,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = XG9549JP5L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -831,7 +843,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.goaldigger.app.LiveActivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -847,7 +859,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = XG9549JP5L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -858,7 +870,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.goaldigger.app.LiveActivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -932,7 +944,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = GoalDigger/GoalDigger.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = XG9549JP5L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -946,7 +958,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.goaldigger.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -965,7 +977,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "GoalDigger/GoalDigger-Release.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = XG9549JP5L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -979,7 +991,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.goaldigger.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1021,6 +1033,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4088D1B50105E174165F24C8 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/facebook/facebook-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 18.1.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D256F901F573FE34821B1F3B /* FacebookCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4088D1B50105E174165F24C8 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = AF000001 /* Project object */;
 }

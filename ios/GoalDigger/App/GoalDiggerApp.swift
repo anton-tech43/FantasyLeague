@@ -335,6 +335,11 @@ struct MainTabView: View {
             .tag(3)
         }
         .tint(.hotRose)
+        .task {
+            // ATT, 1.5 s after the tabs first appear — never in onboarding,
+            // where the notification prompt already asks for something.
+            await Attribution.requestTrackingIfNeeded()
+        }
         .onChange(of: appState.deepLinkContentId) { _, newId in
             if let id = newId {
                 selectedTab = 0
