@@ -108,6 +108,40 @@ enum LingoCategory: String, Codable, CaseIterable {
     }
 }
 
+extension LingoCategory {
+    /// Short label for a row or a card corner. `title` is the section heading
+    /// ("Match situations"); a tag needs one word.
+    var tag: String {
+        switch self {
+        case .rules:           return "Rules"
+        case .tactics:         return "Tactics"
+        case .matchSituations: return "Match"
+        case .culture:         return "Slang"
+        }
+    }
+}
+
+/// Who said the Overheard line, for the chip above the snippet.
+///
+/// Decoded strictly, like `LingoCategory`: a speaker this build does not know
+/// is a content bug the validator catches before publish, not something to
+/// paper over at runtime with a wrong-looking chip.
+enum LingoSpeaker: String, Codable {
+    case him, telly, chat, pundit
+
+    /// `.him` is the personalise token the rest of My Turn uses, so the chip
+    /// renders his name (or "Your partner" when she never gave one) once the
+    /// view runs it through `appState.personalise`.
+    var label: String {
+        switch self {
+        case .him:    return "[His name]"
+        case .telly:  return "The telly"
+        case .chat:   return "Group chat"
+        case .pundit: return "The pundit"
+        }
+    }
+}
+
 struct LingoTerm: Codable, Identifiable, Hashable {
     let id: String
     let category: LingoCategory
@@ -119,11 +153,34 @@ struct LingoTerm: Codable, Identifiable, Hashable {
     /// older cached file still decodes.
     let sayIt: String?
     let seeAlso: [String]?
-    /// Progression level, 1 upwards (2026-09-09). Level 1 is the first ten
-    /// words a newcomer meets; the Lingo view shows it open and folds the rest,
-    /// and flashcard practise starts there. Optional so an older cached file
-    /// still decodes; treat nil as the top level.
+    /// Difficulty, 1 upwards (2026-09-09). It stopped being a ladder on
+    /// 2026-09-22 — there are no levels on screen any more — and is now only a
+    /// sort key: a deck deals easy words before hard ones, and a category fold
+    /// lists its words in this order. Optional so an older cached file still
+    /// decodes; treat nil as the top level.
     let level: Int?
+
+    // MARK: Overheard (2026-09-22)
+    //
+    // The round asks the reverse of a flashcard: he says a thing, what did he
+    // mean. All optional, because a cached lingo.json published before the
+    // overhaul has none of them — a term without them simply is not playable
+    // (`LingoWeekendDeck.options`) and still reads fine in the word list.
+
+    /// A realistic line someone would actually say, using the term.
+    let overheard: String?
+    /// The exact substring of `overheard` to bold, emitted by the build script
+    /// so the view can bold with a plain `range(of:)` and no matching rules.
+    let overheardTerm: String?
+    let speaker: LingoSpeaker?
+    /// The right answer: what he meant, in her words.
+    let gist: String?
+    /// Exactly two hand-written wrong answers, same length band as `gist`.
+    let decoys: [String]?
+    /// When this word is worth knowing: tags from `MatchContext.knownTags`.
+    /// `[String]`, not an enum, so a publish can add a tag before the app
+    /// knows it (an unknown tag simply never matches a context).
+    let when: [String]?
 }
 
 // MARK: Quiz

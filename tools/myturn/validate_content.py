@@ -19,6 +19,9 @@ import re
 import sys
 from collections import Counter, defaultdict
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from validate_overheard import validate_overheard  # noqa: E402
+
 ROOT = os.path.join(os.path.dirname(__file__), "..", "..", "ios", "GoalDigger", "Resources", "MyTurn")
 ID_RE = re.compile(r"^[a-z0-9-]+$")
 
@@ -208,6 +211,13 @@ def validate_lingo(d: dict) -> int:
             err(f"lingo: levels must run 1..{levels[-1]} with no gaps, got {levels}")
     if len(terms) < 120:
         err(f"lingo: {len(terms)} terms (launch floor 120)")
+    # The Overheard game's fields (overheard, speaker, gist, decoys, when).
+    # `--lingo-category rules` checks one category and skips the file-wide
+    # floors, so a writer can validate their own file before the others exist.
+    only = None
+    if "--lingo-category" in sys.argv:
+        only = sys.argv[sys.argv.index("--lingo-category") + 1]
+    validate_overheard(terms, err=err, warn=warn, check_idiom=check_idiom, superlative=SUPERLATIVE, only_category=only)
     return len(terms)
 
 

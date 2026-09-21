@@ -14,7 +14,6 @@
 		159D99B3A0BD1457CA4C4F47 /* LiveMatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCA4D1D232DB07DA5CC85E8B /* LiveMatchSnapshot.swift */; };
 		17B1A6C8E309B3DB90A2F28E /* PlayerHooks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D5FD984EA8B545ADF846F1C /* PlayerHooks.swift */; };
 		1958991C7C4BB12F44CFD55F /* LingoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922140CFA2F1A4786CEDC255 /* LingoView.swift */; };
-		1BED15311C3F5F71032B03F8 /* LingoFlashcardsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6EA0D5580F6C805D4572C4 /* LingoFlashcardsView.swift */; };
 		244B4E7A89E82714DCF2F917 /* MatchActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BDA3526673665ADFD98752B /* MatchActivityAttributes.swift */; };
 		25B33D3555E190DC97F79521 /* LiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D73223B9708A1BB7B5EA13D /* LiveActivityManager.swift */; };
 		278CC3CBDBD9D8A556C88764 /* AttributionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7DE4A791829215579567567 /* AttributionService.swift */; };
@@ -31,6 +30,7 @@
 		754DEA162AF85F46038029EC /* LiveSquadPack.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC063CF34EB46623A471C9F6 /* LiveSquadPack.swift */; };
 		785C14F6B48F7E69523A45EC /* SayThisPractiseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED6D8160AFC958A96956341D /* SayThisPractiseView.swift */; };
 		7AE5C40C19D72FA48BC51F30 /* SaturdayQuiz.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BC4A29F62D389F4A4751E27 /* SaturdayQuiz.swift */; };
+		8B0B08958242D8A2904E2895 /* LingoDeck.swift in Sources */ = {isa = PBXBuildFile; fileRef = B704D2F20367B101AF1B118A /* LingoDeck.swift */; };
 		8DF6B51D2AE83FB59CD63041 /* SaturdayQuizCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD5B3A073E49AF5B5862F38 /* SaturdayQuizCard.swift */; };
 		9D8349CC509C7124A5EB9F29 /* MyTurnPractiseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0C75FEEE6727814C8D4456 /* MyTurnPractiseButton.swift */; };
 		AA000001 /* GoalDiggerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001 /* GoalDiggerApp.swift */; };
@@ -116,6 +116,7 @@
 		DACB60FB5B8E068045070D2F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F288B1DCFB01F70EA2722C7 /* Foundation.framework */; };
 		DB5039EBD938A4E4B32D5BFC /* Competition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C6A674DCE8CC6E44C5136A /* Competition.swift */; };
 		DF1EDE6C6A0AA125869C7F8D /* InsiderCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C25D6C48090CD68B903A14 /* InsiderCard.swift */; };
+		DFF6288FF22ACD8929487E28 /* LingoOverheardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F3A0B91CD9D833177EB1A31 /* LingoOverheardView.swift */; };
 		E1306FD7172C8AD374F812D2 /* MyTurnStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B8C8BE4CFA3444C2C316A0 /* MyTurnStore.swift */; };
 		F2301FB9ED3DC5D4B9693246 /* ErrorReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4421111DA5D3319C08E1C4C /* ErrorReporter.swift */; };
 		F9D3BF1239833859BA1EFD4D /* SayThisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ADF83F8ECC74099BBB0BB27 /* SayThisView.swift */; };
@@ -167,6 +168,7 @@
 		5D5FD984EA8B545ADF846F1C /* PlayerHooks.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlayerHooks.swift; sourceTree = "<group>"; };
 		5DCB2A4C5C03D80779E498AA /* HypeOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HypeOverlay.swift; sourceTree = "<group>"; };
 		61B2720C074D85BD2E44091E /* MyTurn */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; path = MyTurn; sourceTree = "<group>"; };
+		6F3A0B91CD9D833177EB1A31 /* LingoOverheardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LingoOverheardView.swift; sourceTree = "<group>"; };
 		7053F7511B38A308FC409BEB /* MyTurnContent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyTurnContent.swift; sourceTree = "<group>"; };
 		7239C9DAC195717215AC20F2 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		842AE9AEAF418CB78FA4589A /* glossary.json */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json; path = glossary.json; sourceTree = "<group>"; };
@@ -249,11 +251,11 @@
 		AB000309 /* InsiderHeadlineRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InsiderHeadlineRow.swift; sourceTree = "<group>"; };
 		AB000310 /* CollapsibleSection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CollapsibleSection.swift; sourceTree = "<group>"; };
 		AB000311 /* AffectedTeamsHeader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AffectedTeamsHeader.swift; sourceTree = "<group>"; };
+		B704D2F20367B101AF1B118A /* LingoDeck.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LingoDeck.swift; sourceTree = "<group>"; };
 		B7DE4A791829215579567567 /* AttributionService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AttributionService.swift; sourceTree = "<group>"; };
 		BCDB9E93E3CF813F605541EE /* MatchLiveActivity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MatchLiveActivity.swift; sourceTree = "<group>"; };
 		C94C9314600B101EA7FBA6D9 /* LiveActivityBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityBundle.swift; sourceTree = "<group>"; };
 		C9B7B4A91229A7B66DD56083 /* MyTurnView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyTurnView.swift; sourceTree = "<group>"; };
-		CA6EA0D5580F6C805D4572C4 /* LingoFlashcardsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LingoFlashcardsView.swift; sourceTree = "<group>"; };
 		CCC2F8DAF9A3D770423F8C38 /* InsiderItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InsiderItem.swift; sourceTree = "<group>"; };
 		D5A88D0BF10EC36C829985F7 /* LiveMatchCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveMatchCard.swift; sourceTree = "<group>"; };
 		D8C25D6C48090CD68B903A14 /* InsiderCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InsiderCard.swift; sourceTree = "<group>"; };
@@ -294,8 +296,8 @@
 				1ADF83F8ECC74099BBB0BB27 /* SayThisView.swift */,
 				AA0C75FEEE6727814C8D4456 /* MyTurnPractiseButton.swift */,
 				ED6D8160AFC958A96956341D /* SayThisPractiseView.swift */,
-				CA6EA0D5580F6C805D4572C4 /* LingoFlashcardsView.swift */,
 				5DCB2A4C5C03D80779E498AA /* HypeOverlay.swift */,
+				6F3A0B91CD9D833177EB1A31 /* LingoOverheardView.swift */,
 			);
 			name = MyTurn;
 			path = MyTurn;
@@ -485,6 +487,7 @@
 				EC063CF34EB46623A471C9F6 /* LiveSquadPack.swift */,
 				5D5FD984EA8B545ADF846F1C /* PlayerHooks.swift */,
 				B7DE4A791829215579567567 /* AttributionService.swift */,
+				B704D2F20367B101AF1B118A /* LingoDeck.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -806,11 +809,12 @@
 				DB5039EBD938A4E4B32D5BFC /* Competition.swift in Sources */,
 				9D8349CC509C7124A5EB9F29 /* MyTurnPractiseButton.swift in Sources */,
 				785C14F6B48F7E69523A45EC /* SayThisPractiseView.swift in Sources */,
-				1BED15311C3F5F71032B03F8 /* LingoFlashcardsView.swift in Sources */,
 				754DEA162AF85F46038029EC /* LiveSquadPack.swift in Sources */,
 				17B1A6C8E309B3DB90A2F28E /* PlayerHooks.swift in Sources */,
 				C6D2D393CC5FB544D3BF3492 /* HypeOverlay.swift in Sources */,
 				278CC3CBDBD9D8A556C88764 /* AttributionService.swift in Sources */,
+				8B0B08958242D8A2904E2895 /* LingoDeck.swift in Sources */,
+				DFF6288FF22ACD8929487E28 /* LingoOverheardView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

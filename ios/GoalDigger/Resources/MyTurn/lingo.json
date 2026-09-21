@@ -1,5 +1,5 @@
 {
-  "contentVersion": "2026-09-09.2",
+  "contentVersion": "2026-09-22.1",
   "terms": [
     {
       "id": "premier-league",
@@ -8,7 +8,19 @@
       "meaning": "England's top division. Twenty clubs, each plays the other nineteen twice, August to May.",
       "heard": "Constantly. It is the whole thing.",
       "sayIt": "\"Is that a Premier League game or one of the cups?\"",
-      "level": 1
+      "level": 1,
+      "overheard": "First Premier League game of the season on Saturday. Finally.",
+      "overheardTerm": "Premier League",
+      "speaker": "him",
+      "gist": "England's top division, twenty clubs, August to May",
+      "decoys": [
+        "A knockout competition for the top clubs",
+        "Midweek matches against clubs from Europe"
+      ],
+      "when": [
+        "any",
+        "early-season"
+      ]
     },
     {
       "id": "kick-off",
@@ -17,7 +29,18 @@
       "meaning": "The start of the match, and the restart after half-time or a goal.",
       "heard": "\"What time's kick-off?\" about eight times a weekend.",
       "sayIt": "\"What time's kick-off? I'll come and watch the start.\"",
-      "level": 1
+      "level": 1,
+      "overheard": "Kick-off's been moved to Sunday teatime for the telly.",
+      "overheardTerm": "Kick-off's",
+      "speaker": "him",
+      "gist": "The moment the match starts",
+      "decoys": [
+        "The first player to touch the ball",
+        "The whistle that ends the match"
+      ],
+      "when": [
+        "any"
+      ]
     },
     {
       "id": "half-time",
@@ -26,7 +49,18 @@
       "meaning": "The fifteen-minute break in the middle. Kettle time, and the manager's chance to shout.",
       "heard": "\"Half-time team talk\" when the manager needs to fix things.",
       "sayIt": "\"Half-time. What did you make of that?\"",
-      "level": 1
+      "level": 1,
+      "overheard": "Right, that's half-time. I'm putting the kettle on, do you want one?",
+      "overheardTerm": "half-time",
+      "speaker": "him",
+      "gist": "The break in the middle of the match",
+      "decoys": [
+        "The stage where half the season has gone",
+        "Added minutes at the end of a half"
+      ],
+      "when": [
+        "any"
+      ]
     },
     {
       "id": "full-time",
@@ -35,7 +69,18 @@
       "meaning": "The end of the match. The referee blows and it is over, whatever the score.",
       "heard": "\"FT\" in a text. Then either celebration or silence.",
       "sayIt": "\"Full-time. Right, where does that leave us?\"",
-      "level": 1
+      "level": 1,
+      "overheard": "Full-time whistle's gone. That's that, then.",
+      "overheardTerm": "Full-time",
+      "speaker": "telly",
+      "gist": "The referee ends it, whatever the score",
+      "decoys": [
+        "A player signed permanently, not on loan",
+        "The whistle at the end of the first half"
+      ],
+      "when": [
+        "any"
+      ]
     },
     {
       "id": "the-table",
@@ -48,6 +93,21 @@
       "seeAlso": [
         "relegation",
         "goal-difference"
+      ],
+      "overheard": "Have a look at the table. Fourth, and a game in hand.",
+      "overheardTerm": "table",
+      "speaker": "him",
+      "gist": "Every club ranked by points, top to bottom",
+      "decoys": [
+        "A fixture list showing who plays who",
+        "The list of goalscorers across the season"
+      ],
+      "when": [
+        "any",
+        "title",
+        "top-four",
+        "relegation",
+        "run-in"
       ]
     },
     {
@@ -60,6 +120,17 @@
       "level": 1,
       "seeAlso": [
         "var"
+      ],
+      "overheard": "Flag's up. He was offside by a mile, look at the replay.",
+      "overheardTerm": "offside",
+      "speaker": "him",
+      "gist": "He was beyond the final defender for the pass",
+      "decoys": [
+        "He'd stepped off the side of the pitch",
+        "He handled the ball before he shot"
+      ],
+      "when": [
+        "any"
       ]
     },
     {
@@ -72,6 +143,17 @@
       "level": 1,
       "seeAlso": [
         "the-box"
+      ],
+      "overheard": "The referee points to the spot. It's a penalty.",
+      "overheardTerm": "penalty",
+      "speaker": "telly",
+      "gist": "A free shot from twelve yards, keeper alone",
+      "decoys": [
+        "A punishment card shown after a bad tackle",
+        "A free kick given just outside the box"
+      ],
+      "when": [
+        "any"
       ]
     },
     {
@@ -84,6 +166,17 @@
       "level": 1,
       "seeAlso": [
         "clear-and-obvious"
+      ],
+      "overheard": "VAR is checking for a possible offside. Bear with us.",
+      "overheardTerm": "VAR",
+      "speaker": "telly",
+      "gist": "The video referee is looking at the replay",
+      "decoys": [
+        "The ref is checking his watch for added time",
+        "The goal has already been ruled out"
+      ],
+      "when": [
+        "any"
       ]
     },
     {
@@ -96,6 +189,17 @@
       "level": 1,
       "seeAlso": [
         "red-card"
+      ],
+      "overheard": "hes on a yellow card and he's still diving in.",
+      "overheardTerm": "yellow card",
+      "speaker": "chat",
+      "gist": "A formal warning, two of them and you're off",
+      "decoys": [
+        "A note the referee writes the goals down on",
+        "A ban from the next match, straight away"
+      ],
+      "when": [
+        "any"
       ]
     },
     {
@@ -109,6 +213,18 @@
       "seeAlso": [
         "yellow-card",
         "ten-men"
+      ],
+      "overheard": "It's a red card. He's the last man and he's hauled him down.",
+      "overheardTerm": "red card",
+      "speaker": "pundit",
+      "gist": "A sending off, so they play a man short",
+      "decoys": [
+        "A warning before the referee books you",
+        "A penalty given for a foul in the box"
+      ],
+      "when": [
+        "any",
+        "derby"
       ]
     },
     {
@@ -121,6 +237,20 @@
       "level": 2,
       "seeAlso": [
         "the-table"
+      ],
+      "overheard": "didnt deserve that at all but ill take the points.",
+      "overheardTerm": "points",
+      "speaker": "chat",
+      "gist": "Three for a win, one for a draw, none for a loss",
+      "decoys": [
+        "Goals scored, added up over the season",
+        "The gap in the table between two clubs"
+      ],
+      "when": [
+        "any",
+        "run-in",
+        "after-win",
+        "after-draw"
       ]
     },
     {
@@ -133,6 +263,21 @@
       "level": 2,
       "seeAlso": [
         "the-table"
+      ],
+      "overheard": "Level on points, so goal difference decides it. They need three more.",
+      "overheardTerm": "goal difference",
+      "speaker": "pundit",
+      "gist": "Goals scored minus goals let in",
+      "decoys": [
+        "The margin of victory in one match",
+        "Shots on target against shots off it"
+      ],
+      "when": [
+        "title",
+        "top-four",
+        "relegation",
+        "run-in",
+        "after-big-win"
       ]
     },
     {
@@ -146,6 +291,18 @@
       "seeAlso": [
         "championship",
         "promotion"
+      ],
+      "overheard": "If we don't win tonight we're in a relegation scrap by Christmas.",
+      "overheardTerm": "relegation",
+      "speaker": "him",
+      "gist": "Dropping out of the division at the bottom",
+      "decoys": [
+        "A player pushed down to the reserves",
+        "Finishing outside the places for Europe"
+      ],
+      "when": [
+        "relegation",
+        "run-in"
       ]
     },
     {
@@ -159,6 +316,18 @@
       "seeAlso": [
         "championship",
         "play-offs"
+      ],
+      "overheard": "mate they've done it. promotion with three games to spare.",
+      "overheardTerm": "promotion",
+      "speaker": "chat",
+      "gist": "Going up a division at the end of a season",
+      "decoys": [
+        "A player moved up into the first team",
+        "Winning a cup and qualifying for Europe"
+      ],
+      "when": [
+        "early-season",
+        "run-in"
       ]
     },
     {
@@ -171,6 +340,18 @@
       "level": 2,
       "seeAlso": [
         "champions-league"
+      ],
+      "overheard": "Top four with six to play. That's the season now.",
+      "overheardTerm": "Top four",
+      "speaker": "pundit",
+      "gist": "A finish high enough for Champions League",
+      "decoys": [
+        "The four best players picked by the fans",
+        "Winning the league and lifting the trophy"
+      ],
+      "when": [
+        "top-four",
+        "run-in"
       ]
     },
     {
@@ -183,6 +364,17 @@
       "level": 2,
       "seeAlso": [
         "penalty"
+      ],
+      "overheard": "Get it in the box! Nobody's attacking the cross.",
+      "overheardTerm": "box",
+      "speaker": "him",
+      "gist": "The rectangle in front of goal, eighteen yards deep",
+      "decoys": [
+        "The dugout where the manager and subs sit",
+        "The six-yard area a keeper kicks from"
+      ],
+      "when": [
+        "any"
       ]
     },
     {
@@ -196,6 +388,17 @@
       "seeAlso": [
         "free-kick",
         "yellow-card"
+      ],
+      "overheard": "Foul, ref! He's kicked him halfway up the pitch.",
+      "overheardTerm": "Foul",
+      "speaker": "him",
+      "gist": "Going through the man instead of the ball",
+      "decoys": [
+        "Any tackle that wins the ball cleanly",
+        "Arguing with the referee after a decision"
+      ],
+      "when": [
+        "any"
       ]
     },
     {
@@ -208,6 +411,17 @@
       "level": 2,
       "seeAlso": [
         "the-box"
+      ],
+      "overheard": "handball there surely. his arm was up by his head!",
+      "overheardTerm": "handball",
+      "speaker": "chat",
+      "gist": "Touching the ball with an arm on purpose",
+      "decoys": [
+        "The keeper picking the ball up in the box",
+        "A throw taken with one hand only"
+      ],
+      "when": [
+        "any"
       ]
     },
     {
@@ -217,7 +431,18 @@
       "meaning": "A restart after a foul: the ball is put down and kicked from where the foul happened. Near the goal, it is a chance to score.",
       "heard": "\"That's a free kick every day of the week.\"",
       "sayIt": "\"That's a free kick all day long.\"",
-      "level": 2
+      "level": 2,
+      "overheard": "Lovely position for a free kick, twenty-five yards out.",
+      "overheardTerm": "free kick",
+      "speaker": "pundit",
+      "gist": "A restart from where the offence happened",
+      "decoys": [
+        "A shot nobody is allowed to stand in front of",
+        "A drop ball to restart after an injury"
+      ],
+      "when": [
+        "any"
+      ]
     },
     {
       "id": "corner",
@@ -226,7 +451,18 @@
       "meaning": "If a defender puts the ball out behind his own goal, the attackers get to cross it in from the corner of the pitch. Tall players love them.",
       "heard": "\"Corners are as good as a goal\" said hopefully.",
       "sayIt": "\"Corner. Get everyone in the box.\"",
-      "level": 2
+      "level": 2,
+      "overheard": "Corner. Get the big lads up, this is our chance.",
+      "overheardTerm": "Corner",
+      "speaker": "him",
+      "gist": "A kick from the flag after the defence put it out",
+      "decoys": [
+        "The point where two touchlines meet",
+        "A throw-in taken from near the goal line"
+      ],
+      "when": [
+        "any"
+      ]
     },
     {
       "id": "throw-in",
@@ -235,7 +471,18 @@
       "meaning": "Ball goes out over the sideline, the other team throws it back in, two hands, from behind the head.",
       "heard": "Rarely. Unless someone has a famously long one.",
       "sayIt": "\"Long throw. They'll launch it into the box.\"",
-      "level": 2
+      "level": 2,
+      "overheard": "Throw-in to them, deep inside their own half.",
+      "overheardTerm": "Throw-in",
+      "speaker": "telly",
+      "gist": "Restarting play from the sideline with two hands",
+      "decoys": [
+        "Giving up and letting the other lot win",
+        "A free kick taken from the sideline"
+      ],
+      "when": [
+        "any"
+      ]
     },
     {
       "id": "ten-men",
@@ -247,6 +494,18 @@
       "level": 2,
       "seeAlso": [
         "red-card"
+      ],
+      "overheard": "Ten men for half an hour and we've held on. Unbelievable.",
+      "overheardTerm": "Ten men",
+      "speaker": "him",
+      "gist": "Playing a man short after a sending off",
+      "decoys": [
+        "The eleven on the pitch minus the keeper",
+        "A defensive shape with nobody up front"
+      ],
+      "when": [
+        "any",
+        "after-loss"
       ]
     },
     {
@@ -256,7 +515,20 @@
       "meaning": "Letting in no goals in a match. The goalkeeper's favourite statistic, and a defender's.",
       "heard": "\"Another clean sheet\" said with real pride.",
       "sayIt": "\"Another clean sheet. The defence has been solid.\"",
-      "level": 2
+      "level": 2,
+      "overheard": "Another clean sheet. That's four in six for the back four.",
+      "overheardTerm": "clean sheet",
+      "speaker": "pundit",
+      "gist": "Letting in no goals at all in a match",
+      "decoys": [
+        "A fresh set of kit for the second half",
+        "Winning without conceding a penalty"
+      ],
+      "when": [
+        "good-run",
+        "after-win",
+        "after-clean-sheet"
+      ]
     },
     {
       "id": "derby",
@@ -265,7 +537,18 @@
       "meaning": "A match between two local rivals, usually from the same city. Pronounced darby. The week is tense before, during and after.",
       "heard": "The week before, the week of, and the week after.",
       "sayIt": "\"It's the derby this weekend, isn't it? Are you nervous?\"",
-      "level": 2
+      "level": 2,
+      "overheard": "derby weekend. nobody book anything sunday, im no use after.",
+      "overheardTerm": "derby",
+      "speaker": "chat",
+      "gist": "A match between two clubs from the same city",
+      "decoys": [
+        "A horse race the fixture is named after",
+        "A repeat of a cup final from a season before"
+      ],
+      "when": [
+        "derby"
+      ]
     },
     {
       "id": "clear-and-obvious",
@@ -277,6 +560,17 @@
       "level": 2,
       "seeAlso": [
         "var"
+      ],
+      "overheard": "Four minutes on the monitor. That is not clear and obvious.",
+      "overheardTerm": "clear and obvious",
+      "speaker": "pundit",
+      "gist": "A decision so wrong nobody could argue",
+      "decoys": [
+        "A camera angle with a good view of it",
+        "The referee explaining his call out loud"
+      ],
+      "when": [
+        "any"
       ]
     },
     {
@@ -286,7 +580,19 @@
       "meaning": "The second division, one below the Premier League. Confusing name: winning it does not make you champions of anything much.",
       "heard": "\"They'll be in the Championship next year\" said unkindly.",
       "sayIt": "\"Is that a Championship side? So they came up recently.\"",
-      "level": 3
+      "level": 3,
+      "overheard": "He's a Championship player at this level, I'm afraid.",
+      "overheardTerm": "Championship",
+      "speaker": "pundit",
+      "gist": "The division below the top one in England",
+      "decoys": [
+        "The trophy for winning the top division",
+        "The group stage before a knockout round"
+      ],
+      "when": [
+        "relegation",
+        "early-season"
+      ]
     },
     {
       "id": "play-offs",
@@ -298,6 +604,18 @@
       "level": 3,
       "seeAlso": [
         "promotion"
+      ],
+      "overheard": "Third place, so it's the play-offs for them in May.",
+      "overheardTerm": "play-offs",
+      "speaker": "telly",
+      "gist": "A mini knockout deciding who goes up",
+      "decoys": [
+        "Matches called off and rearranged later",
+        "The two-legged semi-final of a cup"
+      ],
+      "when": [
+        "early-season",
+        "run-in"
       ]
     },
     {
@@ -307,7 +625,18 @@
       "meaning": "Minutes added at the end of each half to make up for stoppages: injuries, substitutions, celebrations. Shown on a board by the pitch.",
       "heard": "\"How long has he added?\" the second the board goes up.",
       "sayIt": "\"How long's he added? Six? Six minutes!\"",
-      "level": 3
+      "level": 3,
+      "overheard": "Six minutes of added time to be played here.",
+      "overheardTerm": "added time",
+      "speaker": "telly",
+      "gist": "Extra play at the end for stoppages",
+      "decoys": [
+        "Time taken off the clock for a substitution",
+        "The clock stopping whenever the ball goes out"
+      ],
+      "when": [
+        "any"
+      ]
     },
     {
       "id": "extra-time",
@@ -320,6 +649,18 @@
       "seeAlso": [
         "added-time",
         "penalty-shootout"
+      ],
+      "overheard": "Thirty more minutes. Extra time, and the legs have gone already.",
+      "overheardTerm": "Extra time",
+      "speaker": "pundit",
+      "gist": "Half an hour more to settle a cup game",
+      "decoys": [
+        "A short break before penalties are taken",
+        "The same round played again a week later"
+      ],
+      "when": [
+        "cup",
+        "europe"
       ]
     },
     {
@@ -333,6 +674,18 @@
       "seeAlso": [
         "extra-time",
         "the-cups"
+      ],
+      "overheard": "penalty shootout. i cant look, text me when its done.",
+      "overheardTerm": "penalty shootout",
+      "speaker": "chat",
+      "gist": "A round of five spot kicks each, then sudden death",
+      "decoys": [
+        "A quick round of shots in the warm-up",
+        "A free shot from twelve yards during play"
+      ],
+      "when": [
+        "cup",
+        "europe"
       ]
     },
     {
@@ -348,6 +701,17 @@
         "league-cup",
         "wembley",
         "extra-time"
+      ],
+      "overheard": "We're out of both cups by January. Brilliant, that.",
+      "overheardTerm": "cups",
+      "speaker": "him",
+      "gist": "The knockout competitions run beside the season",
+      "decoys": [
+        "The trophies on show in the club museum",
+        "The group stage played midweek in Europe"
+      ],
+      "when": [
+        "cup"
       ]
     },
     {
@@ -361,6 +725,17 @@
       "seeAlso": [
         "the-cups",
         "wembley"
+      ],
+      "overheard": "Third round of the FA Cup, and a non-league side lead.",
+      "overheardTerm": "FA Cup",
+      "speaker": "telly",
+      "gist": "The oldest knockout competition, open to every club",
+      "decoys": [
+        "The competition every club in Europe can enter",
+        "The knockout for clubs from the lower divisions"
+      ],
+      "when": [
+        "cup"
       ]
     },
     {
@@ -375,13 +750,24 @@
         "the-cups",
         "wembley",
         "two-legs"
+      ],
+      "overheard": "It's the League Cup. He'll make eight changes and nobody minds.",
+      "overheardTerm": "League Cup",
+      "speaker": "pundit",
+      "gist": "The smaller of the two domestic cups",
+      "decoys": [
+        "A trophy for the winners of the division",
+        "The pre-season tournament played in August"
+      ],
+      "when": [
+        "cup"
       ]
     },
     {
       "id": "wembley",
       "category": "culture",
       "term": "Wembley",
-      "meaning": "England's national stadium, in north London. Both domestic cup finals are played there, and the FA Cup semi-finals too. Ninety thousand seats under an arch.",
+      "meaning": "England's national stadium, in north-west London. Both domestic cup finals are played there, and the FA Cup semi-finals too. Ninety thousand seats under an arch.",
       "heard": "\"A trip to Wembley\" means the cup run has gone deep.",
       "sayIt": "\"So a win here is a trip to Wembley?\"",
       "level": 3,
@@ -389,6 +775,18 @@
         "the-cups",
         "fa-cup",
         "league-cup"
+      ],
+      "overheard": "Two games from Wembley. Don't say it out loud, don't jinx it.",
+      "overheardTerm": "Wembley",
+      "speaker": "him",
+      "gist": "The national stadium in north-west London, under an arch",
+      "decoys": [
+        "The name fans give to the cup final itself",
+        "The training base the national team uses"
+      ],
+      "when": [
+        "cup",
+        "run-in"
       ]
     },
     {
@@ -403,6 +801,19 @@
         "europa-league",
         "conference-league",
         "two-legs"
+      ],
+      "overheard": "That anthem, those lights. Champions League football is back.",
+      "overheardTerm": "Champions League",
+      "speaker": "telly",
+      "gist": "Europe's top club competition, midweek nights",
+      "decoys": [
+        "A competition for the winners of each division",
+        "The summer tournament between national sides"
+      ],
+      "when": [
+        "europe",
+        "title",
+        "top-four"
       ]
     },
     {
@@ -416,6 +827,18 @@
       "seeAlso": [
         "champions-league",
         "conference-league"
+      ],
+      "overheard": "Thursday nights in the Europa League. Rock and roll.",
+      "overheardTerm": "Europa League",
+      "speaker": "him",
+      "gist": "Europe's second competition, below the top one",
+      "decoys": [
+        "The knockout stage of Europe's top competition",
+        "A tournament for national sides in Europe"
+      ],
+      "when": [
+        "europe",
+        "top-four"
       ]
     },
     {
@@ -429,6 +852,18 @@
       "seeAlso": [
         "europa-league",
         "champions-league"
+      ],
+      "overheard": "conference league away trip in november. whos coming?",
+      "overheardTerm": "conference league",
+      "speaker": "chat",
+      "gist": "Europe's third competition, below the other two",
+      "decoys": [
+        "A meeting of clubs about the rules",
+        "The qualifying round before a group stage"
+      ],
+      "when": [
+        "europe",
+        "top-four"
       ]
     },
     {
@@ -438,7 +873,19 @@
       "meaning": "The list of upcoming matches: who plays who, when, and where. Published in June for the whole season.",
       "heard": "\"Have you seen the fixtures?\" in June, when they come out.",
       "sayIt": "\"What's the next fixture? Home or away?\"",
-      "level": 3
+      "level": 3,
+      "overheard": "Fixtures are out. We've got them away on Boxing Day.",
+      "overheardTerm": "Fixtures",
+      "speaker": "him",
+      "gist": "The list of who plays who, and when",
+      "decoys": [
+        "Repairs being done to the ground in summer",
+        "The order the clubs sit in, by points"
+      ],
+      "when": [
+        "any",
+        "early-season"
+      ]
     },
     {
       "id": "starting-eleven",
@@ -447,7 +894,19 @@
       "meaning": "The eleven players who begin the match. Announced about an hour before kick-off, when phones come out.",
       "heard": "\"Team's out\" when the line-up appears on his phone.",
       "sayIt": "\"Team's out. Who's starting?\"",
-      "level": 4
+      "level": 4,
+      "overheard": "Team's up. Same starting eleven as Saturday.",
+      "overheardTerm": "starting eleven",
+      "speaker": "him",
+      "gist": "The players who begin the match",
+      "decoys": [
+        "The order the players run out in",
+        "The squad named for a European round"
+      ],
+      "when": [
+        "any",
+        "early-season"
+      ]
     },
     {
       "id": "substitution",
@@ -459,6 +918,17 @@
       "level": 4,
       "seeAlso": [
         "the-bench"
+      ],
+      "overheard": "First substitution already and it's only half an hour gone.",
+      "overheardTerm": "substitution",
+      "speaker": "him",
+      "gist": "Swapping a player on the pitch for one waiting",
+      "decoys": [
+        "Moving a player into a different position",
+        "A change of shape with nobody coming off"
+      ],
+      "when": [
+        "any"
       ]
     },
     {
@@ -471,6 +941,18 @@
       "level": 4,
       "seeAlso": [
         "substitution"
+      ],
+      "overheard": "hes on the bench again. third game running now…",
+      "overheardTerm": "bench",
+      "speaker": "chat",
+      "gist": "The substitutes waiting beside the pitch",
+      "decoys": [
+        "The seats where the away fans sit",
+        "The players left out of the squad entirely"
+      ],
+      "when": [
+        "any",
+        "cup"
       ]
     },
     {
@@ -483,6 +965,18 @@
       "level": 4,
       "seeAlso": [
         "aggregate"
+      ],
+      "overheard": "Remember, this is over two legs. Nothing is settled tonight.",
+      "overheardTerm": "two legs",
+      "speaker": "telly",
+      "gist": "One round played as two matches, home and away",
+      "decoys": [
+        "The two halves either side of the half-time break",
+        "A round replayed at another ground after a draw"
+      ],
+      "when": [
+        "cup",
+        "europe"
       ]
     },
     {
@@ -496,6 +990,18 @@
       "seeAlso": [
         "two-legs",
         "extra-time"
+      ],
+      "overheard": "They're two up on the night, three-two on aggregate.",
+      "overheardTerm": "aggregate",
+      "speaker": "pundit",
+      "gist": "The two scores added together over a round",
+      "decoys": [
+        "A club's goals added up across a season",
+        "The gap between goals scored and let in"
+      ],
+      "when": [
+        "cup",
+        "europe"
       ]
     },
     {
@@ -505,7 +1011,19 @@
       "meaning": "Putting the ball into your own net. It counts for the other team, and it follows the player around for years.",
       "heard": "A pained \"oh no\" from the whole room.",
       "sayIt": "\"Oh no. Own goal. Poor lad.\"",
-      "level": 4
+      "level": 4,
+      "overheard": "Oh, that's an own goal. Off the defender's shin and in.",
+      "overheardTerm": "own goal",
+      "speaker": "telly",
+      "gist": "A ball put into your own net by mistake",
+      "decoys": [
+        "A goal you score on your own, unassisted",
+        "A goal the referee chalks off for a foul"
+      ],
+      "when": [
+        "any",
+        "after-loss"
+      ]
     },
     {
       "id": "assist",
@@ -514,7 +1032,19 @@
       "meaning": "The pass that leads directly to a goal. The scorer gets the headline, the assist gets the credit from people who know.",
       "heard": "\"Goals and assists\" when he's rating a player.",
       "sayIt": "\"Lovely assist. The pass was the best bit.\"",
-      "level": 4
+      "level": 4,
+      "overheard": "Ten goals and eight assists from midfield. Quietly brilliant.",
+      "overheardTerm": "assists",
+      "speaker": "pundit",
+      "gist": "The pass that leads straight to a goal",
+      "decoys": [
+        "A player helping the keeper organise the wall",
+        "The cross that wins a corner"
+      ],
+      "when": [
+        "any",
+        "after-win"
+      ]
     },
     {
       "id": "brace",
@@ -526,6 +1056,18 @@
       "level": 4,
       "seeAlso": [
         "hat-trick"
+      ],
+      "overheard": "two for him already. that's a brace by half-time.",
+      "overheardTerm": "brace",
+      "speaker": "chat",
+      "gist": "Two goals by one player in a match",
+      "decoys": [
+        "A strapping worn on a knee or ankle",
+        "Two players scoring in the same move"
+      ],
+      "when": [
+        "after-win",
+        "after-big-win"
       ]
     },
     {
@@ -538,6 +1080,18 @@
       "level": 4,
       "seeAlso": [
         "brace"
+      ],
+      "overheard": "He's got his hat-trick! Match ball going home with him.",
+      "overheardTerm": "hat-trick",
+      "speaker": "him",
+      "gist": "Three goals by one player in a match",
+      "decoys": [
+        "Three different clubs beaten in one week",
+        "A goal, an assist and a clean sheet in one game"
+      ],
+      "when": [
+        "after-win",
+        "after-big-win"
       ]
     },
     {
@@ -547,7 +1101,19 @@
       "meaning": "The best player on the day, picked by the broadcaster or a sponsor. A safe question to ask any fan.",
       "heard": "\"Who's your man of the match?\" is a safe question every time.",
       "sayIt": "\"Who's your man of the match?\"",
-      "level": 4
+      "level": 4,
+      "overheard": "Man of the match for me, and he didn't even score.",
+      "overheardTerm": "Man of the match",
+      "speaker": "pundit",
+      "gist": "The player judged best on the day",
+      "decoys": [
+        "The captain who leads the side out",
+        "The supporters' player of the season"
+      ],
+      "when": [
+        "any",
+        "after-win"
+      ]
     },
     {
       "id": "nil-nil",
@@ -556,7 +1122,19 @@
       "meaning": "No goals for either side. Football says nil, not zero. A dull one is a bore draw.",
       "heard": "\"Bore draw\" if it was dull, \"a tight game\" if he's being kind.",
       "sayIt": "\"Nil-nil. Bit of a bore draw, that.\"",
-      "level": 4
+      "level": 4,
+      "overheard": "Nil-nil, and that's me an hour of my life down.",
+      "overheardTerm": "Nil-nil",
+      "speaker": "him",
+      "gist": "Nobody scored, the match finished level",
+      "decoys": [
+        "The game was abandoned, so no score counts",
+        "A draw where both sides scored"
+      ],
+      "when": [
+        "after-draw",
+        "after-clean-sheet"
+      ]
     },
     {
       "id": "set-piece",
@@ -569,6 +1147,19 @@
       "seeAlso": [
         "corner",
         "free-kick"
+      ],
+      "overheard": "They're a threat from every set piece. Look at the size of them.",
+      "overheardTerm": "set piece",
+      "speaker": "pundit",
+      "gist": "A rehearsed routine from a dead ball",
+      "decoys": [
+        "The eleven a manager settles on for a game",
+        "A goal that comes from open play instead"
+      ],
+      "when": [
+        "any",
+        "derby",
+        "cup"
       ]
     },
     {
@@ -581,6 +1172,18 @@
       "level": 4,
       "seeAlso": [
         "back-four"
+      ],
+      "overheard": "They've changed the formation again. Back three now, apparently.",
+      "overheardTerm": "formation",
+      "speaker": "him",
+      "gist": "The shape the ten outfield players start in",
+      "decoys": [
+        "The order they line up in the tunnel before kick-off",
+        "The names read out over the tannoy before kick-off"
+      ],
+      "when": [
+        "any",
+        "new-manager"
       ]
     },
     {
@@ -594,6 +1197,18 @@
       "seeAlso": [
         "full-back",
         "centre-back"
+      ],
+      "overheard": "Not a lot for the back four to do there. Dealt with everything.",
+      "overheardTerm": "back four",
+      "speaker": "telly",
+      "gist": "The defenders in a flat line in front of the goalkeeper",
+      "decoys": [
+        "The four players sitting furthest back on the bench",
+        "The four across the middle of the pitch"
+      ],
+      "when": [
+        "any",
+        "after-clean-sheet"
       ]
     },
     {
@@ -603,7 +1218,19 @@
       "meaning": "The two big defenders in the middle. Heading, tackling, shouting at everyone else.",
       "heard": "\"He's a proper centre-back\" means old-fashioned and tough.",
       "sayIt": "\"He's a proper centre-back. Wins every header.\"",
-      "level": 5
+      "level": 5,
+      "overheard": "We need another centre-back. He's getting done for pace every week.",
+      "overheardTerm": "centre-back",
+      "speaker": "him",
+      "gist": "A defender in the middle who wins headers",
+      "decoys": [
+        "A defender posted right on the halfway line",
+        "A midfielder who shields the defence behind him"
+      ],
+      "when": [
+        "any",
+        "after-clean-sheet"
+      ]
     },
     {
       "id": "full-back",
@@ -612,7 +1239,18 @@
       "meaning": "The defenders on the left and right who also sprint forward to attack. Busiest job on the pitch.",
       "heard": "\"The full-backs were up and down all day.\"",
       "sayIt": "\"The full-backs have been up and down all game.\"",
-      "level": 5
+      "level": 5,
+      "overheard": "The full-backs are getting forward too much. Nobody's covering behind.",
+      "overheardTerm": "full-backs",
+      "speaker": "pundit",
+      "gist": "A defender out wide who also joins the attack",
+      "decoys": [
+        "An attacker who hugs the touchline the whole game",
+        "A defender who plays the whole ninety every week"
+      ],
+      "when": [
+        "any"
+      ]
     },
     {
       "id": "wing-back",
@@ -625,6 +1263,18 @@
       "seeAlso": [
         "full-back",
         "back-four"
+      ],
+      "overheard": "He's gone wing-backs today. Three at the back, then.",
+      "overheardTerm": "wing-backs",
+      "speaker": "him",
+      "gist": "A wide defender pushed up almost as an attacker",
+      "decoys": [
+        "A substitute warming up on the touchline for ages",
+        "The reserve who covers for the winger and full-back"
+      ],
+      "when": [
+        "any",
+        "new-manager"
       ]
     },
     {
@@ -637,6 +1287,17 @@
       "level": 5,
       "seeAlso": [
         "box-to-box"
+      ],
+      "overheard": "They need a proper holding midfielder. That's been the problem all season.",
+      "overheardTerm": "holding midfielder",
+      "speaker": "him",
+      "gist": "The one who sits in front of the defence",
+      "decoys": [
+        "A player told to hold on to the ball",
+        "The one who plays just behind the striker"
+      ],
+      "when": [
+        "any"
       ]
     },
     {
@@ -649,6 +1310,17 @@
       "level": 5,
       "seeAlso": [
         "holding-midfielder"
+      ],
+      "overheard": "He covers every blade of grass, that lad. Box-to-box all day.",
+      "overheardTerm": "Box-to-box",
+      "speaker": "chat",
+      "gist": "A midfielder who runs the length of the pitch",
+      "decoys": [
+        "A pass played from one penalty area to the other",
+        "A player swapping sides with a mate at half-time"
+      ],
+      "when": [
+        "any"
       ]
     },
     {
@@ -661,6 +1333,17 @@
       "level": 5,
       "seeAlso": [
         "playmaker"
+      ],
+      "overheard": "He's the number ten tonight. Floating about behind the striker.",
+      "overheardTerm": "number ten",
+      "speaker": "telly",
+      "gist": "The creative one just off the front man",
+      "decoys": [
+        "The player wearing the shirt with ten on",
+        "The player who takes their penalties"
+      ],
+      "when": [
+        "any"
       ]
     },
     {
@@ -673,6 +1356,17 @@
       "level": 5,
       "seeAlso": [
         "number-ten"
+      ],
+      "overheard": "Take their playmaker out of the game and there's nothing else there.",
+      "overheardTerm": "playmaker",
+      "speaker": "pundit",
+      "gist": "The one every attack goes through",
+      "decoys": [
+        "The coach who writes the corner routines",
+        "The captain who organises the defence"
+      ],
+      "when": [
+        "any"
       ]
     },
     {
@@ -682,7 +1376,18 @@
       "meaning": "An attacker who plays out wide near the touchline, runs at defenders and crosses the ball in.",
       "heard": "\"Get it wide to the winger!\"",
       "sayIt": "\"Get it out wide! The winger's in space.\"",
-      "level": 5
+      "level": 5,
+      "overheard": "Their winger is destroying our right side. Someone get over there.",
+      "overheardTerm": "winger",
+      "speaker": "chat",
+      "gist": "An attacker who runs at people wide",
+      "decoys": [
+        "A defender who covers the far side",
+        "The forward who plays off the striker"
+      ],
+      "when": [
+        "any"
+      ]
     },
     {
       "id": "striker",
@@ -695,6 +1400,18 @@
       "seeAlso": [
         "false-nine",
         "target-man"
+      ],
+      "overheard": "We're crying out for a striker in this window. Crying out.",
+      "overheardTerm": "striker",
+      "speaker": "him",
+      "gist": "The one up front whose job is scoring",
+      "decoys": [
+        "The one who takes their free kicks and corners",
+        "A defender who goes up for corners late on"
+      ],
+      "when": [
+        "any",
+        "window"
       ]
     },
     {
@@ -708,6 +1425,17 @@
       "seeAlso": [
         "striker",
         "long-ball"
+      ],
+      "overheard": "They've no target man to aim at when they go long. It just comes back.",
+      "overheardTerm": "target man",
+      "speaker": "pundit",
+      "gist": "A big forward the ball gets launched at",
+      "decoys": [
+        "The player the crowd has turned on this season",
+        "A defender told to follow one player about"
+      ],
+      "when": [
+        "any"
       ]
     },
     {
@@ -720,6 +1448,17 @@
       "level": 5,
       "seeAlso": [
         "striker"
+      ],
+      "overheard": "There's no recognised striker. He's playing a false nine there.",
+      "overheardTerm": "false nine",
+      "speaker": "telly",
+      "gist": "A forward who drops deep to confuse markers",
+      "decoys": [
+        "A player faking an injury to waste a bit of time",
+        "A forward told to stay high up on the shoulder"
+      ],
+      "when": [
+        "any"
       ]
     },
     {
@@ -734,6 +1473,18 @@
         "league-cup",
         "starting-eleven",
         "the-bench"
+      ],
+      "overheard": "He's named a side I don't recognise. Rotation, he says.",
+      "overheardTerm": "Rotation",
+      "speaker": "him",
+      "gist": "Changing several players to rest legs",
+      "decoys": [
+        "Players taking turns as captain through a season",
+        "Swapping positions with someone during a match"
+      ],
+      "when": [
+        "cup",
+        "europe"
       ]
     },
     {
@@ -747,6 +1498,18 @@
       "seeAlso": [
         "high-press",
         "low-block"
+      ],
+      "overheard": "Look at the work off the ball. They're pressing and he's not getting a second.",
+      "overheardTerm": "pressing",
+      "speaker": "pundit",
+      "gist": "Hounding whoever has it into a mistake",
+      "decoys": [
+        "Newspapers and TV crowding round the club",
+        "Playing the ball forward at every chance"
+      ],
+      "when": [
+        "any",
+        "good-run"
       ]
     },
     {
@@ -759,6 +1522,18 @@
       "level": 6,
       "seeAlso": [
         "pressing"
+      ],
+      "overheard": "The high press has knackered them. They can't get out of their half.",
+      "overheardTerm": "high press",
+      "speaker": "him",
+      "gist": "Winning it back right on top of their keeper",
+      "decoys": [
+        "Launching the ball up into the air and chasing",
+        "Sitting deep and waiting for a chance to break"
+      ],
+      "when": [
+        "any",
+        "good-run"
       ]
     },
     {
@@ -772,6 +1547,18 @@
       "seeAlso": [
         "park-the-bus",
         "counter-attack"
+      ],
+      "overheard": "They've dropped into a low block now. Two banks of four.",
+      "overheardTerm": "low block",
+      "speaker": "telly",
+      "gist": "Defending deep, letting the other lot have it",
+      "decoys": [
+        "The stand where the cheap seats are behind the goal",
+        "A tackle that stops a shot right on the goal line"
+      ],
+      "when": [
+        "any",
+        "after-clean-sheet"
       ]
     },
     {
@@ -784,6 +1571,19 @@
       "level": 6,
       "seeAlso": [
         "low-block"
+      ],
+      "overheard": "They've parked the bus since the goal. Ten men behind the ball.",
+      "overheardTerm": "parked the bus",
+      "speaker": "pundit",
+      "gist": "Everyone back defending, nobody trying to attack",
+      "decoys": [
+        "The team coach is blocking the stadium exit",
+        "Substituting all your attackers at once"
+      ],
+      "when": [
+        "any",
+        "after-draw",
+        "after-clean-sheet"
       ]
     },
     {
@@ -796,6 +1596,18 @@
       "level": 6,
       "seeAlso": [
         "on-the-break"
+      ],
+      "overheard": "They'll counter-attack us all night if we keep pushing up.",
+      "overheardTerm": "counter-attack",
+      "speaker": "chat",
+      "gist": "Breaking forward fast the second you win it",
+      "decoys": [
+        "Scoring straight back after going behind early",
+        "Pushing everyone forward chasing a late goal"
+      ],
+      "when": [
+        "any",
+        "europe"
       ]
     },
     {
@@ -808,6 +1620,19 @@
       "level": 6,
       "seeAlso": [
         "tiki-taka"
+      ],
+      "overheard": "You can have all the possession you like. It's goals that count.",
+      "overheardTerm": "possession",
+      "speaker": "him",
+      "gist": "The share of the game a side has the ball",
+      "decoys": [
+        "The number of times a side touches the ball",
+        "The count of shots each side has had on target"
+      ],
+      "when": [
+        "any",
+        "after-loss",
+        "after-draw"
       ]
     },
     {
@@ -820,6 +1645,18 @@
       "level": 6,
       "seeAlso": [
         "possession"
+      ],
+      "overheard": "All that tiki-taka and they haven't had a shot worth the name.",
+      "overheardTerm": "tiki-taka",
+      "speaker": "chat",
+      "gist": "Endless short passes to keep hold of the ball",
+      "decoys": [
+        "The chant the away end sings on repeat all game",
+        "A quick one-two played round a defender's legs"
+      ],
+      "when": [
+        "any",
+        "europe"
       ]
     },
     {
@@ -834,6 +1671,18 @@
         "target-man",
         "route-one",
         "hoof"
+      ],
+      "overheard": "It's long ball after long ball. We've given up trying to play.",
+      "overheardTerm": "long ball",
+      "speaker": "him",
+      "gist": "Hitting it high and far instead of passing",
+      "decoys": [
+        "A shot struck from forty yards or further out",
+        "The cross whipped in hard and low from the byline"
+      ],
+      "when": [
+        "any",
+        "relegation"
       ]
     },
     {
@@ -846,6 +1695,18 @@
       "level": 6,
       "seeAlso": [
         "long-ball"
+      ],
+      "overheard": "Proper route one stuff, this. Kick it and chase it.",
+      "overheardTerm": "route one",
+      "speaker": "pundit",
+      "gist": "Kicking it long and chasing it, no build-up",
+      "decoys": [
+        "The coach taking the shortest road to the ground",
+        "Working the ball wide and crossing it"
+      ],
+      "when": [
+        "any",
+        "relegation"
       ]
     },
     {
@@ -855,7 +1716,18 @@
       "meaning": "A defender following one particular attacker everywhere he goes, rather than guarding an area.",
       "heard": "\"Who's marking him?\" after a free header.",
       "sayIt": "\"Who was marking him? He was completely free.\"",
-      "level": 6
+      "level": 6,
+      "overheard": "They've gone man-marking today. Straight out of the eighties, that.",
+      "overheardTerm": "man-marking",
+      "speaker": "telly",
+      "gist": "Sticking to one opponent, not a zone",
+      "decoys": [
+        "Giving a player marks out of ten",
+        "Standing between the ball and the goal"
+      ],
+      "when": [
+        "any"
+      ]
     },
     {
       "id": "zonal-marking",
@@ -867,6 +1739,18 @@
       "level": 6,
       "seeAlso": [
         "man-marking"
+      ],
+      "overheard": "That's what zonal marking gets you. A free header at the far post.",
+      "overheardTerm": "zonal marking",
+      "speaker": "him",
+      "gist": "Each defender guards a patch of grass",
+      "decoys": [
+        "Switching off and losing concentration",
+        "The wall lined up in front of a free kick"
+      ],
+      "when": [
+        "any",
+        "after-loss"
       ]
     },
     {
@@ -879,6 +1763,17 @@
       "level": 6,
       "seeAlso": [
         "full-back"
+      ],
+      "overheard": "He's got the overlap and he's ignored him again.",
+      "overheardTerm": "overlap",
+      "speaker": "telly",
+      "gist": "A defender running outside his winger",
+      "decoys": [
+        "Two players standing in the same spot",
+        "A pass played inside to the middle"
+      ],
+      "when": [
+        "any"
       ]
     },
     {
@@ -888,7 +1783,18 @@
       "meaning": "A pass slid between the defenders for a teammate to run onto. When it works it looks like magic.",
       "heard": "\"What a ball\" when it works.",
       "sayIt": "\"What a ball! Straight through them.\"",
-      "level": 6
+      "level": 6,
+      "overheard": "Look at the through ball. He didn't even lift his head up.",
+      "overheardTerm": "through ball",
+      "speaker": "telly",
+      "gist": "A pass slid between two defenders",
+      "decoys": [
+        "A ball nudged past a player's legs",
+        "A cross aimed at the far post"
+      ],
+      "when": [
+        "any"
+      ]
     },
     {
       "id": "cutback",
@@ -897,7 +1803,18 @@
       "meaning": "Getting to the byline and passing the ball back across the goal for someone to tap in. Modern teams score half their goals this way.",
       "heard": "Modern teams score half their goals this way.",
       "sayIt": "\"Cut it back! Don't shoot from there.\"",
-      "level": 7
+      "level": 7,
+      "overheard": "Another cutback. They score all their goals like that.",
+      "overheardTerm": "cutback",
+      "speaker": "him",
+      "gist": "A pass pulled square from the byline",
+      "decoys": [
+        "A player turning inside to lose a marker",
+        "A cross floated to the far post"
+      ],
+      "when": [
+        "any"
+      ]
     },
     {
       "id": "inverted-full-back",
@@ -909,6 +1826,17 @@
       "level": 7,
       "seeAlso": [
         "full-back"
+      ],
+      "overheard": "Both of them are inverted full-backs now. It's a midfield three, really.",
+      "overheardTerm": "inverted full-backs",
+      "speaker": "pundit",
+      "gist": "A wide defender stepping into midfield",
+      "decoys": [
+        "A defender playing on the opposite side",
+        "A midfielder dropping in among the defenders"
+      ],
+      "when": [
+        "any"
       ]
     },
     {
@@ -918,7 +1846,18 @@
       "meaning": "The gap between the middle of the pitch and the wing, where clever attackers like to get the ball because nobody is quite sure who marks them.",
       "heard": "Tactics podcasts. Nod if you hear it.",
       "sayIt": "\"He keeps finding space in the half-space. Nobody picks him up.\"",
-      "level": 7
+      "level": 7,
+      "overheard": "He lives in the half-space, that lad. It's a podcast word, apparently.",
+      "overheardTerm": "half-space",
+      "speaker": "him",
+      "gist": "The lane between the middle and the touchline",
+      "decoys": [
+        "The half of the pitch a side sets up to defend",
+        "The strip of grass right in front of the goal mouth"
+      ],
+      "when": [
+        "any"
+      ]
     },
     {
       "id": "xg",
@@ -927,7 +1866,20 @@
       "meaning": "Expected goals. A number for how good a chance was: a tap-in is nearly 1, a shot from forty yards is nearly 0. Add them up to see who deserved to win.",
       "heard": "\"The xG was 2.5 and we lost 1-0\" as a complaint.",
       "sayIt": "\"What was the xG? Felt like they should've scored three.\"",
-      "level": 7
+      "level": 7,
+      "overheard": "Look at the xG. We battered them and lost. That's football.",
+      "overheardTerm": "xG",
+      "speaker": "chat",
+      "gist": "A score for how good a chance was",
+      "decoys": [
+        "How many goals a side should score in a season",
+        "The shots on target added up"
+      ],
+      "when": [
+        "any",
+        "after-loss",
+        "after-draw"
+      ]
     },
     {
       "id": "game-management",
@@ -939,6 +1891,20 @@
       "level": 7,
       "seeAlso": [
         "see-the-game-out"
+      ],
+      "overheard": "Two up and they've not left their own half for ten minutes. Game management.",
+      "overheardTerm": "Game management",
+      "speaker": "him",
+      "gist": "Slowing it down to protect a lead",
+      "decoys": [
+        "The people who run the club upstairs",
+        "Changing the shape after an hour"
+      ],
+      "when": [
+        "derby",
+        "europe",
+        "after-win",
+        "after-clean-sheet"
       ]
     },
     {
@@ -952,6 +1918,20 @@
       "seeAlso": [
         "game-management",
         "squeaky-bum-time"
+      ],
+      "overheard": "They just need to see the game out from here.",
+      "overheardTerm": "see the game out",
+      "speaker": "telly",
+      "gist": "Protect a lead until the final whistle",
+      "decoys": [
+        "Watch the match right to the end on telly",
+        "Push for another goal to settle it"
+      ],
+      "when": [
+        "derby",
+        "run-in",
+        "after-win",
+        "after-clean-sheet"
       ]
     },
     {
@@ -965,6 +1945,21 @@
       "seeAlso": [
         "see-the-game-out",
         "added-time"
+      ],
+      "overheard": "Ten minutes left, we're 1-0 up. Squeaky bum time.",
+      "overheardTerm": "Squeaky bum time",
+      "speaker": "him",
+      "gist": "Nervous closing stages protecting a lead",
+      "decoys": [
+        "The bit where players start time-wasting",
+        "Players sitting down because they're exhausted"
+      ],
+      "when": [
+        "derby",
+        "title",
+        "relegation",
+        "run-in",
+        "after-win"
       ]
     },
     {
@@ -977,6 +1972,19 @@
       "level": 7,
       "seeAlso": [
         "game-management"
+      ],
+      "overheard": "Every throw-in takes him thirty seconds. Proper dark arts, that.",
+      "overheardTerm": "dark arts",
+      "speaker": "chat",
+      "gist": "The sneaky stuff that winds them up",
+      "decoys": [
+        "A match played under the floodlights",
+        "Playing a weakened side on purpose"
+      ],
+      "when": [
+        "derby",
+        "europe",
+        "after-loss"
       ]
     },
     {
@@ -989,6 +1997,18 @@
       "level": 7,
       "seeAlso": [
         "counter-attack"
+      ],
+      "overheard": "They'll hurt you on the break, this lot. All pace.",
+      "overheardTerm": "on the break",
+      "speaker": "him",
+      "gist": "Attacking fast the moment you win the ball",
+      "decoys": [
+        "Scoring right after the half-time interval",
+        "Winning the ball high up the pitch"
+      ],
+      "when": [
+        "any",
+        "europe"
       ]
     },
     {
@@ -1002,6 +2022,18 @@
       "seeAlso": [
         "long-ball",
         "row-z"
+      ],
+      "overheard": "Just hoof it! Anywhere but there.",
+      "overheardTerm": "hoof it",
+      "speaker": "him",
+      "gist": "Boot the ball clear with no particular aim",
+      "decoys": [
+        "Stamp on an opponent's foot deliberately",
+        "Pass it back to the keeper to settle things"
+      ],
+      "when": [
+        "any",
+        "relegation"
       ]
     },
     {
@@ -1014,6 +2046,18 @@
       "level": 7,
       "seeAlso": [
         "hoof"
+      ],
+      "overheard": "He's put that in Row Z. My nan could have scored.",
+      "overheardTerm": "Row Z",
+      "speaker": "him",
+      "gist": "The back of the stand, where a wild shot lands",
+      "decoys": [
+        "The seat number printed on his ticket",
+        "A shot cleared off the line by a defender"
+      ],
+      "when": [
+        "any",
+        "after-draw"
       ]
     },
     {
@@ -1026,6 +2070,19 @@
       "level": 7,
       "seeAlso": [
         "the-box"
+      ],
+      "overheard": "Get it in the mixer! We've nothing to lose now.",
+      "overheardTerm": "in the mixer",
+      "speaker": "him",
+      "gist": "Launching the ball into a crowded penalty area",
+      "decoys": [
+        "Swapping the players' positions around",
+        "Passing it about at the back to keep it"
+      ],
+      "when": [
+        "any",
+        "relegation",
+        "after-draw"
       ]
     },
     {
@@ -1035,7 +2092,20 @@
       "meaning": "After a header or a clearance, the loose ball that drops. Winning the second ball means reacting quickest to it.",
       "heard": "\"They won the second ball\" as praise for hard work.",
       "sayIt": "\"They keep winning the second ball. That's why they're on top.\"",
-      "level": 7
+      "level": 7,
+      "overheard": "They're winning every second ball. That's the game.",
+      "overheardTerm": "second ball",
+      "speaker": "telly",
+      "gist": "Whatever drops loose after a header",
+      "decoys": [
+        "A spare match ball kept by the fourth official",
+        "The second goal that settles a match"
+      ],
+      "when": [
+        "any",
+        "derby",
+        "cup"
+      ]
     },
     {
       "id": "sitter",
@@ -1044,7 +2114,20 @@
       "meaning": "An easy chance that should have been a goal and wasn't. The kind you would score yourself, you tell him.",
       "heard": "\"How has he missed that?\"",
       "sayIt": "\"That's a sitter. How has he missed that?\"",
-      "level": 8
+      "level": 8,
+      "overheard": "He's missed a sitter from six yards. Unbelievable.",
+      "overheardTerm": "sitter",
+      "speaker": "him",
+      "gist": "A chance so easy it should have been a goal",
+      "decoys": [
+        "A shot dragged wide from a tight angle",
+        "A shot the keeper palms away at full stretch"
+      ],
+      "when": [
+        "any",
+        "after-loss",
+        "after-draw"
+      ]
     },
     {
       "id": "clinical-finish",
@@ -1056,6 +2139,19 @@
       "level": 8,
       "seeAlso": [
         "sitter"
+      ],
+      "overheard": "That's clinical finishing. One chance, one goal.",
+      "overheardTerm": "clinical finishing",
+      "speaker": "pundit",
+      "gist": "A calm, precise shot that beats the keeper",
+      "decoys": [
+        "The medical team checking a player over",
+        "A goal that takes a big deflection"
+      ],
+      "when": [
+        "good-run",
+        "after-win",
+        "after-big-win"
       ]
     },
     {
@@ -1069,6 +2165,19 @@
       "seeAlso": [
         "top-bins",
         "worldie"
+      ],
+      "overheard": "Thirty yards out. That is a screamer.",
+      "overheardTerm": "screamer",
+      "speaker": "telly",
+      "gist": "A goal hit very hard from a long way out",
+      "decoys": [
+        "A fan yelling abuse from the stand",
+        "A shot that flies well over the bar"
+      ],
+      "when": [
+        "any",
+        "after-win",
+        "after-big-win"
       ]
     },
     {
@@ -1081,6 +2190,19 @@
       "level": 8,
       "seeAlso": [
         "screamer"
+      ],
+      "overheard": "TOP BINS. The keeper never moved.",
+      "overheardTerm": "TOP BINS",
+      "speaker": "him",
+      "gist": "The corner of the net nobody can reach",
+      "decoys": [
+        "The club sitting at the top of the table",
+        "A shot that creeps in off the inside of the post"
+      ],
+      "when": [
+        "any",
+        "after-win",
+        "after-big-win"
       ]
     },
     {
@@ -1093,6 +2215,18 @@
       "level": 8,
       "seeAlso": [
         "screamer"
+      ],
+      "overheard": "That's a worldie. Nothing else you can call it.",
+      "overheardTerm": "worldie",
+      "speaker": "chat",
+      "gist": "A goal of genuine world-class quality",
+      "decoys": [
+        "A goal scored at the World Cup",
+        "A goal that wins goal of the month"
+      ],
+      "when": [
+        "after-win",
+        "after-big-win"
       ]
     },
     {
@@ -1105,6 +2239,19 @@
       "level": 8,
       "seeAlso": [
         "worldie"
+      ],
+      "overheard": "Top drawer, that pass. Didn't even look up.",
+      "overheardTerm": "Top drawer",
+      "speaker": "pundit",
+      "gist": "Excellent, the very highest quality",
+      "decoys": [
+        "The top division of English football",
+        "A pass that splits the defence open"
+      ],
+      "when": [
+        "any",
+        "after-win",
+        "after-big-win"
       ]
     },
     {
@@ -1117,6 +2264,19 @@
       "level": 8,
       "seeAlso": [
         "sitter"
+      ],
+      "overheard": "That's twice they've hit the woodwork. Not their day.",
+      "overheardTerm": "hit the woodwork",
+      "speaker": "telly",
+      "gist": "The ball struck the post or bar and stayed out",
+      "decoys": [
+        "The ball smashed into the boards behind the goal",
+        "The keeper tipped it round the post"
+      ],
+      "when": [
+        "any",
+        "after-loss",
+        "after-draw"
       ]
     },
     {
@@ -1129,6 +2289,19 @@
       "level": 8,
       "seeAlso": [
         "sitter"
+      ],
+      "overheard": "Unlucky, son! That was never going in anyway.",
+      "overheardTerm": "Unlucky",
+      "speaker": "him",
+      "gist": "A shout of sympathy at a player who missed",
+      "decoys": [
+        "A player who keeps picking up injuries",
+        "A groan when the keeper makes a save"
+      ],
+      "when": [
+        "any",
+        "after-loss",
+        "after-draw"
       ]
     },
     {
@@ -1141,6 +2314,19 @@
       "level": 8,
       "seeAlso": [
         "done-him"
+      ],
+      "overheard": "He's nutmegged him and the whole ground's gone up.",
+      "overheardTerm": "nutmegged",
+      "speaker": "telly",
+      "gist": "Knocking the ball through a defender's legs",
+      "decoys": [
+        "Kicking an opponent on the ankle by accident",
+        "A shot that squeezes under the keeper"
+      ],
+      "when": [
+        "any",
+        "after-win",
+        "after-big-win"
       ]
     },
     {
@@ -1153,6 +2339,19 @@
       "level": 8,
       "seeAlso": [
         "nutmeg"
+      ],
+      "overheard": "He's done him for pace. Not seen him since.",
+      "overheardTerm": "done him",
+      "speaker": "chat",
+      "gist": "Leaving a defender standing",
+      "decoys": [
+        "Fouling an opponent on purpose",
+        "Marking a player out of the game"
+      ],
+      "when": [
+        "any",
+        "after-win",
+        "after-big-win"
       ]
     },
     {
@@ -1162,7 +2361,21 @@
       "meaning": "A defender switching off for a second and letting an attacker get free. Also called going to sleep.",
       "heard": "\"Caught napping\" or \"gone to sleep\" after a goal against.",
       "sayIt": "\"They were caught napping there. Nobody was awake.\"",
-      "level": 8
+      "level": 8,
+      "overheard": "They were caught napping at the back post again.",
+      "overheardTerm": "caught napping",
+      "speaker": "pundit",
+      "gist": "Switching off and letting an attacker get free",
+      "decoys": [
+        "A player having a sleep before an evening game",
+        "Being beaten in the air by a taller player"
+      ],
+      "when": [
+        "any",
+        "after-loss",
+        "after-draw",
+        "after-heavy-loss"
+      ]
     },
     {
       "id": "against-the-run-of-play",
@@ -1174,6 +2387,19 @@
       "level": 8,
       "seeAlso": [
         "smash-and-grab"
+      ],
+      "overheard": "That's against the run of play. They've been second to everything.",
+      "overheardTerm": "against the run of play",
+      "speaker": "telly",
+      "gist": "A goal for the side who have been worse",
+      "decoys": [
+        "A goal scored while the clock was stopped",
+        "A goal that came from a counter-attack"
+      ],
+      "when": [
+        "after-win",
+        "after-loss",
+        "after-draw"
       ]
     },
     {
@@ -1186,6 +2412,19 @@
       "level": 8,
       "seeAlso": [
         "against-the-run-of-play"
+      ],
+      "overheard": "Smash and grab, that. We had one shot and won.",
+      "overheardTerm": "Smash and grab",
+      "speaker": "him",
+      "gist": "A win in a match you were outplayed in",
+      "decoys": [
+        "A tackle that takes the ball and the man",
+        "A late equaliser to rescue a point"
+      ],
+      "when": [
+        "derby",
+        "after-win",
+        "after-loss"
       ]
     },
     {
@@ -1198,6 +2437,19 @@
       "level": 9,
       "seeAlso": [
         "own-goal"
+      ],
+      "overheard": "Absolute howler from the keeper. Straight through his hands.",
+      "overheardTerm": "howler",
+      "speaker": "chat",
+      "gist": "A glaring, embarrassing mistake",
+      "decoys": [
+        "A save so good the crowd roared",
+        "A shot hit so hard it screamed in"
+      ],
+      "when": [
+        "any",
+        "after-loss",
+        "after-heavy-loss"
       ]
     },
     {
@@ -1207,7 +2459,20 @@
       "meaning": "A careless pass that lands between two players from opposite sides, so both go for it and somebody gets hurt.",
       "heard": "\"That's a hospital ball\" when a pass leaves a teammate exposed.",
       "sayIt": "\"Hospital ball, that. He's left him in trouble.\"",
-      "level": 9
+      "level": 9,
+      "overheard": "That's a hospital ball. He's hung him out to dry.",
+      "overheardTerm": "hospital ball",
+      "speaker": "pundit",
+      "gist": "A loose pass that leaves a teammate in trouble",
+      "decoys": [
+        "A charity match played for a local hospital",
+        "A heavy touch that gives the ball away"
+      ],
+      "when": [
+        "any",
+        "after-loss",
+        "after-heavy-loss"
+      ]
     },
     {
       "id": "dive",
@@ -1216,7 +2481,19 @@
       "meaning": "Falling over on purpose to trick the referee into giving a foul or a penalty. Cheating, technically. Very common, technically.",
       "heard": "\"He dived!\" whenever an opponent goes down.",
       "sayIt": "\"He's dived. Nobody touched him.\"",
-      "level": 9
+      "level": 9,
+      "overheard": "He's dived, ref! There's not a hand on him.",
+      "overheardTerm": "dived",
+      "speaker": "him",
+      "gist": "Falling over on purpose to win a foul",
+      "decoys": [
+        "A goalkeeper throwing himself at a shot",
+        "Going down hurt to waste a bit of time"
+      ],
+      "when": [
+        "any",
+        "derby"
+      ]
     },
     {
       "id": "early-bath",
@@ -1228,6 +2505,19 @@
       "level": 9,
       "seeAlso": [
         "red-card"
+      ],
+      "overheard": "Second yellow. That's an early bath for him.",
+      "overheardTerm": "early bath",
+      "speaker": "telly",
+      "gist": "Sent off, heading for the showers",
+      "decoys": [
+        "Going home before the final whistle",
+        "Being left out of the squad altogether"
+      ],
+      "when": [
+        "any",
+        "derby",
+        "after-loss"
       ]
     },
     {
@@ -1237,7 +2527,19 @@
       "meaning": "A pushing and shoving scuffle between players that looks angry but never becomes a proper fight. Nobody gets hurt.",
       "heard": "\"Handbags\" when two players square up and do nothing.",
       "sayIt": "\"Handbags. Nothing in that.\"",
-      "level": 9
+      "level": 9,
+      "overheard": "Bit of handbags at the corner flag there.",
+      "overheardTerm": "handbags",
+      "speaker": "chat",
+      "gist": "A bit of pushing and shoving, nothing more",
+      "decoys": [
+        "The bags the kit man carries onto the pitch",
+        "A proper brawl that gets two players sent off"
+      ],
+      "when": [
+        "any",
+        "derby"
+      ]
     },
     {
       "id": "in-the-book",
@@ -1249,6 +2551,18 @@
       "level": 9,
       "seeAlso": [
         "yellow-card"
+      ],
+      "overheard": "He's in the book after four minutes. Silly, that.",
+      "overheardTerm": "in the book",
+      "speaker": "him",
+      "gist": "The referee has shown him a yellow card",
+      "decoys": [
+        "His name is on the team sheet for today",
+        "He has been sent off and must leave"
+      ],
+      "when": [
+        "any",
+        "derby"
       ]
     },
     {
@@ -1261,6 +2575,19 @@
       "level": 9,
       "seeAlso": [
         "substitution"
+      ],
+      "overheard": "He's getting hooked at half-time, watch.",
+      "overheardTerm": "hooked",
+      "speaker": "him",
+      "gist": "Taken off for playing badly, not for a rest",
+      "decoys": [
+        "Caught by an arm and pulled back illegally",
+        "Left out of the squad before the match"
+      ],
+      "when": [
+        "bad-run",
+        "after-loss",
+        "after-heavy-loss"
       ]
     },
     {
@@ -1273,6 +2600,20 @@
       "level": 9,
       "seeAlso": [
         "low-block"
+      ],
+      "overheard": "Backs to the wall for twenty minutes here. Some defending.",
+      "overheardTerm": "Backs to the wall",
+      "speaker": "telly",
+      "gist": "Soaking up heavy pressure near your own goal",
+      "decoys": [
+        "Players lining up in a wall at a free-kick",
+        "Playing the ball back to the keeper to waste time"
+      ],
+      "when": [
+        "derby",
+        "europe",
+        "after-win",
+        "after-clean-sheet"
       ]
     },
     {
@@ -1285,6 +2626,19 @@
       "level": 9,
       "seeAlso": [
         "half-time"
+      ],
+      "overheard": "Game of two halves, this. You'd not know it was the same eleven.",
+      "overheardTerm": "Game of two halves",
+      "speaker": "pundit",
+      "gist": "A match that turned after the break",
+      "decoys": [
+        "A match split into two equal periods",
+        "A match where both sides scored twice"
+      ],
+      "when": [
+        "after-win",
+        "after-loss",
+        "after-draw"
       ]
     },
     {
@@ -1294,7 +2648,19 @@
       "meaning": "A match that no longer matters because everything has already been decided. Nobody tries very hard.",
       "heard": "Last group game of a tournament, or the final league game.",
       "sayIt": "\"It's a dead rubber. Nothing riding on it.\"",
-      "level": 9
+      "level": 9,
+      "overheard": "It's a dead rubber. He's resting half the side.",
+      "overheardTerm": "dead rubber",
+      "speaker": "chat",
+      "gist": "A match with nothing riding on it any more",
+      "decoys": [
+        "A match played with a worn-out ball",
+        "A match replayed after a draw"
+      ],
+      "when": [
+        "europe",
+        "run-in"
+      ]
     },
     {
       "id": "six-pointer",
@@ -1307,6 +2673,19 @@
       "seeAlso": [
         "relegation-battle",
         "title-race"
+      ],
+      "overheard": "Both of us down there. This is a proper six-pointer on Saturday.",
+      "overheardTerm": "six-pointer",
+      "speaker": "him",
+      "gist": "A match between two sides chasing the same place",
+      "decoys": [
+        "A match where a win is worth six points",
+        "A game decided by six goals or more"
+      ],
+      "when": [
+        "title",
+        "relegation",
+        "run-in"
       ]
     },
     {
@@ -1319,6 +2698,18 @@
       "level": 9,
       "seeAlso": [
         "bottle-it"
+      ],
+      "overheard": "Nobody's running away with this title race, are they?",
+      "overheardTerm": "title race",
+      "speaker": "pundit",
+      "gist": "Two or more clubs close at the top with games left",
+      "decoys": [
+        "A sprint between players to reach the ball",
+        "The final few weeks of the season"
+      ],
+      "when": [
+        "title",
+        "run-in"
       ]
     },
     {
@@ -1332,6 +2723,18 @@
       "seeAlso": [
         "relegation",
         "six-pointer"
+      ],
+      "overheard": "They're properly in a relegation battle now. Grim.",
+      "overheardTerm": "relegation battle",
+      "speaker": "chat",
+      "gist": "A scrap near the bottom to avoid going down",
+      "decoys": [
+        "A fight that breaks out between players",
+        "A play-off to decide who goes up a division"
+      ],
+      "when": [
+        "relegation",
+        "run-in"
       ]
     },
     {
@@ -1344,6 +2747,18 @@
       "level": 10,
       "seeAlso": [
         "deadline-day"
+      ],
+      "overheard": "The transfer window shuts Monday and they've signed nobody.",
+      "overheardTerm": "transfer window",
+      "speaker": "pundit",
+      "gist": "The weeks when clubs can buy and sell players",
+      "decoys": [
+        "The board showing which players came off",
+        "The fee one club pays another for a player"
+      ],
+      "when": [
+        "window",
+        "early-season"
       ]
     },
     {
@@ -1357,6 +2772,17 @@
       "seeAlso": [
         "transfer-window",
         "here-we-go"
+      ],
+      "overheard": "It's deadline day and the window shuts at eleven tonight. Stay with us.",
+      "overheardTerm": "deadline day",
+      "speaker": "telly",
+      "gist": "The final day clubs can buy or sell players",
+      "decoys": [
+        "The final day to buy tickets for the season",
+        "Cut-off for naming the squad for a cup"
+      ],
+      "when": [
+        "window"
       ]
     },
     {
@@ -1366,7 +2792,19 @@
       "meaning": "Borrowing a player from another club for a season, or lending one out. Common for young players who need games.",
       "heard": "\"He's out on loan\" about a promising kid.",
       "sayIt": "\"Is he ours or on loan?\"",
-      "level": 10
+      "level": 10,
+      "overheard": "He's gone out on loan for the season. Needs the games.",
+      "overheardTerm": "loan",
+      "speaker": "him",
+      "gist": "Borrowing a player from another club for a while",
+      "decoys": [
+        "Money a club borrows to build a new stand",
+        "Signing a player and paying in instalments"
+      ],
+      "when": [
+        "window",
+        "early-season"
+      ]
     },
     {
       "id": "silly-season",
@@ -1378,6 +2816,18 @@
       "level": 10,
       "seeAlso": [
         "transfer-window"
+      ],
+      "overheard": "Paper says we're signing three strikers. Silly season, ignore it.",
+      "overheardTerm": "Silly season",
+      "speaker": "him",
+      "gist": "Summer, when every rumour gets printed",
+      "decoys": [
+        "The run of games over Christmas and New Year",
+        "A spell when results make no sense at all"
+      ],
+      "when": [
+        "window",
+        "early-season"
       ]
     },
     {
@@ -1390,6 +2840,17 @@
       "level": 10,
       "seeAlso": [
         "deadline-day"
+      ],
+      "overheard": "Here we go. Medical booked, he's ours by Friday.",
+      "overheardTerm": "Here we go",
+      "speaker": "chat",
+      "gist": "The reporter's signal a transfer is done",
+      "decoys": [
+        "The shout that goes up as a move starts",
+        "The countdown to the window shutting"
+      ],
+      "when": [
+        "window"
       ]
     },
     {
@@ -1402,6 +2863,19 @@
       "level": 10,
       "seeAlso": [
         "sack-race"
+      ],
+      "overheard": "hes getting sacked in the morning and about time too.",
+      "overheardTerm": "sacked",
+      "speaker": "chat",
+      "gist": "A manager losing his job over bad results",
+      "decoys": [
+        "A player dropped from the squad for a game",
+        "A manager leaving for a bigger club"
+      ],
+      "when": [
+        "bad-run",
+        "new-manager",
+        "after-heavy-loss"
       ]
     },
     {
@@ -1415,6 +2889,19 @@
       "seeAlso": [
         "sacked",
         "new-manager-bounce"
+      ],
+      "overheard": "He's odds-on in the sack race and we're not out of September.",
+      "overheardTerm": "sack race",
+      "speaker": "chat",
+      "gist": "The unofficial contest over which manager goes first",
+      "decoys": [
+        "A charity event before a game at the ground",
+        "The scramble to sign players before the window shuts"
+      ],
+      "when": [
+        "bad-run",
+        "new-manager",
+        "after-heavy-loss"
       ]
     },
     {
@@ -1427,6 +2914,18 @@
       "level": 10,
       "seeAlso": [
         "sack-race"
+      ],
+      "overheard": "Two wins and a clean sheet. That's a new manager bounce, nothing more.",
+      "overheardTerm": "new manager bounce",
+      "speaker": "pundit",
+      "gist": "The short run of good results after a change",
+      "decoys": [
+        "The lift in ticket sales after an appointment",
+        "The boost a home crowd gives a struggling side"
+      ],
+      "when": [
+        "good-run",
+        "new-manager"
       ]
     },
     {
@@ -1439,6 +2938,20 @@
       "level": 10,
       "seeAlso": [
         "the-boss"
+      ],
+      "overheard": "New gaffer, new ideas. Give him till Christmas before you judge.",
+      "overheardTerm": "gaffer",
+      "speaker": "him",
+      "gist": "The manager, in old workplace slang",
+      "decoys": [
+        "The person in charge of the floodlights",
+        "The club captain who leads on the pitch"
+      ],
+      "when": [
+        "any",
+        "bad-run",
+        "new-manager",
+        "after-heavy-loss"
       ]
     },
     {
@@ -1451,6 +2964,18 @@
       "level": 10,
       "seeAlso": [
         "the-gaffer"
+      ],
+      "overheard": "Listen to the interviews. Not one of them says his name, it's all the boss.",
+      "overheardTerm": "boss",
+      "speaker": "pundit",
+      "gist": "The manager, the word players use on camera",
+      "decoys": [
+        "The club owner who pays everyone's wages",
+        "The senior player who speaks in the dressing room"
+      ],
+      "when": [
+        "any",
+        "new-manager"
       ]
     },
     {
@@ -1463,6 +2988,20 @@
       "level": 10,
       "seeAlso": [
         "half-time"
+      ],
+      "overheard": "One nil down and shocking. Hairdryer time in there.",
+      "overheardTerm": "Hairdryer",
+      "speaker": "chat",
+      "gist": "A manager screaming at players up close",
+      "decoys": [
+        "A blast of hot air blowing across the pitch",
+        "A quiet word with a player on the touchline"
+      ],
+      "when": [
+        "bad-run",
+        "new-manager",
+        "after-loss",
+        "after-heavy-loss"
       ]
     },
     {
@@ -1475,6 +3014,20 @@
       "level": 10,
       "seeAlso": [
         "title-race"
+      ],
+      "overheard": "Eight points clear in March. I'm telling you now, we'll bottle it.",
+      "overheardTerm": "bottle it",
+      "speaker": "him",
+      "gist": "To lose your nerve and throw away a winning position",
+      "decoys": [
+        "To throw a drink onto the pitch from the stand",
+        "To waste chances in front of goal all game"
+      ],
+      "when": [
+        "title",
+        "bad-run",
+        "run-in",
+        "after-loss"
       ]
     },
     {
@@ -1487,6 +3040,19 @@
       "level": 10,
       "seeAlso": [
         "goal-of-the-month"
+      ],
+      "overheard": "Staying up for Match of the Day, or do you want the short version?",
+      "overheardTerm": "Match of the Day",
+      "speaker": "him",
+      "gist": "The BBC's Saturday night highlights show",
+      "decoys": [
+        "The televised game picked out each Saturday",
+        "A vote for the best player after a game"
+      ],
+      "when": [
+        "any",
+        "after-win",
+        "after-loss"
       ]
     },
     {
@@ -1499,6 +3065,18 @@
       "level": 10,
       "seeAlso": [
         "match-of-the-day"
+      ],
+      "overheard": "The pundits said we'd be fine. That's the worry.",
+      "overheardTerm": "pundits",
+      "speaker": "him",
+      "gist": "A retired player paid to give opinions on TV",
+      "decoys": [
+        "A journalist who writes the match report",
+        "An expert who predicts the score beforehand"
+      ],
+      "when": [
+        "any",
+        "after-loss"
       ]
     },
     {
@@ -1508,7 +3086,19 @@
       "meaning": "A pass for every home league game. Waiting lists at big clubs can be years long, and people inherit them.",
       "heard": "\"I've had a season ticket since I was eight.\"",
       "sayIt": "\"Have you ever had a season ticket?\"",
-      "level": 11
+      "level": 11,
+      "overheard": "Renewed the season ticket. Same seat I've had since I was nine.",
+      "overheardTerm": "season ticket",
+      "speaker": "him",
+      "gist": "A pass covering every home league game",
+      "decoys": [
+        "A ticket sold cheaply at certain times of year",
+        "A membership that lets you buy cup tickets early"
+      ],
+      "when": [
+        "any",
+        "early-season"
+      ]
     },
     {
       "id": "away-day",
@@ -1520,6 +3110,19 @@
       "level": 11,
       "seeAlso": [
         "the-away-end"
+      ],
+      "overheard": "Big away day Saturday. Train at seven, back God knows when.",
+      "overheardTerm": "away day",
+      "speaker": "chat",
+      "gist": "A trip to watch the team at another ground",
+      "decoys": [
+        "A day off given to the players midweek",
+        "A club trip abroad before the season starts"
+      ],
+      "when": [
+        "any",
+        "cup",
+        "europe"
       ]
     },
     {
@@ -1532,6 +3135,20 @@
       "level": 11,
       "seeAlso": [
         "away-day"
+      ],
+      "overheard": "You can hear the away end from up here. Three thousand of them.",
+      "overheardTerm": "away end",
+      "speaker": "telly",
+      "gist": "The part of the ground given to visiting fans",
+      "decoys": [
+        "The end of the pitch the visitors attack",
+        "The stand behind the goal that sings"
+      ],
+      "when": [
+        "any",
+        "derby",
+        "cup",
+        "europe"
       ]
     },
     {
@@ -1544,6 +3161,18 @@
       "level": 11,
       "seeAlso": [
         "chant"
+      ],
+      "overheard": "That song came off the terraces in the seventies. It's older than he is.",
+      "overheardTerm": "terraces",
+      "speaker": "pundit",
+      "gist": "The old standing areas, and the fans in them",
+      "decoys": [
+        "The rows of houses behind an old ground",
+        "The seats reserved for club members"
+      ],
+      "when": [
+        "any",
+        "derby"
       ]
     },
     {
@@ -1556,6 +3185,19 @@
       "level": 11,
       "seeAlso": [
         "terraces"
+      ],
+      "overheard": "There's a chant about him now. The away end did it all game.",
+      "overheardTerm": "chant",
+      "speaker": "him",
+      "gist": "A song the crowd sings to a pop tune",
+      "decoys": [
+        "A rhythm the crowd claps without words",
+        "The anthem played before European nights"
+      ],
+      "when": [
+        "any",
+        "derby",
+        "cup"
       ]
     },
     {
@@ -1565,7 +3207,18 @@
       "meaning": "Liverpool's famous home stand at Anfield, where the loudest fans sing. Other grounds borrowed the name for their own big stand.",
       "heard": "Anfield nights on TV.",
       "sayIt": "\"Is that the Kop end? It's so loud.\"",
-      "level": 11
+      "level": 11,
+      "overheard": "The Kop are on their feet and they've not sat down for ten minutes.",
+      "overheardTerm": "Kop",
+      "speaker": "telly",
+      "gist": "Liverpool's loud home stand at Anfield",
+      "decoys": [
+        "The area where police stand in a stadium",
+        "A stand named after a club's great manager"
+      ],
+      "when": [
+        "any"
+      ]
     },
     {
       "id": "half-and-half-scarf",
@@ -1574,7 +3227,19 @@
       "meaning": "A souvenir scarf with both teams' colours on it. Proper fans find them deeply embarrassing.",
       "heard": "Mocked outside every big game.",
       "sayIt": "\"Please tell me you've never owned a half-and-half scarf.\"",
-      "level": 11
+      "level": 11,
+      "overheard": "Bloke in front of us in a half-and-half scarf. Unbelievable scenes.",
+      "overheardTerm": "half-and-half scarf",
+      "speaker": "chat",
+      "gist": "A souvenir showing both teams' colours",
+      "decoys": [
+        "A ticket that covers both legs of a round",
+        "A shirt design split into two colours"
+      ],
+      "when": [
+        "derby",
+        "cup"
+      ]
     },
     {
       "id": "the-lads",
@@ -1583,7 +3248,20 @@
       "meaning": "The team. How players and fans refer to their own side.",
       "heard": "\"Proud of the lads\" after a hard game.",
       "sayIt": "\"The lads did well today.\"",
-      "level": 11
+      "level": 11,
+      "overheard": "Buzzing for the lads tonight. First time they've looked like a team.",
+      "overheardTerm": "lads",
+      "speaker": "chat",
+      "gist": "The team, as the players and fans call it",
+      "decoys": [
+        "The younger players coming through the academy",
+        "The travelling fans who follow every game"
+      ],
+      "when": [
+        "any",
+        "good-run",
+        "after-win"
+      ]
     },
     {
       "id": "banter",
@@ -1592,7 +3270,20 @@
       "meaning": "Teasing between fans. Mostly friendly, occasionally not, always defended as \"just banter\".",
       "heard": "\"It's just banter\" after a text that went slightly too far.",
       "sayIt": "\"Is that banter or are you actually annoyed?\"",
-      "level": 11
+      "level": 11,
+      "overheard": "Sent him a photo of a bin with the score on it. Banter.",
+      "overheardTerm": "Banter",
+      "speaker": "chat",
+      "gist": "Teasing between fans, mostly friendly",
+      "decoys": [
+        "Chatter between the players on the pitch",
+        "A row between fans that has gone too far"
+      ],
+      "when": [
+        "any",
+        "derby",
+        "after-win"
+      ]
     },
     {
       "id": "group-chat",
@@ -1604,6 +3295,20 @@
       "level": 11,
       "seeAlso": [
         "banter"
+      ],
+      "overheard": "The group chat's gone into meltdown. Forty messages at half-time.",
+      "overheardTerm": "group chat's",
+      "speaker": "him",
+      "gist": "Where his mates react to every goal instantly",
+      "decoys": [
+        "An online forum open to all supporters",
+        "Fans posting videos from inside the ground"
+      ],
+      "when": [
+        "any",
+        "derby",
+        "after-win",
+        "after-loss"
       ]
     },
     {
@@ -1617,6 +3322,19 @@
       "seeAlso": [
         "match-of-the-day",
         "worldie"
+      ],
+      "overheard": "Whatever else you liked, that's goal of the month for me.",
+      "overheardTerm": "goal of the month",
+      "speaker": "pundit",
+      "gist": "The best strike, picked by a viewers' vote",
+      "decoys": [
+        "The award for a player's form over four weeks",
+        "A scoring target a striker is set each month"
+      ],
+      "when": [
+        "any",
+        "after-win",
+        "after-big-win"
       ]
     },
     {
@@ -1629,6 +3347,17 @@
       "level": 11,
       "seeAlso": [
         "offside"
+      ],
+      "overheard": "Lino! Flag stayed down, how has he not seen that?",
+      "overheardTerm": "Lino",
+      "speaker": "him",
+      "gist": "The official watching for offside",
+      "decoys": [
+        "The painted markings around the pitch",
+        "The fourth official holding up the board"
+      ],
+      "when": [
+        "any"
       ]
     },
     {
@@ -1638,7 +3367,18 @@
       "meaning": "The old joke about physios curing any injury with a wet sponge. Players hop up as if nothing happened.",
       "heard": "Ironically, when a player recovers very quickly.",
       "sayIt": "\"Give him the magic sponge, he'll be fine.\"",
-      "level": 11
+      "level": 11,
+      "overheard": "A wipe with the magic sponge and he's up and running again.",
+      "overheardTerm": "magic sponge",
+      "speaker": "telly",
+      "gist": "A wet flannel that fixes any knock",
+      "decoys": [
+        "A cloth used to dry the ball in the rain",
+        "The stretcher carried on for a bad injury"
+      ],
+      "when": [
+        "any"
+      ]
     },
     {
       "id": "we-go-again",
@@ -1647,7 +3387,21 @@
       "meaning": "What players and fans say after a bad result. Move on, next match. Half slogan, half coping mechanism.",
       "heard": "Player interviews after a defeat, and his text the morning after.",
       "sayIt": "\"One of those days. We go again.\"",
-      "level": 11
+      "level": 11,
+      "overheard": "Rubbish today. Nothing to say. We go again Tuesday.",
+      "overheardTerm": "We go again",
+      "speaker": "chat",
+      "gist": "Bad result, forget it, on to the next match",
+      "decoys": [
+        "The match is being replayed after a draw",
+        "Fans are heading off to another away trip"
+      ],
+      "when": [
+        "bad-run",
+        "after-loss",
+        "after-draw",
+        "after-heavy-loss"
+      ]
     },
     {
       "id": "fergie-time",
@@ -1659,6 +3413,19 @@
       "level": 12,
       "seeAlso": [
         "added-time"
+      ],
+      "overheard": "Six added at the end and they score in the ninth. Fergie time, that.",
+      "overheardTerm": "Fergie time",
+      "speaker": "chat",
+      "gist": "Stoppage minutes that suit the big side",
+      "decoys": [
+        "The years a famous manager was in charge",
+        "Kick-off times chosen to suit television"
+      ],
+      "when": [
+        "any",
+        "title",
+        "after-loss"
       ]
     },
     {
@@ -1673,6 +3440,17 @@
         "fa-cup",
         "the-third-round",
         "the-magic-of-the-cup"
+      ],
+      "overheard": "A giant-killing is on the cards here, you feel.",
+      "overheardTerm": "giant-killing",
+      "speaker": "telly",
+      "gist": "A small club knocking a big one out of a cup",
+      "decoys": [
+        "A very tall striker dominating the box",
+        "A big club signing a lower-league player"
+      ],
+      "when": [
+        "cup"
       ]
     },
     {
@@ -1687,6 +3465,17 @@
         "fa-cup",
         "giant-killing",
         "the-magic-of-the-cup"
+      ],
+      "overheard": "Third round draw is Monday. Please give us someone rubbish at home.",
+      "overheardTerm": "Third round",
+      "speaker": "him",
+      "gist": "The FA Cup stage in January when the big clubs enter",
+      "decoys": [
+        "The third game of a group in a tournament",
+        "The round of matches played on Boxing Day"
+      ],
+      "when": [
+        "cup"
       ]
     },
     {
@@ -1701,6 +3490,17 @@
         "fa-cup",
         "giant-killing",
         "the-third-round"
+      ],
+      "overheard": "A part-time side two goals up at a Premier League ground. The magic of the cup.",
+      "overheardTerm": "magic of the cup",
+      "speaker": "telly",
+      "gist": "The idea that a small club can beat a big one",
+      "decoys": [
+        "A trophy handed over on the pitch at the end",
+        "The extra money a cup run brings a club"
+      ],
+      "when": [
+        "cup"
       ]
     },
     {
@@ -1713,6 +3513,18 @@
       "level": 12,
       "seeAlso": [
         "centre-back"
+      ],
+      "overheard": "Their centre-half is a proper hard man. Tell him to stay on his feet.",
+      "overheardTerm": "hard man",
+      "speaker": "chat",
+      "gist": "A player feared for his fierce, physical game",
+      "decoys": [
+        "A player who is difficult to deal with off it",
+        "A defender who blocks shots with his body"
+      ],
+      "when": [
+        "any",
+        "derby"
       ]
     },
     {
@@ -1722,7 +3534,19 @@
       "meaning": "A player or manager admired for how they behave as much as how they play. Good on the pitch, better off it.",
       "heard": "About a player who does charity work or handles a loss with grace.",
       "sayIt": "\"He's a class act, that one. On and off the pitch.\"",
-      "level": 12
+      "level": 12,
+      "overheard": "Stayed out and clapped the travelling fans after that. Class act.",
+      "overheardTerm": "Class act",
+      "speaker": "pundit",
+      "gist": "A player admired for his manner as much as his football",
+      "decoys": [
+        "A player putting on a show for the cameras",
+        "A polished touch that makes the game look easy"
+      ],
+      "when": [
+        "good-run",
+        "after-win"
+      ]
     },
     {
       "id": "top-top-player",
@@ -1734,6 +3558,20 @@
       "level": 12,
       "seeAlso": [
         "top-drawer"
+      ],
+      "overheard": "Forget the goal, look at the pass before it. Top top player.",
+      "overheardTerm": "Top top player",
+      "speaker": "pundit",
+      "gist": "Pundit-speak for very good indeed",
+      "decoys": [
+        "Someone at the top of the scoring charts",
+        "A man voted best on the pitch that day"
+      ],
+      "when": [
+        "good-run",
+        "window",
+        "after-win",
+        "after-big-win"
       ]
     },
     {
@@ -1746,6 +3584,19 @@
       "level": 12,
       "seeAlso": [
         "glory-hunter"
+      ],
+      "overheard": "Half this lot are plastic fans. Where were they when we went down?",
+      "overheardTerm": "plastic fans",
+      "speaker": "him",
+      "gist": "Someone who only supports a club because they win",
+      "decoys": [
+        "Someone who turns up in a shop-bought kit",
+        "A supporter from the artificial-pitch days"
+      ],
+      "when": [
+        "any",
+        "derby",
+        "good-run"
       ]
     },
     {
@@ -1758,6 +3609,19 @@
       "level": 12,
       "seeAlso": [
         "plastic-fan"
+      ],
+      "overheard": "His lad supports whoever's top of the table. Glory hunter in the making.",
+      "overheardTerm": "Glory hunter",
+      "speaker": "chat",
+      "gist": "A fan who picked a club for its trophies",
+      "decoys": [
+        "A player chasing his own goals over the team",
+        "Someone who collects club shirts and badges"
+      ],
+      "when": [
+        "any",
+        "title",
+        "good-run"
       ]
     },
     {
@@ -1767,7 +3631,19 @@
       "meaning": "Liverpool's old coaching room where the next manager was quietly promoted from within. Now means any club that grows its own.",
       "heard": "History chats about how Liverpool used to run things.",
       "sayIt": "\"Is that a boot room appointment, promoted from inside?\"",
-      "level": 12
+      "level": 12,
+      "overheard": "Liverpool did it with the boot room. Nobody has that patience now.",
+      "overheardTerm": "boot room",
+      "speaker": "pundit",
+      "gist": "Promoting the next manager from inside the club",
+      "decoys": [
+        "The place at a ground where kit is stored",
+        "A club's academy for teenage players"
+      ],
+      "when": [
+        "any",
+        "new-manager"
+      ]
     },
     {
       "id": "the-invincibles",
@@ -1776,7 +3652,19 @@
       "meaning": "Arsenal's 2003-04 team, who went the whole league season without losing a game. Arsenal fans mention it roughly twice a year.",
       "heard": "From every Arsenal fan, about twice a year.",
       "sayIt": "\"Were the Invincibles as good as everyone says?\"",
-      "level": 12
+      "level": 12,
+      "overheard": "Their lot will bring up the Invincibles before the first goal.",
+      "overheardTerm": "Invincibles",
+      "speaker": "chat",
+      "gist": "A whole league season without a defeat",
+      "decoys": [
+        "Players who avoided injury for a whole season",
+        "A side that won three trophies in one year"
+      ],
+      "when": [
+        "title",
+        "good-run"
+      ]
     },
     {
       "id": "football-twitter",
@@ -1788,6 +3676,19 @@
       "level": 12,
       "seeAlso": [
         "banter"
+      ],
+      "overheard": "Don't look at Football Twitter tonight. It'll be carnage.",
+      "overheardTerm": "Football Twitter",
+      "speaker": "him",
+      "gist": "The online corner where fans argue all day",
+      "decoys": [
+        "A club's official account posting the news",
+        "The reporters who break transfer stories"
+      ],
+      "when": [
+        "any",
+        "window",
+        "after-loss"
       ]
     },
     {
@@ -1797,7 +3698,19 @@
       "meaning": "An online game where you pick real players and score points from their real performances. Explains why he cheers for players he hates.",
       "heard": "\"He's in my fantasy team\" about a player he's suddenly cheering for.",
       "sayIt": "\"Is that a fantasy football thing, or do you actually like him?\"",
-      "level": 12
+      "level": 12,
+      "overheard": "I need him to score tonight for my fantasy football team. Sorry.",
+      "overheardTerm": "fantasy football",
+      "speaker": "him",
+      "gist": "A game where you pick real players for points",
+      "decoys": [
+        "A made-up league played on a games console",
+        "Betting on which players will score"
+      ],
+      "when": [
+        "any",
+        "early-season"
+      ]
     },
     {
       "id": "wags",
@@ -1806,7 +3719,18 @@
       "meaning": "Old tabloid slang for players' wives and girlfriends, from the 2006 World Cup era. Mostly retired now, thankfully.",
       "heard": "In stories about the 2006 World Cup.",
       "sayIt": "\"Please tell me nobody says WAGs any more.\"",
-      "level": 12
+      "level": 12,
+      "overheard": "Watched a documentary about the WAGs at that 2006 World Cup. Wild.",
+      "overheardTerm": "WAGs",
+      "speaker": "chat",
+      "gist": "Tabloid slang for players' wives and girlfriends",
+      "decoys": [
+        "A word for the jokers in a dressing room",
+        "The section of the stand kept for families"
+      ],
+      "when": [
+        "any"
+      ]
     }
   ]
 }

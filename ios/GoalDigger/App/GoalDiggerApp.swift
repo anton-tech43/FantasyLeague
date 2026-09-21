@@ -369,9 +369,12 @@ struct MainTabView: View {
             }
             #if DEBUG
             // Screenshot harness. `xcrun simctl launch <udid> com.goaldigger.app
-            // -gdTab 2 -gdOpenItem <uuid>` lands on a tab or a detail view
-            // without anyone tapping — simctl cannot tap, and a
+            // -gdSkipATT -gdTab 2 -gdOpenItem <uuid>` lands on a tab or a
+            // detail view without anyone tapping — simctl cannot tap, and a
             // deterministic starting point is what a visual check needs.
+            // `-gdSkipATT` belongs on every harness launch: without it the ATT
+            // sheet slides up 1.5 s after the tabs appear and covers whatever
+            // was being photographed (IOS_GOTCHAS §19).
             let args = ProcessInfo.processInfo.arguments
             if let i = args.firstIndex(of: "-gdTab"), i + 1 < args.count, let tab = Int(args[i + 1]) {
                 selectedTab = tab

@@ -134,6 +134,8 @@ Check the Calendar tab explicitly — its first fixture must be in the future. I
 $P "$SUPABASE_DB_URL" -At -F' | ' -c "select tp.team_id, jsonb_array_length(coalesce(tp.content->'cards'->'upcoming_fixtures','[]')), left(tp.content->'cards'->'upcoming_fixtures'->0->>'date',10), tp.content->'cards'->'upcoming_fixtures'->0->>'opponent' from team_pages tp join teams t on t.id=tp.team_id where t.league_id=39 and t.is_active order by 3 nulls first"
 ```
 
+Two hardcoded calendars live in the app and rot once a year. `ios/GoalDigger/Services/LingoDeck.swift` holds the transfer-window dates (summer and January) that decide when Lingo deals the "window" words; check them against the FA's published window each summer. The same file's derby test compares `next_fixture.opponent` with `rivalry.rival`, so a rival renamed or newly promoted (migration 091 seeds them) shows up as a derby that never fires.
+
 Anything in the prose row older than about six weeks is stale. Fire the routine and watch it:
 
 ```

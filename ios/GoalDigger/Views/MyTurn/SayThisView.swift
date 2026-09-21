@@ -67,6 +67,12 @@ struct SayThisView: View {
             .padding(.top, 12)
             .padding(.bottom, 40)
         }
+        // A "Lines that use this" chip from Lingo picks the situation, but
+        // practise is drawn ahead of it: without this she lands back on
+        // whatever card she paused on, not on the lines she asked for.
+        .onChange(of: store.sayThisSituationId) { _, new in
+            if new != nil { showingPractise = false }
+        }
         .animation(.easeInOut(duration: 0.2), value: store.sayThisSituationId)
         .animation(.easeInOut(duration: 0.2), value: practise?.index)
         .animation(.easeInOut(duration: 0.2), value: practise?.revealed)

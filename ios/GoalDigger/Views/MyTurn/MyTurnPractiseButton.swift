@@ -13,6 +13,10 @@ struct MyTurnPractiseButton: View {
     /// the first ten words", "Continue: question 4 of 10". Keep it concrete.
     let subtitle: String
     var systemImage: String = "play.fill"
+    /// Two lines is enough for "Ten questions from The basics". Lingo's
+    /// subtitle is a whole sentence about the weekend ("1st against 2nd.
+    /// Proper six-pointer. 7 words for it.") and truncates at two.
+    var subtitleLineLimit: Int = 2
     let action: () -> Void
 
     var body: some View {
@@ -33,7 +37,7 @@ struct MyTurnPractiseButton: View {
                     Text(subtitle)
                         .font(.jakarta(14, weight: .regular))
                         .foregroundColor(.warmWhite.opacity(0.85))
-                        .lineLimit(2)
+                        .lineLimit(subtitleLineLimit)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)

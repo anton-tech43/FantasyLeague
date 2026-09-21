@@ -27,7 +27,8 @@ struct MyTurnView: View {
                     SayThisView(content: content.sayThis, lingo: content.lingo, store: store)
                         .opacity(store.lastModule == .sayThis ? 1 : 0)
                         .allowsHitTesting(store.lastModule == .sayThis)
-                    LingoView(content: content.lingo, store: store)
+                    LingoView(content: content.lingo, sayThis: content.sayThis, store: store,
+                              team: appState.selectedTeam, page: live.page)
                         .opacity(store.lastModule == .lingo ? 1 : 0)
                         .allowsHitTesting(store.lastModule == .lingo)
                     QuizView(content: content.quiz, store: store, clubId: appState.selectedTeam?.rawValue,
@@ -62,7 +63,8 @@ struct MyTurnView: View {
     #if DEBUG
     /// Screenshot harness, see MainTabView. `-gdMyTurnModule quiz`,
     /// `-gdMyTurnSituation sideways`, `-gdMyTurnPack legends`,
-    /// `-gdLingoQuery offside`, `-gdLingoFinish 8`.
+    /// `-gdLingoQuery offside`, `-gdLingoExpand offside`. Everything else Lingo
+    /// takes is handled in `LingoView.applyLingoArguments`.
     private func applyLaunchArguments() {
         let args = ProcessInfo.processInfo.arguments
         func value(_ flag: String) -> String? {
@@ -76,15 +78,6 @@ struct MyTurnView: View {
         if let s = value("-gdMyTurnSituation") { store.sayThisSituationId = s }
         if let q = value("-gdLingoQuery") { store.lingoQuery = q }
         if let e = value("-gdLingoExpand") { store.lingoExpandedId = e }
-        // `-gdLingoFinish N` plays a whole flashcard session knowing N of the
-        // ten, which is the only way to reach the end screen without tapping.
-        if let n = value("-gdLingoFinish").flatMap(Int.init) {
-            LingoDrill.start(store, ids: content.lingo.terms(atLevel: content.lingo.currentLevel(store: store)).map(\.id))
-            for i in 0..<LingoDrill.cardsPerSession {
-                store.flip()
-                LingoDrill.grade(store, knewIt: i < n)
-            }
-        }
         if let p = value("-gdMyTurnPack"), let pack = content.quiz.packs.first(where: { $0.id == p }) {
             store.startRound(pack: pack)
             applyQuizAnswerArgument(pack: pack)
@@ -221,6 +214,70 @@ struct MyTurnRow<Trailing: View>: View {
         .background(Color.cardBackground)
         .cornerRadius(Layout.cardCornerRadius)
         .contentShape(Rectangle())
+    }
+}
+
+/// One multiple-choice option, as the quiz and the Overheard round both draw
+/// it: blush card, rose tint and a tick on the right answer once she has
+/// picked, a red cross on hers when it was not, and nothing tappable after.
+///
+/// Shared because the two modules ask the same question in the same shape, and
+/// a tick that looks different in one of them reads as a different meaning.
+struct MyTurnOptionButton: View {
+    let text: String
+    let index: Int
+    let answer: Int
+    /// The option she picked, if any. Non-nil is the answered state.
+    let selected: Int?
+    let onPick: (Int) -> Void
+
+    var body: some View {
+        let answered = selected != nil
+        let isCorrect = index == answer
+        let isPicked = index == selected
+        let background: Color = {
+            guard answered else { return .cardBackground }
+            if isCorrect { return Color.hotRose.opacity(0.18) }
+            if isPicked { return Color.red.opacity(0.10) }
+            return .cardBackground
+        }()
+        return Button {
+            guard !answered else { return }
+            onPick(index)
+            UIImpactFeedbackGenerator(style: isCorrect ? .medium : .light).impactOccurred()
+        } label: {
+            HStack(spacing: 12) {
+                Text(text)
+                    .font(.jakarta(16, weight: .medium))
+                    .foregroundColor(.textPrimaryOnCard)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+                if answered && isCorrect {
+                    Image(systemName: "checkmark.circle.fill").foregroundColor(.hotRose)
+                        .accessibilityHidden(true)
+                } else if answered && isPicked {
+                    Image(systemName: "xmark.circle.fill").foregroundColor(.red.opacity(0.7))
+                        .accessibilityHidden(true)
+                }
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(background)
+            .background(Color.cardBackground)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(answered && isCorrect ? Color.hotRose : Color.clear, lineWidth: 1.5)
+            )
+            .cornerRadius(12)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(answered)
+        // The tick and the cross are the whole answer for a sighted reader, so
+        // VoiceOver needs them said rather than drawn. As a value, not a label:
+        // the option's own text stays the label, and the state is what changed.
+        .accessibilityValue(answered ? (isCorrect ? "Correct answer" : (isPicked ? "Your answer, wrong" : "")) : "")
     }
 }
 

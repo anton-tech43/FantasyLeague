@@ -199,6 +199,19 @@ re-check the caller with `_shared/require-service-auth.ts` and deploy `--no-veri
   onesToKnow/rivalry/form/season/comingUp/postMatch/insider(T2+)/freshness.
 - **Caching:** `CacheService` (SwiftData, feed items, 30-day/50-row, schema-versioned) +
   `TeamPageCache` (UserDefaults JSON, 24h) + shared `URLCache` for crests.
+- **My Turn** (`Views/MyTurn/`, tab 2): the toolbox. Three modules in one segmented
+  control: Quiz, Lingo, Say This. Content is three static, versioned JSON files bundled
+  under `Resources/MyTurn/` and refreshed from `my_turn_content` when a newer
+  `contentVersion` exists (`MyTurnContentService`, decode-then-swap, hourly). Every
+  scrap of her state (module, paused round, three-bucket word progress, starred lines)
+  is one tolerant-decoded JSON blob in `MyTurnStore`. Quiz's "His club" packs and
+  Lingo's "This weekend's words" deck are built on the phone from the cached team page
+  (`LiveClubPack.swift`, `LingoDeck.swift`): the app never ships a current name or a
+  context in static content. Lingo is played as **Overheard** (a line she hears, three
+  meanings, then the line she says back), dealt from the next fixture's context
+  (derby, cup, relegation, after a loss). Editorial rules and the validator gate:
+  `tools/myturn/CONTENT_PRINCIPLES.md`, `tools/myturn/validate_content.py`. No
+  streaks, no dailies, no reminders by design: she did not choose this hobby.
 - **Tiers** (`Models/TierGating.swift`): T2+ = Sunday Brief, Insider, MatchDayLive; T3+ =
   Quiz, GroupChatPrep; Dossier ungated. Gated features are simply absent (no padlocks).
 
@@ -266,6 +279,7 @@ is filed but open.
 | Doc | Verdict | Trust for |
 |---|---|---|
 | `ARCHITECTURE.md` (this) | CURRENT | how it works today |
+| `tools/myturn/CONTENT_PRINCIPLES.md`, `tools/myturn/LINGO_OVERHEARD_BRIEF.md` | CURRENT | My Turn editorial rules, the Overheard content brief |
 | `AUDIT_FINDINGS.md` | CURRENT | known bugs/security/staleness |
 | `V2.2_DESIGN_MULTI_TEAM.md` | CURRENT | the arrays/follow model |
 | `WHATS_NEW_2.0.3.md` | CURRENT | recent shipped features |

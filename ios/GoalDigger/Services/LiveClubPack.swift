@@ -122,8 +122,11 @@ enum LiveClubPack {
 
         // The state of the club, right now. Every one of these changes on a
         // Saturday, which is the point: the people live in the squad pack.
+        // Not `teamName == displayName`: the feed spells seven of the twenty
+        // its own way ("Bournemouth", "Brighton", "Newcastle").
         let mine = cards.standings?.entries.first {
-            $0.teamIdApiFootball == team.apiFootballId || $0.teamName == team.displayName
+            $0.teamIdApiFootball == team.apiFootballId
+                || MatchContext.sameClub($0.teamName, team.displayName)
         }
         if let row = mine, row.rank > 0 {
             let nearby = [-3, -2, -1, 1, 2, 3, 4].map { row.rank + $0 }.filter { (1...20).contains($0) }
@@ -483,6 +486,10 @@ final class LiveClubPackService {
     /// the same daily `players` fetch that gives this pack its top scorer.
     private(set) var leaguePack: QuizPack?
     private(set) var teamId: String?
+    /// The cached team page this refresh loaded, kept so a second consumer does
+    /// not have to reach into `TeamPageCache` itself. Lingo's weekend context
+    /// is built from it (`MatchContext`).
+    private(set) var page: TeamPageContent?
 
     private static let sourcesKey = "myTurnLiveSources.v2"
     private var sources: LiveClubPack.Sources? {
@@ -500,13 +507,21 @@ final class LiveClubPackService {
     }
 
     func clear() {
-        pack = nil; leaguePack = nil; teamId = nil; sources = nil
+        pack = nil; leaguePack = nil; teamId = nil; page = nil; sources = nil
         UserDefaults.standard.removeObject(forKey: Self.sourcesKey)
     }
 
     func refresh(team: Team?, personalise: @escaping (String) -> String) async {
-        teamId = team?.rawValue
-        if team == nil { pack = nil }
+        // Switching club starts a second refresh while this one is awaiting a
+        // fetch. Whoever is no longer the selected club writes nothing: the
+        // loser of the race would otherwise publish the old club's page and
+        // pack over the new club's.
+        let requested = team?.rawValue
+        teamId = requested
+        if team == nil { pack = nil; page = nil }
+        // Publish whatever is cached before anything is fetched, so Lingo has
+        // its weekend context on a cold, offline launch too.
+        page = team.flatMap { TeamPageCache.load(teamId: $0.rawValue)?.content }
 
         // League-wide sources, at most once a day. They also carry the league
         // pack, which is worth having whether or not she follows a club.
@@ -516,6 +531,7 @@ final class LiveClubPackService {
                 merged.silhouettes = sources?.silhouettes ?? []
                 sources = merged
             }
+            guard teamId == requested else { return }
         }
         guard var src = sources else { return }
         leaguePack = LiveSquadPack.buildLeague(
@@ -526,14 +542,16 @@ final class LiveClubPackService {
         guard let team else { return }
 
         // Team page: the cache His Team already keeps, refreshed when stale.
-        var page = TeamPageCache.load(teamId: team.rawValue)
-        if page == nil || page!.isStale {
+        var cached = TeamPageCache.load(teamId: team.rawValue)
+        if cached == nil || cached!.isStale {
             if let fresh = try? await APIClient.shared.fetchTeamPage(teamId: team.rawValue) {
                 TeamPageCache.save(content: fresh, teamId: team.rawValue)
-                page = TeamPageCache.load(teamId: team.rawValue)
+                cached = TeamPageCache.load(teamId: team.rawValue)
             }
+            guard teamId == requested else { return }
         }
-        guard let content = page?.content else { return }
+        page = cached?.content
+        guard let content = cached?.content else { return }
 
         // Manager photo: check the bytes once per URL. Player photos are not
         // checked — all 60 PL ones-to-know photos were real on 2026-09-08.
@@ -544,6 +562,7 @@ final class LiveClubPackService {
                 src.silhouettes.append(photo)
                 sources = src
             }
+            guard teamId == requested else { return }
         }
 
         pack = LiveClubPack.build(team: team, page: content, sources: src, personalise: personalise)

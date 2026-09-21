@@ -59,20 +59,45 @@ final class MyTurnStore {
             selected = try c.decodeIfPresent(Int.self, forKey: .selected)
             finished = try c.decodeIfPresent(Bool.self, forKey: .finished) ?? false
             streak = try c.decodeIfPresent(Int.self, forKey: .streak) ?? 0
+            hypeLine = try c.decodeIfPresent(String.self, forKey: .hypeLine)
         }
     }
 
     enum Bucket: String, Codable { case new, learning, known }
 
+    /// A round of Overheard: seven snippets, three options on each.
+    ///
+    /// The queue is dealt once and never re-ordered — re-showing a word she
+    /// just got wrong, with the same three options in the same order, tests
+    /// where her thumb was, not what the word means.
     struct DrillSession: Codable, Equatable {
         let deckId: String
-        var queue: [String]
+        let queue: [String]
         var index: Int = 0
-        var flipped: Bool = false
-        var done: Int = 0
+        /// The option she picked on the current card, if any. Non-nil means
+        /// the reveal is showing and "Next" is the only way on.
+        var selected: Int? = nil
         var finished: Bool = false
-        /// Cards graded "Knew it" this session, for the end screen.
+        /// Right answers this session, for the end screen.
         var knew: Int = 0
+        /// Right in a row, reset by any miss. Drives the hype card at four and
+        /// eight; not a score, not persisted as one.
+        var streak: Int = 0
+        /// The hype line for this round's end screen, picked once when the
+        /// round finished so the card does not reshuffle on every redraw.
+        var hypeLine: String? = nil
+        /// True when this came out of a flashcard session written by the build
+        /// before Overheard: its queue can be nineteen long and can repeat a
+        /// word, which is not a round of seven. Not persisted — `MyTurnStore`
+        /// drops such a session on the launch that decodes it.
+        var legacy: Bool = false
+
+        enum CodingKeys: String, CodingKey {
+            case deckId, queue, index, selected, finished, knew, streak, hypeLine
+        }
+
+        /// Fields the flashcard build wrote and this one does not.
+        private enum LegacyKeys: String, CodingKey { case flipped, done }
 
         init(deckId: String, queue: [String]) {
             self.deckId = deckId
@@ -80,17 +105,23 @@ final class MyTurnStore {
         }
 
         /// Tolerant: this struct sits inside the one JSON blob that holds every
-        /// starred line and quiz score, so a field added later (`knew`, 2026-09-09)
-        /// must decode as its default rather than throw and reset her state.
+        /// starred line and quiz score, so a field added later (`knew`
+        /// 2026-09-09, `selected`/`streak`/`hypeLine` 2026-09-22) must decode
+        /// as its default rather than throw and reset her state. A session
+        /// paused mid-flashcard carries `flipped` and `done`; they are what
+        /// marks it `legacy`, and the store then drops it.
         init(from decoder: Decoder) throws {
             let c = try decoder.container(keyedBy: CodingKeys.self)
             deckId = try c.decode(String.self, forKey: .deckId)
             queue = try c.decode([String].self, forKey: .queue)
             index = try c.decodeIfPresent(Int.self, forKey: .index) ?? 0
-            flipped = try c.decodeIfPresent(Bool.self, forKey: .flipped) ?? false
-            done = try c.decodeIfPresent(Int.self, forKey: .done) ?? 0
+            selected = try c.decodeIfPresent(Int.self, forKey: .selected)
             finished = try c.decodeIfPresent(Bool.self, forKey: .finished) ?? false
             knew = try c.decodeIfPresent(Int.self, forKey: .knew) ?? 0
+            streak = try c.decodeIfPresent(Int.self, forKey: .streak) ?? 0
+            hypeLine = try c.decodeIfPresent(String.self, forKey: .hypeLine)
+            let old = try decoder.container(keyedBy: LegacyKeys.self)
+            legacy = old.contains(.flipped) || old.contains(.done)
         }
     }
 
@@ -119,7 +150,11 @@ final class MyTurnStore {
 
     private init() {
         if let data = UserDefaults.standard.data(forKey: Self.key),
-           let decoded = try? JSONDecoder().decode(Persisted.self, from: data) {
+           var decoded = try? JSONDecoder().decode(Persisted.self, from: data) {
+            // A flashcard session paused under the previous build would resume
+            // as an Overheard round of up to nineteen cards, some of them
+            // repeats. Start her on a fresh seven instead.
+            if decoded.drillSession?.legacy == true { decoded.drillSession = nil }
             state = decoded
         } else {
             state = Persisted()
@@ -139,6 +174,8 @@ final class MyTurnStore {
     func clearAll() {
         state = Persisted()
         lingoQuery = ""
+        streakTick = 0
+        lingoDealNonce = 0
         UserDefaults.standard.removeObject(forKey: Self.key)
     }
 
@@ -225,7 +262,7 @@ final class MyTurnStore {
             // on the last question: the result card is the moment there, and
             // two rose cards at once is noise.
             if round.streak % 4 == 0, round.streak <= 8, round.index + 1 < round.questionIds.count {
-                streakTick += 1
+                streakTick = round.streak
             }
         } else {
             round.missedIds.append(questionId)
@@ -253,12 +290,12 @@ final class MyTurnStore {
 
     func endRound() { state.quizRound = nil }
 
-    // MARK: Flashcards
+    // MARK: Overheard
     //
     // The three-bucket engine (new / learning / known) that Drills used to own.
-    // Drills went as a tab on 2026-09-09; Lingo's flashcard practise keeps the
-    // engine, keyed by deck id, and the persisted field names stay so nothing
-    // she has already learned is lost.
+    // Drills went as a tab on 2026-09-09, flashcards on 2026-09-22; Lingo's
+    // Overheard round keeps the engine, keyed by deck id, and the persisted
+    // field names stay so nothing she has already learned is lost.
 
     func bucket(deckId: String, cardId: String) -> Bucket {
         state.drillBuckets[deckId]?[cardId] ?? .new
@@ -273,51 +310,57 @@ final class MyTurnStore {
         set { state.drillSession = newValue }
     }
 
-    /// Ten cards: learning first (they are the ones she asked to see again),
-    /// then new, then known — shuffled within each bucket.
-    func startDrill(deckId: String, cardIds: [String]) {
-        let buckets = state.drillBuckets[deckId] ?? [:]
-        func pick(_ b: Bucket) -> [String] { cardIds.filter { (buckets[$0] ?? .new) == b }.shuffled() }
-        let ordered = pick(.learning) + pick(.new) + pick(.known)
-        state.drillSession = DrillSession(deckId: deckId, queue: Array(ordered.prefix(10)))
+    /// The queue is stored exactly as dealt — `LingoWeekendDeck` has already
+    /// decided which words and in what order, and it knows things the store
+    /// does not (this weekend's fixture).
+    func startDrill(deckId: String, queue: [String]) {
+        guard !queue.isEmpty else { return }
+        state.drillSession = DrillSession(deckId: deckId, queue: queue)
     }
 
-    func flip() {
-        guard var s = state.drillSession else { return }
-        s.flipped = true
+    /// One tap on an option. Right moves the word up a bucket (new → learning
+    /// → known); wrong drops it to `learning`, so the next deck prefers it.
+    func answerDrill(_ option: Int, correct: Bool) {
+        guard var s = state.drillSession, s.selected == nil, s.index < s.queue.count else { return }
+        let cardId = s.queue[s.index]
+        s.selected = option
+        var deck = state.drillBuckets[s.deckId] ?? [:]
+        let current = deck[cardId] ?? .new
+        if correct {
+            s.knew += 1
+            s.streak += 1
+            deck[cardId] = current == .new ? .learning : .known
+            // Four and eight, the same rule as the quiz, and never on the last
+            // one: the end card is the moment there.
+            if s.streak % 4 == 0, s.streak <= 8, s.index + 1 < s.queue.count {
+                streakTick = s.streak
+            }
+        } else {
+            deck[cardId] = .learning
+            s.streak = 0
+        }
+        state.drillBuckets[s.deckId] = deck
         state.drillSession = s
     }
 
-    /// Knew it moves the card up a bucket. Didn't know it sends it to
-    /// `learning` and back into this session's queue a few cards later.
-    func grade(knewIt: Bool) {
-        guard var s = state.drillSession, s.index < s.queue.count else { return }
-        let cardId = s.queue[s.index]
-        var deck = state.drillBuckets[s.deckId] ?? [:]
-        let current = deck[cardId] ?? .new
-        if knewIt {
-            s.knew += 1
-            deck[cardId] = current == .new ? .learning : .known
-            if current == .learning || current == .known { deck[cardId] = .known }
-        } else {
-            deck[cardId] = .learning
-            if s.done < 10 - 1 {
-                let insertAt = min(s.queue.count, s.index + 3)
-                s.queue.insert(cardId, at: insertAt)
-            }
-        }
-        state.drillBuckets[s.deckId] = deck
-        s.done += 1
-        s.flipped = false
-        if s.done >= 10 || s.index + 1 >= s.queue.count {
+    func nextDrillCard() {
+        // Only after an answer, the same rule the quiz has: "Next" is the way
+        // on from the reveal, not a way to skip a card.
+        guard var s = state.drillSession, s.selected != nil else { return }
+        if s.index + 1 >= s.queue.count {
             s.finished = true
         } else {
             s.index += 1
+            s.selected = nil
         }
         state.drillSession = s
     }
 
     func endDrill() { state.drillSession = nil }
+
+    /// Transient, deliberately not persisted: "Go again" deals a fresh seven
+    /// from the same context, but reopening the tab tomorrow should not.
+    var lingoDealNonce: Int = 0
 
     // MARK: Hype
     //
@@ -325,8 +368,10 @@ final class MyTurnStore {
     // only remembers which ones she has already been shown, so nothing repeats
     // until the category runs out.
 
-    /// Bumped at four and eight correct in a row. Transient: a streak is
-    /// a moment, not a trophy, and it should not survive a relaunch.
+    /// The run length that just triggered: 4, then 8, and 0 for nothing. Both
+    /// the quiz and the Overheard round set it, and the overlay clears it once
+    /// shown. Transient: a streak is a moment, not a trophy, and it should not
+    /// survive a relaunch.
     var streakTick: Int = 0
 
     /// One line she has not seen from this category, marked as seen. Returns
@@ -365,5 +410,31 @@ func myTurnTolerantDecodeSelfCheck() {
     }
     assert(round.streak == 0 && round.hypeLine == nil && round.index == 1,
            "QuizRound tolerant decode gave the wrong defaults")
+
+    // A flashcard session paused under the build before Overheard (2026-09-22)
+    // has `flipped` and `done` and none of the fields the round needs. It has
+    // to resume as an Overheard round on the card she was on, not throw and
+    // take every quiz score in the same blob with it.
+    let flashcards = Data("""
+    {"deckId":"lingo","queue":["offside","var","penalty"],"index":1,"flipped":true,"done":1,"finished":false,"knew":1}
+    """.utf8)
+    guard let session = try? JSONDecoder().decode(MyTurnStore.DrillSession.self, from: flashcards) else {
+        assertionFailure("DrillSession lost its tolerant init(from:) — a paused round now resets her state")
+        return
+    }
+    assert(session.selected == nil && session.streak == 0 && session.hypeLine == nil
+           && session.index == 1 && session.knew == 1 && session.queue.count == 3,
+           "DrillSession tolerant decode gave the wrong defaults")
+    // ...and it has to be recognisable as one, because a flashcard queue can
+    // repeat a word and run to nineteen. `MyTurnStore.init` drops it on that.
+    assert(session.legacy, "a flashcard session no longer looks legacy, so it resumes as an Overheard round")
+
+    let fresh = MyTurnStore.DrillSession(deckId: "lingo", queue: ["offside"])
+    guard let written = try? JSONEncoder().encode(fresh),
+          let read = try? JSONDecoder().decode(MyTurnStore.DrillSession.self, from: written) else {
+        assertionFailure("DrillSession does not survive its own encoder")
+        return
+    }
+    assert(!read.legacy, "a session this build wrote looks legacy, so every round is dropped on relaunch")
 }
 #endif

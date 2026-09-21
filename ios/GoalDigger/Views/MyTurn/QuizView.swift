@@ -251,7 +251,9 @@ struct QuizView: View {
             }
 
             ForEach(Array(q.options.enumerated()), id: \.offset) { idx, option in
-                optionButton(idx: idx, text: option, question: q, selected: round.selected)
+                MyTurnOptionButton(text: option, index: idx, answer: q.answer, selected: round.selected) { picked in
+                    store.answer(picked, correct: picked == q.answer, questionId: q.id)
+                }
             }
 
             if let selected = round.selected {
@@ -331,49 +333,6 @@ struct QuizView: View {
         .background(Color.hotRose.opacity(0.12))
         .cornerRadius(10)
         .padding(.top, 2)
-    }
-
-    private func optionButton(idx: Int, text: String, question: MyTurnQuestion, selected: Int?) -> some View {
-        let answered = selected != nil
-        let isCorrect = idx == question.answer
-        let isPicked = idx == selected
-        let background: Color = {
-            guard answered else { return .cardBackground }
-            if isCorrect { return Color.hotRose.opacity(0.18) }
-            if isPicked { return Color.red.opacity(0.10) }
-            return .cardBackground
-        }()
-        return Button {
-            guard !answered else { return }
-            store.answer(idx, correct: isCorrect, questionId: question.id)
-            UIImpactFeedbackGenerator(style: isCorrect ? .medium : .light).impactOccurred()
-        } label: {
-            HStack(spacing: 12) {
-                Text(text)
-                    .font(.jakarta(16, weight: .medium))
-                    .foregroundColor(.textPrimaryOnCard)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
-                Spacer(minLength: 0)
-                if answered && isCorrect {
-                    Image(systemName: "checkmark.circle.fill").foregroundColor(.hotRose)
-                } else if answered && isPicked {
-                    Image(systemName: "xmark.circle.fill").foregroundColor(.red.opacity(0.7))
-                }
-            }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(background)
-            .background(Color.cardBackground)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(answered && isCorrect ? Color.hotRose : Color.clear, lineWidth: 1.5)
-            )
-            .cornerRadius(12)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .disabled(answered)
     }
 
     // MARK: Result

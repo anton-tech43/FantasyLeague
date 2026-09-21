@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
 # Adds every Swift file under ios/GoalDigger that the app target does not yet
 # compile, and every resource folder listed in RESOURCE_FOLDERS that is not yet
-# copied, to GoalDigger.xcodeproj. Idempotent — safe to run any time.
+# copied, to GoalDigger.xcodeproj; and removes references to files under ios/
+# that no longer exist. Idempotent — safe to run any time.
 #
 # Why this exists: the project is a classic pbxproj (no file-system-synchronized
 # groups), so a new .swift on disk is invisible to xcodebuild until it is
@@ -25,10 +26,25 @@ project = Xcodeproj::Project.open(PROJECT)
 target  = project.targets.find { |t| t.name == TARGET } or abort("target #{TARGET} not found")
 app_group = project.main_group.children.find { |g| g.path == 'GoalDigger' } or abort('GoalDigger group not found')
 
+added = 0
+removed = 0
+
+# --- Prune references to files that are gone ------------------------------
+# Deleting a .swift on disk leaves its reference behind, and xcodebuild then
+# fails with "Build input file cannot be found". Only references that point
+# inside the app group's .swift sources are considered: a framework or SDK
+# reference resolves elsewhere, and the gitignored Configuration.xcconfig is
+# absent on a fresh clone but must keep its baseConfigurationReference.
+project.files.to_a.each do |f|
+  path = (f.real_path.to_s rescue nil)
+  next if path.nil? || !path.start_with?("#{APP_DIR}/") || !path.end_with?('.swift') || File.exist?(path)
+  puts "  - missing  #{path.sub("#{SRC_ROOT}/", '')}"
+  f.remove_from_project   # takes its build files with it
+  removed += 1
+end
+
 # Every file reference path currently in the project, relative to ios/.
 known = project.files.map { |f| f.real_path.to_s rescue nil }.compact.to_set
-
-added = 0
 
 # --- Swift sources ---------------------------------------------------------
 Dir.glob(File.join(APP_DIR, '**', '*.swift')).sort.each do |abs|
@@ -69,9 +85,9 @@ RESOURCE_FOLDERS.each do |rel|
   added += 1
 end
 
-if added.zero?
+if added.zero? && removed.zero?
   puts 'project already in sync'
 else
   project.save
-  puts "saved #{PROJECT} (#{added} added)"
+  puts "saved #{PROJECT} (#{added} added, #{removed} removed)"
 end

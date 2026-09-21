@@ -324,3 +324,31 @@ v18 exposes no public `isSDKInitialized`; the only public proof the launch path 
 (`false` when it has already run). That's what `Attribution.sdkLaunched` stores, and what
 `Attribution.selfCheck()` asserts alongside the Info.plist keys — launch with
 `-gdCheckFBSDK` and grep the device log for `[FBSDK]`.
+
+---
+
+## 19. Installing the app from DerivedData: the glob picks the wrong build
+
+`~/Library/Developer/Xcode/DerivedData` accumulates one `GoalDigger-<hash>` directory per
+checkout, per worktree and per Xcode reindex — there were several on 2026-09-22, and the
+newest by name is not the newest by date. A `GoalDigger-*/Build/Products/Debug-iphonesimulator/GoalDigger.app`
+glob installed a **July binary with three tabs** onto the simulator, which then "proved" that
+the day's work had not shipped. Ask the build system where it put the thing instead:
+
+```sh
+APP="$(xcodebuild -project ios/GoalDigger.xcodeproj -scheme GoalDigger \
+        -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -showBuildSettings \
+        | awk -F' = ' '/ TARGET_BUILD_DIR/ {print $2}')/GoalDigger.app"
+xcrun simctl install <udid> "$APP"
+```
+
+Same rule for any other artefact: `TARGET_BUILD_DIR`, `BUILT_PRODUCTS_DIR` and
+`CODESIGNING_FOLDER_PATH` come out of `-showBuildSettings` with the same flags as the build.
+
+**And every harness launch needs `-gdSkipATT`.** `Attribution.requestTrackingIfNeeded()` fires
+1.5 s after `MainTabView` appears (gotcha 18.4), so a screenshot taken any later than that is a
+screenshot of the ATT sheet:
+
+```sh
+xcrun simctl launch <udid> com.goaldigger.app -gdSkipATT -gdTab 2 -gdMyTurnModule lingo
+```
