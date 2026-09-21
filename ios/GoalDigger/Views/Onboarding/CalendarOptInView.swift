@@ -15,9 +15,11 @@ import SwiftUI
 /// column nothing has written since May 2026, so onboarding could offer to
 /// add last season's matches.
 ///
-/// On "Yes, add them": requests calendar permission, then syncs. On "Not
-/// now": sets `calendarSyncEnabled = false` and advances. Either way the
-/// user proceeds; we never block.
+/// On "Yes, add them": requests calendar permission, then advances at once
+/// and writes the events detached. On "Not now": sets `calendarSyncEnabled
+/// = false` and advances. Either way the user proceeds; we never block —
+/// waiting on the fixture fetch here is what trapped users behind a spinner
+/// during the 2026-09-21 backend outage.
 struct CalendarOptInView: View {
     @Environment(AppState.self) var appState
     let onComplete: () -> Void
@@ -169,19 +171,20 @@ struct CalendarOptInView: View {
                 return
             }
 
-            // Sync BOTH followed entities (his WC country AND his PL club).
-            // resync fetches each one's upcoming slate itself, so a missing
-            // local `fixtures` preview (e.g. country picked but club fixtures
-            // not loaded) no longer means his games get skipped.
-            try await CalendarSyncService.shared.resync(
-                teams: appState.selectedTeams,
-                countries: appState.selectedCountries
-            )
+            // Permission is granted, so the answer to "do you want these?" is
+            // settled and she should not wait for the network to agree. The
+            // write itself runs detached: onboarding continues immediately and
+            // the events appear behind her. Nothing is lost if it fails — the
+            // launch/foreground `autoResync` retries on every open.
             appState.calendarSyncEnabled = true
+            let teams = appState.selectedTeams
+            let countries = appState.selectedCountries
+            Task { try? await CalendarSyncService.shared.resync(teams: teams, countries: countries) }
             UINotificationFeedbackGenerator().notificationOccurred(.success)
             onComplete()
         } catch {
-            syncErrorMessage = "Something went wrong adding the events. You can try again from Settings later."
+            // Only the permission request can throw now; the write is detached.
+            syncErrorMessage = "Couldn't reach your calendar. You can turn this on from Settings later."
             appState.calendarSyncEnabled = false
             try? await Task.sleep(nanoseconds: 1_500_000_000)
             onComplete()

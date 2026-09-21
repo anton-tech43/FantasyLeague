@@ -91,6 +91,14 @@ class APIClient {
     private func makeRequest(url: URL, method: String = "GET", body: Data? = nil, extraHeaders: [String: String] = [:]) -> URLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = method
+        // URLRequest defaults to 60s, which is not a timeout a user waits out:
+        // during the 2026-09-21 Supabase outage the feed, the squad card, the
+        // manager card and the onboarding calendar step all sat on a spinner
+        // instead of reaching their error states. Every screen here is on a
+        // critical path, so 10s is the floor for all of them; the calls that
+        // want tighter (8s poll loops) or looser (15s) set their own after
+        // this and still win.
+        request.timeoutInterval = 10
         request.setValue(apiKey, forHTTPHeaderField: "apikey")
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
