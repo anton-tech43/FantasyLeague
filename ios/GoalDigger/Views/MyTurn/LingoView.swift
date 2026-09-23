@@ -274,10 +274,6 @@ struct LingoView: View {
         wordList
     }
 
-    /// Called it: three lines she might get to say, under the one thing to
-    /// press. Draws nothing at all when this fixture has no slip to offer and
-    /// she has none saved, which is every fixture until `lingo.json` carries
-    /// `calls`.
     /// The published slip lines, or the harness's three while `lingo.json` has
     /// no `calls` key to publish.
     private var calls: [LingoCall] {
@@ -287,6 +283,10 @@ struct LingoView: View {
         return content.calls ?? []
     }
 
+    /// Called it: three lines she might get to say, under the one thing to
+    /// press. Draws nothing at all when this fixture has no slip to offer and
+    /// she has none saved, which is every fixture until `lingo.json` carries
+    /// `calls`.
     private var callsCard: some View {
         LingoCallsView(calls: calls, store: store, context: context) { _ in
             // Her pick is already in the store. The upload is best effort, and
