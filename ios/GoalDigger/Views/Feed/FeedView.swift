@@ -59,8 +59,6 @@ struct FeedView: View {
         switch appState.activeContext {
         case .country(let c): return c.rawValue
         case .team(let t):    return t.rawValue
-        case .worldChampionship:
-            return FeedContext.worldChampionshipEntityId
         case .everyoneTalking:
             return appState.selectedTeam?.rawValue ?? appState.selectedCountry?.rawValue
         }
@@ -76,27 +74,17 @@ struct FeedView: View {
     /// Items for the active context
     private var displayItems: [ContentItem] {
         switch appState.activeContext {
-        case .team, .country, .worldChampionship: return teamItems
+        case .team, .country: return teamItems
         case .everyoneTalking: return everyoneItems
         }
     }
 
-    /// Tournament hero card: the routine-written preview for the next
-    /// knockout match, pinned above the feed in the World Championship
-    /// context only (below the live card when a match is on).
-    private var wcNextMatchItem: ContentItem? {
-        guard appState.activeContext == .worldChampionship else { return nil }
-        return displayItems.first(where: {
-            $0.previewFixtureId != nil && ($0.kickoffTime ?? .distantPast) > Date()
-        })
-    }
-
-    /// Items for the scrolling list body — the hero item renders as
-    /// WCNextMatchCard, so it's excluded here to avoid a duplicate card.
-    private var bodyItems: [ContentItem] {
-        guard let hero = wcNextMatchItem else { return displayItems }
-        return displayItems.filter { $0.id != hero.id }
-    }
+    /// Items for the scrolling list body.
+    ///
+    /// This used to subtract a hero item that WCNextMatchCard rendered above
+    /// the list in the tournament context. Both went with that context on
+    /// 2026-09-23; the name stays as the one the feed reads from.
+    private var bodyItems: [ContentItem] { displayItems }
 
     var body: some View {
         ZStack {
@@ -209,11 +197,8 @@ struct FeedView: View {
     /// T1 users skip the poll entirely. Cancelled by SwiftUI when the
     /// view disappears or scenePhase transitions to .background.
     private func runLiveBriefPoll() async {
-        // The tournament live box is for everyone — the tier gate applies
-        // only to team/country contexts (product decision, V2.2).
-        let tierOK = appState.activeContext == .worldChampionship
-            || TierGating.isAvailable(.matchDayLive, tier: appState.selectedTier)
-        guard tierOK, let teamId = activeEntityId else {
+        guard TierGating.isAvailable(.matchDayLive, tier: appState.selectedTier),
+              let teamId = activeEntityId else {
             liveBrief = nil
             return
         }
@@ -252,7 +237,6 @@ struct FeedView: View {
     /// away a card the user was about to tap.
     private func loadSaturdayQuiz() async {
         guard TierGating.isAvailable(.saturdayQuiz, tier: appState.selectedTier),
-              appState.activeContext != .worldChampionship,
               let teamId = activeEntityId else {
             currentQuiz = nil
             return
@@ -317,7 +301,7 @@ struct FeedView: View {
                 }
             }
             .frame(width: 16, height: 16)
-        case .worldChampionship, .everyoneTalking:
+        case .everyoneTalking:
             Image(systemName: appState.activeContext.iconName)
                 .font(.system(size: 14))
                 .foregroundColor(.hotRose)
@@ -372,9 +356,7 @@ struct FeedView: View {
     /// ("Everyone Talking" surface shouldn't show team-specific live).
     private var shouldShowLiveBrief: Bool {
         guard liveBrief != nil, appState.activeContext != .everyoneTalking else { return false }
-        // World Championship live box is un-gated (shown to all tiers).
-        return appState.activeContext == .worldChampionship
-            || TierGating.isAvailable(.matchDayLive, tier: appState.selectedTier)
+        return TierGating.isAvailable(.matchDayLive, tier: appState.selectedTier)
     }
 
     /// Whether the SaturdayQuizCard should render right now. T3+ only,
@@ -384,8 +366,7 @@ struct FeedView: View {
     private var shouldShowQuiz: Bool {
         currentQuiz != nil &&
         TierGating.isAvailable(.saturdayQuiz, tier: appState.selectedTier) &&
-        appState.activeContext != .everyoneTalking &&
-        appState.activeContext != .worldChampionship
+        appState.activeContext != .everyoneTalking
     }
 
     /// Persistent "Coming up" card: the country feed always leads with the next
@@ -440,15 +421,6 @@ struct FeedView: View {
                             .padding(.horizontal, Layout.screenPadding)
                             .padding(.vertical, 8)
                             .transition(.move(edge: .top).combined(with: .opacity))
-                    }
-                    // WC hero: mirrors the classic branch — first card in the
-                    // scroll, below the live card, before content items.
-                    if let hero = wcNextMatchItem {
-                        WCNextMatchCard(item: hero) {
-                            navigateToDetail(item: hero, scrollToTalkingPoints: false, isEveryoneContext: false)
-                        }
-                        .padding(.horizontal, Layout.screenPadding)
-                        .padding(.vertical, 8)
                     }
                     if shouldShowComingUp {
                         comingUpFeedCard
@@ -542,28 +514,12 @@ struct FeedView: View {
 
     @ViewBuilder
     private var emptyView: some View {
-        // V2.0: WC country context gets a specific empty state. Evergreen copy
-        // (no hardcoded date — the old "starts June 11" line read as broken once
-        // the tournament was live): there's simply no fresh article this moment,
-        // so point her at his team page where the next match + stakes always
-        // render deterministically.
-        if appState.activeContext == .worldChampionship {
-            // Tournament feed empty state: minimal, mirrors the country copy.
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("NOTHING NEW RIGHT NOW")
-                        .font(.sectionHeader)
-                        .tracking(1)
-                        .foregroundColor(.mutedText)
-                    Text("The World Championship feed warms up on match days. Check back around kickoff for the next preview, every goal, and the full time verdicts.")
-                        .font(.onboardingBody)
-                        .foregroundColor(.textOnDark.opacity(0.8))
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .padding(.horizontal, Layout.screenPadding)
-                .padding(.top, 32)
-            }
-        } else if case .country(let country) = appState.activeContext {
+        // A country context gets its own empty state. Evergreen copy (no
+        // hardcoded date — the old "starts June 11" line read as broken once
+        // the tournament was live): there's simply no fresh article this
+        // moment, so point her at his team page where the next match + stakes
+        // always render deterministically.
+        if case .country(let country) = appState.activeContext {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     if let fixture = countryNextFixture {
@@ -657,7 +613,7 @@ struct FeedView: View {
         // Load data for the new context.
         Task {
             switch context {
-            case .team, .country, .worldChampionship:
+            case .team, .country:
                 // Always reload. `teamItems` still holds the PREVIOUS
                 // entity's stories, so the old `if teamItems.isEmpty` guard
                 // skipped the reload and left the immersive feed showing the
@@ -699,7 +655,6 @@ struct FeedView: View {
             switch appState.activeContext {
             case .country(let c): return c.rawValue
             case .team(let t): return t.rawValue
-            case .worldChampionship: return FeedContext.worldChampionshipEntityId
             case .everyoneTalking:
                 return appState.selectedTeam?.rawValue ?? appState.selectedCountry?.rawValue ?? ""
             }
@@ -725,7 +680,7 @@ struct FeedView: View {
 
     private func refresh() async {
         switch appState.activeContext {
-        case .team, .country, .worldChampionship: await loadTeamFeed()
+        case .team, .country: await loadTeamFeed()
         case .everyoneTalking: await loadEveryoneFeed()
         }
     }
@@ -738,8 +693,6 @@ struct FeedView: View {
         switch appState.activeContext {
         case .country(let c): entityId = c.rawValue
         case .team(let t):    entityId = t.rawValue
-        case .worldChampionship:
-            entityId = FeedContext.worldChampionshipEntityId
         case .everyoneTalking:
             if let team = appState.selectedTeam {
                 entityId = team.rawValue
@@ -795,7 +748,6 @@ struct FeedView: View {
         // club's "things he doesn't know" (or nothing, for a WC-only user
         // with no club). Countries have their own insider rows. (bug 2026-06-01)
         if teamItems.isEmpty,
-           appState.activeContext != .worldChampionship,
            TierGating.isAvailable(.insiderCard, tier: appState.selectedTier) {
             let items = (try? await APIClient.shared.fetchInsiderItems(teamId: teamId, limit: 1)) ?? []
             emptyStateInsider = items.first
@@ -856,10 +808,6 @@ struct FeedView: View {
         case .country(let country):
             guard teamCanLoadMore else { return }
             await loadMoreEntity(teamId: country.rawValue)
-
-        case .worldChampionship:
-            guard teamCanLoadMore else { return }
-            await loadMoreEntity(teamId: FeedContext.worldChampionshipEntityId)
 
         case .everyoneTalking:
             guard everyoneCanLoadMore else { return }

@@ -9,8 +9,8 @@ struct OnboardingFlow: View {
     /// The tournament ended July 2026 and all 48 countries are inactive in
     /// prod (mig 079). Until Sept 2026 step 3 still forced a WC country pick
     /// before the club (audit 2026-09, §4). The club is the primary entity
-    /// again and is mandatory; the country picker survives only in Settings,
-    /// season-gated by WCSeason.isVisible, for the next tournament.
+    /// again and is mandatory. The country picker survives only in Settings,
+    /// behind CountryFollowing.isEnabled, which is off.
     ///
     /// 0.  Welcome
     /// 1.  Her name

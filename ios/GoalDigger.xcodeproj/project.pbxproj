@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		003F6A856B6B334723F84F32 /* MatchLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCDB9E93E3CF813F605541EE /* MatchLiveActivity.swift */; };
-		0A758A8D47CD4DF9A356EB6C /* WCNextMatchCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 912013703FAF48AC8F477692 /* WCNextMatchCard.swift */; };
 		11668C80EB1ED7F740D84481 /* TierGating.swift in Sources */ = {isa = PBXBuildFile; fileRef = 427A2A492E809AB52CDF85A0 /* TierGating.swift */; };
 		14474256E2DD1E7DA90DA178 /* GlossaryText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1969411F418AE27184440E14 /* GlossaryText.swift */; };
 		159D99B3A0BD1457CA4C4F47 /* LiveMatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCA4D1D232DB07DA5CC85E8B /* LiveMatchSnapshot.swift */; };
@@ -92,7 +91,6 @@
 		AA000305 /* Country.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000305 /* Country.swift */; };
 		AA000306 /* CountrySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000306 /* CountrySelectionView.swift */; };
 		AA000307 /* OptionalPLTeamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000307 /* OptionalPLTeamView.swift */; };
-		AA000308 /* WCMigrationSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000308 /* WCMigrationSheetView.swift */; };
 		AA000309 /* InsiderHeadlineRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000309 /* InsiderHeadlineRow.swift */; };
 		AA000310 /* CollapsibleSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000310 /* CollapsibleSection.swift */; };
 		AA000311 /* AffectedTeamsHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000311 /* AffectedTeamsHeader.swift */; };
@@ -168,7 +166,6 @@
 		7239C9DAC195717215AC20F2 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		842AE9AEAF418CB78FA4589A /* glossary.json */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json; path = glossary.json; sourceTree = "<group>"; };
 		87C6A674DCE8CC6E44C5136A /* Competition.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Competition.swift; sourceTree = "<group>"; };
-		912013703FAF48AC8F477692 /* WCNextMatchCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WCNextMatchCard.swift; sourceTree = "<group>"; };
 		922140CFA2F1A4786CEDC255 /* LingoView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LingoView.swift; sourceTree = "<group>"; };
 		9D73223B9708A1BB7B5EA13D /* LiveActivityManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityManager.swift; sourceTree = "<group>"; };
 		AA0C75FEEE6727814C8D4456 /* MyTurnPractiseButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyTurnPractiseButton.swift; sourceTree = "<group>"; };
@@ -236,7 +233,6 @@
 		AB000305 /* Country.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Country.swift; sourceTree = "<group>"; };
 		AB000306 /* CountrySelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountrySelectionView.swift; sourceTree = "<group>"; };
 		AB000307 /* OptionalPLTeamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionalPLTeamView.swift; sourceTree = "<group>"; };
-		AB000308 /* WCMigrationSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WCMigrationSheetView.swift; sourceTree = "<group>"; };
 		AB000309 /* InsiderHeadlineRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InsiderHeadlineRow.swift; sourceTree = "<group>"; };
 		AB000310 /* CollapsibleSection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CollapsibleSection.swift; sourceTree = "<group>"; };
 		AB000311 /* AffectedTeamsHeader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AffectedTeamsHeader.swift; sourceTree = "<group>"; };
@@ -374,7 +370,6 @@
 				AB000311 /* AffectedTeamsHeader.swift */,
 				D5A88D0BF10EC36C829985F7 /* LiveMatchCard.swift */,
 				2CD5B3A073E49AF5B5862F38 /* SaturdayQuizCard.swift */,
-				912013703FAF48AC8F477692 /* WCNextMatchCard.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -403,7 +398,6 @@
 				AB000031 /* HisNameView.swift */,
 				AB000306 /* CountrySelectionView.swift */,
 				AB000307 /* OptionalPLTeamView.swift */,
-				AB000308 /* WCMigrationSheetView.swift */,
 				AB000013 /* NotificationPromptView.swift */,
 				AB000300 /* MeetTeamView.swift */,
 				AB000303 /* MeetManagerView.swift */,
@@ -732,7 +726,6 @@
 				AA000304 /* TeamCrestView.swift in Sources */,
 				AA000306 /* CountrySelectionView.swift in Sources */,
 				AA000307 /* OptionalPLTeamView.swift in Sources */,
-				AA000308 /* WCMigrationSheetView.swift in Sources */,
 				AA000035 /* OnesToWatchView.swift in Sources */,
 				AA000040 /* ProgressDotsView.swift in Sources */,
 				AA000036 /* PlayerCardView.swift in Sources */,
@@ -769,7 +762,6 @@
 				6CA1FD4A864451C12D212143 /* LiveMatchCard.swift in Sources */,
 				7AE5C40C19D72FA48BC51F30 /* SaturdayQuiz.swift in Sources */,
 				8DF6B51D2AE83FB59CD63041 /* SaturdayQuizCard.swift in Sources */,
-				0A758A8D47CD4DF9A356EB6C /* WCNextMatchCard.swift in Sources */,
 				244B4E7A89E82714DCF2F917 /* MatchActivityAttributes.swift in Sources */,
 				25B33D3555E190DC97F79521 /* LiveActivityManager.swift in Sources */,
 				159D99B3A0BD1457CA4C4F47 /* LiveMatchSnapshot.swift in Sources */,

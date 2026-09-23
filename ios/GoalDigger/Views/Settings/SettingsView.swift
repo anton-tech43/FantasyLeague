@@ -46,10 +46,12 @@ struct SettingsView: View {
                         VStack(spacing: Layout.cardSpacing) {
                             yourNameRow
                             hisNameRow
-                            // Gated on the country feature itself, not on
-                            // WCSeason as it used to be. Same visible result
-                            // today, but the two are different questions and
-                            // the tournament gate is on its way out.
+                            // Gated on the country feature itself. It used
+                            // to hang off WCSeason, which conflated "the
+                            // tournament is over" with "countries are not a
+                            // feature" and hid this row — the only way to
+                            // change or remove a followed country — from
+                            // 22 July onwards.
                             if CountryFollowing.isEnabled {
                                 hisCountryRow
                             }
