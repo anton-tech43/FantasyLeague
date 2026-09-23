@@ -4417,7 +4417,9 @@
       "band": "banker",
       "when": [
         "any"
-      ]
+      ],
+      "situation": "If anybody scores, at either end of the pitch.",
+      "cue": "Say it as the net moves, whoever got it. Almost every match hands you this one."
     },
     {
       "id": "first-half-goal",
@@ -4469,7 +4471,9 @@
       "band": "banker",
       "when": [
         "any"
-      ]
+      ],
+      "situation": "If we score, whoever gets it.",
+      "cue": "Say it as it goes in, before he does. It lands because you got there first."
     },
     {
       "id": "they-score",
@@ -4495,7 +4499,9 @@
       "when": [
         "any"
       ],
-      "termId": "striker"
+      "termId": "striker",
+      "situation": "If a striker scores, at either end.",
+      "cue": "Strikers get the bulk of the goals. Say it flat, like the whole thing was expected."
     },
     {
       "id": "derby-they-score",
@@ -4570,7 +4576,9 @@
       "when": [
         "good-run"
       ],
-      "termId": "the-lads"
+      "termId": "the-lads",
+      "situation": "If we score again, the way we have been lately.",
+      "cue": "For a week when we are scoring every game. It reads as calm rather than hopeful."
     },
     {
       "id": "bad-run-they-score",
@@ -4671,7 +4679,9 @@
         "any",
         "good-run"
       ],
-      "termId": "man-of-the-match"
+      "termId": "man-of-the-match",
+      "situation": "If one of our strikers is the one who scores.",
+      "cue": "Narrower than any goal, so it is worth more when it lands. Say it before the replay."
     },
     {
       "id": "their-forward-scores",
@@ -4783,7 +4793,9 @@
       "when": [
         "any"
       ],
-      "termId": "half-time"
+      "termId": "half-time",
+      "situation": "If it is level when the half-time whistle goes.",
+      "cue": "Say it on the way to the kettle, not at the telly. Half of all matches are level here."
     },
     {
       "id": "halftime-ahead",
@@ -4826,7 +4838,9 @@
         "opp-aerial",
         "opp-bad-form"
       ],
-      "termId": "clean-sheet"
+      "termId": "clean-sheet",
+      "situation": "If nobody has put one past us by half-time.",
+      "cue": "Our end has stayed quiet. Say it at the break and it sounds like you rate the back four."
     },
     {
       "id": "halftime-ahead-clean",
@@ -4870,7 +4884,9 @@
       "when": [
         "any"
       ],
-      "termId": "points"
+      "termId": "points",
+      "situation": "If we are in front when the final whistle goes.",
+      "cue": "Say it once, at the whistle. Three points is the only thing he will remember by Monday."
     },
     {
       "id": "fulltime-draw",
@@ -4981,7 +4997,9 @@
       "when": [
         "any"
       ],
-      "termId": "penalty"
+      "termId": "penalty",
+      "situation": "If a penalty is given and it is scored.",
+      "cue": "About one match in three has one. Say it as he places the ball, before it is taken."
     },
     {
       "id": "penalty-us",
@@ -5056,7 +5074,9 @@
         "any",
         "bad-run"
       ],
-      "termId": "own-goal"
+      "termId": "own-goal",
+      "situation": "If one of ours puts it into his own net.",
+      "cue": "Say it while he is still working out whose it was. Nobody ever calls this one."
     },
     {
       "id": "keeper-scores",
@@ -5084,7 +5104,9 @@
         "any",
         "run-in"
       ],
-      "termId": "fergie-time"
+      "termId": "fergie-time",
+      "situation": "If we score in the last couple of minutes.",
+      "cue": "Rare enough that he remembers you called it. Say it standing up, because you will be."
     },
     {
       "id": "goal-added-time",
@@ -5143,7 +5165,9 @@
       "band": "longshot",
       "when": [
         "any"
-      ]
+      ],
+      "situation": "If a goal goes in inside the first ten minutes.",
+      "cue": "Say it before the drinks are poured. Half the fun is that nobody has settled yet."
     },
     {
       "id": "they-score-first-ten",

@@ -61,6 +61,45 @@ a set-piece side the offer can reach for set-piece lines.
 `termId` is optional and links the call back to a Lingo term she has met, which is the whole
 point — the words she learned are the words she gets to use.
 
+### `situation` and `cue` (2026-09-23)
+
+Anton looked at the card and could not tell **when** he would get the line or **why** he would
+want it. Two optional authored strings answer those, in that order:
+
+| field | job | cap | warn |
+|---|---|---|---|
+| `situation` | what has to happen, in living-room English, one line above the quote | 72 | 54 |
+| `cue` | the beat she says it on, **and the bit of why it lands** | 110 | 88 |
+
+`situation` falls back to `LingoCalls.moment(trigger:)` when absent, so all 59 have a when from
+day one; `cue` simply draws nothing. Twelve are hand-written — one weekend's worth of offer,
+across all three bands — and the other 47 are on the fallback.
+
+A `cue` that only restates its situation is worth nothing, and that is the failure this field
+walks into: "when they score" answers the question the line above it already answered.
+`validate_calls.py` refuses it (normalised equality plus a content-word subset test), but the rule
+is a writing rule. *"As it hits the net, before he's said a word. Sounds like you saw it coming
+rather than like you're gloating"* is doing the job.
+
+Three machine gates ride on `situation`, and they exist because it is the first prose in this file
+that is **about** the trigger rather than beside it:
+
+1. **The unresolvable-vocabulary banlist**, the ten casualties below turned into words: header,
+   corner, cross, free kick, red card, booking, sub, VAR, offside, brace or hat-trick, save or
+   howler, possession, nil-nil, margin. A line that promises her a corner now has to say so.
+2. **Agreement with the trigger**, one row per facet with a required and a forbidden half. The
+   forbidden half is the important one: "their striker scores from the spot" on a trigger with no
+   `penalty` key would fire on every open-play goal for the rest of the season.
+3. **The minute window.** Each allowed time phrase claims a window; it must sit inside the
+   trigger's, a trigger that narrows must say so, and a phrase on a trigger with no minute key is
+   refused. The phrase vocabulary is `LingoCalls.window(from:to:)`'s, so the written and the
+   derived say the same thing about the same trigger.
+
+Note one over-reach kept on purpose: full-time `state: draw` + `cleanSheet` does prove nil-nil,
+but the banlist refuses the word anyway, because casualty 5 below makes it a lie everywhere else.
+Write it as a draw with nothing at our end, or carve the exception when that card gets a
+situation.
+
 ## Contract 2: device to server
 
 Writes go through a SECURITY DEFINER RPC, never a table upsert — anon has no access to
