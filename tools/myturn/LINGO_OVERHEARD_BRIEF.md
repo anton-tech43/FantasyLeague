@@ -21,12 +21,13 @@ sit in a textbook, rewrite it.
 
 ```python
 "offside": dict(
-    overheard="Flag's up. He was offside by a mile, look at the replay.",
+    overheard="That's never offside. I don't care what the replay says.",
     speaker="him",
     gist="He was beyond the final defender for the pass",
-    decoys=["He'd stepped off the side of the pitch", "He handled the ball before he shot"],
+    decoy="He got in the keeper's way at the near post",        # the one that ships
+    spare="The ball had already gone out for a goal kick",      # written, reviewed, never shipped
     when=["any"],
-    moment="anytime",
+    moment="common",
     # aliases=["see it out"]   # optional, max 3, only when the natural phrasing is not the term text
     # player=dict(...)         # optional, see "Naming a real player" below
 ),
@@ -60,12 +61,30 @@ full stop. It must not reuse any word of the term (the term is bolded in the bub
 match would give it away). Write "final", not "last"; the validator bans *the last, only,
 most, still, never, record, latest* in options because they go stale.
 
-**`decoys`** (exactly 2, each 12 to 60 chars and within 20 characters of the gist's
-length). Wrong meanings a non-fan would genuinely consider. **One is the literal misreading**
-("a match worth six points", "the team coach blocking the exit"). **The other is a real
-football idea that is not this one** ("added time", "a screamer"). Nothing absurd, so a
-wrong tap still teaches something. Same formatting as the gist. Not the gist of a synonym
-listed in the term's `seeAlso`. If both decoys start with the same word, the gist must too.
+**`decoy`** and **`spare`** (both 12 to 60 chars). Write two wrong meanings a non-fan would
+genuinely consider. **One is the literal misreading** ("a match worth six points", "the team
+coach blocking the exit"). **The other is a real football idea that is not this one** ("added
+time", "a screamer"). Nothing absurd, so a wrong tap still teaches something. Same formatting
+as the gist. Neither may be the gist of a synonym listed in the term's `seeAlso`.
+
+Then choose, by hand, which of the two goes in `decoy`: a round shows **two** options and only
+`decoy` reaches the phone. Keep the one a reasonable non-fan, *having read the line*, would
+genuinely consider. The other stays as `spare`, held to the same rules, so a round can go back
+to three options without a writing pass — `build_lingo.py` fails on a term that lost its spare.
+Never choose by length.
+
+With one wrong option there is no odd one out, so anything that separates the two *shapes*
+answers the card:
+
+- **`decoy` must sit within 10 characters of the gist, or a quarter of its length, whichever is
+  larger.** 23-character and 52-character gists cannot share one absolute band.
+- **Either both options open with a/an/the, or neither does.** An article against a number or a
+  gerund is answerable at word one, and it was right 76% of the time before this rule existed.
+- **Commas are the one to watch.** A gist is often a two-part truth ("Three for a win, one for a
+  draw") and a decoy a flat assertion, which put the only comma in the gist on 90.6% of the cards
+  where they differed. Either give the decoy the same two-part shape or write the gist as one
+  clause. Across the set the gist may carry the extra comma on no more than 60% of the cards where
+  the two differ, and the same holds for length, word count and longest word.
 
 **`when`** (1 to 5 tags). When the word gets dealt. Start from the tag map below; you may
 add a tag if the word truly belongs there, never remove one. `any` marks a word heard at any
@@ -109,44 +128,52 @@ clean sheet is `common` and an own goal is not.
 
 ```python
 "offside": dict(
-    overheard="Flag's up. He was offside by a mile, look at the replay.", speaker="him",
+    overheard="That's never offside. I don't care what the replay says.", speaker="him",
     gist="He was beyond the final defender for the pass",
-    decoys=["He'd stepped off the side of the pitch", "He handled the ball before he shot"],
+    decoy="He got in the keeper's way at the near post",
+    spare="The ball had already gone out for a goal kick",
     when=["any"]),
 "var": dict(
-    overheard="VAR is checking for a possible offside. Bear with us.", speaker="telly",
+    overheard="VAR has been the story of this season, for better or worse.", speaker="telly",
     gist="The video referee is looking at the replay",
-    decoys=["The ref is checking his watch for added time", "The goal has already been ruled out"],
+    decoy="A panel that reviews decisions after the match",
+    spare="The screen in the ground showing the decision",
     when=["any"]),
 "squeaky-bum-time": dict(
-    overheard="Ten minutes left, we're 1-0 up. Squeaky bum time.", speaker="him",
-    gist="Nervous final minutes protecting a narrow lead",
-    decoys=["The bit where players start time-wasting", "Players sitting down because they're exhausted"],
-    when=["run-in", "title", "relegation", "derby", "after-win"]),
+    overheard="Squeaky bum time now. Don't talk to me.", speaker="him",
+    gist="The jitters as the clock winds down",
+    decoy="The bit where players start time-wasting",
+    spare="The nervous wait while a goal is checked",
+    when=["derby", "title", "relegation", "run-in", "after-win"]),
 "park-the-bus": dict(
-    overheard="They've parked the bus since the goal. Ten men behind the ball.", speaker="pundit",
+    overheard="They've parked the bus since that goal. Forty minutes of this left.", speaker="pundit",
     gist="Everyone back defending, nobody trying to attack",
-    decoys=["The team coach is blocking the stadium exit", "Substituting all your attackers at once"],
-    when=["any", "after-draw", "after-clean-sheet"]),
+    decoy="Wasting time at every throw-in and free kick",
+    spare="Bringing defenders on to hang on to a lead",
+    when=["any", "after-draw", "after-clean-sheet", "opp-clean-sheets", "favourites"]),
 "howler": dict(
-    overheard="Absolute howler from the keeper. Straight through his hands.", speaker="chat",
+    overheard="Absolute howler from the keeper. Have you seen it?", speaker="chat",
     gist="A glaring, embarrassing mistake",
-    decoys=["A save so good the crowd roared", "A shot hit so hard it screamed in"],
-    when=["any", "after-loss", "after-heavy-loss"]),
+    decoy="A save so good the crowd roared",
+    spare="A furious shout at his own defenders",
+    when=["any", "after-loss", "after-heavy-loss", "h2h-they-win"]),
 "six-pointer": dict(
-    overheard="Both of us down there. This is a proper six-pointer on Saturday.", speaker="him",
+    overheard="Six-pointer on Saturday. Don't be planning anything.", speaker="him",
     gist="A match between two sides chasing the same place",
-    decoys=["A match where a win is worth six points", "A game decided by six goals or more"],
-    when=["title", "relegation", "run-in"]),
+    decoy="A match where a win is worth six points",
+    spare="A game worth double because it is a derby",
+    when=["title", "relegation", "run-in", "h2h-we-win"]),
 "we-go-again": dict(
-    overheard="Rubbish today. Nothing to say. We go again Tuesday.", speaker="chat",
-    gist="Bad result, forget it, on to the next match",
-    decoys=["The match is being replayed after a draw", "Fans are heading off to another away trip"],
-    when=["after-loss", "after-heavy-loss", "bad-run", "after-draw"]),
+    overheard="We go again Tuesday. Kick-off's at eight, apparently.", speaker="chat",
+    gist="Bad result forgotten and on to the next game",
+    decoy="Back for a replay, the first one was drawn",
+    spare="Fans are heading off to another away trip",
+    when=["bad-run", "after-loss", "after-draw", "after-heavy-loss", "opp-bad-form"]),
 "deadline-day": dict(
-    overheard="It's deadline day and the window shuts at eleven tonight. Stay with us.", speaker="telly",
-    gist="The final day clubs can buy or sell players",
-    decoys=["The final day to buy tickets for the season", "Cut-off for naming the squad for a cup"],
+    overheard="Deadline day, and we're outside the ground with nothing to tell you.", speaker="telly",
+    gist="The final day for doing deals",
+    decoy="The final day to buy season tickets",
+    spare="Cut-off for naming the squad for a cup",
     when=["window"]),
 ```
 
@@ -296,7 +323,8 @@ unusable, which is another reason the line must read fine when no name arrives.
 "target-man": dict(
     overheard="You need a target man in this league. They've not got one.",
     speaker="pundit", gist="A big forward the ball gets launched at",
-    decoys=["A defender told to follow one player about", "A forward who chases everything down"],
+    decoy="A defender told to follow one player about",
+    spare="A forward who chases everything down",
     when=["any"], moment="anytime",
     player=dict(
         slot="theirs.forward",
@@ -306,19 +334,19 @@ unusable, which is another reason the line must read fine when no name arrives.
 ),
 ```
 
-`slot`, `overheard`, `sayIt` and nothing else. `speaker`, `gist`, `decoys`, `when`, `moment`
+`slot`, `overheard`, `sayIt` and nothing else. `speaker`, `gist`, `decoy`, `spare`, `when`, `moment`
 and `basic` are **inherited and never overridable**, so the variant must sound like the same
 person saying the same kind of thing. At most two variants per term, and if there are two their
 sides must differ (pass a list). A variant on a `basic` term is an error, because those are
 never dealt.
 
-### Slots go in `overheard` and `sayIt` only, never in `gist` or `decoys`
+### Slots go in `overheard` and `sayIt` only, never in `gist`, `decoy` or `spare`
 
 Three reasons, in order of severity. A decoy is a **wrong** meaning, so a templated decoy asserts
 something false about a named real person. A single option carrying a proper noun when the other
-two do not is a one-tap giveaway that no existing check can see. And the options are
+does not is a one-tap giveaway that no existing check can see. And the options are
 length-banded and uniqueness-checked at build time, which cannot be done on text the validator
-never sees. The upshot is that the three options stay answerable by someone who has never heard
+never sees. The upshot is that the options stay answerable by someone who has never heard
 of the player.
 
 ### Length
@@ -367,13 +395,22 @@ In practice: keep the template under about 75 characters.
 
 A named line is unusually prone to answering itself, because a name invites the writer to explain
 what the man does: "he's their target man, everything comes through him" is the gist in his
-words. Substitute a plausible name, blank the phrase, and check the three options are still
+words. Substitute a plausible name, blank the phrase, and check the options are still
 separable. Four lines in the first batch failed this and were rewritten.
+
+## The options-only test, before you call a card done
+
+The blind test hides the term and keeps the line. The options-only test hides the **line** and
+keeps the two options, and it is the one a two-option round needs: read `gist` and `decoy` with
+no context and ask which is the football meaning. If the answer is obvious, the decoy is dead
+and the card is a coin flip dressed up — rewrite it, do not re-score it. Across a batch the gist
+should win 40-60% of the time. `CONTENT_PRINCIPLES.md` §8b is the long version.
 
 ## Run before you return
 
 ```bash
 python3 tools/myturn/build_lingo.py && python3 tools/myturn/validate_content.py --lingo-category <your category>
+python3 tools/myturn/validate_overheard.py   # the rules' own self-check
 ```
 
 Zero errors for your category. Every error names the term id and the rule; fix it in your
