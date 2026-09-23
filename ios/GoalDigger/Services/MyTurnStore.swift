@@ -86,10 +86,11 @@ final class MyTurnStore {
         var finished: Bool = false
         /// Right answers this session, for the end screen.
         var knew: Int = 0
-        /// Which words she got right, for the line the end screen offers her.
-        /// Kept alongside `knew` rather than replacing it: a round paused under
-        /// an older build has the count and not the ids, and a resumed round
-        /// must still show the score she actually had.
+        /// Which words she got right this round. Nothing reads it since the
+        /// end card stopped offering her a line to use (2026-09-23); it is the
+        /// one record of which seven she got and which of them landed, which is
+        /// cheap to keep writing and impossible to recover afterwards. Delete
+        /// it if nothing has wanted it by the next content pass.
         var knewIds: [String] = []
         /// Right in a row, reset by any miss. Drives the hype card at four and
         /// eight; not a score, not persisted as one.
@@ -177,52 +178,6 @@ final class MyTurnStore {
         }
     }
 
-    /// One line she said she would use, and whether she did.
-    ///
-    /// The whole of the commitment loop's state. One at a time, keyed by
-    /// fixture, and it retires itself: three sightings, or seven days, or the
-    /// moment she answers, whichever comes first. Nothing counts it, nothing
-    /// adds it up, and ignoring it leaves no debt — see the header rule.
-    struct SaidLine: Codable, Equatable {
-        /// `MatchContext.fixtureKey`, stable across kick-off time nudges.
-        let fixtureKey: String
-        let termId: String
-        /// The sayIt text as it was shown, so later copy cannot drift under
-        /// the question we are about to ask her about it.
-        let line: String
-        /// "Saturday" / "the Leeds game", for the settle row's wording.
-        let occasion: String
-        let committedAt: Date
-        /// Settle-row impressions. Dropped after three.
-        var shownCount: Int = 0
-        var settledAt: Date? = nil
-        var used: Bool? = nil
-
-        init(fixtureKey: String, termId: String, line: String, occasion: String, committedAt: Date) {
-            self.fixtureKey = fixtureKey
-            self.termId = termId
-            self.line = line
-            self.occasion = occasion
-            self.committedAt = committedAt
-        }
-
-        /// Tolerant for the same reason every other struct in this blob is: it
-        /// sits in the one JSON that holds every quiz score and starred line,
-        /// so a field added to it later must decode as its default rather than
-        /// throw and take all of that down with it.
-        init(from decoder: Decoder) throws {
-            let c = try decoder.container(keyedBy: CodingKeys.self)
-            fixtureKey = try c.decode(String.self, forKey: .fixtureKey)
-            termId = try c.decode(String.self, forKey: .termId)
-            line = try c.decode(String.self, forKey: .line)
-            occasion = try c.decode(String.self, forKey: .occasion)
-            committedAt = try c.decode(Date.self, forKey: .committedAt)
-            shownCount = try c.decodeIfPresent(Int.self, forKey: .shownCount) ?? 0
-            settledAt = try c.decodeIfPresent(Date.self, forKey: .settledAt)
-            used = try c.decodeIfPresent(Bool.self, forKey: .used)
-        }
-    }
-
     /// The slip she filled in before kick-off: which of the three offered lines
     /// she took, and the fixture they are about.
     ///
@@ -297,10 +252,6 @@ final class MyTurnStore {
         /// synthesised decoder throws on a missing non-optional key, and this
         /// blob holds every score she has.
         var hypeSeen: [String: [Int]]? = nil
-        /// The one line she said she would use. Optional for the same reason
-        /// `hypeSeen` is: the synthesised decoder throws on a missing
-        /// non-optional key, and every blob written before today lacks this one.
-        var saidLine: SaidLine? = nil
         /// The slip she filled in before kick-off (2026-09-23). Optional for
         /// the same reason as the two above.
         var matchCalls: MatchCalls? = nil
@@ -546,69 +497,6 @@ final class MyTurnStore {
     /// from the same context, but reopening the tab tomorrow should not.
     var lingoDealNonce: Int = 0
 
-    // MARK: The line she said she would use
-    //
-    // The only thing a round leaves behind. One line, one fixture, one
-    // question about it afterwards, and then it is gone whatever she does —
-    // including nothing. Every rule that retires it lives here so the views
-    // only ask "is there a row" and "she tapped this one".
-
-    /// Three sightings of the settle row is enough of an ask. `fileprivate`
-    /// only so the self-check at the bottom of this file counts to the same
-    /// three the rule does.
-    fileprivate static let lineImpressions = 3
-    /// After a week the question is about a match she has stopped thinking
-    /// about, so it is dropped without ever being mentioned.
-    private static let lineLifetime: TimeInterval = 7 * 24 * 3600
-
-    /// Replaces whatever was there. One at a time, keyed by fixture: a second
-    /// round this week means the newer line is the one in her hand, and an
-    /// older unsettled one is not worth two rows or a queue.
-    func commitLine(_ line: SaidLine) { state.saidLine = line }
-
-    /// The line waiting to be settled, or nil when there is nothing to ask.
-    ///
-    /// `currentFixture` is the fixture the app is looking at now: a line can
-    /// only be settled once its own fixture is no longer the current one,
-    /// which is the only way the store can tell the game has been played. It
-    /// holds no calendar and no team page, so this one fact comes in.
-    func pendingLine(currentFixture: String) -> SaidLine? {
-        guard let line = state.saidLine, line.settledAt == nil,
-              line.fixtureKey != currentFixture,
-              line.shownCount < Self.lineImpressions,
-              Date().timeIntervalSince(line.committedAt) <= Self.lineLifetime else { return nil }
-        return line
-    }
-
-    /// The unsettled line committed for this fixture, so the end screen can
-    /// show its confirmation instead of offering again.
-    func committedLine(fixture: String) -> SaidLine? {
-        guard let line = state.saidLine, line.settledAt == nil,
-              line.fixtureKey == fixture else { return nil }
-        return line
-    }
-
-    /// One settle-row impression. The third is the last.
-    func noteLineShown() {
-        guard var line = state.saidLine, line.settledAt == nil else { return }
-        line.shownCount += 1
-        state.saidLine = line
-    }
-
-    /// "I did" retires the word; "Not yet" puts it back in the deck. Either
-    /// way the row is over, and nothing is counted.
-    func settleLine(used: Bool) {
-        guard var line = state.saidLine, line.settledAt == nil else { return }
-        line.settledAt = Date()
-        line.used = used
-        state.saidLine = line
-        // The commitment only ever comes out of a Lingo round, so the bucket
-        // it moves is that deck's.
-        var deck = state.drillBuckets[LingoWeekendDeck.deckId] ?? [:]
-        deck[line.termId] = used ? .known : .learning
-        state.drillBuckets[LingoWeekendDeck.deckId] = deck
-    }
-
     // MARK: The slip
     //
     // Called it: up to three lines committed before kick-off, and after the
@@ -827,72 +715,4 @@ func myTurnSlipSelfCheck() {
     assert(stale.matchCalls(for: fixture) == nil, "a slip older than a week is still on the screen")
 }
 
-/// The commitment loop's rules, against a store that persists nothing.
-///
-/// Every one of these is a way the loop turns into the thing the module's
-/// header rule forbids: a row that never goes away, a question about a match
-/// from last month, a line she settled coming back, or two lines queued up
-/// waiting for her. Fired once per launch alongside `lingoDeckSelfCheck`.
-@MainActor
-func myTurnSaidLineSelfCheck() {
-    let store = MyTurnStore(defaults: nil)
-    let fixture = "b|Tottenham|2026-10-17"
-    func line(_ id: String = "squeaky-bum-time", fixture: String = fixture,
-              committedAt: Date = Date()) -> MyTurnStore.SaidLine {
-        MyTurnStore.SaidLine(fixtureKey: fixture, termId: id, line: "Right, squeaky bum time.",
-                             occasion: "Saturday", committedAt: committedAt)
-    }
-
-    // It has to survive the blob it is written into.
-    guard let data = try? JSONEncoder().encode(line()),
-          let read = try? JSONDecoder().decode(MyTurnStore.SaidLine.self, from: data) else {
-        assertionFailure("SaidLine does not survive its own encoder, so a committed line is lost on relaunch")
-        return
-    }
-    assert(read == line(committedAt: read.committedAt) && read.shownCount == 0
-           && read.settledAt == nil && read.used == nil,
-           "SaidLine came back from its encoder changed")
-
-    // Before the game: nothing to ask, because she has not had the chance yet.
-    store.commitLine(line())
-    assert(store.pendingLine(currentFixture: fixture) == nil,
-           "the settle row shows before the game has been played")
-    assert(store.committedLine(fixture: fixture)?.termId == "squeaky-bum-time",
-           "the end screen cannot see the line she just committed")
-
-    // After it: one row, and three sightings is the whole of the asking.
-    let next = "b|Fulham|2026-10-24"
-    assert(store.pendingLine(currentFixture: next) != nil, "no settle row after the game was played")
-    for _ in 0..<MyTurnStore.lineImpressions { store.noteLineShown() }
-    assert(store.pendingLine(currentFixture: next) == nil,
-           "the settle row is still asking after three openings")
-
-    // A week old is a question about a match she has forgotten.
-    let stale = MyTurnStore(defaults: nil)
-    stale.commitLine(line(committedAt: Date().addingTimeInterval(-8 * 24 * 3600)))
-    assert(stale.pendingLine(currentFixture: next) == nil, "a line older than a week still asks")
-
-    // "I did" retires the word, "Not yet" puts it back in the deck, and either
-    // way the row is over.
-    let did = MyTurnStore(defaults: nil)
-    did.commitLine(line())
-    did.settleLine(used: true)
-    assert(did.bucket(deckId: LingoWeekendDeck.deckId, cardId: "squeaky-bum-time") == .known,
-           "\"I did\" did not retire the word")
-    assert(did.pendingLine(currentFixture: next) == nil, "a settled line is still asking")
-    assert(did.committedLine(fixture: fixture) == nil, "a settled line still reads as committed")
-
-    let notYet = MyTurnStore(defaults: nil)
-    notYet.commitLine(line())
-    notYet.settleLine(used: false)
-    assert(notYet.bucket(deckId: LingoWeekendDeck.deckId, cardId: "squeaky-bum-time") == .learning,
-           "\"Not yet\" did not put the word back in the deck")
-
-    // One at a time: a second round replaces the line, it does not queue up.
-    let twice = MyTurnStore(defaults: nil)
-    twice.commitLine(line())
-    twice.commitLine(line("clean-sheet", fixture: next))
-    assert(twice.pendingLine(currentFixture: fixture)?.termId == "clean-sheet",
-           "committing twice left the older line waiting as well")
-}
 #endif

@@ -217,8 +217,7 @@ enum PlayerSlots {
     }
 
     /// Who she is about to watch them play, or nil. Only `.before`: a name for
-    /// a game already played is a line with nowhere to go, which is the same
-    /// reason `LingoWeekendDeck.offer` refuses one.
+    /// a game already played is a line with nowhere to go.
     static func opponent(of context: MatchContext?) -> String? {
         guard let context, case .before(let opponent, _) = context.phase,
               !opponent.trimmingCharacters(in: .whitespaces).isEmpty else { return nil }

@@ -109,9 +109,10 @@ moment that arrives in about one league match in eight, and then asks about
 something that was never possible. `anytime` waits for nothing on the pitch,
 `common` arrives in most matches, `rare` needs something that usually does not;
 the border sits at about one match in three, which is why a clean sheet is
-`common` and an own goal is `rare`. `LingoWeekendDeck.offer` draws only from
-`anytime` and `common`, and from nothing it does not recognise, so `rare` words
-are still dealt and still learnt, just never committed to.
+`common` and an own goal is `rare`. Nothing reads the band at runtime since
+Called it replaced that loop, and the field is kept anyway: it is a fact about
+the line that is cheap to write while writing it and expensive to reconstruct
+later.
 
 The deck itself ("This weekend's words") is built on the phone from the cached
 team page: the next fixture, the last result, the table, the rival. Static

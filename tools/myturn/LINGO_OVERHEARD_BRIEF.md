@@ -117,12 +117,12 @@ sending off, a shootout, a hat-trick, a cup round that comes once a year). **Jud
 `sayIt` line, not the term.** "Penalty! Who takes them for us?" is `rare` even though
 penalties are an everyday word, because the line needs one to be given.
 
-It exists because the round ends by handing her one line to use at the next match, and asks
-once afterwards whether she said it. A line whose moment never came makes that a question
-about something that was never possible. The app offers only `anytime` and `common` lines
-(`LingoWeekendDeck.offer`); `rare` words are still dealt, still learnt, just never committed
-to. Rule of thumb for the border: below about one match in three is `rare`, which is why a
-clean sheet is `common` and an own goal is not.
+It exists because the round used to end by handing her one line to use at the next match and
+asking once afterwards whether she said it. Called it replaced that loop and nothing reads
+`moment` at runtime any more, but the field stays in the schema and every word still carries
+one: it is the cheapest honest record of how often a line's moment actually arrives, and the
+next thing that offers her a line will want it. Rule of thumb for the border: below about one
+match in three is `rare`, which is why a clean sheet is `common` and an own goal is not.
 
 ## Golden examples
 

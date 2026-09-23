@@ -47,8 +47,6 @@ struct LingoView: View {
     /// something it actually depends on moves — never on a keystroke in the
     /// search field, which is a deck build over 158 words per character.
     @State private var weekend: Weekend?
-    /// Whether this launch has already counted the settle row as shown.
-    @State private var notedLine = false
     #if DEBUG
     /// Set by `-gdLingoContext`, so a screenshot can pin a derby weekend.
     @State private var debugContext: MatchContext?
@@ -346,7 +344,6 @@ struct LingoView: View {
     private var landing: some View {
         callsCard
         hero
-        settleRow
         searchField
         wordList
     }
@@ -398,80 +395,6 @@ struct LingoView: View {
             store.noteMatchCallsUploaded()
         } catch {
             // Deliberately quiet. She has her slip; the next open tries again.
-        }
-    }
-
-    /// The other half of the commitment loop: the game has been played, so ask
-    /// once whether she said the line.
-    ///
-    /// Two buttons and no third, no history, no score, and no nagging — the
-    /// store retires the row after three sightings or seven days whether or
-    /// not she ever answers. "Not yet" is a word going back in the deck, not a
-    /// miss: the copy has to read as neutral because it is.
-    @ViewBuilder
-    private var settleRow: some View {
-        if let line = store.pendingLine(currentFixture: context.fixtureKey) {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(line.line)
-                    .font(.jakarta(16, weight: .semiBold))
-                    .foregroundColor(.warmWhite)
-                    .lineSpacing(2)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                Text("Did you say it?")
-                    .font(.jakarta(15, weight: .regular))
-                    .foregroundColor(.warmWhite.opacity(0.75))
-                    .fixedSize(horizontal: false, vertical: true)
-
-                HStack(spacing: 10) {
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) { store.settleLine(used: true) }
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                    } label: {
-                        Text("I did")
-                            .font(.jakarta(16, weight: .semiBold))
-                            .foregroundColor(.warmWhite)
-                            .frame(maxWidth: .infinity)
-                            .frame(minHeight: 44)
-                            .background(Color.hotRose)
-                            .cornerRadius(Layout.buttonCornerRadius)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("I did say it")
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) { store.settleLine(used: false) }
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    } label: {
-                        Text("Not yet")
-                            .font(.jakarta(16, weight: .semiBold))
-                            .foregroundColor(.hotRose)
-                            .frame(maxWidth: .infinity)
-                            .frame(minHeight: 44)
-                            .overlay(RoundedRectangle(cornerRadius: Layout.buttonCornerRadius)
-                                .stroke(Color.hotRose, lineWidth: 1))
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Not yet. The word goes back in the deck.")
-                }
-            }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.warmWhite.opacity(0.06))
-            .overlay(RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
-                .stroke(Color.hotRose.opacity(0.35), lineWidth: 1))
-            .cornerRadius(Layout.cardCornerRadius)
-            .transition(.opacity)
-            // Counted once per launch, and only while Lingo is the module on
-            // screen: all three module views stay mounted, so an `onAppear`
-            // here would spend her three sightings on three launches she
-            // opened the quiz in and never mention the line at all. `task(id:)`
-            // rather than `onAppear` so switching to Lingo later still counts.
-            .task(id: store.lastModule) {
-                guard !notedLine, store.lastModule == .lingo else { return }
-                notedLine = true
-                store.noteLineShown()
-            }
         }
     }
 
@@ -770,13 +693,6 @@ struct LingoView: View {
     ///   `-gdLingoFinish N`    deals, then plays the whole round with the
     ///                         first N right and the rest wrong, for the end
     ///                         card, its hype band and the line it offers.
-    ///   `-gdLingoCommit`      taps "I'll use it" on that offer, for the
-    ///                         saved state. Needs a Before context and at
-    ///                         least one right answer, so pair it with
-    ///                         `-gdLingoFinish`.
-    ///   `-gdLingoPending`     plants a committed line for last week's
-    ///                         fixture, so the landing shows the settle row
-    ///                         without waiting a week for a real one.
     ///   `-gdLingoCalls`      pins three fixture lines on the Called it slip,
     ///                         for a shot that does not move when the 59
     ///                         published calls do; the bands, the tags, the
@@ -835,7 +751,6 @@ struct LingoView: View {
         // Cheap, and this is the one screen that owns the deck: a wrong
         // `sameClub` mislabels every derby weekend silently.
         lingoDeckSelfCheck(bundled: content)
-        myTurnSaidLineSelfCheck()
         myTurnSlipSelfCheck()
         // The Swift half of the Called it trigger pair, against the same
         // vectors the Deno resolver's test reads, and the moment rules against
@@ -876,13 +791,6 @@ struct LingoView: View {
         }
         if let n = intValue("-gdLingoAnswer") { debugAnswer(n) }
         if let target = intValue("-gdLingoFinish") { debugFinish(right: target, context: current) }
-        if args.contains("-gdLingoCommit"), let session = store.drillSession,
-           let offer = LingoWeekendDeck.offer(terms: roundTerms, knewIds: session.knewIds,
-                                              context: current, now: Date(),
-                                              personalise: appState.personalise) {
-            store.commitLine(offer)
-        }
-        if args.contains("-gdLingoPending") { debugPending(current) }
         if args.contains(LingoCalls.debugPickArgument) { debugPickCalls(current) }
         if args.contains("-gdLingoCallsPass") { debugPassCalls(current) }
     }
@@ -976,22 +884,6 @@ struct LingoView: View {
     private func debugPassCalls(_ context: MatchContext) {
         store.commitMatchCalls(fixtureId: context.fixtureId ?? 900001,
                                fixtureKey: context.fixtureKey, pickedIds: [])
-        if store.drillSession?.finished == true { store.endDrill() }
-        showingLanding = true
-    }
-
-    /// A line committed at last week's fixture, which is what the settle row
-    /// is: the same context with a fixture key that is no longer the current
-    /// one. The word is whichever this weekend's deck would deal first, so the
-    /// row shows a real sayIt line and "I did" retires a real word.
-    private func debugPending(_ context: MatchContext) {
-        guard let id = dealt(context).ids.first,
-              let line = LingoWeekendDeck.offer(terms: roundTerms, knewIds: [id], context: context,
-                                                now: Date(), personalise: appState.personalise)
-        else { return }
-        store.commitLine(MyTurnStore.SaidLine(
-            fixtureKey: line.fixtureKey + "|last-week", termId: line.termId, line: line.line,
-            occasion: line.occasion, committedAt: Date().addingTimeInterval(-3 * 24 * 3600)))
         if store.drillSession?.finished == true { store.endDrill() }
         showingLanding = true
     }
