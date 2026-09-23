@@ -115,6 +115,8 @@ struct SayThisView: View {
             if practise == nil { practise = SayThisPractiseSession(situations: content.situations) }
             showingPractise = true
         }
+        .padding(.top, 8)
+        .padding(.bottom, 20)
 
         // Your lines — the starred ones, one tap from the top of the tab.
         MyTurnSectionLabel(text: "Your lines")

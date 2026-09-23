@@ -120,6 +120,8 @@ struct QuizView: View {
                 subtitle: "\(packTitle(pack)) · question \(round.index + 1) of \(round.questionIds.count)",
                 systemImage: "arrow.right"
             ) { paused = false }
+            .padding(.top, 8)
+            .padding(.bottom, 20)
         } else if let first = defaultPack {
             MyTurnPractiseButton(
                 title: first.id == LiveSquadPack.packId ? "Learn his squad" : "Start a round",
@@ -130,6 +132,8 @@ struct QuizView: View {
                 paused = false
                 store.startRound(pack: first)
             }
+            .padding(.top, 8)
+            .padding(.bottom, 20)
         }
     }
 

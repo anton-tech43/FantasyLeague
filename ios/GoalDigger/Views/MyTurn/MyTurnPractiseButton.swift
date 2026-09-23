@@ -53,8 +53,11 @@ struct MyTurnPractiseButton: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .padding(.top, 8)
-        .padding(.bottom, 20)
+        // The room around it belongs to the screen, not to the button. Twenty
+        // eight points of padding OUTSIDE the `Button` was measured frame that
+        // was never tappable, and a neighbouring card drawn into it is
+        // hit-tested over a hero that looks perfectly fine in a screenshot.
+        // Every call site pads itself.
         .accessibilityLabel("\(title). \(subtitle)")
         .accessibilityAddTraits(.isButton)
     }

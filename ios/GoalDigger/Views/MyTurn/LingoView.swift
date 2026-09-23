@@ -56,7 +56,13 @@ struct LingoView: View {
     @State private var appliedArguments = false
     /// `-gdLingoHeroTap` presses the hero once, not on every rebuild of it.
     @State private var pressedHero = false
+    /// `-gdLingoFrames`: where the two cards actually ended up.
+    @State private var frames: [String: CGRect] = [:]
     #endif
+
+    /// The scroll view's own coordinate space, so a measured frame is a
+    /// position in the column rather than on the screen.
+    static let frameSpace = "lingo"
 
     /// The hero's two facts: what weekend it is, and which words it would deal.
     private struct Weekend {
@@ -190,11 +196,23 @@ struct LingoView: View {
     /// described in its subtitle; without it the deal is computed fresh.
     private func deal(_ context: MatchContext?, ids: [String]? = nil) {
         let queue = ids ?? dealt(context).ids
-        // Nothing to deal keeps whatever round she has rather than silently
-        // doing nothing to it.
-        guard !queue.isEmpty else { return }
+        // A visible, tappable hero that answers a tap with nothing is exactly
+        // what the hero bug looked like from the outside, and a silent return
+        // is how it stayed invisible. The hero is hidden when the deck cannot
+        // fill a round, so reaching here with nothing means those two
+        // conditions have come apart.
+        guard !queue.isEmpty else {
+            assertionFailure("the hero was pressed with nothing to deal, so the tap did nothing")
+            return
+        }
         store.startDrill(deckId: LingoWeekendDeck.deckId, queue: queue)
-        showingLanding = false
+        // And only once the round actually exists: leaving the landing screen
+        // behind a refused `startDrill` is a blank screen with no way back.
+        guard store.drillSession?.deckId == LingoWeekendDeck.deckId else {
+            assertionFailure("startDrill refused a queue of \(queue.count), and the landing screen was about to go with it")
+            return
+        }
+        withAnimation(.easeInOut(duration: 0.2)) { showingLanding = false }
     }
 
     /// "Go again" on the end card.
@@ -206,7 +224,11 @@ struct LingoView: View {
         let ids = dealt(context).ids
         // A content refresh can leave nothing playable. An end card with a
         // button that does nothing is worse than going back to the words.
-        if ids.isEmpty { store.endDrill() } else { deal(context, ids: ids) }
+        if ids.isEmpty {
+            withAnimation(.easeInOut(duration: 0.2)) { store.endDrill() }
+        } else {
+            deal(context, ids: ids)
+        }
     }
 
     // MARK: Body
@@ -253,7 +275,7 @@ struct LingoView: View {
                             content: content, sayThis: sayThis, store: store, context: context,
                             named: weekend?.named ?? [:],
                             onDealAgain: dealAgain,
-                            onPause: { showingLanding = true })
+                            onPause: { withAnimation(.easeInOut(duration: 0.2)) { showingLanding = true } })
                     } else {
                         landing
                     }
@@ -262,8 +284,13 @@ struct LingoView: View {
                 .padding(.top, 12)
                 .padding(.bottom, 40)
             }
-            .animation(.easeInOut(duration: 0.2), value: store.drillSession?.index)
-            .animation(.easeInOut(duration: 0.2), value: store.drillSession?.finished)
+            // No `.animation(_:value:)` here. Hanging it on the ScrollView
+            // animated every layout change in the whole subtree, including a
+            // card arriving with its own transition — and a view mid-transition
+            // is hit-tested at its interpolated frame, which is a neighbouring
+            // card swallowing taps meant for the hero. Each mutation site
+            // animates its own change instead.
+            .coordinateSpace(name: LingoView.frameSpace)
             // One build per thing the deck actually depends on.
             .task(id: heroKey) { weekend = buildWeekend() }
             // A slip that never reached the device row is a slip nothing can
@@ -275,6 +302,14 @@ struct LingoView: View {
             // it, and doing that inside the first body evaluation would mutate
             // state SwiftUI is in the middle of reading.
             .onAppear { Task { applyLingoArguments() } }
+            .onPreferenceChange(LingoFramePreference.self) { measured in
+                Task { @MainActor in frames = measured }
+            }
+            // Keyed on the frames themselves: every move cancels the pending
+            // check and starts another, so the assertion only ever runs
+            // against a screen that has stopped moving — which is the whole
+            // reason the instrumented prints were a lead and not a finding.
+            .task(id: frames) { await checkFrames() }
             #endif
         }
     }
@@ -335,6 +370,9 @@ struct LingoView: View {
             // retried on the next open of the tab if it does not land.
             Task { await uploadSlip() }
         }
+        #if DEBUG
+        .lingoFrame("calls")
+        #endif
     }
 
     /// The slip on the device row, where the goal push can find it.
@@ -460,7 +498,13 @@ struct LingoView: View {
                 ) {
                     pressHero(weekend)
                 }
+                // The room around the hero, which used to sit inside the
+                // button's own body as padding outside its `Button` — measured
+                // frame that was never tappable.
+                .padding(.top, 8)
+                .padding(.bottom, 20)
                 #if DEBUG
+                .lingoFrame("hero")
                 // simctl cannot tap, so `-gdLingoHeroTap` presses it — the
                 // hero's own closure, with the weekend it has actually built.
                 .task(id: weekend.ids) { await debugPressHero(weekend) }
@@ -476,7 +520,7 @@ struct LingoView: View {
     /// What the hero does when she presses it.
     private func pressHero(_ weekend: Weekend) {
         if continueLabel != nil {
-            showingLanding = false
+            withAnimation(.easeInOut(duration: 0.2)) { showingLanding = false }
         } else {
             deal(weekend.context, ids: weekend.ids)
         }
@@ -835,6 +879,38 @@ struct LingoView: View {
         if args.contains("-gdLingoCallsPass") { debugPassCalls(current) }
     }
 
+    /// `-gdLingoFrames`: the two cards, where they actually ended up, once the
+    /// screen has stopped moving.
+    ///
+    /// The instrumented prints this replaces read the hero at y 232…356 and the
+    /// calls card at y 314…729, which is 52 points of overlap — but they were
+    /// taken mid-layout from `onAppear`, so they were a lead and not a finding.
+    /// This waits for a settled screen, and it stays in the tree, which a print
+    /// does not.
+    ///
+    /// The rule it holds, in the order the landing screen is in now: the hero
+    /// starts at or after the calls card ends. Two views that overlap are two
+    /// views where the one on top takes the taps, and a hero covered by its
+    /// neighbour is indistinguishable in a screenshot from one that works.
+    private func checkFrames() async {
+        // The round replaces the landing screen, and neither card is on it —
+        // including after `-gdLingoHeroTap` has pressed the hero, which is the
+        // one run where both flags are on at once.
+        guard ProcessInfo.processInfo.arguments.contains("-gdLingoFrames"), !showingRound else { return }
+        // Cancelled and restarted by the next measurement, so reaching the far
+        // side of this means nothing has moved for two seconds.
+        do { try await Task.sleep(for: .seconds(2)) } catch { return }
+        guard let hero = frames["hero"] else {
+            assertionFailure("-gdLingoFrames measured no hero (it measured \(frames.keys.sorted())): the hero is hidden, or the deck cannot fill a round")
+            return
+        }
+        // No slip for this fixture is a legal screen — then the hero leads and
+        // there is nothing to overlap with.
+        guard let calls = frames["calls"], calls.height > 0 else { return }
+        assert(hero.minY >= calls.maxY - 0.5,
+               "the hero starts at \(hero.minY) and the calls card ends at \(calls.maxY): they overlap, so whichever is on top is taking the other's taps")
+    }
+
     /// `-gdLingoHeroTap`: press the hero, once, with the weekend on screen.
     private func debugPressHero(_ weekend: Weekend) async {
         guard !pressedHero, ProcessInfo.processInfo.arguments.contains("-gdLingoHeroTap") else { return }
@@ -936,3 +1012,29 @@ struct LingoView: View {
     }
     #endif
 }
+
+#if DEBUG
+/// Where the landing screen's two cards ended up, keyed by name. Only ever
+/// filled while `-gdLingoFrames` is on.
+struct LingoFramePreference: PreferenceKey {
+    static var defaultValue: [String: CGRect] { [:] }
+    static func reduce(value: inout [String: CGRect], nextValue: () -> [String: CGRect]) {
+        value.merge(nextValue()) { _, new in new }
+    }
+}
+
+extension View {
+    /// Report this view's frame under `name`, and nothing at all unless
+    /// `-gdLingoFrames` is on: a GeometryReader behind every card is a layout
+    /// pass nobody asked for.
+    func lingoFrame(_ name: String) -> some View {
+        guard ProcessInfo.processInfo.arguments.contains("-gdLingoFrames") else {
+            return AnyView(self)
+        }
+        return AnyView(background(GeometryReader { geo in
+            Color.clear.preference(key: LingoFramePreference.self,
+                                   value: [name: geo.frame(in: .named(LingoView.frameSpace))])
+        }))
+    }
+}
+#endif
