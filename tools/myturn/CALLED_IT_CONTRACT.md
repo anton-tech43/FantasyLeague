@@ -90,11 +90,26 @@ Wired into `sendPlayingTeamPush`'s per-device loop in `match-watcher`, immediate
 `const body = args.copy.bodies[country]`. Add `match_calls` to that function's `device_tokens`
 select. A stale fixture id resolves to nothing.
 
-`appendCallLine` measures the **rendered** body, not the template, and drops its own line rather
-than overflow — the `goal-push-copy.ts` rule.
+**Her line replaces the flavour line, it does not sit after it.** The push body has a 90-character
+budget and the random pool line already spends most of it. When a pick lands, the pool line is the
+least valuable text in the body and her own called line is the most valuable, so the pool line is
+what goes. The scorer lead stays, because it names the player. The rendered-worst-case measurement
+stays as a backstop and should now never fire.
+
+That is what caps a call line at **60 characters**, not a stylistic preference: it is what is left
+of the budget once the scorer lead is paid for.
 
 Scorer position comes from a `players` lookup by `playerApiId`, which `enrichPhotos` already
 performs. Extend that one query; do not add a second.
+
+`sendPlayingTeamPush` takes `outcomeByTeam` keyed by playing-team slug, the same shape
+`copy.bodies` already has, **not** one shared `Outcome`. `state` mirrors between the two sides but
+`conceded`, `cleanSheet` and `comeback` do not, so a single outcome cannot be flipped per device.
+
+Three cases resolve to nothing on purpose: a tick where both sides scored (no single side, scorer
+or minute, so nothing can be said honestly), a stale fixture id, and a goal whose scorer the feed
+has not yet published. When two picks land on one event only the first is named; the body has room
+for one line.
 
 ## Contract 4: the app
 
@@ -115,3 +130,29 @@ disagree without a test going red.
 Substitutions, bookings and VAR, because no push carries them. Asking her to confirm she said it.
 Any line about how a goal was built. A leaderboard, a streak, or a reminder to come back — the
 store header rule stands: she did not choose this hobby.
+
+## What the feed cannot say, and what it would cost to fix
+
+The content pass cut ten kinds of line. Every casualty was the feed, not the voice. Ranked by
+what I would pay for them:
+
+1. **A keeper howler.** No event carries a mistake. The best living-room line in the deck and it
+   cannot ship at any price.
+2. **Red cards, ten men, substitutions.** The events exist in `/fixtures/events`. No push carries
+   them, and the push is the delivery. Fixable only by sending a notification we have decided not
+   to send.
+3. **A brace or a hat-trick.** Needs a running per-scorer tally across the match; the goal push
+   knows one scorer and no history.
+4. **Shot quality, placement, how the goal was built.** `detail` is `Normal Goal | Penalty | Own
+   Goal` and nothing else. This is the one the matchup card most tempts you into, because
+   `opp-set-piece` and `opp-aerial` are live tags with no event-level counterpart.
+5. **A goalless first half.** `halftime` carries ahead / level / behind and `conceded`, but not
+   whether *we* have scored, so "nil-nil at half-time" is inexpressible. `level` plus
+   `conceded: 0` is close and is not the same thing.
+6. **A margin.** `fulltime` carries win / draw / loss and clean sheet, no goal difference, so
+   nothing can fire on the four-nil the moment it happens.
+
+**5 and 6 are the cheap ones**, and they are the next thing to do: a `scored` field on the
+half-time outcome and a `goalDifference` on full-time. Both numbers are already inside the payload
+match-watcher polls every minute, so neither costs an API call. Deferred only because three agents
+were holding this contract open at the time.
