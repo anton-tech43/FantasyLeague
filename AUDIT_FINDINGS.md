@@ -321,3 +321,64 @@ Remaining detail of each finding below is preserved for reference.
   views are read by `get_insights()`, a SQL function inside the database, which
   `scripts/insights.sh` calls and which works today. The tables hold real data
   (68 news sources, 4 reviews). Nothing dropped.
+
+## 2026-09-23 — QA bug pass (BUG_AUDIT_2026-09-23.md)
+
+A manual full-app run on the simulator, documented in
+`BUG_AUDIT_2026-09-23.md`. All six findings are fixed; what follows is what
+each one turned out to be, since three of them were not what the report said.
+
+### Closed
+
+- **B1 — the country-only device reached its country page anyway.**
+  `CountryFollowing.isEnabled` was honoured everywhere except the two
+  properties that decide what the His Team tab renders, so the one entity we
+  had decided not to surface was the one she'd have seen, with a World Cup
+  fixture from 30 June on it. The tab now hides itself rather than render an
+  empty stack, everything that can point at a missing tab lands on the feed
+  instead, and `AppState` no longer opens onto a country context — a repair
+  the scenePhase handler already did, one launch too late.
+- **B6 — 8 of 20 club pages drew a broken manager photo.** Neither placeholder
+  string was ours. `media.api-sports.io` answers every coach id with HTTP 200
+  and serves a placeholder image when it has no headshot, which is the trap
+  `DATA_SOURCES.md` warns about and which migration 085 had explicitly
+  asserted did not apply here (it verified the coach id, not the image). All
+  73 manager photos fetched and hashed: **four** distinct placeholder images
+  exist, not the two the doc recorded, and one is used by a single club, so
+  the documented "a hash shared by several people" test walks straight past
+  it. 30 rows cleared by migration 109; `team-page-generator` now lets the
+  verified override clear a stale `photo_url` instead of spreading it forward
+  for ever. The four checksums and the re-check command are in
+  `DATA_SOURCES.md`.
+- **B2 — "Champion s League" on the Bayern München row.** The calendar's
+  competition column had a maximum width and no floor, so a long club name
+  squeezed it below the width of a single word. Floor added; the club name
+  wraps instead.
+- **B3 — Settings opened on a third of a blank screen.** A `.large`
+  navigation title reserves ~100pt and then draws no text at all against this
+  toolbar background. Inline renders correctly and is what every other screen
+  uses. `PlayerCardsListView` was built the same way and had the same defect;
+  QA could not reach it without tapping, so it was fixed in the same change.
+- **B5 — "He'd have missed two as well." on a 7 of 10.** Hype lines are drawn
+  by band, not score, so no line can state a count — which `hype_src.py`'s own
+  header already says and which two lines in `strong` broke. Both rewritten,
+  and the validator now refuses a count word outside `streak`.
+- **B4 — My Turn after a mid-session reset.** The reported symptom does not
+  reproduce: the documented repro and a harder one (four finished Lingo
+  rounds, a live streak, then reset plus quiz args) both land on Quiz, and the
+  store's wipe is complete. The real defect is the one the report asked us to
+  go looking for. `clearAll()` empties the store but the module views stay
+  mounted holding state the store never sees — SayThisView's practise session
+  (deliberately `@State`), QuizView's paused flag, LingoView's dealt deck — so
+  Settings → Delete My Data could drop her back into a half-played round she
+  had just asked us to forget. The module stack now rebuilds on a wipe.
+
+### Not ours to close here
+
+- The **data-accuracy list** in the QA report (last-season lines, the PL roster
+  vs `is_active`, the forward-dated 2026-27 manager set) belongs to the
+  `stale-data-audit` skill, as the report itself says. Worth running soon: all
+  eight clubs with a missing manager photo are on that 2025/2026 appointment
+  list.
+- The **coverage gaps** (onboarding interior, the context switcher, feed
+  detail, Live Activity) still need a tap-capable simulator.
