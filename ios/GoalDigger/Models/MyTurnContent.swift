@@ -181,6 +181,13 @@ struct LingoTerm: Codable, Identifiable, Hashable {
     /// `[String]`, not an enum, so a publish can add a tag before the app
     /// knows it (an unknown tag simply never matches a context).
     let when: [String]?
+    /// A word an English speaker works out from the words themselves
+    /// ("kick-off", "own goal"). Never dealt in a round — asking a grown woman
+    /// what half-time means is the app talking down to her — but still in the
+    /// word list and in search, because "never dealt" is not "not a word".
+    /// Optional, like the other fields added since launch, so a cached file
+    /// written before the marker existed still decodes.
+    let basic: Bool?
 }
 
 // MARK: Quiz

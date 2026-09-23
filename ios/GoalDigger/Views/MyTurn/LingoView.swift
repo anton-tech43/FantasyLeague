@@ -541,21 +541,23 @@ struct LingoView: View {
         if let target = intValue("-gdLingoFinish") { debugFinish(right: target, context: current) }
     }
 
-    private func debugOptions(_ id: String) -> (options: [String], answer: Int)? {
-        content.terms.first { $0.id == id }.flatMap(LingoWeekendDeck.options(for:))
+    /// The salt matters here too: the harness answers by index, and options
+    /// computed without the session's salt would call a right tap wrong.
+    private func debugOptions(_ id: String, salt: String) -> (options: [String], answer: Int)? {
+        content.terms.first { $0.id == id }.flatMap { LingoWeekendDeck.options(for: $0, salt: salt) }
     }
 
     private func debugAnswer(_ option: Int) {
         guard let s = store.drillSession, !s.finished, let id = s.queue[safe: s.index],
-              let opts = debugOptions(id) else { return }
+              let opts = debugOptions(id, salt: s.salt) else { return }
         store.answerDrill(option, correct: option == opts.answer)
     }
 
     private func debugFinish(right: Int, context: MatchContext?) {
         deal(context)
-        guard let queue = store.drillSession?.queue else { return }
-        for (i, id) in queue.enumerated() {
-            guard let opts = debugOptions(id) else { continue }
+        guard let session = store.drillSession else { return }
+        for (i, id) in session.queue.enumerated() {
+            guard let opts = debugOptions(id, salt: session.salt) else { continue }
             let correct = i < right
             store.answerDrill(correct ? opts.answer : (opts.answer + 1) % opts.options.count, correct: correct)
             store.nextDrillCard()

@@ -94,6 +94,45 @@ team page: the next fixture, the last result, the table, the rival. Static
 content only carries the `when` tags; which tags are live is decided in
 `ios/GoalDigger/Services/LingoDeck.swift` from data, never from memory.
 
+## 8. A question she can answer without knowing the word is not a question (2026-09-23)
+
+The first Overheard batch passed every mechanical rule and was still too easy. The test
+that found it: blank the phrase out of the `overheard` line and have someone who has
+never seen the content pick from the three options. They scored 158 of 158, and on 94
+items the reason they gave was that **the sentence restates the definition**.
+
+Two rules came out of it, and both are now how the content is written.
+
+**The line creates the need for the word. It never explains it.** "They've parked the bus
+since the goal. Ten men behind the ball." answers itself; the second sentence is the right
+option in his words. "They've parked the bus since that goal. Forty minutes of this left."
+gives the situation and his mood, and nothing about the shape. If a clause paraphrases the
+meaning, cut it.
+
+**Every option must be believable to someone who does not know the word.** The original
+brief asked for a literal misreading, and in practice that became a joke nobody would pick
+("The team coach is blocking the stadium exit"), which turns three options into two and a
+fifty-fifty floor. The real test is not literal against football: it is whether a reasonable
+non-fan, having read the line, would genuinely consider the option. A literal reading is
+fine when it is the one her ear actually reaches for ("throwing in the towel" for a
+throw-in). It is dead weight when nobody would pick it.
+
+Some words cannot be hidden, because the English gives them away (`added-time`,
+`own-goal`, `two-legs`, `loan`, `season-ticket`). For those the line stops trying and the
+difficulty moves into the options: make both wrong answers equally consistent with the line,
+so knowing the phrase is the only thing that separates them.
+
+After the rewrite, "the sentence restates the definition" fell from 94 items to a handful.
+Re-run the blind test after any batch of new terms; the raw score is not the number to read,
+because a solver who knows football answers from knowledge. The number that matters is how
+often the line itself does the work.
+
+**`basic`.** A word an English speaker simply decodes from its parts (`kick-off`,
+`half-time`, `own-goal`, `starting-eleven`) is vocabulary, not lingo. Those carry
+`basic=True`: they stay in the word list and in search, and are never dealt in a round.
+Without it the first round on a fresh install asked a grown woman what kick-off means, at
+the moment she was deciding whether to keep the app.
+
 ## Validation summary
 
 - quiz: `why`, `use`, `useType` required; caps above; superlative ban; every
@@ -104,3 +143,5 @@ content only carries the `when` tags; which tags are live is decided in
   length band 20, no club names, no defining phrasing, `when` tags from the enum
   with at least 5 terms per tag and 60 carrying `any`
 - UK idiom banlist unchanged
+- lingo Overheard: `basic` must be a bool and at most 15 terms may carry it; the blind
+  test (§8) is a human gate, not a script

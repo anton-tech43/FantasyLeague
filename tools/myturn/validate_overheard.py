@@ -24,6 +24,9 @@ BAND = 20                      # a decoy may differ from the gist by this many c
 MIN_PER_TAG = 5
 MIN_ANY = 60
 MAX_ALIASES = 3
+# `basic` words are never dealt, so every one marked is a word out of the pool.
+# A floor guard, not a style rule: mark everything and the deck empties.
+MAX_BASIC = 15
 
 STALE_FACT = re.compile(
     r"\b(the|their|its|his|club's) only (club|team|player|manager|time|final|title|trophy|english)\b"
@@ -212,6 +215,10 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
         if len(aliases) > MAX_ALIASES:
             err(f"{where}: more than {MAX_ALIASES} aliases; aliases are the exception, not the rule")
 
+        # --- basic: guessable from the words themselves, so never dealt
+        if "basic" in t and not isinstance(t["basic"], bool):
+            err(f"{where}: basic must be true or false, got {t['basic']!r}")
+
     # --- second pass: a decoy must not be a synonym's right answer
     for t in terms:
         tid = t.get("id", "?")
@@ -259,6 +266,10 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
             err(f"lingo: tag '{tag}' has {tag_count[tag]} terms (min {MIN_PER_TAG}), a deck would come up thin")
     if tag_count["any"] < MIN_ANY:
         err(f"lingo: only {tag_count['any']} terms carry 'any' (min {MIN_ANY}); the fill pool runs dry")
+    basic = [t.get("id", "?") for t in terms if t.get("basic") is True]
+    if len(basic) > MAX_BASIC:
+        err(f"lingo: {len(basic)} terms are marked basic (max {MAX_BASIC}); every one is out of the deck pool, "
+            f"and marking them all empties it: {', '.join(sorted(basic))}")
     for cat, c in speaker_by_cat.items():
         total = sum(c.values()) or 1
         for sp in SPEAKERS:

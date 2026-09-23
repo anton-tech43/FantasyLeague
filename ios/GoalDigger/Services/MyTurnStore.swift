@@ -91,9 +91,15 @@ final class MyTurnStore {
         /// word, which is not a round of seven. Not persisted — `MyTurnStore`
         /// drops such a session on the launch that decodes it.
         var legacy: Bool = false
+        /// Per-deal shuffle salt for `LingoWeekendDeck.options(for:salt:)`.
+        /// Without it the option order is seeded from the term id alone, so a
+        /// word she got wrong comes back next weekend as the same card with the
+        /// right answer in the same slot — thumb position, not meaning. Stable
+        /// for the life of the session, which is what a paused round needs.
+        let salt: String
 
         enum CodingKeys: String, CodingKey {
-            case deckId, queue, index, selected, finished, knew, streak, hypeLine
+            case deckId, queue, index, selected, finished, knew, streak, hypeLine, salt
         }
 
         /// Fields the flashcard build wrote and this one does not.
@@ -102,12 +108,15 @@ final class MyTurnStore {
         init(deckId: String, queue: [String]) {
             self.deckId = deckId
             self.queue = queue
+            self.salt = UUID().uuidString
         }
 
         /// Tolerant: this struct sits inside the one JSON blob that holds every
         /// starred line and quiz score, so a field added later (`knew`
-        /// 2026-09-09, `selected`/`streak`/`hypeLine` 2026-09-22) must decode
-        /// as its default rather than throw and reset her state. A session
+        /// 2026-09-09, `selected`/`streak`/`hypeLine` 2026-09-22, `salt`
+        /// 2026-09-23) must decode as its default rather than throw and reset
+        /// her state. An empty `salt` is the right default for a session dealt
+        /// before it existed: it reproduces the order she was looking at. A session
         /// paused mid-flashcard carries `flipped` and `done`; they are what
         /// marks it `legacy`, and the store then drops it.
         init(from decoder: Decoder) throws {
@@ -120,6 +129,7 @@ final class MyTurnStore {
             knew = try c.decodeIfPresent(Int.self, forKey: .knew) ?? 0
             streak = try c.decodeIfPresent(Int.self, forKey: .streak) ?? 0
             hypeLine = try c.decodeIfPresent(String.self, forKey: .hypeLine)
+            salt = try c.decodeIfPresent(String.self, forKey: .salt) ?? ""
             let old = try decoder.container(keyedBy: LegacyKeys.self)
             legacy = old.contains(.flipped) || old.contains(.done)
         }
@@ -425,6 +435,11 @@ func myTurnTolerantDecodeSelfCheck() {
     assert(session.selected == nil && session.streak == 0 && session.hypeLine == nil
            && session.index == 1 && session.knew == 1 && session.queue.count == 3,
            "DrillSession tolerant decode gave the wrong defaults")
+    // A session persisted before the salt existed (2026-09-23) has no such key.
+    // It must come back as "", which is the option order that round was
+    // already showing — not a fresh UUID, which would move the right answer
+    // under her thumb on the card she is paused on.
+    assert(session.salt == "", "a session written before the salt decodes with a salt, so a paused round reshuffles")
     // ...and it has to be recognisable as one, because a flashcard queue can
     // repeat a word and run to nineteen. `MyTurnStore.init` drops it on that.
     assert(session.legacy, "a flashcard session no longer looks legacy, so it resumes as an Overheard round")
@@ -436,5 +451,9 @@ func myTurnTolerantDecodeSelfCheck() {
         return
     }
     assert(!read.legacy, "a session this build wrote looks legacy, so every round is dropped on relaunch")
+    // The salt has to be in CodingKeys and actually encoded, or a relaunch
+    // reshuffles the options on the card she paused on.
+    assert(!fresh.salt.isEmpty && read.salt == fresh.salt,
+           "DrillSession.salt does not survive its own encoder, so a resumed round moves the right answer")
 }
 #endif

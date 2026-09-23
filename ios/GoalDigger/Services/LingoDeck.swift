@@ -549,7 +549,11 @@ enum LingoWeekendDeck {
     /// orders them inside each of those three groups.
     static func build(terms: [LingoTerm], known: Set<String>, learning: Set<String>,
                       context: MatchContext?, seed: String) -> (ids: [String], refresher: Bool) {
-        let playable = terms.filter { options(for: $0) != nil }
+        // `basic` words stay in the list and in search but never get dealt: the
+        // first round on a fresh install fills from `any` sorted by level, and
+        // asking a grown woman what "kick-off" means at the moment she is
+        // deciding whether to keep the app is the app talking down to her.
+        let playable = terms.filter { $0.basic != true && options(for: $0) != nil }
         guard !playable.isEmpty else { return ([], false) }
 
         let top = terms.compactMap(\.level).max() ?? 1
@@ -621,9 +625,16 @@ enum LingoWeekendDeck {
     /// has not been written for Overheard yet, which is how an older cached
     /// lingo.json keeps working: it simply deals nothing.
     ///
-    /// Seeded from the term id alone, so the right answer does not move when
-    /// she comes back to a paused round.
-    static func options(for term: LingoTerm) -> (options: [String], answer: Int)? {
+    /// Seeded from the term id plus the dealing session's `salt`, so the order
+    /// is fixed for the life of one dealt card — a paused round resumed, or
+    /// relaunched, shows the right answer in the same slot — while the next
+    /// deal of the same word reshuffles. Seeding from the id alone made every
+    /// repeat an identical card, and the deck prefers words she missed, so the
+    /// repeat is the common case and it degrades into thumb-position memory.
+    ///
+    /// An empty salt is the pre-2026-09-23 order, which is what a session
+    /// persisted before the salt existed should keep showing.
+    static func options(for term: LingoTerm, salt: String = "") -> (options: [String], answer: Int)? {
         // The snippet is the question. A word with a gist and two decoys but no
         // line to overhear would ask "what does that mean?" above the drier
         // `heard` note, which is a definition quiz again.
@@ -633,7 +644,7 @@ enum LingoWeekendDeck {
                   .filter({ !$0.isEmpty }), decoys.count >= 2 else { return nil }
         var options = [gist] + decoys.prefix(2)
         guard Set(options).count == 3 else { return nil }
-        var rng = LiveClubPack.SeededGenerator(seed: term.id)
+        var rng = LiveClubPack.SeededGenerator(seed: term.id + salt)
         options.shuffle(using: &rng)
         guard let answer = options.firstIndex(of: gist) else { return nil }
         return (options, answer)
@@ -825,7 +836,8 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
         LingoTerm(id: id, category: .matchSituations, term: id, meaning: "m", heard: "h",
                   sayIt: nil, seeAlso: nil, level: level,
                   overheard: "They said \(id).", overheardTerm: id, speaker: .him,
-                  gist: "gist \(id)", decoys: ["decoy one \(id)", "decoy two \(id)"], when: when)
+                  gist: "gist \(id)", decoys: ["decoy one \(id)", "decoy two \(id)"], when: when,
+                  basic: nil)
     }
     // The derby words sit ABOVE the fillers by difficulty, so "derby first" is
     // a statement about selection and about relevance beating level — with
@@ -898,14 +910,31 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
            "option order is not deterministic, so a paused round moves the right answer")
     assert(first.options[first.answer] == playable.gist, "the answer index does not point at the gist")
     assert(first.options.count == 3, "an Overheard card is three options")
+
+    // The salt. One session's salt has to be stable — she pauses a round, the
+    // app is relaunched, the right answer must still be under the same
+    // option — and two sessions have to disagree, or every repeat of a word
+    // she missed is the same card and the round tests her thumb.
+    let salted = LingoWeekendDeck.options(for: playable, salt: "session-a")
+    let saltedAgain = LingoWeekendDeck.options(for: playable, salt: "session-a")
+    assert(salted?.options == saltedAgain?.options && salted?.answer == saltedAgain?.answer,
+           "the same salt gave a different order, so a resumed round moves the right answer")
+    assert(salted?.options[salted!.answer] == playable.gist, "a salted answer index does not point at the gist")
+    // A single word can land the same way under two salts (one order in six),
+    // so this asks over a sample rather than of one term.
+    let sample = (0..<10).map { term("salt-\($0)", level: 1, when: ["any"]) }
+    assert(sample.contains { t in
+        LingoWeekendDeck.options(for: t, salt: "session-a")?.options
+            != LingoWeekendDeck.options(for: t, salt: "session-b")?.options
+    }, "two different salts dealt every word in the same order, so the salt does nothing")
     let bare = LingoTerm(id: "bare", category: .rules, term: "Bare", meaning: "m", heard: "h",
                          sayIt: nil, seeAlso: nil, level: 1, overheard: nil, overheardTerm: nil,
-                         speaker: nil, gist: nil, decoys: nil, when: nil)
+                         speaker: nil, gist: nil, decoys: nil, when: nil, basic: nil)
     assert(LingoWeekendDeck.options(for: bare) == nil, "a word with no decoys must not be playable")
     let noSnippet = LingoTerm(id: "no-snippet", category: .rules, term: "Nosnip", meaning: "m",
                               heard: "h", sayIt: nil, seeAlso: nil, level: 1, overheard: nil,
                               overheardTerm: nil, speaker: .him, gist: "gist nosnip",
-                              decoys: ["decoy one", "decoy two"], when: ["any"])
+                              decoys: ["decoy one", "decoy two"], when: ["any"], basic: nil)
     assert(LingoWeekendDeck.options(for: noSnippet) == nil,
            "a word with options but no line to overhear must not be playable")
 
@@ -918,11 +947,25 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
         ?? Bundle.main.url(forResource: "lingo", withExtension: "json"))
         .flatMap { try? Data(contentsOf: $0) }
         .flatMap { try? JSONDecoder().decode(LingoContent.self, from: $0) }
-    for t in (shipped ?? bundled).terms {
+    let live = (shipped ?? bundled).terms
+    for t in live {
         for tag in t.when ?? [] {
             assert(MatchContext.knownTags.contains(tag),
                    "lingo.json term \(t.id) carries an unknown when tag: \(tag)")
         }
     }
+
+    // The first round on a fresh install: no cached team page, so the `any`
+    // context, and the deck fills from `any` sorted by level. Nothing she can
+    // read off the word itself may be in it, and it still has to be seven —
+    // marking too many words basic would empty the pool instead.
+    let basicIds = Set(live.filter { $0.basic == true }.map(\.id))
+    let firstRound = LingoWeekendDeck.build(terms: live, known: [], learning: [], context: none,
+                                            seed: LingoWeekendDeck.seed(team: nil, context: none,
+                                                                        now: now, nonce: 0))
+    assert(firstRound.ids.count == LingoWeekendDeck.roundLength,
+           "the first round on a fresh install deals \(firstRound.ids.count), not seven")
+    assert(Set(firstRound.ids).isDisjoint(with: basicIds),
+           "the first round asks what a word she can read means: \(Set(firstRound.ids).intersection(basicIds))")
 }
 #endif

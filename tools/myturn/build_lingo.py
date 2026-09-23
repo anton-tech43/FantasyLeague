@@ -21,7 +21,7 @@ from lingo_overheard import OVERHEARD, WHEN_TAGS  # noqa: E402
 from lingo_src import LEVEL_OF, LEVELS, TERMS  # noqa: E402
 
 OUT = os.path.join(HERE, "..", "..", "ios", "GoalDigger", "Resources", "MyTurn", "lingo.json")
-VERSION = "2026-09-22.1"
+VERSION = "2026-09-23.1"
 
 ORDER = {tid: i for i, tid in enumerate(t for level in LEVELS for t in level)}
 WHEN_ORDER = {w: i for i, w in enumerate(WHEN_TAGS)}
@@ -50,6 +50,10 @@ for category, tid, term, meaning, heard, say_it, see_also in TERMS:
         row["gist"] = o["gist"]
         row["decoys"] = list(o["decoys"])
         row["when"] = sorted(set(o["when"]), key=lambda w: WHEN_ORDER.get(w, 99))
+        if o.get("basic"):
+            # Guessable from the words themselves. Still in the list and in
+            # search; never dealt in a round (LingoWeekendDeck.build).
+            row["basic"] = True
     terms.append(row)
 terms.sort(key=lambda r: ORDER[r["id"]])
 

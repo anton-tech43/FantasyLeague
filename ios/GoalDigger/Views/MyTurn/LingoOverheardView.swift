@@ -9,7 +9,9 @@ import SwiftUI
 ///
 /// Seven items, dealt by `LingoWeekendDeck` from this weekend's fixture. No
 /// re-queue of a missed word inside the round: the same snippet with the same
-/// three options in the same order tests where her thumb was.
+/// three options in the same order tests where her thumb was. Across rounds
+/// the same defence is the session's `salt`, which reshuffles the options on
+/// every deal while holding them still for the round she is in.
 struct LingoOverheardView: View {
     let content: LingoContent
     /// For the "Lines that use this" jump on a reveal.
@@ -34,7 +36,7 @@ struct LingoOverheardView: View {
                 if session.finished {
                     finished(session)
                 } else if let id = session.queue[safe: session.index], let term = term(id),
-                          let options = LingoWeekendDeck.options(for: term) {
+                          let options = LingoWeekendDeck.options(for: term, salt: session.salt) {
                     header(session)
                     item(session, term: term, options: options)
                 } else {
