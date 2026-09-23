@@ -295,6 +295,13 @@ GAMIFICATION = re.compile(
     r"\b(level up|levelled up|leveled up|awesome|amazing|streak|streaks|xp|badge|badges"
     r"|unlock|unlocked|unlocks|achievement|achievements|congrats|congratulations)\b", re.I)
 
+# A hype line is picked by band, not by score, so it cannot know how many she
+# got. "Strong round. He'd have missed two as well." shipped against a 7 of 10
+# (three missed) on 2026-09-23. `streak` is exempt: it fires on a known run of
+# four, and the app already filters the "four" lines out past four.
+COUNT_CLAIM = re.compile(
+    r"\b(two|three|four|five|six|seven|eight|nine|ten|couple)\b", re.I)
+
 
 def validate_hype(d: dict) -> int:
     cats = d.get("categories", {})
@@ -327,6 +334,11 @@ def validate_hype(d: dict) -> int:
             m = GAMIFICATION.search(line)
             if m:
                 err(f"hype/{cat}: '{m.group(0)}' is app-points language, not a friend on the sofa: {line}")
+            if cat != "streak":
+                c = COUNT_CLAIM.search(line)
+                if c:
+                    err(f"hype/{cat}: '{c.group(0)}' states a count the band cannot know "
+                        f"(the app prints the score above the line): {line}")
             check_idiom(f"hype/{cat}", line)
         total += len(lines)
     return total
