@@ -199,24 +199,27 @@ struct MainTabView: View {
 
     /// V2.0: The "His Team" tab follows the active feed context, so the team
     /// page shows whatever the user has currently selected in the switcher.
-    /// Fallback (when on the cross-team `.everyoneTalking` feed): country
-    /// preferred over team, matching AppState's activeContext default picker.
-    /// teamId keys into the same `team_pages` table for both entity types.
+    /// Fallback (when on the cross-team `.everyoneTalking` feed): the first
+    /// followed entity, so the tab keeps working. teamId keys into the same
+    /// `team_pages` table for both entity types.
+    ///
+    /// Nil means there is nothing to show and the tab hides itself. That is
+    /// the country-only user while `CountryFollowing` is off: her country
+    /// page is three months stale (the content pipeline behind it is dead),
+    /// so the honest answer is no tab rather than a page of June fixtures.
     private var teamPageEntityId: String? {
         switch appState.activeContext {
         case .team(let team):
             return team.rawValue
         case .country(let country):
-            return country.rawValue
+            return CountryFollowing.isEnabled ? country.rawValue : nil
         case .worldChampionship, .everyoneTalking:
-            // No team page for the tournament-wide contexts — fall back to
-            // the first followed entity so the His Team tab keeps working.
             // Club first: with country following off, a club+country user
             // would otherwise get a country page on the His Team tab.
             if CountryFollowing.isEnabled {
                 return appState.selectedCountry?.rawValue ?? appState.selectedTeam?.rawValue
             }
-            return appState.selectedTeam?.rawValue ?? appState.selectedCountry?.rawValue
+            return appState.selectedTeam?.rawValue
         }
     }
 
@@ -229,7 +232,7 @@ struct MainTabView: View {
         case .team(let team):
             return team.displayName
         case .country(let country):
-            return country.displayName
+            return CountryFollowing.isEnabled ? country.displayName : "His Team"
         case .worldChampionship, .everyoneTalking:
             return "His Team"
         }
@@ -302,11 +305,12 @@ struct MainTabView: View {
             }
             .tag(0)
 
-            // Tab 2: His Team — V2.0: prefer country (WC primary) over team
-            // (PL). If neither is set, render an empty NavigationStack
-            // (shouldn't happen in normal flow but defensive).
-            NavigationStack {
-                if let teamId = teamPageEntityId {
+            // Tab 2: His Team. Hidden entirely when there is no entity to
+            // show — an empty stack under a "His Team" label reads as a
+            // broken screen, and the one case that reaches it (country-only,
+            // country following off) has no page worth opening.
+            if let teamId = teamPageEntityId {
+                NavigationStack {
                     TeamPageView(teamId: teamId)
                         // V2.0 WC preview surface: TeamPageView's Calendar
                         // tab can navigate to a preview content_item's
@@ -323,11 +327,11 @@ struct MainTabView: View {
                             )
                         }
                 }
+                .tabItem {
+                    Label(teamTabLabel, systemImage: "shield")
+                }
+                .tag(1)
             }
-            .tabItem {
-                Label(teamTabLabel, systemImage: "shield")
-            }
-            .tag(1)
 
             // Tab 3: My Turn — the toolbox. Quiz / Lingo / Say This.
             // Static, offline, no live data; everything here is always true,
@@ -350,6 +354,12 @@ struct MainTabView: View {
             .tag(3)
         }
         .tint(.hotRose)
+        // Tab 1 can disappear (see teamPageEntityId). A selection pointing at
+        // a tag no tab carries leaves the TabView showing nothing at all, so
+        // send her to the feed instead.
+        .onChange(of: teamPageEntityId) { _, id in
+            if id == nil && selectedTab == 1 { selectedTab = 0 }
+        }
         .task {
             // ATT, 1.5 s after the tabs first appear — never in onboarding,
             // where the notification prompt already asks for something.
@@ -379,7 +389,7 @@ struct MainTabView: View {
             // primer dismissed. Clear immediately so subsequent re-appears
             // (e.g., scenePhase background→active) don't snap back to it.
             if let tab = appState.pendingTabAfterPrimer {
-                selectedTab = tab
+                selectedTab = (tab == 1 && teamPageEntityId == nil) ? 0 : tab
                 appState.pendingTabAfterPrimer = nil
             }
             #if DEBUG
@@ -392,7 +402,7 @@ struct MainTabView: View {
             // was being photographed (IOS_GOTCHAS §19).
             let args = ProcessInfo.processInfo.arguments
             if let i = args.firstIndex(of: "-gdTab"), i + 1 < args.count, let tab = Int(args[i + 1]) {
-                selectedTab = tab
+                selectedTab = (tab == 1 && teamPageEntityId == nil) ? 0 : tab
             }
             if let i = args.firstIndex(of: "-gdOpenItem"), i + 1 < args.count, let id = UUID(uuidString: args[i + 1]) {
                 appState.deepLinkContentId = id

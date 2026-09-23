@@ -147,12 +147,15 @@ class AppState {
         // tournament it was the primary anchor. With country following off
         // (CountryFollowing.isEnabled) the club is the only thing with a live
         // feed behind it, so it wins; .everyoneTalking when neither is set.
+        //
+        // A country-only device gets .everyoneTalking, not her country: the
+        // country feed has produced nothing since July, so opening onto it
+        // means opening onto an empty screen. This matches the repair the
+        // scenePhase handler already does on every foreground.
         if CountryFollowing.isEnabled, let country = self.selectedCountry {
             self.activeContext = .country(country)
         } else if let team = self.selectedTeam {
             self.activeContext = .team(team)
-        } else if let country = self.selectedCountry {
-            self.activeContext = .country(country)
         }
 
         #if DEBUG
