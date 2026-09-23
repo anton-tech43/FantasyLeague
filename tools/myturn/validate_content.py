@@ -20,6 +20,7 @@ import sys
 from collections import Counter, defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from validate_calls import validate_calls  # noqa: E402
 from validate_overheard import validate_overheard  # noqa: E402
 
 ROOT = os.path.join(os.path.dirname(__file__), "..", "..", "ios", "GoalDigger", "Resources", "MyTurn")
@@ -352,13 +353,15 @@ def main() -> int:
     hype = load("hype.json")
     n_terms = validate_lingo(lingo) if lingo else 0
     lingo_ids = {t.get("id") for t in lingo.get("terms", [])} if lingo else set()
+    n_calls = validate_calls(lingo.get("calls"), err=err, warn=warn, check_idiom=check_idiom,
+                             lingo_ids=lingo_ids) if lingo else 0
     n_sit, n_lines = validate_saythis(saythis, lingo_ids) if saythis else (0, 0)
     n_packs, n_q = validate_quiz(quiz) if quiz else (0, 0)
     n_hype = validate_hype(hype) if hype else 0
 
     if not quiet:
         print(f"saythis: {n_sit} situations, {n_lines} lines")
-        print(f"lingo:   {n_terms} terms")
+        print(f"lingo:   {n_terms} terms, {n_calls} calls")
         print(f"quiz:    {n_packs} packs, {n_q} questions")
         print(f"hype:    {n_hype} lines")
     for w in warnings:
