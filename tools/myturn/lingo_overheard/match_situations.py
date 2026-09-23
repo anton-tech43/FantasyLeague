@@ -8,6 +8,7 @@ OVERHEARD = {
         gist="The moment the match starts",
         decoys=["The coin toss that decides which way to play", "The first shot that tests the keeper"],
         when=["any"],
+        moment="anytime",
         basic=True,
     ),
     "half-time": dict(
@@ -16,6 +17,7 @@ OVERHEARD = {
         gist="The break in the middle of the match",
         decoys=["The fifteen minutes before kick-off", "A short break for drinks in hot weather"],
         when=["any"],
+        moment="common",
         basic=True,
     ),
     "full-time": dict(
@@ -24,6 +26,7 @@ OVERHEARD = {
         gist="The referee ends it, whatever the score",
         decoys=["The end of the first of the two halves", "The whistle that starts the added minutes"],
         when=["any"],
+        moment="common",
         basic=True,
     ),
     "nil-nil": dict(
@@ -32,6 +35,7 @@ OVERHEARD = {
         gist="Nobody scored, the match finished level",
         decoys=["The game was abandoned, so no score counts", "A draw where both sides scored"],
         when=["after-draw", "after-clean-sheet"],
+        moment="rare",
     ),
     "see-the-game-out": dict(
         overheard="They just need to see the game out from here.",
@@ -39,6 +43,7 @@ OVERHEARD = {
         gist="Protect a lead until the final whistle",
         decoys=["Stay on the pitch without getting sent off", "Push for another goal to settle it"],
         when=["after-win", "after-clean-sheet", "derby", "run-in"],
+        moment="common",
     ),
     "squeaky-bum-time": dict(
         overheard="Squeaky bum time now. Don't talk to me.",
@@ -46,6 +51,7 @@ OVERHEARD = {
         gist="The jitters as the clock winds down",
         decoys=["The bit where players start time-wasting", "The nervous wait while a goal is checked"],
         when=["run-in", "title", "relegation", "derby", "after-win"],
+        moment="common",
     ),
     "six-pointer": dict(
         overheard="Six-pointer on Saturday. Don't be planning anything.",
@@ -53,6 +59,7 @@ OVERHEARD = {
         gist="A match between two sides chasing the same place",
         decoys=["A match where a win is worth six points", "A game worth double because it is a derby"],
         when=["title", "relegation", "run-in"],
+        moment="rare",
     ),
     "top-four": dict(
         overheard="Top four, and he'd call the season a success.",
@@ -60,6 +67,7 @@ OVERHEARD = {
         gist="A finish high enough for Champions League",
         decoys=["Winning the league and lifting the trophy", "The sides who reach a cup semi-final"],
         when=["top-four", "run-in"],
+        moment="anytime",
     ),
     "title-race": dict(
         overheard="This title race is doing my head in.",
@@ -67,6 +75,7 @@ OVERHEARD = {
         gist="The close fight at the top of the table",
         decoys=["The final few weeks of the season", "The scrap for a place in Europe"],
         when=["title", "run-in"],
+        moment="anytime",
     ),
     "relegation-battle": dict(
         overheard="They're properly in a relegation battle now. Grim.",
@@ -74,6 +83,7 @@ OVERHEARD = {
         gist="A scrap near the bottom to avoid going down",
         decoys=["A play-off to decide who goes up a division", "A run of hard games against the top clubs"],
         when=["relegation", "run-in"],
+        moment="anytime",
     ),
     "sitter": dict(
         overheard="He's missed a sitter there. I've seen enough.",
@@ -81,6 +91,7 @@ OVERHEARD = {
         gist="A chance so easy it should have been a goal",
         decoys=["A shot dragged wide from a tight angle", "A shot the keeper palms away at full stretch"],
         when=["any", "after-loss", "after-draw"],
+        moment="common",
     ),
     "clinical-finish": dict(
         overheard="That's clinical finishing. He'll sleep well tonight.",
@@ -88,6 +99,7 @@ OVERHEARD = {
         gist="A calm, precise shot that beats the keeper",
         decoys=["A goal that takes a big deflection", "A move drilled on the training ground"],
         when=["after-win", "after-big-win", "good-run"],
+        moment="common",
     ),
     "screamer": dict(
         overheard="And that is a screamer. Get the replay on.",
@@ -95,6 +107,7 @@ OVERHEARD = {
         gist="A goal hit very hard from a long way out",
         decoys=["A shot that flies well over the bar", "A goal that settles a nervy game late on"],
         when=["any", "after-win", "after-big-win"],
+        moment="rare",
     ),
     "top-bins": dict(
         overheard="TOP BINS. Oh, that's filthy, that is.",
@@ -102,6 +115,7 @@ OVERHEARD = {
         gist="A corner of the goal no keeper can reach",
         decoys=["A shot that creeps in off the inside of the post", "A shot the keeper gets a hand to and can't stop"],
         when=["any", "after-win", "after-big-win"],
+        moment="rare",
     ),
     "worldie": dict(
         overheard="Worldie, that. I've watched it four times.",
@@ -109,6 +123,7 @@ OVERHEARD = {
         gist="A goal of genuine world-class quality",
         decoys=["A goal scored at the World Cup", "A goal that wins goal of the month"],
         when=["after-win", "after-big-win"],
+        moment="rare",
     ),
     "hit-the-woodwork": dict(
         overheard="That's twice they've hit the woodwork. Not their day.",
@@ -116,6 +131,7 @@ OVERHEARD = {
         gist="The ball struck the post or bar and stayed out",
         decoys=["The ball smashed into the boards behind the goal", "A shot that beat the keeper and went wide"],
         when=["any", "after-draw", "after-loss"],
+        moment="common",
     ),
     "row-z": dict(
         overheard="He's put that in Row Z. He'll not want to see that again.",
@@ -123,6 +139,7 @@ OVERHEARD = {
         gist="The back of the stand, where a wild shot lands",
         decoys=["A shot that clears the crossbar by inches", "The seats behind the goal at either end"],
         when=["any", "after-draw"],
+        moment="common",
     ),
     "howler": dict(
         overheard="Absolute howler from the keeper. Have you seen it?",
@@ -130,6 +147,7 @@ OVERHEARD = {
         gist="A glaring, embarrassing mistake",
         decoys=["A save so good the crowd roared", "A furious shout at his own defenders"],
         when=["any", "after-loss", "after-heavy-loss"],
+        moment="rare",
     ),
     "hospital-ball": dict(
         overheard="That's a hospital ball. He can't be doing that at this level.",
@@ -137,6 +155,7 @@ OVERHEARD = {
         gist="A loose pass that leaves a teammate in trouble",
         decoys=["A heavy touch that gives the ball away", "A challenge bad enough to injure someone"],
         when=["any", "after-loss", "after-heavy-loss"],
+        moment="common",
     ),
     "hoof": dict(
         overheard="Just hoof it! He's under pressure there.",
@@ -144,6 +163,7 @@ OVERHEARD = {
         gist="Boot the ball clear with no particular aim",
         decoys=["Knock it back to the keeper to start again", "Put it out of play to stop the attack"],
         when=["any", "relegation"],
+        moment="common",
     ),
     "dive": dict(
         overheard="He's dived, ref! Are you watching this?",
@@ -151,6 +171,7 @@ OVERHEARD = {
         gist="Falling over on purpose to win a foul",
         decoys=["Going down hurt to waste a bit of time", "Sliding in feet first to win the ball"],
         when=["any", "derby"],
+        moment="common",
     ),
     "early-bath": dict(
         overheard="That's an early bath for him, then. Silly boy.",
@@ -158,6 +179,7 @@ OVERHEARD = {
         gist="Sent off, heading for the showers",
         decoys=["Subbed off before he gets himself booked", "Missing the next game as punishment"],
         when=["any", "derby", "after-loss"],
+        moment="rare",
     ),
     "handbags": dict(
         overheard="Handbags at the corner flag. The ref's got a job on.",
@@ -165,6 +187,7 @@ OVERHEARD = {
         gist="A bit of pushing and shoving, nothing more",
         decoys=["A proper brawl that gets two players sent off", "Players surrounding the referee in a group"],
         when=["any", "derby"],
+        moment="common",
     ),
     "in-the-book": dict(
         overheard="He's in the book after four minutes. Calm down, lad.",
@@ -172,6 +195,7 @@ OVERHEARD = {
         gist="The referee has shown him a yellow card",
         decoys=["He has been sent off and must leave", "The referee has spoken to him and let him off"],
         when=["any", "derby"],
+        moment="common",
     ),
     "hooked": dict(
         overheard="He's getting hooked here. He knows it, too.",
@@ -179,6 +203,7 @@ OVERHEARD = {
         gist="Taken off for playing badly, not for a rest",
         decoys=["Caught by an arm and pulled back illegally", "Swapped out to save him for the next game"],
         when=["after-loss", "after-heavy-loss", "bad-run"],
+        moment="common",
     ),
     "nutmeg": dict(
         overheard="He's nutmegged him and the ground's gone up.",
@@ -186,6 +211,7 @@ OVERHEARD = {
         gist="Knocking the ball through a defender's legs",
         decoys=["Barging a defender off the ball and going past", "Flicking the ball over a defender's head"],
         when=["any", "after-win", "after-big-win"],
+        moment="common",
     ),
     "done-him": dict(
         overheard="He's done him there. Watch the replay of that.",
@@ -193,6 +219,7 @@ OVERHEARD = {
         gist="Leaving a defender standing",
         decoys=["Fouling an opponent on purpose", "Rounding the keeper and walking it in"],
         when=["any", "after-win", "after-big-win"],
+        moment="common",
     ),
     "caught-napping": dict(
         overheard="Caught napping again, that lot. Dear me.",
@@ -200,6 +227,7 @@ OVERHEARD = {
         gist="Switching off and letting an attacker get free",
         decoys=["Losing a header to a much taller player", "Being caught too high up when it turns over"],
         when=["any", "after-loss", "after-draw", "after-heavy-loss"],
+        moment="common",
     ),
     "against-the-run-of-play": dict(
         overheard="That is against the run of play, no question.",
@@ -207,6 +235,7 @@ OVERHEARD = {
         gist="A goal for the side who have been worse",
         decoys=["A goal that came from a counter-attack", "A goal scored in the closing minutes"],
         when=["after-win", "after-loss", "after-draw"],
+        moment="common",
     ),
     "smash-and-grab": dict(
         overheard="Smash and grab, that. Typical of this lot.",
@@ -214,6 +243,7 @@ OVERHEARD = {
         gist="A win in a match you were outplayed in",
         decoys=["A tackle that takes the ball and the man", "A late equaliser to rescue a point"],
         when=["after-win", "after-loss", "derby"],
+        moment="rare",
     ),
     "game-of-two-halves": dict(
         overheard="It's been a game of two halves, hasn't it?",
@@ -221,6 +251,7 @@ OVERHEARD = {
         gist="A match that turned after the break",
         decoys=["A match split into two equal periods", "A match where both sides scored twice"],
         when=["after-win", "after-loss", "after-draw"],
+        moment="common",
     ),
     "backs-to-the-wall": dict(
         overheard="Backs to the wall for the home side, and the noise is up.",
@@ -228,6 +259,7 @@ OVERHEARD = {
         gist="Soaking up heavy pressure near your own goal",
         decoys=["Players lining up in a wall at a free-kick", "Playing the ball back to the keeper to waste time"],
         when=["after-clean-sheet", "after-win", "europe", "derby"],
+        moment="common",
     ),
     "in-the-mixer": dict(
         overheard="Get it in the mixer! Stop faffing about.",
@@ -235,6 +267,7 @@ OVERHEARD = {
         gist="Launching the ball into a crowded penalty area",
         decoys=["Getting it wide to the winger to cross", "Booting it into the corner to run the clock"],
         when=["any", "after-draw", "relegation"],
+        moment="common",
     ),
     "route-one": dict(
         overheard="Proper route one stuff, this. Not for me.",
@@ -242,6 +275,7 @@ OVERHEARD = {
         gist="Kicking it long and chasing it, no build-up",
         decoys=["Working the ball wide and crossing it", "Passing it through the middle at speed"],
         when=["any", "relegation"],
+        moment="common",
     ),
     "on-the-break": dict(
         overheard="They'll hurt you on the break, this lot. Watch.",
@@ -249,6 +283,7 @@ OVERHEARD = {
         gist="Attacking at speed before they can get back",
         decoys=["Scoring right after the half-time interval", "Winning the ball high up the pitch"],
         when=["any", "europe"],
+        moment="common",
     ),
     "dead-rubber": dict(
         overheard="Dead rubber tonight. I'll probably miss it.",
@@ -256,6 +291,7 @@ OVERHEARD = {
         gist="A match with nothing riding on it any more",
         decoys=["A match played with a worn-out ball", "A match replayed after a draw"],
         when=["run-in", "europe"],
+        moment="rare",
     ),
     "giant-killing": dict(
         overheard="The ground can smell a giant-killing now.",
@@ -263,6 +299,7 @@ OVERHEARD = {
         gist="A small club knocking a big one out of a cup",
         decoys=["A tall side winning everything in the air", "A late winner that dumps a team out of a cup"],
         when=["cup"],
+        moment="rare",
     ),
     "hairdryer": dict(
         overheard="Hairdryer time in that dressing room, I bet.",
@@ -270,6 +307,7 @@ OVERHEARD = {
         gist="A manager screaming at players up close",
         decoys=["A calm team talk to settle everyone down", "A row between players in the dressing room"],
         when=["bad-run", "new-manager", "after-loss", "after-heavy-loss"],
+        moment="common",
     ),
     "man-of-the-match": dict(
         overheard="They've got man of the match wrong again, you know.",
@@ -277,6 +315,7 @@ OVERHEARD = {
         gist="The player judged best on the day",
         decoys=["The supporters' player of the season", "The player who speaks to the cameras after"],
         when=["any", "after-win"],
+        moment="common",
     ),
     "top-drawer": dict(
         overheard="He's top drawer, that lad. Always has been.",
@@ -284,6 +323,7 @@ OVERHEARD = {
         gist="Excellent, the very highest quality",
         decoys=["The top division of English football", "A player kept back for the big games"],
         when=["any", "after-win", "after-big-win"],
+        moment="common",
     ),
     "second-ball": dict(
         overheard="It's all about the second ball, this.",
@@ -291,6 +331,7 @@ OVERHEARD = {
         gist="Whatever drops loose after a header",
         decoys=["A cross played in after a short corner", "The second goal that settles a match"],
         when=["any", "cup", "derby"],
+        moment="common",
     ),
     "unlucky": dict(
         overheard="Unlucky! Oh, for crying out loud.",
@@ -298,5 +339,6 @@ OVERHEARD = {
         gist="A shout of sympathy at a player who missed",
         decoys=["A groan when the keeper makes a save", "A shout at the referee for a poor call"],
         when=["any", "after-loss", "after-draw"],
+        moment="common",
     ),
 }

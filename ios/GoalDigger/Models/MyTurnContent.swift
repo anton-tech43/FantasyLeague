@@ -188,6 +188,16 @@ struct LingoTerm: Codable, Identifiable, Hashable {
     /// Optional, like the other fields added since launch, so a cached file
     /// written before the marker existed still decodes.
     let basic: Bool?
+    /// How often the moment for this word's `sayIt` line actually arrives in
+    /// one match: "anytime" (waiting for nothing on the pitch), "common" (most
+    /// matches) or "rare" (a sending off, a shootout, a hat-trick). The line
+    /// the round leaves her with is drawn only from the first two, because the
+    /// app asks a week later whether she said it, and asking that about a line
+    /// whose moment never came is asking about something that was never
+    /// possible. `String?` rather than an enum for the same reason `when` is
+    /// `[String]`: a publish can add a band before the app knows it, and an
+    /// unknown band is simply never offered.
+    let moment: String?
 }
 
 // MARK: Quiz

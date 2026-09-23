@@ -3,8 +3,10 @@
 
 Each term: (category, id, term, meaning, heard, sayIt, seeAlso) from
 lingo_src.TERMS, its `level` from lingo_src.LEVELS, and the Overheard game
-fields (overheard, speaker, gist, decoys, when) from lingo_overheard. The
-file is written in level order. Then run validate_content.py.
+fields (overheard, speaker, gist, decoys, when, moment) from lingo_overheard.
+`moment` bands how often the sayIt line's moment arrives, so the end-of-round
+commitment never offers a line she had no chance to use. The file is written
+in level order. Then run validate_content.py.
 
 A term with no Overheard entry yet is written without the game fields, so
 the four category files can be filled in parallel; the validator is what
@@ -21,7 +23,7 @@ from lingo_overheard import OVERHEARD, WHEN_TAGS  # noqa: E402
 from lingo_src import LEVEL_OF, LEVELS, TERMS  # noqa: E402
 
 OUT = os.path.join(HERE, "..", "..", "ios", "GoalDigger", "Resources", "MyTurn", "lingo.json")
-VERSION = "2026-09-23.1"
+VERSION = "2026-09-23.2"
 
 ORDER = {tid: i for i, tid in enumerate(t for level in LEVELS for t in level)}
 WHEN_ORDER = {w: i for i, w in enumerate(WHEN_TAGS)}
@@ -50,6 +52,7 @@ for category, tid, term, meaning, heard, say_it, see_also in TERMS:
         row["gist"] = o["gist"]
         row["decoys"] = list(o["decoys"])
         row["when"] = sorted(set(o["when"]), key=lambda w: WHEN_ORDER.get(w, 99))
+        row["moment"] = o["moment"]
         if o.get("basic"):
             # Guessable from the words themselves. Still in the list and in
             # search; never dealt in a round (LingoWeekendDeck.build).

@@ -15,7 +15,7 @@ import re
 from collections import Counter, defaultdict
 
 from lingo_match import term_match
-from lingo_overheard import SPEAKERS, WHEN_TAGS
+from lingo_overheard import MOMENTS, SPEAKERS, WHEN_TAGS
 
 LIMITS = {"overheard": 120, "gist": 60, "decoy": 60}
 MIN_LEN = {"overheard": 20, "gist": 12, "decoy": 12}
@@ -23,6 +23,13 @@ OVERHEARD_COMFORT = 100        # warn above: four lines on a small phone
 BAND = 20                      # a decoy may differ from the gist by this many chars
 MIN_PER_TAG = 5
 MIN_ANY = 60
+# The end-of-round commitment draws only from `anytime` and `common`: a `rare`
+# line commits her to a moment that never arrives, and then asks whether she
+# said it. Floors so those two bands cannot be reclassified down to nothing.
+# The `anytime` floor counts only words that are actually dealt, because four
+# of them are `basic` and never reach a round.
+MIN_ANYTIME = 40
+MIN_COMMON = 40
 MAX_ALIASES = 3
 # `basic` words are never dealt, so every one marked is a word out of the pool.
 # A floor guard, not a style rule: mark everything and the deck empties.
@@ -89,6 +96,9 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
     gists: dict[str, str] = {}
     overheards: Counter = Counter()
     tag_count: Counter = Counter()
+    moment_count: Counter = Counter()
+    # Counted without `basic` words, which are never dealt and so can never be offered.
+    dealt_moment_count: Counter = Counter()
     speaker_by_cat: dict[str, Counter] = defaultdict(Counter)
     complete = 0
 
@@ -212,6 +222,16 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
             err(f"{where}: when needs 1 to 5 tags, got {len(when)}")
         for w in when:
             tag_count[w] += 1
+
+        # --- moment: how often this line's moment actually arrives
+        moment = t.get("moment")
+        if moment not in MOMENTS:
+            err(f"{where}: moment is {moment!r}, must be one of {', '.join(MOMENTS)} "
+                f"(judge the sayIt line, not the term)")
+        else:
+            moment_count[moment] += 1
+            if moment != "rare" and t.get("basic") is not True:
+                dealt_moment_count[moment] += 1
         if len(aliases) > MAX_ALIASES:
             err(f"{where}: more than {MAX_ALIASES} aliases; aliases are the exception, not the rule")
 
@@ -266,6 +286,14 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
             err(f"lingo: tag '{tag}' has {tag_count[tag]} terms (min {MIN_PER_TAG}), a deck would come up thin")
     if tag_count["any"] < MIN_ANY:
         err(f"lingo: only {tag_count['any']} terms carry 'any' (min {MIN_ANY}); the fill pool runs dry")
+    for band, floor in (("anytime", MIN_ANYTIME), ("common", MIN_COMMON)):
+        if dealt_moment_count[band] < floor:
+            ids = sorted(t.get("id", "?") for t in terms
+                         if t.get("moment") == band and t.get("basic") is not True)
+            err(f"lingo: only {dealt_moment_count[band]} dealt terms are moment '{band}' "
+                f"({moment_count[band]} counting basic ones, min {floor}); the line she leaves with "
+                f"comes only from anytime and common, and a thin pool hands her the same line "
+                f"every week: {', '.join(ids)}")
     basic = [t.get("id", "?") for t in terms if t.get("basic") is True]
     if len(basic) > MAX_BASIC:
         err(f"lingo: {len(basic)} terms are marked basic (max {MAX_BASIC}); every one is out of the deck pool, "

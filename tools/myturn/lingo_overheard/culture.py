@@ -8,6 +8,7 @@ OVERHEARD = {
         gist="Stoppage minutes that suit the bigger side",
         decoys=["Kick-off times chosen to suit the television", "The seasons a famous manager was in charge"],
         when=["any", "after-loss", "title"],
+        moment="common",
     ),
     "the-gaffer": dict(
         overheard="Gaffer's seen it. Look at his face.",
@@ -15,6 +16,7 @@ OVERHEARD = {
         gist="The manager, in old workplace slang",
         decoys=["The club captain who leads on the pitch", "The head of the backroom staff at a club"],
         when=["any", "new-manager", "bad-run", "after-heavy-loss"],
+        moment="anytime",
     ),
     "the-boss": dict(
         overheard="It'll be the boss's call and nobody will argue with it.",
@@ -22,6 +24,7 @@ OVERHEARD = {
         gist="The manager, the word the squad uses for him",
         decoys=["The club owner who pays everyone's wages", "The senior player who speaks in the dressing room"],
         when=["any", "new-manager"],
+        moment="common",
     ),
     "hard-man": dict(
         overheard="Signed a proper hard man in the summer. First start today.",
@@ -29,6 +32,7 @@ OVERHEARD = {
         gist="A player feared for his fierce, physical game",
         decoys=["A player who is difficult to deal with off it", "A defender who blocks shots with his body"],
         when=["any", "derby"],
+        moment="anytime",
     ),
     "class-act": dict(
         overheard="What a player he was. Class act, every time I saw him.",
@@ -36,6 +40,7 @@ OVERHEARD = {
         gist="A man admired for his conduct as much as his play",
         decoys=["A player putting on a show for the cameras", "A polished touch that makes the game look easy"],
         when=["good-run", "after-win"],
+        moment="anytime",
     ),
     "top-top-player": dict(
         overheard="He's a top top player and I don't say that lightly.",
@@ -43,6 +48,7 @@ OVERHEARD = {
         gist="Pundit-speak for about as good as it gets",
         decoys=["Someone at the top of the scoring charts", "A man voted best on the pitch that day"],
         when=["good-run", "after-win", "after-big-win", "window"],
+        moment="anytime",
     ),
     "match-of-the-day": dict(
         overheard="Match of the Day gets worse every year. I still watch it, mind.",
@@ -50,6 +56,7 @@ OVERHEARD = {
         gist="The BBC's Saturday night highlights show",
         decoys=["The televised game chosen for Saturday teatime", "A round-up of the goals from abroad each week"],
         when=["any", "after-win", "after-loss"],
+        moment="anytime",
     ),
     "pundit": dict(
         overheard="The pundits said we'd be fine. That's the worry.",
@@ -57,6 +64,7 @@ OVERHEARD = {
         gist="An ex-player paid to give opinions on TV",
         decoys=["A journalist who writes the match report", "An expert who predicts the score beforehand"],
         when=["any", "after-loss"],
+        moment="anytime",
     ),
     "the-lads": dict(
         overheard="Buzzing for the lads tonight. Been a long few weeks.",
@@ -64,6 +72,7 @@ OVERHEARD = {
         gist="The team, as the players and fans call it",
         decoys=["The younger players coming through the academy", "The travelling fans who follow every game"],
         when=["any", "after-win", "good-run"],
+        moment="common",
     ),
     "bottle-it": dict(
         overheard="I'm saying nothing yet. We'll bottle it, we always do.",
@@ -71,6 +80,7 @@ OVERHEARD = {
         gist="To lose your nerve at the crucial moment",
         decoys=["To keep it all in and say nothing about it", "To waste chances in front of goal all game"],
         when=["title", "run-in", "bad-run", "after-loss"],
+        moment="anytime",
     ),
     "banter": dict(
         overheard="He's not answered since Saturday. Can't take the banter.",
@@ -78,6 +88,7 @@ OVERHEARD = {
         gist="Teasing between fans, mostly good-natured",
         decoys=["Chatter between the players on the pitch", "A row between fans that has gone too far"],
         when=["any", "derby", "after-win"],
+        moment="anytime",
     ),
     "group-chat": dict(
         overheard="Don't mind me, I'm just catching up on the group chat.",
@@ -85,6 +96,7 @@ OVERHEARD = {
         gist="Where his mates react to every goal instantly",
         decoys=["An online forum open to all supporters", "Fans posting videos from inside the ground"],
         when=["any", "derby", "after-win", "after-loss"],
+        moment="anytime",
     ),
     "season-ticket": dict(
         overheard="My dad had that season ticket before me. No chance I'm giving it up.",
@@ -92,6 +104,7 @@ OVERHEARD = {
         gist="A pass covering every home league game",
         decoys=["A pass that gets you into any ground you like", "A membership that lets you buy cup tickets early"],
         when=["any", "early-season"],
+        moment="anytime",
     ),
     "away-day": dict(
         overheard="Big away day Saturday. I'll be useless by Sunday.",
@@ -99,6 +112,7 @@ OVERHEARD = {
         gist="A trip to watch the team at another ground",
         decoys=["A day off the players get away from the club", "A pre-season friendly played overseas"],
         when=["any", "cup", "europe"],
+        moment="anytime",
     ),
     "the-away-end": dict(
         overheard="Second half and they're attacking the away end now.",
@@ -106,6 +120,7 @@ OVERHEARD = {
         gist="The part of the ground given to visiting fans",
         decoys=["The end of the pitch the visitors attack", "The stand behind the goal at the far side"],
         when=["any", "cup", "europe", "derby"],
+        moment="common",
     ),
     "kop": dict(
         overheard="The Kop are on their feet and they've not sat down for ten minutes.",
@@ -113,6 +128,7 @@ OVERHEARD = {
         gist="Liverpool's loud home stand at Anfield",
         decoys=["The steepest old stand, where tickets are cheap", "A stand named after a club's great manager"],
         when=["any"],
+        moment="rare",
     ),
     "terraces": dict(
         overheard="My old man swore by the terraces. He'd not enjoy it now.",
@@ -120,6 +136,7 @@ OVERHEARD = {
         gist="The old standing areas, and the fans in them",
         decoys=["The rows of houses behind an old ground", "The banked rows of seating in the top tier"],
         when=["any", "derby"],
+        moment="common",
     ),
     "chant": dict(
         overheard="The whole ground was on that chant tonight. Goosebumps.",
@@ -127,6 +144,7 @@ OVERHEARD = {
         gist="A song the crowd sings to a pop tune",
         decoys=["A rhythm the crowd claps without words", "The song a club plays as the teams come out"],
         when=["any", "derby", "cup"],
+        moment="common",
     ),
     "half-and-half-scarf": dict(
         overheard="Bloke in front of us in a half-and-half scarf. Unbelievable scenes.",
@@ -134,6 +152,7 @@ OVERHEARD = {
         gist="A souvenir showing both teams' colours",
         decoys=["A ticket that covers both legs of a round", "A scarf swapped with a rival fan at full time"],
         when=["derby", "cup"],
+        moment="anytime",
     ),
     "plastic-fan": dict(
         overheard="Listen to them. Plastic fans, the lot of them.",
@@ -141,6 +160,7 @@ OVERHEARD = {
         gist="A fan who only turns up when things go well",
         decoys=["Someone who turns up in a shop-bought kit", "A supporter who watches on TV and nothing else"],
         when=["any", "derby", "good-run"],
+        moment="anytime",
     ),
     "glory-hunter": dict(
         overheard="Glory hunter, him. Always has been, even at school.",
@@ -148,6 +168,7 @@ OVERHEARD = {
         gist="A fan who picked a club for its trophies",
         decoys=["A player chasing his own goals over the team", "Someone who collects club shirts and badges"],
         when=["any", "good-run", "title"],
+        moment="anytime",
     ),
     "the-boot-room": dict(
         overheard="The boot room was a proper thing once. All gone now.",
@@ -155,6 +176,7 @@ OVERHEARD = {
         gist="Promoting a manager from inside the club",
         decoys=["The place at a ground where kit is stored", "A club's academy for teenage players"],
         when=["any", "new-manager"],
+        moment="rare",
     ),
     "the-invincibles": dict(
         overheard="Their lot will bring up the Invincibles before the first goal.",
@@ -162,6 +184,7 @@ OVERHEARD = {
         gist="A whole league season without a defeat",
         decoys=["A team that went a season without losing at home", "A side that won three trophies in one year"],
         when=["title", "good-run"],
+        moment="anytime",
     ),
     "sack-race": dict(
         overheard="He'll be in the sack race by Christmas at this rate.",
@@ -169,6 +192,7 @@ OVERHEARD = {
         gist="The unofficial contest over which manager goes first",
         decoys=["A charity event before a game at the ground", "The run of games that decides a manager's future"],
         when=["bad-run", "new-manager", "after-heavy-loss"],
+        moment="anytime",
     ),
     "new-manager-bounce": dict(
         overheard="You'll hear a lot about the new manager bounce this week.",
@@ -176,6 +200,7 @@ OVERHEARD = {
         gist="The short run of good results after a change",
         decoys=["The lift in ticket sales after an appointment", "The boost a home crowd gives a struggling side"],
         when=["new-manager", "good-run"],
+        moment="rare",
     ),
     "silly-season": dict(
         overheard="Silly season, that's all this is. Same every year.",
@@ -183,6 +208,7 @@ OVERHEARD = {
         gist="Summer, when every rumour gets printed",
         decoys=["The run of games over Christmas and New Year", "A spell when results make no sense at all"],
         when=["window", "early-season"],
+        moment="anytime",
     ),
     "here-we-go": dict(
         overheard="Here we go, apparently. My phone hasn't stopped.",
@@ -190,6 +216,7 @@ OVERHEARD = {
         gist="The reporter's signal a transfer is done",
         decoys=["The chant fans start as a big game kicks off", "The countdown to the window shutting"],
         when=["window"],
+        moment="anytime",
     ),
     "football-twitter": dict(
         overheard="Football Twitter has been at it since lunchtime. Not for me.",
@@ -197,6 +224,7 @@ OVERHEARD = {
         gist="The online corner where fans argue all day",
         decoys=["A club's official account posting the news", "The reporters who break transfer stories"],
         when=["any", "window", "after-loss"],
+        moment="anytime",
     ),
     "fantasy-football": dict(
         overheard="Don't talk to me about fantasy football this week.",
@@ -204,6 +232,7 @@ OVERHEARD = {
         gist="A game where you pick real players for points",
         decoys=["A made-up league played on a games console", "Betting on which players will score first"],
         when=["any", "early-season"],
+        moment="anytime",
     ),
     "we-go-again": dict(
         overheard="We go again Tuesday. Kick-off's at eight, apparently.",
@@ -211,6 +240,7 @@ OVERHEARD = {
         gist="Bad result, forget it, on to the next game",
         decoys=["The match is being replayed after a draw", "Fans are heading off to another away trip"],
         when=["after-loss", "after-heavy-loss", "bad-run", "after-draw"],
+        moment="common",
     ),
     "the-lino": dict(
         overheard="Lino! That's never a throw to them. He's making it up now.",
@@ -218,6 +248,7 @@ OVERHEARD = {
         gist="The assistant referee who judges offside",
         decoys=["The painted markings around the pitch", "The fourth official holding up the board"],
         when=["any"],
+        moment="common",
     ),
     "wags": dict(
         overheard="My mum still goes on about the WAGs at that 2006 World Cup.",
@@ -225,6 +256,7 @@ OVERHEARD = {
         gist="Tabloid slang for players' wives and girlfriends",
         decoys=["Photographers who chase the players about", "The section of the stand kept for families"],
         when=["any"],
+        moment="anytime",
     ),
     "magic-sponge": dict(
         overheard="Here comes the magic sponge. We've all seen this before.",
@@ -232,6 +264,7 @@ OVERHEARD = {
         gist="A wet flannel that fixes any knock",
         decoys=["A cloth used to dry the ball", "The stretcher carried on for a bad injury"],
         when=["any"],
+        moment="common",
     ),
     "goal-of-the-month": dict(
         overheard="Goal of the month's going to be a tough one this time.",
@@ -239,6 +272,7 @@ OVERHEARD = {
         gist="The best strike, picked by a viewers' vote",
         decoys=["The award for a player's form over four weeks", "A scoring target a striker is set each month"],
         when=["any", "after-win", "after-big-win"],
+        moment="rare",
     ),
     "the-magic-of-the-cup": dict(
         overheard="You cannot write this. The magic of the cup, that is.",
@@ -246,6 +280,7 @@ OVERHEARD = {
         gist="The idea that a small club can beat a big one",
         decoys=["A trophy handed over on the pitch at the end", "The extra money a cup run brings a club"],
         when=["cup"],
+        moment="rare",
     ),
     "wembley": dict(
         overheard="Two games from Wembley. Don't say it out loud, don't jinx it.",
@@ -253,6 +288,7 @@ OVERHEARD = {
         gist="The national stadium in north-west London",
         decoys=["The name fans give to the cup final itself", "The training base the national team uses"],
         when=["cup", "run-in"],
+        moment="rare",
     ),
     "the-third-round": dict(
         overheard="We've got them in the third round. Of course we have.",
@@ -260,5 +296,6 @@ OVERHEARD = {
         gist="The FA Cup stage in January the big clubs enter",
         decoys=["The third game of a group in a tournament", "The round of matches played on Boxing Day"],
         when=["cup"],
+        moment="rare",
     ),
 }

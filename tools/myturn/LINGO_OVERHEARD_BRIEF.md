@@ -26,6 +26,7 @@ sit in a textbook, rewrite it.
     gist="He was beyond the final defender for the pass",
     decoys=["He'd stepped off the side of the pitch", "He handled the ball before he shot"],
     when=["any"],
+    moment="anytime",
     # aliases=["see it out"]   # optional, max 3, only when the natural phrasing is not the term text
 ),
 ```
@@ -87,6 +88,21 @@ match. Tags:
 | `after-win` `after-loss` `after-draw` | within 36 hours of the result |
 | `after-big-win` `after-heavy-loss` | margin of three or more |
 | `after-clean-sheet` | nothing let in |
+
+**`moment`**: `anytime` | `common` | `rare`. How often the moment for this word's `sayIt`
+line actually arrives in the one match she watches with him. `anytime` waits for nothing on
+the pitch (the squad, the table, the fixture list, the window, a player's reputation);
+`common` arrives in most matches; `rare` needs something that usually does not happen (a
+sending off, a shootout, a hat-trick, a cup round that comes once a year). **Judge the
+`sayIt` line, not the term.** "Penalty! Who takes them for us?" is `rare` even though
+penalties are an everyday word, because the line needs one to be given.
+
+It exists because the round ends by handing her one line to use at the next match, and asks
+once afterwards whether she said it. A line whose moment never came makes that a question
+about something that was never possible. The app offers only `anytime` and `common` lines
+(`LingoWeekendDeck.offer`); `rare` words are still dealt, still learnt, just never committed
+to. Rule of thumb for the border: below about one match in three is `rare`, which is why a
+clean sheet is `common` and an own goal is not.
 
 ## Golden examples
 

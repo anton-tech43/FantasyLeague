@@ -8,6 +8,7 @@ OVERHEARD = {
         gist="England's top division, twenty clubs, August to May",
         decoys=["The league for the top clubs in Britain", "All the English divisions taken together"],
         when=["any", "early-season"],
+        moment="anytime",
         basic=True,
     ),
     "points": dict(
@@ -16,6 +17,7 @@ OVERHEARD = {
         gist="Three for a win, one for a draw",
         decoys=["One for every goal scored", "A tally handed out by finishing position"],
         when=["any", "run-in", "after-win", "after-draw"],
+        moment="common",
     ),
     "the-table": dict(
         overheard="Have a look at the table and tell me that's fair.",
@@ -23,6 +25,7 @@ OVERHEARD = {
         gist="Every club ordered by points won",
         decoys=["A fixture list for the weekend's games", "The clubs sorted by goals scored so far"],
         when=["any", "run-in", "title", "top-four", "relegation"],
+        moment="anytime",
         basic=True,
     ),
     "goal-difference": dict(
@@ -31,6 +34,7 @@ OVERHEARD = {
         gist="Goals scored minus goals let in",
         decoys=["The margin in a single match", "A gap in points between two clubs"],
         when=["run-in", "title", "top-four", "relegation", "after-big-win"],
+        moment="anytime",
     ),
     "relegation": dict(
         overheard="If we don't win tonight we're in a relegation scrap by Christmas.",
@@ -38,6 +42,7 @@ OVERHEARD = {
         gist="Dropping out of the division at the bottom",
         decoys=["A player pushed down to the reserves", "Finishing outside the places for Europe"],
         when=["relegation", "run-in"],
+        moment="anytime",
     ),
     "promotion": dict(
         overheard="mate they've done it. promotion with three games to spare.",
@@ -45,6 +50,7 @@ OVERHEARD = {
         gist="Moving up into the division above",
         decoys=["A move up into the first team", "Finishing top of the division, champions"],
         when=["early-season", "run-in"],
+        moment="anytime",
     ),
     "championship": dict(
         overheard="He's a Championship player at this level, I'm afraid.",
@@ -52,6 +58,7 @@ OVERHEARD = {
         gist="The division below the top one in England",
         decoys=["A league for clubs' reserve and youth sides", "The tier where the clubs are part-time"],
         when=["early-season", "relegation"],
+        moment="anytime",
     ),
     "play-offs": dict(
         overheard="Play-offs again. I can't go through that a third year running.",
@@ -59,6 +66,7 @@ OVERHEARD = {
         gist="A mini knockout deciding who goes up",
         decoys=["A one-off final for the title", "Extra games to decide who avoids going down"],
         when=["early-season", "run-in"],
+        moment="anytime",
     ),
     "offside": dict(
         overheard="That's never offside. I don't care what the replay says.",
@@ -66,6 +74,7 @@ OVERHEARD = {
         gist="He was beyond the final defender for the pass",
         decoys=["The ball had already gone out for a goal kick", "He got in the keeper's way at the near post"],
         when=["any"],
+        moment="common",
     ),
     "var": dict(
         overheard="VAR has been the story of this season, for better or worse.",
@@ -73,6 +82,7 @@ OVERHEARD = {
         gist="The video referee is looking at the replay",
         decoys=["A panel that reviews decisions after the match", "The screen in the ground showing the decision"],
         when=["any"],
+        moment="common",
     ),
     "clear-and-obvious": dict(
         overheard="They keep saying clear and obvious. I've stopped believing in it.",
@@ -80,6 +90,7 @@ OVERHEARD = {
         gist="A decision so wrong nobody could argue",
         decoys=["Footage good enough to see it", "A decision the referee got right first time"],
         when=["any"],
+        moment="rare",
     ),
     "foul": dict(
         overheard="Foul, ref! Are you watching the same game as me?",
@@ -87,6 +98,7 @@ OVERHEARD = {
         gist="Going through the man, not the ball",
         decoys=["A decision the referee got wrong", "Arguing with the referee after a decision"],
         when=["any"],
+        moment="common",
     ),
     "handball": dict(
         overheard="handball there surely. how has he not given that?",
@@ -94,6 +106,7 @@ OVERHEARD = {
         gist="Touching the ball with an arm on purpose",
         decoys=["The keeper picking the ball up outside his box", "Grabbing an opponent's shirt to hold him back"],
         when=["any"],
+        moment="common",
     ),
     "penalty": dict(
         overheard="Penalty. The whole ground has gone quiet.",
@@ -101,6 +114,7 @@ OVERHEARD = {
         gist="A free shot with just the keeper to beat",
         decoys=["A punishment card shown after a bad tackle", "A free kick given just outside the box"],
         when=["any"],
+        moment="rare",
     ),
     "the-box": dict(
         overheard="Get it in the box. Stop passing it sideways.",
@@ -108,6 +122,7 @@ OVERHEARD = {
         gist="The big rectangle in front of each goal",
         decoys=["The dugout where the manager and subs sit", "The six-yard area a keeper kicks from"],
         when=["any"],
+        moment="common",
     ),
     "free-kick": dict(
         overheard="That's a free kick, surely. He's gone through the back of him.",
@@ -115,6 +130,7 @@ OVERHEARD = {
         gist="A restart taken from where the offence happened",
         decoys=["A kick awarded for a foul inside the box", "A drop ball restart after a player's hurt"],
         when=["any"],
+        moment="common",
     ),
     "corner": dict(
         overheard="Corner. Get the big lads up, this is our chance.",
@@ -122,6 +138,7 @@ OVERHEARD = {
         gist="A kick from the flag after a defender puts it out",
         decoys=["A cross from deep while the ball is live", "A free kick given wide, level with the goal"],
         when=["any"],
+        moment="common",
         basic=True,
     ),
     "throw-in": dict(
@@ -130,6 +147,7 @@ OVERHEARD = {
         gist="Putting the ball back in from the sideline",
         decoys=["Giving up and letting the other lot have it", "A free kick given out on the touchline"],
         when=["any"],
+        moment="common",
         basic=True,
     ),
     "yellow-card": dict(
@@ -138,6 +156,7 @@ OVERHEARD = {
         gist="A formal warning, two and you are off",
         decoys=["A fine the club pays the league", "A ban from the next match, straight away"],
         when=["any"],
+        moment="common",
     ),
     "red-card": dict(
         overheard="Red card. Well, that's the game gone.",
@@ -145,6 +164,7 @@ OVERHEARD = {
         gist="A player off, and nobody replaces him",
         decoys=["A warning before he is sent off", "A penalty given against them for the foul"],
         when=["any", "derby"],
+        moment="rare",
     ),
     "ten-men": dict(
         overheard="Ten men and we're somehow level here. Unbelievable.",
@@ -152,6 +172,7 @@ OVERHEARD = {
         gist="A man down for the rest of the match",
         decoys=["The ten outfield players, not the keeper", "A shape with nobody up front"],
         when=["any", "after-loss"],
+        moment="rare",
     ),
     "added-time": dict(
         overheard="Six minutes of added time. Where has he got that from?",
@@ -159,6 +180,7 @@ OVERHEARD = {
         gist="Extra play at the end for stoppages",
         decoys=["A count of how long the ball was out of play", "Time carried over from the first half"],
         when=["any"],
+        moment="common",
     ),
     "extra-time": dict(
         overheard="Extra time it is, then. Nobody wanted that.",
@@ -166,6 +188,7 @@ OVERHEARD = {
         gist="Half an hour more to settle a cup game",
         decoys=["A short break before penalties are taken", "The same round played again a week later"],
         when=["cup", "europe"],
+        moment="rare",
     ),
     "penalty-shootout": dict(
         overheard="penalty shootout. i cant look, text me when its done.",
@@ -173,6 +196,7 @@ OVERHEARD = {
         gist="A round of five spot kicks each, then sudden death",
         decoys=["One kick each until somebody misses", "A free shot from twelve yards during play"],
         when=["cup", "europe"],
+        moment="rare",
     ),
     "two-legs": dict(
         overheard="Remember, this is over two legs. Anything can happen from here.",
@@ -180,6 +204,7 @@ OVERHEARD = {
         gist="One round played as two matches, home and away",
         decoys=["The two halves either side of the break", "A round decided by a second match if it's level"],
         when=["europe", "cup"],
+        moment="rare",
     ),
     "aggregate": dict(
         overheard="The aggregate is all that matters now. Forget the performance.",
@@ -187,6 +212,7 @@ OVERHEARD = {
         gist="Both scores added together over a round",
         decoys=["A club's goals across a season", "The gap between goals scored and let in"],
         when=["europe", "cup"],
+        moment="rare",
     ),
     "substitution": dict(
         overheard="First substitution already, and it's half an hour gone.",
@@ -194,6 +220,7 @@ OVERHEARD = {
         gist="Swapping a player on the pitch for one waiting",
         decoys=["Taking a player off with nobody coming on", "One player moving to cover another's role"],
         when=["any"],
+        moment="common",
     ),
     "the-bench": dict(
         overheard="hes on the bench again. third game running now…",
@@ -201,6 +228,7 @@ OVERHEARD = {
         gist="The substitutes waiting beside the pitch",
         decoys=["The staff sat in the dugout", "The players left out of the squad entirely"],
         when=["any", "cup"],
+        moment="common",
         basic=True,
     ),
     "starting-eleven": dict(
@@ -209,6 +237,7 @@ OVERHEARD = {
         gist="The players picked to begin the match",
         decoys=["The order the players run out in", "The squad named for a European round"],
         when=["any", "early-season"],
+        moment="common",
         basic=True,
     ),
     "clean-sheet": dict(
@@ -217,6 +246,7 @@ OVERHEARD = {
         gist="Letting in no goals at all in a match",
         decoys=["A game with no cards and no trouble", "Winning without conceding a penalty"],
         when=["after-clean-sheet", "after-win", "good-run"],
+        moment="common",
     ),
     "own-goal": dict(
         overheard="And that's an own goal. The second of the afternoon.",
@@ -224,6 +254,7 @@ OVERHEARD = {
         gist="A ball put into your own net by mistake",
         decoys=["A goal you score on your own, unassisted", "A goal that came off a defender on the way in"],
         when=["any", "after-loss"],
+        moment="rare",
         basic=True,
     ),
     "brace": dict(
@@ -232,6 +263,7 @@ OVERHEARD = {
         gist="Two goals by the same player in a match",
         decoys=["A strapping worn on a knee or ankle", "One goal and one assist in a match"],
         when=["after-win", "after-big-win"],
+        moment="rare",
     ),
     "hat-trick": dict(
         overheard="That's the hat-trick, then. What a way to spend a Saturday.",
@@ -239,6 +271,7 @@ OVERHEARD = {
         gist="Three goals by one man in a match",
         decoys=["Three wins on the bounce for a club", "Three goals for a side inside one half"],
         when=["after-win", "after-big-win"],
+        moment="rare",
     ),
     "assist": dict(
         overheard="Another assist for him. He's having a season.",
@@ -246,6 +279,7 @@ OVERHEARD = {
         gist="The pass that leads straight to a goal",
         decoys=["Any pass in the move that led to the goal", "Winning the ball back to start an attack"],
         when=["any", "after-win"],
+        moment="common",
     ),
     "fixtures": dict(
         overheard="Fixtures are out. I've already booked three days off.",
@@ -253,6 +287,7 @@ OVERHEARD = {
         gist="Who plays who, and when",
         decoys=["Dates the tickets go on sale", "The TV picks for the weekend's games"],
         when=["any", "early-season"],
+        moment="anytime",
         basic=True,
     ),
     "derby": dict(
@@ -261,6 +296,7 @@ OVERHEARD = {
         gist="A match between two clubs from the same city",
         decoys=["Any game with a real edge to it", "A fixture played every year on the same day"],
         when=["derby"],
+        moment="rare",
     ),
     "the-cups": dict(
         overheard="He never takes the cups seriously and it shows.",
@@ -268,6 +304,7 @@ OVERHEARD = {
         gist="The knockout competitions beside the league",
         decoys=["The trophies handed out at the end of a season", "The two European competitions played midweek"],
         when=["cup"],
+        moment="anytime",
     ),
     "fa-cup": dict(
         overheard="FA Cup third round. This is the one he wants.",
@@ -275,6 +312,7 @@ OVERHEARD = {
         gist="The oldest knockout, open to every club",
         decoys=["The competition every club in Europe can enter", "The cup for the top two divisions"],
         when=["cup"],
+        moment="rare",
     ),
     "league-cup": dict(
         overheard="It's the League Cup, and the sponsors have changed the name again.",
@@ -282,6 +320,7 @@ OVERHEARD = {
         gist="The smaller of the two domestic cups",
         decoys=["A trophy for the winners of the division", "The pre-season tournament played in August"],
         when=["cup"],
+        moment="rare",
     ),
     "champions-league": dict(
         overheard="That anthem, those lights. Champions League football is back.",
@@ -289,6 +328,7 @@ OVERHEARD = {
         gist="Europe's top club competition",
         decoys=["A competition for the winners of each division", "The summer tournament between national sides"],
         when=["europe", "top-four", "title"],
+        moment="rare",
     ),
     "europa-league": dict(
         overheard="Europa League on Thursday. I'll be up late again.",
@@ -296,6 +336,7 @@ OVERHEARD = {
         gist="Europe's second club competition",
         decoys=["The knockout stage of Europe's top competition", "A tournament for national sides in Europe"],
         when=["europe", "top-four"],
+        moment="rare",
     ),
     "conference-league": dict(
         overheard="conference league away trip in november. whos coming?",
@@ -303,6 +344,7 @@ OVERHEARD = {
         gist="Europe's third club competition",
         decoys=["A division below the Football League", "The qualifying round before a group stage"],
         when=["europe", "top-four"],
+        moment="rare",
     ),
     "transfer-window": dict(
         overheard="We're a month into the transfer window and they've signed nobody.",
@@ -310,6 +352,7 @@ OVERHEARD = {
         gist="The weeks when deals can be done",
         decoys=["A club's list of targets", "The fee one club pays another for a player"],
         when=["window", "early-season"],
+        moment="anytime",
     ),
     "deadline-day": dict(
         overheard="Deadline day, and we're outside the ground with nothing to tell you.",
@@ -317,6 +360,7 @@ OVERHEARD = {
         gist="The final day for doing deals",
         decoys=["The final day to buy tickets for the season", "Cut-off for naming the squad for a cup"],
         when=["window"],
+        moment="rare",
     ),
     "loan": dict(
         overheard="He's gone out on loan for the season. Bit of a surprise.",
@@ -324,6 +368,7 @@ OVERHEARD = {
         gist="Borrowing a player from another club for a while",
         decoys=["Dropping down a division to get regular games", "Playing for the reserve side until he's wanted"],
         when=["window", "early-season"],
+        moment="anytime",
     ),
     "sacked": dict(
         overheard="hes getting sacked in the morning and about time too.",
@@ -331,5 +376,6 @@ OVERHEARD = {
         gist="Losing the job when results go bad",
         decoys=["A player dropped from the squad for a game", "The manager walking out for a bigger club"],
         when=["bad-run", "new-manager", "after-heavy-loss"],
+        moment="anytime",
     ),
 }

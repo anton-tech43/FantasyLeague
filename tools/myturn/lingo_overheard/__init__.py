@@ -1,9 +1,13 @@
 """lingo_overheard — the Overheard game's content, one file per category.
 
 Each file holds OVERHEARD: dict[term id -> dict(overheard, speaker, gist,
-decoys, when, aliases?, basic?)]. `basic=True` marks a word an English
-speaker works out from the words themselves ("kick-off", "own goal"): it
-stays in the word list and in search, and is never dealt in a round.
+decoys, when, moment, aliases?, basic?)]. `moment` says how often the line's
+moment arrives in one match (anytime, common, rare): the end-of-round
+commitment only ever offers a line she could actually get to say.
+
+`basic=True` marks a word an English speaker works out from the words
+themselves ("kick-off", "own goal"): it stays in the word list and in search,
+and is never dealt in a round.
 
 Split by category so four people can write in parallel without touching the
 same file. lingo_src.py stays the source for
@@ -19,6 +23,7 @@ WHEN_TAGS = (
     "after-win", "after-loss", "after-draw", "after-big-win", "after-heavy-loss", "after-clean-sheet",
 )
 SPEAKERS = ("him", "telly", "chat", "pundit")
+MOMENTS = ("anytime", "common", "rare")
 
 OVERHEARD: dict[str, dict] = {}
 for _mod in (rules, tactics, match_situations, culture):

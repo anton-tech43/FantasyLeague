@@ -77,6 +77,7 @@ meant and has a line back. So every term also carries the game:
 | `gist` | the right option, a fragment, no word of the term in it | 60 |
 | `decoys` | two wrong options: the literal misreading and a neighbouring real idea, same length band | 2 x 60 |
 | `when` | the match contexts the word is dealt in (derby, cup, relegation, after-loss ...) | 1 to 5 tags |
+| `moment` | how often the `sayIt` line's moment arrives: `anytime` / `common` / `rare` | one of three |
 
 The content lives in `tools/myturn/lingo_overheard/<category>.py`, one file per
 category; the brief with the golden examples and the tag map is
@@ -88,6 +89,17 @@ Overheard is speech, so it gets only the dated-fact half of the superlative ban
 how people talk. Gist and decoys are definitions and get the full ban. Nothing
 in any of the five fields names a club or a living person: the app cannot see
 the present and a name goes stale the week he is sacked.
+
+`moment` bands the `sayIt` line, not the word. The round ends by handing her one
+line to use at the next match and asks once afterwards whether she said it, so a
+line waiting for a sending off ("That's a red. He's off.") commits her to a
+moment that arrives in about one league match in eight, and then asks about
+something that was never possible. `anytime` waits for nothing on the pitch,
+`common` arrives in most matches, `rare` needs something that usually does not;
+the border sits at about one match in three, which is why a clean sheet is
+`common` and an own goal is `rare`. `LingoWeekendDeck.offer` draws only from
+`anytime` and `common`, and from nothing it does not recognise, so `rare` words
+are still dealt and still learnt, just never committed to.
 
 The deck itself ("This weekend's words") is built on the phone from the cached
 team page: the next fixture, the last result, the table, the rival. Static
@@ -143,5 +155,7 @@ the moment she was deciding whether to keep the app.
   length band 20, no club names, no defining phrasing, `when` tags from the enum
   with at least 5 terms per tag and 60 carrying `any`
 - UK idiom banlist unchanged
-- lingo Overheard: `basic` must be a bool and at most 15 terms may carry it; the blind
-  test (§8) is a human gate, not a script
+- lingo Overheard: `basic` must be a bool and at most 15 terms may carry it; `moment`
+  required and one of `anytime` / `common` / `rare`, with at least 40 dealt terms in each
+  of `anytime` and `common` (the `basic` ones do not count, because they are never dealt
+  and so can never be offered); the blind test (§8) is a human gate, not a script

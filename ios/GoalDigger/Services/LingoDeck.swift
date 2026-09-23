@@ -555,6 +555,9 @@ enum LingoWeekendDeck {
     /// The one word a six-pointer is about. Forced into the deck when the
     /// fixture is one, because it is the phrase she will hear all week.
     static let sixPointerTermId = "six-pointer"
+    /// The `moment` bands a line may be offered from. Every other value,
+    /// including none at all, keeps the word in the round and out of her hand.
+    static let offerableMoments: Set<String> = ["anytime", "common"]
 
     /// The seven, easiest first, and whether they had to be padded out with
     /// words she already knows.
@@ -670,9 +673,14 @@ enum LingoWeekendDeck {
     ///
     /// Only before a game: after one, a line to use is a line with nowhere to
     /// go. Only a word she got right, because the offer is "you have this
-    /// one", not homework. Tag overlap first, so the line is about the game
-    /// she is actually walking into, then any word she got right, in the order
-    /// the round dealt them so the pick does not move under her.
+    /// one", not homework. Only a line whose moment actually arrives: a `rare`
+    /// word commits her to a sending off, and the app then asks whether she
+    /// said it, which is a question about something that was never possible.
+    /// A word with no `moment`, or one this build does not recognise, is not
+    /// offered either — unclassified means unknown, and unknown might be
+    /// un-sayable. Then tag overlap first, so the line is about the game she is
+    /// actually walking into, then any word left, in the order the round dealt
+    /// them so the pick does not move under her.
     ///
     /// Returns the whole record rather than the term: the heading, the line
     /// and the settle row a week later all have to say the same words, and
@@ -681,7 +689,8 @@ enum LingoWeekendDeck {
                       now: Date, personalise: (String) -> String) -> MyTurnStore.SaidLine? {
         guard let occasion = context.occasion(now: now) else { return nil }
         let byId = Dictionary(terms.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
-        let right = knewIds.compactMap { byId[$0] }.filter { $0.sayIt?.isEmpty == false }
+        let right = knewIds.compactMap { byId[$0] }
+            .filter { $0.sayIt?.isEmpty == false && offerableMoments.contains($0.moment ?? "") }
         let live = Set(context.tags).subtracting(["any"])
         let pick = right.first { !Set($0.when ?? []).isDisjoint(with: live) } ?? right.first
         guard let term = pick, let sayIt = term.sayIt else { return nil }
@@ -882,12 +891,12 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
     assert(none.occasion(now: now) == nil, "no fixture at all was offered a line to use")
 
     // --- The deck --------------------------------------------------------
-    func term(_ id: String, level: Int, when: [String]) -> LingoTerm {
+    func term(_ id: String, level: Int, when: [String], moment: String? = "common") -> LingoTerm {
         LingoTerm(id: id, category: .matchSituations, term: id, meaning: "m", heard: "h",
                   sayIt: "Say \(id).", seeAlso: nil, level: level,
                   overheard: "They said \(id).", overheardTerm: id, speaker: .him,
                   gist: "gist \(id)", decoys: ["decoy one \(id)", "decoy two \(id)"], when: when,
-                  basic: nil)
+                  basic: nil, moment: moment)
     }
     // The derby words sit ABOVE the fillers by difficulty, so "derby first" is
     // a statement about selection and about relevance beating level — with
@@ -970,6 +979,32 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
                                   now: now, personalise: plain) == nil,
            "a line to use was offered after the game it would be used at")
 
+    // The moment band. A `rare` line waits for a sending off, and a week later
+    // the app asks whether she said it: never offered, not even when it is the
+    // only thing she got right. A word carrying no band, or one written after
+    // this build, is unclassified and therefore also un-offerable.
+    let rare = term("rare-0", level: 1, when: ["derby", "any"], moment: "rare")
+    let unbanded = term("unbanded-0", level: 1, when: ["derby", "any"], moment: nil)
+    let future = term("future-0", level: 1, when: ["derby", "any"], moment: "matchday-only")
+    assert(LingoWeekendDeck.offer(terms: synthetic + [rare], knewIds: ["rare-0"], context: derby,
+                                  now: now, personalise: plain) == nil,
+           "a rare line was offered as the only right answer, so she was committed to a sending off")
+    assert(LingoWeekendDeck.offer(terms: synthetic + [unbanded], knewIds: ["unbanded-0"], context: derby,
+                                  now: now, personalise: plain) == nil,
+           "a word with no moment was offered; unclassified might be un-sayable")
+    assert(LingoWeekendDeck.offer(terms: synthetic + [future], knewIds: ["future-0"], context: derby,
+                                  now: now, personalise: plain) == nil,
+           "a moment band this build has never heard of was treated as offerable")
+    // The tag preference has to survive inside the filtered pool: a rare derby
+    // word must not take the slot from a common word for any match, and a
+    // common derby word must still beat it.
+    assert(LingoWeekendDeck.offer(terms: synthetic + [rare], knewIds: ["any-0", "rare-0"], context: derby,
+                                  now: now, personalise: plain)?.termId == "any-0",
+           "the tag preference reached past the moment filter and picked the rare derby word")
+    assert(LingoWeekendDeck.offer(terms: synthetic + [rare], knewIds: ["any-0", "rare-0", "derby-2"],
+                                  context: derby, now: now, personalise: plain)?.termId == "derby-2",
+           "filtering by moment cost the offer its tag preference")
+
     // --- The options -----------------------------------------------------
     let playable = term("opt", level: 1, when: ["any"])
     guard let first = LingoWeekendDeck.options(for: playable),
@@ -1000,12 +1035,13 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
     }, "two different salts dealt every word in the same order, so the salt does nothing")
     let bare = LingoTerm(id: "bare", category: .rules, term: "Bare", meaning: "m", heard: "h",
                          sayIt: nil, seeAlso: nil, level: 1, overheard: nil, overheardTerm: nil,
-                         speaker: nil, gist: nil, decoys: nil, when: nil, basic: nil)
+                         speaker: nil, gist: nil, decoys: nil, when: nil, basic: nil, moment: nil)
     assert(LingoWeekendDeck.options(for: bare) == nil, "a word with no decoys must not be playable")
     let noSnippet = LingoTerm(id: "no-snippet", category: .rules, term: "Nosnip", meaning: "m",
                               heard: "h", sayIt: nil, seeAlso: nil, level: 1, overheard: nil,
                               overheardTerm: nil, speaker: .him, gist: "gist nosnip",
-                              decoys: ["decoy one", "decoy two"], when: ["any"], basic: nil)
+                              decoys: ["decoy one", "decoy two"], when: ["any"], basic: nil,
+                              moment: "common")
     assert(LingoWeekendDeck.options(for: noSnippet) == nil,
            "a word with options but no line to overhear must not be playable")
 
@@ -1024,6 +1060,10 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
             assert(MatchContext.knownTags.contains(tag),
                    "lingo.json term \(t.id) carries an unknown when tag: \(tag)")
         }
+        // A band this build does not know is not offered, so a typo in the
+        // content would quietly shrink the pool rather than break anything.
+        assert(["anytime", "common", "rare"].contains(t.moment ?? ""),
+               "lingo.json term \(t.id) has moment '\(t.moment ?? "nil")', not one of anytime, common, rare")
     }
 
     // The first round on a fresh install: no cached team page, so the `any`

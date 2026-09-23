@@ -8,6 +8,7 @@ OVERHEARD = {
         gist="The shape the ten outfield players start in",
         decoys=["The eleven he picks to start the match", "The way they set up for corners and free kicks"],
         when=["any", "new-manager"],
+        moment="common",
     ),
     "back-four": dict(
         overheard="Same back four again. He's not changing that in a hurry.",
@@ -15,6 +16,7 @@ OVERHEARD = {
         gist="The defenders in a line in front of the goalkeeper",
         decoys=["The players sitting furthest back on the bench", "The four across the middle of the pitch"],
         when=["any", "after-clean-sheet"],
+        moment="common",
     ),
     "centre-back": dict(
         overheard="We've spent a fortune on that centre-back. Jury's out for me.",
@@ -22,6 +24,7 @@ OVERHEARD = {
         gist="A defender in the middle who wins headers",
         decoys=["A midfielder who shields the defence behind him", "The one who whips the crosses in from wide"],
         when=["any", "after-clean-sheet"],
+        moment="anytime",
     ),
     "full-back": dict(
         overheard="Both full-backs are booked now. That's a worry with an hour to go.",
@@ -29,6 +32,7 @@ OVERHEARD = {
         gist="A defender out wide who also joins the attack",
         decoys=["An attacker who hugs the touchline all game", "A defender who plays the whole ninety every week"],
         when=["any"],
+        moment="common",
     ),
     "wing-back": dict(
         overheard="He's gone with wing-backs today. That's bold against this lot.",
@@ -36,6 +40,7 @@ OVERHEARD = {
         gist="A wide defender pushed up almost as an attacker",
         decoys=["A back-up who covers out wide when needed", "A midfielder who stays out on the touchline"],
         when=["any", "new-manager"],
+        moment="common",
     ),
     "holding-midfielder": dict(
         overheard="They need a proper holding midfielder. That's been the problem all season.",
@@ -43,6 +48,7 @@ OVERHEARD = {
         gist="The one who sits in front of the defence",
         decoys=["A player told to hold on to the ball", "The one who plays just behind the striker"],
         when=["any"],
+        moment="common",
     ),
     "box-to-box": dict(
         overheard="He's box-to-box, that lad. Doesn't half make it look easy.",
@@ -50,6 +56,7 @@ OVERHEARD = {
         gist="A midfielder who runs the length of the pitch",
         decoys=["The one who pings it from one box to the other", "A midfielder who gets forward to score goals"],
         when=["any"],
+        moment="anytime",
     ),
     "number-ten": dict(
         overheard="He's the number ten tonight. A big call from the manager, that.",
@@ -57,6 +64,7 @@ OVERHEARD = {
         gist="The creative one just off the front man",
         decoys=["The player wearing the shirt with ten on", "The one the manager picks as captain"],
         when=["any"],
+        moment="common",
     ),
     "playmaker": dict(
         overheard="Their playmaker was at it again tonight. He's some player, him.",
@@ -64,6 +72,7 @@ OVERHEARD = {
         gist="The one every attack goes through",
         decoys=["The one who takes the corners and free kicks", "The one who barks the orders at everyone"],
         when=["any"],
+        moment="anytime",
     ),
     "winger": dict(
         overheard="That winger has had a stinker tonight. Not been in it at all.",
@@ -71,6 +80,7 @@ OVERHEARD = {
         gist="An attacker who runs at people wide",
         decoys=["The forward who plays just off the striker", "A defender who gets forward down the touchline"],
         when=["any"],
+        moment="common",
     ),
     "striker": dict(
         overheard="Two years we've been after a striker. Two years.",
@@ -78,6 +88,7 @@ OVERHEARD = {
         gist="The one up front whose job is scoring",
         decoys=["The one who strikes the dead balls for them", "The player who plays behind the front man"],
         when=["any", "window"],
+        moment="anytime",
     ),
     "target-man": dict(
         overheard="You need a target man in this league. They've not got one.",
@@ -85,6 +96,7 @@ OVERHEARD = {
         gist="A big forward the ball gets launched at",
         decoys=["A defender told to follow one player about", "A forward who chases everything down"],
         when=["any"],
+        moment="common",
     ),
     "false-nine": dict(
         overheard="He's playing a false nine there. We'll see how long that lasts.",
@@ -92,6 +104,7 @@ OVERHEARD = {
         gist="A forward who drops deep to confuse markers",
         decoys=["A player faking an injury to waste some time", "A forward told to stay high on the shoulder"],
         when=["any"],
+        moment="rare",
     ),
     "pressing": dict(
         overheard="It's all about the pressing with this manager. Nothing else matters.",
@@ -99,6 +112,7 @@ OVERHEARD = {
         gist="Hounding whoever has it into a mistake",
         decoys=["Newspapers and TV crowding round the club", "Playing the ball forward at every chance"],
         when=["any", "good-run"],
+        moment="anytime",
     ),
     "high-press": dict(
         overheard="He's gone with the high press today. That's a big risk, that.",
@@ -106,6 +120,7 @@ OVERHEARD = {
         gist="Winning it back right on top of their keeper",
         decoys=["Launching the ball up in the air and chasing", "Sitting deep and waiting for a chance to break"],
         when=["any", "good-run"],
+        moment="rare",
     ),
     "low-block": dict(
         overheard="They've gone to a low block now. This'll be a long old night.",
@@ -113,6 +128,7 @@ OVERHEARD = {
         gist="Defending deep, letting the other lot have it",
         decoys=["Playing with three at the back instead of four", "Dropping the back line deep to protect a win"],
         when=["any", "after-clean-sheet"],
+        moment="common",
     ),
     "park-the-bus": dict(
         overheard="They've parked the bus since that goal. Forty minutes of this left.",
@@ -120,6 +136,7 @@ OVERHEARD = {
         gist="Everyone back defending, nobody trying to attack",
         decoys=["Wasting time at every throw-in and free kick", "Bringing defenders on to hang on to a lead"],
         when=["any", "after-draw", "after-clean-sheet"],
+        moment="common",
     ),
     "counter-attack": dict(
         overheard="They're built for the counter-attack, this lot. It's no accident.",
@@ -127,6 +144,7 @@ OVERHEARD = {
         gist="Breaking forward fast the second you win it",
         decoys=["Scoring straight back after going behind", "Pushing everyone forward chasing a late goal"],
         when=["any", "europe"],
+        moment="anytime",
     ),
     "possession": dict(
         overheard="He's obsessed with the possession. It tells you nothing, that.",
@@ -134,6 +152,7 @@ OVERHEARD = {
         gist="The share of the game a side has the ball",
         decoys=["The number of times a side touches the ball", "The count of shots each side has on target"],
         when=["any", "after-draw", "after-loss"],
+        moment="common",
     ),
     "tiki-taka": dict(
         overheard="Loads of tiki-taka tonight. Not a lot else happening, mind.",
@@ -141,6 +160,7 @@ OVERHEARD = {
         gist="Endless short passes to keep hold of the ball",
         decoys=["The chant the away end sings on repeat", "A quick one-two played round a defender"],
         when=["any", "europe"],
+        moment="common",
     ),
     "long-ball": dict(
         overheard="Another long ball. That's his way, always has been.",
@@ -148,6 +168,7 @@ OVERHEARD = {
         gist="Hitting it high and far instead of passing",
         decoys=["A shot struck from forty yards or further", "The cross whipped in low from the byline"],
         when=["any", "relegation"],
+        moment="common",
     ),
     "man-marking": dict(
         overheard="They've gone man-marking today. You don't see that often.",
@@ -155,6 +176,7 @@ OVERHEARD = {
         gist="Sticking with one opponent all game",
         decoys=["Each defender covering an area of the pitch", "Standing goal-side of your man at a corner"],
         when=["any"],
+        moment="common",
     ),
     "zonal-marking": dict(
         overheard="That's zonal marking for you. I've no time for it.",
@@ -162,6 +184,7 @@ OVERHEARD = {
         gist="Each defender guards a patch of grass",
         decoys=["Switching off and losing concentration", "The wall lined up in front of a free kick"],
         when=["any", "after-loss"],
+        moment="common",
     ),
     "set-piece": dict(
         overheard="They're a threat from set pieces, this lot. Always have been.",
@@ -169,6 +192,7 @@ OVERHEARD = {
         gist="A rehearsed routine from a dead ball",
         decoys=["The eleven a manager settles on for a game", "A goal that comes straight from open play"],
         when=["any", "derby", "cup"],
+        moment="anytime",
     ),
     "overlap": dict(
         overheard="He's missed the overlap again. That's twice in five minutes.",
@@ -176,6 +200,7 @@ OVERHEARD = {
         gist="A defender running outside his winger",
         decoys=["A pass rolled inside instead of out wide", "A player drifting into a teammate's space"],
         when=["any"],
+        moment="common",
     ),
     "through-ball": dict(
         overheard="Just look at that through ball. Wonderful, that.",
@@ -183,6 +208,7 @@ OVERHEARD = {
         gist="A pass slid between two defenders",
         decoys=["A ball nudged past a player's legs", "A cross aimed at the far post"],
         when=["any"],
+        moment="common",
     ),
     "cutback": dict(
         overheard="Another cutback. They score all their goals like that.",
@@ -190,6 +216,7 @@ OVERHEARD = {
         gist="A pass pulled square from the byline",
         decoys=["A player turning inside to lose a marker", "A cross floated to the far post"],
         when=["any"],
+        moment="common",
     ),
     "inverted-full-back": dict(
         overheard="They've gone to inverted full-backs. It's all a bit much for me.",
@@ -197,6 +224,7 @@ OVERHEARD = {
         gist="A wide defender stepping into midfield",
         decoys=["A defender playing on the opposite side", "A midfielder dropping in among the defence"],
         when=["any"],
+        moment="rare",
     ),
     "half-space": dict(
         overheard="He lives in the half-space, that lad. It's a podcast word, apparently.",
@@ -204,6 +232,7 @@ OVERHEARD = {
         gist="The lane between the middle and the touchline",
         decoys=["The half of the pitch a side sets up to defend", "The strip of grass right in front of the goal mouth"],
         when=["any"],
+        moment="common",
     ),
     "xg": dict(
         overheard="Have a look at the xG from that. It'll only wind you up.",
@@ -211,6 +240,7 @@ OVERHEARD = {
         gist="A score for how good a chance was",
         decoys=["How many goals a side should score in a season", "The shots on target added up"],
         when=["any", "after-draw", "after-loss"],
+        moment="common",
     ),
     "game-management": dict(
         overheard="That's game management, apparently. Dull as you like, this.",
@@ -218,6 +248,7 @@ OVERHEARD = {
         gist="Slowing it down to protect a lead",
         decoys=["The manager barking at them from the side", "Changing the shape after an hour"],
         when=["after-win", "after-clean-sheet", "europe", "derby"],
+        moment="common",
     ),
     "dark-arts": dict(
         overheard="Proper dark arts from this lot tonight. Been at it for years.",
@@ -225,6 +256,7 @@ OVERHEARD = {
         gist="The sneaky stuff that winds them up",
         decoys=["Playing a weakened side on purpose", "Rough tackling meant to rattle them"],
         when=["derby", "europe", "after-loss"],
+        moment="common",
     ),
     "rotation": dict(
         overheard="Rotation, he's calling it. I'm not convinced, me.",
@@ -232,5 +264,6 @@ OVERHEARD = {
         gist="Changing several players to rest legs",
         decoys=["Players taking turns as captain in a season", "Swapping positions with someone mid-match"],
         when=["cup", "europe"],
+        moment="rare",
     ),
 }
