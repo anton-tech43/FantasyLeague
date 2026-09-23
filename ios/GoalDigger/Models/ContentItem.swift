@@ -650,6 +650,11 @@ struct NextFixtureCard: Codable {
     let round: String?
     /// Opponent's API-Football id, for the crest.
     let opponentApiId: Int?
+    /// The fixture's own API-Football id. `MatchContext` prefers the one on
+    /// `upcoming_fixtures`, but a device cache one refresh behind can carry an
+    /// upcoming row without an id while this one is set, so it is the fallback
+    /// that keeps the Called It slip from vanishing on stale data.
+    let fixtureId: Int?
     /// Deterministic pre-game verdict from FIFA ranks (B2). nil when either
     /// side's strength_rank is unknown — render nothing in that case.
     let favorite: FavoriteVerdict?
@@ -666,6 +671,7 @@ struct NextFixtureCard: Codable {
         case leagueId = "league_id"
         case round
         case opponentApiId = "opponent_api_id"
+        case fixtureId = "fixture_id"
     }
 
     /// The competition without the sponsor parenthetical, for the narrow chip

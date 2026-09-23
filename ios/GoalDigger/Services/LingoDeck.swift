@@ -298,7 +298,16 @@ struct MatchContext: Equatable {
         tags = t
         sixPointer = six
         fixtureKey = "b|\(opponent)|\(Self.dayStamp(kickoff))"
-        fixtureId = liveFixtureId
+        // The matchup TAGS stay gated on the strict id above — an opponent note
+        // is only shown when the upcoming row confirms the fixture. The slip is
+        // more forgiving: a cache one refresh behind can hold an upcoming row
+        // with no id while `next_fixture` still carries one for the same club,
+        // and losing the whole Called It screen to that is worse than losing a
+        // few tags. So the slip's id falls back to next_fixture's when it names
+        // the same opponent.
+        fixtureId = liveFixtureId ?? cards?.nextFixture.flatMap {
+            Self.sameClub($0.opponent, opponent) ? $0.fixtureId : nil
+        }
         title = "Before \(opp)"
 
         // Most specific first. Six-pointer beats the plain title line: "1st

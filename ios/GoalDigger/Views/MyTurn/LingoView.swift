@@ -43,6 +43,10 @@ struct LingoView: View {
     /// relaunch (it is in `MyTurnStore`), and a relaunch should drop her back
     /// into the word she was on, the way Quiz does.
     @State private var showingLanding = false
+    /// She pressed the X on the full-screen Called It. Drops her to the landing
+    /// for this viewing; a fresh open of the tab offers it again, because it is
+    /// the timely thing and un-acted. View state, like `showingLanding`.
+    @State private var calledItDismissed = false
     /// This weekend and the seven it would deal right now, rebuilt only when
     /// something it actually depends on moves — never on a keystroke in the
     /// search field, which is a deck build over 158 words per character.
@@ -235,6 +239,17 @@ struct LingoView: View {
         store.drillSession?.deckId == LingoWeekendDeck.deckId && !showingLanding
     }
 
+    /// The Called It offer owns the whole screen — Anton's "hela sidan, endast
+    /// det i fokus" — whenever there is a slip to offer this fixture, she has
+    /// not acted on it, and she has not closed it this viewing. Above the round
+    /// in the switch, so on opening Lingo it is the first thing she meets and a
+    /// paused round waits behind it.
+    private var showingCalledIt: Bool {
+        store.matchCalls(for: context) == nil
+            && !calledItDismissed
+            && !LingoCalls.offer(calls: calls, context: context).isEmpty
+    }
+
     /// The reveal, whenever there is one to draw: a round on screen, on a card
     /// she has answered, whose word and options this build can still resolve.
     ///
@@ -268,7 +283,11 @@ struct LingoView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: Layout.cardSpacing) {
-                    if showingRound {
+                    if showingCalledIt {
+                        // The whole screen, nothing else — the round and the
+                        // words are not even below the fold.
+                        calledItTakeover
+                    } else if showingRound {
                         LingoOverheardView(
                             content: content, sayThis: sayThis, store: store, context: context,
                             named: weekend?.named ?? [:],
@@ -362,14 +381,27 @@ struct LingoView: View {
     /// she has none saved, which is every fixture until `lingo.json` carries
     /// `calls`.
     private var callsCard: some View {
-        LingoCallsView(calls: calls, store: store, context: context) { _ in
-            // Her pick is already in the store. The upload is best effort, and
-            // retried on the next open of the tab if it does not land.
+        // On the landing: the compact re-open row while an offer is un-acted and
+        // closed, or the filled "watching for these" card once she has picked.
+        LingoCallsView(calls: calls, store: store, context: context,
+                       presentation: .inline,
+                       onReopen: { withAnimation(.easeInOut(duration: 0.2)) { calledItDismissed = false } }) { _ in
             Task { await uploadSlip() }
         }
         #if DEBUG
         .lingoFrame("calls")
         #endif
+    }
+
+    /// The offer as the whole page: one call at a time, an X to step off it.
+    private var calledItTakeover: some View {
+        LingoCallsView(calls: calls, store: store, context: context,
+                       presentation: .takeover,
+                       onClose: { withAnimation(.easeInOut(duration: 0.2)) { calledItDismissed = true } }) { _ in
+            // Her pick is already in the store. The upload is best effort, and
+            // retried on the next open of the tab if it does not land.
+            Task { await uploadSlip() }
+        }
     }
 
     /// The slip on the device row, where the goal push can find it.
@@ -739,6 +771,9 @@ struct LingoView: View {
     ///   `-gdLingoRevealExpand`
     ///                         opens the reveal popup's `+` on arrival. Pair it
     ///                         with `-gdLingoAnswer`.
+    ///   `-gdLingoCallsClose`  closes the full-screen Called it, for a shot of
+    ///                         the landing it leaves behind — the compact
+    ///                         re-open row above the hero and the words.
     ///
     /// simctl cannot tap, so these are the only way to a screenshot of
     /// anything past the landing screen.
@@ -793,6 +828,9 @@ struct LingoView: View {
         if let target = intValue("-gdLingoFinish") { debugFinish(right: target, context: current) }
         if args.contains(LingoCalls.debugPickArgument) { debugPickCalls(current) }
         if args.contains("-gdLingoCallsPass") { debugPassCalls(current) }
+        // The state the X drops her to: an un-acted offer, closed, so the
+        // landing shows its compact re-open row instead of the full page.
+        if args.contains("-gdLingoCallsClose") { calledItDismissed = true }
     }
 
     /// `-gdLingoFrames`: the two cards, where they actually ended up, once the

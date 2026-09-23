@@ -27,10 +27,21 @@ struct LingoCallsView: View {
     /// This weekend. Before kick-off it deals the offer; after the match it is
     /// what ties the stored slip to the game that has just been played.
     let context: MatchContext
+    /// The offer as the whole screen, or a compact row on the landing that
+    /// re-opens it. `LingoView` decides which; this only draws it. The filled
+    /// and after states are always the compact card, whatever this says.
+    var presentation: Presentation = .inline
+    /// The X on the takeover. Drops her to the landing; the slip is untouched
+    /// and she can re-open it from the row it leaves behind.
+    var onClose: () -> Void = {}
+    /// The compact entry's tap: re-open the takeover she closed.
+    var onReopen: () -> Void = {}
     /// She confirmed. The caller sends it to the device row; the pick is
     /// already saved locally by then, so a failed upload costs her nothing.
     let onConfirm: ([LingoCall]) -> Void
     @Environment(AppState.self) private var appState
+
+    enum Presentation { case takeover, inline }
 
     /// Which lines she has said yes to, before the slip commits, and which one
     /// she is being asked about. Both view state on purpose: a half-walked slip
@@ -52,9 +63,49 @@ struct LingoCallsView: View {
 
     var body: some View {
         if let slip {
+            // She has acted — the compact card, in either presentation.
             filled(slip)
         } else if !played {
-            offer
+            switch presentation {
+            case .takeover: offer
+            case .inline:   entry
+            }
+        }
+    }
+
+    // MARK: The way back in
+
+    /// The compact row the takeover leaves on the landing after the X. Only
+    /// while there is still an un-acted offer behind it; once she has picked or
+    /// passed, `slip` is non-nil and this branch is never reached.
+    @ViewBuilder
+    private var entry: some View {
+        if !LingoCalls.offer(calls: calls, context: context).isEmpty {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) { onReopen() }
+            } label: {
+                HStack(spacing: 14) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Get in the game")
+                            .font(.jakarta(17, weight: .bold))
+                            .foregroundColor(.textPrimaryOnCard)
+                        Text("Pick what you'd say on Saturday")
+                            .font(.jakarta(14, weight: .regular))
+                            .foregroundColor(.textSecondaryOnCard)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.hotRose)
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.cardBackground)
+                .cornerRadius(Layout.cardCornerRadius)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Get in the game. Pick what you would say on Saturday.")
         }
     }
 
@@ -125,6 +176,19 @@ struct LingoCallsView: View {
                     .font(.jakarta(15, weight: .semiBold))
                     .foregroundColor(.textSecondaryOnCard)
                     .accessibilityLabel("Line \(index + 1) of \(offered.count)")
+                // The way out. Not skipping the slip — it stays exactly where it
+                // is — just stepping off it to the rest of Lingo.
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { onClose() }
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.textSecondaryOnCard)
+                        .frame(width: 30, height: 30)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Close. Back to Lingo; your slip is kept.")
             }
             .dynamicTypeSize(...Self.displayCap)
 
