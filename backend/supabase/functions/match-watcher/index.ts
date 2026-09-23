@@ -495,6 +495,18 @@ async function sendPlayingTeamPush(
       const finalBody = landed
         ? withCallLine({ body, scorerLead: args.scorerLead, pick: landed })
         : body;
+      // A landed pick that changed nothing was dropped for overflow, which
+      // means an authored line is longer than MAX_CALL_LINE allows behind this
+      // push's scorer lead. Silent, otherwise: the push still goes out, reads
+      // fine, and simply never mentions the thing she called. Say it where an
+      // audit looks, once per device, so the content cap gets fixed rather
+      // than rediscovered.
+      if (landed && finalBody === body) {
+        console.warn(
+          `called-it ${args.label} fixture=${args.fixtureId}: pick ${landed.id} dropped, ` +
+            `line is ${landed.line.length} chars behind a ${(args.scorerLead ?? "").length}-char lead`,
+        );
+      }
       const contentId = args.contentIdByCountry?.[country] ?? `live-${args.label}-${args.fixtureId}`;
       const payload = buildAPNsPayload(
         "", // teamShortName fallback unused — we pass pushTitle below

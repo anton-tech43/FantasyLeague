@@ -106,12 +106,31 @@ function wants<T>(expected: T | undefined, actual: unknown): boolean {
   return expected === undefined || expected === actual;
 }
 
+/// The trigger grammar is CLOSED, per kind. A key outside this list is not
+/// ignored, it makes the trigger unmatchable.
+///
+/// This is the runtime half of validate_calls.py's rule, and it is the half
+/// that matters across versions: a build newer than this deployment can author
+/// `{ kind: "halftime", scored: 0 }`, and a resolver that skipped the key it
+/// did not know would read that as "any half-time" and fire her line at the
+/// wrong moment every week until somebody noticed. Failing closed costs one
+/// line; failing open costs her trust in all of them.
+const TRIGGER_KEYS: Record<Outcome["kind"], ReadonlySet<string>> = {
+  goal: new Set(["kind", "side", "scorerRole", "penalty", "ownGoal", "minuteFrom", "minuteTo"]),
+  halftime: new Set(["kind", "state", "conceded"]),
+  fulltime: new Set(["kind", "state", "cleanSheet", "comeback"]),
+};
+
 /// Does this trigger describe the moment that just happened? Total: any shape
 /// of garbage answers false rather than throwing.
 export function triggerMatches(trigger: unknown, outcome: Outcome): boolean {
   if (!isObject(trigger)) return false;
   const t = trigger as unknown as CallTrigger;
   if (t.kind !== outcome.kind) return false;
+  const allowed = TRIGGER_KEYS[outcome.kind];
+  for (const key of Object.keys(trigger)) {
+    if (!allowed.has(key)) return false;
+  }
 
   if (outcome.kind === "goal") {
     if (t.side !== undefined && t.side !== "any" && t.side !== outcome.side) return false;

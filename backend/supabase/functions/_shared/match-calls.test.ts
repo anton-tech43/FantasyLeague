@@ -124,6 +124,21 @@ Deno.test("more than one pick can land on one event, in pick order", () => {
   eq(got.map((p) => p.id).join(","), "late,forward", "order preserved");
 });
 
+Deno.test("the trigger grammar is closed, so a newer build cannot fire early", () => {
+  // The forward-compatibility case: `scored` is a field the contract defers to
+  // a later version. A resolver that skipped keys it did not know would read
+  // this as "any half-time" and fire her line every week.
+  const ht: Outcome = { kind: "halftime", state: "ahead", conceded: 0 };
+  eq(triggerMatches({ kind: "halftime", conceded: 0 }, ht), true, "the known field still matches");
+  eq(triggerMatches({ kind: "halftime", conceded: 0, scored: 1 }, ht), false, "an unknown field never matches");
+  eq(triggerMatches({ kind: "halftime", state: "ahead", goalDifference: 2 }, ht), false, "nor a future one");
+
+  // Per kind, not one shared vocabulary: a goal has no clean sheet.
+  eq(triggerMatches({ kind: "goal", side: "us", cleanSheet: true }, GOAL), false, "wrong kind's field");
+  eq(triggerMatches({ kind: "goal", side: "us", header: true }, GOAL), false, "a fact the feed cannot carry");
+  eq(triggerMatches({ kind: "goal", side: "us" }, GOAL), true, "the vocabulary itself still matches");
+});
+
 // The worst-case scorer lead goal-push.ts can produce, without its trailing
 // space. goal-push.test.ts derives its own 63-char pool ceiling from this
 // string, so if that one ever changes, this assertion is where it gets caught.
