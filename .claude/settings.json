@@ -2,15 +2,12 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
-      "Bash(curl:*)",
-
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
       "Bash(git show:*)",
       "Bash(git branch:*)",
       "Bash(git stash list:*)",
-
       "Bash(cd:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
@@ -38,7 +35,6 @@
       "Bash(file:*)",
       "Bash(set:*)",
       "Bash(source:*)",
-
       "Bash(mkdir:*)",
       "Bash(cp:*)",
       "Bash(mv:*)",
@@ -48,33 +44,33 @@
       "Bash(open:*)",
       "Bash(zip:*)",
       "Bash(unzip:*)",
-
       "Bash(kill:*)",
       "Bash(pkill:*)",
-
       "Bash(xcodebuild:*)",
       "Bash(xcrun:*)",
       "Bash(plutil:*)",
       "Bash(sips:*)",
       "Bash(gh:*)",
-
       "Bash(supabase:*)",
       "Bash(/opt/homebrew/Cellar/libpq/*)",
       "Bash(/opt/homebrew/opt/libpq/bin/psql:*)",
-
       "Bash(deno:*)",
       "Bash(node:*)",
       "Bash(npm:*)",
       "Bash(npx:*)",
       "Bash(python3:*)",
       "Bash(python:*)",
-
       "Bash(ffmpeg:*)",
       "Bash(ffprobe:*)",
       "Bash(higgsfield:*)",
-
       "WebFetch",
       "WebSearch"
+    ],
+    "deny": [
+      "Read(./backend/.env)",
+      "Read(./backend/.env.*)",
+      "Read(./ios/GoalDigger/Configuration.xcconfig)",
+      "Read(./.claude/worktrees/**)"
     ]
   }
 }

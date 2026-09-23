@@ -240,3 +240,84 @@ Remaining detail of each finding below is preserved for reference.
 4. **COPY-1** — the product-correctness gap the relationship picker promises but doesn't deliver.
 5. **PUSH-3/PUSH-4** — deliverability decay over time.
 6. The MEDIUM/LOW cleanups as capacity allows.
+
+---
+
+## 2026-09-23 — cleanup + security pass
+
+### Closed
+
+- **SEC-1 / SEC-3 (read half).** `device_tokens` and `live_activity_tokens` were
+  readable with the publishable key that ships in the App Store binary; a plain
+  GET returned every row (APNs token, followed clubs and countries, tier, APNs
+  environment). Verified open, then closed by migration 106 and re-verified:
+  the same request now returns 401. All anon access to `live_activity_tokens`
+  went in the same migration.
+- **The 072 blocker.** `updateTokenTier` was the last direct anon write to
+  `device_tokens`. Removed; the tier now goes through
+  `register_device_token(p_tier)`. Migration 072 is replaced by
+  `107_drop_anon_token_write.sql.PENDING_APP_RELEASE`, which also fixes three
+  `DROP POLICY` names 072 had wrong (`live_activity_tokens_anon_*` vs the real
+  `la_tokens_anon_*` — it would have silently dropped nothing).
+- **Token registration DoS.** `check_token_rate_limit` blocked every real new
+  install for an hour after 500 junk registrations, silently. Migration 108
+  warns into `pipeline_health` from 500 and rejects only at 20,000.
+- **`delete-my-data`.** Now writes an audit row per call and no longer answers
+  404 for an unknown token (that was a "is this token registered?" oracle).
+- **Unpinned CDN dependency.** `esm.sh/@supabase/supabase-js@2` floated to
+  whatever 2.x existed at deploy time, inside every function holding the
+  service key. Pinned to `npm:@supabase/supabase-js@2.117.0`.
+
+### Corrected
+
+- **`schedule_matchday_job` and `trigger_team_page_for_new_device` do not exist
+  in production.** Both are created by migration files and were flagged as live
+  SECURITY DEFINER risks. Checked against `pg_proc`: neither is there. Only a
+  rebuild from migrations would recreate them.
+- **`active_competition_ids` was dropped** and `poll_leagues` is not SECURITY
+  DEFINER. `anon` can execute `poll_leagues`, which is a read-only view of
+  internal scheduling state. LOW, left alone.
+
+### New, open
+
+- **KEY-1 (MEDIUM): no Keychain use anywhere.** The APNs token, the Live
+  Activity push-to-start token and `hisName`/`herName` all live in
+  `UserDefaults` — plaintext in the app container, included in unencrypted
+  backups. The APNs token is the one that matters, because the register RPCs
+  are keyed on it alone. Deliberately left out of the 2026-09-23 pass: it
+  changes how the app stores tokens and wants its own test round.
+- **AGENT-1 (MEDIUM, partly closed): agent permissions.** `.claude/settings.json`
+  allowed `Bash(curl:*)` with no `deny` block, next to `Bash(source:*)` and a
+  documented recipe that sources `backend/.env`. Two allowed calls exfiltrated
+  every production secret. `curl` is out of the blanket allow and the secret
+  files are denied to the Read tool. A determined injection can still shell out
+  — the remaining control is that the human sees the command.
+- **BUILD-1 (LOW): `content-audit` does not type-check.** 8 errors, all
+  `GenericStringError` from supabase-js's stricter PostgREST typing. Predates
+  the version pin (verified by swapping the import back and re-checking). The
+  deploy bundles rather than checks, so it ships and runs. Same class of error
+  that `team-page-generator` had until 2026-09-23.
+- **WORKTREE-1 (MEDIUM): five abandoned worktrees under `.claude/worktrees/`**,
+  one holding a byte-identical copy of `backend/.env` (service key, Anthropic
+  key, API-Football key, and `SUPABASE_DB_URL` with the DB password). Contents
+  archived to `~/fantasyleague-worktrees-archive-2026-09-23.tgz`; removal needs
+  a human because it is an irreversible local delete.
+
+### Fixed in passing
+
+- **iOS-x: a followed country could not be changed or removed.** `hisCountryRow`
+  in Settings is the only post-onboarding route to the country picker, and it
+  was gated on `WCSeason.isVisible`, which went false on 22 July 2026. Eleven of
+  fourteen active users follow a country. Ungated.
+- **`team-page-generator` full rebuild silently dropped every card it does not
+  own** — `post_match`, `mood`, `this_week`, `rivalry_intensity`,
+  `recent_results`, `europe_standings`, `freshness_text`. It now spreads
+  `existingCards` first.
+
+### Checked and deliberately NOT done
+
+- **`content_reviews`, `team_news_sources` and the seven `v_*` insights views
+  were proposed for deletion as unread. All three claims were wrong.** The
+  views are read by `get_insights()`, a SQL function inside the database, which
+  `scripts/insights.sh` calls and which works today. The tables hold real data
+  (68 news sources, 4 reviews). Nothing dropped.

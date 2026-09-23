@@ -73,4 +73,13 @@ Defaults: no unrequested abstractions, deletion over addition, boring over cleve
 - **JSONB null trap**: `WHERE x IS NULL` does NOT match a JSONB literal `null`. Use `WHERE x IS NULL OR jsonb_typeof(x) = 'null'`.
 - **Routines repo**: `anton-tech43/goaldigger-routines` — pattern is `PROMPT.md` + `post_*.sh` + cron schedule via `RemoteTrigger`. Copy this pattern for any new LLM-backed cross-team workflow.
 - **Status snapshot**: `STATUS.md` (one-pager). Phase log: `IMPLEMENTATION_PROGRESS.md`. iOS pitfalls: `IOS_GOTCHAS.md`. Recovery: `RUNBOOK.md`.
+- **Before deleting anything as "unused"**: a grep over the repo is not
+  evidence. On 2026-09-23 seven views proposed for deletion turned out to be
+  read by `get_insights()`, a function that lives in the database, and two
+  "orphan" tables held real data. Check `pg_proc`, `cron.job` and the row
+  count, not just the tree. The same day, `hisCountryRow` looked like dead
+  code behind an expired date gate and was in fact the only way to change a
+  followed country.
+- **`.claude/worktrees/` copies `backend/.env`**: an abandoned worktree holds a
+  live copy of every production secret. Remove worktrees when the work lands.
 - **"The app looks broken"**: run `./scripts/db-health.sh` BEFORE touching code — it separates our bug from our data from Supabase's infrastructure, which all look identical from the app. Interpretation: `db-health-check` skill. How the pieces fit together, written for a non-DBA: `DB_BASICS.md`. The Supabase dashboard's "database unhealthy" is derived from a probe of the PostgREST path, so it goes red when the HTTP layer dies even though Postgres is fine (2026-09-21).
