@@ -17,6 +17,8 @@ struct LingoOverheardView: View {
     /// For the "Lines that use this" jump on a reveal.
     let sayThis: SayThisContent
     @Bindable var store: MyTurnStore
+    /// This weekend, for the line the end card offers her to use at it.
+    let context: MatchContext
     /// A fresh seven from the same weekend, from the end card.
     let onDealAgain: () -> Void
     /// "The words" on an unfinished round: the round is kept exactly where it
@@ -243,6 +245,8 @@ struct LingoOverheardView: View {
             .padding(.bottom, 8)
             .accessibilityAddTraits(.isHeader)
 
+        commitment(session)
+
         HypeCard(scoreLine: "You got \(session.knew) of \(session.queue.count).", hype: session.hypeLine)
             .task(id: session.finished) {
                 // Read the session back out of the store: the screenshot
@@ -298,6 +302,75 @@ struct LingoOverheardView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Back to the words")
+    }
+
+    /// One line out of the seven, and an offer to actually use it.
+    ///
+    /// The round used to end with a number, which she walked into the room
+    /// with nothing holding. This is the one thing it leaves behind: a line
+    /// she got right, named for the game it fits, and a single button. Not
+    /// tapping costs nothing and leaves nothing behind either — there is no
+    /// second ask, and the landing only mentions it once the game has been
+    /// played.
+    ///
+    /// Nothing at all after a game, or when the round produced no right
+    /// answer: both are handled inside `LingoWeekendDeck.offer`.
+    @ViewBuilder
+    private func commitment(_ session: MyTurnStore.DrillSession) -> some View {
+        let saved = store.committedLine(fixture: context.fixtureKey)
+        // The saved one wins: it holds the words as they were shown when she
+        // said yes, and a redraw must not offer her a different line.
+        if let line = saved ?? LingoWeekendDeck.offer(
+            terms: content.terms, knewIds: session.knewIds, context: context,
+            now: Date(), personalise: appState.personalise) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("For \(line.occasion)")
+                    .font(.jakarta(17, weight: .bold))
+                    .foregroundColor(.warmWhite)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text(line.line)
+                    .font(.jakarta(16, weight: .semiBold))
+                    .foregroundColor(.warmWhite)
+                    .lineSpacing(2)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if saved == nil {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) { store.commitLine(line) }
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    } label: {
+                        Text("I'll use it")
+                            .font(.jakarta(16, weight: .semiBold))
+                            .foregroundColor(.warmWhite)
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: 46)
+                            .background(Color.hotRose)
+                            .cornerRadius(Layout.buttonCornerRadius)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("I'll use it. Keeps this line for \(line.occasion).")
+                } else {
+                    HStack(spacing: 6) {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 13, weight: .bold))
+                        Text("Saved for \(line.occasion)")
+                            .font(.jakarta(15, weight: .semiBold))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .foregroundColor(.hotRose)
+                    .frame(minHeight: 46, alignment: .leading)
+                    .accessibilityElement(children: .combine)
+                }
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.warmWhite.opacity(0.06))
+            .overlay(RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
+                .stroke(Color.hotRose.opacity(0.35), lineWidth: 1))
+            .cornerRadius(Layout.cardCornerRadius)
+            .padding(.bottom, 2)
+        }
     }
 
     /// A round dealt before the content was refreshed, or resumed from the old

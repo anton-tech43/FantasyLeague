@@ -521,6 +521,21 @@ struct MatchContext: Equatable {
         return days < 6 ? weekdayFormatter.string(from: date) : dayMonthFormatter.string(from: date)
     }
 
+    /// What to call the game she is committing a line to: "Saturday" inside
+    /// the week, "the Leeds game" beyond it, where a weekday would be
+    /// ambiguous. Nil when there is no game to prepare for, which is the whole
+    /// test for whether a line is worth offering.
+    func occasion(now: Date) -> String? {
+        guard case .before(let opponent, let kickoff) = phase else { return nil }
+        let cal = Calendar.current
+        let days = cal.dateComponents([.day], from: cal.startOfDay(for: now),
+                                      to: cal.startOfDay(for: kickoff)).day ?? 0
+        // Seven days out is the same weekday name as today, so the weekday
+        // only reads unambiguously inside six.
+        guard days >= 7 else { return Self.weekdayFormatter.string(from: kickoff) }
+        return "the \(Self.shortName(opponent)) game"
+    }
+
     /// Local calendar day, for a fixture key that does not move when a kickoff
     /// time is nudged by fifteen minutes for the telly.
     private static func dayStamp(_ date: Date) -> String {
@@ -648,6 +663,30 @@ enum LingoWeekendDeck {
         options.shuffle(using: &rng)
         guard let answer = options.firstIndex(of: gist) else { return nil }
         return (options, answer)
+    }
+
+    /// The one line the round leaves in her hand, or nil when there is nothing
+    /// worth offering.
+    ///
+    /// Only before a game: after one, a line to use is a line with nowhere to
+    /// go. Only a word she got right, because the offer is "you have this
+    /// one", not homework. Tag overlap first, so the line is about the game
+    /// she is actually walking into, then any word she got right, in the order
+    /// the round dealt them so the pick does not move under her.
+    ///
+    /// Returns the whole record rather than the term: the heading, the line
+    /// and the settle row a week later all have to say the same words, and
+    /// that is easier to guarantee at one keystroke than at three call sites.
+    static func offer(terms: [LingoTerm], knewIds: [String], context: MatchContext,
+                      now: Date, personalise: (String) -> String) -> MyTurnStore.SaidLine? {
+        guard let occasion = context.occasion(now: now) else { return nil }
+        let byId = Dictionary(terms.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
+        let right = knewIds.compactMap { byId[$0] }.filter { $0.sayIt?.isEmpty == false }
+        let live = Set(context.tags).subtracting(["any"])
+        let pick = right.first { !Set($0.when ?? []).isDisjoint(with: live) } ?? right.first
+        guard let term = pick, let sayIt = term.sayIt else { return nil }
+        return MyTurnStore.SaidLine(fixtureKey: context.fixtureKey, termId: term.id,
+                                    line: personalise(sayIt), occasion: occasion, committedAt: now)
     }
 
     /// The deal seed. Same club, same fixture, same day, same nonce gives the
@@ -831,10 +870,21 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
     let none = MatchContext(page: nil, team: .arsenal, now: now)
     assert(none.phase == .any && none.tags == ["any"], "no page should be the any context")
 
+    // --- The occasion ----------------------------------------------------
+    // What the end card calls the game she is committing a line to. A weekday
+    // inside the week, the opponent beyond it, and nothing at all when there
+    // is no game to say it at.
+    assert(derby.occasion(now: now) == "Tuesday",
+           "a fixture three days out is not named by its day: \(derby.occasion(now: now) ?? "nil")")
+    assert(pst.occasion(now: now) == "the Fulham game",
+           "a fixture nine days out is not named by its opponent: \(pst.occasion(now: now) ?? "nil")")
+    assert(win.occasion(now: now) == nil, "a game already played was offered a line to use at it")
+    assert(none.occasion(now: now) == nil, "no fixture at all was offered a line to use")
+
     // --- The deck --------------------------------------------------------
     func term(_ id: String, level: Int, when: [String]) -> LingoTerm {
         LingoTerm(id: id, category: .matchSituations, term: id, meaning: "m", heard: "h",
-                  sayIt: nil, seeAlso: nil, level: level,
+                  sayIt: "Say \(id).", seeAlso: nil, level: level,
                   overheard: "They said \(id).", overheardTerm: id, speaker: .him,
                   gist: "gist \(id)", decoys: ["decoy one \(id)", "decoy two \(id)"], when: when,
                   basic: nil)
@@ -898,6 +948,27 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
     let three = LingoWeekendDeck.build(terms: Array(synthetic.prefix(3)), known: [], learning: [],
                                        context: derby, seed: "s1")
     assert(three.ids.count == 3, "three playable words should deal three, not pad")
+
+    // --- The line she leaves with -----------------------------------------
+    // The word she got right whose tags match the game she is walking into,
+    // never one she got wrong, and never at all when there is no game.
+    let plain = { (s: String) in s }
+    let offered = LingoWeekendDeck.offer(terms: synthetic, knewIds: ["any-0", "derby-1"],
+                                         context: derby, now: now, personalise: plain)
+    assert(offered?.termId == "derby-1",
+           "the offer ignored the tags and took the first right answer: \(offered?.termId ?? "nil")")
+    assert(offered?.line == "Say derby-1." && offered?.occasion == "Tuesday"
+           && offered?.fixtureKey == derby.fixtureKey,
+           "the offered line did not carry the words, the day and the fixture it was made for")
+    assert(LingoWeekendDeck.offer(terms: synthetic, knewIds: ["any-0"], context: derby,
+                                  now: now, personalise: plain)?.termId == "any-0",
+           "nothing matched the tags and the offer gave up instead of falling back")
+    assert(LingoWeekendDeck.offer(terms: synthetic, knewIds: [], context: derby,
+                                  now: now, personalise: plain) == nil,
+           "a round with nothing right still offered a line")
+    assert(LingoWeekendDeck.offer(terms: synthetic, knewIds: ["any-0"], context: win,
+                                  now: now, personalise: plain) == nil,
+           "a line to use was offered after the game it would be used at")
 
     // --- The options -----------------------------------------------------
     let playable = term("opt", level: 1, when: ["any"])

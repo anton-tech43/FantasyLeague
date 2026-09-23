@@ -43,6 +43,8 @@ struct LingoView: View {
     /// something it actually depends on moves — never on a keystroke in the
     /// search field, which is a deck build over 158 words per character.
     @State private var weekend: Weekend?
+    /// Whether this launch has already counted the settle row as shown.
+    @State private var notedLine = false
     #if DEBUG
     /// Set by `-gdLingoContext`, so a screenshot can pin a derby weekend.
     @State private var debugContext: MatchContext?
@@ -153,7 +155,7 @@ struct LingoView: View {
                 VStack(alignment: .leading, spacing: Layout.cardSpacing) {
                     if showingRound {
                         LingoOverheardView(
-                            content: content, sayThis: sayThis, store: store,
+                            content: content, sayThis: sayThis, store: store, context: context,
                             onDealAgain: dealAgain,
                             onPause: { showingLanding = true })
                     } else {
@@ -197,9 +199,84 @@ struct LingoView: View {
 
     @ViewBuilder
     private var landing: some View {
+        settleRow
         hero
         searchField
         wordList
+    }
+
+    /// The other half of the commitment loop: the game has been played, so ask
+    /// once whether she said the line.
+    ///
+    /// Two buttons and no third, no history, no score, and no nagging — the
+    /// store retires the row after three sightings or seven days whether or
+    /// not she ever answers. "Not yet" is a word going back in the deck, not a
+    /// miss: the copy has to read as neutral because it is.
+    @ViewBuilder
+    private var settleRow: some View {
+        if let line = store.pendingLine(currentFixture: context.fixtureKey) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(line.line)
+                    .font(.jakarta(16, weight: .semiBold))
+                    .foregroundColor(.warmWhite)
+                    .lineSpacing(2)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text("Did you say it?")
+                    .font(.jakarta(15, weight: .regular))
+                    .foregroundColor(.warmWhite.opacity(0.75))
+                    .fixedSize(horizontal: false, vertical: true)
+
+                HStack(spacing: 10) {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) { store.settleLine(used: true) }
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    } label: {
+                        Text("I did")
+                            .font(.jakarta(16, weight: .semiBold))
+                            .foregroundColor(.warmWhite)
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: 44)
+                            .background(Color.hotRose)
+                            .cornerRadius(Layout.buttonCornerRadius)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("I did say it")
+
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) { store.settleLine(used: false) }
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    } label: {
+                        Text("Not yet")
+                            .font(.jakarta(16, weight: .semiBold))
+                            .foregroundColor(.hotRose)
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: 44)
+                            .overlay(RoundedRectangle(cornerRadius: Layout.buttonCornerRadius)
+                                .stroke(Color.hotRose, lineWidth: 1))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Not yet. The word goes back in the deck.")
+                }
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.warmWhite.opacity(0.06))
+            .overlay(RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
+                .stroke(Color.hotRose.opacity(0.35), lineWidth: 1))
+            .cornerRadius(Layout.cardCornerRadius)
+            .transition(.opacity)
+            // Counted once per launch, and only while Lingo is the module on
+            // screen: all three module views stay mounted, so an `onAppear`
+            // here would spend her three sightings on three launches she
+            // opened the quiz in and never mention the line at all. `task(id:)`
+            // rather than `onAppear` so switching to Lingo later still counts.
+            .task(id: store.lastModule) {
+                guard !notedLine, store.lastModule == .lingo else { return }
+                notedLine = true
+                store.noteLineShown()
+            }
+        }
     }
 
     /// "Continue · 3 of 7" while a round is paused, in place of the invitation
@@ -228,22 +305,6 @@ struct LingoView: View {
                     } else {
                         deal(weekend.context, ids: weekend.ids)
                     }
-                }
-
-                if playable {
-                    Button {
-                        deal(nil)
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    } label: {
-                        Text("Or seven from anywhere")
-                            .font(.jakarta(15, weight: .semiBold))
-                            .foregroundColor(.hotRose)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Seven words from anywhere, whatever this weekend is")
                 }
             } else {
                 // The search field below is the whole screen now, so say so
@@ -316,14 +377,13 @@ struct LingoView: View {
     @ViewBuilder
     private var wordList: some View {
         let knownIds = known
+        // No "23 of 158" under the label. It read as a completion meter on a
+        // syllabus she never signed up for, and it moves by at most seven a
+        // week, so it was imperceptible as well as wrong. The per-category
+        // counts stay: "12 of 46 got" is useful while she is in that fold.
         MyTurnSectionLabel(text: "Words you've got")
             .padding(.top, 8)
-        Text("\(knownIds.count) of \(content.terms.count)")
-            .font(.jakarta(14, weight: .regular))
-            .foregroundColor(.warmWhite.opacity(0.7))
-            .padding(.leading, 4)
             .padding(.bottom, 2)
-            .accessibilityLabel("You've got \(knownIds.count) of \(content.terms.count) words.")
 
         let categories = LingoCategory.allCases.filter { !searching || !terms(in: $0).isEmpty }
         if categories.isEmpty {
@@ -491,7 +551,14 @@ struct LingoView: View {
     ///   `-gdLingoAnswer N`    taps option N on the card she is on.
     ///   `-gdLingoFinish N`    deals, then plays the whole round with the
     ///                         first N right and the rest wrong, for the end
-    ///                         card and its hype band.
+    ///                         card, its hype band and the line it offers.
+    ///   `-gdLingoCommit`      taps "I'll use it" on that offer, for the
+    ///                         saved state. Needs a Before context and at
+    ///                         least one right answer, so pair it with
+    ///                         `-gdLingoFinish`.
+    ///   `-gdLingoPending`     plants a committed line for last week's
+    ///                         fixture, so the landing shows the settle row
+    ///                         without waiting a week for a real one.
     ///
     /// simctl cannot tap, so these are the only way to a screenshot of
     /// anything past the landing screen.
@@ -504,6 +571,7 @@ struct LingoView: View {
         // Cheap, and this is the one screen that owns the deck: a wrong
         // `sameClub` mislabels every derby weekend silently.
         lingoDeckSelfCheck(bundled: content)
+        myTurnSaidLineSelfCheck()
 
         let args = ProcessInfo.processInfo.arguments
         func value(_ flag: String) -> String? {
@@ -539,6 +607,29 @@ struct LingoView: View {
         }
         if let n = intValue("-gdLingoAnswer") { debugAnswer(n) }
         if let target = intValue("-gdLingoFinish") { debugFinish(right: target, context: current) }
+        if args.contains("-gdLingoCommit"), let session = store.drillSession,
+           let offer = LingoWeekendDeck.offer(terms: content.terms, knewIds: session.knewIds,
+                                              context: current, now: Date(),
+                                              personalise: appState.personalise) {
+            store.commitLine(offer)
+        }
+        if args.contains("-gdLingoPending") { debugPending(current) }
+    }
+
+    /// A line committed at last week's fixture, which is what the settle row
+    /// is: the same context with a fixture key that is no longer the current
+    /// one. The word is whichever this weekend's deck would deal first, so the
+    /// row shows a real sayIt line and "I did" retires a real word.
+    private func debugPending(_ context: MatchContext) {
+        guard let id = dealt(context).ids.first,
+              let line = LingoWeekendDeck.offer(terms: content.terms, knewIds: [id], context: context,
+                                                now: Date(), personalise: appState.personalise)
+        else { return }
+        store.commitLine(MyTurnStore.SaidLine(
+            fixtureKey: line.fixtureKey + "|last-week", termId: line.termId, line: line.line,
+            occasion: line.occasion, committedAt: Date().addingTimeInterval(-3 * 24 * 3600)))
+        if store.drillSession?.finished == true { store.endDrill() }
+        showingLanding = true
     }
 
     /// The salt matters here too: the harness answers by index, and options
