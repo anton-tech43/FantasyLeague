@@ -47,7 +47,7 @@
 // from solving this with a per-team LLM routine), IMPLEMENTATION_PROGRESS
 // Lesson 74 (the May 19 Arsenal title incident that prompted this layer).
 
-import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import type { SupabaseClient } from "npm:@supabase/supabase-js@2.117.0";
 import type { GroupStanding } from "./stakes-engine.ts";
 import { classifyBestThird, type BestThirdResult } from "./best-third.ts";
 import { coarseThirdPointsBounds, GROUP_GAMES_PER_TEAM, type GroupTeam } from "./group-scenarios.ts";

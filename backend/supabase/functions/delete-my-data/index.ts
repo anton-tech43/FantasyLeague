@@ -5,6 +5,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
+import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 
 serve(async (req) => {
   // Only accept POST
@@ -66,13 +67,22 @@ serve(async (req) => {
       else laDeleted = laData?.length ?? 0;
     }
 
-    if ((!data || data.length === 0) && laDeleted === 0) {
-      return new Response(
-        JSON.stringify({ error: "No matching device token found" }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      );
-    }
+    // Every deletion leaves a trace. This endpoint is unauthenticated by
+    // necessity (a user deleting their data has no account to sign in to), so
+    // the only way a mass unsubscribe would ever be noticed is a row per call.
+    // The token is never logged, only whether something matched.
+    const deleted = (data?.length ?? 0) + laDeleted;
+    await logPipelineEvent(supabase, {
+      stage: "token_register",
+      status: deleted > 0 ? "success" : "skipped",
+      target: "delete_my_data",
+      message: `deleted ${data?.length ?? 0} device_tokens + ${laDeleted} live_activity_tokens`,
+    });
 
+    // Deliberately the same answer whether or not a row matched. The 404 that
+    // used to live here was a token oracle: it let a caller ask "is this token
+    // registered?" one guess at a time. From the user's side the outcome is
+    // identical either way — their data is not on the server.
     return new Response(
       JSON.stringify({
         success: true,

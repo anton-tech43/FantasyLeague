@@ -89,7 +89,16 @@ export interface PipelineHealthLog {
     | "apns_send"         // notification-sender sending a single APNs push
     | "morning_push"      // morning-push "game day" send (was missing → type error)
     | "routine_post"      // routine post_*.sh POSTing to Supabase REST
-    | "cron_invoke";      // pg_cron invoking an Edge Function
+    | "cron_invoke"       // pg_cron invoking an Edge Function
+    // These five exist in the table's CHECK constraint but were never added
+    // here, so writing one from TypeScript failed to compile even though the
+    // database would have taken it happily.
+    | "starting_xi_fire"
+    | "content_audit"
+    | "watch"
+    | "page_refresh"      // any team_pages write, incl. the post_match card
+    | "news_feeds"
+    | "token_register";   // device_tokens registration volume (migration 108)
   // 'partial' for aggregated hop results where some children succeeded and
   // others failed (e.g., notification-sender batching to multiple tokens).
   status: "success" | "failure" | "skipped" | "partial";

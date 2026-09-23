@@ -12,7 +12,7 @@
 // This switch was forced by a public-repo leak of the legacy JWT in
 // migrations 015-017; full context in IMPLEMENTATION_PROGRESS.md.
 
-import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, SupabaseClient } from "npm:@supabase/supabase-js@2.117.0";
 
 let _client: SupabaseClient | null = null;
 

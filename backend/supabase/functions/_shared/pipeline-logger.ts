@@ -1,7 +1,7 @@
 // _shared/pipeline-logger.ts
 // Goal Digger — Logs pipeline events to pipeline_health table
 
-import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { SupabaseClient } from "npm:@supabase/supabase-js@2.117.0";
 import { PipelineHealthLog } from "./types.ts";
 
 export async function logPipelineEvent(
