@@ -152,6 +152,13 @@ struct LingoCallsView: View {
 
     // MARK: Pieces
 
+    /// When she gets to say it. Hand-written where the content has bothered,
+    /// and read off the trigger where it has not — `moment` covers all 59, so
+    /// no card ever draws a blank line where the moment should be.
+    private func moment(_ call: LingoCall) -> String {
+        call.situation ?? LingoCalls.moment(call.trigger)
+    }
+
     /// One line, and how hard she is making it for herself.
     ///
     /// Modelled on `MyTurnOptionButton` and deliberately not it: that one is a
@@ -188,7 +195,15 @@ struct LingoCallsView: View {
                         .accessibilityHidden(true)
                 }
             }
-            Text(appState.personalise(call.line))
+            // When she gets to say it, above the line rather than under it:
+            // the moment is what she is picking, and the words are what she
+            // gets for picking it.
+            Text(moment(call))
+                .font(.jakarta(13, weight: .semiBold))
+                .foregroundColor(.textSecondaryOnCard)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+            Text("\u{201C}\(appState.personalise(call.line))\u{201D}")
                 .font(.jakarta(16, weight: .medium))
                 .foregroundColor(.textPrimaryOnCard)
                 .multilineTextAlignment(.leading)
@@ -214,13 +229,13 @@ struct LingoCallsView: View {
                 content
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("\(band?.label ?? "A line"). \(appState.personalise(call.line))")
+            .accessibilityLabel("\(band?.label ?? "A line"). \(moment(call)). \(appState.personalise(call.line))")
             .accessibilityValue(isPicked ? "On your slip" : "")
             .accessibilityHint(isPicked ? "Takes it off your slip" : "Puts it on your slip")
         } else {
             content
                 .accessibilityElement(children: .combine)
-                .accessibilityLabel("\(band?.label ?? "A line"). \(appState.personalise(call.line))")
+                .accessibilityLabel("\(band?.label ?? "A line"). \(moment(call)). \(appState.personalise(call.line))")
                 .accessibilityValue(landed ? "Came up" : "")
         }
     }

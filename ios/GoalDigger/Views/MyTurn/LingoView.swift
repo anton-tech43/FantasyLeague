@@ -738,8 +738,9 @@ struct LingoView: View {
         lingoDeckSelfCheck(bundled: content)
         myTurnSaidLineSelfCheck()
         // The Swift half of the Called it trigger pair, against the same
-        // vectors the Deno resolver's test reads.
-        LingoCalls.selfCheck()
+        // vectors the Deno resolver's test reads, and the moment rules against
+        // whichever calls are actually loaded.
+        LingoCalls.selfCheck(published: calls)
 
         let args = ProcessInfo.processInfo.arguments
         func value(_ flag: String) -> String? {

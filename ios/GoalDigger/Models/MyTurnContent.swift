@@ -312,11 +312,23 @@ struct LingoCall: Codable, Identifiable, Hashable {
     /// The Lingo term this line came out of, when there is one: the words she
     /// learned are the words she gets to use.
     let termId: String?
+    /// When she gets to say it, hand-written: "If their striker gets one from
+    /// the spot". Nil falls back to `LingoCalls.moment(trigger:)`, which reads
+    /// the trigger itself, so every line has a when from day one — the authored
+    /// field exists because a derivation cannot say what the grammar does not
+    /// hold. Only `line` keeps the 50-character cap, because only `line` enters
+    /// the push body.
+    let situation: String?
+    /// Why it is worth calling — the half-sentence that turns a moment into a
+    /// bet. Nil simply draws nothing.
+    let cue: String?
 
     init(id: String, line: String, trigger: LingoCallTrigger?, band: String?,
-         when: [String]? = nil, termId: String? = nil) {
+         when: [String]? = nil, termId: String? = nil,
+         situation: String? = nil, cue: String? = nil) {
         self.id = id; self.line = line; self.trigger = trigger
         self.band = band; self.when = when; self.termId = termId
+        self.situation = situation; self.cue = cue
     }
 
     init(from decoder: Decoder) throws {
@@ -327,6 +339,8 @@ struct LingoCall: Codable, Identifiable, Hashable {
         band = try c.decodeIfPresent(String.self, forKey: .band)
         when = try c.decodeIfPresent([String].self, forKey: .when)
         termId = try c.decodeIfPresent(String.self, forKey: .termId)
+        situation = try c.decodeIfPresent(String.self, forKey: .situation)
+        cue = try c.decodeIfPresent(String.self, forKey: .cue)
     }
 }
 

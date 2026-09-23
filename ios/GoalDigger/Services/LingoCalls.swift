@@ -113,6 +113,159 @@ enum LingoCalls {
         }
     }
 
+    // MARK: When she gets to say it
+
+    /// The moment a trigger marks, in the words she would use for it: "If one
+    /// of their forwards scores", "If we're ahead at half-time".
+    ///
+    /// The fallback behind `LingoCall.situation`, so all 59 published lines
+    /// carry a when from day one rather than waiting on 59 hand-written ones.
+    /// Pure, total and never empty — a card with a blank line above it is worse
+    /// than a card with a dull one.
+    ///
+    /// It is a fallback and not the answer, which is why the authored field
+    /// exists: the grammar cannot say everything the copy wants to. 59 calls
+    /// share 48 triggers, so several cards read alike; a minute window becomes
+    /// a bucket rather than a number, because nobody says "in minute 90 or
+    /// later"; and `conceded: 0` is "we have not let one in", never "nil-nil",
+    /// because the feed cannot see from here whether WE have scored.
+    ///
+    /// Same reading rule as `resolve`: an absent field is don't-care and says
+    /// nothing, `any` is how the content spells absent, and a field that IS
+    /// present is always spoken, so the sentence never promises a wider moment
+    /// than the trigger will mark.
+    static func moment(_ trigger: LingoCallTrigger?) -> String {
+        guard let trigger, let kind = trigger.kind.flatMap(Kind.init(rawValue:)) else {
+            // A kind this build has never heard of is never offered (`usable`),
+            // so this is the shape of a bug rather than a card she will read.
+            return "Some time in this match"
+        }
+        switch kind {
+        case .goal:     return goalMoment(trigger)
+        case .halftime: return halftimeMoment(trigger)
+        case .fulltime: return fulltimeMoment(trigger)
+        }
+    }
+
+    /// `any` is the content's spelling of "don't care", same as in `implies`.
+    private static func named(_ raw: String?) -> String? { raw == "any" ? nil : raw }
+
+    private static func goalMoment(_ t: LingoCallTrigger) -> String {
+        let side = named(t.side)
+        var clause: String
+        if t.ownGoal == true {
+            // An own goal is credited to the side that BENEFITED, per
+            // API-Football and `Outcome`, so `side: "us"` is one of THEIRS
+            // putting it into his own net.
+            switch side {
+            case "us":   clause = "one of theirs puts it in his own net"
+            case "them": clause = "one of ours puts it in his own net"
+            default:     clause = "there's an own goal"
+            }
+        } else if let role = named(t.scorerRole), let phrase = scorer(role: role, side: side) {
+            clause = phrase
+        } else {
+            switch side {
+            case "us":   clause = "we score"
+            case "them": clause = "they score"
+            default:     clause = "there's a goal"
+            }
+        }
+        if t.penalty == true { clause += " from the spot" }
+        if let window = window(from: t.minuteFrom, to: t.minuteTo) { clause += " " + window }
+        return "If " + clause
+    }
+
+    /// The four values `players.position` actually holds, in the words she
+    /// hears them called. Nil for a position this build does not know, which
+    /// falls back to the plain goal rather than inventing a word for it.
+    private static func scorer(role: String, side: String?) -> String? {
+        let ours = side == "us", theirs = side == "them"
+        func one(_ singular: String, _ plural: String) -> String {
+            ours ? "one of our \(plural) scores"
+                : theirs ? "one of their \(plural) scores" : "a \(singular) scores"
+        }
+        switch role {
+        // There is only ever one of him, so he does not take "one of".
+        case "Goalkeeper": return ours ? "our keeper scores"
+                                : theirs ? "their keeper scores" : "a keeper scores"
+        case "Defender":   return one("defender", "defenders")
+        case "Midfielder": return one("midfielder", "midfielders")
+        case "Attacker":   return one("forward", "forwards")
+        default:           return nil
+        }
+    }
+
+    /// A minute window as a part of the match rather than a number. The
+    /// buckets are wide on purpose: "in minute 46 or later" is not a thing
+    /// anybody says, and the sentence has to survive being read out loud.
+    private static func window(from: Int?, to: Int?) -> String? {
+        switch (from, to) {
+        case let (f?, t?):
+            return "between the \(f)th and the \(t)th minute"
+        case let (f?, nil):
+            if f >= 90 { return "in added time" }
+            if f >= 86 { return "in the last few minutes" }
+            if f >= 76 { return "in the last ten minutes" }
+            if f >= 61 { return "late on" }
+            if f >= 46 { return "after half-time" }
+            return "after the first \(f) minutes"
+        case let (nil, t?):
+            if t <= 10 { return "in the first ten minutes" }
+            if t <= 20 { return "in the first twenty minutes" }
+            if t <= 45 { return "before half-time" }
+            if t <= 60 { return "in the first hour" }
+            return "in the first \(t) minutes"
+        case (nil, nil):
+            return nil
+        }
+    }
+
+    private static func halftimeMoment(_ t: LingoCallTrigger) -> String {
+        // `conceded: 0` is what the feed can see: nothing has gone in at OUR
+        // end. It says nothing about whether we have scored, so it is never
+        // "nil-nil" here.
+        let clean = t.conceded == 0
+        switch t.state {
+        case "ahead":
+            return clean ? "If we're ahead at half-time and haven't let one in"
+                         : "If we're ahead at half-time"
+        case "level":
+            return clean ? "If it's level at half-time with nothing let in"
+                         : "If it's level at half-time"
+        case "behind":
+            return "If we're behind at half-time"
+        default:
+            if clean { return "If we haven't let one in by half-time" }
+            if let n = t.conceded { return "If we've let \(n) in by half-time" }
+            return "At half-time"
+        }
+    }
+
+    private static func fulltimeMoment(_ t: LingoCallTrigger) -> String {
+        if t.comeback == true {
+            return t.state == nil || t.state == "win"
+                ? "If we come from behind to win" : "If we come from behind"
+        }
+        let sheet: String
+        switch t.cleanSheet {
+        case true?:  sheet = " without letting one in"
+        case false?: sheet = " having let one in"
+        default:     sheet = ""
+        }
+        switch t.state {
+        case "win":  return "If we win" + sheet
+        case "draw": return "If it's a draw" + sheet
+        case "loss": return "If we lose" + sheet
+        default:
+            switch t.cleanSheet {
+            case true?:  return "If we keep a clean sheet"
+            case false?: return "If we let one in"
+            default:     return "At full-time"
+            }
+        }
+    }
+
     // MARK: The slip
 
     /// Is this call something this build can put in front of her at all? A line
@@ -152,8 +305,6 @@ enum LingoCalls {
               kind == b.kind.flatMap(Kind.init(rawValue:)) else { return false }
         /// What `b` asks for is either not asked for, or asked for identically.
         func holds<T: Equatable>(_ wanted: T?, _ stated: T?) -> Bool { wanted == nil || wanted == stated }
-        /// `any` is how the content spells "don't care".
-        func named(_ raw: String?) -> String? { raw == "any" ? nil : raw }
 
         switch kind {
         case .goal:
@@ -314,14 +465,17 @@ extension LingoCalls {
     ///
     /// The clean sheet is deliberately the one a full-time result can resolve
     /// on its own (`outcomes(after:)`), so the reveal has something to mark.
+    ///
+    /// Unquoted, like the published 59: the card draws the quote marks itself,
+    /// and a fixture that carried its own put a second pair on the screenshot.
     static let debugCalls: [LingoCall] = [
-        LingoCall(id: "debug-we-score", line: "\u{201C}Get in. That's more like it.\u{201D}",
+        LingoCall(id: "debug-we-score", line: "Get in. That's more like it.",
                   trigger: .init(kind: "goal", side: "us"), band: Band.banker.rawValue,
                   when: ["any"], termId: nil),
-        LingoCall(id: "debug-clean-sheet", line: "\u{201C}Nothing let in. That'll do.\u{201D}",
+        LingoCall(id: "debug-clean-sheet", line: "Nothing let in. That'll do.",
                   trigger: .init(kind: "fulltime", cleanSheet: true), band: Band.likely.rawValue,
                   when: ["any"], termId: nil),
-        LingoCall(id: "debug-their-forward", line: "\u{201C}We've given him far too much space there.\u{201D}",
+        LingoCall(id: "debug-their-forward", line: "We've given him far too much space there.",
                   trigger: .init(kind: "goal", side: "them", scorerRole: "Attacker"),
                   band: Band.longshot.rawValue, when: ["any", "opp-set-piece"], termId: "space"),
     ]
@@ -378,7 +532,11 @@ extension LingoCalls {
     /// cover: no banker, no calls, no fixture, determinism, and a stale slip.
     /// Fired once per launch from Lingo's `onAppear`, next to
     /// `lingoDeckSelfCheck`.
-    static func selfCheck() {
+    ///
+    /// `published` is whatever content is loaded, so the `moment` rules below
+    /// are checked against the 59 lines actually on the device rather than
+    /// against a fixture that cannot go out of date.
+    static func selfCheck(published: [LingoCall] = []) {
         // --- The shared vectors ---------------------------------------------
         guard let url = Bundle.main.url(forResource: "call_vectors", withExtension: "json"),
               let data = try? Data(contentsOf: url),
@@ -557,6 +715,98 @@ extension LingoCalls {
         assert(derived == [.fulltime(state: "win", cleanSheet: true, comeback: nil)],
                "a 3-0 win derived \(derived)")
         assert(outcomes(after: fixture).isEmpty, "a game not yet played derived an outcome")
+
+        momentCheck(published: published)
+    }
+
+    /// How long a hand-written `situation` may be, and therefore how long the
+    /// derived one is allowed to get: the card draws it on one or two lines
+    /// above the quote, and a third line pushes the line itself under the fold.
+    static let situationCap = 72
+
+    /// `moment(trigger:)`: the shapes it has to render, and the two properties
+    /// every card on the slip leans on.
+    private static func momentCheck(published: [LingoCall]) {
+        let table: [(LingoCallTrigger, String)] = [
+            // Who scored, and for whom. `any` says nothing, the way it does
+            // everywhere else.
+            (.init(kind: "goal", side: "us"), "If we score"),
+            (.init(kind: "goal", side: "them"), "If they score"),
+            (.init(kind: "goal", side: "any", scorerRole: "any"), "If there's a goal"),
+            (.init(kind: "goal", side: "them", scorerRole: "Attacker"),
+             "If one of their forwards scores"),
+            (.init(kind: "goal", side: "any", scorerRole: "Goalkeeper"), "If a keeper scores"),
+            (.init(kind: "goal", side: "us", scorerRole: "Defender"),
+             "If one of our defenders scores"),
+            // An own goal is credited to the side that benefited, so this one
+            // is OUR goal, put in by one of theirs. Getting it the wrong way
+            // round is the whole reason it is in the table.
+            (.init(kind: "goal", side: "us", ownGoal: true), "If one of theirs puts it in his own net"),
+            (.init(kind: "goal", side: "them", ownGoal: true), "If one of ours puts it in his own net"),
+            (.init(kind: "goal", side: "us", penalty: true), "If we score from the spot"),
+            // Minutes are parts of a match, not numbers.
+            (.init(kind: "goal", side: "any", minuteFrom: 90), "If there's a goal in added time"),
+            (.init(kind: "goal", side: "us", minuteFrom: 88), "If we score in the last few minutes"),
+            (.init(kind: "goal", side: "them", minuteFrom: 80), "If they score in the last ten minutes"),
+            (.init(kind: "goal", side: "any", minuteFrom: 75), "If there's a goal late on"),
+            (.init(kind: "goal", side: "us", minuteFrom: 46), "If we score after half-time"),
+            (.init(kind: "goal", side: "them", minuteTo: 10), "If they score in the first ten minutes"),
+            (.init(kind: "goal", side: "us", scorerRole: "Attacker", minuteTo: 20),
+             "If one of our forwards scores in the first twenty minutes"),
+            (.init(kind: "goal", side: "us", minuteTo: 45), "If we score before half-time"),
+            (.init(kind: "goal", side: "any", minuteTo: 60), "If there's a goal in the first hour"),
+            (.init(kind: "goal", side: "any", penalty: true, minuteFrom: 75),
+             "If there's a goal from the spot late on"),
+            // Half-time. `conceded: 0` is only that nothing has gone in at our
+            // end — the feed cannot see from here whether we have scored, so
+            // this must never read as nil-nil.
+            (.init(kind: "halftime", state: "ahead"), "If we're ahead at half-time"),
+            (.init(kind: "halftime", state: "level"), "If it's level at half-time"),
+            (.init(kind: "halftime", state: "behind"), "If we're behind at half-time"),
+            (.init(kind: "halftime", conceded: 0), "If we haven't let one in by half-time"),
+            (.init(kind: "halftime", state: "ahead", conceded: 0),
+             "If we're ahead at half-time and haven't let one in"),
+            // Full-time.
+            (.init(kind: "fulltime", state: "win"), "If we win"),
+            (.init(kind: "fulltime", state: "draw"), "If it's a draw"),
+            (.init(kind: "fulltime", state: "loss"), "If we lose"),
+            (.init(kind: "fulltime", cleanSheet: true), "If we keep a clean sheet"),
+            (.init(kind: "fulltime", state: "win", cleanSheet: true), "If we win without letting one in"),
+            (.init(kind: "fulltime", state: "draw", cleanSheet: true),
+             "If it's a draw without letting one in"),
+            (.init(kind: "fulltime", comeback: true), "If we come from behind to win"),
+            // Nothing stated is still a moment, and a kind this build cannot
+            // resolve still has to render something rather than a blank line.
+            (.init(kind: "fulltime"), "At full-time"),
+            (.init(kind: "halftime"), "At half-time"),
+            (.init(kind: "redcard"), "Some time in this match"),
+        ]
+        for (trigger, expected) in table {
+            assert(moment(trigger) == expected,
+                   "moment rendered \"\(moment(trigger))\" for \(trigger), expected \"\(expected)\"")
+        }
+        assert(!moment(nil).isEmpty, "a call with no trigger at all rendered nothing")
+
+        // Every published line has a when, and one short enough to draw above
+        // the quote. This is the property the whole fallback exists for.
+        for call in published where usable(call) {
+            let text = moment(call.trigger)
+            assert(!text.isEmpty, "\(call.id) has no moment, so its card would carry a blank line")
+            assert(text.count <= situationCap,
+                   "\(call.id)'s moment runs to \(text.count) characters: \"\(text)\"")
+        }
+
+        // Two lines that READ the same must be two lines that can never share
+        // a slip, or the card asks her the same question twice in other words.
+        // `clash` is what `offer` filters on, so this is the check that ties
+        // the sentence back to the rule.
+        for (i, one) in published.enumerated() where usable(one) {
+            for other in published.dropFirst(i + 1) where usable(other) {
+                guard moment(one.trigger) == moment(other.trigger) else { continue }
+                assert(clash(one, other),
+                       "\(one.id) and \(other.id) both read \"\(moment(one.trigger))\" and can share a slip")
+            }
+        }
     }
 }
 #endif
