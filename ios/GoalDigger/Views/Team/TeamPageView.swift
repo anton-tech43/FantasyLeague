@@ -784,7 +784,15 @@ struct TeamPageView: View {
                         .layoutPriority(1)
                     Spacer(minLength: 0)
                     calendarImportanceColumn(f, hasPreview: hasPreview)
-                        .frame(maxWidth: importanceColumnWidth, alignment: .trailing)
+                        // A maximum with no floor let the club name squeeze
+                        // this column until a single word no longer fitted,
+                        // and "Champions League" broke as "Champion s League"
+                        // on the Bayern München row. The floor holds the
+                        // longest word we ever print; the club name wraps
+                        // instead, which it already knows how to do.
+                        .frame(minWidth: min(importanceColumnWidth, 76),
+                               maxWidth: importanceColumnWidth,
+                               alignment: .trailing)
                 }
             }
         }
@@ -847,7 +855,10 @@ struct TeamPageView: View {
                 Text(f.isPostponed ? "Postponed" : f.importanceLabel)
                     .font(.feedTimestamp).foregroundColor(.hotRose)
                     .lineLimit(2)
-                    .minimumScaleFactor(0.8)
+                    // Shrink before splitting a word: the label is free text
+                    // from the server and the next one may be longer than
+                    // anything the floor above was measured against.
+                    .minimumScaleFactor(0.6)
                     .multilineTextAlignment(.trailing)
                 if hasPreview {
                     Image(systemName: "chevron.right")

@@ -79,7 +79,12 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Settings")
-        .navigationBarTitleDisplayMode(.large)
+        // Inline, not .large. A large title reserves about 100pt under the
+        // status bar and then draws nothing in it — the text never appears
+        // against this toolbar background, so the screen opened on a third of
+        // a blank page (BUG_AUDIT_2026-09-23 B3). Inline is what every other
+        // screen in the app uses and it renders correctly.
+        .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(Color.appBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .task {
