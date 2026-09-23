@@ -382,3 +382,32 @@ each one turned out to be, since three of them were not what the report said.
   list.
 - The **coverage gaps** (onboarding interior, the context switcher, feed
   detail, Live Activity) still need a tap-capable simulator.
+
+## 2026-09-23 — stale-data audit, Premier League set
+
+Run of the `stale-data-audit` skill (sections 1–8) over the 20 active clubs.
+The findings and the evidence are written up in Swedish in
+`SJALVRANNSAKAN_2026-09.md` → "Stale-data-audit 2026-09-23". In one line each:
+
+- **F1.** `gd-team-page`'s idempotence check keyed on `team_pages.updated_at`,
+  which the Edge function rewrites every two hours, so it answered "all 20
+  already done" at every slot after 06:00 UTC and the second slot has never been
+  a retry. The prose froze on 7 September; Chelsea's ones_to_know still named
+  Enzo Fernández three weeks after a £125m move to Manchester City. Fixed and
+  re-fired.
+- **F2.** `fetchPlayerCards` has no squad filter and nothing ever deletes, so
+  the club player list carried Salah at Liverpool, Rodri at City and five more.
+  27 rows removed (mig 111). **Open:** the app still has no squad filter, so the
+  next window puts it back. iOS/API change, needs a decision.
+- **F3.** API-Football HTML-escapes apostrophes (`N. O&apos;Reilly`). Decoded at
+  ingest (mig 110); `post_team_page.sh`'s guard would otherwise reject a club's
+  whole payload for naming a player who is in the squad.
+- **F4.** `api_football_id` is not unique in `teams` — FA Cup is 45 and so is
+  Everton. `detect-consequences` kept the wrong row. Fixed and deployed.
+- **F5.** `team-season-state-generator` told the model "2025-26 season" while
+  handing it the 2026-27 table. Computed now.
+
+Clean and verified: the roster (two sources), all 20 managers and their
+appointment dates (two sources), squads, calendars, phase, insider items, the
+non-PL guard. Counted, not fixed: 55 of 621 player photos are the upstream
+silhouette.

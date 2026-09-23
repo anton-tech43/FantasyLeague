@@ -743,3 +743,126 @@ Verifierat read-only: `country | f | 48`, match-watcher grön varje minut, dagen
 | 6 sep 20:0x | A30: mig 084 spelarsynk, team-page-generator v72, gd-team-page skapad och körd, post_news-validatorer (`3e8b7d8`) |
 | 6 sep 21:2x | A31: webbkontroll av klubbar/tränare/spelare; mig 085 tränar-override, skill `stale-data-audit`, `DATA_SOURCES.md`, kalenderfliken byggd deterministiskt, placeholder- och tenure-vakter |
 | 6 sep | Denna granskning (Spår A + B) + kundgranskning (plan `parsed-chasing-ladybug`): onboarding utan VM-steg, routines på `teams`-tabellen och innevarande säsong, quiet hours, validatorer |
+
+---
+
+# Stale-data-audit 2026-09-23 — Premier League-laguppsättningen
+
+**Scope:** `stale-data-audit`-skillen, avsnitt 1–8, körd mot de 20 aktiva
+PL-klubbarna. Allt nedan är verifierat mot produktion och åtgärdat samma dag om
+inget annat står.
+
+## Rent — kontrollerat, inget fel
+
+- **Laguppsättningen.** De 20 aktiva raderna matchar exakt feedens egen
+  liga-39-tabell och premierleague.com. Wikipedias 2026-27-artikel bekräftar
+  uppflyttade (Coventry, Ipswich, Hull) och nedflyttade (West Ham, Burnley,
+  Wolves). iOS `Team`-enumet är identiskt med databasen. CONTENT-6:s misstanke
+  om roster-drift (Ipswich) håller alltså inte — Ipswich *är* i ligan.
+- **Tränarna, 20 av 20.** Namn *och* tillträdesdatum stämmer mot två oberoende
+  källor. Buggrapportens misstanke att den framåtdaterade 2026-27-uppsättningen
+  kunde vara "stale/scrambled" är därmed avfärdad. `manager_verified_at` satt
+  till i dag på alla 20.
+- **Trupperna.** 26–38 spelare per klubb, foto-URL på varenda en, alla synkade
+  i dag (Hull i går). `sync_players_from_squads()` returnerar 0 = inget drev.
+- **Kalendern.** Alla 20 har 15 matcher, samtliga i framtiden (10–12 okt), och
+  motståndarparen går ihop inbördes.
+- **Fas + insider.** `phase = mid_season` för alla 20, vilket stämmer med
+  kalendern. `team_insider_items` skrivna i dag.
+- **Vakterna.** `post_news.sh`:s non-PL-lista är aktuell och testad: den
+  avvisar en resultatmening som nämner Luton. Inget innehåll har gått till en
+  inaktiv klubb de senaste sju dagarna.
+
+## F1 — Prosan har stått stilla sedan 7 september, och retry-slotten har aldrig varit en retry
+
+`gd-team-page` skriver `ones_to_know`, `season` och tränarprosan. Korten är
+daterade **2026-09-07**. Rutinen är påslagen och har kört varje måndag.
+
+Steg 0b frågar "har dagens körning redan landat?" mot `team_pages.updated_at`.
+Den kolumnen skrivs om **varannan timme från 06:00 UTC** av
+`team-page-generator`s `dynamic_only`-pass, som uppdaterar siffrorna. Från
+06:00 varje dag säger den alltså "i dag" för alla 20, kontrollen svarar "klart",
+och rutinen avslutar utan att skriva. Slotten 08:30 — som lades till just för
+att ett avbrott 02:30 inte skulle kosta veckan — **har aldrig kunnat fungera**.
+
+Bara 02:30-slotten kan skriva, och den föll två måndagar i rad:
+14 sep veckokvot (`rate_limit: rejected (seven_day)`, 8 sekunder),
+21 sep Supabase HTTP 522 (rutinen stannade korrekt och pushade ett larm).
+Båda 08:30-körningarna no-oppade på två minuter och rapporterade *success*.
+
+Kostnaden: 16 dagar där Chelseas "ones to know" namngav **Enzo Fernández**, tre
+veckor efter att han gick till Manchester City för £125m på deadline day, och
+Sunderlands namngav **Simon Adingra**. Båda saknas i dagens trupp-payload, som
+hämtades 08:00 i morse — de har alltså verkligen lämnat.
+
+**Åtgärd:** kontrollen nycklar nu på `season`-kortets eget `updated_at`, som
+bara rutinen skriver (`33677c5` i routines-repot). Verifierat mot de levande
+raderna: det gamla uttrycket kallade alla 20 klara, det nya kallar noll klara.
+Rutinen kördes om och skrev.
+
+## F2 — Salah på Liverpools spelarlista (migration 111)
+
+`APIClient.fetchPlayerCards` (`ios/GoalDigger/Services/APIClient.swift:287`)
+hämtar **varje** `player_cards`-rad för en klubb utan truppfilter, och
+`gd-player-dossier` skriver bara — ingenting har någonsin raderat. Listan bar
+Mohamed Salah på Liverpool, Rodri på Manchester City, Bruno Guimarães, Sandro
+Tonali och Anthony Gordon på Newcastle, Ollie Watkins och Emi Martínez på Villa.
+
+27 rader raderade, var och en kontrollerad för hand mot dagens trupp. En
+grövre efternamnsmatchning påstod också att Alisson lämnat Liverpool — trupen
+stavar honom "Alisson Becker". Tre spelare låg dubbelt, en rad per stavning
+(`Emi Martinez`/`Emi Martínez`), för att dossier-rutinen skapar en ny rad när
+feeden byter förkortning i stället för att uppdatera den gamla.
+
+**Kvar att bestämma:** appen har fortfarande inget truppfilter, så nästa
+fönster lägger tillbaka problemet. Det är en iOS/API-ändring och tas inte här.
+
+## F3 — API-Football HTML-escapar apostrofer (migration 110)
+
+`/players/squads?team=50` svarar `N. O&apos;Reilly`. Kontrollerat mot det
+levande endpointet — det är feeden, inte vår ingest. Finns i fyra av dess
+payloads; sex nuvarande spelare bär det.
+
+Två saker går sönder, ingen av dem högljutt: ett mål av en av de sex hade
+pushat "N. O&apos;Reilly", och `post_team_page.sh`:s grundningsvakt jämförde
+kortets `o'reilly` med snapshotens `o&apos;reilly`, hittade ingen matchning och
+**avvisade hela klubbens payload för att den namngav en spelare som finns i
+truppen**. Ingen av de sex ligger i ett `ones_to_know`-kort just nu, så inget
+var blockerat — fixen landade före, inte efter.
+
+Avkodat i `players` via `decode_feed_entities()`; råpayloaderna lämnas orörda
+eftersom de är bevis. Vakten avkodar nu också (`33973c3`), med före/efter testat.
+
+## F4 — `api_football_id` är inte unikt i `teams`
+
+De fyra tävlingsraderna lagrar sitt **liga**-id i kolumnen, och två krockar med
+klubbar: FA Cup är liga 45 och Everton är lag 45, League Cup är 48 och West Ham
+är 48. `detect-consequences` byggde sin karta med ett ofiltrerat `.in()`, och
+sista raden vinner i en `Map` — i dag `fa_cup`. Varje konsekvens uträknad för
+Everton hade alltså skrivits mot en cup-rad: Evertons följare får ingenting, och
+pushen hamnar under en turnering. Inte utlöst ännu (ligan är fem omgångar in),
+men det är precis i upploppet konsekvenserna betyder något.
+
+Turneringar exkluderade i `detect-consequences` och `match-watcher`. Deployat.
+
+## F5 — Säsongsetiketter
+
+`team-season-state-generator` sa i prompten **"Premier League (2025-26 season)"**
+samtidigt som den fick 2026-27-tabellen. Beräknas nu. `data-fetcher`s kommentar
+påstod en fastnaglad `season=2025`; koden har alltid räknat ut den, men
+kommentaren är vad en läsare som letade efter just den buggen hade trott.
+
+## Noterat, inte åtgärdat
+
+- **55 av 621 spelarfoton (8,9 %)** är en och samma uppströms-silhuett
+  (`430d67fd…`, 5192 byte). Sunderland har 11. De klustrar på spelare värvade
+  sedan förra kontrollen, samma mönster som tränarfotona. Lämnas: den läser som
+  en avsiktlig avatar snarare än en trasig bild, och `photo_url` skrivs om varje
+  natt från trupp-payloaden så en nullning inte överlever natten.
+- **`LingoCalendar.summerWindow` stänger 31 augusti.** Enzo Fernández-affären
+  slutfördes **1 september 2026**, deadline day. Konstanten ligger alltså en dag
+  fel för 2026. Ingen effekt nu (fönstret är stängt oavsett) och en ändring
+  kräver en App Store-release — kontrollera mot FA:s publicerade fönster nästa
+  sommar.
+- **Avsnitt 9 (App Store-texten) och 9a (TikTok-quizet)** ligger utanför
+  "PL-lagen" och är inte körda. Avsnitt 10 (`WCSeason`) hanteras av PR #17.
