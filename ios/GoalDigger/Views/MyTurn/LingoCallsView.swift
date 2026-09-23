@@ -15,6 +15,12 @@ import SwiftUI
 /// Three states, in the order she meets them: the offer, the slip she has
 /// already filled in, and afterwards the same lines with the ones that came up
 /// marked. All the deciding is `LingoCalls`; this only draws it.
+///
+/// Only the offer is a full screen. It is the one state that asks her for
+/// something, and it is the one Anton was looking at when he said "den här
+/// sidan vill man inte ens vara på" — so it gets the whole viewport and every
+/// other thing in Lingo goes below the fold. The two states she only reads are
+/// still cards, because a card she has already filled in has nothing to ask.
 struct LingoCallsView: View {
     let calls: [LingoCall]
     @Bindable var store: MyTurnStore
@@ -32,6 +38,10 @@ struct LingoCallsView: View {
     /// tab switch, and a relaunch starting again at the first line is correct.
     @State private var picked: Set<String> = []
     @State private var index = LingoCallsView.startIndex
+    /// How tall the offer has to be to fill the screen, measured rather than
+    /// guessed — see `viewportProbe`.
+    @State private var viewport: CGFloat = 0
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     private var slip: MyTurnStore.MatchCalls? { store.matchCalls(for: context) }
 
@@ -50,13 +60,22 @@ struct LingoCallsView: View {
 
     // MARK: Before kick-off
 
-    /// One line, yes or no, then the next one.
+    /// One line, yes or no, then the next one — filling the screen.
     ///
     /// Three cards at once was three decisions at once with a button under
     /// them, on a screen Anton read as "för mycket som händer". One card is one
     /// decision, and the last yes or no IS the confirmation — there is no
     /// separate "That's my slip", because a button that only ever means "I've
     /// finished answering" is a fourth thing to understand.
+    ///
+    /// The short version of that card was still wrong, and the diagnosis was
+    /// weight rather than shape: the line she might say sat in a white rounded
+    /// box, the glossary row under it sat in an identical white rounded box,
+    /// and the only saturated surface on the screen belonged to the hero, so
+    /// the eye landed on none of them. Full height fixes it by having nothing
+    /// to compete with — the situation gets a headline, the line gets a size
+    /// worth reading, and the hero and the 158 words are one scroll away
+    /// rather than in the same glance.
     @ViewBuilder
     private var offer: some View {
         let offered = LingoCalls.offer(calls: calls, context: context)
@@ -66,58 +85,164 @@ struct LingoCallsView: View {
         // none at all means this fixture has nothing to offer, and the card
         // stays off the screen rather than apologising for itself.
         if let call = offered[safe: index] {
-            card {
-                heading("Called it", subtitle: offerSubtitle)
-
-                HStack(spacing: 8) {
-                    Text("\(index + 1) of \(offered.count)")
-                        .font(.jakarta(13, weight: .semiBold))
-                        .foregroundColor(.warmWhite.opacity(0.6))
-                        .accessibilityLabel("Line \(index + 1) of \(offered.count)")
-                    Spacer(minLength: 0)
+            offerScreen(call, of: offered)
+                // A floor, not a height. It fills the viewport at the sizes she
+                // will actually read at, and at the accessibility sizes it
+                // simply grows past it and she scrolls — which is the only way
+                // the Yes and No can be guaranteed to stay on the screen, since
+                // they are the only way forward.
+                .frame(minHeight: viewport, alignment: .top)
+                .background(viewportProbe)
+                .onPreferenceChange(ViewportHeight.self) { measured in
+                    Task { @MainActor in viewport = measured }
                 }
-
-                row(call, picked: false)
-
-                HStack(spacing: 10) {
-                    Button {
-                        answer(call, yes: true, of: offered)
-                    } label: {
-                        answerLabel("Yes", filled: true)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Yes. Puts this line on your slip.")
-
-                    Button {
-                        answer(call, yes: false, of: offered)
-                    } label: {
-                        answerLabel("No", filled: false)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("No. Leaves this one off.")
+                // A different fixture is a different slip, and this view stays
+                // mounted across one arriving.
+                .onChange(of: context.fixtureKey) { _, _ in
+                    index = 0
+                    picked = []
                 }
-            }
-            // A floor, not a height: the card is the top of the screen now and
-            // the hero sits directly under it, so a line that wraps to two
-            // where the last one wrapped to three would move the hero under
-            // her thumb between one answer and the next.
-            .frame(minHeight: Self.slipMinHeight, alignment: .top)
-            // A different fixture is a different slip, and this view stays
-            // mounted across one arriving.
-            .onChange(of: context.fixtureKey) { _, _ in
-                index = 0
-                picked = []
-            }
         }
     }
 
-    /// The tallest the offer card gets at the default text size: a heading over
-    /// two lines, a moment over two and a fifty-character line over three. Only
-    /// a floor, so a bigger text size still grows past it.
-    private static let slipMinHeight: CGFloat = 300
+    /// The offer, drawn on the brightest surface in the app.
+    ///
+    /// Blush and not rose on purpose: the hero directly below is `hotRose`, and
+    /// two saturated pink blocks in a column are two things shouting. A full
+    /// bleed of the light card colour against the mauve background is the most
+    /// primary this screen can be without taking the hero's colour off it, and
+    /// it leaves rose free to mean exactly two things here — the line she would
+    /// say, and the button that puts it on her slip.
+    private func offerScreen(_ call: LingoCall, of offered: [LingoCall]) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text("Get in the game")
+                    .font(.jakarta(17, weight: .bold))
+                    .foregroundColor(.textPrimaryOnCard)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer(minLength: 0)
+                Text("\(index + 1) of \(offered.count)")
+                    .font(.jakarta(15, weight: .semiBold))
+                    .foregroundColor(.textSecondaryOnCard)
+                    .accessibilityLabel("Line \(index + 1) of \(offered.count)")
+            }
+            .dynamicTypeSize(...Self.displayCap)
 
-    /// The promise, word for word in both states: it is what she is agreeing to
-    /// while she picks, and it must not change wording once she has.
+            // Capped, so the words sit in the upper half and the leftover room
+            // falls below them. Two equal spacers centred the block and left
+            // the screen reading as one short card with a lot of padding.
+            Spacer(minLength: 28).frame(maxHeight: 96)
+
+            VStack(alignment: .leading, spacing: 14) {
+                // The moment, at headline size. It was a ten-point grey eyebrow
+                // on a card whose whole job is explaining when she gets to say
+                // the thing, which is the wrong way round.
+                Text(moment(call))
+                    .font(.jakarta(34, weight: .bold))
+                    .foregroundColor(.textPrimaryOnCard)
+                    .lineSpacing(2)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("\u{201C}\(appState.personalise(call.line))\u{201D}")
+                    .font(.jakarta(25, weight: .medium))
+                    .foregroundColor(.hotRose)
+                    .lineSpacing(3)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                if let cue = call.cue {
+                    Text(appState.personalise(cue))
+                        .font(.jakarta(15, weight: .regular))
+                        .foregroundColor(.textSecondaryOnCard)
+                        .lineSpacing(2)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .dynamicTypeSize(...Self.displayCap)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(moment(call)). \(appState.personalise(call.line))")
+
+            Spacer(minLength: 28)
+
+            answerButtons(call, of: offered)
+        }
+        .padding(.horizontal, 22)
+        .padding(.vertical, 24)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.cardBackground)
+        .cornerRadius(Layout.cardCornerRadius)
+        .transition(.opacity)
+    }
+
+    /// How far the display type scales, and no further. It starts at 34 and 25
+    /// points, so at `accessibility2` it is already bigger than body text is at
+    /// the largest setting — past that it stops being a headline and becomes
+    /// three words per screen. The cap is on the display type only: the cue,
+    /// the buttons and every other state scale the whole way.
+    private static let displayCap = DynamicTypeSize.accessibility2
+
+    /// Side by side until the text is big enough that two words on one row
+    /// start truncating, then one above the other. Nothing here may shrink or
+    /// clip: these two are the only way off this screen.
+    @ViewBuilder
+    private func answerButtons(_ call: LingoCall, of offered: [LingoCall]) -> some View {
+        let yes = Button {
+            answer(call, yes: true, of: offered)
+        } label: {
+            answerLabel("Yes", filled: true)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Yes. Puts this line on your slip.")
+
+        let no = Button {
+            answer(call, yes: false, of: offered)
+        } label: {
+            answerLabel("No", filled: false)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("No. Leaves this one off.")
+
+        if typeSize >= .accessibility2 {
+            VStack(spacing: 12) { yes; no }
+        } else {
+            HStack(spacing: 12) { yes; no }
+        }
+    }
+
+    /// How tall the offer has to be to reach the bottom of the screen.
+    ///
+    /// `containerRelativeFrame` is the scroll view's visible region, so this is
+    /// the right number on an SE and on a Pro Max without either being written
+    /// down. Invisible, untappable, and laid out in a background, so it cannot
+    /// change what it is measuring.
+    private var viewportProbe: some View {
+        Color.clear
+            .containerRelativeFrame(.vertical)
+            .overlay(
+                GeometryReader { geo in
+                    Color.clear.preference(key: ViewportHeight.self,
+                                           value: max(0, geo.size.height - Self.columnTopInset))
+                }
+            )
+            .allowsHitTesting(false)
+    }
+
+    /// What the Lingo column pads itself by above its first card. Subtracted so
+    /// the bottom of this screen lands on the bottom of the viewport rather
+    /// than that much below it.
+    private static let columnTopInset: CGFloat = 12
+
+    private struct ViewportHeight: PreferenceKey {
+        static let defaultValue: CGFloat = 0
+        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+            value = max(value, nextValue())
+        }
+    }
+
+    /// The promise, in the state where it is still ahead of her. It is off the
+    /// offer at Anton's word — the screen that asks her a question carries the
+    /// question and nothing else — so the first time she reads it is on the
+    /// slip she has just filled in, and the wording must not move after that.
     private static let promise = "We'll tell you the moment one comes up."
 
     /// "For Saturday" — the occasion reads as a weekday inside the week and as
@@ -125,10 +250,6 @@ struct LingoCallsView: View {
     /// one preposition both spellings take.
     private var when: String {
         context.occasion(now: Date()).map { "For \($0). " } ?? ""
-    }
-
-    private var offerSubtitle: String {
-        "\(when)Would you say it? \(Self.promise)"
     }
 
     /// Yes puts it on the slip, no does not, and both move her on. Past the
@@ -146,13 +267,14 @@ struct LingoCallsView: View {
 
     private func answerLabel(_ text: String, filled: Bool) -> some View {
         Text(text)
-            .font(.jakarta(16, weight: .semiBold))
+            .font(.jakarta(18, weight: .bold))
             .foregroundColor(filled ? .warmWhite : .hotRose)
             .frame(maxWidth: .infinity)
-            .frame(minHeight: 46)
+            .frame(minHeight: 56)
+            .padding(.vertical, 4)
             .background(filled ? Color.hotRose : Color.clear)
             .overlay(RoundedRectangle(cornerRadius: Layout.buttonCornerRadius)
-                .stroke(filled ? Color.clear : Color.hotRose, lineWidth: 1))
+                .stroke(filled ? Color.clear : Color.hotRose, lineWidth: 1.5))
             .cornerRadius(Layout.buttonCornerRadius)
             .contentShape(Rectangle())
     }
@@ -188,7 +310,7 @@ struct LingoCallsView: View {
             // and nothing to undo: not picking costs nothing.
             if !played {
                 card {
-                    heading("Called it", subtitle: "\(when)None of those took your fancy. There'll be three more for the next one.")
+                    heading("Get in the game", subtitle: "\(when)None of those took your fancy. There'll be three more for the next one.")
                 }
             }
         } else {
@@ -196,14 +318,15 @@ struct LingoCallsView: View {
                                                 calls: mine,
                                                 outcomes: LingoCalls.outcomes(after: context)).map(\.id))
             card {
-                // The same promise, in the same words, either side of the last
-                // yes: the card she reads back has to be the card she agreed to.
-                heading("Called it", subtitle: played
+                // The one place the promise is made, and afterwards the one
+                // place it is answered. Both read back what she picked; neither
+                // asks her whether she said it.
+                heading("Get in the game", subtitle: played
                         ? "What you called\(context.occasion(now: Date()).map { " for \($0)" } ?? "")."
                         : "\(when)\(Self.promise)")
 
                 ForEach(mine) { call in
-                    row(call, picked: true, landed: landed.contains(call.id))
+                    row(call, landed: landed.contains(call.id))
                 }
             }
         }
@@ -229,20 +352,24 @@ struct LingoCallsView: View {
         call.situation ?? LingoCalls.moment(call.trigger)
     }
 
-    /// One line: the moment it belongs to, the words, and how hard she is
-    /// making it for herself. Never tappable — the row is what she is being
-    /// asked about, and the two buttons under it are the answer.
-    private func row(_ call: LingoCall, picked isPicked: Bool,
-                     landed: Bool = false) -> some View {
-        let band = LingoCalls.Band(rawValue: call.band ?? "")
-        return VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 8) {
-                if let band {
-                    Text(band.label.uppercased())
-                        .font(.jakarta(10, weight: .bold))
-                        .tracking(1)
-                        .foregroundColor(.hotRose)
-                }
+    /// One line she picked: the moment it belongs to and the words. Never
+    /// tappable, and only ever drawn on a slip she has already filled in, so
+    /// every row here is one of hers.
+    ///
+    /// No band label. "NEAR CERTAIN" over a line she has already chosen is a
+    /// word about how the offer was built, not about her afternoon, and it was
+    /// the loudest thing on the row.
+    private func row(_ call: LingoCall, landed: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .top, spacing: 8) {
+                // When she gets to say it, above the line rather than under it:
+                // the moment is what she picked, and the words are what she
+                // gets for picking it.
+                Text(moment(call))
+                    .font(.jakarta(13, weight: .semiBold))
+                    .foregroundColor(.textSecondaryOnCard)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 0)
                 if landed {
                     Text("CAME UP")
@@ -252,7 +379,7 @@ struct LingoCallsView: View {
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
                         .background(Capsule().fill(Color.hotRose.opacity(0.18)))
-                } else if isPicked, !played {
+                } else if !played {
                     // Only while she is waiting. Afterwards every row on the
                     // card is one she picked, so a tick there reads as "this
                     // one happened" next to the badge that actually means it.
@@ -261,14 +388,6 @@ struct LingoCallsView: View {
                         .accessibilityHidden(true)
                 }
             }
-            // When she gets to say it, above the line rather than under it:
-            // the moment is what she is picking, and the words are what she
-            // gets for picking it.
-            Text(moment(call))
-                .font(.jakarta(13, weight: .semiBold))
-                .foregroundColor(.textSecondaryOnCard)
-                .multilineTextAlignment(.leading)
-                .fixedSize(horizontal: false, vertical: true)
             Text("\u{201C}\(appState.personalise(call.line))\u{201D}")
                 .font(.jakarta(16, weight: .medium))
                 .foregroundColor(.textPrimaryOnCard)
@@ -286,13 +405,13 @@ struct LingoCallsView: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(isPicked ? Color.hotRose.opacity(0.18) : Color.clear)
+        .background(Color.hotRose.opacity(0.18))
         .background(Color.cardBackground)
         .overlay(RoundedRectangle(cornerRadius: 12)
-            .stroke(isPicked ? Color.hotRose : Color.clear, lineWidth: 1.5))
+            .stroke(Color.hotRose, lineWidth: 1.5))
         .cornerRadius(12)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(band?.label ?? "A line"). \(moment(call)). \(appState.personalise(call.line))")
+        .accessibilityLabel("\(moment(call)). \(appState.personalise(call.line))")
         .accessibilityValue(landed ? "Came up" : "")
     }
 
