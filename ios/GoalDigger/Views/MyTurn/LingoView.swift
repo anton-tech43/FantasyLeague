@@ -54,6 +54,8 @@ struct LingoView: View {
     @State private var debugContext: MatchContext?
     /// `onAppear` fires again on every return to the tab; the harness must not.
     @State private var appliedArguments = false
+    /// `-gdLingoHeroTap` presses the hero once, not on every rebuild of it.
+    @State private var pressedHero = false
     #endif
 
     /// The hero's two facts: what weekend it is, and which words it would deal.
@@ -416,17 +418,27 @@ struct LingoView: View {
                     subtitle: continueLabel ?? appState.personalise(weekend.context.subtitle),
                     subtitleLineLimit: 3
                 ) {
-                    if continueLabel != nil {
-                        showingLanding = false
-                    } else {
-                        deal(weekend.context, ids: weekend.ids)
-                    }
+                    pressHero(weekend)
                 }
+                #if DEBUG
+                // simctl cannot tap, so `-gdLingoHeroTap` presses it — the
+                // hero's own closure, with the weekend it has actually built.
+                .task(id: weekend.ids) { await debugPressHero(weekend) }
+                #endif
             } else {
                 // The search field below is the whole screen now, so say so
                 // rather than leaving a gap where the hero was.
                 MyTurnEmptyText(text: "Nothing to deal yet. Search for a word you heard.")
             }
+        }
+    }
+
+    /// What the hero does when she presses it.
+    private func pressHero(_ weekend: Weekend) {
+        if continueLabel != nil {
+            showingLanding = false
+        } else {
+            deal(weekend.context, ids: weekend.ids)
         }
     }
 
@@ -681,13 +693,13 @@ struct LingoView: View {
     ///   `-gdLingoPending`     plants a committed line for last week's
     ///                         fixture, so the landing shows the settle row
     ///                         without waiting a week for a real one.
-    ///   `-gdLingoCalls`      hangs three fixture lines on the Called it slip.
-    ///                         `lingo.json` carries no `calls` key yet, so
-    ///                         there is nothing published to photograph; the
-    ///                         bands, the tags, the banker rule and the
-    ///                         fixture gate all still apply to these. Pair it
-    ///                         with `-gdLingoContext matchup`, which is a
-    ///                         Before context the calendar has an id for.
+    ///   `-gdLingoCalls`      pins three fixture lines on the Called it slip,
+    ///                         for a shot that does not move when the 59
+    ///                         published calls do; the bands, the tags, the
+    ///                         banker rule and the fixture gate all still
+    ///                         apply to these. Pair it with
+    ///                         `-gdLingoContext matchup`, which is a Before
+    ///                         context the calendar has an id for.
     ///   `-gdLingoCallsPick`   fills that slip in, for the two states a tap
     ///                         gets to: waiting for the match before it, and
     ///                         the reveal after it (pair it with
@@ -706,6 +718,12 @@ struct LingoView: View {
     ///                         gate all still apply — and touches nothing
     ///                         outside DEBUG. Pair it with `-gdLingoContext
     ///                         derby -gdLingoPlay`.
+    ///   `-gdLingoHeroTap`     presses the hero once, two seconds after the
+    ///                         screen has settled, through its own closure,
+    ///                         and asserts a round opened. It is the only way
+    ///                         to prove the hero is reachable, since a hero
+    ///                         that is covered by a neighbouring card looks
+    ///                         identical in a screenshot to one that works.
     ///
     /// simctl cannot tap, so these are the only way to a screenshot of
     /// anything past the landing screen.
@@ -765,6 +783,20 @@ struct LingoView: View {
         }
         if args.contains("-gdLingoPending") { debugPending(current) }
         if args.contains(LingoCalls.debugPickArgument) { debugPickCalls(current) }
+    }
+
+    /// `-gdLingoHeroTap`: press the hero, once, with the weekend on screen.
+    private func debugPressHero(_ weekend: Weekend) async {
+        guard !pressedHero, ProcessInfo.processInfo.arguments.contains("-gdLingoHeroTap") else { return }
+        pressedHero = true
+        // The rest of the harness runs off `onAppear`; a press that lands
+        // before it is not the press she makes, which is on a settled screen.
+        try? await Task.sleep(for: .seconds(2))
+        pressHero(weekend)
+        // The whole point of the flag: a hero that is on screen and pressed
+        // must have opened a round. If it has not, the press went nowhere and
+        // that is the bug, not a screenshot that happens to look wrong.
+        assert(showingRound, "the hero was pressed and no round opened")
     }
 
     /// A filled-in slip, for a shot of the two states a tap gets to and simctl

@@ -287,11 +287,12 @@ enum LingoCalls {
 extension LingoCalls {
     // MARK: - Screenshot harness
 
-    /// `-gdLingoCalls`. `lingo.json` carries no `calls` key yet, so there is
-    /// nothing on the device to photograph: this hands the slip three fixture
-    /// lines instead. It changes nothing outside DEBUG and nothing about how a
-    /// published call is offered, resolved or uploaded — the bands, the tags,
-    /// the banker rule and the fixture gate all still apply to these.
+    /// `-gdLingoCalls`. `lingo.json` publishes 59 calls, so this is no longer
+    /// the only way to see a slip: it pins three fixture lines instead, for a
+    /// shot that does not move when the content does. It changes nothing
+    /// outside DEBUG and nothing about how a published call is offered,
+    /// resolved or uploaded — the bands, the tags, the banker rule and the
+    /// fixture gate all still apply to these.
     static let debugArgument = "-gdLingoCalls"
 
     /// `-gdLingoCallsPick`, which fills the slip in out of whatever content is
