@@ -25,17 +25,26 @@ struct GoalDiggerApp: App {
                         // or a country-only user left on .team(nil)).
                         let stillValid: Bool = {
                             switch appState.activeContext {
-                            case .country(let c): return appState.selectedCountries.contains(c)
+                            // A stored country context is invalid while the
+                            // feature is off, so the repair below moves her to
+                            // a club (or the cross-team feed) on next launch
+                            // rather than leaving her on an empty tab.
+                            case .country(let c):
+                                return CountryFollowing.isEnabled && appState.selectedCountries.contains(c)
                             case .team(let t):    return appState.selectedTeams.contains(t)
                             case .worldChampionship: return WCSeason.isVisible
                             case .everyoneTalking: return true
                             }
                         }()
                         if !stillValid {
-                            if let country = appState.selectedCountries.first {
-                                appState.activeContext = .country(country)
-                            } else if let team = appState.selectedTeams.first {
+                            // Club first. Country only when the feature is on
+                            // — otherwise an invalidated country context would
+                            // be repaired straight back to the same country.
+                            if let team = appState.selectedTeams.first {
                                 appState.activeContext = .team(team)
+                            } else if CountryFollowing.isEnabled,
+                                      let country = appState.selectedCountries.first {
+                                appState.activeContext = .country(country)
                             } else {
                                 appState.activeContext = .everyoneTalking
                             }
@@ -202,7 +211,12 @@ struct MainTabView: View {
         case .worldChampionship, .everyoneTalking:
             // No team page for the tournament-wide contexts — fall back to
             // the first followed entity so the His Team tab keeps working.
-            return appState.selectedCountry?.rawValue ?? appState.selectedTeam?.rawValue
+            // Club first: with country following off, a club+country user
+            // would otherwise get a country page on the His Team tab.
+            if CountryFollowing.isEnabled {
+                return appState.selectedCountry?.rawValue ?? appState.selectedTeam?.rawValue
+            }
+            return appState.selectedTeam?.rawValue ?? appState.selectedCountry?.rawValue
         }
     }
 

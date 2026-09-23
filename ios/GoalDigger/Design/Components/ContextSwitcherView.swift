@@ -14,7 +14,9 @@ struct ContextSwitcherView: View {
         // club, then Everyone. Countries come first (the WC anchor) so the
         // first row matches AppState's default activeContext picker.
         var result: [FeedContext] = []
-        result.append(contentsOf: appState.selectedCountries.map { .country($0) })
+        if CountryFollowing.isEnabled {
+            result.append(contentsOf: appState.selectedCountries.map { .country($0) })
+        }
         result.append(contentsOf: appState.selectedTeams.map { .team($0) })
         // Tournament-wide feed, visible for everyone during the World
         // Championship; self-hides after the final (WCSeason gate).

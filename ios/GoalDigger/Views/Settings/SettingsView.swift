@@ -46,10 +46,11 @@ struct SettingsView: View {
                         VStack(spacing: Layout.cardSpacing) {
                             yourNameRow
                             hisNameRow
-                            // Country only while a tournament is live (same
-                            // gate as the feed switcher). Between tournaments
-                            // the club is the only entity she can change.
-                            if WCSeason.isVisible {
+                            // Gated on the country feature itself, not on
+                            // WCSeason as it used to be. Same visible result
+                            // today, but the two are different questions and
+                            // the tournament gate is on its way out.
+                            if CountryFollowing.isEnabled {
                                 hisCountryRow
                             }
                             hisTeamRow

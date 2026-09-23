@@ -143,14 +143,16 @@ class AppState {
         // actually a separate auto-expand bug, now removed; the immersive feed
         // itself is the intended default.
 
-        // Active context — country takes precedence over team in V2.0 (WC
-        // is the primary anchor; if the user has both, default to the WC
-        // feed). Falls back to team for V1.x users with no country selected,
-        // and to .everyoneTalking when neither is set.
-        if let country = self.selectedCountry {
+        // Active context. Country used to take precedence — during the
+        // tournament it was the primary anchor. With country following off
+        // (CountryFollowing.isEnabled) the club is the only thing with a live
+        // feed behind it, so it wins; .everyoneTalking when neither is set.
+        if CountryFollowing.isEnabled, let country = self.selectedCountry {
             self.activeContext = .country(country)
         } else if let team = self.selectedTeam {
             self.activeContext = .team(team)
+        } else if let country = self.selectedCountry {
+            self.activeContext = .country(country)
         }
 
         #if DEBUG
@@ -168,6 +170,27 @@ class AppState {
             self.hasCompletedOnboarding = true
             self.hasSeenSeasonPrimer = true
             self.hasSeenWCPrompt = true
+        }
+        // `-gdPresetCountry netherlands` adds a country follow on top, which
+        // is the only way to reproduce the ten club+country devices and the
+        // one country-only device that exist in production — onboarding has
+        // not offered the choice since September, so a fresh simulator can
+        // never get into that state by itself. Pass it WITHOUT -gdPresetTeam
+        // to reproduce the country-only user.
+        if let i = args.firstIndex(of: "-gdPresetCountry"), i + 1 < args.count,
+           let country = Country(rawValue: args[i + 1]) {
+            self.selectedCountries = [country]
+            self.hisName = "Tom"
+            self.herName = "Sophie"
+            self.selectedTier = 2
+            self.hasCompletedOnboarding = true
+            self.hasSeenSeasonPrimer = true
+            self.hasSeenWCPrompt = true
+            if CountryFollowing.isEnabled {
+                self.activeContext = .country(country)
+            } else if let team = self.selectedTeams.first {
+                self.activeContext = .team(team)
+            }
         }
         #endif
     }

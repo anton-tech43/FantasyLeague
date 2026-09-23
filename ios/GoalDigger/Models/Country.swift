@@ -1,5 +1,30 @@
 import Foundation
 
+/// Whether following a country is a live feature.
+///
+/// Off since 2026-09-23. Onboarding stopped offering the choice in September,
+/// and the content behind it has stopped: every published article for the four
+/// countries anyone still follows is archived, the newest from 26 August, and
+/// all 48 country rows in `teams` are `is_active = false`. So the country tab
+/// led to an empty feed. The one device following a country and no club
+/// registered on 29 June, opened the app that day, and never came back.
+///
+/// The follows themselves are NOT deleted — `selectedCountries` and the
+/// `device_tokens` arrays keep their values. This gate only stops the entity
+/// being surfaced: no row in the context switcher, never the active context,
+/// never the His Team tab, and no picker in Settings. Flip it to `true` and
+/// eleven existing follows come back with their data intact, which is the
+/// point: Anton is holding this as something to sell later rather than
+/// something to throw away.
+///
+/// Turning it back on needs more than this flag. The `teams` rows have to be
+/// reactivated and the content pipeline pointed at whatever tournament is on;
+/// see the note in `best-third.ts`, whose group maths is specific to the 2026
+/// format (8 of 12 third-placed teams).
+enum CountryFollowing {
+    static let isEnabled = false
+}
+
 /// World Cup 2026 national teams. Parallel to `Team` (the PL clubs).
 /// Both share the same downstream pipeline — the `id` (rawValue) is what
 /// gets persisted to `device_tokens.team_id`, queried in `content_items`,
