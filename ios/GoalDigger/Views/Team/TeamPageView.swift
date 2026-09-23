@@ -784,15 +784,15 @@ struct TeamPageView: View {
                         .layoutPriority(1)
                     Spacer(minLength: 0)
                     calendarImportanceColumn(f, hasPreview: hasPreview)
-                        // A maximum with no floor let the club name squeeze
-                        // this column until a single word no longer fitted,
-                        // and "Champions League" broke as "Champion s League"
-                        // on the Bayern München row. The floor holds the
-                        // longest word we ever print; the club name wraps
-                        // instead, which it already knows how to do.
-                        .frame(minWidth: min(importanceColumnWidth, 76),
-                               maxWidth: importanceColumnWidth,
-                               alignment: .trailing)
+                        // No floor here. A 76pt minimum was tried on
+                        // 2026-09-23 to stop "Champions League" breaking as
+                        // "Champion s League", and it moved the break onto the
+                        // club name instead — "Nottingha m Forest" at default
+                        // text size on a 390pt phone, which is worse, because
+                        // the club name is the thing she is reading. The
+                        // column takes what is left and the label shrinks to
+                        // fit it; both Texts below scale rather than split.
+                        .frame(maxWidth: importanceColumnWidth, alignment: .trailing)
                 }
             }
         }
@@ -831,6 +831,11 @@ struct TeamPageView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(f.opponent)
                     .font(.feedHeadline).foregroundColor(.warmWhite)
+                    // Wrap between words, shrink before splitting one.
+                    // "Nottingham" is 99.6pt and the column is narrower than
+                    // that on a 390pt phone once the date and the importance
+                    // label have taken theirs.
+                    .minimumScaleFactor(0.8)
                     .fixedSize(horizontal: false, vertical: true)
                 Text(f.venue.capitalized)
                     .font(.feedTimestamp).foregroundColor(.warmWhite.opacity(0.6))
