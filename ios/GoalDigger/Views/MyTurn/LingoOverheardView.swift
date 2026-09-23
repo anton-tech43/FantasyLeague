@@ -111,14 +111,23 @@ struct LingoOverheardView: View {
                 .accessibilityLabel("Said by \(appState.personalise(speaker.label))")
         }
 
+        // The line she heard is a dark bubble, not a light card: it is the one
+        // thing on screen she reads rather than picks, so it must not look like
+        // the two options below it (Anton, "alla rutor är samma färg"). The
+        // rose-edged dark chrome is the module's own card, and with the speaker
+        // pill above it the whole thing reads as a message from him rather than
+        // a third answer. The two options stay identical to each other, because
+        // colouring one of them would hand her the answer.
         Text(snippet(term))
             .font(.jakarta(19, weight: .regular))
-            .foregroundColor(.textPrimaryOnCard)
+            .foregroundColor(.warmWhite)
             .lineSpacing(3)
             .fixedSize(horizontal: false, vertical: true)
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.cardBackground)
+            .background(Color.warmWhite.opacity(0.08))
+            .overlay(RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
+                .stroke(Color.hotRose.opacity(0.35), lineWidth: 1))
             .cornerRadius(Layout.cardCornerRadius)
 
         Text(question(term))

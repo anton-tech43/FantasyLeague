@@ -312,7 +312,11 @@ struct MyTurnPopup<Content: View>: View {
     @AccessibilityFocusState private var focused: Bool
 
     var body: some View {
-        ZStack {
+        // Top-aligned, not centred: the reveal comes up where she was just
+        // looking — the line and the options near the top of the round — rather
+        // than dropping into the middle of the screen (Anton, "den bör starta
+        // där frågan kommer"). The scrim still covers everything.
+        ZStack(alignment: .top) {
             Color.black.opacity(0.6)
                 .ignoresSafeArea()
                 // Swallows the tap rather than passing it to the options
@@ -357,6 +361,10 @@ struct MyTurnPopup<Content: View>: View {
             .cornerRadius(Layout.cardCornerRadius)
             .padding(.horizontal, Layout.screenPadding)
             .shadow(color: .black.opacity(0.4), radius: 24, y: 8)
+            // Clears the "My Turn" title and the module tabs so the card lands
+            // roughly where the round's line and question sit, on any device
+            // (the offset is below the chrome, not a fixed screen position).
+            .padding(.top, 96)
         }
         // Everything behind it is untouchable to VoiceOver as well as to her
         // thumb, and the escape gesture is the button rather than a way round
