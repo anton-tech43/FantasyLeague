@@ -26,9 +26,12 @@ struct LingoCallsView: View {
     let onConfirm: ([LingoCall]) -> Void
     @Environment(AppState.self) private var appState
 
-    /// Which lines she has tapped, before she confirms. View state on purpose:
-    /// a slip half filled in is not worth persisting, and the confirmed one is.
+    /// Which lines she has said yes to, before the slip commits, and which one
+    /// she is being asked about. Both view state on purpose: a half-walked slip
+    /// is not worth persisting, the module views stay mounted so it survives a
+    /// tab switch, and a relaunch starting again at the first line is correct.
     @State private var picked: Set<String> = []
+    @State private var index = LingoCallsView.startIndex
 
     private var slip: MyTurnStore.MatchCalls? { store.matchCalls(for: context) }
 
@@ -47,54 +50,106 @@ struct LingoCallsView: View {
 
     // MARK: Before kick-off
 
-    /// The three on offer, and one button.
+    /// One line, yes or no, then the next one.
+    ///
+    /// Three cards at once was three decisions at once with a button under
+    /// them, on a screen Anton read as "för mycket som händer". One card is one
+    /// decision, and the last yes or no IS the confirmation — there is no
+    /// separate "That's my slip", because a button that only ever means "I've
+    /// finished answering" is a fourth thing to understand.
     @ViewBuilder
     private var offer: some View {
         let offered = LingoCalls.offer(calls: calls, context: context)
+        // `offer` recomputes on every body evaluation and a content refresh can
+        // shrink it under her, so the index is read safely and never trusted.
         // Fewer than three is a legal slip (there is always a banker in it);
         // none at all means this fixture has nothing to offer, and the card
         // stays off the screen rather than apologising for itself.
-        if !offered.isEmpty {
+        if let call = offered[safe: index] {
             card {
-                heading("Called it", subtitle: subtitle(offered.count))
+                heading("Called it", subtitle: offerSubtitle)
 
-                ForEach(offered) { call in
-                    row(call, picked: picked.contains(call.id), tappable: true)
+                HStack(spacing: 8) {
+                    Text("\(index + 1) of \(offered.count)")
+                        .font(.jakarta(13, weight: .semiBold))
+                        .foregroundColor(.warmWhite.opacity(0.6))
+                        .accessibilityLabel("Line \(index + 1) of \(offered.count)")
+                    Spacer(minLength: 0)
                 }
 
-                Button {
-                    confirm(offered)
-                } label: {
-                    Text("That's my slip")
-                        .font(.jakarta(16, weight: .semiBold))
-                        .foregroundColor(.warmWhite)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 46)
-                        .background(picked.isEmpty ? Color.hotRose.opacity(0.35) : Color.hotRose)
-                        .cornerRadius(Layout.buttonCornerRadius)
+                row(call, picked: false)
+
+                HStack(spacing: 10) {
+                    Button {
+                        answer(call, yes: true, of: offered)
+                    } label: {
+                        answerLabel("Yes", filled: true)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Yes. Puts this line on your slip.")
+
+                    Button {
+                        answer(call, yes: false, of: offered)
+                    } label: {
+                        answerLabel("No", filled: false)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("No. Leaves this one off.")
                 }
-                .buttonStyle(.plain)
-                .disabled(picked.isEmpty)
-                .accessibilityLabel(picked.isEmpty
-                                    ? "That's my slip. Pick a line first."
-                                    : "That's my slip. Keeps \(picked.count == 1 ? "this line" : "these lines") for the match.")
+            }
+            // A different fixture is a different slip, and this view stays
+            // mounted across one arriving.
+            .onChange(of: context.fixtureKey) { _, _ in
+                index = 0
+                picked = []
             }
         }
     }
 
-    /// "For Saturday. Things that might happen..." — the occasion reads as a
-    /// weekday inside the week and as "the Fulham game" beyond it, so it has to
-    /// sit behind "For", which is the one preposition both spellings take.
-    private func subtitle(_ count: Int) -> String {
-        let when = context.occasion(now: Date()).map { "For \($0). " } ?? ""
-        let what = count == 1 ? "One thing that might happen" : "Things that might happen"
-        return "\(when)\(what). Pick what you fancy saying."
+    /// The promise, word for word in both states: it is what she is agreeing to
+    /// while she picks, and it must not change wording once she has.
+    private static let promise = "We'll tell you the moment one comes up."
+
+    /// "For Saturday" — the occasion reads as a weekday inside the week and as
+    /// "the Fulham game" beyond it, so it has to sit behind "For", which is the
+    /// one preposition both spellings take.
+    private var when: String {
+        context.occasion(now: Date()).map { "For \($0). " } ?? ""
+    }
+
+    private var offerSubtitle: String {
+        "\(when)Would you say it? \(Self.promise)"
+    }
+
+    /// Yes puts it on the slip, no does not, and both move her on. Past the
+    /// last one the slip commits itself — including the empty one, because a
+    /// slip she walked and fancied none of has to be remembered as walked or
+    /// the same three come back on every open, which is nagging.
+    private func answer(_ call: LingoCall, yes: Bool, of offered: [LingoCall]) {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            if yes { picked.insert(call.id) }
+            index += 1
+        }
+        UIImpactFeedbackGenerator(style: yes ? .medium : .light).impactOccurred()
+        if index >= offered.count { confirm(offered) }
+    }
+
+    private func answerLabel(_ text: String, filled: Bool) -> some View {
+        Text(text)
+            .font(.jakarta(16, weight: .semiBold))
+            .foregroundColor(filled ? .warmWhite : .hotRose)
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 46)
+            .background(filled ? Color.hotRose : Color.clear)
+            .overlay(RoundedRectangle(cornerRadius: Layout.buttonCornerRadius)
+                .stroke(filled ? Color.clear : Color.hotRose, lineWidth: 1))
+            .cornerRadius(Layout.buttonCornerRadius)
+            .contentShape(Rectangle())
     }
 
     private func confirm(_ offered: [LingoCall]) {
         guard let fixtureId = context.fixtureId else { return }
         let picks = offered.filter { picked.contains($0.id) }
-        guard !picks.isEmpty else { return }
         withAnimation(.easeInOut(duration: 0.2)) {
             store.commitMatchCalls(fixtureId: fixtureId, fixtureKey: context.fixtureKey,
                                    pickedIds: picks.map(\.id))
@@ -116,24 +171,29 @@ struct LingoCallsView: View {
     @ViewBuilder
     private func filled(_ slip: MyTurnStore.MatchCalls) -> some View {
         let mine = picks(slip)
-        if !mine.isEmpty {
+        if mine.isEmpty {
+            // She walked the slip and fancied none of it. Stored, so the same
+            // three do not come back on every open, and said out loud, so the
+            // card going quiet does not read as one that broke. No second ask
+            // and nothing to undo: not picking costs nothing.
+            if !played {
+                card {
+                    heading("Called it", subtitle: "\(when)None of those took your fancy. There'll be three more for the next one.")
+                }
+            }
+        } else {
             let landed = Set(LingoCalls.matched(stored: slip, fixtureId: slip.fixtureId,
                                                 calls: mine,
                                                 outcomes: LingoCalls.outcomes(after: context)).map(\.id))
             card {
+                // The same promise, in the same words, either side of the last
+                // yes: the card she reads back has to be the card she agreed to.
                 heading("Called it", subtitle: played
                         ? "What you called\(context.occasion(now: Date()).map { " for \($0)" } ?? "")."
-                        : "You're watching for \(mine.count == 1 ? "this one" : "these").")
+                        : "\(when)\(Self.promise)")
 
                 ForEach(mine) { call in
-                    row(call, picked: true, tappable: false, landed: landed.contains(call.id))
-                }
-
-                if !played {
-                    Text("We'll tell you when one comes up.")
-                        .font(.jakarta(14, weight: .regular))
-                        .foregroundColor(.warmWhite.opacity(0.7))
-                        .fixedSize(horizontal: false, vertical: true)
+                    row(call, picked: true, landed: landed.contains(call.id))
                 }
             }
         }
@@ -159,17 +219,13 @@ struct LingoCallsView: View {
         call.situation ?? LingoCalls.moment(call.trigger)
     }
 
-    /// One line, and how hard she is making it for herself.
-    ///
-    /// Modelled on `MyTurnOptionButton` and deliberately not it: that one is a
-    /// quiz option, with a right answer, a wrong answer and nothing tappable
-    /// after the first tap. Nothing here is right or wrong, and she can pick
-    /// all three.
-    @ViewBuilder
-    private func row(_ call: LingoCall, picked isPicked: Bool, tappable: Bool,
+    /// One line: the moment it belongs to, the words, and how hard she is
+    /// making it for herself. Never tappable — the row is what she is being
+    /// asked about, and the two buttons under it are the answer.
+    private func row(_ call: LingoCall, picked isPicked: Bool,
                      landed: Bool = false) -> some View {
         let band = LingoCalls.Band(rawValue: call.band ?? "")
-        let content = VStack(alignment: .leading, spacing: 6) {
+        return VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
                 if let band {
                     Text(band.label.uppercased())
@@ -209,6 +265,14 @@ struct LingoCallsView: View {
                 .multilineTextAlignment(.leading)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
+            // Why it is worth calling, where the content has written one.
+            if let cue = call.cue {
+                Text(appState.personalise(cue))
+                    .font(.jakarta(13, weight: .regular))
+                    .foregroundColor(.textSecondaryOnCard)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -217,27 +281,9 @@ struct LingoCallsView: View {
         .overlay(RoundedRectangle(cornerRadius: 12)
             .stroke(isPicked ? Color.hotRose : Color.clear, lineWidth: 1.5))
         .cornerRadius(12)
-        .contentShape(Rectangle())
-
-        if tappable {
-            Button {
-                withAnimation(.easeInOut(duration: 0.15)) {
-                    if picked.contains(call.id) { picked.remove(call.id) } else { picked.insert(call.id) }
-                }
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            } label: {
-                content
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("\(band?.label ?? "A line"). \(moment(call)). \(appState.personalise(call.line))")
-            .accessibilityValue(isPicked ? "On your slip" : "")
-            .accessibilityHint(isPicked ? "Takes it off your slip" : "Puts it on your slip")
-        } else {
-            content
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("\(band?.label ?? "A line"). \(moment(call)). \(appState.personalise(call.line))")
-                .accessibilityValue(landed ? "Came up" : "")
-        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(band?.label ?? "A line"). \(moment(call)). \(appState.personalise(call.line))")
+        .accessibilityValue(landed ? "Came up" : "")
     }
 
     @ViewBuilder
@@ -253,6 +299,19 @@ struct LingoCallsView: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
+
+    #if DEBUG
+    /// `-gdLingoCallsIndex 2` starts the slip on the third line, because simctl
+    /// cannot tap through the first two. Clamped by the safe subscript, so a
+    /// number past the end simply draws no card.
+    private static var startIndex: Int {
+        let args = ProcessInfo.processInfo.arguments
+        guard let i = args.firstIndex(of: "-gdLingoCallsIndex"), i + 1 < args.count else { return 0 }
+        return Int(args[i + 1]) ?? 0
+    }
+    #else
+    private static let startIndex = 0
+    #endif
 
     /// The same card the settle row and the commitment card are drawn in.
     private func card<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {

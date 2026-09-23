@@ -608,11 +608,17 @@ final class MyTurnStore {
         return slip
     }
 
-    /// She confirmed the slip. Replaces whatever was there: one fixture at a
+    /// She walked the slip. Replaces whatever was there: one fixture at a
     /// time, and an old slip is not worth a second card.
+    ///
+    /// An EMPTY slip is a slip. She said no to all three, and that has to be
+    /// remembered or the same three come back on every open of the tab, which
+    /// is the nagging this feature exists not to do. Nothing is sent for one —
+    /// `LingoView.uploadSlip` refuses a slip with no picks — and the seven-day
+    /// `slipLifetime` retires it like any other.
     func commitMatchCalls(fixtureId: Int, fixtureKey: String, pickedIds: [String],
                           at now: Date = Date()) {
-        guard fixtureId > 0, !pickedIds.isEmpty else { return }
+        guard fixtureId > 0 else { return }
         state.matchCalls = MatchCalls(fixtureId: fixtureId, fixtureKey: fixtureKey,
                                       pickedIds: pickedIds, pickedAt: now)
     }
@@ -714,6 +720,49 @@ func myTurnTolerantDecodeSelfCheck() {
     // reshuffles the options on the card she paused on.
     assert(!fresh.salt.isEmpty && read.salt == fresh.salt,
            "DrillSession.salt does not survive its own encoder, so a resumed round moves the right answer")
+}
+
+/// The slip's one persistence rule, against a store that persists nothing.
+///
+/// She walks three lines saying yes or no, and the slip commits itself on the
+/// last answer. Saying no to all three has to store as an EMPTY slip: without
+/// it the next open of the tab deals the same three again, which is exactly the
+/// nagging Called it exists not to do. Nothing is sent for one, and the same
+/// week retires it.
+@MainActor
+func myTurnSlipSelfCheck() {
+    let store = MyTurnStore(defaults: nil)
+    let fixture = MatchContext(page: LingoFixtures.page("matchup", now: Date()), team: .arsenal, now: Date())
+    guard let fixtureId = fixture.fixtureId else {
+        assertionFailure("the matchup fixture lost its id, so the slip cannot be checked")
+        return
+    }
+
+    store.commitMatchCalls(fixtureId: fixtureId, fixtureKey: fixture.fixtureKey, pickedIds: [])
+    assert(store.matchCalls(for: fixture)?.pickedIds.isEmpty == true,
+           "a slip she passed on did not store, so the same three come back on every open")
+
+    // It has to survive the blob it is written into, or the pass is forgotten
+    // on the next launch and the cards come back anyway.
+    guard let slip = store.matchCalls, let data = try? JSONEncoder().encode(slip),
+          let read = try? JSONDecoder().decode(MyTurnStore.MatchCalls.self, from: data) else {
+        assertionFailure("MatchCalls does not survive its own encoder, so a walked slip is lost on relaunch")
+        return
+    }
+    assert(read.pickedIds.isEmpty && read.fixtureId == fixtureId,
+           "an empty slip came back from its encoder changed")
+
+    // A slip with no fixture behind it is still refused: nothing could resolve
+    // it, and nothing could tie it to a result afterwards.
+    let unkeyed = MyTurnStore(defaults: nil)
+    unkeyed.commitMatchCalls(fixtureId: 0, fixtureKey: fixture.fixtureKey, pickedIds: ["b1"])
+    assert(unkeyed.matchCalls == nil, "a slip with no fixture id stored anyway")
+
+    // And a week later it has stopped being about anything.
+    let stale = MyTurnStore(defaults: nil)
+    stale.commitMatchCalls(fixtureId: fixtureId, fixtureKey: fixture.fixtureKey, pickedIds: [],
+                           at: Date().addingTimeInterval(-8 * 24 * 3600))
+    assert(stale.matchCalls(for: fixture) == nil, "a slip older than a week is still on the screen")
 }
 
 /// The commitment loop's rules, against a store that persists nothing.

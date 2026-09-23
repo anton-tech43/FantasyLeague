@@ -704,6 +704,13 @@ struct LingoView: View {
     ///                         gets to: waiting for the match before it, and
     ///                         the reveal after it (pair it with
     ///                         `-gdLingoContext after-win`). Never uploaded.
+    ///   `-gdLingoCallsIndex N`
+    ///                         starts the slip on line N (zero-based), for a
+    ///                         shot of the second or third card without
+    ///                         tapping through the ones before it.
+    ///   `-gdLingoCallsPass`   stores the empty slip she gets by saying no to
+    ///                         all three, which is the state that stops the
+    ///                         same three coming back on every open.
     ///   `-gdLingoPlayerVariant`
     ///                         names a real player on two of the dealt cards.
     ///                         No published term carries `playerVariants` yet,
@@ -737,6 +744,7 @@ struct LingoView: View {
         // `sameClub` mislabels every derby weekend silently.
         lingoDeckSelfCheck(bundled: content)
         myTurnSaidLineSelfCheck()
+        myTurnSlipSelfCheck()
         // The Swift half of the Called it trigger pair, against the same
         // vectors the Deno resolver's test reads, and the moment rules against
         // whichever calls are actually loaded.
@@ -784,6 +792,7 @@ struct LingoView: View {
         }
         if args.contains("-gdLingoPending") { debugPending(current) }
         if args.contains(LingoCalls.debugPickArgument) { debugPickCalls(current) }
+        if args.contains("-gdLingoCallsPass") { debugPassCalls(current) }
     }
 
     /// `-gdLingoHeroTap`: press the hero, once, with the weekend on screen.
@@ -833,6 +842,16 @@ struct LingoView: View {
         // harness slip must never be mistaken for one the push could resolve.
         store.commitMatchCalls(fixtureId: context.fixtureId ?? 900001,
                                fixtureKey: context.fixtureKey, pickedIds: ids)
+        if store.drillSession?.finished == true { store.endDrill() }
+        showingLanding = true
+    }
+
+    /// `-gdLingoCallsPass`: the slip she walked and fancied none of. Stored
+    /// empty, which is the state that stops the same three coming back on
+    /// every open, and the one a tap cannot reach from here.
+    private func debugPassCalls(_ context: MatchContext) {
+        store.commitMatchCalls(fixtureId: context.fixtureId ?? 900001,
+                               fixtureKey: context.fixtureKey, pickedIds: [])
         if store.drillSession?.finished == true { store.endDrill() }
         showingLanding = true
     }

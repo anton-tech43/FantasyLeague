@@ -536,6 +536,7 @@ extension LingoCalls {
     /// `published` is whatever content is loaded, so the `moment` rules below
     /// are checked against the 59 lines actually on the device rather than
     /// against a fixture that cannot go out of date.
+    @MainActor
     static func selfCheck(published: [LingoCall] = []) {
         // --- The shared vectors ---------------------------------------------
         guard let url = Bundle.main.url(forResource: "call_vectors", withExtension: "json"),
@@ -691,6 +692,14 @@ extension LingoCalls {
         let landed = matched(stored: stored, fixtureId: 1387422, calls: picks, outcomes: win)
         assert(landed.map(\.id) == ["w", "cs"],
                "a 1-0 win did not land the win and the clean sheet, or claimed the comeback we cannot see: \(landed.map(\.id))")
+
+        // The empty slip she gets by saying no to all three is checked against
+        // a real store in `myTurnSlipSelfCheck`, which is where the throwaway
+        // one can be built.
+        assert(matched(stored: MyTurnStore.MatchCalls(fixtureId: 1387422, fixtureKey: fixture.fixtureKey,
+                                                      pickedIds: [], pickedAt: won),
+                       fixtureId: 1387422, calls: picks, outcomes: win).isEmpty,
+               "an empty slip marked a line as having come up")
 
         // A stale fixture id resolves to nothing, whatever happened.
         assert(matched(stored: stored, fixtureId: 1387423, calls: picks, outcomes: win).isEmpty,
