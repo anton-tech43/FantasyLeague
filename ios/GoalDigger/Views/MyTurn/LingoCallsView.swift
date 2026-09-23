@@ -97,6 +97,11 @@ struct LingoCallsView: View {
                     .accessibilityLabel("No. Leaves this one off.")
                 }
             }
+            // A floor, not a height: the card is the top of the screen now and
+            // the hero sits directly under it, so a line that wraps to two
+            // where the last one wrapped to three would move the hero under
+            // her thumb between one answer and the next.
+            .frame(minHeight: Self.slipMinHeight, alignment: .top)
             // A different fixture is a different slip, and this view stays
             // mounted across one arriving.
             .onChange(of: context.fixtureKey) { _, _ in
@@ -105,6 +110,11 @@ struct LingoCallsView: View {
             }
         }
     }
+
+    /// The tallest the offer card gets at the default text size: a heading over
+    /// two lines, a moment over two and a fifty-character line over three. Only
+    /// a floor, so a bigger text size still grows past it.
+    private static let slipMinHeight: CGFloat = 300
 
     /// The promise, word for word in both states: it is what she is agreeing to
     /// while she picks, and it must not change wording once she has.

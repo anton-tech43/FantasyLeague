@@ -267,11 +267,22 @@ struct LingoView: View {
 
     // MARK: The landing screen
 
+    /// Called it leads, the hero sits under it, and the look-up is below both.
+    ///
+    /// The slip is the thing that puts her in the match, so it is the first
+    /// thing she meets; the round is the thing she chooses, so it waits to be
+    /// chosen. Search and the 158 words stay where they were — a wall of terms
+    /// to someone who does not know football, and the four-second look-up she
+    /// will hardly ever need.
+    ///
+    /// Not a takeover: `showingRound` is reserved for something she pressed.
+    /// Gating the tab on the slip would put a door between her and the
+    /// glossary, which is the one thing this module promised not to do.
     @ViewBuilder
     private var landing: some View {
-        settleRow
-        hero
         callsCard
+        hero
+        settleRow
         searchField
         wordList
     }
