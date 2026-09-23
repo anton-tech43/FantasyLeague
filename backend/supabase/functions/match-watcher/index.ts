@@ -68,6 +68,13 @@ import {
   type StoredGoalEvent,
   toStoredGoalEvents,
 } from "../_shared/goal-push.ts";
+import {
+  appendCallLine,
+  halfTimeGoals,
+  matchedCalls,
+  type Outcome,
+  type ScorerRole,
+} from "../_shared/match-calls.ts";
 
 const FINISHED_STATUSES = new Set(["FT", "AET", "PEN"]);
 // Live = match is in play (or in HT pause). Both halves + extra time
@@ -191,24 +198,48 @@ function hasUnresolvedScorer(events: unknown, goalsOnBoard = 0): boolean {
     (e as StoredGoalEvent).playerApiId == null);
 }
 
+/// The four values `players.position` holds. Anything else the feed invents is
+/// read as "unknown", which never satisfies a Called-it role trigger.
+const SCORER_ROLES = new Set<string>(["Goalkeeper", "Defender", "Midfielder", "Attacker"]);
+function toScorerRole(position: unknown): ScorerRole | null {
+  return typeof position === "string" && SCORER_ROLES.has(position) ? position as ScorerRole : null;
+}
+
+/// `mine` against `theirs`, as one of three labels. The half-time and full-time
+/// "Called it" outcomes differ only in what the three labels are called.
+function sideState<T>(mine: number, theirs: number, up: T, level: T, down: T): T {
+  return mine > theirs ? up : mine < theirs ? down : level;
+}
+
 /// One players lookup by provider id, stamping photo URLs onto stored events.
 /// Shared by the goal-detection tick and the re-fetch-to-backfill path.
+///
+/// It also returns each scorer's position, because "Called it" needs the
+/// scorer's role and this is the query that already has the row. Extending the
+/// select was the whole cost; a second lookup on the every-minute tick was not
+/// worth a push line (CALLED_IT_CONTRACT.md, contract 3).
 async function enrichPhotos(
   supabase: ReturnType<typeof getSupabaseClient>,
   stored: StoredGoalEvent[],
-): Promise<StoredGoalEvent[]> {
+): Promise<{ events: StoredGoalEvent[]; roleByApiId: Map<number, ScorerRole | null> }> {
   const ids = [
     ...new Set(
       stored.map((e) => e.playerApiId).filter((id): id is number => typeof id === "number"),
     ),
   ];
-  if (ids.length === 0) return attachScorerPhotos(stored, new Map());
+  if (ids.length === 0) {
+    return { events: attachScorerPhotos(stored, new Map()), roleByApiId: new Map() };
+  }
   const { data } = await supabase
-    .from("players").select("api_player_id, photo_url").in("api_player_id", ids);
-  return attachScorerPhotos(
-    stored,
-    new Map((data ?? []).map((r) => [r.api_player_id as number, (r.photo_url as string | null) ?? null])),
-  );
+    .from("players").select("api_player_id, photo_url, position").in("api_player_id", ids);
+  const rows = data ?? [];
+  return {
+    events: attachScorerPhotos(
+      stored,
+      new Map(rows.map((r) => [r.api_player_id as number, (r.photo_url as string | null) ?? null])),
+    ),
+    roleByApiId: new Map(rows.map((r) => [r.api_player_id as number, toScorerRole(r.position)])),
+  };
 }
 
 /// Return prior goal_events with any anonymous scorer back-filled from a fresh
@@ -225,7 +256,7 @@ async function resolveScorers(
 ): Promise<StoredGoalEvent[] | null> {
   const fresh = toStoredGoalEvents(await fetchGoalEvents(fixtureId, apiKey), homeApiId, awayApiId);
   if (fresh.length === 0) return priorEvents ?? null;
-  return await enrichPhotos(supabase, fresh);
+  return (await enrichPhotos(supabase, fresh)).events;
 }
 
 serve(async (req) => {
@@ -348,6 +379,13 @@ async function sendPlayingTeamPush(
     // country, the push deep-links to that article (FT result); otherwise the
     // content_id is a non-UUID sentinel and the tap just opens the app.
     contentIdByCountry?: Record<string, string>;
+    /// "Called it": what just happened, keyed by playing-team slug exactly as
+    /// `copy.bodies` is, because the outcome is as perspective-dependent as the
+    /// copy — one side's "ahead" is the other's "behind", and conceded, clean
+    /// sheet and comeback cannot be derived by flipping a single Outcome.
+    /// Absent (kickoff, and a tick where both sides scored) means no pick can
+    /// resolve and the bodies go out untouched.
+    outcomeByTeam?: Record<string, Outcome>;
   },
 ): Promise<number> {
   try {
@@ -375,7 +413,7 @@ async function sendPlayingTeamPush(
     const playing = `${args.homeTeamId},${args.awayTeamId}`;
     const { data: tokens, error: tokensErr } = await supabase
       .from("device_tokens")
-      .select("apns_token, tier, country_id, country_ids, team_id, team_ids, apns_environment")
+      .select("apns_token, tier, country_id, country_ids, team_id, team_ids, apns_environment, match_calls")
       .or(
         `country_id.in.(${playing}),country_ids.ov.{${playing}},` +
           `team_id.in.(${playing}),team_ids.ov.{${playing}}`,
@@ -434,14 +472,24 @@ async function sendPlayingTeamPush(
       if (!country) continue; // matched on stale scalar only — not actually following
       const body = args.copy.bodies[country];
       if (!body) continue; // follower of a team not in this match — shouldn't happen
+      // "Called it". Her slip is stored on THIS row and carries its own text,
+      // so no lookup and no content bundle is needed here. The outcome is read
+      // from this device's perspective (country is the team it follows), a
+      // stale fixture id resolves to nothing, and a malformed blob resolves to
+      // nothing rather than throwing inside the send loop. Only the first
+      // landed pick is named: the body has room for one line, not three.
+      // appendCallLine drops itself rather than overflow.
+      const outcome = args.outcomeByTeam?.[country];
+      const landed = outcome ? matchedCalls(t.match_calls, args.fixtureId, outcome)[0] : undefined;
+      const finalBody = landed ? appendCallLine(body, landed) : body;
       const contentId = args.contentIdByCountry?.[country] ?? `live-${args.label}-${args.fixtureId}`;
       const payload = buildAPNsPayload(
         "", // teamShortName fallback unused — we pass pushTitle below
-        body, // headline fallback
+        finalBody, // headline fallback
         contentId, // UUID (deep-links to the article) or non-UUID sentinel (just opens)
         args.category,
         false,
-        body, // push_text (lock-screen body)
+        finalBody, // push_text (lock-screen body)
         args.copy.title, // push_title (lock-screen title)
       );
       const env = t.apns_environment === "production" ? "production" : "development";
@@ -1764,11 +1812,47 @@ async function handleRequest(req: Request): Promise<Response> {
           const waiting = briefsFired.find((m) => m.startsWith(`GOAL_WAIT:${score}:`));
           const waitingSide = waiting?.split(":")[2] as "home" | "away" | undefined;
 
+          const eventFor = (events: GoalEvent[], goalSide: "home" | "away") =>
+            pickLatestGoalForTeam(events, goalSide === "home" ? homeApiId : awayApiId);
           const scorerFor = (events: GoalEvent[], goalSide: "home" | "away" | "both") =>
-            goalSide === "both"
-              ? null
-              : formatScorerLine(pickLatestGoalForTeam(events, goalSide === "home" ? homeApiId : awayApiId));
-          const queueGoalPush = (goalSide: "home" | "away" | "both", scorerLine: string | null) => {
+            goalSide === "both" ? null : formatScorerLine(eventFor(events, goalSide));
+          /// "Called it" outcome per playing side for the goal that just
+          /// landed. "us" is the side the DEVICE follows, so the scoring side
+          /// reads `us` under its own slug and `them` under the other's.
+          ///
+          /// An own goal stays credited to the BENEFITING side, because
+          /// parseGoalEvents already credits it there and call_vectors.json's
+          /// own-goal-credited-to-beneficiary says so; it carries no scorer
+          /// role, because the player the feed names plays for the other team.
+          ///
+          /// No event (the feed has the score but not the goal yet) is the
+          /// honest minimum: we know a goal happened and to which side, so a
+          /// bare side trigger still lands and a penalty, own-goal or minute
+          /// trigger does not.
+          const goalOutcomes = (
+            goalSide: "home" | "away",
+            ev: GoalEvent | null,
+            roles: Map<number, ScorerRole | null>,
+          ): Record<string, Outcome> => {
+            const shared = {
+              kind: "goal" as const,
+              scorerRole: ev && !ev.isOwnGoal && ev.playerApiId != null
+                ? roles.get(ev.playerApiId) ?? null
+                : null,
+              penalty: ev?.isPenalty ?? false,
+              ownGoal: ev?.isOwnGoal ?? false,
+              minute: ev?.minute ?? null,
+            };
+            return {
+              [homeTeamId]: { ...shared, side: goalSide === "home" ? "us" : "them" },
+              [awayTeamId]: { ...shared, side: goalSide === "away" ? "us" : "them" },
+            };
+          };
+          const queueGoalPush = (
+            goalSide: "home" | "away" | "both",
+            scorerLine: string | null,
+            outcomeByTeam?: Record<string, Outcome>,
+          ) => {
             const copy = renderGoalPush({
               home: homeTeam,
               away: awayTeam,
@@ -1790,6 +1874,7 @@ async function handleRequest(req: Request): Promise<Response> {
                 label: "goal",
                 minTier: minTierForLiveEvent("goal", fixtureLeagueId, fixtureRound),
                 marker: goalMarker,
+                outcomeByTeam,
               },
               isGoal: true,
             });
@@ -1819,15 +1904,22 @@ async function handleRequest(req: Request): Promise<Response> {
             // Scorer photos (077): stamped by enrichPhotos (one players lookup
             // by provider id, CDN-URL fallback) so the live box and the FT
             // articles that copy this list render faces with no join.
-            goalEventsStored = await enrichPhotos(
+            const enriched = await enrichPhotos(
               supabase,
               toStoredGoalEvents(events, homeApiId, awayApiId),
             );
+            goalEventsStored = enriched.events;
             if (side !== "both" && scorerLine === null && !waiting) {
               stateMarkers.push(`GOAL_WAIT:${score}:${side}`);
               console.log(`goal ${score} fixture=${fixtureId}: scorer not in events yet, push waits one tick`);
             } else {
-              queueGoalPush(side, scorerLine);
+              // Both sides scoring inside one tick has no single side, scorer
+              // or minute, so no pick can honestly resolve against it.
+              queueGoalPush(
+                side,
+                scorerLine,
+                side === "both" ? undefined : goalOutcomes(side, eventFor(events, side), enriched.roleByApiId),
+              );
             }
 
             // NOTE: goals deliberately do NOT create per-goal tournament feed
@@ -1841,10 +1933,17 @@ async function handleRequest(req: Request): Promise<Response> {
             // The score has not moved since the goal was detected: send now,
             // with the scorer if the feed has caught up, without if not.
             const events = await fetchGoalEvents(fixtureId, apiFootballKey);
+            let roles = new Map<number, ScorerRole | null>();
             if (events.length > 0) {
-              goalEventsStored = await enrichPhotos(supabase, toStoredGoalEvents(events, homeApiId, awayApiId));
+              const enriched = await enrichPhotos(supabase, toStoredGoalEvents(events, homeApiId, awayApiId));
+              goalEventsStored = enriched.events;
+              roles = enriched.roleByApiId;
             }
-            queueGoalPush(waitingSide, scorerFor(events, waitingSide));
+            queueGoalPush(
+              waitingSide,
+              scorerFor(events, waitingSide),
+              goalOutcomes(waitingSide, eventFor(events, waitingSide), roles),
+            );
           } else if (hasUnresolvedScorer(prior.goal_events, (homeGoals ?? 0) + (awayGoals ?? 0))) {
             // No new goal this tick, but the stored list is short or anonymous
             // (API-Football hadn't published the scorer when it was detected, or
@@ -1890,6 +1989,21 @@ async function handleRequest(req: Request): Promise<Response> {
               label: "ht",
               minTier: minTierForLiveEvent("ht", fixtureLeagueId, fixtureRound),
               marker: "HT_PUSH",
+              // "Called it" at the break, per side. `conceded` is the OTHER
+              // side's goals, which is why this cannot be one shared Outcome
+              // flipped: ahead/behind mirrors, conceded does not.
+              outcomeByTeam: {
+                [homeTeamId]: {
+                  kind: "halftime",
+                  state: sideState(homeGoals ?? 0, awayGoals ?? 0, "ahead", "level", "behind"),
+                  conceded: awayGoals ?? 0,
+                },
+                [awayTeamId]: {
+                  kind: "halftime",
+                  state: sideState(awayGoals ?? 0, homeGoals ?? 0, "ahead", "level", "behind"),
+                  conceded: homeGoals ?? 0,
+                },
+              },
             },
             isGoal: false,
           });
@@ -1999,6 +2113,34 @@ async function handleRequest(req: Request): Promise<Response> {
             }
           }
 
+          // "Called it" at the whistle, per side. A shootout decides the
+          // result, so win/loss follows the pens exactly as the copy pool does;
+          // a clean sheet is still about GOALS, and a shootout is not a save
+          // the defence made.
+          //
+          // `comeback` is the one fact the fixture payload does not carry: we
+          // never fetch the half-time score. It is counted off the goal_events
+          // list we already hold (minute <= 45), which fails to 0-0 when that
+          // list is missing, so the worst case is that her longshot quietly
+          // does not land rather than landing when it should not.
+          const ftOutcomes: Record<string, Outcome> = (() => {
+            const [h, a] = ftPen && typeof ftPen.home === "number" && typeof ftPen.away === "number" &&
+                ftPen.home !== ftPen.away && status === "PEN"
+              ? [ftPen.home, ftPen.away]
+              : [homeGoals ?? 0, awayGoals ?? 0];
+            const ht = halfTimeGoals(goalEventsStored ?? prior?.goal_events);
+            const side = (mine: number, theirs: number, conceded: number, htMine: number, htTheirs: number): Outcome => ({
+              kind: "fulltime",
+              state: sideState(mine, theirs, "win" as const, "draw" as const, "loss" as const),
+              cleanSheet: conceded === 0,
+              comeback: htMine < htTheirs && mine > theirs,
+            });
+            return {
+              [homeTeamId]: side(h, a, awayGoals ?? 0, ht.home, ht.away),
+              [awayTeamId]: side(a, h, homeGoals ?? 0, ht.away, ht.home),
+            };
+          })();
+
           const copy = renderFullTimePush({
             home: homeTeam,
             away: awayTeam,
@@ -2025,6 +2167,7 @@ async function handleRequest(req: Request): Promise<Response> {
               // article (populated in the post_match block above, same tick).
               contentIdByCountry: wcResultItemIds,
               marker: "FT_PUSH",
+              outcomeByTeam: ftOutcomes,
             },
             isGoal: false,
           });

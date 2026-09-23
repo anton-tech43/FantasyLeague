@@ -178,3 +178,26 @@ export function appendCallLine(body: string, pick: CallPick): string {
   const merged = `${body} You called it: "${line}"`;
   return merged.length <= PUSH_BODY_BUDGET ? merged : body;
 }
+
+/// Goals each side had scored by half-time, counted off a stored `goal_events`
+/// list (minute <= 45, so a 45+2 goal counts to the first half). This exists to
+/// answer one question, "were we behind at the break", which is the `comeback`
+/// trigger at full-time. The half-time score is not in the fixture payload
+/// match-watcher fetches, and this is derivable from a list we already hold, so
+/// it costs no call.
+///
+/// Tolerant of a missing, partial or malformed list, and biased to the safe
+/// answer: nothing readable counts as 0-0, which means no comeback, which means
+/// her longshot simply does not land. A false negative costs one line; a false
+/// positive would tell her she called something she did not.
+export function halfTimeGoals(events: unknown): { home: number; away: number } {
+  const out = { home: 0, away: 0 };
+  if (!Array.isArray(events)) return out;
+  for (const e of events) {
+    if (!isObject(e)) continue;
+    if (!isFiniteNumber(e.minute) || e.minute > 45) continue;
+    if (e.side === "home") out.home++;
+    else if (e.side === "away") out.away++;
+  }
+  return out;
+}

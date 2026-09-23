@@ -9,6 +9,7 @@
 import {
   appendCallLine,
   type CallPick,
+  halfTimeGoals,
   matchedCalls,
   type Outcome,
   PUSH_BODY_BUDGET,
@@ -145,4 +146,21 @@ Deno.test("appendCallLine refuses to overflow the body budget", () => {
 
   // Campaign rule: the segment we add carries no em/en dash.
   assert(!/[–—]/.test(fits), `no em/en dashes: ${fits}`);
+});
+
+Deno.test("halfTimeGoals counts the first half only, and fails safe", () => {
+  const ev = (side: string, minute: number | null) => ({ side, minute, player: null });
+  const ht = (events: unknown) => {
+    const g = halfTimeGoals(events);
+    return `${g.home}-${g.away}`;
+  };
+  eq(ht([ev("home", 12), ev("away", 45), ev("home", 67)]), "1-1", "45+ counts to the first half, 67 does not");
+  eq(ht([ev("home", 3), ev("home", 44)]), "2-0", "both before the break");
+  eq(ht([ev("away", 46), ev("away", 90)]), "0-0", "a second half of goals is still 0-0 at the break");
+  // Fails safe rather than throwing, and an unreadable event is never counted:
+  // a wrong 0-0 costs her a line, a wrong lead would tell her she called
+  // something she did not.
+  for (const junk of [null, undefined, "x", 7, {}, [null], [{ side: "home" }], [ev("home", null)], [ev("nobody", 10)]]) {
+    eq(ht(junk), "0-0", `junk is 0-0: ${JSON.stringify(junk)}`);
+  }
 });
