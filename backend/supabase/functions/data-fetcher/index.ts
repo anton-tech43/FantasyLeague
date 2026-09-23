@@ -208,8 +208,13 @@ async function fetchAPIFootball(
     );
 
   // V2.0: parameterise league_id + season per team.
-  // PL teams (league_id=39) use season=2025 (the 2025-26 season).
-  // WC countries (league_id=1) use season=2026 (the 2026 tournament).
+  // The season is COMPUTED by seasonForLeague(), never written down: for the
+  // PL and every club cup it is the calendar year from July onwards, so
+  // 2026-27 is season=2026. This comment used to say "PL teams use
+  // season=2025", which was true when it was written and a month out of date
+  // by September 2026 — the stale-data audit flagged it on 2026-09-23 because
+  // a reader checking for a pinned season would have believed it.
+  // WC countries (league_id=1) use the tournament year.
   // Any new league added in future just slots into seasonForLeague().
   //
   // Skip teams with no league_id — pre-V2.0 there was a `?? 39` fallback

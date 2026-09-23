@@ -678,8 +678,13 @@ async function handleRequest(req: Request): Promise<Response> {
   const activeTeamIds = new Set(
     (teams ?? []).filter((t) => t.is_active).map((t) => t.id as string),
   );
+  // Tournaments excluded: they keep their LEAGUE id in `api_football_id`, so
+  // champions_league (2) collides with France (2) and europa_league (3) with
+  // Croatia (3). A fixture's team id is never a competition id, and the last
+  // writer wins in a Map (audit 2026-09-23).
   const teamIdMap = new Map<number, string>(
-    (teams ?? []).map((t) => [t.api_football_id as number, t.id as string]),
+    (teams ?? []).filter((t) => t.entity_type !== "tournament")
+      .map((t) => [t.api_football_id as number, t.id as string]),
   );
   // Display meta for the live pushes + Live Activity (name + flag). Countries
   // come from WC_COUNTRY_META (emoji flag); clubs from teams.short_name with no

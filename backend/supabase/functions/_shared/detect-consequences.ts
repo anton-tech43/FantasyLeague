@@ -593,9 +593,19 @@ async function buildApiIdToSlugMap(
   const apiIds = group.map((t) => t.team?.id).filter((id): id is number => typeof id === "number");
   if (apiIds.length === 0) return new Map();
 
+  // `api_football_id` is not unique across `teams`: the four competition rows
+  // store their LEAGUE id in it, and two of those collide with clubs — FA Cup
+  // is league 45 and Everton is team 45, League Cup is 48 and West Ham is 48.
+  // An unfiltered `.in()` therefore returns two rows for Everton, the loop
+  // below keeps whichever came last, and today that is fa_cup: every
+  // consequence computed for Everton would be written against a competition
+  // row, so Everton's followers get nothing and the push is filed under a cup.
+  // A standings entry is never a competition, so exclude them (audit
+  // 2026-09-23).
   const { data } = await supabase
     .from("teams")
     .select("id, api_football_id")
+    .neq("entity_type", "tournament")
     .in("api_football_id", apiIds);
 
   const map = new Map<number, string>();

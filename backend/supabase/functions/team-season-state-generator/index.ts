@@ -276,6 +276,16 @@ function buildNextFixturesArray(
 // Per-team generation
 // ============================================================
 
+/// "2026-27" from today's date, July onwards being the new season. This line
+/// said "2025-26" in the prompt until the stale-data audit on 2026-09-23, so
+/// every season primer written this season told the model the wrong season
+/// while handing it this season's table. Same shape as team-page-generator's
+/// plSeasonLabel; computed, never written down.
+function plSeasonLabel(now = new Date()): string {
+  const y = now.getUTCMonth() >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
+  return `${y}-${String(y + 1).slice(2)}`;
+}
+
 async function generateForTeam(
   supabase: ReturnType<typeof getSupabaseClient>,
   team: Team
@@ -334,7 +344,7 @@ async function generateForTeam(
   //   post-final (after Jul 19)                → post_season
   const leagueContext = team.entity_type === "country"
     ? `the 2026 World Championship — a national team competing at the tournament hosted by USA/Canada/Mexico from June 11 to July 19, 2026. PHASE MAPPING for the routine: today is before June 11 → pre_season. Between June 11 and elimination (or July 19 final) → run_in (every game is sudden-death stakes). If they've been knocked out mid-tournament → off_season. After July 19 → post_season. Standings show GROUP-stage tables (4 teams per group); 'where they are' means group position + whether they're advancing.`
-    : `Premier League (2025-26 season). PHASE MAPPING: pre_season is Jun 15 to Aug 8. mid_season is Aug 9 to Mar 31. run_in is Apr 1 to May 31. off_season is mid-June. post_season is the first week or two after the season ends.`;
+    : `Premier League (${plSeasonLabel()} season). PHASE MAPPING: pre_season is Jun 15 to Aug 8. mid_season is Aug 9 to Mar 31. run_in is Apr 1 to May 31. off_season is mid-June. post_season is the first week or two after the season ends.`;
 
   const systemPrompt = SEASON_PRIMER_SYSTEM_PROMPT
     .replace(/\{\{team_display_name\}\}/g, team.display_name)
