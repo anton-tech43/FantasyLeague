@@ -1,7 +1,10 @@
 """lingo_overheard — the Overheard game's content, one file per category.
 
 Each file holds OVERHEARD: dict[term id -> dict(overheard, speaker, gist,
-decoys, when, moment, aliases?, basic?, player?)]. `moment` says how often the line's
+decoy, spare, when, moment, aliases?, basic?, player?)]. Two wrong options are
+written; `decoy` is the one that ships and `spare` is the reviewed reserve that
+never leaves this package, so a round can go back to three options without a
+writing pass. `moment` says how often the line's
 moment arrives in one match (anytime, common, rare): the end-of-round
 commitment only ever offers a line she could actually get to say.
 

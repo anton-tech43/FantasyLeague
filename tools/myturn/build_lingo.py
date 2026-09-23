@@ -3,7 +3,9 @@
 
 Each term: (category, id, term, meaning, heard, sayIt, seeAlso) from
 lingo_src.TERMS, its `level` from lingo_src.LEVELS, and the Overheard game
-fields (overheard, speaker, gist, decoys, when, moment) from lingo_overheard.
+fields (overheard, speaker, gist, decoy/spare, when, moment) from lingo_overheard.
+Of the two authored wrong options only `decoy` ships; `spare` stays in the
+source so dropping back to three options stays a one-line change.
 `moment` bands how often the sayIt line's moment arrives, so the end-of-round
 commitment never offers a line she had no chance to use. An entry's optional
 `player` key becomes `playerVariants`, each with its own `overheardTerm`, so a
@@ -27,10 +29,10 @@ from lingo_overheard import OVERHEARD, SLOTS, WHEN_TAGS  # noqa: E402
 from lingo_src import LEVEL_OF, LEVELS, TERMS  # noqa: E402
 
 OUT = os.path.join(HERE, "..", "..", "ios", "GoalDigger", "Resources", "MyTurn", "lingo.json")
-VERSION = "2026-09-23.6"
+VERSION = "2026-09-23.7"
 
 # The optional `player` key: one variant, or a list of at most two whose sides
-# differ. It overrides `overheard` and `sayIt` only; speaker, gist, decoys,
+# differ. It overrides `overheard` and `sayIt` only; speaker, gist, decoy,
 # when, moment and basic are inherited and not overridable.
 PLAYER_KEYS = {"slot", "overheard", "sayIt"}
 
@@ -59,7 +61,17 @@ for category, tid, term, meaning, heard, say_it, see_also in TERMS:
             row["aliases"] = list(o["aliases"])
         row["speaker"] = o["speaker"]
         row["gist"] = o["gist"]
-        row["decoys"] = list(o["decoys"])
+        # Two wrong options are authored; one ships. `spare` is written and
+        # reviewed and never leaves this file, so the revert to three options is
+        # a one-line change rather than a writing job. Asserted rather than
+        # defaulted: a term that lost its spare has lost the revert.
+        assert isinstance(o.get("decoy"), str) and o["decoy"].strip(), f"{tid}: needs a shipping `decoy`"
+        assert isinstance(o.get("spare"), str) and o["spare"].strip(), \
+            f"{tid}: needs a reviewed `spare`, the decoy that does not ship; without it the revert to three options is a rewrite"
+        row["decoy"] = o["decoy"]
+        # ponytail: `decoys` is the pair the shipped Swift still reads
+        # (LingoDeck.options requires two). It goes when Swift moves to `decoy`.
+        row["decoys"] = [o["decoy"], o["spare"]]
         row["when"] = sorted(set(o["when"]), key=lambda w: WHEN_ORDER.get(w, 99))
         row["moment"] = o["moment"]
         player = o.get("player")
