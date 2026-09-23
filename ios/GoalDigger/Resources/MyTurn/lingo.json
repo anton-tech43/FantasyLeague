@@ -12,10 +12,10 @@
       "overheard": "Premier League is back Saturday. Three months of my life, gone.",
       "overheardTerm": "Premier League",
       "speaker": "him",
-      "gist": "England's top division, twenty clubs, August to May",
-      "decoy": "The league for the top clubs in Britain",
+      "gist": "England's top division of twenty clubs",
+      "decoy": "Britain's top clubs, English and Scottish",
       "decoys": [
-        "The league for the top clubs in Britain",
+        "Britain's top clubs, English and Scottish",
         "All the English divisions taken together"
       ],
       "when": [
@@ -37,9 +37,9 @@
       "overheardTerm": "Kick-off's",
       "speaker": "him",
       "gist": "The moment the match starts",
-      "decoy": "The coin toss that decides which way to play",
+      "decoy": "The coin toss that starts the game",
       "decoys": [
-        "The coin toss that decides which way to play",
+        "The coin toss that starts the game",
         "The first shot that tests the keeper"
       ],
       "when": [
@@ -82,10 +82,10 @@
       "overheard": "Full-time here. They'll take that, I'm sure.",
       "overheardTerm": "Full-time",
       "speaker": "telly",
-      "gist": "The referee ends it, whatever the score",
-      "decoy": "The end of the first of the two halves",
+      "gist": "The referee ends it whatever the score",
+      "decoy": "The end of the first half, not the match",
       "decoys": [
-        "The end of the first of the two halves",
+        "The end of the first half, not the match",
         "The whistle that starts the added minutes"
       ],
       "when": [
@@ -110,9 +110,9 @@
       "overheardTerm": "table",
       "speaker": "him",
       "gist": "Every club ordered by points won",
-      "decoy": "A fixture list for the weekend's games",
+      "decoy": "Weekend fixtures listed by kick-off time",
       "decoys": [
-        "A fixture list for the weekend's games",
+        "Weekend fixtures listed by kick-off time",
         "The clubs sorted by goals scored so far"
       ],
       "when": [
@@ -140,10 +140,10 @@
       "overheardTerm": "offside",
       "speaker": "him",
       "gist": "He was beyond the final defender for the pass",
-      "decoy": "The ball had already gone out for a goal kick",
+      "decoy": "He got in the keeper's way at the near post",
       "decoys": [
-        "The ball had already gone out for a goal kick",
-        "He got in the keeper's way at the near post"
+        "He got in the keeper's way at the near post",
+        "The ball had already gone out for a goal kick"
       ],
       "when": [
         "any"
@@ -214,10 +214,10 @@
       "overheard": "yellow card for that? he's barely touched him.",
       "overheardTerm": "yellow card",
       "speaker": "chat",
-      "gist": "A formal warning, two and you are off",
-      "decoy": "A fine the club pays the league",
+      "gist": "A formal warning and a step towards a ban",
+      "decoy": "A fine the club pays, not the player",
       "decoys": [
-        "A fine the club pays the league",
+        "A fine the club pays, not the player",
         "A ban from the next match, straight away"
       ],
       "when": [
@@ -274,10 +274,10 @@
       "overheard": "didnt deserve that at all but ill take the points.",
       "overheardTerm": "points",
       "speaker": "chat",
-      "gist": "Three for a win, one for a draw",
-      "decoy": "One for every goal scored",
+      "gist": "Three for a win and one for a draw",
+      "decoy": "One for every goal, added up all season",
       "decoys": [
-        "One for every goal scored",
+        "One for every goal, added up all season",
         "A tally handed out by finishing position"
       ],
       "when": [
@@ -303,9 +303,9 @@
       "overheardTerm": "goal difference",
       "speaker": "pundit",
       "gist": "Goals scored minus goals let in",
-      "decoy": "The margin in a single match",
+      "decoy": "Margin of victory in a single match",
       "decoys": [
-        "The margin in a single match",
+        "Margin of victory in a single match",
         "A gap in points between two clubs"
       ],
       "when": [
@@ -333,9 +333,9 @@
       "overheardTerm": "relegation",
       "speaker": "him",
       "gist": "Dropping out of the division at the bottom",
-      "decoy": "A player pushed down to the reserves",
+      "decoy": "Being pushed down into the reserves",
       "decoys": [
-        "A player pushed down to the reserves",
+        "Being pushed down into the reserves",
         "Finishing outside the places for Europe"
       ],
       "when": [
@@ -368,9 +368,9 @@
       "overheardTerm": "promotion",
       "speaker": "chat",
       "gist": "Moving up into the division above",
-      "decoy": "A move up into the first team",
+      "decoy": "Moving up into the first team",
       "decoys": [
-        "A move up into the first team",
+        "Moving up into the first team",
         "Finishing top of the division, champions"
       ],
       "when": [
@@ -394,10 +394,10 @@
       "overheardTerm": "Top four",
       "speaker": "pundit",
       "gist": "A finish high enough for Champions League",
-      "decoy": "Winning the league and lifting the trophy",
+      "decoy": "The sides who reach a cup semi-final",
       "decoys": [
-        "Winning the league and lifting the trophy",
-        "The sides who reach a cup semi-final"
+        "The sides who reach a cup semi-final",
+        "Winning the league and lifting the trophy"
       ],
       "when": [
         "top-four",
@@ -453,10 +453,10 @@
       "overheard": "Foul, ref! Are you watching the same game as me?",
       "overheardTerm": "Foul",
       "speaker": "him",
-      "gist": "Going through the man, not the ball",
-      "decoy": "A decision the referee got wrong",
+      "gist": "Going through the man instead of the ball",
+      "decoy": "Any stoppage the referee calls, right or wrong",
       "decoys": [
-        "A decision the referee got wrong",
+        "Any stoppage the referee calls, right or wrong",
         "Arguing with the referee after a decision"
       ],
       "when": [
@@ -479,10 +479,10 @@
       "overheardTerm": "handball",
       "speaker": "chat",
       "gist": "Touching the ball with an arm on purpose",
-      "decoy": "The keeper picking the ball up outside his box",
+      "decoy": "Grabbing an opponent's shirt to hold him back",
       "decoys": [
-        "The keeper picking the ball up outside his box",
-        "Grabbing an opponent's shirt to hold him back"
+        "Grabbing an opponent's shirt to hold him back",
+        "The keeper picking the ball up outside his box"
       ],
       "when": [
         "any"
@@ -597,9 +597,9 @@
       "overheardTerm": "clean sheet",
       "speaker": "him",
       "gist": "Letting in no goals at all in a match",
-      "decoy": "A game with no cards and no trouble",
+      "decoy": "Ninety minutes with no cards and no trouble",
       "decoys": [
-        "A game with no cards and no trouble",
+        "Ninety minutes with no cards and no trouble",
         "Winning without conceding a penalty"
       ],
       "when": [
@@ -622,10 +622,10 @@
       "overheardTerm": "derby",
       "speaker": "chat",
       "gist": "A match between two clubs from the same city",
-      "decoy": "Any game with a real edge to it",
+      "decoy": "A fixture played every year on the same day",
       "decoys": [
-        "Any game with a real edge to it",
-        "A fixture played every year on the same day"
+        "A fixture played every year on the same day",
+        "Any local game with a real edge to it"
       ],
       "when": [
         "derby"
@@ -647,10 +647,10 @@
       "overheardTerm": "clear and obvious",
       "speaker": "pundit",
       "gist": "A decision so wrong nobody could argue",
-      "decoy": "Footage good enough to see it",
+      "decoy": "A decision the referee got right first time",
       "decoys": [
-        "Footage good enough to see it",
-        "A decision the referee got right first time"
+        "A decision the referee got right first time",
+        "Footage good enough to see it"
       ],
       "when": [
         "any"
@@ -718,10 +718,10 @@
       "overheardTerm": "added time",
       "speaker": "telly",
       "gist": "Extra play at the end for stoppages",
-      "decoy": "A count of how long the ball was out of play",
+      "decoy": "Time carried over from the first half",
       "decoys": [
-        "A count of how long the ball was out of play",
-        "Time carried over from the first half"
+        "Time carried over from the first half",
+        "A count of how long the ball was out of play"
       ],
       "when": [
         "any"
@@ -744,9 +744,9 @@
       "overheardTerm": "Extra time",
       "speaker": "pundit",
       "gist": "Half an hour more to settle a cup game",
-      "decoy": "A short break before penalties are taken",
+      "decoy": "Penalties to decide who goes through",
       "decoys": [
-        "A short break before penalties are taken",
+        "Penalties to decide who goes through",
         "The same round played again a week later"
       ],
       "when": [
@@ -770,10 +770,10 @@
       "overheard": "penalty shootout. i cant look, text me when its done.",
       "overheardTerm": "penalty shootout",
       "speaker": "chat",
-      "gist": "A round of five spot kicks each, then sudden death",
-      "decoy": "One kick each until somebody misses",
+      "gist": "Five spot kicks each and then sudden death",
+      "decoy": "One kick each, whoever misses is out",
       "decoys": [
-        "One kick each until somebody misses",
+        "One kick each, whoever misses is out",
         "A free shot from twelve yards during play"
       ],
       "when": [
@@ -841,11 +841,11 @@
       "overheard": "FA Cup third round. This is the one he wants.",
       "overheardTerm": "FA Cup",
       "speaker": "telly",
-      "gist": "The oldest knockout, open to every club",
-      "decoy": "The competition every club in Europe can enter",
+      "gist": "The oldest knockout open to every club",
+      "decoy": "The cup for the top two divisions",
       "decoys": [
-        "The competition every club in Europe can enter",
-        "The cup for the top two divisions"
+        "The cup for the top two divisions",
+        "The competition every club in Europe can enter"
       ],
       "when": [
         "cup"
@@ -924,10 +924,10 @@
       "overheardTerm": "Champions League",
       "speaker": "telly",
       "gist": "Europe's top club competition",
-      "decoy": "A competition for the winners of each division",
+      "decoy": "Every division's champion in one cup",
       "decoys": [
-        "A competition for the winners of each division",
-        "The summer tournament between national sides"
+        "Every division's champion in one cup",
+        "A tournament between national sides"
       ],
       "when": [
         "europe",
@@ -960,9 +960,9 @@
       "overheardTerm": "Europa League",
       "speaker": "him",
       "gist": "Europe's second club competition",
-      "decoy": "The knockout stage of Europe's top competition",
+      "decoy": "Knockout rounds of Europe's top cup",
       "decoys": [
-        "The knockout stage of Europe's top competition",
+        "Knockout rounds of Europe's top cup",
         "A tournament for national sides in Europe"
       ],
       "when": [
@@ -987,9 +987,9 @@
       "overheardTerm": "conference league",
       "speaker": "chat",
       "gist": "Europe's third club competition",
-      "decoy": "A division below the Football League",
+      "decoy": "Non-league clubs below the top divisions",
       "decoys": [
-        "A division below the Football League",
+        "Non-league clubs below the top divisions",
         "The qualifying round before a group stage"
       ],
       "when": [
@@ -1009,10 +1009,10 @@
       "overheard": "Fixtures are out. I've already booked three days off.",
       "overheardTerm": "Fixtures",
       "speaker": "him",
-      "gist": "Who plays who, and when",
-      "decoy": "Dates the tickets go on sale",
+      "gist": "Who plays who each week and when",
+      "decoy": "Dates the tickets go on sale, week by week",
       "decoys": [
-        "Dates the tickets go on sale",
+        "Dates the tickets go on sale, week by week",
         "The TV picks for the weekend's games"
       ],
       "when": [
@@ -1086,9 +1086,9 @@
       "overheardTerm": "bench",
       "speaker": "chat",
       "gist": "The substitutes waiting beside the pitch",
-      "decoy": "The staff sat in the dugout",
+      "decoy": "The coaching staff sat in the dugout",
       "decoys": [
-        "The staff sat in the dugout",
+        "The coaching staff sat in the dugout",
         "The players left out of the squad entirely"
       ],
       "when": [
@@ -1112,10 +1112,10 @@
       "overheard": "Remember, this is over two legs. Anything can happen from here.",
       "overheardTerm": "two legs",
       "speaker": "telly",
-      "gist": "One round played as two matches, home and away",
-      "decoy": "The two halves either side of the break",
+      "gist": "One round played as two matches home and away",
+      "decoy": "Both halves, either side of the break",
       "decoys": [
-        "The two halves either side of the break",
+        "Both halves, either side of the break",
         "A round decided by a second match if it's level"
       ],
       "when": [
@@ -1140,9 +1140,9 @@
       "overheardTerm": "aggregate",
       "speaker": "pundit",
       "gist": "Both scores added together over a round",
-      "decoy": "A club's goals across a season",
+      "decoy": "Every goal a club scores in a season",
       "decoys": [
-        "A club's goals across a season",
+        "Every goal a club scores in a season",
         "The gap between goals scored and let in"
       ],
       "when": [
@@ -1187,9 +1187,9 @@
       "overheardTerm": "assist",
       "speaker": "pundit",
       "gist": "The pass that leads straight to a goal",
-      "decoy": "Any pass in the move that led to the goal",
+      "decoy": "The whole move that led up to the goal",
       "decoys": [
-        "Any pass in the move that led to the goal",
+        "The whole move that led up to the goal",
         "Winning the ball back to start an attack"
       ],
       "when": [
@@ -1221,9 +1221,9 @@
       "overheardTerm": "brace",
       "speaker": "chat",
       "gist": "Two goals by the same player in a match",
-      "decoy": "A strapping worn on a knee or ankle",
+      "decoy": "Strapping worn on a knee or ankle",
       "decoys": [
-        "A strapping worn on a knee or ankle",
+        "Strapping worn on a knee or ankle",
         "One goal and one assist in a match"
       ],
       "when": [
@@ -1300,11 +1300,11 @@
       "overheard": "Nil-nil, that. He'll be in a mood all night.",
       "overheardTerm": "Nil-nil",
       "speaker": "him",
-      "gist": "Nobody scored, the match finished level",
+      "gist": "A match that ended level with nobody scoring",
       "decoy": "The game was abandoned, so no score counts",
       "decoys": [
         "The game was abandoned, so no score counts",
-        "A draw where both sides scored"
+        "A draw where both sides scored a goal each"
       ],
       "when": [
         "after-draw",
@@ -1585,9 +1585,9 @@
       "overheardTerm": "playmaker",
       "speaker": "pundit",
       "gist": "The one every attack goes through",
-      "decoy": "The one who takes the corners and free kicks",
+      "decoy": "The one taking the corners and free kicks",
       "decoys": [
-        "The one who takes the corners and free kicks",
+        "The one taking the corners and free kicks",
         "The one who barks the orders at everyone"
       ],
       "when": [
@@ -1618,7 +1618,7 @@
       "decoy": "The forward who plays just off the striker",
       "decoys": [
         "The forward who plays just off the striker",
-        "A defender who gets forward down the touchline"
+        "A defender who gets forward out wide"
       ],
       "when": [
         "any"
@@ -1890,9 +1890,9 @@
       "overheardTerm": "counter-attack",
       "speaker": "chat",
       "gist": "Breaking forward fast the second you win it",
-      "decoy": "Scoring straight back after going behind",
+      "decoy": "Throwing bodies forward after going behind",
       "decoys": [
-        "Scoring straight back after going behind",
+        "Throwing bodies forward after going behind",
         "Pushing everyone forward chasing a late goal"
       ],
       "when": [
@@ -1945,9 +1945,9 @@
       "overheardTerm": "tiki-taka",
       "speaker": "chat",
       "gist": "Endless short passes to keep hold of the ball",
-      "decoy": "The chant the away end sings on repeat",
+      "decoy": "Chanting from the away end on repeat",
       "decoys": [
-        "The chant the away end sings on repeat",
+        "Chanting from the away end on repeat",
         "A quick one-two played round a defender"
       ],
       "when": [
@@ -1973,9 +1973,9 @@
       "overheardTerm": "long ball",
       "speaker": "him",
       "gist": "Hitting it high and far instead of passing",
-      "decoy": "A shot struck from forty yards or further",
+      "decoy": "Shooting from forty yards or further",
       "decoys": [
-        "A shot struck from forty yards or further",
+        "Shooting from forty yards or further",
         "The cross whipped in low from the byline"
       ],
       "when": [
@@ -2202,10 +2202,10 @@
       "overheardTerm": "xG",
       "speaker": "chat",
       "gist": "A score for how good a chance was",
-      "decoy": "How many goals a side should score in a season",
+      "decoy": "The shots on target added up",
       "decoys": [
-        "How many goals a side should score in a season",
-        "The shots on target added up"
+        "The shots on target added up",
+        "How many goals a side scores in a season"
       ],
       "when": [
         "any",
@@ -2231,10 +2231,10 @@
       "overheardTerm": "game management",
       "speaker": "him",
       "gist": "Slowing it down to protect a lead",
-      "decoy": "The manager barking at them from the side",
+      "decoy": "Changing the shape after an hour",
       "decoys": [
-        "The manager barking at them from the side",
-        "Changing the shape after an hour"
+        "Changing the shape after an hour",
+        "The manager barking at them from the side"
       ],
       "when": [
         "derby",
@@ -2327,9 +2327,9 @@
       "overheardTerm": "dark arts",
       "speaker": "chat",
       "gist": "The sneaky stuff that winds them up",
-      "decoy": "Playing a weakened side on purpose",
+      "decoy": "A weakened side put out on purpose",
       "decoys": [
-        "Playing a weakened side on purpose",
+        "A weakened side put out on purpose",
         "Rough tackling meant to rattle them"
       ],
       "when": [
@@ -2487,9 +2487,9 @@
       "overheardTerm": "second ball",
       "speaker": "telly",
       "gist": "Whatever drops loose after a header",
-      "decoy": "A cross played in after a short corner",
+      "decoy": "Crossing in again after a short corner",
       "decoys": [
-        "A cross played in after a short corner",
+        "Crossing in again after a short corner",
         "The second goal that settles a match"
       ],
       "when": [
@@ -2669,10 +2669,10 @@
       "overheard": "He's top drawer, that lad. Always has been.",
       "overheardTerm": "top drawer",
       "speaker": "pundit",
-      "gist": "Excellent, the very highest quality",
-      "decoy": "The top division of English football",
+      "gist": "Excellent and of the very highest quality",
+      "decoy": "Playing in the top division, nothing less",
       "decoys": [
-        "The top division of English football",
+        "Playing in the top division, nothing less",
         "A player kept back for the big games"
       ],
       "when": [
@@ -3024,10 +3024,10 @@
       "overheardTerm": "in the book",
       "speaker": "him",
       "gist": "The referee has shown him a yellow card",
-      "decoy": "He has been sent off and must leave",
+      "decoy": "The referee has spoken to him and let him off",
       "decoys": [
-        "He has been sent off and must leave",
-        "The referee has spoken to him and let him off"
+        "The referee has spoken to him and let him off",
+        "He has been sent off and must leave"
       ],
       "when": [
         "any",
@@ -3142,7 +3142,7 @@
       "decoy": "A match played with a worn-out ball",
       "decoys": [
         "A match played with a worn-out ball",
-        "A match replayed after a draw"
+        "A match replayed after a draw, later on"
       ],
       "when": [
         "europe",
@@ -3282,9 +3282,9 @@
       "overheardTerm": "Deadline day",
       "speaker": "telly",
       "gist": "The final day for doing deals",
-      "decoy": "The final day to buy tickets for the season",
+      "decoy": "The final day to buy season tickets",
       "decoys": [
-        "The final day to buy tickets for the season",
+        "The final day to buy season tickets",
         "Cut-off for naming the squad for a cup"
       ],
       "when": [
@@ -3329,10 +3329,10 @@
       "overheard": "Silly season, that's all this is. Same every year.",
       "overheardTerm": "Silly season",
       "speaker": "him",
-      "gist": "Summer, when every rumour gets printed",
-      "decoy": "The run of games over Christmas and New Year",
+      "gist": "Summer when every rumour gets printed",
+      "decoy": "Christmas and New Year, games back to back",
       "decoys": [
-        "The run of games over Christmas and New Year",
+        "Christmas and New Year, games back to back",
         "A spell when results make no sense at all"
       ],
       "when": [
@@ -3381,9 +3381,9 @@
       "overheardTerm": "sacked",
       "speaker": "chat",
       "gist": "Losing the job when results go bad",
-      "decoy": "A player dropped from the squad for a game",
+      "decoy": "Being dropped from the squad for a game",
       "decoys": [
-        "A player dropped from the squad for a game",
+        "Being dropped from the squad for a game",
         "The manager walking out for a bigger club"
       ],
       "when": [
@@ -3793,9 +3793,9 @@
       "overheardTerm": "Kop",
       "speaker": "telly",
       "gist": "Liverpool's loud home stand at Anfield",
-      "decoy": "The steepest old stand, where tickets are cheap",
+      "decoy": "Steep old terracing, where tickets are cheap",
       "decoys": [
-        "The steepest old stand, where tickets are cheap",
+        "Steep old terracing, where tickets are cheap",
         "A stand named after a club's great manager"
       ],
       "when": [
@@ -3899,9 +3899,9 @@
       "overheardTerm": "group chat",
       "speaker": "him",
       "gist": "Where his mates react to every goal instantly",
-      "decoy": "An online forum open to all supporters",
+      "decoy": "Any online forum open to supporters",
       "decoys": [
-        "An online forum open to all supporters",
+        "Any online forum open to supporters",
         "Fans posting videos from inside the ground"
       ],
       "when": [
@@ -4000,10 +4000,10 @@
       "overheard": "We go again Tuesday. Kick-off's at eight, apparently.",
       "overheardTerm": "We go again",
       "speaker": "chat",
-      "gist": "Bad result, forget it, on to the next game",
-      "decoy": "The match is being replayed after a draw",
+      "gist": "Bad result forgotten and on to the next game",
+      "decoy": "Back for a replay, the first one was drawn",
       "decoys": [
-        "The match is being replayed after a draw",
+        "Back for a replay, the first one was drawn",
         "Fans are heading off to another away trip"
       ],
       "when": [
@@ -4236,9 +4236,9 @@
       "overheardTerm": "Plastic fans",
       "speaker": "him",
       "gist": "A fan who only turns up when things go well",
-      "decoy": "Someone who turns up in a shop-bought kit",
+      "decoy": "A fan who turns up in a shop-bought kit",
       "decoys": [
-        "Someone who turns up in a shop-bought kit",
+        "A fan who turns up in a shop-bought kit",
         "A supporter who watches on TV and nothing else"
       ],
       "when": [
@@ -4289,9 +4289,9 @@
       "overheardTerm": "boot room",
       "speaker": "pundit",
       "gist": "Promoting a manager from inside the club",
-      "decoy": "The place at a ground where kit is stored",
+      "decoy": "Storing the kit in a room at the ground",
       "decoys": [
-        "The place at a ground where kit is stored",
+        "Storing the kit in a room at the ground",
         "A club's academy for teenage players"
       ],
       "when": [

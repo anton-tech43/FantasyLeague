@@ -24,10 +24,25 @@ from collections import Counter, defaultdict
 from lingo_match import term_match
 from lingo_overheard import MOMENTS, SLOTS, SPEAKERS, WHEN_TAGS
 
-LIMITS = {"overheard": 120, "gist": 60, "decoy": 60}
-MIN_LEN = {"overheard": 20, "gist": 12, "decoy": 12}
+LIMITS = {"overheard": 120, "gist": 60, "decoy": 60, "spare": 60}
+MIN_LEN = {"overheard": 20, "gist": 12, "decoy": 12, "spare": 12}
 OVERHEARD_COMFORT = 100        # warn above: four lines on a small phone
-BAND = 20                      # a decoy may differ from the gist by this many chars
+# How far a decoy may sit from the gist in characters. One absolute number
+# cannot be right across a 23-to-52-character gist range: 20 was 87% of the
+# shortest gists and a third of the longest. So a floor, below which a
+# difference is invisible anyway, and a proportion above it.
+BAND_FLOOR = 10
+BAND_RATIO = 0.25
+# A word that opens an option and answers it. At three options the tell was a
+# first word two options shared; at two there is no odd one out, so what is left
+# is the register difference an article announces.
+DETERMINERS = {"a", "an", "the"}
+# Set-level skew, symmetric because at two options there is no third option to
+# hide behind: a solver tapping on one surface should score a coin flip. 40/60
+# is about 2.5 SD at n=158, wide enough not to fire on noise.
+SKEW_ERR = (0.40, 0.60)
+SKEW_WARN = (0.45, 0.55)
+MIN_DECIDED = 30               # below this the share is noise, not skew
 MIN_PER_TAG = 5
 MIN_ANY = 60
 # The end-of-round commitment draws only from `anytime` and `common`: a `rare`
@@ -105,6 +120,21 @@ def content_words(s: str) -> set[str]:
 def first_word(s: str) -> str:
     m = re.match(r"[A-Za-z']+", s.strip())
     return m.group(0).lower() if m else ""
+
+
+def band_for(gist: str) -> int:
+    return max(BAND_FLOOR, round(BAND_RATIO * len(gist)))
+
+
+# The four surfaces a solver reads without reading: how long it is, how many
+# words, how many commas (a two-part truth carries one, a flat assertion does
+# not) and how long its longest word.
+FEATURES = {
+    "character length": len,
+    "word count": lambda s: len(s.split()),
+    "comma count": lambda s: s.count(","),
+    "longest word": lambda s: max((len(w) for w in re.findall(r"[\w'-]+", s)), default=0),
+}
 
 
 def render(text: str, name: str) -> str:
@@ -259,9 +289,10 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
         tid = t.get("id", "?")
         if only_category and t.get("category") != only_category:
             continue
-        o, sp, g, ds, when = t.get("overheard"), t.get("speaker"), t.get("gist"), t.get("decoys"), t.get("when")
-        if not all([o, sp, g, ds, when]):
-            err(f"lingo/{tid}: Overheard entry missing or incomplete (overheard, speaker, gist, decoys, when) — "
+        o, sp, g, when = t.get("overheard"), t.get("speaker"), t.get("gist"), t.get("when")
+        d, ds = t.get("decoy"), t.get("decoys")
+        if not all([o, sp, g, d, ds, when]):
+            err(f"lingo/{tid}: Overheard entry missing or incomplete (overheard, speaker, gist, decoy, when) — "
                 f"add it to tools/myturn/lingo_overheard/{t.get('category')}.py")
             if t.get("playerVariants"):
                 # Said plainly here rather than letting every variant rule fail
@@ -271,9 +302,15 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
             continue
         complete += 1
         where = f"lingo/{tid}"
+        # Checked before anything reads it: the leak rule below needs the
+        # shipping decoy as a string, and the list form is the shape a
+        # half-finished rename leaves behind.
+        if not isinstance(d, str) or not d.strip():
+            err(f"{where}: decoy must be one non-empty string, got {d!r}; a term with no decoy is unplayable")
+            d = ""
 
         for field, text in (("meaning", t.get("meaning", "")), ("heard", t.get("heard", "")), ("sayIt", t.get("sayIt", "")),
-                            ("overheard", o), ("gist", g), *((f"decoy", x) for x in ds)):
+                            ("overheard", o), ("gist", g), *(("decoy", x) for x in (ds if isinstance(ds, list) else []))):
             if "—" in text or "–" in text:
                 err(f"{where}: {field} has an em-dash, write two sentences: {text[:60]}")
 
@@ -324,15 +361,17 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
         term_stems = {w[:5] for w in content_words(re.sub(r"[^\w\s-]", "", t.get("term", ""))) | set(aliases_words(aliases))}
         bubble = {w[:5] for w in content_words(o) if len(w) >= 5} - term_stems - STEM_OK
         g_st = {w[:5] for w in content_words(g) if len(w) >= 5}
-        d_st = [{w[:5] for w in content_words(x) if len(w) >= 5} for x in (ds if isinstance(ds, list) else [])]
-        leak = bubble & g_st - set().union(*d_st) if d_st else set()
+        # The excuse is the shipping decoy alone. A word echoed by the gist and
+        # by text she never sees is still a word echoed by the only right
+        # answer on the card.
+        d_st = {w[:5] for w in content_words(d) if len(w) >= 5}
+        leak = (bubble & g_st) - d_st
         if leak:
             err(f"{where}: '{sorted(leak)[0]}…' is in the bubble and only in the gist, the bubble hands over the answer: {o}")
 
         # --- playerVariants: the same card with a real name from the fixture in it
         pv = t.get("playerVariants")
         if pv is not None:
-            decoy_stems = set().union(*d_st) if d_st else set()
             if not isinstance(pv, list) or not pv:
                 err(f"{where}: playerVariants must be a non-empty list, got {pv!r}")
                 pv = []
@@ -344,7 +383,7 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
             if len(sides) == 2 and sides[0] == sides[1]:
                 err(f"{where}: both player variants are '{sides[0]}'; two variants on one term must take different sides")
             got_slots = [check_variant(t, v, i, err=err, check_idiom=check_idiom, term_stems=term_stems,
-                                       gist_stems=g_st, decoy_stems=decoy_stems)
+                                       gist_stems=g_st, decoy_stems=d_st)
                          for i, v in enumerate(pv) if isinstance(v, dict)]
             if any(got_slots):
                 variant_terms += 1
@@ -359,12 +398,20 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
             err(f"{where}: speaker '{sp}' invalid (him, telly, chat, pundit)")
         speaker_by_cat[t.get("category", "?")][sp] += 1
 
-        # --- gist and decoys share a shape
+        # --- the options. She sees two: the gist and the decoy that ships.
+        # `spare` is the reviewed reserve, held so three options stay one line
+        # away; it gets the format rules and none of the balance ones, because
+        # balancing a card against text she never reads proves nothing.
+        # ponytail: `decoys` is the pair the shipped Swift still reads. This
+        # clause goes with the key, when LingoDeck moves to `decoy`.
         if not isinstance(ds, list) or len(ds) != 2:
             err(f"{where}: decoys must be exactly 2, got {ds!r}")
-            ds = list(ds or [])[:2]
-        opts = [("gist", g)] + [("decoy", x) for x in ds]
-        for field, x in opts:
+            ds = list(ds or ["", ""])[:2] + ["", ""]
+        elif d and ds[0] != d:
+            err(f"{where}: decoys[0] is not the shipping decoy, rerun build_lingo.py")
+        spare = ds[1] if len(ds) > 1 and isinstance(ds[1], str) else ""
+        opts = [("gist", g), ("decoy", d)]
+        for field, x in [(f, x) for f, x in opts + [("spare", spare)] if x]:
             if len(x) > LIMITS[field]:
                 err(f"{where}: {field} is {len(x)} chars (cap {LIMITS[field]}): {x}")
             if len(x) < MIN_LEN[field]:
@@ -377,17 +424,25 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
             if m:
                 err(f"{where}: {field} has a superlative that can go stale ('{m.group(0)}'), write the dated fact: {x}")
             check_idiom(where, x)
-        for x in ds:
-            if abs(len(x) - len(g)) > BAND:
-                err(f"{where}: decoy length {len(x)} is more than {BAND} off the gist ({len(g)}), length gives it away: {x}")
-        if len({norm(x) for _, x in opts}) != 3:
-            err(f"{where}: gist and decoys must be three different options")
+        band = band_for(g)
+        if d and abs(len(d) - len(g)) > band:
+            err(f"{where}: decoy length {len(d)} is more than {band} off the gist ({len(g)}), "
+                f"length gives it away with two options: {d}")
+        if spare and abs(len(spare) - len(g)) > band:
+            warn(f"{where}: spare length {len(spare)} is more than {band} off the gist ({len(g)}); "
+                 f"it could not take the decoy's place as written")
+        written = [x for x in (g, d, spare) if x]
+        if len({norm(x) for x in written}) != len(written):
+            err(f"{where}: gist, decoy and spare must be three different options")
+        # Exactly one article is the new first-word tell. "A tally handed out by
+        # finishing position" against "Three for a win, one for a draw" is an
+        # article against a number, and she never has to read past word one.
+        if g and d and (first_word(g) in DETERMINERS) != (first_word(d) in DETERMINERS):
+            err(f"{where}: exactly one option opens with a/an/the, which is the whole card at two options. "
+                f"Give both an article or neither: {g!r} / {d!r}")
         clash = content_words(g) & content_words(re.sub(r"[^\w\s-]", "", t.get("term", "")))
         if clash:
             err(f"{where}: gist repeats a word of the term ({', '.join(sorted(clash))}), which is bolded in the bubble: {g}")
-        fw = [first_word(x) for _, x in opts]
-        if len(fw) == 3 and fw[1] == fw[2] != fw[0]:
-            err(f"{where}: both decoys start with '{fw[1]}' and the gist does not, the odd one out is the answer")
         if norm(g) in gists:
             err(f"{where}: gist is identical to {gists[norm(g)]}'s gist: {g}")
         gists[norm(g)] = tid
@@ -431,38 +486,48 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
         if only_category and t.get("category") != only_category:
             continue
         neighbours = set(t.get("seeAlso") or []) | {o.get("id") for o in terms if tid in (o.get("seeAlso") or [])}
-        for x in t.get("decoys") or []:
+        ds = t.get("decoys")
+        ds = ds if isinstance(ds, list) else []
+        for x, shipping in ((t.get("decoy"), True), (ds[1] if len(ds) > 1 else None, False)):
+            if not isinstance(x, str) or not x:
+                continue
+            label = "decoy" if shipping else "spare"
             owner = gists.get(norm(x))
             if owner and (owner == tid or owner in neighbours):
-                err(f"lingo/{tid}: decoy '{x}' is the gist of {owner}, a synonym she would rightly pick")
+                (err if shipping else warn)(
+                    f"lingo/{tid}: {label} '{x}' is the gist of {owner}, a synonym she would rightly pick")
             elif owner:
-                warn(f"lingo/{tid}: decoy '{x}' is {owner}'s gist")
+                warn(f"lingo/{tid}: {label} '{x}' is {owner}'s gist")
     for text, n in overheards.items():
         if n > 1:
             err(f"lingo: duplicate overheard line: {text[:60]}")
 
-    # Length skew across the set: each entry passes the 20-char band, but if the
-    # gist is the longest option most of the time, "tap the longest" beats the
-    # game without reading. Counted here, over every complete entry.
-    longest = shortest = 0
-    for t in terms:
-        g, ds = t.get("gist"), t.get("decoys")
-        if not g or not isinstance(ds, list) or len(ds) != 2:
-            continue
-        lens = [len(g), len(ds[0]), len(ds[1])]
-        if lens[0] > max(lens[1:]):
-            longest += 1
-        if lens[0] < min(lens[1:]):
-            shortest += 1
     if only_category:
         return complete
-    if complete:
-        share = longest / complete
-        if share > 0.45:
-            err(f"lingo: the gist is the longest option in {longest} of {complete} entries ({share:.0%}, max 45%); "
-                f"'tap the longest' would beat the game. Pad decoys or trim gists")
-        if shortest / complete < 0.20:
-            err(f"lingo: the gist is the shortest option in only {shortest} of {complete} entries (min 20%)")
+
+    # Skew across the set. Each card passes its own band, but a surface that
+    # points at the gist most of the time beats the game without reading a word,
+    # and at two options there is no third to dilute it. Ties are counted apart
+    # and charged to neither side: an equal pair tells her nothing, and folding
+    # it into one half is exactly what hid the comma tell, which sat at 90.6%.
+    pairs = [(t["gist"], t["decoy"]) for t in terms
+             if t.get("gist") and isinstance(t.get("decoy"), str) and t["decoy"]]
+    for label, f in FEATURES.items():
+        higher = sum(1 for g, d in pairs if f(g) > f(d))
+        ties = sum(1 for g, d in pairs if f(g) == f(d))
+        decided = len(pairs) - ties
+        if decided < MIN_DECIDED:
+            warn(f"lingo: {label} separates only {decided} of {len(pairs)} cards ({ties} tied); "
+                 f"too few to read a skew from")
+            continue
+        share = higher / decided
+        where = (f"the gist has the higher {label} in {higher} of the {decided} cards where the two options "
+                 f"differ ({share:.0%}), {ties} tied")
+        if not SKEW_ERR[0] <= share <= SKEW_ERR[1]:
+            err(f"lingo: {where}. A solver reading nothing but {label} scores {max(share, 1 - share):.0%}; "
+                f"bring it inside {SKEW_ERR[0]:.0%}-{SKEW_ERR[1]:.0%}")
+        elif not SKEW_WARN[0] <= share <= SKEW_WARN[1]:
+            warn(f"lingo: {where}, outside the {SKEW_WARN[0]:.0%}-{SKEW_WARN[1]:.0%} aim")
 
     # --- file-wide floors: a deck must never come up thin
     for tag in WHEN_TAGS:
@@ -503,3 +568,56 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
             if share < 0.10 or share > 0.55:
                 warn(f"lingo/{cat}: speaker '{sp}' is {share:.0%} of the category (aim 10-55%)")
     return complete
+
+
+if __name__ == "__main__":
+    # Self-check: the rules that decide a two-option card, each fired once.
+    # `python3 tools/myturn/validate_overheard.py` prints OK or raises. The file
+    # went without one until the arity change, which is how a gist-only comma in
+    # 90.6% of cards and a lone article in 38 of them lived here unremarked.
+    _decoy = "The trick that leaves him on the floor"
+    ok = dict(id="nutmeg", category="tactics", term="Nutmeg", meaning="Through the legs", heard="Commentary, mostly", level=1,
+              sayIt="Through his legs, that", overheard="He got nutmegged there and he knows it.",
+              speaker="him", gist="The ball played through his legs",
+              decoy=_decoy, decoys=[_decoy, "The shot that goes in off the post"],
+              when=["any"], moment="common")
+    NEVER = re.compile(r"(?!x)x")
+
+    def run(terms, category="tactics"):
+        errs: list[str] = []
+        warns: list[str] = []
+        validate_overheard(terms, err=errs.append, warn=warns.append,
+                           check_idiom=lambda w, v: None, superlative=NEVER, only_category=category)
+        return errs, warns
+
+    def fires(needle, where="err", **changes):
+        errs, warns = run([dict(ok, **changes)])
+        got = errs if where == "err" else warns
+        assert any(needle in m for m in got), f"expected {needle!r}, got {got}"
+
+    assert run([ok]) == ([], []), run([ok])
+    # --- arity: one decoy ships, and the pair must still agree with it
+    # The list form left in place: truthy, so it clears the completeness gate.
+    fires("decoy must be one non-empty string", decoy=[_decoy])
+    fires("decoys must be exactly 2", decoys=[_decoy])
+    fires("decoys[0] is not the shipping decoy", decoys=["The shot that goes in off the post", _decoy])
+    # --- the band is a floor plus a proportion, so it means the same at 23 chars and at 52
+    fires("length gives it away", decoy="The trick that leaves him flat on the floor, twice over",
+          decoys=["The trick that leaves him flat on the floor, twice over", "x" * 30])
+    fires("it could not take the decoy's place", "warn",
+          decoys=[_decoy, "The shot that goes in off the post after a deflection"])
+    # --- one article between two options is the whole card
+    fires("exactly one option opens with a/an/the", gist="Played through his legs, all ends up")
+    fires("three different options", decoys=[_decoy, _decoy])
+    # --- a leak the spare would have excused is still a leak: she never reads the spare
+    fires("hands over the answer", overheard="He got nutmegged straight through there.",
+          decoys=[_decoy, "Passing it straight through the middle"])
+    # --- set level, so no category: the floors fire too and are not what is asserted
+    skewed = [dict(ok, id=f"t{i}", overheard=f"He got nutmegged there, number {i} of the night.",
+                   gist=f"Ball {i} played through both of his legs",
+                   decoy=f"Trick {i} on the floor", decoys=[f"Trick {i} on the floor", "The post"])
+              for i in range(40)]
+    errs, warns = run(skewed, category=None)
+    assert any("A solver reading nothing but character length" in m for m in errs), errs
+    assert any("comma count separates only 0" in m for m in warns), warns
+    print("validate_overheard self-check: OK")
