@@ -39,7 +39,6 @@
 		AA000004 /* ContentItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000004 /* ContentItem.swift */; };
 		AA000005 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000005 /* AppState.swift */; };
 		AA000006 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000006 /* Theme.swift */; };
-		AA000007 /* ContentCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000007 /* ContentCard.swift */; };
 		AA000008 /* TeamPickerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000008 /* TeamPickerCard.swift */; };
 		AA000009 /* BadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000009 /* BadgeView.swift */; };
 		AA000010 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000010 /* EmptyStateView.swift */; };
@@ -61,8 +60,6 @@
 		AA000036 /* PlayerCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000036 /* PlayerCardView.swift */; };
 		AA000037 /* TeamPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000037 /* TeamPageView.swift */; };
 		AA000040 /* ProgressDotsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000040 /* ProgressDotsView.swift */; };
-		AA000041 /* YourMoveCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000041 /* YourMoveCard.swift */; };
-		AA000042 /* MatchDayCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000042 /* MatchDayCard.swift */; };
 		AA000043 /* GoalDiggerWordmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000043 /* GoalDiggerWordmark.swift */; };
 		AA000050 /* arsenal.json in Resources */ = {isa = PBXBuildFile; fileRef = AB000050 /* arsenal.json */; };
 		AA000060 /* FeedContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000060 /* FeedContext.swift */; };
@@ -71,7 +68,6 @@
 		AA000063 /* ImmersiveSkeletonCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000063 /* ImmersiveSkeletonCard.swift */; };
 		AA000064 /* ContextSwitcherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000064 /* ContextSwitcherView.swift */; };
 		AA000065 /* EveryoneEmptyStateCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000065 /* EveryoneEmptyStateCard.swift */; };
-		AA000066 /* ClassicFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000066 /* ClassicFeedView.swift */; };
 		AA000070 /* PlusJakartaSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000070 /* PlusJakartaSans-Regular.ttf */; };
 		AA000071 /* PlusJakartaSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000071 /* PlusJakartaSans-Medium.ttf */; };
 		AA000072 /* PlusJakartaSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000072 /* PlusJakartaSans-SemiBold.ttf */; };
@@ -180,7 +176,6 @@
 		AB000004 /* ContentItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentItem.swift; sourceTree = "<group>"; };
 		AB000005 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		AB000006 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
-		AB000007 /* ContentCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentCard.swift; sourceTree = "<group>"; };
 		AB000008 /* TeamPickerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPickerCard.swift; sourceTree = "<group>"; };
 		AB000009 /* BadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeView.swift; sourceTree = "<group>"; };
 		AB000010 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
@@ -207,8 +202,6 @@
 		AB000036 /* PlayerCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerCardView.swift; sourceTree = "<group>"; };
 		AB000037 /* TeamPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageView.swift; sourceTree = "<group>"; };
 		AB000040 /* ProgressDotsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressDotsView.swift; sourceTree = "<group>"; };
-		AB000041 /* YourMoveCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YourMoveCard.swift; sourceTree = "<group>"; };
-		AB000042 /* MatchDayCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDayCard.swift; sourceTree = "<group>"; };
 		AB000043 /* GoalDiggerWordmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalDiggerWordmark.swift; sourceTree = "<group>"; };
 		AB000050 /* arsenal.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = arsenal.json; sourceTree = "<group>"; };
 		AB000060 /* FeedContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedContext.swift; sourceTree = "<group>"; };
@@ -217,7 +210,6 @@
 		AB000063 /* ImmersiveSkeletonCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImmersiveSkeletonCard.swift; sourceTree = "<group>"; };
 		AB000064 /* ContextSwitcherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextSwitcherView.swift; sourceTree = "<group>"; };
 		AB000065 /* EveryoneEmptyStateCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EveryoneEmptyStateCard.swift; sourceTree = "<group>"; };
-		AB000066 /* ClassicFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassicFeedView.swift; sourceTree = "<group>"; };
 		AB000070 /* PlusJakartaSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Regular.ttf"; sourceTree = "<group>"; };
 		AB000071 /* PlusJakartaSans-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Medium.ttf"; sourceTree = "<group>"; };
 		AB000072 /* PlusJakartaSans-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-SemiBold.ttf"; sourceTree = "<group>"; };
@@ -361,14 +353,11 @@
 		AC000005 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				AB000007 /* ContentCard.swift */,
 				AB000008 /* TeamPickerCard.swift */,
 				AB000009 /* BadgeView.swift */,
 				AB000304 /* TeamCrestView.swift */,
 				AB000010 /* EmptyStateView.swift */,
 				AB000040 /* ProgressDotsView.swift */,
-				AB000041 /* YourMoveCard.swift */,
-				AB000042 /* MatchDayCard.swift */,
 				AB000043 /* GoalDiggerWordmark.swift */,
 				AB000062 /* ImmersiveCard.swift */,
 				AB000063 /* ImmersiveSkeletonCard.swift */,
@@ -428,7 +417,6 @@
 			isa = PBXGroup;
 			children = (
 				AB000014 /* FeedView.swift */,
-				AB000066 /* ClassicFeedView.swift */,
 			);
 			path = Feed;
 			sourceTree = "<group>";
@@ -718,7 +706,6 @@
 				AA000004 /* ContentItem.swift in Sources */,
 				AA000005 /* AppState.swift in Sources */,
 				AA000006 /* Theme.swift in Sources */,
-				AA000007 /* ContentCard.swift in Sources */,
 				AA000008 /* TeamPickerCard.swift in Sources */,
 				AA000009 /* BadgeView.swift in Sources */,
 				AA000010 /* EmptyStateView.swift in Sources */,
@@ -747,8 +734,6 @@
 				AA000040 /* ProgressDotsView.swift in Sources */,
 				AA000036 /* PlayerCardView.swift in Sources */,
 				AA000037 /* TeamPageView.swift in Sources */,
-				AA000041 /* YourMoveCard.swift in Sources */,
-				AA000042 /* MatchDayCard.swift in Sources */,
 				AA000043 /* GoalDiggerWordmark.swift in Sources */,
 				AA000060 /* FeedContext.swift in Sources */,
 				AA000061 /* UnreadTracker.swift in Sources */,
@@ -756,7 +741,6 @@
 				AA000063 /* ImmersiveSkeletonCard.swift in Sources */,
 				AA000064 /* ContextSwitcherView.swift in Sources */,
 				AA000065 /* EveryoneEmptyStateCard.swift in Sources */,
-				AA000066 /* ClassicFeedView.swift in Sources */,
 				AA000090 /* TeamPageCard.swift in Sources */,
 				AA000091 /* TeamPageMoodBanner.swift in Sources */,
 				AA000092 /* TeamPageThisWeek.swift in Sources */,

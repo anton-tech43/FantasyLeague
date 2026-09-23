@@ -100,15 +100,6 @@ class AppState {
     var activeContext: FeedContext = .everyoneTalking
     var isContextSwitcherOpen: Bool = false
 
-    // Feed style — persisted
-    var feedStyle: FeedStyle {
-        didSet { UserDefaults.standard.set(feedStyle.rawValue, forKey: "feedStyle") }
-    }
-
-    enum FeedStyle: String {
-        case immersive, classic
-    }
-
     /// Who the followed person is to the user. Partner is the default framing;
     /// the others let someone following a parent / sibling / friend keep the
     /// app's voice without it assuming a romantic partner.
@@ -151,8 +142,6 @@ class AppState {
         // per scroll position). The "lands on article" complaint earlier was
         // actually a separate auto-expand bug, now removed; the immersive feed
         // itself is the intended default.
-        let styleRaw = UserDefaults.standard.string(forKey: "feedStyle") ?? "immersive"
-        self.feedStyle = FeedStyle(rawValue: styleRaw) ?? .immersive
 
         // Active context — country takes precedence over team in V2.0 (WC
         // is the primary anchor; if the user has both, default to the WC
@@ -274,7 +263,6 @@ class AppState {
         pendingTabAfterPrimer = nil
         activeContext = .everyoneTalking
         isContextSwitcherOpen = false
-        feedStyle = .immersive
         let keys = ["herName", "hisName", "relationshipType",
                      "selectedTeam", "selectedCountry", "selectedTeams", "selectedCountries",
                      "selectedTier",
@@ -284,6 +272,9 @@ class AppState {
                      "footballKnowledgeLevel",
                      "hasCompletedOnboarding", "notificationPermissionRequested", "apnsToken",
                      "apnsTokenRegistered", "lastRegisteredScope", "liveActivityPushToStartToken",
+                     // Written by the Immersive/Classic switch, which left
+                     // Settings in May 2026 and the codebase in September.
+                     // A device that chose "classic" still has it on disk.
                      "feedStyle",
                      "calendarSyncEnabled", "hasSeenSeasonPrimer", "hasSeenWCPrompt"]
         keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }

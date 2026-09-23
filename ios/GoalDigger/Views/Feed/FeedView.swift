@@ -42,7 +42,6 @@ struct FeedView: View {
     /// loads the live brief poll — no poll loop. The 36-hour freshness
     /// window lives server-side; iOS just renders whatever it gets back.
     @State private var currentQuiz: SaturdayQuiz?
-    @AppStorage("hasSeenImmersiveBanner") private var hasSeenImmersiveBanner = false
 
     private let pageSize = 20
     private let screenHeight = UIScreen.main.bounds.height
@@ -351,71 +350,22 @@ struct FeedView: View {
         }
     }
 
-    // MARK: - Feed Content (switches between immersive and classic)
+    // MARK: - Feed Content
 
-    @ViewBuilder
-    private var feedContent: some View {
-        // V1.1 task C5: LiveMatchCard renders as the first item INSIDE the
-        // feed's scroll view so it scrolls away with content rather than
-        // pinning to the top. See immersiveFeed and classic feed branches
-        // for the prepend; both gate on `shouldShowLiveBrief` so the card
-        // never appears for T1 users or in the "Everyone Talking" context.
-        if appState.feedStyle == .immersive {
-            immersiveFeed
-        } else {
-            VStack(spacing: 0) {
-                if !hasSeenImmersiveBanner {
-                    migrationBanner
-                }
-                ScrollView(.vertical) {
-                    LazyVStack(spacing: 0) {
-                        if shouldShowLiveBrief, let brief = liveBrief {
-                            LiveMatchCard(brief: brief)
-                                .padding(.horizontal, Layout.screenPadding)
-                                .padding(.vertical, 8)
-                                .transition(.move(edge: .top).combined(with: .opacity))
-                        }
-                        // WC hero: next-match preview leads the tournament feed
-                        // (below the live card when a match is on).
-                        if let hero = wcNextMatchItem {
-                            WCNextMatchCard(item: hero) {
-                                navigateToDetail(item: hero, scrollToTalkingPoints: false, isEveryoneContext: false)
-                            }
-                            .padding(.horizontal, Layout.screenPadding)
-                            .padding(.vertical, 8)
-                        }
-                        if shouldShowComingUp {
-                            comingUpFeedCard
-                                .padding(.horizontal, Layout.screenPadding)
-                                .padding(.vertical, 8)
-                                .transition(.move(edge: .top).combined(with: .opacity))
-                        }
-                        // SaturdayQuizCard sits below the live card — live
-                        // takes priority during matches, quiz is the
-                        // Saturday-morning surface that lasts the weekend.
-                        if shouldShowQuiz, let quiz = currentQuiz {
-                            SaturdayQuizCard(quiz: quiz)
-                                .padding(.horizontal, Layout.screenPadding)
-                                .padding(.vertical, 8)
-                                .transition(.opacity)
-                        }
-                        ClassicFeedView(
-                            items: bodyItems,
-                            feedContext: appState.activeContext,
-                            appState: appState,
-                            matchdayPlayers: matchdayPlayers,
-                            freshnessCardDismissed: $freshnessCardDismissed,
-                            isOffSeason: isOffSeason,
-                            onLoadMore: { await loadMore() }
-                        )
-                    }
-                }
-                .refreshable { await refresh() }
-            }
-            .animation(.easeInOut(duration: 0.25), value: liveBrief?.id)
-            .animation(.easeInOut(duration: 0.25), value: currentQuiz?.id)
-        }
-    }
+    // There used to be a second feed here. The Immersive/Classic switch was
+    // taken out of Settings in May 2026 and nothing has been able to set
+    // .classic since, so the whole else-arm below this line — ClassicFeedView,
+    // ContentCard, MatchDayCard, YourMoveCard, two skeletons and a migration
+    // banner whose copy told her to "switch back in Settings anytime" — has
+    // been compiled into every build and unreachable from all of them.
+    // Removed 2026-09-23.
+    //
+    // V1.1 task C5: LiveMatchCard renders as the first item INSIDE the feed's
+    // scroll view so it scrolls away with content rather than pinning to the
+    // top. It gates on `shouldShowLiveBrief` so the card never appears for T1
+    // users or in the "Everyone Talking" context.
+
+    private var feedContent: some View { immersiveFeed }
 
     /// Whether the LiveMatchCard should render right now. Combines the
     /// data check (we have a brief), the tier gate, and the context check
@@ -554,44 +504,12 @@ struct FeedView: View {
         }
     }
 
-    // MARK: - Migration Banner
-
-    private var migrationBanner: some View {
-        HStack {
-            Text("New: immersive feed is now your default. Switch back in Settings anytime.")
-                .font(.jakarta(12, weight: .regular))
-                .foregroundColor(.charcoal)
-            Spacer()
-            Button {
-                withAnimation { hasSeenImmersiveBanner = true }
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.hotRose)
-            }
-        }
-        .padding(12)
-        .background(Color.softBlush)
-        .transition(.move(edge: .top).combined(with: .opacity))
-    }
-
     // MARK: - States
 
-    @ViewBuilder
     private var loadingView: some View {
-        if appState.feedStyle == .immersive {
-            VStack(spacing: 0) {
-                ImmersiveSkeletonCard(cardHeight: screenHeight * Layout.immersiveCardHeightRatio)
-                ImmersiveSkeletonCard(cardHeight: screenHeight * Layout.immersiveCardHeightRatio)
-            }
-        } else {
-            VStack(spacing: Layout.cardSpacing) {
-                YourMoveSkeletonCard()
-                ForEach(0..<3, id: \.self) { _ in
-                    SkeletonCard()
-                }
-            }
-            .padding(.horizontal, Layout.screenPadding)
+        VStack(spacing: 0) {
+            ImmersiveSkeletonCard(cardHeight: screenHeight * Layout.immersiveCardHeightRatio)
+            ImmersiveSkeletonCard(cardHeight: screenHeight * Layout.immersiveCardHeightRatio)
         }
     }
 
@@ -1026,88 +944,5 @@ struct FreshnessCard: View {
         .frame(maxWidth: .infinity)
         .background(Color.feedDivider)
         .cornerRadius(Layout.cardCornerRadius)
-    }
-}
-
-// MARK: - Skeleton Loading
-
-struct YourMoveSkeletonCard: View {
-    @State private var shimmerOffset: CGFloat = -200
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            RoundedRectangle(cornerRadius: Layout.badgeCornerRadius)
-                .fill(Color.warmWhite.opacity(0.15))
-                .frame(width: 90, height: 22)
-
-            RoundedRectangle(cornerRadius: 4)
-                .fill(Color.warmWhite.opacity(0.15))
-                .frame(height: 16)
-
-            RoundedRectangle(cornerRadius: 4)
-                .fill(Color.warmWhite.opacity(0.15))
-                .frame(width: 200, height: 16)
-        }
-        .padding(Layout.cardPadding)
-        .background(Color.hotRose)
-        .cornerRadius(Layout.cardCornerRadius)
-        .overlay(
-            LinearGradient(
-                colors: [.clear, Color.warmWhite.opacity(0.1), .clear],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-            .offset(x: shimmerOffset)
-        )
-        .clipped()
-        .onAppear {
-            withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
-                shimmerOffset = 400
-            }
-        }
-    }
-}
-
-struct SkeletonCard: View {
-    @State private var shimmerOffset: CGFloat = -200
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(Color.hotRose.opacity(0.08))
-                    .frame(width: 70, height: 20)
-                Spacer()
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.hotRose.opacity(0.08))
-                    .frame(width: 50, height: 14)
-            }
-
-            RoundedRectangle(cornerRadius: 4)
-                .fill(Color.hotRose.opacity(0.08))
-                .frame(height: 16)
-
-            RoundedRectangle(cornerRadius: 4)
-                .fill(Color.hotRose.opacity(0.08))
-                .frame(width: 200, height: 16)
-        }
-        .padding(Layout.cardPadding)
-        .background(Color.cardBackground)
-        .cornerRadius(Layout.cardCornerRadius)
-        .shadow(color: Color.cardShadowColor, radius: Layout.cardShadowRadius, y: Layout.cardShadowY)
-        .overlay(
-            LinearGradient(
-                colors: [.clear, Color.hotRose.opacity(0.08), .clear],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-            .offset(x: shimmerOffset)
-        )
-        .clipped()
-        .onAppear {
-            withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
-                shimmerOffset = 400
-            }
-        }
     }
 }

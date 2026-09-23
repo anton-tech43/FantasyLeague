@@ -151,9 +151,8 @@ struct SettingsView: View {
     // MARK: - Row components
     //
     // The Immersive/Classic toggle that used to live here was removed in
-    // May 2026. Everyone runs the Immersive layout now (AppState.feedStyle
-    // defaults to .immersive). FeedView still reads the flag but no UI
-    // exposes it.
+    // May 2026. FeedView went on reading the flag for another four months;
+    // the flag, the second feed and its four cards were deleted 2026-09-23.
 
     @ViewBuilder private var yourNameRow: some View {
         settingsRow {
