@@ -34,7 +34,7 @@ final class MyTurnContentService {
         // Bundled files are validated in CI; if one is missing the tab still
         // needs to render, so fall back to an empty module rather than crash.
         sayThis = Self.loadBest("saythis") ?? SayThisContent(contentVersion: "0", situations: [])
-        lingo   = Self.loadBest("lingo")   ?? LingoContent(contentVersion: "0", terms: [])
+        lingo   = Self.loadBest("lingo")   ?? LingoContent(contentVersion: "0", terms: [], calls: nil)
         quiz    = Self.loadBest("quiz")    ?? QuizContent(contentVersion: "0", packs: [])
         hype    = Self.loadBest("hype")    ?? HypeContent(contentVersion: "0", categories: [:])
     }

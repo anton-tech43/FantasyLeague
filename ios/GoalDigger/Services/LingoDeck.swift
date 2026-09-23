@@ -70,6 +70,15 @@ struct MatchContext: Equatable {
     /// Stable id for the fixture this context is about, for the deal seed: the
     /// same fixture deals the same seven until she asks for another.
     let fixtureKey: String
+    /// The API-Football id of the fixture this context settled on, out of
+    /// `upcoming_fixtures` — the one list on the page carrying ids. Nil for
+    /// every After context (`recent_results` has no ids at all) and for a
+    /// Before context the calendar has no live row for.
+    ///
+    /// Called it needs it: a pick is stored against this id on the device row
+    /// and the push resolves against it, so a slip that cannot be keyed to a
+    /// fixture is one nothing could ever tell her about.
+    let fixtureId: Int?
 
     let title: String
     /// Held without the refresher sentence so `refresher` can be flipped after
@@ -232,6 +241,7 @@ struct MatchContext: Equatable {
         tags = (w.open ? ["window"] : []) + ["any"]
         sixPointer = false
         fixtureKey = "any"
+        fixtureId = nil
         title = offSeason ? "Silly season" : "The first words"
         baseSubtitle = offSeason
             ? "No football till August. 7 words for the transfer window."
@@ -279,8 +289,8 @@ struct MatchContext: Equatable {
         // somebody else, true for ninety minutes and then gone, out of the
         // newest and least-weathered field on the page. A derby still outranks
         // them: what the fixture IS beats a note on how they play.
-        t += Self.matchupTags(cards?.matchup, opponent: opponent,
-                              fixtureId: Self.fixtureId(cards: cards, opponent: opponent, kickoff: kickoff))
+        let liveFixtureId = Self.fixtureId(cards: cards, opponent: opponent, kickoff: kickoff)
+        t += Self.matchupTags(cards?.matchup, opponent: opponent, fixtureId: liveFixtureId)
         t += season.tags.filter { calendar.contains($0) }
         t.append("any")
 
@@ -288,6 +298,7 @@ struct MatchContext: Equatable {
         tags = t
         sixPointer = six
         fixtureKey = "b|\(opponent)|\(Self.dayStamp(kickoff))"
+        fixtureId = liveFixtureId
         title = "Before \(opp)"
 
         // Most specific first. Six-pointer beats the plain title line: "1st
@@ -358,6 +369,11 @@ struct MatchContext: Equatable {
         tags = t
         sixPointer = false
         fixtureKey = "a|\(opponent)|\(Self.dayStamp(resultDate))"
+        // `recent_results` carries no fixture id, so an After context never has
+        // one. `LingoCalls` ties a stored slip to the game that has just been
+        // played through the fixture key instead, which is the same opponent
+        // and the same day either side of kick-off.
+        fixtureId = nil
         title = "After \(opp)"
 
         if let score {

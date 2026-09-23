@@ -32,6 +32,8 @@
 		785C14F6B48F7E69523A45EC /* SayThisPractiseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED6D8160AFC958A96956341D /* SayThisPractiseView.swift */; };
 		7AE5C40C19D72FA48BC51F30 /* SaturdayQuiz.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BC4A29F62D389F4A4751E27 /* SaturdayQuiz.swift */; };
 		8B0B08958242D8A2904E2895 /* LingoDeck.swift in Sources */ = {isa = PBXBuildFile; fileRef = B704D2F20367B101AF1B118A /* LingoDeck.swift */; };
+		CA11ED01CA11ED01CA11ED01 /* LingoCalls.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA11ED00CA11ED00CA11ED00 /* LingoCalls.swift */; };
+		CA11ED11CA11ED11CA11ED11 /* call_vectors.json in Resources */ = {isa = PBXBuildFile; fileRef = CA11ED10CA11ED10CA11ED10 /* call_vectors.json */; };
 		8DF6B51D2AE83FB59CD63041 /* SaturdayQuizCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD5B3A073E49AF5B5862F38 /* SaturdayQuizCard.swift */; };
 		9D8349CC509C7124A5EB9F29 /* MyTurnPractiseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0C75FEEE6727814C8D4456 /* MyTurnPractiseButton.swift */; };
 		AA000001 /* GoalDiggerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001 /* GoalDiggerApp.swift */; };
@@ -241,6 +243,8 @@
 		AB000310 /* CollapsibleSection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CollapsibleSection.swift; sourceTree = "<group>"; };
 		AB000311 /* AffectedTeamsHeader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AffectedTeamsHeader.swift; sourceTree = "<group>"; };
 		B704D2F20367B101AF1B118A /* LingoDeck.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LingoDeck.swift; sourceTree = "<group>"; };
+		CA11ED00CA11ED00CA11ED00 /* LingoCalls.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LingoCalls.swift; sourceTree = "<group>"; };
+		CA11ED10CA11ED10CA11ED10 /* call_vectors.json */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json; name = call_vectors.json; path = "../../../tools/myturn/call_vectors.json"; sourceTree = "<group>"; };
 		B7DE4A791829215579567567 /* AttributionService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AttributionService.swift; sourceTree = "<group>"; };
 		BCDB9E93E3CF813F605541EE /* MatchLiveActivity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MatchLiveActivity.swift; sourceTree = "<group>"; };
 		C94C9314600B101EA7FBA6D9 /* LiveActivityBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityBundle.swift; sourceTree = "<group>"; };
@@ -470,6 +474,7 @@
 				5D5FD984EA8B545ADF846F2F /* PlayerSlots.swift */,
 				B7DE4A791829215579567567 /* AttributionService.swift */,
 				B704D2F20367B101AF1B118A /* LingoDeck.swift */,
+				CA11ED00CA11ED00CA11ED00 /* LingoCalls.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -481,6 +486,7 @@
 				AC000022 /* Fonts */,
 				842AE9AEAF418CB78FA4589A /* glossary.json */,
 				61B2720C074D85BD2E44091E /* MyTurn */,
+				CA11ED10CA11ED10CA11ED10 /* call_vectors.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -675,6 +681,7 @@
 				AA000077 /* LeagueSpartan-Black.ttf in Resources */,
 				52553E77A05FC21AFD39FE05 /* glossary.json in Resources */,
 				3D33C7639937879D8C8E619F /* MyTurn in Resources */,
+				CA11ED11CA11ED11CA11ED11 /* call_vectors.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -790,6 +797,7 @@
 				C6D2D393CC5FB544D3BF3492 /* HypeOverlay.swift in Sources */,
 				278CC3CBDBD9D8A556C88764 /* AttributionService.swift in Sources */,
 				8B0B08958242D8A2904E2895 /* LingoDeck.swift in Sources */,
+				CA11ED01CA11ED01CA11ED01 /* LingoCalls.swift in Sources */,
 				DFF6288FF22ACD8929487E28 /* LingoOverheardView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

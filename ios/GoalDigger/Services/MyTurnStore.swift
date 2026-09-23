@@ -198,6 +198,59 @@ final class MyTurnStore {
         }
     }
 
+    /// The slip she filled in before kick-off: which of the three offered lines
+    /// she took, and the fixture they are about.
+    ///
+    /// Only the ids are kept. The lines themselves live in the content bundle
+    /// (a call whose id has since been unpublished simply drops off the reveal)
+    /// and the copy that has to survive without the bundle is the one uploaded
+    /// to the device row, which carries its own text because the server has no
+    /// lingo.json.
+    ///
+    /// Nothing counts these. There is no score, no streak and no history: one
+    /// slip at a time, and the next fixture replaces it.
+    struct MatchCalls: Codable, Equatable {
+        /// API-Football fixture id, the same one the RPC and the push resolve
+        /// against. Zero is "written by a build that had none", which no slip
+        /// is offered or resolved for.
+        var fixtureId: Int = 0
+        /// `MatchContext.fixtureKey` as it was when she picked. The id cannot
+        /// do this job on its own: an After context has no fixture id at all
+        /// (`recent_results` carries none), and this key is the same opponent
+        /// and the same day either side of kick-off, so it is what ties the
+        /// slip to the game that has just been played.
+        var fixtureKey: String = ""
+        var pickedIds: [String] = []
+        var pickedAt: Date = .distantPast
+
+        init(fixtureId: Int, fixtureKey: String, pickedIds: [String], pickedAt: Date) {
+            self.fixtureId = fixtureId
+            self.fixtureKey = fixtureKey
+            self.pickedIds = pickedIds
+            self.pickedAt = pickedAt
+        }
+
+        /// Tolerant, for the same reason `streak`, `hypeLine` and `salt` are:
+        /// this sits inside the one blob holding every quiz score and starred
+        /// line, so a field added later — or missing from a blob written by a
+        /// build that had none of them — must decode as its default rather
+        /// than throw and reset all of it.
+        init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            fixtureId = try c.decodeIfPresent(Int.self, forKey: .fixtureId) ?? 0
+            fixtureKey = try c.decodeIfPresent(String.self, forKey: .fixtureKey) ?? ""
+            pickedIds = try c.decodeIfPresent([String].self, forKey: .pickedIds) ?? []
+            pickedAt = try c.decodeIfPresent(Date.self, forKey: .pickedAt) ?? .distantPast
+        }
+
+        /// One fixture, seen from before and from after: `b|Tottenham|2026-10-17`
+        /// while she is waiting for it, `a|Tottenham|2026-10-17` once it has
+        /// been played. Everything past the first character is the fixture.
+        static func sameFixture(_ a: String, _ b: String) -> Bool {
+            !a.isEmpty && !b.isEmpty && a.dropFirst() == b.dropFirst()
+        }
+    }
+
     private struct Persisted: Codable {
         var lastModule: MyTurnModule = .quiz
         var starredLineIds: [String] = []
@@ -217,6 +270,9 @@ final class MyTurnStore {
         /// `hypeSeen` is: the synthesised decoder throws on a missing
         /// non-optional key, and every blob written before today lacks this one.
         var saidLine: SaidLine? = nil
+        /// The slip she filled in before kick-off (2026-09-23). Optional for
+        /// the same reason as the two above.
+        var matchCalls: MatchCalls? = nil
     }
 
     private var state: Persisted {
@@ -520,6 +576,39 @@ final class MyTurnStore {
         var deck = state.drillBuckets[LingoWeekendDeck.deckId] ?? [:]
         deck[line.termId] = used ? .known : .learning
         state.drillBuckets[LingoWeekendDeck.deckId] = deck
+    }
+
+    // MARK: The slip
+    //
+    // Called it: up to three lines committed before kick-off, and after the
+    // match the same three with the ones that came up marked. She is never
+    // asked whether she said it, there is nothing to settle and nothing to
+    // come back for — the slip simply stops being about anything.
+
+    /// After this the slip is about a match she has stopped thinking about, so
+    /// it goes without being mentioned. The same week the settle row gets.
+    private static let slipLifetime: TimeInterval = 7 * 24 * 3600
+
+    /// Whatever slip is stored, for the debug harness and the uploader. The
+    /// views ask `matchCalls(for:)` instead.
+    var matchCalls: MatchCalls? { state.matchCalls }
+
+    /// The slip for the fixture this context is about — the one she is waiting
+    /// for, or the one just played — and nil for anybody else's.
+    func matchCalls(for context: MatchContext) -> MatchCalls? {
+        guard let slip = state.matchCalls, slip.fixtureId > 0,
+              MatchCalls.sameFixture(slip.fixtureKey, context.fixtureKey),
+              Date().timeIntervalSince(slip.pickedAt) <= Self.slipLifetime else { return nil }
+        return slip
+    }
+
+    /// She confirmed the slip. Replaces whatever was there: one fixture at a
+    /// time, and an old slip is not worth a second card.
+    func commitMatchCalls(fixtureId: Int, fixtureKey: String, pickedIds: [String],
+                          at now: Date = Date()) {
+        guard fixtureId > 0, !pickedIds.isEmpty else { return }
+        state.matchCalls = MatchCalls(fixtureId: fixtureId, fixtureKey: fixtureKey,
+                                      pickedIds: pickedIds, pickedAt: now)
     }
 
     // MARK: Hype

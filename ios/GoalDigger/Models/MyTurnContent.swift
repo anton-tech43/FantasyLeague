@@ -90,6 +90,10 @@ struct SayLine: Codable, Identifiable, Hashable {
 struct LingoContent: Codable {
     let contentVersion: String
     let terms: [LingoTerm]
+    /// Called it (2026-09-23): the lines she can put on a slip before kick-off.
+    /// Optional because the key is being added to lingo.json separately — a
+    /// build that decodes a file without it simply has no slip to offer.
+    let calls: [LingoCall]?
 }
 
 enum LingoCategory: String, Codable, CaseIterable {
@@ -246,6 +250,83 @@ struct LingoTerm: Codable, Identifiable, Hashable {
         copy.overheardTerm = variant.overheardTerm ?? overheardTerm
         copy.sayIt = variant.sayIt.replacingOccurrences(of: token, with: named)
         return copy
+    }
+}
+
+// MARK: Called it (2026-09-23)
+//
+// Three lines before kick-off: one near-certain, one likely, one long shot.
+// She picks them and watches for her moment. The app never asks whether she
+// said it — it knows what happened on the pitch, and that is the whole game.
+//
+// The grammar is fixed by tools/myturn/CALLED_IT_CONTRACT.md and its semantics
+// by tools/myturn/call_vectors.json, which `LingoCalls.selfCheck` and the Deno
+// resolver's test both read. Neither side may add a case without the other
+// going red.
+
+/// The moment that earns a line. Every field optional and meaning "don't care"
+/// when absent, exactly as `_shared/match-calls.ts` reads it: a trigger field
+/// that IS present is never satisfied by an unknown outcome field.
+///
+/// Camel-case keys, unlike the snake_case the rest of the content files use:
+/// the same JSON travels to the server verbatim inside a stored pick, and the
+/// contract and the vectors spell it this way.
+/// `var` throughout only so the memberwise initialiser defaults every field to
+/// nil, which is what "absent means don't care" looks like at a call site.
+struct LingoCallTrigger: Codable, Hashable {
+    /// `goal | halftime | fulltime`. A kind this build does not know never
+    /// resolves, which is what keeps a newer content file safe here.
+    var kind: String?
+    /// `us | them | any`, relative to the club she follows.
+    var side: String?
+    /// `Goalkeeper | Defender | Midfielder | Attacker | any` — the four values
+    /// `players.position` actually holds, per `PlayerSlots`.
+    var scorerRole: String?
+    var penalty: Bool?
+    var ownGoal: Bool?
+    var minuteFrom: Int?
+    var minuteTo: Int?
+    /// `ahead|level|behind` at half-time, `win|draw|loss` at full-time.
+    var state: String?
+    var conceded: Int?
+    var cleanSheet: Bool?
+    var comeback: Bool?
+}
+
+/// One line on the slip.
+///
+/// Every field decoded with `decodeIfPresent`: a call this build cannot use is
+/// dropped by `LingoCalls.offer` rather than throwing, because one malformed
+/// element would otherwise take the whole `LingoContent` decode down with it
+/// and leave the module on the bundled file.
+struct LingoCall: Codable, Identifiable, Hashable {
+    let id: String
+    let line: String
+    let trigger: LingoCallTrigger?
+    /// `banker | likely | longshot`. A band this build does not know is never
+    /// offered — same rule as `LingoTerm.moment`.
+    let band: String?
+    /// Overheard tag vocabulary, unchanged, so a slip is fixture-aware for
+    /// free. Nil means "any match".
+    let when: [String]?
+    /// The Lingo term this line came out of, when there is one: the words she
+    /// learned are the words she gets to use.
+    let termId: String?
+
+    init(id: String, line: String, trigger: LingoCallTrigger?, band: String?,
+         when: [String]? = nil, termId: String? = nil) {
+        self.id = id; self.line = line; self.trigger = trigger
+        self.band = band; self.when = when; self.termId = termId
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeIfPresent(String.self, forKey: .id) ?? ""
+        line = try c.decodeIfPresent(String.self, forKey: .line) ?? ""
+        trigger = try c.decodeIfPresent(LingoCallTrigger.self, forKey: .trigger)
+        band = try c.decodeIfPresent(String.self, forKey: .band)
+        when = try c.decodeIfPresent([String].self, forKey: .when)
+        termId = try c.decodeIfPresent(String.self, forKey: .termId)
     }
 }
 
