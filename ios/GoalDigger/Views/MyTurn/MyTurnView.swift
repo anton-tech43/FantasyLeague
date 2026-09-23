@@ -284,6 +284,89 @@ struct MyTurnOptionButton: View {
     }
 }
 
+/// A popup over a module: a scrim that swallows taps, a verdict she cannot
+/// miss, and exactly one way out.
+///
+/// The reveal used to be appended under the options in the same scrolling
+/// column, four hundred points down, with nothing scrolling it into view — so
+/// on a real card the answer, the line she can say and the Next button all
+/// started at or below the fold. Above everything is the only place a reveal
+/// can be.
+///
+/// Not a `.sheet`: a sheet is swipe-dismissible, and a swipe would leave her
+/// on an answered card with dead options and no way forward. The scrim
+/// deliberately does nothing when tapped, and the escape gesture does what the
+/// button does rather than closing anything on its own.
+///
+/// Shared because the quiz has the identical problem. Nothing about it is
+/// Lingo's.
+struct MyTurnPopup<Content: View>: View {
+    /// "Right." / "Not that one." — and where VoiceOver lands when it opens,
+    /// because the popup arrives without her having moved.
+    let verdict: String
+    var verdictTint: Color = .hotRose
+    /// The one way out, and what its button says.
+    let exitLabel: String
+    let exit: () -> Void
+    @ViewBuilder var content: () -> Content
+    @AccessibilityFocusState private var focused: Bool
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.6)
+                .ignoresSafeArea()
+                // Swallows the tap rather than passing it to the options
+                // underneath, which are answered and must stay that way.
+                .contentShape(Rectangle())
+                .onTapGesture { }
+                .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: 10) {
+                Text(verdict)
+                    .font(.jakarta(17, weight: .bold))
+                    .foregroundColor(verdictTint)
+                    .accessibilityAddTraits(.isHeader)
+                    .accessibilityFocused($focused)
+
+                content()
+
+                Button {
+                    exit()
+                } label: {
+                    Text(exitLabel)
+                        .font(.jakarta(16, weight: .semiBold))
+                        .foregroundColor(.warmWhite)
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 46)
+                        .background(Color.hotRose)
+                        .cornerRadius(Layout.buttonCornerRadius)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 4)
+                .accessibilityLabel(exitLabel)
+            }
+            .padding(18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            // Opaque, over the scrim: the same card the modules draw, with
+            // something solid behind it so nothing reads through.
+            .background(Color.warmWhite.opacity(0.08))
+            .background(Color.appBackground)
+            .overlay(RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
+                .stroke(Color.hotRose.opacity(0.45), lineWidth: 1))
+            .cornerRadius(Layout.cardCornerRadius)
+            .padding(.horizontal, Layout.screenPadding)
+            .shadow(color: .black.opacity(0.4), radius: 24, y: 8)
+        }
+        // Everything behind it is untouchable to VoiceOver as well as to her
+        // thumb, and the escape gesture is the button rather than a way round
+        // it.
+        .accessibilityAddTraits(.isModal)
+        .accessibilityAction(.escape, exit)
+        .onAppear { focused = true }
+    }
+}
+
 struct MyTurnEmptyText: View {
     let text: String
     var body: some View {

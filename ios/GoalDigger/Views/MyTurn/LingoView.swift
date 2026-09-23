@@ -215,7 +215,36 @@ struct LingoView: View {
         store.drillSession?.deckId == LingoWeekendDeck.deckId && !showingLanding
     }
 
+    /// The reveal, whenever there is one to draw: a round on screen, on a card
+    /// she has answered, whose word and options this build can still resolve.
+    ///
+    /// Derived rather than stored — every part of it is already true somewhere
+    /// else. "The words" clears `showingRound` and the popup goes with it,
+    /// leaving the round exactly where it was; `selected` is persisted, so a
+    /// relaunch brings the popup back on the card she was answering; and it
+    /// cannot get out of step with the card underneath it, because it is read
+    /// off the same session.
+    private var reveal: (term: LingoTerm, correct: Bool, last: Bool)? {
+        guard showingRound, let session = store.drillSession, !session.finished,
+              let selected = session.selected,
+              let id = session.queue[safe: session.index],
+              let term = weekend?.named[id] ?? content.terms.first(where: { $0.id == id }),
+              let options = LingoWeekendDeck.options(for: term, salt: session.salt) else { return nil }
+        return (term, selected == options.answer, session.index + 1 >= session.queue.count)
+    }
+
     var body: some View {
+        ZStack {
+            scroller
+            if let reveal {
+                LingoRevealPopup(term: reveal.term, correct: reveal.correct, last: reveal.last,
+                                 sayThis: sayThis, store: store)
+                    .transition(.opacity)
+            }
+        }
+    }
+
+    private var scroller: some View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: Layout.cardSpacing) {

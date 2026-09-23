@@ -132,12 +132,13 @@ struct LingoOverheardView: View {
         ForEach(Array(options.options.enumerated()), id: \.offset) { idx, option in
             MyTurnOptionButton(text: option, index: idx, answer: options.answer,
                                selected: session.selected) { picked in
-                store.answerDrill(picked, correct: picked == options.answer)
+                // The reveal is a popup drawn by `LingoView`, over this whole
+                // screen: answering is what brings it in, so the animation
+                // belongs on the answer and not on the column it covers.
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    store.answerDrill(picked, correct: picked == options.answer)
+                }
             }
-        }
-
-        if let selected = session.selected {
-            reveal(session, term: term, correct: selected == options.answer)
         }
     }
 
@@ -159,92 +160,6 @@ struct LingoOverheardView: View {
     private func question(_ term: LingoTerm) -> String {
         guard term.speaker == .him else { return "What does that mean?" }
         return appState.usesHeVoice ? "What does he mean?" : "What do they mean?"
-    }
-
-    // MARK: The reveal
-
-    @ViewBuilder
-    private func reveal(_ session: MyTurnStore.DrillSession, term: LingoTerm, correct: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(correct ? "Right." : "Not that one.")
-                .font(.jakarta(17, weight: .bold))
-                .foregroundColor(correct ? .hotRose : .warmWhite)
-
-            Text(term.term)
-                .font(.jakarta(18, weight: .bold))
-                .foregroundColor(.warmWhite)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Text(term.meaning)
-                .font(.jakarta(15, weight: .regular))
-                .foregroundColor(.warmWhite.opacity(0.9))
-                .lineSpacing(3)
-                .fixedSize(horizontal: false, vertical: true)
-
-            if let sayIt = term.sayIt {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("NOW YOU SAY")
-                        .font(.jakarta(10, weight: .bold))
-                        .tracking(1)
-                        .foregroundColor(.hotRose)
-                    Text(sayIt)
-                        .font(.jakarta(15, weight: .semiBold))
-                        .foregroundColor(.warmWhite)
-                        .lineSpacing(2)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .padding(12)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.hotRose.opacity(0.12))
-                .cornerRadius(10)
-                .padding(.top, 2)
-            }
-
-            if let situation = situation(using: term) {
-                Button {
-                    store.sayThisSituationId = situation.id
-                    withAnimation(.spring(duration: 0.25)) { store.lastModule = .sayThis }
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "text.bubble")
-                            .font(.system(size: 14, weight: .semibold))
-                        Text("Lines that use this")
-                            .font(.jakarta(14, weight: .semiBold))
-                    }
-                    .foregroundColor(.hotRose)
-                    .padding(.vertical, 4)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Lines that use \(term.term), in Say This")
-            }
-
-            Button {
-                store.nextDrillCard()
-            } label: {
-                Text(session.index + 1 >= session.queue.count ? "See how you did" : "Next")
-                    .font(.jakarta(16, weight: .semiBold))
-                    .foregroundColor(.warmWhite)
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: 46)
-                    .padding(.vertical, 4)
-                    .background(Color.hotRose)
-                    .cornerRadius(Layout.buttonCornerRadius)
-            }
-            .buttonStyle(.plain)
-            .padding(.top, 4)
-            .accessibilityLabel(session.index + 1 >= session.queue.count
-                                ? "See how you did" : "Next word")
-        }
-        .padding(14)
-        .background(Color.warmWhite.opacity(0.06))
-        .cornerRadius(Layout.cardCornerRadius)
-        .transition(.opacity.combined(with: .move(edge: .bottom)))
-    }
-
-    /// The Say This situation whose lines lean on this word, if there is one.
-    private func situation(using term: LingoTerm) -> Situation? {
-        sayThis.situations.first { $0.lines.contains { $0.lingo == term.id } }
     }
 
     // MARK: The end
@@ -407,4 +322,120 @@ struct LingoOverheardView: View {
         .buttonStyle(.plain)
         .accessibilityLabel("Back to the words")
     }
+}
+
+/// The reveal: what the word was and the line she can say back, over the round
+/// rather than under it.
+///
+/// Drawn by `LingoView` as a sibling of the scroll view, never from inside the
+/// round — see `MyTurnPopup` for why it is not a sheet and why the scrim does
+/// nothing. Its presence is derived from the round she is in and the option
+/// she picked, both of which are already persisted, so it survives a relaunch
+/// for free and cannot get out of step with the card underneath it.
+///
+/// `meaning` runs to 167 characters and is the answer she has just been given,
+/// so it goes behind a `+`. What she needs in the two seconds before the next
+/// card is the word and the sentence she can say with it.
+struct LingoRevealPopup: View {
+    let term: LingoTerm
+    let correct: Bool
+    /// The last card in the round, so the button says where it goes.
+    let last: Bool
+    /// For the "Lines that use this" jump.
+    let sayThis: SayThisContent
+    @Bindable var store: MyTurnStore
+    @Environment(AppState.self) private var appState
+    /// The only state here, and it is about this popup and nothing else.
+    @State private var showingMeaning = LingoRevealPopup.startExpanded
+
+    var body: some View {
+        MyTurnPopup(verdict: correct ? "Right." : "Not that one.",
+                    verdictTint: correct ? .hotRose : .warmWhite,
+                    exitLabel: last ? "See how you did" : "Next",
+                    exit: { withAnimation(.easeInOut(duration: 0.2)) { store.nextDrillCard() } }) {
+            Text(term.term)
+                .font(.jakarta(20, weight: .bold))
+                .foregroundColor(.warmWhite)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if let sayIt = term.sayIt {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("NOW YOU SAY")
+                        .font(.jakarta(10, weight: .bold))
+                        .tracking(1)
+                        .foregroundColor(.hotRose)
+                    Text(appState.personalise(sayIt))
+                        .font(.jakarta(16, weight: .semiBold))
+                        .foregroundColor(.warmWhite)
+                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.hotRose.opacity(0.12))
+                .cornerRadius(10)
+            }
+
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) { showingMeaning.toggle() }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: showingMeaning ? "minus" : "plus")
+                        .font(.system(size: 12, weight: .bold))
+                    Text("What it means")
+                        .font(.jakarta(14, weight: .semiBold))
+                }
+                .foregroundColor(.hotRose)
+                .padding(.vertical, 4)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("What it means")
+            .accessibilityHint(showingMeaning ? "Hides it" : "Shows it")
+
+            if showingMeaning {
+                Text(term.meaning)
+                    .font(.jakarta(15, weight: .regular))
+                    .foregroundColor(.warmWhite.opacity(0.9))
+                    .lineSpacing(3)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            // Not an exit from the popup: it is still here, with its Next, when
+            // she comes back to Lingo.
+            if let situation = situation {
+                Button {
+                    store.sayThisSituationId = situation.id
+                    withAnimation(.spring(duration: 0.25)) { store.lastModule = .sayThis }
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "text.bubble")
+                            .font(.system(size: 14, weight: .semibold))
+                        Text("Lines that use this")
+                            .font(.jakarta(14, weight: .semiBold))
+                    }
+                    .foregroundColor(.hotRose)
+                    .padding(.vertical, 4)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Lines that use \(term.term), in Say This")
+            }
+        }
+    }
+
+    /// The Say This situation whose lines lean on this word, if there is one.
+    private var situation: Situation? {
+        sayThis.situations.first { $0.lines.contains { $0.lingo == term.id } }
+    }
+
+    #if DEBUG
+    /// `-gdLingoRevealExpand` opens the `+` on arrival, because simctl cannot
+    /// tap it.
+    static var startExpanded: Bool {
+        ProcessInfo.processInfo.arguments.contains("-gdLingoRevealExpand")
+    }
+    #else
+    static let startExpanded = false
+    #endif
 }
