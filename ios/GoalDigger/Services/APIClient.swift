@@ -284,10 +284,24 @@ class APIClient {
 
     // MARK: - Context Cards (Contract 10)
 
+    /// Dossiers for the players who are ACTUALLY in the club's squad today.
+    ///
+    /// `player_cards` is written by `gd-player-dossier` and never pruned by it,
+    /// so asking for `team_id=eq.<club>` alone served whoever had a card
+    /// whenever it was written: on 2026-09-23 that was Mohamed Salah on
+    /// Liverpool's list and Rodri on Manchester City's, months after they left.
+    ///
+    /// The `!inner` embed turns that into a join. `player_cards.api_player_id`
+    /// links to the squad (migrations 112-114, matched once in SQL rather than
+    /// by name at read time), and `players.team_id` follows a transfer because
+    /// the nightly squad sync rewrites it. So a player who moves drops off his
+    /// old club's list the next morning without anybody deleting anything, and
+    /// a card we could not place against a squad member is never served at all.
     func fetchPlayerCards(teamId: String) async throws -> [PlayerCard] {
         let url = try buildURL(path: "player_cards", queryItems: [
             URLQueryItem(name: "team_id", value: "eq.\(teamId)"),
-            URLQueryItem(name: "select", value: "player_name,position,age,summary,vibe,form")
+            URLQueryItem(name: "select", value: "player_name,position,age,summary,vibe,form,players!inner(team_id)"),
+            URLQueryItem(name: "players.team_id", value: "eq.\(teamId)")
         ])
         let request = makeRequest(url: url)
         let (data, response) = try await URLSession.shared.data(for: request)

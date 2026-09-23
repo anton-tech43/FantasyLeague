@@ -395,10 +395,16 @@ The findings and the evidence are written up in Swedish in
   a retry. The prose froze on 7 September; Chelsea's ones_to_know still named
   Enzo Fernández three weeks after a £125m move to Manchester City. Fixed and
   re-fired.
-- **F2.** `fetchPlayerCards` has no squad filter and nothing ever deletes, so
+- **F2.** `fetchPlayerCards` had no squad filter and nothing ever deletes, so
   the club player list carried Salah at Liverpool, Rodri at City and five more.
-  27 rows removed (mig 111). **Open:** the app still has no squad filter, so the
-  next window puts it back. iOS/API change, needs a decision.
+  27 rows removed (mig 111), and **closed the same day**: `player_cards` now
+  carries `api_player_id` (mig 112-114) and the app joins through it to
+  `players.team_id`, which follows a transfer. A player who moves drops off his
+  old club's list the next morning with nobody deleting anything, and a card
+  that cannot be placed against a squad member is never served. All 334 links
+  were audited — every one points at a player at the same club. The dedupe that
+  came with it removed a Brentford card for "Demarai Ouattara", a first name
+  the routine had invented for Dango.
 - **F3.** API-Football HTML-escapes apostrophes (`N. O&apos;Reilly`). Decoded at
   ingest (mig 110); `post_team_page.sh`'s guard would otherwise reject a club's
   whole payload for naming a player who is in the squad.
@@ -411,3 +417,11 @@ Clean and verified: the roster (two sources), all 20 managers and their
 appointment dates (two sources), squads, calendars, phase, insider items, the
 non-PL guard. Counted, not fixed: 55 of 621 player photos are the upstream
 silhouette.
+
+### Open, found in passing
+
+- **`players` carries table-level GRANTs of INSERT, UPDATE, DELETE and TRUNCATE
+  to `anon`.** Only RLS stands between the shipped publishable key and the
+  squad table; a write probe with that key is refused (`42501`), so it is not
+  exploitable today, but the grants should not be there. One `REVOKE`, no
+  functional change — left for a decision rather than folded into a data fix.
