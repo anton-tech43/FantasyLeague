@@ -96,8 +96,13 @@ least valuable text in the body and her own called line is the most valuable, so
 what goes. The scorer lead stays, because it names the player. The rendered-worst-case measurement
 stays as a backstop and should now never fire.
 
-That is what caps a call line at **60 characters**, not a stylistic preference: it is what is left
-of the budget once the scorer lead is paid for.
+That is what caps a call line at **50 characters**, not a stylistic preference. The arithmetic:
+90 budget, less 27 for the worst-case scorer lead (`Calvert-Lewin 90+3' (pen).`), less 13 for the
+wrapper `Called it: "…"`. Half-time and full-time carry no scorer lead and so allow 77, but the
+cap is the worst case.
+
+Sixty was reachable only by deleting the framing words and pushing a bare sentence in quotes, with
+nothing saying it was hers. The framing is the feature, so the lines got shorter instead.
 
 Scorer position comes from a `players` lookup by `playerApiId`, which `enrichPhotos` already
 performs. Extend that one query; do not add a second.
@@ -127,7 +132,9 @@ disagree without a test going red.
 
 ## What is out of scope
 
-Substitutions, bookings and VAR, because no push carries them. Asking her to confirm she said it.
+Substitutions, bookings and VAR, because no push carries them. The competition clause on a
+full-time push (`Through to the last 16.`) goes with the pool line when a pick lands; the title
+still carries the scoreline and the tap still opens the result. Asking her to confirm she said it.
 Any line about how a goal was built. A leaderboard, a streak, or a reminder to come back — the
 store header rule stands: she did not choose this hobby.
 
