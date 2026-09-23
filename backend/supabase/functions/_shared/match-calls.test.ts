@@ -7,13 +7,15 @@
 // the other or this test fails with the vector's name in the message.
 
 import {
-  appendCallLine,
   type CallPick,
   halfTimeGoals,
   matchedCalls,
+  MAX_CALL_LINE,
+  MAX_SCORER_LEAD,
   type Outcome,
   PUSH_BODY_BUDGET,
   triggerMatches,
+  withCallLine,
 } from "./match-calls.ts";
 
 function assert(c: boolean, m: string): void {
@@ -122,30 +124,47 @@ Deno.test("more than one pick can land on one event, in pick order", () => {
   eq(got.map((p) => p.id).join(","), "late,forward", "order preserved");
 });
 
-Deno.test("appendCallLine refuses to overflow the body budget", () => {
-  const short = "0-1. He is up." as const;
+// The worst-case scorer lead goal-push.ts can produce, without its trailing
+// space. goal-push.test.ts derives its own 63-char pool ceiling from this
+// string, so if that one ever changes, this assertion is where it gets caught.
+const WORST_LEAD = "Calvert-Lewin 90+3' (pen).";
+
+Deno.test("MAX_CALL_LINE is exactly what the worst case leaves", () => {
+  eq(WORST_LEAD.length + 1, MAX_SCORER_LEAD, "the documented worst-case lead, plus its space");
   const p = (line: string): CallPick => ({ id: "x", line, trigger: { kind: "goal" } });
+  const body = "the rotating pool line that gets replaced";
 
-  const fits = appendCallLine(short, p("Told you."));
-  assert(fits !== short, "a short body plus a short line is appended");
-  assert(fits.includes("Told you."), "her words are quoted back");
-  assert(fits.length <= PUSH_BODY_BUDGET, `rendered stays within budget (got ${fits.length}): ${fits}`);
+  const atCap = withCallLine({ body, scorerLead: WORST_LEAD, pick: p("y".repeat(MAX_CALL_LINE)) });
+  eq(atCap.length, PUSH_BODY_BUDGET, "a line at the cap renders to exactly the budget");
+  assert(atCap.startsWith(WORST_LEAD), "the scorer lead survives");
 
-  // One char over is dropped whole, never truncated: half a sentence of hers
-  // is worse than none of it.
-  const long = "x".repeat(PUSH_BODY_BUDGET - 20);
-  eq(appendCallLine(long, p("A line that will not fit.")), long, "overflow returns the body unchanged");
+  const overCap = withCallLine({ body, scorerLead: WORST_LEAD, pick: p("y".repeat(MAX_CALL_LINE + 1)) });
+  eq(overCap, body, "one character over drops whole, never truncated");
+});
 
-  // The 120-char ceiling the RPC allows can never fit; it must not throw or
-  // truncate.
-  eq(appendCallLine(short, p("y".repeat(120))), short, "a max-length line drops cleanly");
+Deno.test("withCallLine replaces the pool line and keeps the scorer", () => {
+  const body = "Odegaard 71'. Arsenal lead 0-1 and he knows it.";
+  const p = (line: string): CallPick => ({ id: "x", line, trigger: { kind: "goal" } });
+  const mine = "He always scores against us.";
 
-  // Nothing to say is a no-op rather than a trailing fragment.
-  eq(appendCallLine(short, p("   ")), short, "a blank line is a no-op");
-  eq(appendCallLine(short, { id: "x", trigger: {} } as unknown as CallPick), short, "a missing line is a no-op");
+  const goal = withCallLine({ body, scorerLead: "Odegaard 71'.", pick: p(mine) });
+  eq(goal, `Odegaard 71'. Called it: "${mine}"`, "lead plus her line, pool line gone");
+  assert(!goal.includes("and he knows it"), "the rotating colour is dropped, not appended");
+  assert(goal.length <= PUSH_BODY_BUDGET, `within budget (got ${goal.length})`);
 
-  // Campaign rule: the segment we add carries no em/en dash.
-  assert(!/[–—]/.test(fits), `no em/en dashes: ${fits}`);
+  // Half-time and full-time carry no scorer, so her line is the whole body.
+  const ht = withCallLine({ body: "Level at the break. Anything can happen.", pick: p(mine) });
+  eq(ht, `Called it: "${mine}"`, "no lead, no pool line");
+
+  // Nothing to say is a no-op rather than a bare wrapper.
+  eq(withCallLine({ body, pick: p("   ") }), body, "a blank line is a no-op");
+  eq(withCallLine({ body, pick: { id: "x", trigger: {} } as unknown as CallPick }), body, "a missing line is a no-op");
+
+  // The RPC's 120-char storage ceiling can never render; it must drop, not throw.
+  eq(withCallLine({ body, scorerLead: WORST_LEAD, pick: p("y".repeat(120)) }), body, "a max-stored line drops cleanly");
+
+  // Campaign rule: nothing we add carries an em or en dash.
+  assert(!/[–—]/.test(goal), `no em/en dashes: ${goal}`);
 });
 
 Deno.test("halfTimeGoals counts the first half only, and fails safe", () => {

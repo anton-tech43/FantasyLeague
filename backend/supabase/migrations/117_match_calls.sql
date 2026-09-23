@@ -1,4 +1,4 @@
--- 113_match_calls.sql — "Called it": store the three lines she picked before kickoff.
+-- 117_match_calls.sql — "Called it": store the three lines she picked before kickoff.
 --
 -- She picks up to three lines from her slip; the goal / half-time / full-time
 -- push that was going out anyway tells her when one of them landed. The app
@@ -85,8 +85,12 @@ BEGIN
        OR length(v_pick ->> 'id') = 0 OR length(v_pick ->> 'id') > 64 THEN
       RAISE EXCEPTION 'pick.id must be a string of 1..64 chars';
     END IF;
-    -- 120 is the storage cap, not the display cap: appendCallLine measures the
-    -- RENDERED push body and drops her line rather than overflow it.
+    -- 120 is the STORAGE cap and deliberately loose. The cap that matters is
+    -- MAX_CALL_LINE in _shared/match-calls.ts, currently 50, which is what a
+    -- line can be and still render inside the push body behind the longest
+    -- possible scorer lead. A longer line is stored and then dropped at send
+    -- time rather than truncated, so authoring belongs under 50; this check
+    -- only stops the column being used as a text field.
     IF jsonb_typeof(v_pick -> 'line') <> 'string'
        OR length(v_pick ->> 'line') = 0 OR length(v_pick ->> 'line') > 120 THEN
       RAISE EXCEPTION 'pick.line must be a string of 1..120 chars';

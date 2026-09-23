@@ -5,9 +5,9 @@
 // whether she actually said it; the feed already knows what happened.
 //
 // Pure, no I/O, no Claude. Two jobs:
-//   matchedCalls()   which of her stored picks this moment satisfies
-//   appendCallLine() the extra segment on the push body, dropped when it would
-//                    overflow the body budget
+//   matchedCalls()  which of her stored picks this moment satisfies
+//   withCallLine()  the push body when one landed: the scorer lead plus HER
+//                   line, with the rotating pool line dropped
 //
 // The trigger vocabulary is FIXED by tools/myturn/CALLED_IT_CONTRACT.md and its
 // semantics by tools/myturn/call_vectors.json, which this file's test reads and
@@ -73,10 +73,23 @@ export interface CallPick {
 }
 
 /// Longest rendered push body, the same ceiling goal-push-copy.ts holds its
-/// pools to and goal-push.test.ts sweeps for. appendCallLine measures the
-/// rendered result against this and drops its own segment rather than exceed
-/// it.
+/// pools to and goal-push.test.ts sweeps for.
 export const PUSH_BODY_BUDGET = 90;
+
+/// Longest scorer lead goal-push.ts can put in front of a body, INCLUDING the
+/// space after it: "Calvert-Lewin 90+3' (pen). " is 27, the worst case
+/// goal-push.test.ts derives its own 63-char pool ceiling from.
+export const MAX_SCORER_LEAD = 27;
+
+/// What wraps her line: `Called it: "` plus the closing quote.
+const CALL_WRAPPER = 'Called it: ""'.length;
+
+/// The hard cap on an authored call line, and the number the content side has
+/// to build against: the worst-case scorer lead plus the wrapper plus a line of
+/// this length is exactly PUSH_BODY_BUDGET. A line longer than this is not
+/// truncated, it is DROPPED, so this is a ceiling to author under, not a hint.
+/// Enforced from both sides in match-calls.test.ts.
+export const MAX_CALL_LINE = PUSH_BODY_BUDGET - MAX_SCORER_LEAD - CALL_WRAPPER;
 
 function isObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
@@ -167,16 +180,33 @@ export function matchedCalls(stored: unknown, fixtureId: number, outcome: Outcom
   return out;
 }
 
-/// Append the "that one was yours" segment to a rendered push body, quoting the
-/// line she picked. Measures the RENDERED result, not a template, and returns
-/// the body UNCHANGED rather than overflow PUSH_BODY_BUDGET: the reaction copy
-/// and the scorer are the push, and her line is the bonus, so the bonus is what
-/// gives way. Pure; never throws.
-export function appendCallLine(body: string, pick: CallPick): string {
-  const line = (pick?.line ?? "").trim();
-  if (!line) return body;
-  const merged = `${body} You called it: "${line}"`;
-  return merged.length <= PUSH_BODY_BUDGET ? merged : body;
+/// The push body for a device whose pick just landed. Her line REPLACES the
+/// rotating pool line rather than following it.
+///
+/// That is the whole point of the feature. The pool line is random colour,
+/// drawn from forty interchangeable variants; her line is the one thing in the
+/// push she wrote. Appending both never fit inside PUSH_BODY_BUDGET, and it was
+/// the wrong one that was giving way.
+///
+/// `scorerLead` survives, because it names the player and the minute and she
+/// cannot get that anywhere else in a glance. Everything else in `body` goes.
+/// At half-time and full-time there is no lead and her line is the whole body.
+///
+/// The drop-rather-than-truncate rule stays as the backstop: measure the
+/// RENDERED result, and hand back `body` untouched if it would overflow. With
+/// a line inside MAX_CALL_LINE that backstop never fires, which is the point of
+/// publishing that number. Half a sentence of hers is worse than none of it.
+///
+/// Pure; never throws.
+export function withCallLine(
+  args: { body: string; scorerLead?: string | null; pick: CallPick },
+): string {
+  const line = (args.pick?.line ?? "").trim();
+  if (!line) return args.body;
+  const lead = (args.scorerLead ?? "").trim();
+  const segment = `Called it: "${line}"`;
+  const rendered = lead ? `${lead} ${segment}` : segment;
+  return rendered.length <= PUSH_BODY_BUDGET ? rendered : args.body;
 }
 
 /// Goals each side had scored by half-time, counted off a stored `goal_events`

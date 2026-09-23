@@ -69,11 +69,11 @@ import {
   toStoredGoalEvents,
 } from "../_shared/goal-push.ts";
 import {
-  appendCallLine,
   halfTimeGoals,
   matchedCalls,
   type Outcome,
   type ScorerRole,
+  withCallLine,
 } from "../_shared/match-calls.ts";
 
 const FINISHED_STATUSES = new Set(["FT", "AET", "PEN"]);
@@ -96,6 +96,11 @@ interface ApiFixture {
   // through a shootout by construction.
   goals: { home: number | null; away: number | null };
   score?: {
+    // Sent on every poll from 1H onward and kept for finished fixtures. It was
+    // narrowed away until 2026-09-23, so the half-time score arrived once a
+    // minute all match and was discarded every time; "Called it" needs it for
+    // the `comeback` trigger (migration 118).
+    halftime?: { home: number | null; away: number | null } | null;
     extratime?: { home: number | null; away: number | null } | null;
     penalty?: { home: number | null; away: number | null } | null;
   };
@@ -386,6 +391,10 @@ async function sendPlayingTeamPush(
     /// Absent (kickoff, and a tick where both sides scored) means no pick can
     /// resolve and the bodies go out untouched.
     outcomeByTeam?: Record<string, Outcome>;
+    /// The factual lead this push's bodies already start with ("Pedri 47'."),
+    /// the ONE part of the body that survives when a pick lands. Goals only;
+    /// half-time and full-time have no scorer to name.
+    scorerLead?: string | null;
   },
 ): Promise<number> {
   try {
@@ -478,10 +487,14 @@ async function sendPlayingTeamPush(
       // stale fixture id resolves to nothing, and a malformed blob resolves to
       // nothing rather than throwing inside the send loop. Only the first
       // landed pick is named: the body has room for one line, not three.
-      // appendCallLine drops itself rather than overflow.
+      //
+      // When one lands, her line REPLACES the rotating pool line; only the
+      // scorer lead survives. See withCallLine.
       const outcome = args.outcomeByTeam?.[country];
       const landed = outcome ? matchedCalls(t.match_calls, args.fixtureId, outcome)[0] : undefined;
-      const finalBody = landed ? appendCallLine(body, landed) : body;
+      const finalBody = landed
+        ? withCallLine({ body, scorerLead: args.scorerLead, pick: landed })
+        : body;
       const contentId = args.contentIdByCountry?.[country] ?? `live-${args.label}-${args.fixtureId}`;
       const payload = buildAPNsPayload(
         "", // teamShortName fallback unused — we pass pushTitle below
@@ -890,7 +903,7 @@ async function handleRequest(req: Request): Promise<Response> {
 
     const { data: prior, error: priorErr } = await supabase
       .from("match_status_state")
-      .select("status, home_goals, away_goals, fired_finished_at, briefs_fired, matchday_fire_capped, la_started, la_sig, la_ended, goal_events")
+      .select("status, home_goals, away_goals, fired_finished_at, briefs_fired, matchday_fire_capped, la_started, la_sig, la_ended, goal_events, ht_home, ht_away")
       .eq("fixture_id", fixtureId)
       .maybeSingle();
     if (priorErr) {
@@ -1875,6 +1888,7 @@ async function handleRequest(req: Request): Promise<Response> {
                 minTier: minTierForLiveEvent("goal", fixtureLeagueId, fixtureRound),
                 marker: goalMarker,
                 outcomeByTeam,
+                scorerLead: scorerLine,
               },
               isGoal: true,
             });
@@ -2128,7 +2142,17 @@ async function handleRequest(req: Request): Promise<Response> {
                 ftPen.home !== ftPen.away && status === "PEN"
               ? [ftPen.home, ftPen.away]
               : [homeGoals ?? 0, awayGoals ?? 0];
-            const ht = halfTimeGoals(goalEventsStored ?? prior?.goal_events);
+            // Three sources, best first. This tick's payload is authoritative
+            // and still carries score.halftime at full-time; the stored column
+            // covers a payload that has dropped it; counting goal_events by
+            // minute covers a row written before migration 118, and fails to
+            // 0-0, so the worst case is her longshot quietly not landing.
+            const feedHt = fx.score?.halftime;
+            const ht = typeof feedHt?.home === "number" && typeof feedHt?.away === "number"
+              ? { home: feedHt.home, away: feedHt.away }
+              : typeof prior?.ht_home === "number" && typeof prior?.ht_away === "number"
+              ? { home: prior.ht_home as number, away: prior.ht_away as number }
+              : halfTimeGoals(goalEventsStored ?? prior?.goal_events);
             const side = (mine: number, theirs: number, conceded: number, htMine: number, htTheirs: number): Outcome => ({
               kind: "fulltime",
               state: sideState(mine, theirs, "win" as const, "draw" as const, "loss" as const),
@@ -2209,6 +2233,12 @@ async function handleRequest(req: Request): Promise<Response> {
           // goal). The conditional spread below leaves the column untouched on
           // quiet ticks so a populated list is never clobbered with null.
           ...(goalEventsStored ? { goal_events: goalEventsStored } : {}),
+          // The feed's own half-time score (118). Written only once both
+          // numbers are present, so a pre-kickoff row keeps NULL rather than
+          // being handed a 0-0 that reads like a real result at the break.
+          ...(typeof fx.score?.halftime?.home === "number" && typeof fx.score?.halftime?.away === "number"
+            ? { ht_home: fx.score.halftime.home, ht_away: fx.score.halftime.away }
+            : {}),
           la_started: laStarted,
           la_sig: laSig,
           la_ended: laEnded,
