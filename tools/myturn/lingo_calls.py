@@ -71,7 +71,7 @@ CALLS = [
     # Same moments, different week. The fixture tags are what make the slip
     # sound like it knows who we're playing.
     dict(id="derby-they-score",
-         line="Against this lot. The group chat will be unbearable.",
+         line="Against this lot. The group chat will be brutal.",
          trigger=dict(kind="goal", side="them"),
          band="banker", when=["derby"], termId="group-chat"),
     dict(id="cup-we-score",
@@ -272,7 +272,7 @@ CALLS = [
          trigger=dict(kind="goal", side="them", scorerRole="Attacker", minuteFrom=75),
          band="longshot", when=["relegation", "opp-counter", "opp-close-range", "opp-good-form"]),
     dict(id="comeback-win",
-         line="Behind at the break, and we've won. Game of two halves.",
+         line="Behind at the break. Game of two halves, that.",
          trigger=dict(kind="fulltime", comeback=True),
          band="longshot", when=["any", "good-run"], termId="game-of-two-halves"),
     dict(id="win-to-nil",

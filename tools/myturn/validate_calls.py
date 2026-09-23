@@ -31,9 +31,19 @@ ROLES = ("Goalkeeper", "Defender", "Midfielder", "Attacker", "any")
 ID_RE = re.compile(r"^[a-z0-9-]+$")
 
 # Her line REPLACES the goal push's flavour line rather than riding after it, so
-# it gets what the 90-character push body has left once the scorer is named.
-# The contract stores 120; this is what actually reaches her.
-LINE_CAP = 60
+# it gets what is left of the 90-character push body. The arithmetic, so the
+# next writer does not have to rediscover it:
+#
+#     90  the push body budget (goal-push-copy.ts)
+#   - 27  the worst-case scorer lead, "Calvert-Lewin 90+3' (pen)."
+#   - 13  the wrapper, Called it: "…"
+#   = 50
+#
+# The wrapper is not negotiable: without it a matched push is a bare sentence
+# in quotes with nothing saying it was hers, which is the whole feature. So the
+# framing stays and the lines get shorter. The contract stores 120; this is
+# what actually reaches her.
+LINE_CAP = 50
 LINE_MIN = 12
 MIN_BANKERS = 8
 MIN_PER_TAG = 3      # below this an offer for that week keeps handing her the same line
@@ -111,7 +121,7 @@ def validate_calls(calls, *, err, warn, check_idiom, lingo_ids: set) -> int:
         lines[line] += 1
         n = len(line)
         if n > LINE_CAP:
-            err(f"{where}: line is {n} chars (cap {LINE_CAP}, it replaces the flavour line in a 90-char push): {line[:50]}…")
+            err(f"{where}: line is {n} chars (cap {LINE_CAP}, what the 90-char push has left after the scorer and the wrapper): {line[:50]}…")
         if n < LINE_MIN:
             err(f"{where}: line is {n} chars (min {LINE_MIN}), too short to sound like a person: {line}")
         if "—" in line or "–" in line:
@@ -256,7 +266,7 @@ if __name__ == "__main__":
     only(dict(ok, id="x", trigger=dict(kind="fulltime")), "fires in every match")
     only(dict(ok, id="x", trigger=dict(kind="goal", side="us", minuteFrom=80, minuteTo=20)), "is after minuteTo")
     only(dict(ok, id="x", line="It's a proper Arsenal goal, that."), "names a club")
-    only(dict(ok, id="x", line="A goal " + "and another " * 8 + "one."), "cap 60")
+    only(dict(ok, id="x", line="A goal " + "and another " * 8 + "one."), "cap 50")
     only(dict(ok, id="x", line="Their only final, and it's gone in."), "dated-fact superlative")
     only(dict(ok, id="x", band="nailed-on"), "must be one of")
     only(dict(ok, id="x", when=["matchday"]), "not in WHEN_TAGS")

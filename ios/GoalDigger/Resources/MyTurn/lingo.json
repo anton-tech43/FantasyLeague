@@ -4341,7 +4341,7 @@
     },
     {
       "id": "derby-they-score",
-      "line": "Against this lot. The group chat will be unbearable.",
+      "line": "Against this lot. The group chat will be brutal.",
       "trigger": {
         "kind": "goal",
         "side": "them"
@@ -5036,7 +5036,7 @@
     },
     {
       "id": "comeback-win",
-      "line": "Behind at the break, and we've won. Game of two halves.",
+      "line": "Behind at the break. Game of two halves, that.",
       "trigger": {
         "kind": "fulltime",
         "comeback": true
