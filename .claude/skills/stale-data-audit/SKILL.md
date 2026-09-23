@@ -45,6 +45,13 @@ Check the 20 active rows against the current Premier League table on the web (`p
 
 - A promoted club needs a `teams` row with the right `api_football_id`, `is_active=true`, and a `team_pages` row (section 4 creates it).
 - A relegated club gets `is_active=false`. Do not delete it; its history and its `players` rows still resolve.
+**`api_football_id` is not unique.** The four competition rows (`champions_league`, `europa_league`, `fa_cup`, `league_cup`, `entity_type = 'tournament'`) store their LEAGUE id in that column, and two collide with real clubs: FA Cup is league 45 and Everton is team 45, League Cup is 48 and West Ham is 48. Any query that maps `api_football_id` to a slug must exclude tournaments, or the last row wins and a club's fixtures resolve to a cup (found live in `detect-consequences` on 2026-09-23). Check nothing new has grown one:
+
+```bash
+$P "$SUPABASE_DB_URL" -c "select id, entity_type, api_football_id from teams where api_football_id in (select api_football_id from teams group by 1 having count(*)>1) order by api_football_id"
+grep -rn "api_football_id" backend/supabase/functions/ | grep -v node_modules   # every map builder needs the filter
+```
+
 - The iOS `Team` enum must match exactly: `ios/GoalDigger/Models/Team.swift`, plus `displayName`, `shortName` and any crest asset. A club missing here cannot be picked in onboarding, and this needs an App Store build, so it is the long pole. Check it early.
 
 ```bash
@@ -111,7 +118,13 @@ $P "$SUPABASE_DB_URL" -At -c "select photo_url from players order by random() li
   | while read -r u; do echo "$(curl -sS --max-time 15 "$u" | md5) $u"; done | sort | uniq -c -w 32
 ```
 
-Do the same for the 20 manager photos. On 2026-09-06 seven of them shared two placeholder hashes: that is a known upstream gap, not a bug to chase, but say so in the report rather than claiming every manager has a headshot.
+Do the same for the 20 manager photos, and **hash against the table in `DATA_SOURCES.md` rather than looking for a shared hash** — one of the four manager placeholders is used by a single club, so "any hash shared by several people" walks straight past it (2026-09-23). Placeholders are a known upstream gap, not a bug to chase, but say so in the report rather than claiming every player and manager has a face.
+
+**Names come HTML-escaped.** The feed sends `N. O&apos;Reilly` in the squad, transfer and player-stats payloads. `players.name` is decoded on ingest by `decode_feed_entities()` (migration 110), so read names from that table. Anything comparing a name against a RAW payload has to decode first, or it rejects a correct name — that is what `post_team_page.sh`'s grounding guard did until 2026-09-23.
+
+```bash
+$P "$SUPABASE_DB_URL" -At -c "select count(*) from players where name like '%&%'"   # expect 0
+```
 
 ## 4. Team pages
 
@@ -121,12 +134,20 @@ Do the same for the 20 manager photos. On 2026-09-06 seven of them shared two pl
 |---|---|---|---|
 | `form`, `next_fixture`, `standings`, `upcoming_fixtures`, `manager.name`, `manager.photo_url` | `team-page-generator` `dynamic_only` | every 2h via `goaldigger-daily-pipeline` | no |
 | `manager.summary`, `form_summary`, `season.summary`, `next_fixture.preview`, `ones_to_know` | `gd-team-page` routine | Mondays 02:30 UTC | yes, this is the section that went five months stale |
-| `basics`, `rivalry` | hand-seeded (migration 004), never overwritten | never | stadium renames, nothing else |
+| `basics`, `rivalry` | hand-seeded (migration 004), never overwritten | never | `last_title`, `last_season` and `pl_since` every June; stadium renames |
 
 ```bash
 $P "$SUPABASE_DB_URL" -At -F' | ' -c "select c.key, count(*), min(left(c.value->>'updated_at',10)), max(left(c.value->>'updated_at',10)) from team_pages tp join teams t on t.id=tp.team_id, jsonb_each(tp.content->'cards') c where t.league_id=39 and t.is_active group by 1 order by 3"
 $P "$SUPABASE_DB_URL" -At -c "select id from teams where league_id=39 and is_active and id not in (select team_id from team_pages)"
 ```
+
+`basics.last_season` and `basics.last_title` go stale the day a season ends and nothing rewrites them. Read all twenty at once; the set is self-checking, because the PL positions must be 1 to 20 with the relegated three missing and no duplicates, the points must fall with the rank, and the promoted clubs must say something Championship-shaped:
+
+```bash
+$P "$SUPABASE_DB_URL" -At -F' | ' -c "select tp.team_id, tp.content->'cards'->'basics'->>'last_season' from team_pages tp join teams t on t.id=tp.team_id where t.league_id=39 and t.is_active order by 1"
+```
+
+Do not trust `basics.updated_at` as a freshness signal — on 2026-09-23 it read `2026-04-07` on rows whose content described a season that had not finished on that date, so it was edited later without being bumped.
 
 Check the Calendar tab explicitly — its first fixture must be in the future. It was written only by the paid `full` mode until Sept 2026, so every club's calendar sat on May's run-in for four months, naming opponents who had since been relegated:
 
@@ -136,7 +157,13 @@ $P "$SUPABASE_DB_URL" -At -F' | ' -c "select tp.team_id, jsonb_array_length(coal
 
 Two hardcoded calendars live in the app and rot once a year. `ios/GoalDigger/Services/LingoDeck.swift` holds the transfer-window dates (summer and January) that decide when Lingo deals the "window" words; check them against the FA's published window each summer. The same file's derby test compares `next_fixture.opponent` with `rivalry.rival`, so a rival renamed or newly promoted (migration 091 seeds them) shows up as a derby that never fires.
 
-Anything in the prose row older than about six weeks is stale. Fire the routine and watch it:
+Anything in the prose row older than about six weeks is stale. **A routine that reports success is not evidence it wrote anything.** `gd-team-page`'s "has today's run already landed?" check keyed on `team_pages.updated_at` until 2026-09-23 — a column the Edge function rewrites every two hours — so from 06:00 UTC it answered "all 20 already done" every day, exited in two minutes and reported success, and the second slot was never once a retry. Compare the CARD's own `updated_at` with the run log, and treat a run much shorter than the ~45 minutes below as a no-op until proven otherwise:
+
+```
+RemoteTrigger action=list_runs trigger_id=trig_015wVs1ZDsEaMYd7c99Fcy34   # durations, not just statuses
+```
+
+Fire the routine and watch it:
 
 ```
 RemoteTrigger action=run trigger_id=trig_015wVs1ZDsEaMYd7c99Fcy34   # gd-team-page
