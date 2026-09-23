@@ -226,6 +226,7 @@ def validate_lingo(d: dict) -> int:
 # Three options since 2026-09-23. All 496 questions were read and the weakest of
 # the three wrong answers cut, so what she picks between is the two that tempt.
 OPTIONS_PER_QUESTION = 3
+DETERMINER = re.compile(r"(an?|the)\b", re.I)
 
 
 def validate_quiz(d: dict) -> tuple[int, int]:
@@ -257,6 +258,13 @@ def validate_quiz(d: dict) -> tuple[int, int]:
                 err(f"quiz/{qid}: duplicate options")
             for o in opts:
                 check_len(f"quiz/{qid}", "option", o)
+            # One option carrying the article the others lack is a free
+            # elimination. Measured on the four-option set: 19 questions had a
+            # lone a/an/the and it was the answer twice, so "skip that one" won
+            # 17 of 19. (The mirror shape — one option *without* the article the
+            # rest carry — sat at 4 of 9, which is chance, and is not an error.)
+            if sum(1 for o in opts if DETERMINER.match(o)) == 1:
+                err(f"quiz/{qid}: exactly one option opens with a/an/the, which eliminates it on sight — give a second option one, or take it off this one: {opts}")
             ans = q.get("answer")
             if not isinstance(ans, int) or not 0 <= ans < len(opts):
                 err(f"quiz/{qid}: answer index {ans!r} is not a valid option index")

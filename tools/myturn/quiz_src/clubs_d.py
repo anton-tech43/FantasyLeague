@@ -121,7 +121,7 @@ NEWCASTLE = [
      "1955, the FA Cup, their third in five years. Then seventy years of nothing, which became the club's identity.",
      "Seventy years without a trophy is the number that explains the tears in 2025.",
      "impress", "\"Seventy years between domestic trophies. 1955 to 2025. That's why grown men cried at Wembley.\""),
-    (2, "Newcastle won the League Cup in 2025 by beating which club?", ["Liverpool", "Arsenal", "Chelsea"], 0,
+    (2, "Newcastle won the League Cup in 2025 by beating which club?", ["Liverpool", "Arsenal", "Manchester City"], 0,
      "Liverpool, 2-1 at Wembley. Dan Burn, a six-foot-seven Geordie who had grown up a fan, scored the first goal. The city did not sleep.",
      "The 2025 cup is the happiest day in the life of every Newcastle fan under seventy. Ask about it.",
      "ask", "Ask him: \"Where were you when Newcastle won the cup? Did you cry? Be honest.\""),
@@ -168,7 +168,7 @@ NEWCASTLE = [
 ]
 
 NOTTM_FOREST = [
-    (1, "What is Nottingham Forest's home ground called?", ["The City Ground", "Meadow Lane", "Pride Park"], 0,
+    (1, "What is Nottingham Forest's home ground called?", ["City Ground", "Meadow Lane", "Pride Park"], 0,
      "The City Ground, on the south bank of the River Trent since 1898. Notts County's ground is 300 yards away across the river, the closest two league grounds in England.",
      "Two grounds you can see from each other is a fact people refuse to believe.",
      "impress", "\"Forest and Notts County's grounds are three hundred yards apart. Either side of the river.\""),
@@ -323,7 +323,7 @@ SPURS = [
      "Harry Hotspur, a medieval knight whose family owned land in the area, and a character in Shakespeare's Henry IV. Schoolboys chose the name in 1882.",
      "A club named after a Shakespeare character is a good fact for a non-football crowd too.",
      "impress", "\"Spurs are named after a Shakespeare character. Harry Hotspur, from Henry IV.\""),
-    (1, "Spurs are from which part of London?", ["North", "East", "West"], 0,
+    (1, "Spurs are from which part of London?", ["North", "South", "West"], 0,
      "North London, in Tottenham, a few miles from Arsenal. Both clubs claim to be the real north London club.",
      "Two clubs, one postcode area, one argument about who belongs.",
      "say", "\"North London's ours, he'll say. Arsenal fans say the same. Neither will budge.\""),
@@ -362,7 +362,7 @@ SUNDERLAND = [
      "Six, all between 1892 and 1936. In the 1890s they were called the Team of All Talents, the best in England.",
      "Six titles puts Sunderland among the big historic clubs, which surprises people who only know recent years.",
      "impress", "\"Sunderland have six league titles. More than Chelsea had until 2017. All before the war, mind.\""),
-    (2, "Sunderland, then in the second division, won the 1973 FA Cup by beating which club?", ["Leeds United", "Arsenal", "Liverpool"], 0,
+    (2, "Sunderland, then in the second division, won the 1973 FA Cup by beating which club?", ["Leeds United", "Liverpool", "Manchester United"], 0,
      "Leeds United, the best team in England at the time, 1-0 at Wembley. One of the great cup shocks, and the club's defining moment.",
      "1973 is the story every Sunderland fan's parents told them. It is the founding myth.",
      "ask", "Ask him: \"Was anyone in your family at Wembley in 1973?\""),

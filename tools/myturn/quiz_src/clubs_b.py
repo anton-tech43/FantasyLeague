@@ -161,14 +161,14 @@ COVENTRY = [
      "Frank Lampard, after a difficult spell at Chelsea. Coventry were mid-table when he arrived and champions eighteen months later.",
      "Lampard rebuilding his reputation at Coventry is a redemption story fans of every club follow.",
      "ask", "Ask him: \"Has Lampard proved himself as a manager now, or was it the squad?\""),
-    (3, "The Sky Blue Song is sung to the tune of what?", ["The Eton Boating Song", "Rule Britannia", "Land of Hope and Glory"], 0,
+    (3, "The Sky Blue Song is sung to the tune of what?", ["Eton Boating Song", "Rule Britannia", "Land of Hope and Glory"], 0,
      "The Eton Boating Song, a rowing song from the posh school. Jimmy Hill wrote the football words in 1962 and fans have sung it ever since.",
      "Working-class fans singing an Eton rowing song is a lovely contradiction to have in your pocket.",
      "impress", "\"The Coventry song is the Eton Boating Song with new words. Jimmy Hill wrote it in 1962.\""),
 ]
 
 CRYSTAL_PALACE = [
-    (1, "What is Crystal Palace's home ground called?", ["Selhurst Park", "The Valley", "Plough Lane"], 0,
+    (1, "What is Crystal Palace's home ground called?", ["Selhurst Park", "The Valley", "The Den"], 0,
      "Selhurst Park, in south London, since 1924. Old, cramped and loud, with the Holmesdale Road end full of drums and flags.",
      "Selhurst's atmosphere is the thing rival fans concede. Mention it and he lights up.",
      "say", "\"Selhurst on a night game. Best atmosphere in London, they say.\""),

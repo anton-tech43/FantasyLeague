@@ -216,7 +216,7 @@ LEEDS = [
      "The Whites, for the kit. Older fans also say the Peacocks, after a pub that stood near the ground.",
      "Two nicknames, one obvious and one obscure. The obscure one impresses.",
      "impress", "\"They used to be the Peacocks, after a pub by the ground. Nobody says it now.\""),
-    (2, "Why do Leeds play in all white?", ["Revie copied Real Madrid", "A sponsor demanded it", "To match the Yorkshire rose"], 0,
+    (2, "Why do Leeds play in all white?", ["Revie copied Real Madrid", "Sponsors demanded it", "To match the Yorkshire rose"], 0,
      "Don Revie changed the kit in 1961 to copy Real Madrid, the best team in Europe, hoping his players would carry themselves like champions.",
      "The kit as a psychological trick is a great story about ambition.",
      "say", "\"Revie put them in white to make them feel like Real Madrid. And then they won the league.\""),
@@ -251,7 +251,7 @@ LEEDS = [
 ]
 
 LIVERPOOL = [
-    (1, "What is Liverpool's home ground called?", ["Anfield", "Goodison Park", "The Kop"], 0,
+    (1, "What is Liverpool's home ground called?", ["Anfield", "Goodison Park", "Stanley Park"], 0,
      "Anfield, since 1892. It was Everton's ground first, until a rent row saw Everton leave and the landlord start a new club to play there.",
      "Liverpool exist because of a landlord dispute. Evertonians love telling this; get in first.",
      "impress", "\"Liverpool were founded because Everton fell out with their landlord over rent at Anfield.\""),
@@ -386,7 +386,7 @@ MAN_CITY = [
      "1970, beating Górnik Zabrze of Poland in Vienna. Their one European trophy until 2023.",
      "City fans of a certain age had one European trophy to cling to for fifty years. This is it.",
      "impress", "\"City won a European trophy in 1970 and then nothing in Europe until 2023.\""),
-    (3, "The Colin Bell Stand at the Etihad is named after a 1960s midfielder nicknamed what?", ["Nijinsky", "Bell Boy", "The Engine"], 0,
+    (3, "The Colin Bell Stand at the Etihad is named after a 1960s midfielder nicknamed what?", ["Nijinsky", "The King", "The Engine"], 0,
      "Nijinsky, after a famous racehorse, because he could run all day. A stand is named after him, the sign of a true club great.",
      "A footballer nicknamed after a horse is a fact worth having on hand.",
      "impress", "\"Colin Bell was nicknamed after a racehorse. Nijinsky. Because he ran all day.\""),

@@ -173,7 +173,7 @@
           "options": [
             "Extra time",
             "A penalty shootout",
-            "Both teams get a point"
+            "A point each"
           ],
           "answer": 2,
           "explanation": "A draw: one point each. Extra time and penalties only happen in cup games that must have a winner.",
@@ -189,7 +189,7 @@
           "options": [
             "No yellow cards",
             "Letting in no goals",
-            "A win by three goals"
+            "Winning by three goals"
           ],
           "answer": 1,
           "explanation": "Letting in nothing. The goalkeeper's favourite statistic, and the defence's bragging right.",
@@ -348,7 +348,7 @@
           "question": "Which body runs the Champions League?",
           "options": [
             "UEFA",
-            "The FA",
+            "England's FA",
             "FIFA"
           ],
           "answer": 0,
@@ -546,7 +546,7 @@
           "question": "Who scored the injury-time goal that won Manchester City the title in 2012?",
           "options": [
             "Sergio Agüero",
-            "Yaya Touré",
+            "Mario Balotelli",
             "Edin Džeko"
           ],
           "answer": 0,
@@ -1229,7 +1229,7 @@
           "verified": true,
           "question": "Anfield is the home of which club?",
           "options": [
-            "Leeds",
+            "Manchester United",
             "Everton",
             "Liverpool"
           ],
@@ -1995,7 +1995,7 @@
           "options": [
             "Nine",
             "Seven",
-            "Five"
+            "Three"
           ],
           "answer": 1,
           "explanation": "Seven, six of them before 1911 and the seventh in 1981. For a spell around 1900 they were the biggest club in England.",
@@ -2496,7 +2496,7 @@
           "question": "In which division were Bournemouth playing in 2009, six years before reaching the Premier League?",
           "options": [
             "League One",
-            "The National League",
+            "National League",
             "League Two"
           ],
           "answer": 2,
@@ -2774,7 +2774,7 @@
           "question": "Christian Eriksen joined Brentford in 2022 after collapsing on the pitch at which tournament?",
           "options": [
             "Euro 2020",
-            "The 2018 World Cup",
+            "2018 World Cup",
             "Euro 2016"
           ],
           "answer": 0,
@@ -3100,7 +3100,7 @@
           "question": "Where did Brighton play their home games between 1999 and 2011?",
           "options": [
             "Brighton Racecourse",
-            "The Goldstone Ground",
+            "Goldstone Ground",
             "Withdean Stadium"
           ],
           "answer": 2,
@@ -3832,7 +3832,7 @@
           "question": "The Sky Blue Song is sung to the tune of what?",
           "options": [
             "Land of Hope and Glory",
-            "The Eton Boating Song",
+            "Eton Boating Song",
             "Rule Britannia"
           ],
           "answer": 1,
@@ -3854,7 +3854,7 @@
           "question": "What is Crystal Palace's home ground called?",
           "options": [
             "Selhurst Park",
-            "Plough Lane",
+            "The Den",
             "The Valley"
           ],
           "answer": 0,
@@ -5677,7 +5677,7 @@
           "options": [
             "To match the Yorkshire rose",
             "Revie copied Real Madrid",
-            "A sponsor demanded it"
+            "Sponsors demanded it"
           ],
           "answer": 1,
           "explanation": "Don Revie changed the kit in 1961 to copy Real Madrid, the best team in Europe, hoping his players would carry themselves like champions.",
@@ -5810,7 +5810,7 @@
           "question": "What is Liverpool's home ground called?",
           "options": [
             "Anfield",
-            "The Kop",
+            "Stanley Park",
             "Goodison Park"
           ],
           "answer": 0,
@@ -6343,7 +6343,7 @@
           "verified": true,
           "question": "The Colin Bell Stand at the Etihad is named after a 1960s midfielder nicknamed what?",
           "options": [
-            "Bell Boy",
+            "The King",
             "Nijinsky",
             "The Engine"
           ],
@@ -6931,7 +6931,7 @@
           "verified": true,
           "question": "Newcastle won the League Cup in 2025 by beating which club?",
           "options": [
-            "Chelsea",
+            "Manchester City",
             "Liverpool",
             "Arsenal"
           ],
@@ -7113,7 +7113,7 @@
           "verified": true,
           "question": "What is Nottingham Forest's home ground called?",
           "options": [
-            "The City Ground",
+            "City Ground",
             "Pride Park",
             "Meadow Lane"
           ],
@@ -7729,7 +7729,7 @@
           "options": [
             "North",
             "West",
-            "East"
+            "South"
           ],
           "answer": 0,
           "explanation": "North London, in Tottenham, a few miles from Arsenal. Both clubs claim to be the real north London club.",
@@ -7878,8 +7878,8 @@
           "question": "Sunderland, then in the second division, won the 1973 FA Cup by beating which club?",
           "options": [
             "Leeds United",
-            "Liverpool",
-            "Arsenal"
+            "Manchester United",
+            "Liverpool"
           ],
           "answer": 0,
           "explanation": "Leeds United, the best team in England at the time, 1-0 at Wembley. One of the great cup shocks, and the club's defining moment.",
