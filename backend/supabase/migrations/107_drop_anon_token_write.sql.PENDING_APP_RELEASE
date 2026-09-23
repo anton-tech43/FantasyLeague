@@ -1,0 +1,58 @@
+-- 107_drop_anon_token_write.sql — ⛔ STAGED, DO NOT APPLY YET ⛔
+--
+-- Replaces 072_drop_anon_token_access.sql.PENDING_APP_RELEASE, which was
+-- written in June 2026 from the migration files rather than from the live
+-- catalog and was wrong in two ways:
+--
+--   1. It dropped `live_activity_tokens_anon_select/insert/update`. The live
+--      policies are named `la_tokens_anon_*` (migration 062). DROP POLICY IF
+--      EXISTS would have silently matched nothing, leaving three permissive
+--      anon policies behind the REVOKE — invisible until a future GRANT
+--      reopened the hole with no policy standing in the way.
+--   2. Its stated blocker — "the shipped App Store build still registers via a
+--      direct PostgREST upsert" — stopped being true when 2.2 shipped. The RPC
+--      landed in fa7f53a on 2026-06-17; 2.2 is a descendant of it.
+--
+-- Everything that was safe to apply immediately has already gone in 106
+-- (the SELECT leak on both tables, plus all anon access to
+-- live_activity_tokens). What is left here is the one piece that needs an app
+-- release ahead of it.
+--
+-- ── THE BLOCKER, precisely ─────────────────────────────────────────────────
+-- App Store 2.2 (build 12) changes the tier with a direct
+-- `PATCH /rest/v1/device_tokens?apns_token=eq.<token>`
+-- (APIClient.updateTokenTier). Revoking UPDATE while 2.2 is the live build
+-- makes the Change Mode screen stop saving, silently: the call site is a
+-- `try?` and the user sees the sheet dismiss as normal.
+--
+-- 2.3 removes that method and routes the tier through
+-- register_device_token(p_tier) instead, which needs only EXECUTE.
+--
+-- ── APPLY WHEN ─────────────────────────────────────────────────────────────
+-- 2.3 (or later) is live in the App Store AND you accept that anyone still on
+-- 2.2 cannot change their tier until they update. Registration itself is
+-- unaffected on every build back to 2.2 — that has gone through the RPC since
+-- June. Then rename off the .PENDING_APP_RELEASE suffix and run it.
+--
+-- Verify the blocker is really gone before applying:
+--   grep -rn "updateTokenTier\|buildURL(path: \"device_tokens\"" ios/
+-- must return nothing but comments.
+
+BEGIN;
+
+-- Policy names read from pg_policies on 2026-09-23, not from the migrations.
+DROP POLICY IF EXISTS device_tokens_anon_insert ON device_tokens;
+DROP POLICY IF EXISTS device_tokens_anon_update ON device_tokens;
+REVOKE INSERT, UPDATE ON device_tokens FROM anon, authenticated;
+
+-- After this, anon holds nothing on device_tokens at all. Registration works
+-- only through register_device_token / register_la_token, which are SECURITY
+-- DEFINER and therefore bypass RLS with just EXECUTE. device_tokens_service_delete
+-- and every service_role grant are untouched, so the Edge Functions keep working.
+
+COMMIT;
+
+-- Post-apply check (should be f, f, f):
+--   SELECT has_table_privilege('anon','device_tokens','SELECT'),
+--          has_table_privilege('anon','device_tokens','INSERT'),
+--          has_table_privilege('anon','device_tokens','UPDATE');

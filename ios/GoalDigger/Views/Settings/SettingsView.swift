@@ -750,11 +750,14 @@ struct TierPickerSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         appState.selectedTier = selected
-                        if let token = UserDefaults.standard.string(forKey: "apnsToken") {
-                            Task {
-                                try? await APIClient.shared.updateTokenTier(token, tier: selected)
-                            }
-                        }
+                        // SEC-2: the tier used to go out as a direct anon PATCH
+                        // on device_tokens, and that one call was the last thing
+                        // keeping anon INSERT/UPDATE open on a table holding
+                        // every user's push token. register_device_token already
+                        // takes p_tier, and handleTokenRegistration already reads
+                        // selectedTier into its scope key, so a re-register is
+                        // the same write down the one path that survives.
+                        NotificationService.shared.reregisterForFollowChange()
                         dismiss()
                     }
                     .foregroundColor(.hotRose)

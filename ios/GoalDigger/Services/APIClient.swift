@@ -275,19 +275,12 @@ class APIClient {
 
     // updateTokenTeam / updateTokenCountry were retired in V2.2: the partial
     // PATCH couldn't express the multi-follow arrays or NULL a removed scalar.
+    // updateTokenTier followed them in 2.3 (SEC-2): it was the last direct
+    // anon write to device_tokens, and while it existed the table had to keep
+    // anon INSERT/UPDATE — on rows holding every user's APNs token. The
+    // register RPC already takes p_tier, so nothing was lost.
     // Settings now does a full re-register via
     // NotificationService.reregisterForFollowChange (one write path).
-
-    func updateTokenTier(_ token: String, tier: Int) async throws {
-        let url = try buildURL(path: "device_tokens", queryItems: [
-            URLQueryItem(name: "apns_token", value: "eq.\(token)")
-        ])
-        let body: [String: Any] = ["tier": tier, "updated_at": ISO8601DateFormatter().string(from: Date())]
-        let bodyData = try JSONSerialization.data(withJSONObject: body)
-        let request = makeRequest(url: url, method: "PATCH", body: bodyData)
-        let (_, response) = try await URLSession.shared.data(for: request)
-        try validateResponse(response)
-    }
 
     // MARK: - Context Cards (Contract 10)
 
