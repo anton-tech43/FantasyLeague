@@ -103,10 +103,11 @@ struct RootView: View {
           && !appState.hasSeenWCPrompt
     }
 
-    // Paid app on App Store (£4.99) — no in-app paywall. Purchase is enforced at the
-    // storefront before download. PurchaseManager + PaywallView are kept in the
-    // codebase but unreferenced; can be re-wired if we add an IAP later
-    // (e.g. World Cup pass).
+    // No in-app paywall. PurchaseManager and PaywallView were kept unreferenced
+    // "in case we add an IAP later" and were deleted on 2026-09-23 — two files
+    // compiled into every build for a purchase flow the app does not have, and
+    // git remembers them. The comment they left behind also still said £4.99,
+    // which Apple's feed has not agreed with since the World Cup.
 
     var body: some View {
         Group {

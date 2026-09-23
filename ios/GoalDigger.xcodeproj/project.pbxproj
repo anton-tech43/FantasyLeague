@@ -80,8 +80,6 @@
 		AA000075 /* PlusJakartaSans-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000075 /* PlusJakartaSans-MediumItalic.ttf */; };
 		AA000076 /* PlusJakartaSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000076 /* PlusJakartaSans-ExtraBold.ttf */; };
 		AA000077 /* LeagueSpartan-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB000077 /* LeagueSpartan-Black.ttf */; };
-		AA000080 /* PurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000080 /* PurchaseManager.swift */; };
-		AA000081 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000081 /* PaywallView.swift */; };
 		AA000090 /* TeamPageCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000090 /* TeamPageCard.swift */; };
 		AA000091 /* TeamPageMoodBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000091 /* TeamPageMoodBanner.swift */; };
 		AA000092 /* TeamPageThisWeek.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000092 /* TeamPageThisWeek.swift */; };
@@ -118,7 +116,6 @@
 		DF1EDE6C6A0AA125869C7F8D /* InsiderCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C25D6C48090CD68B903A14 /* InsiderCard.swift */; };
 		DFF6288FF22ACD8929487E28 /* LingoOverheardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F3A0B91CD9D833177EB1A31 /* LingoOverheardView.swift */; };
 		E1306FD7172C8AD374F812D2 /* MyTurnStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B8C8BE4CFA3444C2C316A0 /* MyTurnStore.swift */; };
-		F2301FB9ED3DC5D4B9693246 /* ErrorReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4421111DA5D3319C08E1C4C /* ErrorReporter.swift */; };
 		F9D3BF1239833859BA1EFD4D /* SayThisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ADF83F8ECC74099BBB0BB27 /* SayThisView.swift */; };
 /* End PBXBuildFile section */
 
@@ -229,8 +226,6 @@
 		AB000075 /* PlusJakartaSans-MediumItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-MediumItalic.ttf"; sourceTree = "<group>"; };
 		AB000076 /* PlusJakartaSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-ExtraBold.ttf"; sourceTree = "<group>"; };
 		AB000077 /* LeagueSpartan-Black.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "LeagueSpartan-Black.ttf"; sourceTree = "<group>"; };
-		AB000080 /* PurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseManager.swift; sourceTree = "<group>"; };
-		AB000081 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 		AB000090 /* TeamPageCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageCard.swift; sourceTree = "<group>"; };
 		AB000091 /* TeamPageMoodBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageMoodBanner.swift; sourceTree = "<group>"; };
 		AB000092 /* TeamPageThisWeek.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageThisWeek.swift; sourceTree = "<group>"; };
@@ -260,7 +255,6 @@
 		D5A88D0BF10EC36C829985F7 /* LiveMatchCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveMatchCard.swift; sourceTree = "<group>"; };
 		D8C25D6C48090CD68B903A14 /* InsiderCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InsiderCard.swift; sourceTree = "<group>"; };
 		DCA4D1D232DB07DA5CC85E8B /* LiveMatchSnapshot.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveMatchSnapshot.swift; sourceTree = "<group>"; };
-		E4421111DA5D3319C08E1C4C /* ErrorReporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ErrorReporter.swift; sourceTree = "<group>"; };
 		E5B6B4EAC55CB925992D81ED /* ShareableCardRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareableCardRenderer.swift; sourceTree = "<group>"; };
 		EC063CF34EB46623A471C9F6 /* LiveSquadPack.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveSquadPack.swift; sourceTree = "<group>"; };
 		ED6D8160AFC958A96956341D /* SayThisPractiseView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SayThisPractiseView.swift; sourceTree = "<group>"; };
@@ -404,7 +398,6 @@
 				AC000014 /* Team */,
 				AC000015 /* Player */,
 				AC000016 /* Matchday */,
-				AB000081 /* PaywallView.swift */,
 				430BEFCC585335D42A45315D /* MyTurn */,
 			);
 			path = Views;
@@ -476,11 +469,9 @@
 				AB000018 /* CacheService.swift */,
 				AB000019 /* NotificationService.swift */,
 				AB000061 /* UnreadTracker.swift */,
-				AB000080 /* PurchaseManager.swift */,
 				36F66AB00E15F67DAA68C18A /* AudioPlayerService.swift */,
 				37D3E46E7BC8929DF2B09425 /* CalendarSyncService.swift */,
 				2AD6B0120F684DF2FDE52DDA /* GlossaryService.swift */,
-				E4421111DA5D3319C08E1C4C /* ErrorReporter.swift */,
 				FFF77F3DBF5A4E6FED9FA92D /* MyTurnContentService.swift */,
 				07B8C8BE4CFA3444C2C316A0 /* MyTurnStore.swift */,
 				4D8F505623CCED3CAAB391AA /* LiveClubPack.swift */,
@@ -766,8 +757,6 @@
 				AA000064 /* ContextSwitcherView.swift in Sources */,
 				AA000065 /* EveryoneEmptyStateCard.swift in Sources */,
 				AA000066 /* ClassicFeedView.swift in Sources */,
-				AA000080 /* PurchaseManager.swift in Sources */,
-				AA000081 /* PaywallView.swift in Sources */,
 				AA000090 /* TeamPageCard.swift in Sources */,
 				AA000091 /* TeamPageMoodBanner.swift in Sources */,
 				AA000092 /* TeamPageThisWeek.swift in Sources */,
@@ -798,7 +787,6 @@
 				25B33D3555E190DC97F79521 /* LiveActivityManager.swift in Sources */,
 				159D99B3A0BD1457CA4C4F47 /* LiveMatchSnapshot.swift in Sources */,
 				BFC33C9E2EEBFADD73924600 /* MyTurnContent.swift in Sources */,
-				F2301FB9ED3DC5D4B9693246 /* ErrorReporter.swift in Sources */,
 				53B18C2E8D0E9CA715D82926 /* MyTurnContentService.swift in Sources */,
 				E1306FD7172C8AD374F812D2 /* MyTurnStore.swift in Sources */,
 				1958991C7C4BB12F44CFD55F /* LingoView.swift in Sources */,

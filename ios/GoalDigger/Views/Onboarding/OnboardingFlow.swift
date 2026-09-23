@@ -28,10 +28,10 @@ struct OnboardingFlow: View {
         case herName
         case hisName
         case plTeamOptional
-        // ONB-5: `footballKnowledge` step removed from the flow until the signal
-        // is actually used (planned: drive content depth / glossary verbosity).
-        // FootballKnowledgeView + AppState.footballKnowledgeLevel are kept (parked)
-        // so reintroduction is a one-line re-add here. See AUDIT_FINDINGS.md ONB-5.
+        // ONB-5: a `footballKnowledge` step used to sit here, asking her to
+        // self-rate before she had seen anything. It was pulled from the flow
+        // because nothing read the answer, and the view was kept "parked" for
+        // a reintroduction that never came. Deleted 2026-09-23; git has it.
         case tierSelection
         case notificationPrompt
         case calendar
@@ -158,79 +158,5 @@ struct OnboardingFlow: View {
         // user who finishes onboarding and immediately force-quits before
         // cfprefsd flushes loses every field and re-onboards next launch.
         appState.persistNow()
-    }
-}
-
-/// "How much football do you already know?" — a 3-level self-rating.
-/// ⏸️ PARKED (ONB-5): currently NOT in the onboarding flow — removed to cut a
-/// friction step that gathered a signal nothing used. Kept here, ready to
-/// reintroduce once it drives behaviour (planned: content depth / glossary
-/// verbosity by level). To re-add: restore `case footballKnowledge` in
-/// OnboardingStep + the switch case, and point OptionalPLTeamView at it.
-private struct FootballKnowledgeView: View {
-    @Environment(AppState.self) var appState
-    let onContinue: () -> Void
-
-    private struct Level: Identifiable {
-        let id: Int
-        let title: String
-        let body: String
-    }
-
-    private var levels: [Level] {
-        [
-            .init(id: 1, title: "I don't know anything",
-                  body: "Total newcomer. You're here for \(appState.pObject), not the football."),
-            .init(id: 2, title: "I know the basic rules",
-                  body: "You get how the game works, but not \(appState.pPossessive) team or the players."),
-            .init(id: 3, title: "Rules, \(appState.pPossessive) team, some players",
-                  body: "You know the rules, \(appState.pPossessive) team, and a few of the players by name.")
-        ]
-    }
-
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("How much football\ndo you already know?")
-                        .font(.onboardingTitle)
-                        .foregroundColor(.textOnDark)
-                    Text("No wrong answer. It just helps us pitch things at the right level.")
-                        .font(.onboardingBody)
-                        .foregroundColor(.textOnDark.opacity(0.8))
-                }
-                .padding(.top, 24)
-
-                VStack(spacing: Layout.cardSpacing) {
-                    ForEach(levels) { level in
-                        levelCard(level)
-                    }
-                }
-            }
-            .padding(.horizontal, Layout.screenPadding)
-            .padding(.bottom, 24)
-        }
-    }
-
-    @ViewBuilder
-    private func levelCard(_ level: Level) -> some View {
-        Button {
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            appState.footballKnowledgeLevel = level.id
-            onContinue()
-        } label: {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(level.title)
-                    .font(.feedHeadline)
-                    .foregroundColor(.textPrimaryOnCard)
-                Text(level.body)
-                    .font(.jakarta(15, weight: .regular))
-                    .foregroundColor(.textSecondaryOnCard)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .cardStyle()
-        }
-        .buttonStyle(.plain)
     }
 }

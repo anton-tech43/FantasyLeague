@@ -60,13 +60,6 @@ class AppState {
     var selectedTier: Int {
         didSet { UserDefaults.standard.set(selectedTier, forKey: "selectedTier") }
     }
-    /// How much football the user already knows: 1 = nothing, 2 = basic rules
-    /// only, 3 = rules + his team + some players. 0 = not yet answered. Gathered
-    /// in onboarding; NOT wired to any behavior yet (depth/glossary tuning is a
-    /// later design).
-    var footballKnowledgeLevel: Int {
-        didSet { UserDefaults.standard.set(footballKnowledgeLevel, forKey: "footballKnowledgeLevel") }
-    }
     var hasCompletedOnboarding: Bool {
         didSet { UserDefaults.standard.set(hasCompletedOnboarding, forKey: "hasCompletedOnboarding") }
     }
@@ -148,7 +141,6 @@ class AppState {
                 .flatMap { Country(rawValue: $0) }.map { [$0] } ?? []
         }
         self.selectedTier = UserDefaults.standard.integer(forKey: "selectedTier").clamped(to: 1...3, default: 2)
-        self.footballKnowledgeLevel = UserDefaults.standard.integer(forKey: "footballKnowledgeLevel")
         self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
         self.notificationPermissionRequested = UserDefaults.standard.bool(forKey: "notificationPermissionRequested")
         self.calendarSyncEnabled = UserDefaults.standard.bool(forKey: "calendarSyncEnabled")
@@ -273,7 +265,6 @@ class AppState {
         selectedTeams = []
         selectedCountries = []
         selectedTier = 2
-        footballKnowledgeLevel = 0
         hasCompletedOnboarding = false
         notificationPermissionRequested = false
         calendarSyncEnabled = false
@@ -286,7 +277,11 @@ class AppState {
         feedStyle = .immersive
         let keys = ["herName", "hisName", "relationshipType",
                      "selectedTeam", "selectedCountry", "selectedTeams", "selectedCountries",
-                     "selectedTier", "footballKnowledgeLevel",
+                     "selectedTier",
+                     // Written by the onboarding step deleted on 2026-09-23.
+                     // Nothing reads it any more, but a device that answered it
+                     // still has the value on disk, so a reset still clears it.
+                     "footballKnowledgeLevel",
                      "hasCompletedOnboarding", "notificationPermissionRequested", "apnsToken",
                      "apnsTokenRegistered", "lastRegisteredScope", "liveActivityPushToStartToken",
                      "feedStyle",
