@@ -125,9 +125,67 @@ enum LingoCalls {
             && Kind(rawValue: call.trigger?.kind ?? "") != nil
     }
 
+    /// Does every moment that satisfies `a` also satisfy `b`?
+    ///
+    /// Two lines on one slip where this holds are one bet wearing two hats:
+    /// `{fulltime, state: win, cleanSheet: true}` cannot land without
+    /// `{fulltime, cleanSheet: true}` landing with it, so a slip carrying both
+    /// marks two lines for one event and reads as a slip that came in twice.
+    /// The reveal is where it shows, and it showed.
+    ///
+    /// Read off the closed grammar, constraint by constraint: for each thing
+    /// `b` states, `a` must state the same or tighter. A constraint `b` leaves
+    /// out is don't-care and is satisfied by anything; one `a` leaves out
+    /// cannot satisfy a stated one, because `resolve` refuses a stated
+    /// constraint against an unknown outcome field and `a` therefore admits
+    /// moments `b` would turn down. `any` on `side` and `scorerRole` is the
+    /// explicit spelling of absent, so it reads as don't-care on both sides.
+    ///
+    /// Minutes are the one constraint that is not simple equality: a window has
+    /// to sit inside the other window, so `minuteFrom: 88` implies
+    /// `minuteFrom: 85` and not the other way round.
+    ///
+    /// Reflexive on purpose (a trigger implies itself), so the same line twice
+    /// is caught by the same test that catches a superset.
+    static func implies(_ a: LingoCallTrigger?, _ b: LingoCallTrigger?) -> Bool {
+        guard let a, let b, let kind = a.kind.flatMap(Kind.init(rawValue:)),
+              kind == b.kind.flatMap(Kind.init(rawValue:)) else { return false }
+        /// What `b` asks for is either not asked for, or asked for identically.
+        func holds<T: Equatable>(_ wanted: T?, _ stated: T?) -> Bool { wanted == nil || wanted == stated }
+        /// `any` is how the content spells "don't care".
+        func named(_ raw: String?) -> String? { raw == "any" ? nil : raw }
+
+        switch kind {
+        case .goal:
+            guard holds(named(b.side), named(a.side)),
+                  holds(named(b.scorerRole), named(a.scorerRole)),
+                  holds(b.penalty, a.penalty), holds(b.ownGoal, a.ownGoal) else { return false }
+            if let from = b.minuteFrom { guard let mine = a.minuteFrom, mine >= from else { return false } }
+            if let to = b.minuteTo { guard let mine = a.minuteTo, mine <= to else { return false } }
+            return true
+        case .halftime:
+            return holds(b.state, a.state) && holds(b.conceded, a.conceded)
+        case .fulltime:
+            return holds(b.state, a.state) && holds(b.cleanSheet, a.cleanSheet)
+                && holds(b.comeback, a.comeback)
+        }
+    }
+
+    /// Would these two lines land together, whichever way round the implication
+    /// runs? Then they are not two bets and they do not share a slip.
+    static func clash(_ a: LingoCall, _ b: LingoCall) -> Bool {
+        implies(a.trigger, b.trigger) || implies(b.trigger, a.trigger)
+    }
+
     /// Three lines for this fixture: one banker, one likely, one long shot, in
     /// that order, filtered by the context's tags and seeded by `fixtureKey` so
     /// a slip she comes back to is the slip she left.
+    ///
+    /// No two of them can land on the same moment (`clash`). Having drawn the
+    /// banker, a likely that implies it or is implied by it is skipped, and the
+    /// long shot is drawn against both. A band with nothing legal left comes
+    /// back empty and the slip is shorter, on the rule the banker already
+    /// establishes: a short slip beats a dishonest one.
     ///
     /// **It refuses to deal a slip with no banker**, returning nothing at all.
     /// Three lines that all miss is the one outcome that kills this feature —
@@ -153,8 +211,11 @@ enum LingoCalls {
         let live = Set(context.tags.filter { $0 != "any" })
         func tags(_ call: LingoCall) -> Set<String> { Set(call.when ?? ["any"]) }
 
-        func best(_ band: Band) -> LingoCall? {
-            let banded = pool.filter { $0.band == band.rawValue && !tags($0).isDisjoint(with: allow) }
+        func best(_ band: Band, avoiding chosen: [LingoCall]) -> LingoCall? {
+            let banded = pool.filter { call in
+                call.band == band.rawValue && !tags(call).isDisjoint(with: allow)
+                    && !chosen.contains { clash(call, $0) }
+            }
             guard !banded.isEmpty else { return nil }
             // A line about the game she is actually walking into beats a line
             // for any match; inside either group the draw is seeded, so the
@@ -164,8 +225,11 @@ enum LingoCalls {
             return group.min { draw(context.fixtureKey, $0) < draw(context.fixtureKey, $1) }
         }
 
-        guard let banker = best(.banker) else { return [] }
-        return [banker, best(.likely), best(.longshot)].compactMap { $0 }
+        guard let banker = best(.banker, avoiding: []) else { return [] }
+        var slip = [banker]
+        if let likely = best(.likely, avoiding: slip) { slip.append(likely) }
+        if let longshot = best(.longshot, avoiding: slip) { slip.append(longshot) }
+        return slip
     }
 
     /// One seeded draw per call, so the offer does not move under her.
@@ -342,8 +406,11 @@ extension LingoCalls {
                   trigger: LingoCallTrigger = .init(kind: "goal", side: "us")) -> LingoCall {
             LingoCall(id: id, line: "Line \(id).", trigger: trigger, band: band.rawValue, when: when)
         }
+        // Three different bets, so nothing here is dropped for a clash: our
+        // goal, level at half-time, and their penalty.
         let full = [call("b1", .banker), call("b2", .banker),
-                    call("l1", .likely), call("s1", .longshot)]
+                    call("l1", .likely, trigger: .init(kind: "halftime", state: "level")),
+                    call("s1", .longshot, trigger: .init(kind: "goal", side: "them", penalty: true))]
 
         let slip = offer(calls: full, context: fixture)
         assert(slip.count == 3, "a full pool dealt \(slip.count) lines, not three")
@@ -377,6 +444,72 @@ extension LingoCalls {
         assert(tagged.map(\.id) == ["b2"], "the fixture's own tag did not win the banker slot: \(tagged.map(\.id))")
         assert(offer(calls: [call("d1", .banker, when: ["derby"])], context: fixture).isEmpty,
                "a derby-only line was dealt for a game that is not one")
+
+        // --- One bet, two hats -------------------------------------------------
+        // The pair the reveal screenshot caught: a clean-sheet win cannot land
+        // without the clean sheet landing with it, so the two never share a slip.
+        let cleanSheet = LingoCallTrigger(kind: "fulltime", cleanSheet: true)
+        let wonToNil = LingoCallTrigger(kind: "fulltime", state: "win", cleanSheet: true)
+        assert(implies(wonToNil, cleanSheet), "a clean-sheet win does not imply a clean sheet")
+        assert(!implies(cleanSheet, wonToNil), "a clean sheet was read as implying a win with it")
+        assert(clash(call("a", .likely, trigger: cleanSheet), call("b", .longshot, trigger: wonToNil)),
+               "the pair from the reveal shot is not a clash")
+
+        // Same kind, and genuinely two bets: either side can score without the
+        // other scoring.
+        let weScore = LingoCallTrigger(kind: "goal", side: "us")
+        let theyScore = LingoCallTrigger(kind: "goal", side: "them")
+        assert(!implies(weScore, theyScore) && !implies(theyScore, weScore),
+               "our goal and their goal were read as one event")
+        // `any` is don't-care, so the narrower one implies the broader one.
+        let anyoneScores = LingoCallTrigger(kind: "goal", side: "any", scorerRole: "any")
+        assert(implies(weScore, anyoneScores), "our goal does not imply somebody scoring")
+        assert(!implies(anyoneScores, weScore), "somebody scoring was read as implying it was us")
+        // A stated constraint is never satisfied by an absent one.
+        assert(implies(LingoCallTrigger(kind: "goal", side: "us", penalty: true), weScore),
+               "our penalty does not imply our goal")
+        assert(!implies(weScore, LingoCallTrigger(kind: "goal", side: "us", penalty: true)),
+               "our goal was read as implying a penalty")
+        // Minutes contain rather than match: 88 upwards sits inside 85 upwards.
+        assert(implies(LingoCallTrigger(kind: "goal", minuteFrom: 88),
+                       LingoCallTrigger(kind: "goal", minuteFrom: 85)),
+               "the 88th minute is not inside the last five")
+        assert(!implies(LingoCallTrigger(kind: "goal", minuteFrom: 85),
+                        LingoCallTrigger(kind: "goal", minuteFrom: 88)),
+               "the last five minutes was read as sitting inside the last two")
+
+        // Across kinds, never: a goal and a full-time result are different
+        // moments even when one always follows the other.
+        assert(!implies(weScore, LingoCallTrigger(kind: "fulltime", state: "win"))
+               && !implies(LingoCallTrigger(kind: "fulltime", state: "win"), weScore),
+               "a goal and a full-time result were read as one moment")
+
+        // And through the offer: the likely is the banker again in other words,
+        // so it goes, and the long shot (a different kind of moment) stays.
+        let doubled = offer(calls: [call("b1", .banker, trigger: anyoneScores),
+                                    call("l1", .likely, trigger: weScore),
+                                    call("s1", .longshot, trigger: .init(kind: "fulltime", state: "win"))],
+                            context: fixture)
+        assert(doubled.map(\.id) == ["b1", "s1"],
+               "a likely implied by the banker stayed on the slip: \(doubled.map(\.id))")
+        // Worth stating because it reshapes real slips: a banker as broad as
+        // "somebody scores" swallows every other goal line on the card,
+        // whichever side it is about, because they all land with it. The rest
+        // of the slip then has to come from half-time and full-time.
+        assert(offer(calls: [call("b1", .banker, trigger: anyoneScores),
+                             call("s1", .longshot, trigger: theyScore)],
+                     context: fixture).map(\.id) == ["b1"],
+               "their goal shared a slip with somebody scoring")
+        assert(offer(calls: [call("b1", .banker, trigger: anyoneScores),
+                             call("l1", .likely, trigger: weScore)], context: fixture).map(\.id) == ["b1"],
+               "a band with nothing legal left did not come back empty")
+        // The invariant, stated where it can be read: no two lines on one slip
+        // can land on the same moment.
+        for (i, one) in slip.enumerated() {
+            for other in slip.dropFirst(i + 1) {
+                assert(!clash(one, other), "\(one.id) and \(other.id) landed on the same moment")
+            }
+        }
 
         // Unusable content is dropped, not offered: a band or a trigger kind
         // this build has never heard of cannot resolve, so it cannot be a pick.

@@ -778,14 +778,23 @@ struct LingoView: View {
     /// those instead, so the reveal has a badge to show.
     private func debugPickCalls(_ context: MatchContext) {
         let outcomes = LingoCalls.outcomes(after: context)
-        let ids: [String] = LingoCalls.Band.allCases.compactMap { band in
-            let pool = calls.filter { LingoCalls.usable($0) && $0.band == band.rawValue }
+        var chosen: [LingoCall] = []
+        for band in LingoCalls.Band.allCases {
+            // The clash rule applies to a planted slip too, or the screenshot
+            // shows exactly the thing the rule exists to stop.
+            let pool = calls.filter { call in
+                LingoCalls.usable(call) && call.band == band.rawValue
+                    && !chosen.contains { LingoCalls.clash(call, $0) }
+            }
             let markable = pool.filter { call in
                 outcomes.contains { LingoCalls.resolve(trigger: call.trigger, outcome: $0) }
             }
-            return (markable.isEmpty ? pool : markable)
-                .max { ($0.line.count, $0.id) < ($1.line.count, $1.id) }?.id
+            if let longest = (markable.isEmpty ? pool : markable)
+                .max(by: { ($0.line.count, $0.id) < ($1.line.count, $1.id) }) {
+                chosen.append(longest)
+            }
         }
+        let ids = chosen.map(\.id)
         guard !ids.isEmpty else { return }
         // 900001 is a fixture id no calendar row carries, which is the point: a
         // harness slip must never be mistaken for one the push could resolve.
