@@ -418,10 +418,12 @@ appointment dates (two sources), squads, calendars, phase, insider items, the
 non-PL guard. Counted, not fixed: 55 of 621 player photos are the upstream
 silhouette.
 
-### Open, found in passing
+### Found in passing, and closed
 
-- **`players` carries table-level GRANTs of INSERT, UPDATE, DELETE and TRUNCATE
-  to `anon`.** Only RLS stands between the shipped publishable key and the
-  squad table; a write probe with that key is refused (`42501`), so it is not
-  exploitable today, but the grants should not be there. One `REVOKE`, no
-  functional change — left for a decision rather than folded into a data fix.
+- **`anon` could write to 23 tables.** `players` was how it surfaced, but the
+  shipped publishable key held INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES,
+  TRIGGER and MAINTAIN across `public`, inherited from Supabase's default
+  privileges rather than granted by anyone. RLS held, so it was never
+  exploitable. Revoked, defaults fixed so new tables come out SELECT-only, with
+  `device_tokens` INSERT/UPDATE kept for 2.2 until migration 107 lands
+  (mig 115; details and the verification in `CHANGELOG_SECURITY.md`).

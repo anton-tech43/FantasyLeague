@@ -134,4 +134,47 @@
 
 ---
 
+## 2026-09-23 — anon is read-only (migration 115)
+
+**What was wrong.** The publishable key that ships in the App Store binary held
+INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER and MAINTAIN on 23 tables
+in `public` — `players`, `teams`, `content_items`, `team_pages`, the lot. Only
+RLS stood in the way. RLS did hold (a write probe with the shipped key is
+refused with `42501`), so this was never exploitable, which is the reason to
+fix it now rather than after someone adds a table and forgets a policy.
+
+**Why it existed.** Nobody granted it. Supabase's `ALTER DEFAULT PRIVILEGES` on
+`public` gives `arwdDxtm` to `anon` and `authenticated` for every new table, so
+every migration ever written inherited the full set.
+
+**What the app actually needs, checked not assumed.** It issues no POST, PATCH
+or DELETE at all. Every REST call is a GET, and both writes go through
+`register_device_token` and `register_la_token`, which are SECURITY DEFINER and
+run as their owner. So: SELECT, and nothing else.
+
+**Applied.** All write privileges revoked from `anon` and `authenticated` on
+every table in `public`, and the default privileges changed so new tables come
+out SELECT-only. MAINTAIN was included deliberately: it does not appear in
+`information_schema.role_table_grants`, so it survives a revoke you thought was
+complete — anon held it on 22 of 25 tables, carrying VACUUM, REINDEX and
+REFRESH MATERIALIZED VIEW on the compute that ran out in August.
+
+**The one exception.** `device_tokens` keeps INSERT and UPDATE, because 2.2 is
+in the App Store and still PATCHes the tier directly. It goes when
+`107_drop_anon_token_write.sql.PENDING_APP_RELEASE` is applied after 2.3 ships.
+That migration now finishes this one.
+
+**Verified after applying:** every read the app makes returns 200, including
+the new `player_cards` squad join; `players` INSERT and `team_pages` DELETE are
+refused with `permission denied for table` rather than by RLS; and
+`register_device_token` still returns 204 and lands a row with the right club
+and tier (probe row removed). Feed and team page screenshotted clean.
+
+**Not done, noted here instead.** Function EXECUTE still defaults to `anon` for
+everything in `public`, which is how the two RPCs work but also means every new
+function is callable with the shipped key. Tightening that needs a per-function
+allow-list and is its own change.
+
+---
+
 *This changelog is authoritative. If you see a conflict between this document and older content in BUILD_PLAN.md or AGENT_CONTRACTS.md, this document reflects the latest decisions.*
