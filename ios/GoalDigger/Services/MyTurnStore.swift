@@ -260,7 +260,20 @@ final class MyTurnStore {
         streakTick = 0
         lingoDealNonce = 0
         defaults?.removeObject(forKey: Self.key)
+        resetTick += 1
     }
+
+    /// Bumped by `clearAll`. MyTurnView hangs the module stack's identity on
+    /// it, so a wipe rebuilds the three module views instead of only emptying
+    /// the store underneath them.
+    ///
+    /// The modules keep real state of their own that this store never sees and
+    /// a relaunch would have thrown away: SayThisView's practise session
+    /// (deliberately `@State`, so "Continue · 4 of 10" survives a segment
+    /// switch), QuizView's paused flag, LingoView's dealt weekend deck and open
+    /// folds. Without this, Delete My Data leaves her mid-round in a session
+    /// she just asked us to forget.
+    var resetTick: Int = 0
 
     // MARK: Module
 

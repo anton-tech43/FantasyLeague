@@ -40,6 +40,9 @@ struct MyTurnView: View {
                     // wherever she is when it happens.
                     HypeStreakOverlay(store: store)
                 }
+                // Rebuild every module when the store is wiped — see
+                // MyTurnStore.resetTick for what would otherwise survive it.
+                .id(store.resetTick)
             }
         }
         .navigationTitle("My Turn")
