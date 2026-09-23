@@ -52,6 +52,11 @@ OVERHEARD = {
         decoys=["The bit where players start time-wasting", "The nervous wait while a goal is checked"],
         when=["run-in", "title", "relegation", "derby", "after-win"],
         moment="common",
+        player=dict(
+            slot='ours.forward',
+            overheard="Squeaky bum time. I'd want {ours.forward} on the pitch for this, me.",
+            sayIt='"Squeaky bum time. Is {ours.forward} the one you want on for this?"',
+        ),
     ),
     "six-pointer": dict(
         overheard="Six-pointer on Saturday. Don't be planning anything.",
@@ -92,6 +97,11 @@ OVERHEARD = {
         decoys=["A shot dragged wide from a tight angle", "A shot the keeper palms away at full stretch"],
         when=["any", "after-loss", "after-draw"],
         moment="common",
+        player=dict(
+            slot='theirs.forward',
+            overheard='If {theirs.forward} gets a sitter like that, are we in trouble?',
+            sayIt='"Would {theirs.forward} put a sitter like that away, do you think?"',
+        ),
     ),
     "clinical-finish": dict(
         overheard="That's clinical finishing. He'll sleep well tonight.",
@@ -100,6 +110,11 @@ OVERHEARD = {
         decoys=["A goal that takes a big deflection", "A move drilled on the training ground"],
         when=["after-win", "after-big-win", "good-run"],
         moment="common",
+        player=dict(
+            slot='theirs.forward',
+            overheard="Clinical finishing, that is. That's what they pay {theirs.forward} for.",
+            sayIt='"That\'s a clinical finish. Is that what {theirs.forward} is there for?"',
+        ),
     ),
     "screamer": dict(
         overheard="And that is a screamer. Get the replay on.",
@@ -164,6 +179,11 @@ OVERHEARD = {
         decoys=["Knock it back to the keeper to start again", "Put it out of play to stop the attack"],
         when=["any", "relegation"],
         moment="common",
+        player=dict(
+            slot='ours.keeper',
+            overheard="Just hoof it. I'd not trust anyone here, {ours.keeper} included.",
+            sayIt='"Do they just hoof it every time? Even {ours.keeper}?"',
+        ),
     ),
     "dive": dict(
         overheard="He's dived, ref! Are you watching this?",
@@ -260,6 +280,11 @@ OVERHEARD = {
         decoys=["Players lining up in a wall at a free-kick", "Playing the ball back to the keeper to waste time"],
         when=["after-clean-sheet", "after-win", "europe", "derby"],
         moment="common",
+        player=dict(
+            slot='ours.defender',
+            overheard='Backs to the wall from here. Get {ours.defender} in the middle of it.',
+            sayIt='"Backs to the wall. Is {ours.defender} the one who heads everything away?"',
+        ),
     ),
     "in-the-mixer": dict(
         overheard="Get it in the mixer! Stop faffing about.",
@@ -268,6 +293,11 @@ OVERHEARD = {
         decoys=["Getting it wide to the winger to cross", "Booting it into the corner to run the clock"],
         when=["any", "after-draw", "relegation"],
         moment="common",
+        player=dict(
+            slot='theirs.defender',
+            overheard='Get it in the mixer. See if {theirs.defender} fancies it.',
+            sayIt='"In the mixer, that\'s the plan. Does {theirs.defender} like it in there?"',
+        ),
     ),
     "route-one": dict(
         overheard="Proper route one stuff, this. Not for me.",
@@ -284,6 +314,11 @@ OVERHEARD = {
         decoys=["Scoring right after the half-time interval", "Winning the ball high up the pitch"],
         when=["any", "europe"],
         moment="common",
+        player=dict(
+            slot='theirs.midfielder',
+            overheard="They'll hurt you on the break, this lot. Where does {theirs.midfielder} fit in?",
+            sayIt='"They\'re good on the break. Is {theirs.midfielder} part of that?"',
+        ),
     ),
     "dead-rubber": dict(
         overheard="Dead rubber tonight. I'll probably miss it.",
@@ -316,6 +351,11 @@ OVERHEARD = {
         decoys=["The supporters' player of the season", "The player who speaks to the cameras after"],
         when=["any", "after-win"],
         moment="common",
+        player=dict(
+            slot='ours.midfielder',
+            overheard="{ours.midfielder} could win man of the match every week and they'd still moan.",
+            sayIt='"Would you give {ours.midfielder} man of the match? Or is that just me?"',
+        ),
     ),
     "top-drawer": dict(
         overheard="He's top drawer, that lad. Always has been.",
@@ -324,6 +364,11 @@ OVERHEARD = {
         decoys=["The top division of English football", "A player kept back for the big games"],
         when=["any", "after-win", "after-big-win"],
         moment="common",
+        player=dict(
+            slot='theirs.keeper',
+            overheard="Is {theirs.keeper} top drawer, though? That's the question, for me.",
+            sayIt='"Is {theirs.keeper} top drawer, then? You\'d know better than me."',
+        ),
     ),
     "second-ball": dict(
         overheard="It's all about the second ball, this.",

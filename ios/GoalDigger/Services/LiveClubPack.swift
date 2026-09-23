@@ -69,6 +69,18 @@ enum LiveClubPack {
         var isStale: Bool { Date().timeIntervalSince(fetchedAt) > 24 * 60 * 60 }
     }
 
+    /// One club's players, out of the league-wide cache and nothing else.
+    /// A plain value so `Sources` — which carries twenty pages, every manager
+    /// and 1500 squad rows — stays private to its service.
+    struct ClubPlayers: Equatable {
+        var picks: [LiveSquadPack.Player] = []
+        var curated: [TopPlayer] = []
+
+        static func == (a: Self, b: Self) -> Bool {
+            a.picks == b.picks && a.curated.map(\.name) == b.curated.map(\.name)
+        }
+    }
+
     /// api-sports returns HTTP 200 with a silhouette for a missing photo, so
     /// the only test is the bytes. Two coach variants seen on 2026-09-08 (7 of
     /// 20 PL managers), the "unknown id" image, and the player silhouette
@@ -566,6 +578,16 @@ final class LiveClubPackService {
         }
 
         pack = LiveClubPack.build(team: team, page: content, sources: src, personalise: personalise)
+    }
+
+    /// One club's players out of the cached league-wide sources: the two men
+    /// the league pack picked, and that club's own three curated players.
+    /// Read-only, so `sources` stays private. Empty before the first fetch and
+    /// for a club id nothing was cached for.
+    func clubPlayers(teamId: String) -> LiveClubPack.ClubPlayers {
+        guard let sources else { return .init() }
+        return .init(picks: sources.leaguePicks.filter { $0.team_id == teamId },
+                     curated: sources.slices.first { $0.team_id == teamId }?.players ?? [])
     }
 
     private var checkedPhotos: Set<String> = []

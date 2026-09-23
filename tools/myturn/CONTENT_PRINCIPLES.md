@@ -106,6 +106,26 @@ team page: the next fixture, the last result, the table, the rival. Static
 content only carries the `when` tags; which tags are live is decided in
 `ios/GoalDigger/Services/LingoDeck.swift` from data, never from memory.
 
+**Naming a real player (2026-09-23).** An entry may also carry a `player`
+variant: the same card with one `{ours|theirs}.{keeper|defender|midfielder|forward}`
+slot, filled on the phone from the fixture's squads, so up to two of the seven
+cards in a round name a real man. A runtime-filled slot is the sanctioned form
+of §4's escape hatch — the same trick `LiveClubPack.positionUse` already plays
+in Quiz — while a literal name typed into the JSON stays banned, and inside a
+variant the capitalised-word check is an error rather than a warning, because a
+variant is exactly where a writer is tempted to hand-write one to see how it
+looks. Slots never go in `gist` or `decoys`: a decoy is a *wrong* meaning, so a
+templated decoy would assert something false about a named real person. Two
+rules govern what a variant may say, and neither is checkable by script: it may
+say what he **is**, never what he **did** or that he **will play**; and it may
+only say what our data actually holds about him — position, club, squad
+membership, shirt number. No form, quality, reputation or fitness, because we
+have none of it, not even an injury column. Questions, preferences and position
+facts are the three safe shapes. The rules, the eight slots, the rendered-length
+arithmetic and five worked examples are in `LINGO_OVERHEARD_BRIEF.md`;
+`validate_overheard.py` enforces the mechanical half and `build_lingo.py` fails
+on an unknown slot.
+
 ## 8. A question she can answer without knowing the word is not a question (2026-09-23)
 
 The first Overheard batch passed every mechanical rule and was still too easy. The test
@@ -155,6 +175,14 @@ the moment she was deciding whether to keep the app.
   length band 20, no club names, no defining phrasing, `when` tags from the enum
   with at least 5 terms per tag and 60 carrying `any`
 - UK idiom banlist unchanged
+- lingo player variants: slot from the closed eight; exactly one distinct slot per
+  variant, equal to the declared one and present in `overheard`; caps and floors
+  measured on the rendered line (22-character name for the caps, 3 for the floor),
+  with a tighter 90 on a variant's `overheard`; every plain-`overheard` rule re-run
+  against a defanged copy; the term still matched outside the slot; the bubble-leak
+  check against the inherited gist; no duplicate of the plain line or `sayIt`; none
+  on a `basic` term; at most two per term and their sides must differ; floors of 30
+  terms, 3 per slot and 20 carrying `any`
 - lingo Overheard: `basic` must be a bool and at most 15 terms may carry it; `moment`
   required and one of `anytime` / `common` / `rare`, with at least 40 dealt terms in each
   of `anytime` and `common` (the `basic` ones do not count, because they are never dealt

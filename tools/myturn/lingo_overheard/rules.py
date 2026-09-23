@@ -43,6 +43,11 @@ OVERHEARD = {
         decoys=["A player pushed down to the reserves", "Finishing outside the places for Europe"],
         when=["relegation", "run-in"],
         moment="anytime",
+        player=dict(
+            slot='ours.forward',
+            overheard="If it's a relegation scrap, does a lad like {ours.forward} stick around?",
+            sayIt='"Would {ours.forward} still be here if it was a relegation scrap?"',
+        ),
     ),
     "promotion": dict(
         overheard="mate they've done it. promotion with three games to spare.",
@@ -123,6 +128,11 @@ OVERHEARD = {
         decoys=["The dugout where the manager and subs sit", "The six-yard area a keeper kicks from"],
         when=["any"],
         moment="common",
+        player=dict(
+            slot='theirs.keeper',
+            overheard='Get it in the box and make {theirs.keeper} come and claim it.',
+            sayIt='"Why not just put it in the box? {theirs.keeper} has to deal with it then."',
+        ),
     ),
     "free-kick": dict(
         overheard="That's a free kick, surely. He's gone through the back of him.",
@@ -157,6 +167,11 @@ OVERHEARD = {
         decoys=["A fine the club pays the league", "A ban from the next match, straight away"],
         when=["any"],
         moment="common",
+        player=dict(
+            slot='theirs.defender',
+            overheard="If {theirs.defender} picks up a yellow card early, he's in bother all afternoon.",
+            sayIt='"If {theirs.defender} gets a yellow card, does he have to be careful after?"',
+        ),
     ),
     "red-card": dict(
         overheard="Red card. Well, that's the game gone.",
@@ -197,6 +212,11 @@ OVERHEARD = {
         decoys=["One kick each until somebody misses", "A free shot from twelve yards during play"],
         when=["cup", "europe"],
         moment="rare",
+        player=dict(
+            slot='ours.keeper',
+            overheard='penalty shootout. dont tell me how it goes. and dont mention {ours.keeper}.',
+            sayIt='"A penalty shootout. Is {ours.keeper} the one who has to save them?"',
+        ),
     ),
     "two-legs": dict(
         overheard="Remember, this is over two legs. Anything can happen from here.",
@@ -280,6 +300,11 @@ OVERHEARD = {
         decoys=["Any pass in the move that led to the goal", "Winning the ball back to start an attack"],
         when=["any", "after-win"],
         moment="common",
+        player=dict(
+            slot='ours.midfielder',
+            overheard='Assists, assists, assists. Nobody asks what {ours.midfielder} actually does.',
+            sayIt='"Does {ours.midfielder} get many assists, or is it all goals with him?"',
+        ),
     ),
     "fixtures": dict(
         overheard="Fixtures are out. I've already booked three days off.",
@@ -305,6 +330,11 @@ OVERHEARD = {
         decoys=["The trophies handed out at the end of a season", "The two European competitions played midweek"],
         when=["cup"],
         moment="anytime",
+        player=dict(
+            slot='ours.defender',
+            overheard="He never takes the cups seriously. I'd start {ours.defender} in every one.",
+            sayIt='"Do the cups actually matter? Would you even play {ours.defender} in them?"',
+        ),
     ),
     "fa-cup": dict(
         overheard="FA Cup third round. This is the one he wants.",
@@ -329,6 +359,11 @@ OVERHEARD = {
         decoys=["A competition for the winners of each division", "The summer tournament between national sides"],
         when=["europe", "top-four", "title"],
         moment="rare",
+        player=dict(
+            slot='theirs.forward',
+            overheard='Champions League football is back, and {theirs.forward} is up front for them.',
+            sayIt='"Champions League, and {theirs.forward} up front. Should I be worried?"',
+        ),
     ),
     "europa-league": dict(
         overheard="Europa League on Thursday. I'll be up late again.",
@@ -353,6 +388,11 @@ OVERHEARD = {
         decoys=["A club's list of targets", "The fee one club pays another for a player"],
         when=["window", "early-season"],
         moment="anytime",
+        player=dict(
+            slot='theirs.midfielder',
+            overheard="Would you take {theirs.midfielder}? That's your transfer window done.",
+            sayIt='"Would we ever sign someone like {theirs.midfielder} in a transfer window?"',
+        ),
     ),
     "deadline-day": dict(
         overheard="Deadline day, and we're outside the ground with nothing to tell you.",

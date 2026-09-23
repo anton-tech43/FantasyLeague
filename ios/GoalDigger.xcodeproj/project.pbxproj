@@ -13,6 +13,7 @@
 		14474256E2DD1E7DA90DA178 /* GlossaryText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1969411F418AE27184440E14 /* GlossaryText.swift */; };
 		159D99B3A0BD1457CA4C4F47 /* LiveMatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCA4D1D232DB07DA5CC85E8B /* LiveMatchSnapshot.swift */; };
 		17B1A6C8E309B3DB90A2F28E /* PlayerHooks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D5FD984EA8B545ADF846F1C /* PlayerHooks.swift */; };
+		17B1A6C8E309B3DB90A2F29F /* PlayerSlots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D5FD984EA8B545ADF846F2F /* PlayerSlots.swift */; };
 		1958991C7C4BB12F44CFD55F /* LingoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922140CFA2F1A4786CEDC255 /* LingoView.swift */; };
 		244B4E7A89E82714DCF2F917 /* MatchActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BDA3526673665ADFD98752B /* MatchActivityAttributes.swift */; };
 		25B33D3555E190DC97F79521 /* LiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D73223B9708A1BB7B5EA13D /* LiveActivityManager.swift */; };
@@ -159,6 +160,7 @@
 		4D8F505623CCED3CAAB391AA /* LiveClubPack.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveClubPack.swift; sourceTree = "<group>"; };
 		4DEDD7BB48436C1F2CEE9515 /* QuizView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuizView.swift; sourceTree = "<group>"; };
 		5D5FD984EA8B545ADF846F1C /* PlayerHooks.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlayerHooks.swift; sourceTree = "<group>"; };
+		5D5FD984EA8B545ADF846F2F /* PlayerSlots.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlayerSlots.swift; sourceTree = "<group>"; };
 		5DCB2A4C5C03D80779E498AA /* HypeOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HypeOverlay.swift; sourceTree = "<group>"; };
 		61B2720C074D85BD2E44091E /* MyTurn */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; path = MyTurn; sourceTree = "<group>"; };
 		6F3A0B91CD9D833177EB1A31 /* LingoOverheardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LingoOverheardView.swift; sourceTree = "<group>"; };
@@ -465,6 +467,7 @@
 				4D8F505623CCED3CAAB391AA /* LiveClubPack.swift */,
 				EC063CF34EB46623A471C9F6 /* LiveSquadPack.swift */,
 				5D5FD984EA8B545ADF846F1C /* PlayerHooks.swift */,
+				5D5FD984EA8B545ADF846F2F /* PlayerSlots.swift */,
 				B7DE4A791829215579567567 /* AttributionService.swift */,
 				B704D2F20367B101AF1B118A /* LingoDeck.swift */,
 			);
@@ -783,6 +786,7 @@
 				785C14F6B48F7E69523A45EC /* SayThisPractiseView.swift in Sources */,
 				754DEA162AF85F46038029EC /* LiveSquadPack.swift in Sources */,
 				17B1A6C8E309B3DB90A2F28E /* PlayerHooks.swift in Sources */,
+				17B1A6C8E309B3DB90A2F29F /* PlayerSlots.swift in Sources */,
 				C6D2D393CC5FB544D3BF3492 /* HypeOverlay.swift in Sources */,
 				278CC3CBDBD9D8A556C88764 /* AttributionService.swift in Sources */,
 				8B0B08958242D8A2904E2895 /* LingoDeck.swift in Sources */,

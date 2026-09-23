@@ -28,6 +28,7 @@ sit in a textbook, rewrite it.
     when=["any"],
     moment="anytime",
     # aliases=["see it out"]   # optional, max 3, only when the natural phrasing is not the term text
+    # player=dict(...)         # optional, see "Naming a real player" below
 ),
 ```
 
@@ -212,6 +213,162 @@ good-run · sack-race *(no any)* bad-run, new-manager, after-heavy-loss · new-m
 we-go-again *(no any)* after-loss, after-heavy-loss, bad-run, after-draw · goal-of-the-month
 after-win, after-big-win · the-magic-of-the-cup, the-third-round *(no any)* cup · wembley *(no
 any)* cup, run-in
+
+## Naming a real player: the `player` variant
+
+Up to two of the seven cards in a round can name a real player from the actual fixture. You
+write a **template**; the phone fills the name from live squad data at the moment the round is
+dealt. This is the sanctioned form of `CONTENT_PRINCIPLES.md` §4's escape hatch. A literal name
+typed into one of these files is still banned, and the validator now treats it as an error
+rather than a warning inside a variant.
+
+### The rule that matters most, and the one no script can check
+
+> **A templated line may only say what our data actually says about him: his position, his
+> club, that he is in the squad, and his shirt number. Nothing else.**
+>
+> **And it may say what he *is*, never what he *did* or that he *will play*.**
+
+The second rule is necessary and not sufficient. Look at the plain line for `set-piece`:
+
+> "They're strong from set pieces. Watch the corners."
+
+It reads perfectly. It is also completely groundless. Nothing in any feed we hold carries
+style-of-play data: API-Football has no set-piece, pressing or counter-attacking numbers at all,
+`teams/statistics` has not been fetched since April and would not carry it anyway, and the site
+that does have it forbids reuse without a licence. Written about a team it is harmless colour.
+Written about a **named man** it is the app inventing a fact about a real person, and the moment
+she repeats it back to him it collapses.
+
+So these are all wrong, even though every one of them is dispositional rather than eventive:
+
+- "{theirs.defender} wins every header." — no aerial data.
+- "{ours.forward} is due a goal." — no form data.
+- "{theirs.midfielder} is the best they've got." — no quality data.
+- "{ours.keeper} is fit again." — there is no injury or suspension column anywhere.
+- "{ours.midfielder} is getting hooked here." — reports something that did not happen.
+- "{theirs.forward} will run us ragged today." — predicts he plays.
+
+There is no injury or suspension data, and `minutes > 0` only proves he played at some point, so
+**every line must also survive the man sitting on the bench.** Naming a suspended, injured or
+sold player is unavoidable; that is precisely why nothing may depend on him being on the pitch.
+
+Neither the validator nor the app can see any of this. It is a human gate, exactly like the
+blind test in §8.
+
+**Three shapes are always safe.** Prefer them in this order:
+
+1. **A question.** It cannot be wrong, and it is on voice for both of them. "Is {ours.defender}
+   a centre-back, or does he play out wide?"
+2. **A preference or a hypothetical.** It is a claim about the speaker, not the player. "I'd
+   play {ours.defender} at centre-back and worry about the rest later."
+3. **A position or squad fact.** It is what the data says. "Champions League football is back,
+   and {theirs.forward} is up front for them."
+
+Aim for the player being the **occasion** for the word rather than the **subject** of a claim.
+
+### The eight slots
+
+```
+{ours.keeper}   {ours.defender}   {ours.midfielder}   {ours.forward}
+{theirs.keeper} {theirs.defender} {theirs.midfielder} {theirs.forward}
+```
+
+A closed enum; anything else fails the build. **There is no `winger` slot, and that is
+deliberate.** The only trustworthy position vocabulary has four buckets, so a `forward` line
+must be true of a winger and a striker alike. Write "I'm not sure what {theirs.forward} is",
+not "{theirs.forward} is their target man" — the second is false the week the slot resolves to a
+5'7" wide player. Where the distinction matters, put it in the question: "Does {theirs.forward}
+play as a winger, or through the middle?"
+
+The token is substituted by literal string match, so write it **character for character in
+lowercase, with no space inside the braces**. `{Ours.Forward}` and `{ ours.forward }` are not
+slots, and a variant whose `overheard` carries no token at all fails the build, because the app
+would skip it and silently waste one of only two named cards in the round. Note also that a
+curated player only resolves through a closed position table (goalkeeper/keeper;
+defender/centre-back/center-back/full-back/fullback/wing-back/wingback;
+midfielder/midfield; attacker/forward/striker/winger) — anything outside it makes that player
+unusable, which is another reason the line must read fine when no name arrives.
+
+### Entry shape
+
+```python
+"target-man": dict(
+    overheard="You need a target man in this league. They've not got one.",
+    speaker="pundit", gist="A big forward the ball gets launched at",
+    decoys=["A defender told to follow one player about", "A forward who chases everything down"],
+    when=["any"], moment="anytime",
+    player=dict(
+        slot="theirs.forward",
+        overheard="Every side needs a target man. I'm not sure what {theirs.forward} is.",
+        sayIt='"Is {theirs.forward} a target man, or is he one of the quick ones?"',
+    ),
+),
+```
+
+`slot`, `overheard`, `sayIt` and nothing else. `speaker`, `gist`, `decoys`, `when`, `moment`
+and `basic` are **inherited and never overridable**, so the variant must sound like the same
+person saying the same kind of thing. At most two variants per term, and if there are two their
+sides must differ (pass a list). A variant on a `basic` term is an error, because those are
+never dealt.
+
+### Slots go in `overheard` and `sayIt` only, never in `gist` or `decoys`
+
+Three reasons, in order of severity. A decoy is a **wrong** meaning, so a templated decoy asserts
+something false about a named real person. A single option carrying a proper noun when the other
+two do not is a one-tap giveaway that no existing check can see. And the options are
+length-banded and uniqueness-checked at build time, which cannot be done on text the validator
+never sees. The upshot is that the three options stay answerable by someone who has never heard
+of the player.
+
+### Length
+
+Caps are measured on the **rendered** line with a 22-character name, which is the longest the
+resolver will print, and the floor is measured with a 3-character one so a fat placeholder cannot
+hide a line that is too short. A variant's `overheard` gets a tighter **90** (the plain cap is
+120) so a long name cannot push the bubble to four lines on a small phone. `sayIt` keeps its 100.
+In practice: keep the template under about 75 characters.
+
+### Five worked examples
+
+```python
+# 1. A position fact and nothing else. True whether he starts, is benched or was sold.
+"champions-league": player=dict(
+    slot="theirs.forward",
+    overheard="Champions League football is back, and {theirs.forward} is up front for them.",
+    sayIt='"Champions League, and {theirs.forward} up front. Should I be worried?"'),
+
+# 2. A question. It cannot be wrong, and it hands her the thing she actually wants to ask.
+"centre-back": player=dict(
+    slot="ours.defender",
+    overheard="I'd play {ours.defender} at centre-back and worry about the rest later.",
+    sayIt='"Is {ours.defender} a centre-back, or does he play out wide?"'),
+
+# 3. The uncertainty is the joke. This is how a forward line survives the winger/striker gap.
+"target-man": player=dict(
+    slot="theirs.forward",
+    overheard="Every side needs a target man. I'm not sure what {theirs.forward} is.",
+    sayIt='"Is {theirs.forward} a target man, or is he one of the quick ones?"'),
+
+# 4. He is the occasion, not the subject. Nothing at all is claimed about him.
+"the-gaffer": player=dict(
+    slot="ours.keeper",
+    overheard="You'd have to ask the gaffer about {ours.keeper}. I've got no idea.",
+    sayIt='"What\'s the gaffer like with {ours.keeper}? Do you ever hear?"'),
+
+# 5. A rule consequence inside a conditional. The rule is data; the conditional survives the bench.
+"yellow-card": player=dict(
+    slot="theirs.defender",
+    overheard="If {theirs.defender} picks up a yellow card early, he's in bother all afternoon.",
+    sayIt='"If {theirs.defender} gets a yellow card, does he have to be careful after?"'),
+```
+
+### Re-run the blind test
+
+A named line is unusually prone to answering itself, because a name invites the writer to explain
+what the man does: "he's their target man, everything comes through him" is the gist in his
+words. Substitute a plausible name, blank the phrase, and check the three options are still
+separable. Four lines in the first batch failed this and were rewritten.
 
 ## Run before you return
 

@@ -98,16 +98,13 @@ enum LiveSquadPack {
         // the feed's name is used whole; where the feed itself repeats a name
         // (Spurs list "T. Hall" twice) nothing we can print separates them, so
         // he is skipped entirely.
-        var shortCounts: [String: Int] = [:], fullCounts: [String: Int] = [:]
-        for p in named {
-            shortCounts[LiveClubPack.shortName(p.name), default: 0] += 1
-            fullCounts[p.name, default: 0] += 1
-        }
-        func display(_ p: Player) -> String {
-            let s = LiveClubPack.shortName(p.name)
-            return shortCounts[s] == 1 ? s : p.name
-        }
-        let allNames = named.filter { fullCounts[$0.name] == 1 }.map(display)
+        //
+        // The rule itself lives in `PlayerSlots.displayNames`, which is where
+        // Lingo's named cards print from: two copies of it would eventually
+        // disagree about what to call the same man on two screens.
+        let printable = PlayerSlots.displayNames(named.map(\.name))
+        func display(_ p: Player) -> String { printable[p.name] ?? LiveClubPack.shortName(p.name) }
+        let allNames = named.filter { printable[$0.name] != nil }.map(display)
         let hooks = PlayerHooks.build(players: named, club: club, played: played, name: display)
         var qs: [MyTurnQuestion] = []
 
@@ -127,7 +124,7 @@ enum LiveSquadPack {
             )
         }
 
-        for p in named where fullCounts[p.name] == 1 {
+        for p in named where printable[p.name] != nil {
             let short = display(p)
             let label = LiveClubPack.positionLabel(p.position ?? "")
             let card = match(p.name, in: cards)
@@ -150,7 +147,7 @@ enum LiveSquadPack {
             // and a silhouette is not one: "Who is this?" over the grey figure
             // api-sports serves for a player it has no photo of is unanswerable.
             if let photo = p.photo {
-                let sameShirt = named.filter { $0.position == p.position && $0.name != p.name && fullCounts[$0.name] == 1 }
+                let sameShirt = named.filter { $0.position == p.position && $0.name != p.name && printable[$0.name] != nil }
                     .map(display)
                 qs += LiveClubPack.question(
                     id: "squad-photo-\(p.api_player_id)", difficulty: p.isFringe ? 3 : 2,
@@ -424,6 +421,10 @@ final class LiveSquadService {
     static let shared = LiveSquadService()
 
     private(set) var pack: QuizPack?
+
+    /// His club's cached squad rows, read-only. `PlayerSlots` needs the men
+    /// and their minutes; it has no business with the rest of the cache.
+    var players: [LiveSquadPack.Player] { cache?.players ?? [] }
 
     private struct Cache: Codable {
         let teamId: String

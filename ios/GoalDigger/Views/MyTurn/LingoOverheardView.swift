@@ -19,6 +19,12 @@ struct LingoOverheardView: View {
     @Bindable var store: MyTurnStore
     /// This weekend, for the line the end card offers her to use at it.
     let context: MatchContext
+    /// The dealt words that name a real player from this fixture, keyed by
+    /// term id (`PlayerSlots`). At most two of the seven, and empty whenever
+    /// nothing resolved. Only the round reads it: the glossary keeps rendering
+    /// the plain text, because a name in a definition is noise when she is
+    /// looking up what a word means mid-match.
+    var named: [String: LingoTerm] = [:]
     /// A fresh seven from the same weekend, from the end card.
     let onDealAgain: () -> Void
     /// "The words" on an unfinished round: the round is kept exactly where it
@@ -27,7 +33,15 @@ struct LingoOverheardView: View {
     let onPause: () -> Void
     @Environment(AppState.self) private var appState
 
-    private func term(_ id: String) -> LingoTerm? { content.terms.first { $0.id == id } }
+    private func term(_ id: String) -> LingoTerm? { named[id] ?? content.terms.first { $0.id == id } }
+
+    /// The word list the round speaks from. Used for the line the end card
+    /// offers so a committed line carries the name she just read on the card —
+    /// the heading, the bubble and the settle row a week later all have to say
+    /// the same words.
+    private var terms: [LingoTerm] {
+        named.isEmpty ? content.terms : content.terms.map { named[$0.id] ?? $0 }
+    }
 
     var body: some View {
         // Its own stack rather than borrowing the parent's: the round is a
@@ -321,7 +335,7 @@ struct LingoOverheardView: View {
         // The saved one wins: it holds the words as they were shown when she
         // said yes, and a redraw must not offer her a different line.
         if let line = saved ?? LingoWeekendDeck.offer(
-            terms: content.terms, knewIds: session.knewIds, context: context,
+            terms: terms, knewIds: session.knewIds, context: context,
             now: Date(), personalise: appState.personalise) {
             VStack(alignment: .leading, spacing: 10) {
                 Text("For \(line.occasion)")

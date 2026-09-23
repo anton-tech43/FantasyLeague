@@ -896,7 +896,7 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
                   sayIt: "Say \(id).", seeAlso: nil, level: level,
                   overheard: "They said \(id).", overheardTerm: id, speaker: .him,
                   gist: "gist \(id)", decoys: ["decoy one \(id)", "decoy two \(id)"], when: when,
-                  basic: nil, moment: moment)
+                  basic: nil, moment: moment, playerVariants: nil)
     }
     // The derby words sit ABOVE the fillers by difficulty, so "derby first" is
     // a statement about selection and about relevance beating level — with
@@ -1035,15 +1035,22 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
     }, "two different salts dealt every word in the same order, so the salt does nothing")
     let bare = LingoTerm(id: "bare", category: .rules, term: "Bare", meaning: "m", heard: "h",
                          sayIt: nil, seeAlso: nil, level: 1, overheard: nil, overheardTerm: nil,
-                         speaker: nil, gist: nil, decoys: nil, when: nil, basic: nil, moment: nil)
+                         speaker: nil, gist: nil, decoys: nil, when: nil, basic: nil, moment: nil,
+                         playerVariants: nil)
     assert(LingoWeekendDeck.options(for: bare) == nil, "a word with no decoys must not be playable")
     let noSnippet = LingoTerm(id: "no-snippet", category: .rules, term: "Nosnip", meaning: "m",
                               heard: "h", sayIt: nil, seeAlso: nil, level: 1, overheard: nil,
                               overheardTerm: nil, speaker: .him, gist: "gist nosnip",
                               decoys: ["decoy one", "decoy two"], when: ["any"], basic: nil,
-                              moment: "common")
+                              moment: "common", playerVariants: nil)
     assert(LingoWeekendDeck.options(for: noSnippet) == nil,
            "a word with options but no line to overhear must not be playable")
+
+    // --- The names on the cards -------------------------------------------
+    // Its own table test, in its own file. Asserted from here because this is
+    // the function Lingo already fires once per launch, and because the gate
+    // it guards is built out of `LingoFixtures` above.
+    assert(PlayerSlots.selfCheck(), "PlayerSlots broke: a Lingo card may be naming the wrong man")
 
     // --- The bundled content ---------------------------------------------
     // Against the copy in the app bundle, not against `bundled`: that is

@@ -27,6 +27,10 @@ struct LingoView: View {
     /// fine: the context falls back to "7 words you'll hear at any match."
     let page: TeamPageContent?
     @Environment(AppState.self) private var appState
+    /// The two device-built caches, for the real players a card can name.
+    /// Read-only here: `MyTurnView`'s task owns refreshing them.
+    @State private var squad = LiveSquadService.shared
+    @State private var live = LiveClubPackService.shared
 
     /// Which category folds are open. Not persisted: a fold is a glance, and
     /// she comes back to the hero, not to where she left the list.
@@ -57,6 +61,11 @@ struct LingoView: View {
         /// With `refresher` already filled in from the deck below.
         var context: MatchContext
         var ids: [String]
+        /// The dealt words that came back naming a real player, keyed by term
+        /// id. At most two (`PlayerSlots.maxPlayerCards`), and empty whenever
+        /// nothing resolved — which is every round until the content carries a
+        /// variant, and every round on a cold start after that.
+        var named: [String: LingoTerm] = [:]
     }
 
     // MARK: What weekend it is
@@ -94,6 +103,13 @@ struct LingoView: View {
         let known: Int
         let day: String
         let debug: String?
+        /// The player caches. A squad or a league fetch landing after the first
+        /// build is what turns a plain round into a named one, and without
+        /// these the round would stay plain until something else moved.
+        let squad: Int
+        let ourCurated: Int
+        let theirs: Int
+        let opponentKnown: Bool
     }
 
     private var heroKey: HeroKey {
@@ -103,6 +119,7 @@ struct LingoView: View {
         #else
         let debug: String? = nil
         #endif
+        let players = inputs(for: context)
         return HeroKey(
             fixture: page?.cards.nextFixture?.date,
             result: page?.cards.recentResults?.first?.date,
@@ -110,14 +127,61 @@ struct LingoView: View {
             nonce: store.lingoDealNonce,
             known: store.knownCount(deckId: LingoWeekendDeck.deckId),
             day: "\(day.year ?? 0)-\(day.month ?? 0)-\(day.day ?? 0)",
-            debug: debug)
+            debug: debug,
+            squad: players.squad.count,
+            ourCurated: players.ourCurated.count,
+            theirs: players.theirPicks.count + players.theirCurated.count,
+            opponentKnown: players.opponentKnown)
+    }
+
+    /// Everything `PlayerSlots` needs, gathered from the two device caches.
+    ///
+    /// The opponent comes from the context, never from `next_fixture`: the two
+    /// disagree exactly when a fixture is postponed, and that disagreement is
+    /// how a Chelsea player's name ends up on a card before a Fulham match.
+    private func inputs(for context: MatchContext) -> PlayerSlots.Inputs {
+        #if DEBUG
+        if PlayerSlots.debugRequested { return PlayerSlots.debugInputs }
+        #endif
+        let opponent = PlayerSlots.opponent(of: context)
+        let theirs = opponent
+            .flatMap { name in Team.allCases.first { MatchContext.sameClub($0.displayName, name) } }
+            .map { live.clubPlayers(teamId: $0.rawValue) } ?? .init()
+        return PlayerSlots.Inputs(
+            squad: squad.players,
+            ourCurated: page?.cards.onesToKnow?.players ?? [],
+            theirPicks: theirs.picks,
+            // The gated opponent side off his own page first — it was written
+            // for this fixture — then the opponent's own curated three.
+            theirCurated: PlayerSlots.opponentCurated(page: page, context: context) + theirs.curated,
+            opponentKnown: opponent != nil)
     }
 
     private func buildWeekend() -> Weekend {
         var shown = context
         let deck = dealt(shown)
         shown.refresher = deck.refresher
-        return Weekend(context: shown, ids: deck.ids)
+
+        // `LingoWeekendDeck.build` stays pure and knows nothing about players.
+        // The names go on afterwards, over the seven it dealt, in dealt order.
+        let byId = Dictionary(content.terms.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
+        var plain = deck.ids.compactMap { byId[$0] }
+        #if DEBUG
+        if PlayerSlots.debugRequested { plain = PlayerSlots.debugInjected(plain) }
+        #endif
+        let resolved = PlayerSlots.apply(plain, inputs: inputs(for: shown),
+                                         seed: shown.fixtureKey + "|\(store.lingoDealNonce)")
+        var named: [String: LingoTerm] = [:]
+        for (before, after) in zip(plain, resolved) where before != after { named[after.id] = after }
+        return Weekend(context: shown, ids: deck.ids, named: named)
+    }
+
+    /// The whole word list with this round's named cards swapped in. The
+    /// glossary below deliberately does not use it: a name in a definition is
+    /// noise when she is looking up what a word means mid-match.
+    private var roundTerms: [LingoTerm] {
+        guard let named = weekend?.named, !named.isEmpty else { return content.terms }
+        return content.terms.map { named[$0.id] ?? $0 }
     }
 
     /// Start a round. `ids` is the deck the hero already built and already
@@ -156,6 +220,7 @@ struct LingoView: View {
                     if showingRound {
                         LingoOverheardView(
                             content: content, sayThis: sayThis, store: store, context: context,
+                            named: weekend?.named ?? [:],
                             onDealAgain: dealAgain,
                             onPause: { showingLanding = true })
                     } else {
@@ -559,6 +624,20 @@ struct LingoView: View {
     ///   `-gdLingoPending`     plants a committed line for last week's
     ///                         fixture, so the landing shows the settle row
     ///                         without waiting a week for a real one.
+    ///   `-gdLingoPlayerVariant`
+    ///                         names a real player on two of the dealt cards.
+    ///                         No published term carries `playerVariants` yet,
+    ///                         so there is nothing on the device to
+    ///                         photograph: this hangs a `theirs.forward`
+    ///                         variant on the first dealt word and an
+    ///                         `ours.midfielder` one on the second, and hands
+    ///                         `PlayerSlots` a fixture squad and a fixture
+    ///                         opponent (`PlayerSlots.debugInputs`) so the
+    ///                         caches do not have to have landed. It exercises
+    ///                         the real resolver — the cap, the claim and the
+    ///                         gate all still apply — and touches nothing
+    ///                         outside DEBUG. Pair it with `-gdLingoContext
+    ///                         derby -gdLingoPlay`.
     ///
     /// simctl cannot tap, so these are the only way to a screenshot of
     /// anything past the landing screen.
@@ -608,7 +687,7 @@ struct LingoView: View {
         if let n = intValue("-gdLingoAnswer") { debugAnswer(n) }
         if let target = intValue("-gdLingoFinish") { debugFinish(right: target, context: current) }
         if args.contains("-gdLingoCommit"), let session = store.drillSession,
-           let offer = LingoWeekendDeck.offer(terms: content.terms, knewIds: session.knewIds,
+           let offer = LingoWeekendDeck.offer(terms: roundTerms, knewIds: session.knewIds,
                                               context: current, now: Date(),
                                               personalise: appState.personalise) {
             store.commitLine(offer)
@@ -622,7 +701,7 @@ struct LingoView: View {
     /// row shows a real sayIt line and "I did" retires a real word.
     private func debugPending(_ context: MatchContext) {
         guard let id = dealt(context).ids.first,
-              let line = LingoWeekendDeck.offer(terms: content.terms, knewIds: [id], context: context,
+              let line = LingoWeekendDeck.offer(terms: roundTerms, knewIds: [id], context: context,
                                                 now: Date(), personalise: appState.personalise)
         else { return }
         store.commitLine(MyTurnStore.SaidLine(

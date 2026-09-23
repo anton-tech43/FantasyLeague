@@ -17,6 +17,11 @@ OVERHEARD = {
         decoys=["The club captain who leads on the pitch", "The head of the backroom staff at a club"],
         when=["any", "new-manager", "bad-run", "after-heavy-loss"],
         moment="anytime",
+        player=dict(
+            slot='ours.keeper',
+            overheard="You'd have to ask the gaffer about {ours.keeper}. I've got no idea.",
+            sayIt='"What\'s the gaffer like with {ours.keeper}? Do you ever hear?"',
+        ),
     ),
     "the-boss": dict(
         overheard="It'll be the boss's call and nobody will argue with it.",
@@ -25,6 +30,11 @@ OVERHEARD = {
         decoys=["The club owner who pays everyone's wages", "The senior player who speaks in the dressing room"],
         when=["any", "new-manager"],
         moment="common",
+        player=dict(
+            slot='ours.midfielder',
+            overheard="Whether {ours.midfielder} plays is the boss's call. Nobody else gets a say.",
+            sayIt='"Is it the boss who decides whether {ours.midfielder} plays, or the coaches?"',
+        ),
     ),
     "hard-man": dict(
         overheard="Signed a proper hard man in the summer. First start today.",
@@ -41,6 +51,11 @@ OVERHEARD = {
         decoys=["A player putting on a show for the cameras", "A polished touch that makes the game look easy"],
         when=["good-run", "after-win"],
         moment="anytime",
+        player=dict(
+            slot='theirs.keeper',
+            overheard="Class act, is he, {theirs.keeper}? I'd have to see more of him.",
+            sayIt='"Is {theirs.keeper} a class act, or is that just what they say?"',
+        ),
     ),
     "top-top-player": dict(
         overheard="He's a top top player and I don't say that lightly.",
@@ -49,6 +64,11 @@ OVERHEARD = {
         decoys=["Someone at the top of the scoring charts", "A man voted best on the pitch that day"],
         when=["good-run", "after-win", "after-big-win", "window"],
         moment="anytime",
+        player=dict(
+            slot='theirs.midfielder',
+            overheard='Would you call {theirs.midfielder} a top top player? Honestly, now.',
+            sayIt='"Is {theirs.midfielder} a top top player, or is that just pundit talk?"',
+        ),
     ),
     "match-of-the-day": dict(
         overheard="Match of the Day gets worse every year. I still watch it, mind.",
@@ -65,6 +85,11 @@ OVERHEARD = {
         decoys=["A journalist who writes the match report", "An expert who predicts the score beforehand"],
         when=["any", "after-loss"],
         moment="anytime",
+        player=dict(
+            slot='theirs.defender',
+            overheard="Ask a pundit about {theirs.defender} and you'll get ten minutes of it.",
+            sayIt='"What do the pundits actually say about {theirs.defender}?"',
+        ),
     ),
     "the-lads": dict(
         overheard="Buzzing for the lads tonight. Been a long few weeks.",
@@ -81,6 +106,11 @@ OVERHEARD = {
         decoys=["To keep it all in and say nothing about it", "To waste chances in front of goal all game"],
         when=["title", "run-in", "bad-run", "after-loss"],
         moment="anytime",
+        player=dict(
+            slot='theirs.keeper',
+            overheard="They'll bottle it. They always do, with {theirs.keeper} in goal.",
+            sayIt='"They always bottle it, you said. Is {theirs.keeper} the problem?"',
+        ),
     ),
     "banter": dict(
         overheard="He's not answered since Saturday. Can't take the banter.",
@@ -89,6 +119,11 @@ OVERHEARD = {
         decoys=["Chatter between the players on the pitch", "A row between fans that has gone too far"],
         when=["any", "derby", "after-win"],
         moment="anytime",
+        player=dict(
+            slot='ours.forward',
+            overheard='The banter if {ours.forward} misses one of those, though. Imagine.',
+            sayIt='"Is that banter, or would you actually fall out over {ours.forward}?"',
+        ),
     ),
     "group-chat": dict(
         overheard="Don't mind me, I'm just catching up on the group chat.",
@@ -233,6 +268,11 @@ OVERHEARD = {
         decoys=["A made-up league played on a games console", "Betting on which players will score first"],
         when=["any", "early-season"],
         moment="anytime",
+        player=dict(
+            slot='ours.forward',
+            overheard="Fantasy football's ruining my life. Ask me about {ours.forward} and see.",
+            sayIt='"Is {ours.forward} good, or is that your fantasy football team talking?"',
+        ),
     ),
     "we-go-again": dict(
         overheard="We go again Tuesday. Kick-off's at eight, apparently.",

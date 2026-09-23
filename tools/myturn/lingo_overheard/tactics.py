@@ -25,6 +25,11 @@ OVERHEARD = {
         decoys=["A midfielder who shields the defence behind him", "The one who whips the crosses in from wide"],
         when=["any", "after-clean-sheet"],
         moment="anytime",
+        player=dict(
+            slot='ours.defender',
+            overheard="I'd play {ours.defender} at centre-back and worry about the rest later.",
+            sayIt='"Is {ours.defender} a centre-back, or does he play out wide?"',
+        ),
     ),
     "full-back": dict(
         overheard="Both full-backs are booked now. That's a worry with an hour to go.",
@@ -49,6 +54,11 @@ OVERHEARD = {
         decoys=["A player told to hold on to the ball", "The one who plays just behind the striker"],
         when=["any"],
         moment="common",
+        player=dict(
+            slot='ours.midfielder',
+            overheard='They need a proper holding midfielder. Could {ours.midfielder} do that job?',
+            sayIt='"Is {ours.midfielder} a holding midfielder, or does he get forward?"',
+        ),
     ),
     "box-to-box": dict(
         overheard="He's box-to-box, that lad. Doesn't half make it look easy.",
@@ -73,6 +83,11 @@ OVERHEARD = {
         decoys=["The one who takes the corners and free kicks", "The one who barks the orders at everyone"],
         when=["any"],
         moment="anytime",
+        player=dict(
+            slot='theirs.midfielder',
+            overheard='If {theirs.midfielder} is their playmaker, someone needs to sit on him.',
+            sayIt='"Is {theirs.midfielder} the playmaker, then? Who is supposed to stop him?"',
+        ),
     ),
     "winger": dict(
         overheard="That winger has had a stinker tonight. Not been in it at all.",
@@ -81,6 +96,11 @@ OVERHEARD = {
         decoys=["The forward who plays just off the striker", "A defender who gets forward down the touchline"],
         when=["any"],
         moment="common",
+        player=dict(
+            slot='theirs.forward',
+            overheard='If {theirs.forward} plays as a winger, that changes how we set up.',
+            sayIt='"Does {theirs.forward} play as a winger, or through the middle?"',
+        ),
     ),
     "striker": dict(
         overheard="Two years we've been after a striker. Two years.",
@@ -97,6 +117,11 @@ OVERHEARD = {
         decoys=["A defender told to follow one player about", "A forward who chases everything down"],
         when=["any"],
         moment="common",
+        player=dict(
+            slot='theirs.forward',
+            overheard="Every side needs a target man. I'm not sure what {theirs.forward} is.",
+            sayIt='"Is {theirs.forward} a target man, or is he one of the quick ones?"',
+        ),
     ),
     "false-nine": dict(
         overheard="He's playing a false nine there. We'll see how long that lasts.",
@@ -113,6 +138,11 @@ OVERHEARD = {
         decoys=["Newspapers and TV crowding round the club", "Playing the ball forward at every chance"],
         when=["any", "good-run"],
         moment="anytime",
+        player=dict(
+            slot='theirs.midfielder',
+            overheard="It's all pressing with this manager. Nobody asks if {theirs.midfielder} enjoys it.",
+            sayIt='"All that pressing. Does {theirs.midfielder} ever stop running?"',
+        ),
     ),
     "high-press": dict(
         overheard="He's gone with the high press today. That's a big risk, that.",
@@ -177,6 +207,11 @@ OVERHEARD = {
         decoys=["Each defender covering an area of the pitch", "Standing goal-side of your man at a corner"],
         when=["any"],
         moment="common",
+        player=dict(
+            slot='ours.defender',
+            overheard="Man marking, is it. I'd not give {ours.defender} that job, personally.",
+            sayIt='"Man marking sounds hard. Could {ours.defender} do that for ninety minutes?"',
+        ),
     ),
     "zonal-marking": dict(
         overheard="That's zonal marking for you. I've no time for it.",
@@ -193,6 +228,11 @@ OVERHEARD = {
         decoys=["The eleven a manager settles on for a game", "A goal that comes straight from open play"],
         when=["any", "derby", "cup"],
         moment="anytime",
+        player=dict(
+            slot='ours.defender',
+            overheard='Set pieces, then. Get {ours.defender} up there and hope for the best.',
+            sayIt='"Set piece. Does {ours.defender} go up for these, or stay back?"',
+        ),
     ),
     "overlap": dict(
         overheard="He's missed the overlap again. That's twice in five minutes.",
@@ -265,5 +305,10 @@ OVERHEARD = {
         decoys=["Players taking turns as captain in a season", "Swapping positions with someone mid-match"],
         when=["cup", "europe"],
         moment="rare",
+        player=dict(
+            slot='ours.keeper',
+            overheard="Rotation again. I'd pick {ours.keeper} every single week, me.",
+            sayIt='"All this rotation. Would you pick {ours.keeper} every week?"',
+        ),
     ),
 }

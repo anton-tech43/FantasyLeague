@@ -150,8 +150,9 @@ struct LingoTerm: Codable, Identifiable, Hashable {
     let heard: String
     /// A sentence she can say that uses the term — turns a definition into a
     /// tool. Required by the validator since 2026-09-08; optional here so an
-    /// older cached file still decodes.
-    let sayIt: String?
+    /// older cached file still decodes. `var` for the same reason `overheard`
+    /// is: `naming(_:_:)` rewrites it with a real player's name.
+    var sayIt: String?
     let seeAlso: [String]?
     /// Difficulty, 1 upwards (2026-09-09). It stopped being a ladder on
     /// 2026-09-22 — there are no levels on screen any more — and is now only a
@@ -168,10 +169,12 @@ struct LingoTerm: Codable, Identifiable, Hashable {
     // (`LingoWeekendDeck.options`) and still reads fine in the word list.
 
     /// A realistic line someone would actually say, using the term.
-    let overheard: String?
+    /// `var` only so `naming(_:_:)` can hand back a copy carrying a real
+    /// player's name; nothing else writes it.
+    var overheard: String?
     /// The exact substring of `overheard` to bold, emitted by the build script
     /// so the view can bold with a plain `range(of:)` and no matching rules.
-    let overheardTerm: String?
+    var overheardTerm: String?
     let speaker: LingoSpeaker?
     /// The right answer: what he meant, in her words.
     let gist: String?
@@ -198,6 +201,52 @@ struct LingoTerm: Codable, Identifiable, Hashable {
     /// `[String]`: a publish can add a band before the app knows it, and an
     /// unknown band is simply never offered.
     let moment: String?
+
+    // MARK: Player variants (2026-09-23)
+
+    /// A rewrite of this term's three text fields that names a real player
+    /// from the actual fixture, resolved on the phone by `PlayerSlots`.
+    ///
+    /// It overrides an existing term rather than minting a card id: her
+    /// known/learning progress is keyed on term ids, so a one-off id would be
+    /// progress she could never bank. `speaker`, `gist`, `decoys`, `when`,
+    /// `basic` and `moment` are inherited and never overridden — a decoy is a
+    /// *wrong* meaning, so a name in one would assert something false about a
+    /// real person, and a proper noun in one option out of three is a one-tap
+    /// giveaway.
+    struct PlayerVariant: Codable, Hashable {
+        /// `{ours|theirs}.{keeper|defender|midfielder|forward}`. A `String`
+        /// rather than an enum for the same reason `when` is `[String]`: a
+        /// publish may add a slot before the app knows it, and an unknown slot
+        /// simply never resolves, which leaves the plain line on screen.
+        let slot: String
+        /// The line as it would be said, with `{slot}` where the name goes.
+        let overheard: String
+        /// The substring of `overheard` to bold, emitted per variant by the
+        /// build script. Nil falls back to the term's own.
+        let overheardTerm: String?
+        /// The line she says back, with `{slot}` where the name goes.
+        let sayIt: String
+    }
+
+    /// Nil on every term until the content build starts emitting them, and nil
+    /// forever on a cached file published before they existed.
+    let playerVariants: [PlayerVariant]?
+
+    /// This term with `variant`'s lines in place of its own and the slot token
+    /// replaced by `named`.
+    ///
+    /// The one place the substitution happens, so the bubble, the reveal and
+    /// the line the round leaves her with can never disagree about what he
+    /// was called.
+    func naming(_ named: String, _ variant: PlayerVariant) -> LingoTerm {
+        let token = "{\(variant.slot)}"
+        var copy = self
+        copy.overheard = variant.overheard.replacingOccurrences(of: token, with: named)
+        copy.overheardTerm = variant.overheardTerm ?? overheardTerm
+        copy.sayIt = variant.sayIt.replacingOccurrences(of: token, with: named)
+        return copy
+    }
 }
 
 // MARK: Quiz

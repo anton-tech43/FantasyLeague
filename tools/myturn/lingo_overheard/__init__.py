@@ -1,7 +1,7 @@
 """lingo_overheard — the Overheard game's content, one file per category.
 
 Each file holds OVERHEARD: dict[term id -> dict(overheard, speaker, gist,
-decoys, when, moment, aliases?, basic?)]. `moment` says how often the line's
+decoys, when, moment, aliases?, basic?, player?)]. `moment` says how often the line's
 moment arrives in one match (anytime, common, rare): the end-of-round
 commitment only ever offers a line she could actually get to say.
 
@@ -24,6 +24,16 @@ WHEN_TAGS = (
 )
 SPEAKERS = ("him", "telly", "chat", "pundit")
 MOMENTS = ("anytime", "common", "rare")
+
+# The optional `player` key on an entry: a variant of `overheard` and `sayIt`
+# carrying one slot, filled on the phone with a real name from the fixture.
+# Four archetypes, not five, because players.position has four values and
+# nothing else about a position is trustworthy: a `forward` line must be true of
+# a winger and a striker alike. A templated line may say what a player *is*; it
+# may never report what he did or predict that he will play.
+SIDES = ("ours", "theirs")
+ARCHETYPES = ("keeper", "defender", "midfielder", "forward")
+SLOTS = tuple(f"{side}.{arch}" for side in SIDES for arch in ARCHETYPES)
 
 OVERHEARD: dict[str, dict] = {}
 for _mod in (rules, tactics, match_situations, culture):

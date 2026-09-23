@@ -1,5 +1,5 @@
 {
-  "contentVersion": "2026-09-23.2",
+  "contentVersion": "2026-09-23.3",
   "terms": [
     {
       "id": "premier-league",
@@ -214,7 +214,15 @@
       "when": [
         "any"
       ],
-      "moment": "common"
+      "moment": "common",
+      "playerVariants": [
+        {
+          "slot": "theirs.defender",
+          "overheard": "If {theirs.defender} picks up a yellow card early, he's in bother all afternoon.",
+          "sayIt": "\"If {theirs.defender} gets a yellow card, does he have to be careful after?\"",
+          "overheardTerm": "yellow card"
+        }
+      ]
     },
     {
       "id": "red-card",
@@ -321,7 +329,15 @@
         "relegation",
         "run-in"
       ],
-      "moment": "anytime"
+      "moment": "anytime",
+      "playerVariants": [
+        {
+          "slot": "ours.forward",
+          "overheard": "If it's a relegation scrap, does a lad like {ours.forward} stick around?",
+          "sayIt": "\"Would {ours.forward} still be here if it was a relegation scrap?\"",
+          "overheardTerm": "relegation"
+        }
+      ]
     },
     {
       "id": "promotion",
@@ -396,7 +412,15 @@
       "when": [
         "any"
       ],
-      "moment": "common"
+      "moment": "common",
+      "playerVariants": [
+        {
+          "slot": "theirs.keeper",
+          "overheard": "Get it in the box and make {theirs.keeper} come and claim it.",
+          "sayIt": "\"Why not just put it in the box? {theirs.keeper} has to deal with it then.\"",
+          "overheardTerm": "box"
+        }
+      ]
     },
     {
       "id": "foul",
@@ -723,7 +747,15 @@
         "cup",
         "europe"
       ],
-      "moment": "rare"
+      "moment": "rare",
+      "playerVariants": [
+        {
+          "slot": "ours.keeper",
+          "overheard": "penalty shootout. dont tell me how it goes. and dont mention {ours.keeper}.",
+          "sayIt": "\"A penalty shootout. Is {ours.keeper} the one who has to save them?\"",
+          "overheardTerm": "penalty shootout"
+        }
+      ]
     },
     {
       "id": "the-cups",
@@ -750,7 +782,15 @@
       "when": [
         "cup"
       ],
-      "moment": "anytime"
+      "moment": "anytime",
+      "playerVariants": [
+        {
+          "slot": "ours.defender",
+          "overheard": "He never takes the cups seriously. I'd start {ours.defender} in every one.",
+          "sayIt": "\"Do the cups actually matter? Would you even play {ours.defender} in them?\"",
+          "overheardTerm": "cups"
+        }
+      ]
     },
     {
       "id": "fa-cup",
@@ -856,7 +896,15 @@
         "title",
         "top-four"
       ],
-      "moment": "rare"
+      "moment": "rare",
+      "playerVariants": [
+        {
+          "slot": "theirs.forward",
+          "overheard": "Champions League football is back, and {theirs.forward} is up front for them.",
+          "sayIt": "\"Champions League, and {theirs.forward} up front. Should I be worried?\"",
+          "overheardTerm": "Champions League"
+        }
+      ]
     },
     {
       "id": "europa-league",
@@ -1100,7 +1148,15 @@
         "any",
         "after-win"
       ],
-      "moment": "common"
+      "moment": "common",
+      "playerVariants": [
+        {
+          "slot": "ours.midfielder",
+          "overheard": "Assists, assists, assists. Nobody asks what {ours.midfielder} actually does.",
+          "sayIt": "\"Does {ours.midfielder} get many assists, or is it all goals with him?\"",
+          "overheardTerm": "Assists"
+        }
+      ]
     },
     {
       "id": "brace",
@@ -1172,7 +1228,15 @@
         "any",
         "after-win"
       ],
-      "moment": "common"
+      "moment": "common",
+      "playerVariants": [
+        {
+          "slot": "ours.midfielder",
+          "overheard": "{ours.midfielder} could win man of the match every week and they'd still moan.",
+          "sayIt": "\"Would you give {ours.midfielder} man of the match? Or is that just me?\"",
+          "overheardTerm": "man of the match"
+        }
+      ]
     },
     {
       "id": "nil-nil",
@@ -1221,7 +1285,15 @@
         "derby",
         "cup"
       ],
-      "moment": "anytime"
+      "moment": "anytime",
+      "playerVariants": [
+        {
+          "slot": "ours.defender",
+          "overheard": "Set pieces, then. Get {ours.defender} up there and hope for the best.",
+          "sayIt": "\"Set piece. Does {ours.defender} go up for these, or stay back?\"",
+          "overheardTerm": "Set pieces"
+        }
+      ]
     },
     {
       "id": "formation",
@@ -1294,7 +1366,15 @@
         "any",
         "after-clean-sheet"
       ],
-      "moment": "anytime"
+      "moment": "anytime",
+      "playerVariants": [
+        {
+          "slot": "ours.defender",
+          "overheard": "I'd play {ours.defender} at centre-back and worry about the rest later.",
+          "sayIt": "\"Is {ours.defender} a centre-back, or does he play out wide?\"",
+          "overheardTerm": "centre-back"
+        }
+      ]
     },
     {
       "id": "full-back",
@@ -1365,7 +1445,15 @@
       "when": [
         "any"
       ],
-      "moment": "common"
+      "moment": "common",
+      "playerVariants": [
+        {
+          "slot": "ours.midfielder",
+          "overheard": "They need a proper holding midfielder. Could {ours.midfielder} do that job?",
+          "sayIt": "\"Is {ours.midfielder} a holding midfielder, or does he get forward?\"",
+          "overheardTerm": "holding midfielder"
+        }
+      ]
     },
     {
       "id": "box-to-box",
@@ -1437,7 +1525,15 @@
       "when": [
         "any"
       ],
-      "moment": "anytime"
+      "moment": "anytime",
+      "playerVariants": [
+        {
+          "slot": "theirs.midfielder",
+          "overheard": "If {theirs.midfielder} is their playmaker, someone needs to sit on him.",
+          "sayIt": "\"Is {theirs.midfielder} the playmaker, then? Who is supposed to stop him?\"",
+          "overheardTerm": "playmaker"
+        }
+      ]
     },
     {
       "id": "winger",
@@ -1458,7 +1554,15 @@
       "when": [
         "any"
       ],
-      "moment": "common"
+      "moment": "common",
+      "playerVariants": [
+        {
+          "slot": "theirs.forward",
+          "overheard": "If {theirs.forward} plays as a winger, that changes how we set up.",
+          "sayIt": "\"Does {theirs.forward} play as a winger, or through the middle?\"",
+          "overheardTerm": "winger"
+        }
+      ]
     },
     {
       "id": "striker",
@@ -1509,7 +1613,15 @@
       "when": [
         "any"
       ],
-      "moment": "common"
+      "moment": "common",
+      "playerVariants": [
+        {
+          "slot": "theirs.forward",
+          "overheard": "Every side needs a target man. I'm not sure what {theirs.forward} is.",
+          "sayIt": "\"Is {theirs.forward} a target man, or is he one of the quick ones?\"",
+          "overheardTerm": "target man"
+        }
+      ]
     },
     {
       "id": "false-nine",
@@ -1560,7 +1672,15 @@
         "cup",
         "europe"
       ],
-      "moment": "rare"
+      "moment": "rare",
+      "playerVariants": [
+        {
+          "slot": "ours.keeper",
+          "overheard": "Rotation again. I'd pick {ours.keeper} every single week, me.",
+          "sayIt": "\"All this rotation. Would you pick {ours.keeper} every week?\"",
+          "overheardTerm": "Rotation"
+        }
+      ]
     },
     {
       "id": "pressing",
@@ -1586,7 +1706,15 @@
         "any",
         "good-run"
       ],
-      "moment": "anytime"
+      "moment": "anytime",
+      "playerVariants": [
+        {
+          "slot": "theirs.midfielder",
+          "overheard": "It's all pressing with this manager. Nobody asks if {theirs.midfielder} enjoys it.",
+          "sayIt": "\"All that pressing. Does {theirs.midfielder} ever stop running?\"",
+          "overheardTerm": "pressing"
+        }
+      ]
     },
     {
       "id": "high-press",
@@ -1812,7 +1940,15 @@
       "when": [
         "any"
       ],
-      "moment": "common"
+      "moment": "common",
+      "playerVariants": [
+        {
+          "slot": "ours.defender",
+          "overheard": "Man marking, is it. I'd not give {ours.defender} that job, personally.",
+          "sayIt": "\"Man marking sounds hard. Could {ours.defender} do that for ninety minutes?\"",
+          "overheardTerm": "Man marking"
+        }
+      ]
     },
     {
       "id": "zonal-marking",
@@ -2055,7 +2191,15 @@
         "run-in",
         "after-win"
       ],
-      "moment": "common"
+      "moment": "common",
+      "playerVariants": [
+        {
+          "slot": "ours.forward",
+          "overheard": "Squeaky bum time. I'd want {ours.forward} on the pitch for this, me.",
+          "sayIt": "\"Squeaky bum time. Is {ours.forward} the one you want on for this?\"",
+          "overheardTerm": "Squeaky bum time"
+        }
+      ]
     },
     {
       "id": "dark-arts",
@@ -2106,7 +2250,15 @@
         "any",
         "europe"
       ],
-      "moment": "common"
+      "moment": "common",
+      "playerVariants": [
+        {
+          "slot": "theirs.midfielder",
+          "overheard": "They'll hurt you on the break, this lot. Where does {theirs.midfielder} fit in?",
+          "sayIt": "\"They're good on the break. Is {theirs.midfielder} part of that?\"",
+          "overheardTerm": "on the break"
+        }
+      ]
     },
     {
       "id": "hoof",
@@ -2132,7 +2284,15 @@
         "any",
         "relegation"
       ],
-      "moment": "common"
+      "moment": "common",
+      "playerVariants": [
+        {
+          "slot": "ours.keeper",
+          "overheard": "Just hoof it. I'd not trust anyone here, {ours.keeper} included.",
+          "sayIt": "\"Do they just hoof it every time? Even {ours.keeper}?\"",
+          "overheardTerm": "hoof it"
+        }
+      ]
     },
     {
       "id": "row-z",
@@ -2183,7 +2343,15 @@
         "relegation",
         "after-draw"
       ],
-      "moment": "common"
+      "moment": "common",
+      "playerVariants": [
+        {
+          "slot": "theirs.defender",
+          "overheard": "Get it in the mixer. See if {theirs.defender} fancies it.",
+          "sayIt": "\"In the mixer, that's the plan. Does {theirs.defender} like it in there?\"",
+          "overheardTerm": "in the mixer"
+        }
+      ]
     },
     {
       "id": "second-ball",
@@ -2229,7 +2397,15 @@
         "after-loss",
         "after-draw"
       ],
-      "moment": "common"
+      "moment": "common",
+      "playerVariants": [
+        {
+          "slot": "theirs.forward",
+          "overheard": "If {theirs.forward} gets a sitter like that, are we in trouble?",
+          "sayIt": "\"Would {theirs.forward} put a sitter like that away, do you think?\"",
+          "overheardTerm": "sitter"
+        }
+      ]
     },
     {
       "id": "clinical-finish",
@@ -2255,7 +2431,15 @@
         "after-win",
         "after-big-win"
       ],
-      "moment": "common"
+      "moment": "common",
+      "playerVariants": [
+        {
+          "slot": "theirs.forward",
+          "overheard": "Clinical finishing, that is. That's what they pay {theirs.forward} for.",
+          "sayIt": "\"That's a clinical finish. Is that what {theirs.forward} is there for?\"",
+          "overheardTerm": "Clinical finishing"
+        }
+      ]
     },
     {
       "id": "screamer",
@@ -2359,7 +2543,15 @@
         "after-win",
         "after-big-win"
       ],
-      "moment": "common"
+      "moment": "common",
+      "playerVariants": [
+        {
+          "slot": "theirs.keeper",
+          "overheard": "Is {theirs.keeper} top drawer, though? That's the question, for me.",
+          "sayIt": "\"Is {theirs.keeper} top drawer, then? You'd know better than me.\"",
+          "overheardTerm": "top drawer"
+        }
+      ]
     },
     {
       "id": "hit-the-woodwork",
@@ -2736,7 +2928,15 @@
         "after-win",
         "after-clean-sheet"
       ],
-      "moment": "common"
+      "moment": "common",
+      "playerVariants": [
+        {
+          "slot": "ours.defender",
+          "overheard": "Backs to the wall from here. Get {ours.defender} in the middle of it.",
+          "sayIt": "\"Backs to the wall. Is {ours.defender} the one who heads everything away?\"",
+          "overheardTerm": "Backs to the wall"
+        }
+      ]
     },
     {
       "id": "game-of-two-halves",
@@ -2887,7 +3087,15 @@
         "window",
         "early-season"
       ],
-      "moment": "anytime"
+      "moment": "anytime",
+      "playerVariants": [
+        {
+          "slot": "theirs.midfielder",
+          "overheard": "Would you take {theirs.midfielder}? That's your transfer window done.",
+          "sayIt": "\"Would we ever sign someone like {theirs.midfielder} in a transfer window?\"",
+          "overheardTerm": "transfer window"
+        }
+      ]
     },
     {
       "id": "deadline-day",
@@ -3088,7 +3296,15 @@
         "new-manager",
         "after-heavy-loss"
       ],
-      "moment": "anytime"
+      "moment": "anytime",
+      "playerVariants": [
+        {
+          "slot": "ours.keeper",
+          "overheard": "You'd have to ask the gaffer about {ours.keeper}. I've got no idea.",
+          "sayIt": "\"What's the gaffer like with {ours.keeper}? Do you ever hear?\"",
+          "overheardTerm": "gaffer"
+        }
+      ]
     },
     {
       "id": "the-boss",
@@ -3113,7 +3329,15 @@
         "any",
         "new-manager"
       ],
-      "moment": "common"
+      "moment": "common",
+      "playerVariants": [
+        {
+          "slot": "ours.midfielder",
+          "overheard": "Whether {ours.midfielder} plays is the boss's call. Nobody else gets a say.",
+          "sayIt": "\"Is it the boss who decides whether {ours.midfielder} plays, or the coaches?\"",
+          "overheardTerm": "boss's"
+        }
+      ]
     },
     {
       "id": "hairdryer",
@@ -3167,7 +3391,15 @@
         "run-in",
         "after-loss"
       ],
-      "moment": "anytime"
+      "moment": "anytime",
+      "playerVariants": [
+        {
+          "slot": "theirs.keeper",
+          "overheard": "They'll bottle it. They always do, with {theirs.keeper} in goal.",
+          "sayIt": "\"They always bottle it, you said. Is {theirs.keeper} the problem?\"",
+          "overheardTerm": "bottle it"
+        }
+      ]
     },
     {
       "id": "match-of-the-day",
@@ -3218,7 +3450,15 @@
         "any",
         "after-loss"
       ],
-      "moment": "anytime"
+      "moment": "anytime",
+      "playerVariants": [
+        {
+          "slot": "theirs.defender",
+          "overheard": "Ask a pundit about {theirs.defender} and you'll get ten minutes of it.",
+          "sayIt": "\"What do the pundits actually say about {theirs.defender}?\"",
+          "overheardTerm": "pundit"
+        }
+      ]
     },
     {
       "id": "season-ticket",
@@ -3433,7 +3673,15 @@
         "derby",
         "after-win"
       ],
-      "moment": "anytime"
+      "moment": "anytime",
+      "playerVariants": [
+        {
+          "slot": "ours.forward",
+          "overheard": "The banter if {ours.forward} misses one of those, though. Imagine.",
+          "sayIt": "\"Is that banter, or would you actually fall out over {ours.forward}?\"",
+          "overheardTerm": "banter"
+        }
+      ]
     },
     {
       "id": "group-chat",
@@ -3707,7 +3955,15 @@
         "good-run",
         "after-win"
       ],
-      "moment": "anytime"
+      "moment": "anytime",
+      "playerVariants": [
+        {
+          "slot": "theirs.keeper",
+          "overheard": "Class act, is he, {theirs.keeper}? I'd have to see more of him.",
+          "sayIt": "\"Is {theirs.keeper} a class act, or is that just what they say?\"",
+          "overheardTerm": "Class act"
+        }
+      ]
     },
     {
       "id": "top-top-player",
@@ -3734,7 +3990,15 @@
         "after-win",
         "after-big-win"
       ],
-      "moment": "anytime"
+      "moment": "anytime",
+      "playerVariants": [
+        {
+          "slot": "theirs.midfielder",
+          "overheard": "Would you call {theirs.midfielder} a top top player? Honestly, now.",
+          "sayIt": "\"Is {theirs.midfielder} a top top player, or is that just pundit talk?\"",
+          "overheardTerm": "top top player"
+        }
+      ]
     },
     {
       "id": "plastic-fan",
@@ -3878,7 +4142,15 @@
         "any",
         "early-season"
       ],
-      "moment": "anytime"
+      "moment": "anytime",
+      "playerVariants": [
+        {
+          "slot": "ours.forward",
+          "overheard": "Fantasy football's ruining my life. Ask me about {ours.forward} and see.",
+          "sayIt": "\"Is {ours.forward} good, or is that your fantasy football team talking?\"",
+          "overheardTerm": "Fantasy football's"
+        }
+      ]
     },
     {
       "id": "wags",
