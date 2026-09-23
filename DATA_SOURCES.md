@@ -42,7 +42,18 @@ Fetched every 2 hours per club by the `data-fetcher` Edge Function into `raw_fet
 
 **`/injuries` is keyed by fixture, not by "now".** One record is one player missing one fixture, so the response spans several past fixtures at once, repeats the same player across them, and contains duplicates within a single fixture. Arsenal's payload on 2026-09-06 held 19 records covering three fixture dates. **Filter to the latest (or next) fixture and dedupe by player id** before showing anything, or the app will report a three-week-old injury as current.
 
-**Photos are never 404.** Both the player CDN (`.../players/<id>.png`) and the coach CDN (`.../coachs/<id>.png`) return HTTP 200 with a generic silhouette when there is no real headshot. A status check therefore proves nothing. Group the bytes by checksum: any hash shared by several people is a placeholder. On 2026-09-06 all 781 player photos were real, and 7 of 20 manager photos were one of two placeholder images (shared by Fulham, Ipswich and Manchester United; and by Crystal Palace, Hull, Liverpool and Sunderland).
+**Photos are never 404.** Both the player CDN (`.../players/<id>.png`) and the coach CDN (`.../coachs/<id>.png`) return HTTP 200 with a generic image when there is no real headshot. A status check therefore proves nothing. Group the bytes by checksum: any hash shared by several people is a placeholder. On 2026-09-06 all 781 player photos were real, and 7 of 20 manager photos were placeholders.
+
+Nothing was done about that line for two weeks, and a QA pass on 2026-09-23 found the same thing from the other end: 8 of 20 club pages drawing a broken image where the manager's face goes. Migration 085 had asserted this CDN "serves a correct headshot even for the coaches whose club record is stale" — it had verified the coach *id*, not the image. All 73 manager photos were then fetched and hashed. **Four** placeholder images exist, not two, and one of them (the camera) is not shared by anyone, so "a hash shared by several people" finds it only by luck:
+
+| md5 | bytes | what it looks like |
+|---|---|---|
+| `f512b984f93ca6915dd623351b93b531` | 8624 | grey silhouette, "NO PHOTO YET" |
+| `3e52d4ec4bb65b0a2019236c4dabd3fc` | 12934 | dark shield with a slash |
+| `68ac0d5773da5ee81444ade70d89533d` | 29416 | grey camera, "image not available" |
+| `0e3bde19a08632f2e893bc2a835598bc` | 678 | stub served for an unknown coach id |
+
+30 of the 73 were one of these; migration 109 cleared them so the app draws its own silhouette instead. Compare against this table by hash, not by "is it shared" — and re-run it after every manager change, because every one of the 8 clubs was a 2025/2026 appointment. The command is in `109_manager_photo_placeholders.sql`'s header.
 
 ### Also worth knowing
 

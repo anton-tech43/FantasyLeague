@@ -1085,8 +1085,13 @@ async function updateDynamicFields(
     : currentCoach;
 
   if (coach) {
-    const prev = (cards.manager ?? {}) as Record<string, unknown>;
+    const prev = { ...((cards.manager ?? {}) as Record<string, unknown>) };
     const changed = prev.name !== coach.name;
+    // The verified override owns the photo as well as the name. Without this
+    // delete the spread below carries the previous photo_url forward for ever,
+    // so a headshot we deliberately removed (mig 109: the CDN answers 200 with
+    // a placeholder image, never a 404) reappears on the next refresh.
+    if (team.manager_name && !coach.photo) delete prev.photo_url;
     cards.manager = {
       ...prev,
       updated_at: now,
