@@ -223,6 +223,11 @@ def validate_lingo(d: dict) -> int:
 
 
 # ------------------------------------------------------------------- quiz
+# Three options since 2026-09-23. All 496 questions were read and the weakest of
+# the three wrong answers cut, so what she picks between is the two that tempt.
+OPTIONS_PER_QUESTION = 3
+
+
 def validate_quiz(d: dict) -> tuple[int, int]:
     packs = d.get("packs", [])
     check_ids("quiz packs", [p.get("id", "") for p in packs])
@@ -246,8 +251,8 @@ def validate_quiz(d: dict) -> tuple[int, int]:
             question = q.get("question", "")
             check_len(f"quiz/{qid}", "question", question)
             opts = q.get("options", [])
-            if len(opts) != 4:
-                err(f"quiz/{qid}: {len(opts)} options (need exactly 4)")
+            if len(opts) != OPTIONS_PER_QUESTION:
+                err(f"quiz/{qid}: {len(opts)} options (need exactly {OPTIONS_PER_QUESTION})")
             if len(set(o.strip().lower() for o in opts)) != len(opts):
                 err(f"quiz/{qid}: duplicate options")
             for o in opts:
@@ -268,7 +273,10 @@ def validate_quiz(d: dict) -> tuple[int, int]:
             check_len(f"quiz/{qid}", "use", use)
             if use_type not in ("say", "ask", "impress"):
                 err(f"quiz/{qid}: useType must be say, ask or impress")
-            check_idiom(f"quiz/{qid}", question + " " + " ".join(opts) + " " + expl + " " + why + " " + use)
+            # Newlines, not spaces: joined with spaces the option "Zero" and an
+            # explanation opening "Zero." read as the banned "zero zero", and
+            # which fields end up adjacent is decided by the shuffle.
+            check_idiom(f"quiz/{qid}", "\n".join([question, *opts, expl, why, use]))
             for field, text in (("question", question), ("explanation", expl), ("why", why), ("use", use)):
                 m = SUPERLATIVE.search(text)
                 if m:
@@ -277,8 +285,11 @@ def validate_quiz(d: dict) -> tuple[int, int]:
             if re.search(r"\b(this season|currently|right now|current manager|current captain|this year)\b", question + " " + expl, re.I):
                 err(f"quiz/{qid}: asks about the present — static content must be finished history: {question}")
         total += len(qs)
-        if qs and max(answers.values()) > len(qs) * 0.5:
-            warn(f"quiz/{pid}: the correct answer sits in one slot more than half the time")
+        # 0.6 of 20, not the 0.5 that was right at four options: a slot now holds
+        # a third of the answers by design, and eleven of twenty is inside two
+        # standard deviations of that, so half the packs would warn on nothing.
+        if qs and max(answers.values()) > len(qs) * 0.6:
+            warn(f"quiz/{pid}: the correct answer sits in one slot more than 60% of the time")
     check_ids("quiz questions", qids)
     if total < 200:
         err(f"quiz: {total} questions (launch floor 200)")

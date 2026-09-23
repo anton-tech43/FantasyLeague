@@ -6,7 +6,7 @@ and review; this script gives them ids, checks the shape, and writes the JSON
 the app reads. Then run validate_content.py.
 
 Each question, since the 2026-09-08 rewrite (see CONTENT_PRINCIPLES.md):
-  (difficulty, question, [four options], answer_index, explanation, why, useType, use)
+  (difficulty, question, [three options], answer_index, explanation, why, useType, use)
 explanation carries the fact AND the context a non-fan lacks; why is the one
 line on why she would need it; use is the line she gets — useType say/ask/impress.
 
@@ -25,7 +25,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 OUT = os.path.join(HERE, "..", "..", "ios", "GoalDigger", "Resources", "MyTurn", "quiz.json")
-VERSION = "2026-09-08.3"
+VERSION = "2026-09-23.1"
 
 MODULES = ["quiz_src.general", "quiz_src.clubs_a", "quiz_src.clubs_b", "quiz_src.clubs_c", "quiz_src.clubs_d"]
 
@@ -35,14 +35,14 @@ for m in MODULES:
     for pack_id, label, questions in mod.PACKS:
         qs = []
         for i, (diff, q, opts, ans, expl, why, use_type, use) in enumerate(questions, 1):
-            assert len(opts) == 4, (pack_id, q)
-            assert 0 <= ans < 4, (pack_id, q)
-            # The source files list the right answer first for readability. Shuffle
-            # per question, seeded on the id, so the slot is stable between builds
-            # (a user's progress is keyed on question id, not option order) and no
-            # pack teaches her to pick the first option.
+            assert len(opts) == 3, (pack_id, q)
+            assert 0 <= ans < 3, (pack_id, q)
+            # Shuffle per question, seeded on the id, so the slot is stable
+            # between builds (a user's progress is keyed on question id, not
+            # option order) and the order the writer happened to type is never
+            # the order she is shown.
             qid = f"{pack_id}-{i}"
-            order = list(range(4))
+            order = list(range(3))
             random.Random(qid).shuffle(order)
             shuffled = [opts[k] for k in order]
             qs.append({
