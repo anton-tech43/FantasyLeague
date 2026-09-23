@@ -115,8 +115,12 @@ struct MatchContext: Equatable {
         let cards = page?.cards
 
         // --- The last result -------------------------------------------------
-        // `post_match` is written for World Cup fixtures only, so after-match
-        // state comes from the results list.
+        // After-match state comes from the results list, not from the
+        // `post_match` card. That card became club-wide on 2026-09-23 (it was
+        // World-Cup-only when this was written), but the results list stays
+        // the right source here: it carries the kickoff time, which is what
+        // decides whether the result is still inside afterWindow, and it is
+        // present whether or not match-watcher managed to write a card.
         let last = cards?.recentResults?.first
         let lastKickoff = last.flatMap { Self.parseISO($0.date) }
         let hasResult = lastKickoff.map { now.timeIntervalSince($0) >= 0 && now.timeIntervalSince($0) <= Self.afterWindow } ?? false

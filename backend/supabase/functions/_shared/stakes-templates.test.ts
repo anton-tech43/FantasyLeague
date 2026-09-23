@@ -2,6 +2,7 @@
 //   deno test backend/supabase/functions/_shared/stakes-templates.test.ts
 
 import {
+  renderClubPostMatch,
   renderClubPreMatch,
   renderClubThisWeek,
   renderNextFixturePreview,
@@ -375,4 +376,106 @@ Deno.test("renderClubPreMatch: form is labelled as league form", () => {
     `the window is named: ${out.preview}`,
   );
   assert(!/favourite/.test(out.preview), `three points, ten places: still no favourite: ${out.preview}`);
+});
+
+
+// ============================================================
+// renderClubPostMatch — the club after-match card
+// ============================================================
+
+function cpm(over: Partial<Parameters<typeof renderClubPostMatch>[0]> = {}) {
+  return renderClubPostMatch({
+    teamName: "Arsenal", opponentName: "Tottenham", venue: "home",
+    teamScore: 2, oppScore: 1, state: "win",
+    competition: "Premier League",
+    ...over,
+  });
+}
+
+Deno.test("club post_match: a league win is the result, the ground and nothing invented", () => {
+  const r = cpm();
+  assert(r.text === "Arsenal beat Tottenham 2-1 at home in the Premier League.", r.text);
+  assert(r.state === "win", "state passes through");
+});
+
+Deno.test("club post_match: never claims a run, however tempting", () => {
+  // cards.form.recent_form has no defined order (it is partly a Claude
+  // tool-call field), so a run folded in from it could be false. The card
+  // states what it saw.
+  for (const r of [cpm(), cpm({ state: "loss", teamScore: 0, oppScore: 3 })]) {
+    assert(!/(in their last|straight|without a win)/i.test(r.text), `no run claim: ${r.text}`);
+  }
+});
+
+Deno.test("club post_match: never says he or him in the body, always in the talking point", () => {
+  for (const r of [cpm(), cpm({ state: "loss", teamScore: 0, oppScore: 3 }),
+                   cpm({ state: "draw", teamScore: 1, oppScore: 1 })]) {
+    assert(!/\b(he|him|his)\b/i.test(r.text), `body addresses the clubs: ${r.text}`);
+    assert(/\b(he|him|his)\b/i.test(r.talking_point), `talking point is about him: ${r.talking_point}`);
+    assert(!/—/.test(r.text + r.talking_point), "no em-dashes");
+  }
+});
+
+Deno.test("club post_match: an away draw and a home draw read differently", () => {
+  const home = cpm({ state: "draw", teamScore: 1, oppScore: 1, venue: "home" });
+  const away = cpm({ state: "draw", teamScore: 1, oppScore: 1, venue: "away" });
+  assert(/drew 1-1 with Tottenham at home/.test(home.text), home.text);
+  assert(/drew 1-1 with Tottenham away/.test(away.text), away.text);
+  assert(/two dropped/.test(home.talking_point), home.talking_point);
+  assert(/would have taken that/.test(away.talking_point), away.talking_point);
+});
+
+Deno.test("club post_match: a heavy defeat is given room, a one-goal defeat is not", () => {
+  const heavy = cpm({ state: "loss", teamScore: 0, oppScore: 4 });
+  const narrow = cpm({ state: "loss", teamScore: 1, oppScore: 2 });
+  assert(/Give him a minute/.test(heavy.talking_point), heavy.talking_point);
+  assert(/A goal in it/.test(narrow.talking_point), narrow.talking_point);
+});
+
+Deno.test("club post_match: a settled cup tie states what it settled", () => {
+  const through = cpm({
+    competition: "League Cup (Carabao Cup)", round: "last 32",
+    knockoutLine: "Through to the last 16.",
+  });
+  assert(/in the League Cup \(Carabao Cup\), last 32\./.test(through.text), through.text);
+  assert(/Through to the last 16\./.test(through.text), through.text);
+  assert(/who he wants to draw in the last 16/.test(through.talking_point), through.talking_point);
+
+  const out = cpm({
+    state: "loss", teamScore: 0, oppScore: 1,
+    competition: "FA Cup", round: "3rd round", knockoutLine: "Out of the FA Cup.",
+  });
+  assert(/Out of the FA Cup\./.test(out.text), out.text);
+  assert(/run is over/.test(out.talking_point), out.talking_point);
+});
+
+Deno.test("club post_match: a first leg settles nothing and says nothing", () => {
+  // match-watcher passes knockoutLine only when isSingleLegTie says the night
+  // decides it. Absent, the card must not imply progression either way.
+  const leg1 = cpm({
+    competition: "Champions League", round: "last 16",
+    knockoutLine: null,
+  });
+  assert(!/(through|out of)/i.test(leg1.text), `no progression claim: ${leg1.text}`);
+});
+
+Deno.test("club post_match: a shootout win is a win, not a draw", () => {
+  const pens = cpm({
+    state: "win", teamScore: 1, oppScore: 1,
+    competition: "FA Cup", round: "4th round",
+    shootout: { mine: 4, theirs: 3 }, knockoutLine: "Through to the fifth round.",
+  });
+  assert(/beat Tottenham 4-3 on penalties after a 1-1 draw/.test(pens.text), pens.text);
+  assert(!/drew/.test(pens.text), "never 'drew' after a shootout");
+
+  const lost = cpm({
+    state: "loss", teamScore: 1, oppScore: 1,
+    competition: "FA Cup", shootout: { mine: 3, theirs: 4 }, knockoutLine: "Out of the FA Cup.",
+  });
+  assert(/lost to Tottenham 4-3 on penalties/.test(lost.text), lost.text);
+});
+
+Deno.test("club post_match: extra time is named", () => {
+  const aet = cpm({ afterExtraTime: true, competition: "FA Cup" });
+  assert(/after extra time\./.test(aet.text), aet.text);
 });

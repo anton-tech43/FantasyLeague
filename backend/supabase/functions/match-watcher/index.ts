@@ -25,6 +25,7 @@ import {
   competitionName,
   competitionProse,
   isSingleLegTie,
+  roundLabel,
 } from "../_shared/league-helpers.ts";
 import { detectConsequences, loadPostResultWcContext, WC_LEAGUE_ID } from "../_shared/detect-consequences.ts";
 import { renderConsequence } from "../_shared/consequence-templates.ts";
@@ -34,7 +35,13 @@ import { competitionSuffix, knockoutOutcome } from "../_shared/goal-push.ts";
 import { type LiveEvent, minTierForLiveEvent, tierReceives, TIER_NOBODY } from "../_shared/push-tiers.ts";
 import type { Team } from "../_shared/types.ts";
 import { groupSituation } from "../_shared/stakes-engine.ts";
-import { renderPostMatch, type PostMatchState } from "../_shared/stakes-templates.ts";
+import {
+  CLUB_POST_MATCH_TTL_HOURS,
+  renderClubPostMatch,
+  renderPostMatch,
+  type PostMatchState,
+} from "../_shared/stakes-templates.ts";
+import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 import { resultFraming, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
 import { decideMatchdayRetry, MATCHDAY_STALENESS_MS } from "../_shared/matchday-retry.ts";
 import {
@@ -498,10 +505,21 @@ async function sendPlayingTeamPush(
 
 /// Merge a deterministic post_match card into a team's team_pages.content.
 /// Best-effort: a missing page or write error never blocks the FT tick.
-async function writeWcPostMatch(
+///
+/// Entity-agnostic — it only ever touches one team_pages row by slug — which
+/// is why it needed nothing but a rename to serve PL clubs as well as WC
+/// countries. It was called writeWcPostMatch until 2026-09-23 purely because
+/// the only call site was inside `if (fixtureLeagueId === WC_LEAGUE_ID)`.
+///
+/// A team with no team_pages row (an auto-registered cup opponent nobody
+/// follows) is a silent no-op, which is the correct behaviour rather than an
+/// error to handle at the call site.
+async function writeTeamPostMatch(
   supabase: ReturnType<typeof getSupabaseClient>,
   teamSlug: string,
   pm: { state: "win" | "loss" | "draw"; text: string; talking_point: string },
+  ttlHours: number,
+  fixtureId: number,
 ): Promise<void> {
   try {
     const { data: existing } = await supabase
@@ -516,12 +534,21 @@ async function writeWcPostMatch(
       state: pm.state,
       text: pm.text,
       talking_point: pm.talking_point,
-      expires_at: new Date(Date.now() + 48 * 60 * 60_000).toISOString(),
+      expires_at: new Date(Date.now() + ttlHours * 60 * 60_000).toISOString(),
     };
     content.cards = cards;
-    await supabase.from("team_pages").update({ content }).eq("team_id", teamSlug);
+    const { error } = await supabase.from("team_pages").update({ content }).eq("team_id", teamSlug);
+    // This used to log nothing at all, which is why there was no way to tell a
+    // card that never wrote from a card that wrote and was later overwritten.
+    await logPipelineEvent(supabase, {
+      team_id: teamSlug,
+      stage: "page_refresh",
+      status: error ? "failure" : "success",
+      target: `post_match:${teamSlug}:${fixtureId}`,
+      message: error ? error.message : pm.text.slice(0, 160),
+    });
   } catch (e) {
-    console.error(`writeWcPostMatch failed for ${teamSlug} (non-fatal):`, e);
+    console.error(`writeTeamPostMatch failed for ${teamSlug} (non-fatal):`, e);
   }
 }
 
@@ -1350,7 +1377,7 @@ async function handleRequest(req: Request): Promise<Response> {
                     situation: groupSituation(wcCtx.group, p.apiId),
                     bestThird: wcCtx.bestThirdByApiId.get(p.apiId),
                   });
-                  await writeWcPostMatch(supabase, p.slug, pm);
+                  await writeTeamPostMatch(supabase, p.slug, pm, 48, fixtureId);
                   baseBody = pm.text;
                   talkingPoint = pm.talking_point;
                 } else {
@@ -1901,6 +1928,72 @@ async function handleRequest(req: Request): Promise<Response> {
             [homeTeamId]: knockoutOutcome(fixtureLeagueId, fixtureRound, homeThrough),
             [awayTeamId]: knockoutOutcome(fixtureLeagueId, fixtureRound, homeThrough === null ? null : !homeThrough),
           };
+          // The club post_match card. Deliberately here and not in the
+          // WC_LEAGUE_ID block above, for two reasons:
+          //
+          //   1. Everything it needs is already computed for the push —
+          //      settles, homeThrough, competitionBySide — so it costs no new
+          //      API call and no Claude.
+          //   2. The WC block sits inside `if (homeFireOk && awayFireOk)`. A
+          //      free deterministic card has no business disappearing because
+          //      a PAID routine returned a 500.
+          //
+          // At-most-once comes from the enclosing guard: this branch only runs
+          // on the OBSERVED live→finished transition, and once the row's status
+          // is FT the next tick's prior.status is FT too.
+          if (fixtureLeagueId !== WC_LEAGUE_ID) {
+            // A league game has no round worth naming ("Regular Season - 6"
+            // parses to an empty label anyway); a cup tie does.
+            const isCupTie = COVERED_CUP_LEAGUES.includes(fixtureLeagueId);
+            const sides = [
+              { slug: homeTeamId, name: homeTeam.name, oppName: awayTeam.name,
+                venue: "home" as const, gf: homeGoals ?? 0, ga: awayGoals ?? 0,
+                pen: ftPen?.home, oppPen: ftPen?.away, through: homeThrough },
+              { slug: awayTeamId, name: awayTeam.name, oppName: homeTeam.name,
+                venue: "away" as const, gf: awayGoals ?? 0, ga: homeGoals ?? 0,
+                pen: ftPen?.away, oppPen: ftPen?.home,
+                through: homeThrough === null ? null : !homeThrough },
+            ];
+            for (const side of sides) {
+              // A shootout leaves the goals level and the tie decided, so the
+              // winner is `through`, not the scoreline.
+              const shootout = status === "PEN" &&
+                  typeof side.pen === "number" && typeof side.oppPen === "number" &&
+                  side.pen !== side.oppPen
+                ? { mine: side.pen, theirs: side.oppPen }
+                : null;
+              const pmState: PostMatchState = shootout
+                ? (shootout.mine > shootout.theirs ? "win" : "loss")
+                : side.gf > side.ga
+                ? "win"
+                : side.gf < side.ga
+                ? "loss"
+                : "draw";
+              const card = renderClubPostMatch({
+                teamName: side.name,
+                opponentName: side.oppName,
+                venue: side.venue,
+                teamScore: side.gf,
+                oppScore: side.ga,
+                state: pmState,
+                competition: competitionProse(fixtureLeagueId),
+                round: isCupTie ? roundLabel(fixtureRound, fixtureLeagueId) : undefined,
+                afterExtraTime: status === "AET",
+                shootout,
+                // competitionBySide already holds knockoutOutcome for this
+                // side, but it falls back to naming the competition when the
+                // tie is unsettled ("League Cup, the fourth round.") and the
+                // card must claim nothing in that case. Only a real verdict.
+                knockoutLine: side.through === null
+                  ? null
+                  : knockoutOutcome(fixtureLeagueId, fixtureRound, side.through),
+              });
+              await writeTeamPostMatch(
+                supabase, side.slug, card, CLUB_POST_MATCH_TTL_HOURS, fixtureId,
+              );
+            }
+          }
+
           const copy = renderFullTimePush({
             home: homeTeam,
             away: awayTeam,

@@ -456,9 +456,13 @@ async function generateFullPage(
   startTime: number
 ) {
   // Fetch latest raw data per source type
+  // No `.returns<RawFetchLog[]>()` here. supabase-js cannot know an RPC's
+  // row shape, and asking it to cast one resolves to the library's "Cannot
+  // cast single object to array type" error type — which then poisons every
+  // use of rawLogs below. This file has not type-checked since that guard
+  // landed; the deploy bundles rather than checks, so it shipped anyway.
   const { data: logs } = await supabase
-    .rpc("get_latest_fetch_logs_per_source", { p_team_id: team.id })
-    .returns<RawFetchLog[]>();
+    .rpc("get_latest_fetch_logs_per_source", { p_team_id: team.id });
 
   // If no RPC exists, fall back to a manual query. Limit of 100 covers
   // ~7 hours of hourly fetches across all ~14 sources per team — wide
@@ -466,7 +470,7 @@ async function generateFullPage(
   // returns []) doesn't crowd out the most recent GOOD row. The
   // newest-good-wins guards in the loop below pick correctly even when
   // the window contains both empty and populated snapshots.
-  let rawLogs = logs;
+  let rawLogs = (logs ?? null) as RawFetchLog[] | null;
   if (!rawLogs) {
     const { data } = await supabase
       .from("raw_fetch_logs")
@@ -474,7 +478,7 @@ async function generateFullPage(
       .eq("team_id", team.id)
       .order("fetched_at", { ascending: false })
       .limit(100);
-    rawLogs = data ?? [];
+    rawLogs = (data ?? []) as RawFetchLog[];
   }
 
   // SECONDARY: targeted top-up for api_football_coachs.
@@ -502,7 +506,7 @@ async function generateFullPage(
     .order("fetched_at", { ascending: false })
     .limit(20);
   if (extraCoachs && extraCoachs.length > 0) {
-    rawLogs = [...rawLogs, ...extraCoachs];
+    rawLogs = [...rawLogs, ...(extraCoachs as RawFetchLog[])];
   }
 
   // Get team context flags
@@ -783,6 +787,17 @@ tab shows empty state, so do NOT skip this field when fixtures exist.`;
   const content: Record<string, unknown> = {
     schema_version: 1,
     cards: {
+      // Everything that is not rebuilt below survives a full run.
+      //
+      // Without this spread the literal WAS the new card set, so a full
+      // rebuild silently deleted every card written by anything other than
+      // this function: post_match, mood, this_week, rivalry_intensity,
+      // recent_results, europe_standings, freshness_text. The ones listed
+      // individually further down were rescued one at a time as each loss was
+      // noticed. Spreading first means the next card added elsewhere is safe
+      // by default instead of safe once somebody files the bug.
+      ...existingCards,
+
       // PL clubs have hand-seeded basics from migration 004 (curated voice
       // — Arsenal's 49-game Invincibles fun fact, etc.) that we preserve
       // verbatim. For teams without a seed (the 48 WC countries on first

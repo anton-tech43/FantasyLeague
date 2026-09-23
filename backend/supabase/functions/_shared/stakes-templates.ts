@@ -395,6 +395,145 @@ export function renderClubThisWeek(
   };
 }
 
+// ============================================================
+// CLUB post_match card — deterministic, league vocabulary
+//
+// The sibling of renderClubPreMatch, and the reason it had to be written
+// separately from renderPostMatch above: the WC card speaks group-stage
+// ("have won their group", "through to the last 16"), and a Premier League
+// Saturday has no group and no qualification maths. Until September 2026
+// nothing wrote a post-match card for a club at all — match-watcher knew full
+// time to the minute and the Info tab carried on showing "Coming up" with the
+// next fixture, as if the match she had just watched him watch had not
+// happened.
+//
+// What matters for a club is the result, which competition it was in, the run
+// it continues, and for a cup tie what the night actually settled.
+//
+// Deliberately NOT the league position. The standings are refreshed by
+// planPageRefresh after the whistle, not inside the same tick, so any position
+// stated here would be last week's. The Info tab has its own standings card.
+//
+// House rules, same as the pre-match block: no em-dashes, UK English, and
+// `text` never says "he" or "him" (it is about the two clubs). The talking
+// point is the opposite: addressed to her, about him.
+// ============================================================
+
+/// How long a club post-match card stays on the Info tab.
+///
+/// The WC card uses 48h, spaced to group games three days apart. A Premier
+/// League Saturday 15:00 result would then still be sitting there on Monday
+/// afternoon with a midweek fixture already announced. 36h matches
+/// LingoDeck.afterWindow on the client, so the card and the Lingo deck stop
+/// talking about the same match at the same moment.
+export const CLUB_POST_MATCH_TTL_HOURS = 36;
+
+export interface ClubPostMatchContext {
+  teamName: string;
+  opponentName: string;
+  venue: "home" | "away";
+  /** Goals scored and conceded in normal time (plus extra time). */
+  teamScore: number;
+  oppScore: number;
+  /** Resolved by the caller: after a shootout, level goals are a win. */
+  state: PostMatchState;
+  /** competitionProse(leagueId), e.g. "Premier League". */
+  competition?: string;
+  /** roundLabel(...). Absent or empty for a league game. */
+  round?: string;
+  /** True when the match went to extra time. */
+  afterExtraTime?: boolean;
+  /** Shootout score from this team's side, when there was one. */
+  shootout?: { mine: number; theirs: number } | null;
+  /** knockoutOutcome(...) — pass ONLY when this match settled the tie. */
+  knockoutLine?: string | null;
+}
+
+// Two things that look like they belong on this card and deliberately do not:
+//
+// THE RUN ("that is three wins in their last five"). It would have to come
+// from cards.form.recent_form with this result folded in, and that string's
+// ORDER IS NOT DEFINED. In the full generator path it is a Claude tool-call
+// field described only as "Last 5 results as W/D/L string, e.g. 'WWDLW'"
+// (team-page-generator:125). Checked against eight live team_pages rows on
+// 2026-09-23: seven had the newest result first, Aston Villa's second letter
+// disagreed with its own second-newest result. Fold a result into a string
+// whose ends you cannot tell apart and the card states a run that did not
+// happen, in the one place she is about to repeat it out loud.
+//
+// THE SCORERS. Trusted data, but they are resolved inside the WC block from a
+// /fixtures/events call that can lag the whistle by a tick — match-watcher
+// defers a goal a whole minute when the scorer is not published yet. The FT
+// push already names them, live, and the feed article carries them again.
+//
+// What is certain at the whistle is the score, the ground, the competition,
+// and for a settled cup tie what it settled. So that is the card.
+
+/**
+ * The after-match card for a club: two to three sentences of fact, plus the
+ * one line she can use. Pure — every input is already in hand at the final
+ * whistle, no Claude, no I/O, no extra API call.
+ */
+export function renderClubPostMatch(
+  ctx: ClubPostMatchContext,
+): { state: PostMatchState; text: string; talking_point: string } {
+  const parts = [
+    resultSentence(ctx),
+    (ctx.knockoutLine ?? "").trim() || null,
+  ].filter((s): s is string => !!s);
+
+  return { state: ctx.state, text: parts.join(" "), talking_point: postMatchTalkingPoint(ctx) };
+}
+
+/// "Arsenal beat Tottenham 2-1 at home in the Premier League."
+function resultSentence(ctx: ClubPostMatchContext): string {
+  const { teamName: team, opponentName: opp, teamScore: gf, oppScore: ga } = ctx;
+  const where = ctx.venue === "home" ? "at home" : "away";
+  const comp = ctx.competition
+    ? ` in the ${ctx.competition}${ctx.round ? `, ${ctx.round}` : ""}`
+    : "";
+
+  // A shootout leaves the goals level and the tie decided, so the plain
+  // scoreline would call a win a draw.
+  if (ctx.shootout) {
+    const { mine, theirs } = ctx.shootout;
+    const verb = ctx.state === "win" ? "beat" : "lost to";
+    const pens = ctx.state === "win" ? `${mine}-${theirs}` : `${theirs}-${mine}`;
+    return `${team} ${verb} ${opp} ${pens} on penalties after a ${gf}-${ga} draw ${where}${comp}.`;
+  }
+
+  const extra = ctx.afterExtraTime ? " after extra time" : "";
+  const phrase = ctx.state === "win"
+    ? `beat ${opp} ${gf}-${ga}`
+    : ctx.state === "loss"
+    ? `lost ${gf}-${ga} to ${opp}`
+    : `drew ${gf}-${ga} with ${opp}`;
+  return `${team} ${phrase} ${where}${comp}${extra}.`;
+}
+
+function postMatchTalkingPoint(ctx: ClubPostMatchContext): string {
+  const line = (ctx.knockoutLine ?? "").trim();
+  const through = line.match(/^Through to (.+)\.$/);
+  if (through) return `They are through. Ask him who he wants to draw in ${through[1]}.`;
+  if (/ winners\.$/.test(line)) return `They have won it. Let him have this one all evening.`;
+  if (/^Out of the /.test(line)) return `Their run is over. He might need a minute before he wants to talk about it.`;
+
+  const margin = Math.abs(ctx.teamScore - ctx.oppScore);
+  if (ctx.state === "win") {
+    return margin >= 3
+      ? `A win like that changes his week. Ask him whether it was as comfortable as the score makes it look.`
+      : `Ask him whether that felt comfortable, or closer than the scoreline says.`;
+  }
+  if (ctx.state === "loss") {
+    return margin >= 3
+      ? `Give him a minute with that one. Then ask what has to change before the next game.`
+      : `A goal in it. Ask him what he would have done differently.`;
+  }
+  return ctx.venue === "home"
+    ? `A point at home. Ask him whether that counts as two dropped.`
+    : `A point away from home. Ask him whether he would have taken that before kickoff.`;
+}
+
 function tableSentence(ctx: ClubPreMatchContext): string | null {
   const { myPosition: mine, oppPosition: theirs } = ctx;
   if (mine == null || theirs == null) return null;
