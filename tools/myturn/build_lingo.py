@@ -4,8 +4,8 @@
 Each term: (category, id, term, meaning, heard, sayIt, seeAlso) from
 lingo_src.TERMS, its `level` from lingo_src.LEVELS, and the Overheard game
 fields (overheard, speaker, gist, decoy/spare, when, moment) from lingo_overheard.
-Of the two authored wrong options only `decoy` ships; `spare` stays in the
-source so dropping back to three options stays a one-line change.
+Of the two authored wrong options only `decoy` is ever shown; `spare` rides
+along unread so dropping back to three options stays a one-line change.
 `moment` bands how often the sayIt line's moment arrives, so the end-of-round
 commitment never offers a line she had no chance to use. An entry's optional
 `player` key becomes `playerVariants`, each with its own `overheardTerm`, so a
@@ -62,16 +62,17 @@ for category, tid, term, meaning, heard, say_it, see_also in TERMS:
         row["speaker"] = o["speaker"]
         row["gist"] = o["gist"]
         # Two wrong options are authored; one ships. `spare` is written and
-        # reviewed and never leaves this file, so the revert to three options is
-        # a one-line change rather than a writing job. Asserted rather than
-        # defaulted: a term that lost its spare has lost the revert.
+        # reviewed and never shown, so the revert to three options is a one-line
+        # change rather than a writing job. Asserted rather than defaulted: a
+        # term that lost its spare has lost the revert.
         assert isinstance(o.get("decoy"), str) and o["decoy"].strip(), f"{tid}: needs a shipping `decoy`"
         assert isinstance(o.get("spare"), str) and o["spare"].strip(), \
             f"{tid}: needs a reviewed `spare`, the decoy that does not ship; without it the revert to three options is a rewrite"
         row["decoy"] = o["decoy"]
-        # ponytail: `decoys` is the pair the shipped Swift still reads
-        # (LingoDeck.options requires two). It goes when Swift moves to `decoy`.
-        row["decoys"] = [o["decoy"], o["spare"]]
+        # Source-only in spirit, like `aliases`, but it rides along in the JSON:
+        # the validator reads lingo.json, and so does the launch self-check that
+        # proves every shipped term still has a spare to walk back to.
+        row["spare"] = o["spare"]
         row["when"] = sorted(set(o["when"]), key=lambda w: WHEN_ORDER.get(w, 99))
         row["moment"] = o["moment"]
         player = o.get("player")

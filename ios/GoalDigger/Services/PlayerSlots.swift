@@ -294,7 +294,7 @@ enum PlayerSlots {
             LingoTerm(id: id, category: .tactics, term: "target man", meaning: "m", heard: "h",
                       sayIt: "Plain \(id).", seeAlso: nil, level: 1,
                       overheard: "Plain \(id), that.", overheardTerm: "target man", speaker: .him,
-                      gist: "g", decoys: ["d1", "d2"], when: ["any"], basic: nil, moment: "common",
+                      gist: "g", decoy: "d1", spare: "d2", when: ["any"], basic: nil, moment: "common",
                       playerVariants: variants)
         }
         func variant(_ slot: String) -> LingoTerm.PlayerVariant {
@@ -470,7 +470,7 @@ enum PlayerSlots {
                 id: term.id, category: term.category, term: term.term, meaning: term.meaning,
                 heard: term.heard, sayIt: term.sayIt, seeAlso: term.seeAlso, level: term.level,
                 overheard: term.overheard, overheardTerm: term.overheardTerm, speaker: term.speaker,
-                gist: term.gist, decoys: term.decoys, when: term.when, basic: term.basic,
+                gist: term.gist, decoy: term.decoy, spare: term.spare, when: term.when, basic: term.basic,
                 moment: term.moment,
                 playerVariants: [.init(slot: f.slot,
                                        overheard: line + " " + f.says,

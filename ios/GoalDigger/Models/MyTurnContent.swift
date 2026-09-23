@@ -182,8 +182,20 @@ struct LingoTerm: Codable, Identifiable, Hashable {
     let speaker: LingoSpeaker?
     /// The right answer: what he meant, in her words.
     let gist: String?
-    /// Exactly two hand-written wrong answers, same length band as `gist`.
-    let decoys: [String]?
+    /// The one hand-written wrong answer she is shown, same length band as
+    /// `gist`. Authored rather than computed: a runtime pick out of a pair
+    /// would re-seed per session and could never be validated, and a length
+    /// heuristic would move the shipped card whenever a gist is trimmed. The
+    /// second wrong answer is written and reviewed but stays in the source as
+    /// `spare`, so reverting to three options is a one-line change and not a
+    /// writing job.
+    let decoy: String?
+    /// The reviewed wrong answer that does not ship. Never shown, never an
+    /// option, decoded only so `lingoDeckSelfCheck` can prove that every word
+    /// in the bundle still has one — a revert nobody can evidence is not a
+    /// revert. A cached file published before the rename has none, which is
+    /// why it is optional like the rest.
+    let spare: String?
     /// When this word is worth knowing: tags from `MatchContext.knownTags`.
     /// `[String]`, not an enum, so a publish can add a tag before the app
     /// knows it (an unknown tag simply never matches a context).
@@ -213,11 +225,11 @@ struct LingoTerm: Codable, Identifiable, Hashable {
     ///
     /// It overrides an existing term rather than minting a card id: her
     /// known/learning progress is keyed on term ids, so a one-off id would be
-    /// progress she could never bank. `speaker`, `gist`, `decoys`, `when`,
+    /// progress she could never bank. `speaker`, `gist`, `decoy`, `when`,
     /// `basic` and `moment` are inherited and never overridden — a decoy is a
     /// *wrong* meaning, so a name in one would assert something false about a
-    /// real person, and a proper noun in one option out of three is a one-tap
-    /// giveaway.
+    /// real person, and a proper noun in one option out of two is the whole
+    /// card given away.
     struct PlayerVariant: Codable, Hashable {
         /// `{ours|theirs}.{keeper|defender|midfielder|forward}`. A `String`
         /// rather than an enum for the same reason `when` is `[String]`: a

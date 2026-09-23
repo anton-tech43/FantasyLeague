@@ -5,11 +5,11 @@ import SwiftUI
 /// A flashcard asked her to recall a definition, which is a thing she will
 /// never have to do. This asks the question she actually gets asked: he says
 /// "squeaky bum time", the telly says "they've gone route one", what did that
-/// mean. Snippet, three options, then the reveal with a line she can say back.
+/// mean. Snippet, two options, then the reveal with a line she can say back.
 ///
 /// Seven items, dealt by `LingoWeekendDeck` from this weekend's fixture. No
 /// re-queue of a missed word inside the round: the same snippet with the same
-/// three options in the same order tests where her thumb was. Across rounds
+/// two options in the same order tests where her thumb was. Across rounds
 /// the same defence is the session's `salt`, which reshuffles the options on
 /// every deal while holding them still for the round she is in.
 struct LingoOverheardView: View {

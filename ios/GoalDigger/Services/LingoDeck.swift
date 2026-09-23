@@ -716,7 +716,7 @@ struct MatchContext: Equatable {
 
 // MARK: - This weekend's seven
 
-/// Which seven words she gets, and the three options on each of them.
+/// Which seven words she gets, and the two options on each of them.
 enum LingoWeekendDeck {
     /// Unchanged from the flashcard deck, so every word she has already marked
     /// known carries over.
@@ -809,7 +809,12 @@ enum LingoWeekendDeck {
         return (dealt.map(\.id), refresher)
     }
 
-    /// The three options for a word, and which one is right. Nil when the word
+    /// How many options a card shows. Named so the walk back to three is this
+    /// line plus `decoy` becoming `decoys` again — the content still carries
+    /// the second wrong answer as `spare`, reviewed and never shipped.
+    static let optionCount = 2
+
+    /// The options for a word, and which one is right. Nil when the word
     /// has not been written for Overheard yet, which is how an older cached
     /// lingo.json keeps working: it simply deals nothing.
     ///
@@ -823,15 +828,15 @@ enum LingoWeekendDeck {
     /// An empty salt is the pre-2026-09-23 order, which is what a session
     /// persisted before the salt existed should keep showing.
     static func options(for term: LingoTerm, salt: String = "") -> (options: [String], answer: Int)? {
-        // The snippet is the question. A word with a gist and two decoys but no
+        // The snippet is the question. A word with a gist and a decoy but no
         // line to overhear would ask "what does that mean?" above the drier
         // `heard` note, which is a definition quiz again.
         guard term.overheard?.isEmpty == false,
               let gist = term.gist?.trimmingCharacters(in: .whitespacesAndNewlines), !gist.isEmpty,
-              let decoys = term.decoys?.map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) })
-                  .filter({ !$0.isEmpty }), decoys.count >= 2 else { return nil }
-        var options = [gist] + decoys.prefix(2)
-        guard Set(options).count == 3 else { return nil }
+              let decoy = term.decoy?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !decoy.isEmpty else { return nil }
+        var options = [gist, decoy]
+        guard Set(options).count == optionCount else { return nil }
         var rng = LiveClubPack.SeededGenerator(seed: term.id + salt)
         options.shuffle(using: &rng)
         guard let answer = options.firstIndex(of: gist) else { return nil }
@@ -1216,7 +1221,7 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
         LingoTerm(id: id, category: .matchSituations, term: id, meaning: "m", heard: "h",
                   sayIt: "Say \(id).", seeAlso: nil, level: level,
                   overheard: "They said \(id).", overheardTerm: id, speaker: .him,
-                  gist: "gist \(id)", decoys: ["decoy one \(id)", "decoy two \(id)"], when: when,
+                  gist: "gist \(id)", decoy: "decoy \(id)", spare: "spare \(id)", when: when,
                   basic: nil, moment: moment, playerVariants: nil)
     }
     // The derby words sit ABOVE the fillers by difficulty, so "derby first" is
@@ -1330,13 +1335,18 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
     let playable = term("opt", level: 1, when: ["any"])
     guard let first = LingoWeekendDeck.options(for: playable),
           let second = LingoWeekendDeck.options(for: playable) else {
-        assertionFailure("a word with a gist and two decoys is not playable")
+        assertionFailure("a word with a gist and one decoy is not playable")
         return
     }
     assert(first.options == second.options && first.answer == second.answer,
            "option order is not deterministic, so a paused round moves the right answer")
     assert(first.options[first.answer] == playable.gist, "the answer index does not point at the gist")
-    assert(first.options.count == 3, "an Overheard card is three options")
+    assert(first.options.count == LingoWeekendDeck.optionCount,
+           "an Overheard card is \(LingoWeekendDeck.optionCount) options, got \(first.options.count)")
+    // The wrong option she sees is the authored one and never the spare: the
+    // spare is written to make the walk back cheap, not to be shown.
+    assert(Set(first.options) == Set([playable.gist, playable.decoy].compactMap { $0 }),
+           "the card is not the gist against the shipping decoy: \(first.options)")
 
     // The salt. One session's salt has to be stable — she pauses a round, the
     // app is relaunched, the right answer must still be under the same
@@ -1347,8 +1357,8 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
     assert(salted?.options == saltedAgain?.options && salted?.answer == saltedAgain?.answer,
            "the same salt gave a different order, so a resumed round moves the right answer")
     assert(salted?.options[salted!.answer] == playable.gist, "a salted answer index does not point at the gist")
-    // A single word can land the same way under two salts (one order in six),
-    // so this asks over a sample rather than of one term.
+    // A single word lands the same way under two salts half the time at two
+    // options, so this asks over a sample rather than of one term.
     let sample = (0..<10).map { term("salt-\($0)", level: 1, when: ["any"]) }
     assert(sample.contains { t in
         LingoWeekendDeck.options(for: t, salt: "session-a")?.options
@@ -1356,13 +1366,13 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
     }, "two different salts dealt every word in the same order, so the salt does nothing")
     let bare = LingoTerm(id: "bare", category: .rules, term: "Bare", meaning: "m", heard: "h",
                          sayIt: nil, seeAlso: nil, level: 1, overheard: nil, overheardTerm: nil,
-                         speaker: nil, gist: nil, decoys: nil, when: nil, basic: nil, moment: nil,
-                         playerVariants: nil)
-    assert(LingoWeekendDeck.options(for: bare) == nil, "a word with no decoys must not be playable")
+                         speaker: nil, gist: nil, decoy: nil, spare: nil, when: nil, basic: nil,
+                         moment: nil, playerVariants: nil)
+    assert(LingoWeekendDeck.options(for: bare) == nil, "a word with no decoy must not be playable")
     let noSnippet = LingoTerm(id: "no-snippet", category: .rules, term: "Nosnip", meaning: "m",
                               heard: "h", sayIt: nil, seeAlso: nil, level: 1, overheard: nil,
                               overheardTerm: nil, speaker: .him, gist: "gist nosnip",
-                              decoys: ["decoy one", "decoy two"], when: ["any"], basic: nil,
+                              decoy: "decoy nosnip", spare: "spare nosnip", when: ["any"], basic: nil,
                               moment: "common", playerVariants: nil)
     assert(LingoWeekendDeck.options(for: noSnippet) == nil,
            "a word with options but no line to overhear must not be playable")
@@ -1392,6 +1402,13 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
         // content would quietly shrink the pool rather than break anything.
         assert(["anytime", "common", "rare"].contains(t.moment ?? ""),
                "lingo.json term \(t.id) has moment '\(t.moment ?? "nil")', not one of anytime, common, rare")
+        // The revert to three options is only one line while the second wrong
+        // answer is still written down. A word that lost its spare would make
+        // it a writing job, quietly, and nothing else here would notice. Only
+        // asked of the words that are actually played: a term with no decoy is
+        // not a card and has nothing to walk back to.
+        assert(t.decoy?.isEmpty != false || t.spare?.isEmpty == false,
+               "lingo.json term \(t.id) ships a decoy with no spare behind it, so three options is a rewrite")
     }
 
     // The first round on a fresh install: no cached team page, so the `any`

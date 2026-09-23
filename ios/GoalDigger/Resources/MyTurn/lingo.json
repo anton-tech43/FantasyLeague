@@ -14,10 +14,7 @@
       "speaker": "him",
       "gist": "England's top division of twenty clubs",
       "decoy": "Britain's top clubs, English and Scottish",
-      "decoys": [
-        "Britain's top clubs, English and Scottish",
-        "All the English divisions taken together"
-      ],
+      "spare": "All the English divisions taken together",
       "when": [
         "any",
         "early-season"
@@ -38,10 +35,7 @@
       "speaker": "him",
       "gist": "The moment the match starts",
       "decoy": "The coin toss that starts the game",
-      "decoys": [
-        "The coin toss that starts the game",
-        "The first shot that tests the keeper"
-      ],
+      "spare": "The first shot that tests the keeper",
       "when": [
         "any"
       ],
@@ -61,10 +55,7 @@
       "speaker": "him",
       "gist": "The break in the middle of the match",
       "decoy": "The fifteen minutes before kick-off",
-      "decoys": [
-        "The fifteen minutes before kick-off",
-        "A short break for drinks in hot weather"
-      ],
+      "spare": "A short break for drinks in hot weather",
       "when": [
         "any"
       ],
@@ -84,10 +75,7 @@
       "speaker": "telly",
       "gist": "The referee ends it whatever the score",
       "decoy": "The end of the first half, not the match",
-      "decoys": [
-        "The end of the first half, not the match",
-        "The whistle that starts the added minutes"
-      ],
+      "spare": "The whistle that starts the added minutes",
       "when": [
         "any"
       ],
@@ -111,10 +99,7 @@
       "speaker": "him",
       "gist": "Every club ordered by points won",
       "decoy": "Weekend fixtures listed by kick-off time",
-      "decoys": [
-        "Weekend fixtures listed by kick-off time",
-        "The clubs sorted by goals scored so far"
-      ],
+      "spare": "The clubs sorted by goals scored so far",
       "when": [
         "any",
         "title",
@@ -141,10 +126,7 @@
       "speaker": "him",
       "gist": "He was beyond the final defender for the pass",
       "decoy": "He got in the keeper's way at the near post",
-      "decoys": [
-        "He got in the keeper's way at the near post",
-        "The ball had already gone out for a goal kick"
-      ],
+      "spare": "The ball had already gone out for a goal kick",
       "when": [
         "any"
       ],
@@ -166,10 +148,7 @@
       "speaker": "telly",
       "gist": "A free shot with just the keeper to beat",
       "decoy": "A punishment card shown after a bad tackle",
-      "decoys": [
-        "A punishment card shown after a bad tackle",
-        "A free kick given just outside the box"
-      ],
+      "spare": "A free kick given just outside the box",
       "when": [
         "any"
       ],
@@ -191,10 +170,7 @@
       "speaker": "telly",
       "gist": "The video referee is looking at the replay",
       "decoy": "A panel that reviews decisions after the match",
-      "decoys": [
-        "A panel that reviews decisions after the match",
-        "The screen in the ground showing the decision"
-      ],
+      "spare": "The screen in the ground showing the decision",
       "when": [
         "any"
       ],
@@ -216,10 +192,7 @@
       "speaker": "chat",
       "gist": "A formal warning and a step towards a ban",
       "decoy": "A fine the club pays, not the player",
-      "decoys": [
-        "A fine the club pays, not the player",
-        "A ban from the next match, straight away"
-      ],
+      "spare": "A ban from the next match, straight away",
       "when": [
         "any"
       ],
@@ -250,10 +223,7 @@
       "speaker": "pundit",
       "gist": "A player off, and nobody replaces him",
       "decoy": "A warning before he is sent off",
-      "decoys": [
-        "A warning before he is sent off",
-        "A penalty given against them for the foul"
-      ],
+      "spare": "A penalty given against them for the foul",
       "when": [
         "any",
         "derby"
@@ -276,10 +246,7 @@
       "speaker": "chat",
       "gist": "Three for a win and one for a draw",
       "decoy": "One for every goal, added up all season",
-      "decoys": [
-        "One for every goal, added up all season",
-        "A tally handed out by finishing position"
-      ],
+      "spare": "A tally handed out by finishing position",
       "when": [
         "any",
         "run-in",
@@ -304,10 +271,7 @@
       "speaker": "pundit",
       "gist": "Goals scored minus goals let in",
       "decoy": "Margin of victory in a single match",
-      "decoys": [
-        "Margin of victory in a single match",
-        "A gap in points between two clubs"
-      ],
+      "spare": "A gap in points between two clubs",
       "when": [
         "title",
         "top-four",
@@ -334,10 +298,7 @@
       "speaker": "him",
       "gist": "Dropping out of the division at the bottom",
       "decoy": "Being pushed down into the reserves",
-      "decoys": [
-        "Being pushed down into the reserves",
-        "Finishing outside the places for Europe"
-      ],
+      "spare": "Finishing outside the places for Europe",
       "when": [
         "relegation",
         "run-in"
@@ -369,10 +330,7 @@
       "speaker": "chat",
       "gist": "Moving up into the division above",
       "decoy": "Moving up into the first team",
-      "decoys": [
-        "Moving up into the first team",
-        "Finishing top of the division, champions"
-      ],
+      "spare": "Finishing top of the division, champions",
       "when": [
         "early-season",
         "run-in"
@@ -395,10 +353,7 @@
       "speaker": "pundit",
       "gist": "A finish high enough for Champions League",
       "decoy": "The sides who reach a cup semi-final",
-      "decoys": [
-        "The sides who reach a cup semi-final",
-        "Winning the league and lifting the trophy"
-      ],
+      "spare": "Winning the league and lifting the trophy",
       "when": [
         "top-four",
         "run-in"
@@ -421,10 +376,7 @@
       "speaker": "him",
       "gist": "The big rectangle in front of each goal",
       "decoy": "The dugout where the manager and subs sit",
-      "decoys": [
-        "The dugout where the manager and subs sit",
-        "The six-yard area a keeper kicks from"
-      ],
+      "spare": "The six-yard area a keeper kicks from",
       "when": [
         "any"
       ],
@@ -455,10 +407,7 @@
       "speaker": "him",
       "gist": "Going through the man instead of the ball",
       "decoy": "Any stoppage the referee calls, right or wrong",
-      "decoys": [
-        "Any stoppage the referee calls, right or wrong",
-        "Arguing with the referee after a decision"
-      ],
+      "spare": "Arguing with the referee after a decision",
       "when": [
         "any"
       ],
@@ -480,10 +429,7 @@
       "speaker": "chat",
       "gist": "Touching the ball with an arm on purpose",
       "decoy": "Grabbing an opponent's shirt to hold him back",
-      "decoys": [
-        "Grabbing an opponent's shirt to hold him back",
-        "The keeper picking the ball up outside his box"
-      ],
+      "spare": "The keeper picking the ball up outside his box",
       "when": [
         "any"
       ],
@@ -502,10 +448,7 @@
       "speaker": "pundit",
       "gist": "A restart taken from where the offence happened",
       "decoy": "A kick awarded for a foul inside the box",
-      "decoys": [
-        "A kick awarded for a foul inside the box",
-        "A drop ball restart after a player's hurt"
-      ],
+      "spare": "A drop ball restart after a player's hurt",
       "when": [
         "any",
         "opp-set-piece"
@@ -525,10 +468,7 @@
       "speaker": "him",
       "gist": "A kick from the flag after a defender puts it out",
       "decoy": "A cross from deep while the ball is live",
-      "decoys": [
-        "A cross from deep while the ball is live",
-        "A free kick given wide, level with the goal"
-      ],
+      "spare": "A free kick given wide, level with the goal",
       "when": [
         "any",
         "opp-set-piece"
@@ -549,10 +489,7 @@
       "speaker": "telly",
       "gist": "Putting the ball back in from the sideline",
       "decoy": "Giving up and letting the other lot have it",
-      "decoys": [
-        "Giving up and letting the other lot have it",
-        "A free kick given out on the touchline"
-      ],
+      "spare": "A free kick given out on the touchline",
       "when": [
         "any"
       ],
@@ -575,10 +512,7 @@
       "speaker": "him",
       "gist": "A man down for the rest of the match",
       "decoy": "The ten outfield players, not the keeper",
-      "decoys": [
-        "The ten outfield players, not the keeper",
-        "A shape with nobody up front"
-      ],
+      "spare": "A shape with nobody up front",
       "when": [
         "any",
         "after-loss"
@@ -598,10 +532,7 @@
       "speaker": "him",
       "gist": "Letting in no goals at all in a match",
       "decoy": "Ninety minutes with no cards and no trouble",
-      "decoys": [
-        "Ninety minutes with no cards and no trouble",
-        "Winning without conceding a penalty"
-      ],
+      "spare": "Winning without conceding a penalty",
       "when": [
         "good-run",
         "after-win",
@@ -623,10 +554,7 @@
       "speaker": "chat",
       "gist": "A match between two clubs from the same city",
       "decoy": "A fixture played every year on the same day",
-      "decoys": [
-        "A fixture played every year on the same day",
-        "Any local game with a real edge to it"
-      ],
+      "spare": "Any local game with a real edge to it",
       "when": [
         "derby"
       ],
@@ -648,10 +576,7 @@
       "speaker": "pundit",
       "gist": "A decision so wrong nobody could argue",
       "decoy": "A decision the referee got right first time",
-      "decoys": [
-        "A decision the referee got right first time",
-        "Footage good enough to see it"
-      ],
+      "spare": "Footage good enough to see it",
       "when": [
         "any"
       ],
@@ -670,10 +595,7 @@
       "speaker": "pundit",
       "gist": "The division below the top one in England",
       "decoy": "A league for clubs' reserve and youth sides",
-      "decoys": [
-        "A league for clubs' reserve and youth sides",
-        "The tier where the clubs are part-time"
-      ],
+      "spare": "The tier where the clubs are part-time",
       "when": [
         "relegation",
         "early-season"
@@ -696,10 +618,7 @@
       "speaker": "telly",
       "gist": "A mini knockout deciding who goes up",
       "decoy": "A one-off final for the title",
-      "decoys": [
-        "A one-off final for the title",
-        "Extra games to decide who avoids going down"
-      ],
+      "spare": "Extra games to decide who avoids going down",
       "when": [
         "early-season",
         "run-in"
@@ -719,10 +638,7 @@
       "speaker": "telly",
       "gist": "Extra play at the end for stoppages",
       "decoy": "Time carried over from the first half",
-      "decoys": [
-        "Time carried over from the first half",
-        "A count of how long the ball was out of play"
-      ],
+      "spare": "A count of how long the ball was out of play",
       "when": [
         "any"
       ],
@@ -745,10 +661,7 @@
       "speaker": "pundit",
       "gist": "Half an hour more to settle a cup game",
       "decoy": "Penalties to decide who goes through",
-      "decoys": [
-        "Penalties to decide who goes through",
-        "The same round played again a week later"
-      ],
+      "spare": "The same round played again a week later",
       "when": [
         "cup",
         "europe"
@@ -772,10 +685,7 @@
       "speaker": "chat",
       "gist": "Five spot kicks each and then sudden death",
       "decoy": "One kick each, whoever misses is out",
-      "decoys": [
-        "One kick each, whoever misses is out",
-        "A free shot from twelve yards during play"
-      ],
+      "spare": "A free shot from twelve yards during play",
       "when": [
         "cup",
         "europe"
@@ -809,10 +719,7 @@
       "speaker": "him",
       "gist": "The knockout competitions beside the league",
       "decoy": "The trophies handed out at the end of a season",
-      "decoys": [
-        "The trophies handed out at the end of a season",
-        "The two European competitions played midweek"
-      ],
+      "spare": "The two European competitions played midweek",
       "when": [
         "cup"
       ],
@@ -843,10 +750,7 @@
       "speaker": "telly",
       "gist": "The oldest knockout open to every club",
       "decoy": "The cup for the top two divisions",
-      "decoys": [
-        "The cup for the top two divisions",
-        "The competition every club in Europe can enter"
-      ],
+      "spare": "The competition every club in Europe can enter",
       "when": [
         "cup"
       ],
@@ -870,10 +774,7 @@
       "speaker": "pundit",
       "gist": "The smaller of the two domestic cups",
       "decoy": "A trophy for the winners of the division",
-      "decoys": [
-        "A trophy for the winners of the division",
-        "The pre-season tournament played in August"
-      ],
+      "spare": "The pre-season tournament played in August",
       "when": [
         "cup"
       ],
@@ -897,10 +798,7 @@
       "speaker": "him",
       "gist": "The national stadium in north-west London",
       "decoy": "The name fans give to the cup final itself",
-      "decoys": [
-        "The name fans give to the cup final itself",
-        "The training base the national team uses"
-      ],
+      "spare": "The training base the national team uses",
       "when": [
         "cup",
         "run-in"
@@ -925,10 +823,7 @@
       "speaker": "telly",
       "gist": "Europe's top club competition",
       "decoy": "Every division's champion in one cup",
-      "decoys": [
-        "Every division's champion in one cup",
-        "A tournament between national sides"
-      ],
+      "spare": "A tournament between national sides",
       "when": [
         "europe",
         "title",
@@ -961,10 +856,7 @@
       "speaker": "him",
       "gist": "Europe's second club competition",
       "decoy": "Knockout rounds of Europe's top cup",
-      "decoys": [
-        "Knockout rounds of Europe's top cup",
-        "A tournament for national sides in Europe"
-      ],
+      "spare": "A tournament for national sides in Europe",
       "when": [
         "europe",
         "top-four"
@@ -988,10 +880,7 @@
       "speaker": "chat",
       "gist": "Europe's third club competition",
       "decoy": "Non-league clubs below the top divisions",
-      "decoys": [
-        "Non-league clubs below the top divisions",
-        "The qualifying round before a group stage"
-      ],
+      "spare": "The qualifying round before a group stage",
       "when": [
         "europe",
         "top-four"
@@ -1011,10 +900,7 @@
       "speaker": "him",
       "gist": "Who plays who each week and when",
       "decoy": "Dates the tickets go on sale, week by week",
-      "decoys": [
-        "Dates the tickets go on sale, week by week",
-        "The TV picks for the weekend's games"
-      ],
+      "spare": "The TV picks for the weekend's games",
       "when": [
         "any",
         "early-season"
@@ -1035,10 +921,7 @@
       "speaker": "him",
       "gist": "The players picked to begin the match",
       "decoy": "The order the players run out in",
-      "decoys": [
-        "The order the players run out in",
-        "The squad named for a European round"
-      ],
+      "spare": "The squad named for a European round",
       "when": [
         "any",
         "early-season"
@@ -1062,10 +945,7 @@
       "speaker": "him",
       "gist": "Swapping a player on the pitch for one waiting",
       "decoy": "Taking a player off with nobody coming on",
-      "decoys": [
-        "Taking a player off with nobody coming on",
-        "One player moving to cover another's role"
-      ],
+      "spare": "One player moving to cover another's role",
       "when": [
         "any"
       ],
@@ -1087,10 +967,7 @@
       "speaker": "chat",
       "gist": "The substitutes waiting beside the pitch",
       "decoy": "The coaching staff sat in the dugout",
-      "decoys": [
-        "The coaching staff sat in the dugout",
-        "The players left out of the squad entirely"
-      ],
+      "spare": "The players left out of the squad entirely",
       "when": [
         "any",
         "cup"
@@ -1114,10 +991,7 @@
       "speaker": "telly",
       "gist": "One round played as two matches home and away",
       "decoy": "Both halves, either side of the break",
-      "decoys": [
-        "Both halves, either side of the break",
-        "A round decided by a second match if it's level"
-      ],
+      "spare": "A round decided by a second match if it's level",
       "when": [
         "cup",
         "europe"
@@ -1141,10 +1015,7 @@
       "speaker": "pundit",
       "gist": "Both scores added together over a round",
       "decoy": "Every goal a club scores in a season",
-      "decoys": [
-        "Every goal a club scores in a season",
-        "The gap between goals scored and let in"
-      ],
+      "spare": "The gap between goals scored and let in",
       "when": [
         "cup",
         "europe"
@@ -1164,10 +1035,7 @@
       "speaker": "telly",
       "gist": "A ball put into your own net by mistake",
       "decoy": "A goal you score on your own, unassisted",
-      "decoys": [
-        "A goal you score on your own, unassisted",
-        "A goal that came off a defender on the way in"
-      ],
+      "spare": "A goal that came off a defender on the way in",
       "when": [
         "any",
         "after-loss"
@@ -1188,10 +1056,7 @@
       "speaker": "pundit",
       "gist": "The pass that leads straight to a goal",
       "decoy": "The whole move that led up to the goal",
-      "decoys": [
-        "The whole move that led up to the goal",
-        "Winning the ball back to start an attack"
-      ],
+      "spare": "Winning the ball back to start an attack",
       "when": [
         "any",
         "after-win"
@@ -1222,10 +1087,7 @@
       "speaker": "chat",
       "gist": "Two goals by the same player in a match",
       "decoy": "Strapping worn on a knee or ankle",
-      "decoys": [
-        "Strapping worn on a knee or ankle",
-        "One goal and one assist in a match"
-      ],
+      "spare": "One goal and one assist in a match",
       "when": [
         "after-win",
         "after-big-win"
@@ -1248,10 +1110,7 @@
       "speaker": "him",
       "gist": "Three goals by one man in a match",
       "decoy": "Three wins on the bounce for a club",
-      "decoys": [
-        "Three wins on the bounce for a club",
-        "Three goals for a side inside one half"
-      ],
+      "spare": "Three goals for a side inside one half",
       "when": [
         "after-win",
         "after-big-win"
@@ -1271,10 +1130,7 @@
       "speaker": "pundit",
       "gist": "The player judged best on the day",
       "decoy": "The supporters' player of the season",
-      "decoys": [
-        "The supporters' player of the season",
-        "The player who speaks to the cameras after"
-      ],
+      "spare": "The player who speaks to the cameras after",
       "when": [
         "any",
         "after-win"
@@ -1302,10 +1158,7 @@
       "speaker": "him",
       "gist": "A match that ended level with nobody scoring",
       "decoy": "The game was abandoned, so no score counts",
-      "decoys": [
-        "The game was abandoned, so no score counts",
-        "A draw where both sides scored a goal each"
-      ],
+      "spare": "A draw where both sides scored a goal each",
       "when": [
         "after-draw",
         "after-clean-sheet",
@@ -1331,10 +1184,7 @@
       "speaker": "pundit",
       "gist": "A rehearsed routine from a dead ball",
       "decoy": "The eleven a manager settles on for a game",
-      "decoys": [
-        "The eleven a manager settles on for a game",
-        "A goal that comes straight from open play"
-      ],
+      "spare": "A goal that comes straight from open play",
       "when": [
         "any",
         "derby",
@@ -1367,10 +1217,7 @@
       "speaker": "him",
       "gist": "The shape the ten outfield players start in",
       "decoy": "The eleven he picks to start the match",
-      "decoys": [
-        "The eleven he picks to start the match",
-        "The way they set up for corners and free kicks"
-      ],
+      "spare": "The way they set up for corners and free kicks",
       "when": [
         "any",
         "new-manager"
@@ -1394,10 +1241,7 @@
       "speaker": "telly",
       "gist": "The defenders in a line in front of the goalkeeper",
       "decoy": "The players sitting furthest back on the bench",
-      "decoys": [
-        "The players sitting furthest back on the bench",
-        "The four across the middle of the pitch"
-      ],
+      "spare": "The four across the middle of the pitch",
       "when": [
         "any",
         "after-clean-sheet",
@@ -1418,10 +1262,7 @@
       "speaker": "him",
       "gist": "A defender in the middle who wins headers",
       "decoy": "A midfielder who shields the defence behind him",
-      "decoys": [
-        "A midfielder who shields the defence behind him",
-        "The one who whips the crosses in from wide"
-      ],
+      "spare": "The one who whips the crosses in from wide",
       "when": [
         "any",
         "after-clean-sheet",
@@ -1451,10 +1292,7 @@
       "speaker": "pundit",
       "gist": "A defender out wide who also joins the attack",
       "decoy": "An attacker who hugs the touchline all game",
-      "decoys": [
-        "An attacker who hugs the touchline all game",
-        "A defender who plays the whole ninety every week"
-      ],
+      "spare": "A defender who plays the whole ninety every week",
       "when": [
         "any"
       ],
@@ -1477,10 +1315,7 @@
       "speaker": "him",
       "gist": "A wide defender pushed up almost as an attacker",
       "decoy": "A back-up who covers out wide when needed",
-      "decoys": [
-        "A back-up who covers out wide when needed",
-        "A midfielder who stays out on the touchline"
-      ],
+      "spare": "A midfielder who stays out on the touchline",
       "when": [
         "any",
         "new-manager"
@@ -1503,10 +1338,7 @@
       "speaker": "him",
       "gist": "The one who sits in front of the defence",
       "decoy": "A player told to hold on to the ball",
-      "decoys": [
-        "A player told to hold on to the ball",
-        "The one who plays just behind the striker"
-      ],
+      "spare": "The one who plays just behind the striker",
       "when": [
         "any"
       ],
@@ -1536,10 +1368,7 @@
       "speaker": "chat",
       "gist": "A midfielder who runs the length of the pitch",
       "decoy": "The one who pings it from one box to the other",
-      "decoys": [
-        "The one who pings it from one box to the other",
-        "A midfielder who gets forward to score goals"
-      ],
+      "spare": "A midfielder who gets forward to score goals",
       "when": [
         "any"
       ],
@@ -1561,10 +1390,7 @@
       "speaker": "telly",
       "gist": "The creative one just off the front man",
       "decoy": "The player wearing the shirt with ten on",
-      "decoys": [
-        "The player wearing the shirt with ten on",
-        "The one the manager picks as captain"
-      ],
+      "spare": "The one the manager picks as captain",
       "when": [
         "any"
       ],
@@ -1586,10 +1412,7 @@
       "speaker": "pundit",
       "gist": "The one every attack goes through",
       "decoy": "The one taking the corners and free kicks",
-      "decoys": [
-        "The one taking the corners and free kicks",
-        "The one who barks the orders at everyone"
-      ],
+      "spare": "The one who barks the orders at everyone",
       "when": [
         "any"
       ],
@@ -1616,10 +1439,7 @@
       "speaker": "chat",
       "gist": "An attacker who runs at people wide",
       "decoy": "The forward who plays just off the striker",
-      "decoys": [
-        "The forward who plays just off the striker",
-        "A defender who gets forward out wide"
-      ],
+      "spare": "A defender who gets forward out wide",
       "when": [
         "any"
       ],
@@ -1650,10 +1470,7 @@
       "speaker": "him",
       "gist": "The one up front whose job is scoring",
       "decoy": "The one who strikes the dead balls for them",
-      "decoys": [
-        "The one who strikes the dead balls for them",
-        "The player who plays behind the front man"
-      ],
+      "spare": "The player who plays behind the front man",
       "when": [
         "any",
         "window"
@@ -1677,10 +1494,7 @@
       "speaker": "pundit",
       "gist": "A big forward the ball gets launched at",
       "decoy": "A defender told to follow one player about",
-      "decoys": [
-        "A defender told to follow one player about",
-        "A forward who chases everything down"
-      ],
+      "spare": "A forward who chases everything down",
       "when": [
         "any",
         "opp-aerial"
@@ -1711,10 +1525,7 @@
       "speaker": "telly",
       "gist": "A forward who drops deep to confuse markers",
       "decoy": "A player faking an injury to waste some time",
-      "decoys": [
-        "A player faking an injury to waste some time",
-        "A forward told to stay high on the shoulder"
-      ],
+      "spare": "A forward told to stay high on the shoulder",
       "when": [
         "any"
       ],
@@ -1738,10 +1549,7 @@
       "speaker": "him",
       "gist": "Changing several players to rest legs",
       "decoy": "Players taking turns as captain in a season",
-      "decoys": [
-        "Players taking turns as captain in a season",
-        "Swapping positions with someone mid-match"
-      ],
+      "spare": "Swapping positions with someone mid-match",
       "when": [
         "cup",
         "europe"
@@ -1773,10 +1581,7 @@
       "speaker": "pundit",
       "gist": "Hounding whoever has it into a mistake",
       "decoy": "Newspapers and TV crowding round the club",
-      "decoys": [
-        "Newspapers and TV crowding round the club",
-        "Playing the ball forward at every chance"
-      ],
+      "spare": "Playing the ball forward at every chance",
       "when": [
         "any",
         "good-run"
@@ -1807,10 +1612,7 @@
       "speaker": "him",
       "gist": "Winning it back right on top of their keeper",
       "decoy": "Launching the ball up in the air and chasing",
-      "decoys": [
-        "Launching the ball up in the air and chasing",
-        "Sitting deep and waiting for a chance to break"
-      ],
+      "spare": "Sitting deep and waiting for a chance to break",
       "when": [
         "any",
         "good-run"
@@ -1834,10 +1636,7 @@
       "speaker": "telly",
       "gist": "Defending deep, letting the other lot have it",
       "decoy": "Playing with three at the back instead of four",
-      "decoys": [
-        "Playing with three at the back instead of four",
-        "Dropping the back line deep to protect a win"
-      ],
+      "spare": "Dropping the back line deep to protect a win",
       "when": [
         "any",
         "after-clean-sheet",
@@ -1862,10 +1661,7 @@
       "speaker": "pundit",
       "gist": "Everyone back defending, nobody trying to attack",
       "decoy": "Wasting time at every throw-in and free kick",
-      "decoys": [
-        "Wasting time at every throw-in and free kick",
-        "Bringing defenders on to hang on to a lead"
-      ],
+      "spare": "Bringing defenders on to hang on to a lead",
       "when": [
         "any",
         "after-draw",
@@ -1891,10 +1687,7 @@
       "speaker": "chat",
       "gist": "Breaking forward fast the second you win it",
       "decoy": "Throwing bodies forward after going behind",
-      "decoys": [
-        "Throwing bodies forward after going behind",
-        "Pushing everyone forward chasing a late goal"
-      ],
+      "spare": "Pushing everyone forward chasing a late goal",
       "when": [
         "any",
         "europe",
@@ -1918,10 +1711,7 @@
       "speaker": "him",
       "gist": "The share of the game a side has the ball",
       "decoy": "The number of times a side touches the ball",
-      "decoys": [
-        "The number of times a side touches the ball",
-        "The count of shots each side has on target"
-      ],
+      "spare": "The count of shots each side has on target",
       "when": [
         "any",
         "after-loss",
@@ -1946,10 +1736,7 @@
       "speaker": "chat",
       "gist": "Endless short passes to keep hold of the ball",
       "decoy": "Chanting from the away end on repeat",
-      "decoys": [
-        "Chanting from the away end on repeat",
-        "A quick one-two played round a defender"
-      ],
+      "spare": "A quick one-two played round a defender",
       "when": [
         "any",
         "europe"
@@ -1974,10 +1761,7 @@
       "speaker": "him",
       "gist": "Hitting it high and far instead of passing",
       "decoy": "Shooting from forty yards or further",
-      "decoys": [
-        "Shooting from forty yards or further",
-        "The cross whipped in low from the byline"
-      ],
+      "spare": "The cross whipped in low from the byline",
       "when": [
         "any",
         "relegation",
@@ -2001,10 +1785,7 @@
       "speaker": "pundit",
       "gist": "Kicking it long and chasing it, no build-up",
       "decoy": "Working the ball wide and crossing it",
-      "decoys": [
-        "Working the ball wide and crossing it",
-        "Passing it through the middle at speed"
-      ],
+      "spare": "Passing it through the middle at speed",
       "when": [
         "any",
         "relegation",
@@ -2026,10 +1807,7 @@
       "speaker": "telly",
       "gist": "Sticking with one opponent all game",
       "decoy": "Each defender covering an area of the pitch",
-      "decoys": [
-        "Each defender covering an area of the pitch",
-        "Standing goal-side of your man at a corner"
-      ],
+      "spare": "Standing goal-side of your man at a corner",
       "when": [
         "any",
         "opp-close-range"
@@ -2060,10 +1838,7 @@
       "speaker": "him",
       "gist": "Each defender guards a patch of grass",
       "decoy": "Switching off and losing concentration",
-      "decoys": [
-        "Switching off and losing concentration",
-        "The wall lined up in front of a free kick"
-      ],
+      "spare": "The wall lined up in front of a free kick",
       "when": [
         "any",
         "after-loss",
@@ -2087,10 +1862,7 @@
       "speaker": "telly",
       "gist": "A defender running outside his winger",
       "decoy": "A pass rolled inside instead of out wide",
-      "decoys": [
-        "A pass rolled inside instead of out wide",
-        "A player drifting into a teammate's space"
-      ],
+      "spare": "A player drifting into a teammate's space",
       "when": [
         "any",
         "opp-close-range"
@@ -2110,10 +1882,7 @@
       "speaker": "telly",
       "gist": "A pass slid between two defenders",
       "decoy": "A ball nudged past a player's legs",
-      "decoys": [
-        "A ball nudged past a player's legs",
-        "A cross aimed at the far post"
-      ],
+      "spare": "A cross aimed at the far post",
       "when": [
         "any",
         "opp-counter"
@@ -2133,10 +1902,7 @@
       "speaker": "him",
       "gist": "A pass pulled square from the byline",
       "decoy": "A player turning inside to lose a marker",
-      "decoys": [
-        "A player turning inside to lose a marker",
-        "A cross floated to the far post"
-      ],
+      "spare": "A cross floated to the far post",
       "when": [
         "any",
         "opp-close-range"
@@ -2159,10 +1925,7 @@
       "speaker": "pundit",
       "gist": "A wide defender stepping into midfield",
       "decoy": "A defender playing on the opposite side",
-      "decoys": [
-        "A defender playing on the opposite side",
-        "A midfielder dropping in among the defence"
-      ],
+      "spare": "A midfielder dropping in among the defence",
       "when": [
         "any"
       ],
@@ -2181,10 +1944,7 @@
       "speaker": "him",
       "gist": "The lane between the middle and the touchline",
       "decoy": "The half of the pitch a side sets up to defend",
-      "decoys": [
-        "The half of the pitch a side sets up to defend",
-        "The strip of grass right in front of the goal mouth"
-      ],
+      "spare": "The strip of grass right in front of the goal mouth",
       "when": [
         "any"
       ],
@@ -2203,10 +1963,7 @@
       "speaker": "chat",
       "gist": "A score for how good a chance was",
       "decoy": "The shots on target added up",
-      "decoys": [
-        "The shots on target added up",
-        "How many goals a side scores in a season"
-      ],
+      "spare": "How many goals a side scores in a season",
       "when": [
         "any",
         "after-loss",
@@ -2232,10 +1989,7 @@
       "speaker": "him",
       "gist": "Slowing it down to protect a lead",
       "decoy": "Changing the shape after an hour",
-      "decoys": [
-        "Changing the shape after an hour",
-        "The manager barking at them from the side"
-      ],
+      "spare": "The manager barking at them from the side",
       "when": [
         "derby",
         "europe",
@@ -2261,10 +2015,7 @@
       "speaker": "telly",
       "gist": "Protect a lead until the final whistle",
       "decoy": "Stay on the pitch without getting sent off",
-      "decoys": [
-        "Stay on the pitch without getting sent off",
-        "Push for another goal to settle it"
-      ],
+      "spare": "Push for another goal to settle it",
       "when": [
         "derby",
         "run-in",
@@ -2291,10 +2042,7 @@
       "speaker": "him",
       "gist": "The jitters as the clock winds down",
       "decoy": "The bit where players start time-wasting",
-      "decoys": [
-        "The bit where players start time-wasting",
-        "The nervous wait while a goal is checked"
-      ],
+      "spare": "The nervous wait while a goal is checked",
       "when": [
         "derby",
         "title",
@@ -2328,10 +2076,7 @@
       "speaker": "chat",
       "gist": "The sneaky stuff that winds them up",
       "decoy": "A weakened side put out on purpose",
-      "decoys": [
-        "A weakened side put out on purpose",
-        "Rough tackling meant to rattle them"
-      ],
+      "spare": "Rough tackling meant to rattle them",
       "when": [
         "derby",
         "europe",
@@ -2356,10 +2101,7 @@
       "speaker": "him",
       "gist": "Attacking at speed before they can get back",
       "decoy": "Scoring right after the half-time interval",
-      "decoys": [
-        "Scoring right after the half-time interval",
-        "Winning the ball high up the pitch"
-      ],
+      "spare": "Winning the ball high up the pitch",
       "when": [
         "any",
         "europe",
@@ -2392,10 +2134,7 @@
       "speaker": "him",
       "gist": "Boot the ball clear with no particular aim",
       "decoy": "Knock it back to the keeper to start again",
-      "decoys": [
-        "Knock it back to the keeper to start again",
-        "Put it out of play to stop the attack"
-      ],
+      "spare": "Put it out of play to stop the attack",
       "when": [
         "any",
         "relegation",
@@ -2427,10 +2166,7 @@
       "speaker": "him",
       "gist": "The back of the stand, where a wild shot lands",
       "decoy": "A shot that clears the crossbar by inches",
-      "decoys": [
-        "A shot that clears the crossbar by inches",
-        "The seats behind the goal at either end"
-      ],
+      "spare": "The seats behind the goal at either end",
       "when": [
         "any",
         "after-draw",
@@ -2454,10 +2190,7 @@
       "speaker": "him",
       "gist": "Launching the ball into a crowded penalty area",
       "decoy": "Getting it wide to the winger to cross",
-      "decoys": [
-        "Getting it wide to the winger to cross",
-        "Booting it into the corner to run the clock"
-      ],
+      "spare": "Booting it into the corner to run the clock",
       "when": [
         "any",
         "relegation",
@@ -2488,10 +2221,7 @@
       "speaker": "telly",
       "gist": "Whatever drops loose after a header",
       "decoy": "Crossing in again after a short corner",
-      "decoys": [
-        "Crossing in again after a short corner",
-        "The second goal that settles a match"
-      ],
+      "spare": "The second goal that settles a match",
       "when": [
         "any",
         "derby",
@@ -2514,10 +2244,7 @@
       "speaker": "him",
       "gist": "A chance so easy it should have been a goal",
       "decoy": "A shot dragged wide from a tight angle",
-      "decoys": [
-        "A shot dragged wide from a tight angle",
-        "A shot the keeper palms away at full stretch"
-      ],
+      "spare": "A shot the keeper palms away at full stretch",
       "when": [
         "any",
         "after-loss",
@@ -2550,10 +2277,7 @@
       "speaker": "pundit",
       "gist": "A calm, precise shot that beats the keeper",
       "decoy": "A goal that takes a big deflection",
-      "decoys": [
-        "A goal that takes a big deflection",
-        "A move drilled on the training ground"
-      ],
+      "spare": "A move drilled on the training ground",
       "when": [
         "good-run",
         "after-win",
@@ -2588,10 +2312,7 @@
       "speaker": "telly",
       "gist": "A goal hit very hard from a long way out",
       "decoy": "A shot that flies well over the bar",
-      "decoys": [
-        "A shot that flies well over the bar",
-        "A goal that settles a nervy game late on"
-      ],
+      "spare": "A goal that settles a nervy game late on",
       "when": [
         "any",
         "after-win",
@@ -2616,10 +2337,7 @@
       "speaker": "him",
       "gist": "A corner of the goal no keeper can reach",
       "decoy": "A shot that creeps in off the inside of the post",
-      "decoys": [
-        "A shot that creeps in off the inside of the post",
-        "A shot the keeper gets a hand to and can't stop"
-      ],
+      "spare": "A shot the keeper gets a hand to and can't stop",
       "when": [
         "any",
         "after-win",
@@ -2644,10 +2362,7 @@
       "speaker": "chat",
       "gist": "A goal of genuine world-class quality",
       "decoy": "A goal scored at the World Cup",
-      "decoys": [
-        "A goal scored at the World Cup",
-        "A goal that wins goal of the month"
-      ],
+      "spare": "A goal that wins goal of the month",
       "when": [
         "after-win",
         "after-big-win",
@@ -2671,10 +2386,7 @@
       "speaker": "pundit",
       "gist": "Excellent and of the very highest quality",
       "decoy": "Playing in the top division, nothing less",
-      "decoys": [
-        "Playing in the top division, nothing less",
-        "A player kept back for the big games"
-      ],
+      "spare": "A player kept back for the big games",
       "when": [
         "any",
         "after-win",
@@ -2706,10 +2418,7 @@
       "speaker": "telly",
       "gist": "The ball struck the post or bar and stayed out",
       "decoy": "The ball smashed into the boards behind the goal",
-      "decoys": [
-        "The ball smashed into the boards behind the goal",
-        "A shot that beat the keeper and went wide"
-      ],
+      "spare": "A shot that beat the keeper and went wide",
       "when": [
         "any",
         "after-loss",
@@ -2734,10 +2443,7 @@
       "speaker": "him",
       "gist": "A shout of sympathy at a player who missed",
       "decoy": "A groan when the keeper makes a save",
-      "decoys": [
-        "A groan when the keeper makes a save",
-        "A shout at the referee for a poor call"
-      ],
+      "spare": "A shout at the referee for a poor call",
       "when": [
         "any",
         "after-loss",
@@ -2762,10 +2468,7 @@
       "speaker": "telly",
       "gist": "Knocking the ball through a defender's legs",
       "decoy": "Barging a defender off the ball and going past",
-      "decoys": [
-        "Barging a defender off the ball and going past",
-        "Flicking the ball over a defender's head"
-      ],
+      "spare": "Flicking the ball over a defender's head",
       "when": [
         "any",
         "after-win",
@@ -2789,10 +2492,7 @@
       "speaker": "chat",
       "gist": "Leaving a defender standing",
       "decoy": "Fouling an opponent on purpose",
-      "decoys": [
-        "Fouling an opponent on purpose",
-        "Rounding the keeper and walking it in"
-      ],
+      "spare": "Rounding the keeper and walking it in",
       "when": [
         "any",
         "after-win",
@@ -2813,10 +2513,7 @@
       "speaker": "pundit",
       "gist": "Switching off and letting an attacker get free",
       "decoy": "Losing a header to a much taller player",
-      "decoys": [
-        "Losing a header to a much taller player",
-        "Being caught too high up when it turns over"
-      ],
+      "spare": "Being caught too high up when it turns over",
       "when": [
         "any",
         "after-loss",
@@ -2842,10 +2539,7 @@
       "speaker": "telly",
       "gist": "A goal for the side who have been worse",
       "decoy": "A goal that came from a counter-attack",
-      "decoys": [
-        "A goal that came from a counter-attack",
-        "A goal scored in the closing minutes"
-      ],
+      "spare": "A goal scored in the closing minutes",
       "when": [
         "after-win",
         "after-loss",
@@ -2871,10 +2565,7 @@
       "speaker": "him",
       "gist": "A win in a match you were outplayed in",
       "decoy": "A tackle that takes the ball and the man",
-      "decoys": [
-        "A tackle that takes the ball and the man",
-        "A late equaliser to rescue a point"
-      ],
+      "spare": "A late equaliser to rescue a point",
       "when": [
         "derby",
         "after-win",
@@ -2899,10 +2590,7 @@
       "speaker": "chat",
       "gist": "A glaring, embarrassing mistake",
       "decoy": "A save so good the crowd roared",
-      "decoys": [
-        "A save so good the crowd roared",
-        "A furious shout at his own defenders"
-      ],
+      "spare": "A furious shout at his own defenders",
       "when": [
         "any",
         "after-loss",
@@ -2924,10 +2612,7 @@
       "speaker": "pundit",
       "gist": "A loose pass that leaves a teammate in trouble",
       "decoy": "A heavy touch that gives the ball away",
-      "decoys": [
-        "A heavy touch that gives the ball away",
-        "A challenge bad enough to injure someone"
-      ],
+      "spare": "A challenge bad enough to injure someone",
       "when": [
         "any",
         "after-loss",
@@ -2949,10 +2634,7 @@
       "speaker": "him",
       "gist": "Falling over on purpose to win a foul",
       "decoy": "Going down hurt to waste a bit of time",
-      "decoys": [
-        "Going down hurt to waste a bit of time",
-        "Sliding in feet first to win the ball"
-      ],
+      "spare": "Sliding in feet first to win the ball",
       "when": [
         "any",
         "derby"
@@ -2975,10 +2657,7 @@
       "speaker": "telly",
       "gist": "Sent off, heading for the showers",
       "decoy": "Subbed off before he gets himself booked",
-      "decoys": [
-        "Subbed off before he gets himself booked",
-        "Missing the next game as punishment"
-      ],
+      "spare": "Missing the next game as punishment",
       "when": [
         "any",
         "derby",
@@ -2999,10 +2678,7 @@
       "speaker": "chat",
       "gist": "A bit of pushing and shoving, nothing more",
       "decoy": "A proper brawl that gets two players sent off",
-      "decoys": [
-        "A proper brawl that gets two players sent off",
-        "Players surrounding the referee in a group"
-      ],
+      "spare": "Players surrounding the referee in a group",
       "when": [
         "any",
         "derby"
@@ -3025,10 +2701,7 @@
       "speaker": "him",
       "gist": "The referee has shown him a yellow card",
       "decoy": "The referee has spoken to him and let him off",
-      "decoys": [
-        "The referee has spoken to him and let him off",
-        "He has been sent off and must leave"
-      ],
+      "spare": "He has been sent off and must leave",
       "when": [
         "any",
         "derby"
@@ -3051,10 +2724,7 @@
       "speaker": "him",
       "gist": "Taken off for playing badly, not for a rest",
       "decoy": "Caught by an arm and pulled back illegally",
-      "decoys": [
-        "Caught by an arm and pulled back illegally",
-        "Swapped out to save him for the next game"
-      ],
+      "spare": "Swapped out to save him for the next game",
       "when": [
         "bad-run",
         "after-loss",
@@ -3079,10 +2749,7 @@
       "speaker": "telly",
       "gist": "Soaking up heavy pressure near your own goal",
       "decoy": "Players lining up in a wall at a free-kick",
-      "decoys": [
-        "Players lining up in a wall at a free-kick",
-        "Playing the ball back to the keeper to waste time"
-      ],
+      "spare": "Playing the ball back to the keeper to waste time",
       "when": [
         "derby",
         "europe",
@@ -3116,10 +2783,7 @@
       "speaker": "pundit",
       "gist": "A match that turned after the break",
       "decoy": "A match split into two equal periods",
-      "decoys": [
-        "A match split into two equal periods",
-        "A match where both sides scored twice"
-      ],
+      "spare": "A match where both sides scored twice",
       "when": [
         "after-win",
         "after-loss",
@@ -3140,10 +2804,7 @@
       "speaker": "chat",
       "gist": "A match with nothing riding on it any more",
       "decoy": "A match played with a worn-out ball",
-      "decoys": [
-        "A match played with a worn-out ball",
-        "A match replayed after a draw, later on"
-      ],
+      "spare": "A match replayed after a draw, later on",
       "when": [
         "europe",
         "run-in"
@@ -3167,10 +2828,7 @@
       "speaker": "him",
       "gist": "A match between two sides chasing the same place",
       "decoy": "A match where a win is worth six points",
-      "decoys": [
-        "A match where a win is worth six points",
-        "A game worth double because it is a derby"
-      ],
+      "spare": "A game worth double because it is a derby",
       "when": [
         "title",
         "relegation",
@@ -3195,10 +2853,7 @@
       "speaker": "chat",
       "gist": "The close fight at the top of the table",
       "decoy": "The final few weeks of the season",
-      "decoys": [
-        "The final few weeks of the season",
-        "The scrap for a place in Europe"
-      ],
+      "spare": "The scrap for a place in Europe",
       "when": [
         "title",
         "run-in"
@@ -3222,10 +2877,7 @@
       "speaker": "chat",
       "gist": "A scrap near the bottom to avoid going down",
       "decoy": "A play-off to decide who goes up a division",
-      "decoys": [
-        "A play-off to decide who goes up a division",
-        "A run of hard games against the top clubs"
-      ],
+      "spare": "A run of hard games against the top clubs",
       "when": [
         "relegation",
         "run-in"
@@ -3248,10 +2900,7 @@
       "speaker": "pundit",
       "gist": "The weeks when deals can be done",
       "decoy": "A club's list of targets",
-      "decoys": [
-        "A club's list of targets",
-        "The fee one club pays another for a player"
-      ],
+      "spare": "The fee one club pays another for a player",
       "when": [
         "window",
         "early-season"
@@ -3283,10 +2932,7 @@
       "speaker": "telly",
       "gist": "The final day for doing deals",
       "decoy": "The final day to buy season tickets",
-      "decoys": [
-        "The final day to buy season tickets",
-        "Cut-off for naming the squad for a cup"
-      ],
+      "spare": "Cut-off for naming the squad for a cup",
       "when": [
         "window"
       ],
@@ -3305,10 +2951,7 @@
       "speaker": "him",
       "gist": "Borrowing a player from another club for a while",
       "decoy": "Dropping down a division to get regular games",
-      "decoys": [
-        "Dropping down a division to get regular games",
-        "Playing for the reserve side until he's wanted"
-      ],
+      "spare": "Playing for the reserve side until he's wanted",
       "when": [
         "window",
         "early-season"
@@ -3331,10 +2974,7 @@
       "speaker": "him",
       "gist": "Summer when every rumour gets printed",
       "decoy": "Christmas and New Year, games back to back",
-      "decoys": [
-        "Christmas and New Year, games back to back",
-        "A spell when results make no sense at all"
-      ],
+      "spare": "A spell when results make no sense at all",
       "when": [
         "window",
         "early-season"
@@ -3357,10 +2997,7 @@
       "speaker": "chat",
       "gist": "The reporter's signal a transfer is done",
       "decoy": "The chant fans start as a big game kicks off",
-      "decoys": [
-        "The chant fans start as a big game kicks off",
-        "The countdown to the window shutting"
-      ],
+      "spare": "The countdown to the window shutting",
       "when": [
         "window"
       ],
@@ -3382,10 +3019,7 @@
       "speaker": "chat",
       "gist": "Losing the job when results go bad",
       "decoy": "Being dropped from the squad for a game",
-      "decoys": [
-        "Being dropped from the squad for a game",
-        "The manager walking out for a bigger club"
-      ],
+      "spare": "The manager walking out for a bigger club",
       "when": [
         "bad-run",
         "new-manager",
@@ -3411,10 +3045,7 @@
       "speaker": "chat",
       "gist": "The unofficial contest over which manager goes first",
       "decoy": "A charity event before a game at the ground",
-      "decoys": [
-        "A charity event before a game at the ground",
-        "The run of games that decides a manager's future"
-      ],
+      "spare": "The run of games that decides a manager's future",
       "when": [
         "bad-run",
         "new-manager",
@@ -3439,10 +3070,7 @@
       "speaker": "pundit",
       "gist": "The short run of good results after a change",
       "decoy": "The lift in ticket sales after an appointment",
-      "decoys": [
-        "The lift in ticket sales after an appointment",
-        "The boost a home crowd gives a struggling side"
-      ],
+      "spare": "The boost a home crowd gives a struggling side",
       "when": [
         "good-run",
         "new-manager",
@@ -3466,10 +3094,7 @@
       "speaker": "him",
       "gist": "The manager, in old workplace slang",
       "decoy": "The club captain who leads on the pitch",
-      "decoys": [
-        "The club captain who leads on the pitch",
-        "The head of the backroom staff at a club"
-      ],
+      "spare": "The head of the backroom staff at a club",
       "when": [
         "any",
         "bad-run",
@@ -3503,10 +3128,7 @@
       "speaker": "pundit",
       "gist": "The manager, the word the squad uses for him",
       "decoy": "The club owner who pays everyone's wages",
-      "decoys": [
-        "The club owner who pays everyone's wages",
-        "The senior player who speaks in the dressing room"
-      ],
+      "spare": "The senior player who speaks in the dressing room",
       "when": [
         "any",
         "new-manager"
@@ -3537,10 +3159,7 @@
       "speaker": "chat",
       "gist": "A manager screaming at players up close",
       "decoy": "A calm team talk to settle everyone down",
-      "decoys": [
-        "A calm team talk to settle everyone down",
-        "A row between players in the dressing room"
-      ],
+      "spare": "A row between players in the dressing room",
       "when": [
         "bad-run",
         "new-manager",
@@ -3566,10 +3185,7 @@
       "speaker": "him",
       "gist": "To lose your nerve at the crucial moment",
       "decoy": "To keep it all in and say nothing about it",
-      "decoys": [
-        "To keep it all in and say nothing about it",
-        "To waste chances in front of goal all game"
-      ],
+      "spare": "To waste chances in front of goal all game",
       "when": [
         "title",
         "bad-run",
@@ -3603,10 +3219,7 @@
       "speaker": "him",
       "gist": "The BBC's Saturday night highlights show",
       "decoy": "The televised game chosen for Saturday teatime",
-      "decoys": [
-        "The televised game chosen for Saturday teatime",
-        "A round-up of the goals from abroad each week"
-      ],
+      "spare": "A round-up of the goals from abroad each week",
       "when": [
         "any",
         "after-win",
@@ -3630,10 +3243,7 @@
       "speaker": "him",
       "gist": "An ex-player paid to give opinions on TV",
       "decoy": "A journalist who writes the match report",
-      "decoys": [
-        "A journalist who writes the match report",
-        "An expert who predicts the score beforehand"
-      ],
+      "spare": "An expert who predicts the score beforehand",
       "when": [
         "any",
         "after-loss"
@@ -3661,10 +3271,7 @@
       "speaker": "him",
       "gist": "A pass covering every home league game",
       "decoy": "A pass that gets you into any ground you like",
-      "decoys": [
-        "A pass that gets you into any ground you like",
-        "A membership that lets you buy cup tickets early"
-      ],
+      "spare": "A membership that lets you buy cup tickets early",
       "when": [
         "any",
         "early-season"
@@ -3687,10 +3294,7 @@
       "speaker": "chat",
       "gist": "A trip to watch the team at another ground",
       "decoy": "A day off the players get away from the club",
-      "decoys": [
-        "A day off the players get away from the club",
-        "A pre-season friendly played overseas"
-      ],
+      "spare": "A pre-season friendly played overseas",
       "when": [
         "any",
         "cup",
@@ -3714,10 +3318,7 @@
       "speaker": "telly",
       "gist": "The part of the ground given to visiting fans",
       "decoy": "The end of the pitch the visitors attack",
-      "decoys": [
-        "The end of the pitch the visitors attack",
-        "The stand behind the goal at the far side"
-      ],
+      "spare": "The stand behind the goal at the far side",
       "when": [
         "any",
         "derby",
@@ -3742,10 +3343,7 @@
       "speaker": "pundit",
       "gist": "The old standing areas, and the fans in them",
       "decoy": "The rows of houses behind an old ground",
-      "decoys": [
-        "The rows of houses behind an old ground",
-        "The banked rows of seating in the top tier"
-      ],
+      "spare": "The banked rows of seating in the top tier",
       "when": [
         "any",
         "derby",
@@ -3769,10 +3367,7 @@
       "speaker": "him",
       "gist": "A song the crowd sings to a pop tune",
       "decoy": "A rhythm the crowd claps without words",
-      "decoys": [
-        "A rhythm the crowd claps without words",
-        "The song a club plays as the teams come out"
-      ],
+      "spare": "The song a club plays as the teams come out",
       "when": [
         "any",
         "derby",
@@ -3794,10 +3389,7 @@
       "speaker": "telly",
       "gist": "Liverpool's loud home stand at Anfield",
       "decoy": "Steep old terracing, where tickets are cheap",
-      "decoys": [
-        "Steep old terracing, where tickets are cheap",
-        "A stand named after a club's great manager"
-      ],
+      "spare": "A stand named after a club's great manager",
       "when": [
         "any"
       ],
@@ -3816,10 +3408,7 @@
       "speaker": "chat",
       "gist": "A souvenir showing both teams' colours",
       "decoy": "A ticket that covers both legs of a round",
-      "decoys": [
-        "A ticket that covers both legs of a round",
-        "A scarf swapped with a rival fan at full time"
-      ],
+      "spare": "A scarf swapped with a rival fan at full time",
       "when": [
         "derby",
         "cup",
@@ -3840,10 +3429,7 @@
       "speaker": "chat",
       "gist": "The team, as the players and fans call it",
       "decoy": "The younger players coming through the academy",
-      "decoys": [
-        "The younger players coming through the academy",
-        "The travelling fans who follow every game"
-      ],
+      "spare": "The travelling fans who follow every game",
       "when": [
         "any",
         "good-run",
@@ -3864,10 +3450,7 @@
       "speaker": "chat",
       "gist": "Teasing between fans, mostly good-natured",
       "decoy": "Chatter between the players on the pitch",
-      "decoys": [
-        "Chatter between the players on the pitch",
-        "A row between fans that has gone too far"
-      ],
+      "spare": "A row between fans that has gone too far",
       "when": [
         "any",
         "derby",
@@ -3900,10 +3483,7 @@
       "speaker": "him",
       "gist": "Where his mates react to every goal instantly",
       "decoy": "Any online forum open to supporters",
-      "decoys": [
-        "Any online forum open to supporters",
-        "Fans posting videos from inside the ground"
-      ],
+      "spare": "Fans posting videos from inside the ground",
       "when": [
         "any",
         "derby",
@@ -3930,10 +3510,7 @@
       "speaker": "pundit",
       "gist": "The best strike, picked by a viewers' vote",
       "decoy": "The award for a player's form over four weeks",
-      "decoys": [
-        "The award for a player's form over four weeks",
-        "A scoring target a striker is set each month"
-      ],
+      "spare": "A scoring target a striker is set each month",
       "when": [
         "any",
         "after-win",
@@ -3958,10 +3535,7 @@
       "speaker": "him",
       "gist": "The assistant referee who judges offside",
       "decoy": "The painted markings around the pitch",
-      "decoys": [
-        "The painted markings around the pitch",
-        "The fourth official holding up the board"
-      ],
+      "spare": "The fourth official holding up the board",
       "when": [
         "any"
       ],
@@ -3980,10 +3554,7 @@
       "speaker": "telly",
       "gist": "A wet flannel that fixes any knock",
       "decoy": "A cloth used to dry the ball",
-      "decoys": [
-        "A cloth used to dry the ball",
-        "The stretcher carried on for a bad injury"
-      ],
+      "spare": "The stretcher carried on for a bad injury",
       "when": [
         "any"
       ],
@@ -4002,10 +3573,7 @@
       "speaker": "chat",
       "gist": "Bad result forgotten and on to the next game",
       "decoy": "Back for a replay, the first one was drawn",
-      "decoys": [
-        "Back for a replay, the first one was drawn",
-        "Fans are heading off to another away trip"
-      ],
+      "spare": "Fans are heading off to another away trip",
       "when": [
         "bad-run",
         "after-loss",
@@ -4031,10 +3599,7 @@
       "speaker": "chat",
       "gist": "Stoppage minutes that suit the bigger side",
       "decoy": "Kick-off times chosen to suit the television",
-      "decoys": [
-        "Kick-off times chosen to suit the television",
-        "The seasons a famous manager was in charge"
-      ],
+      "spare": "The seasons a famous manager was in charge",
       "when": [
         "any",
         "title",
@@ -4061,10 +3626,7 @@
       "speaker": "telly",
       "gist": "A small club knocking a big one out of a cup",
       "decoy": "A tall side winning everything in the air",
-      "decoys": [
-        "A tall side winning everything in the air",
-        "A late winner that dumps a team out of a cup"
-      ],
+      "spare": "A late winner that dumps a team out of a cup",
       "when": [
         "cup",
         "favourites",
@@ -4090,10 +3652,7 @@
       "speaker": "him",
       "gist": "The FA Cup stage in January the big clubs enter",
       "decoy": "The third game of a group in a tournament",
-      "decoys": [
-        "The third game of a group in a tournament",
-        "The round of matches played on Boxing Day"
-      ],
+      "spare": "The round of matches played on Boxing Day",
       "when": [
         "cup"
       ],
@@ -4117,10 +3676,7 @@
       "speaker": "telly",
       "gist": "The idea that a small club can beat a big one",
       "decoy": "A trophy handed over on the pitch at the end",
-      "decoys": [
-        "A trophy handed over on the pitch at the end",
-        "The extra money a cup run brings a club"
-      ],
+      "spare": "The extra money a cup run brings a club",
       "when": [
         "cup",
         "underdog"
@@ -4143,10 +3699,7 @@
       "speaker": "chat",
       "gist": "A player feared for his fierce, physical game",
       "decoy": "A player who is difficult to deal with off it",
-      "decoys": [
-        "A player who is difficult to deal with off it",
-        "A defender who blocks shots with his body"
-      ],
+      "spare": "A defender who blocks shots with his body",
       "when": [
         "any",
         "derby"
@@ -4166,10 +3719,7 @@
       "speaker": "pundit",
       "gist": "A man admired for his conduct as much as his play",
       "decoy": "A player putting on a show for the cameras",
-      "decoys": [
-        "A player putting on a show for the cameras",
-        "A polished touch that makes the game look easy"
-      ],
+      "spare": "A polished touch that makes the game look easy",
       "when": [
         "good-run",
         "after-win"
@@ -4200,10 +3750,7 @@
       "speaker": "pundit",
       "gist": "Pundit-speak for about as good as it gets",
       "decoy": "Someone at the top of the scoring charts",
-      "decoys": [
-        "Someone at the top of the scoring charts",
-        "A man voted best on the pitch that day"
-      ],
+      "spare": "A man voted best on the pitch that day",
       "when": [
         "good-run",
         "window",
@@ -4237,10 +3784,7 @@
       "speaker": "him",
       "gist": "A fan who only turns up when things go well",
       "decoy": "A fan who turns up in a shop-bought kit",
-      "decoys": [
-        "A fan who turns up in a shop-bought kit",
-        "A supporter who watches on TV and nothing else"
-      ],
+      "spare": "A supporter who watches on TV and nothing else",
       "when": [
         "any",
         "derby",
@@ -4265,10 +3809,7 @@
       "speaker": "chat",
       "gist": "A fan who picked a club for its trophies",
       "decoy": "A player chasing his own goals over the team",
-      "decoys": [
-        "A player chasing his own goals over the team",
-        "Someone who collects club shirts and badges"
-      ],
+      "spare": "Someone who collects club shirts and badges",
       "when": [
         "any",
         "title",
@@ -4290,10 +3831,7 @@
       "speaker": "pundit",
       "gist": "Promoting a manager from inside the club",
       "decoy": "Storing the kit in a room at the ground",
-      "decoys": [
-        "Storing the kit in a room at the ground",
-        "A club's academy for teenage players"
-      ],
+      "spare": "A club's academy for teenage players",
       "when": [
         "any",
         "new-manager"
@@ -4313,10 +3851,7 @@
       "speaker": "chat",
       "gist": "A whole league season without a defeat",
       "decoy": "A team that went a season without losing at home",
-      "decoys": [
-        "A team that went a season without losing at home",
-        "A side that won three trophies in one year"
-      ],
+      "spare": "A side that won three trophies in one year",
       "when": [
         "title",
         "good-run",
@@ -4340,10 +3875,7 @@
       "speaker": "him",
       "gist": "The online corner where fans argue all day",
       "decoy": "A club's official account posting the news",
-      "decoys": [
-        "A club's official account posting the news",
-        "The reporters who break transfer stories"
-      ],
+      "spare": "The reporters who break transfer stories",
       "when": [
         "any",
         "window",
@@ -4364,10 +3896,7 @@
       "speaker": "him",
       "gist": "A game where you pick real players for points",
       "decoy": "A made-up league played on a games console",
-      "decoys": [
-        "A made-up league played on a games console",
-        "Betting on which players will score first"
-      ],
+      "spare": "Betting on which players will score first",
       "when": [
         "any",
         "early-season"
@@ -4395,10 +3924,7 @@
       "speaker": "chat",
       "gist": "Tabloid slang for players' wives and girlfriends",
       "decoy": "Photographers who chase the players about",
-      "decoys": [
-        "Photographers who chase the players about",
-        "The section of the stand kept for families"
-      ],
+      "spare": "The section of the stand kept for families",
       "when": [
         "any"
       ],

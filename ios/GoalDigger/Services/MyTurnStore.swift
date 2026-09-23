@@ -71,10 +71,10 @@ final class MyTurnStore {
 
     enum Bucket: String, Codable { case new, learning, known }
 
-    /// A round of Overheard: seven snippets, three options on each.
+    /// A round of Overheard: seven snippets, two options on each.
     ///
     /// The queue is dealt once and never re-ordered — re-showing a word she
-    /// just got wrong, with the same three options in the same order, tests
+    /// just got wrong, with the same two options in the same order, tests
     /// where her thumb was, not what the word means.
     struct DrillSession: Codable, Equatable {
         let deckId: String
@@ -113,9 +113,19 @@ final class MyTurnStore {
         /// right answer in the same slot — thumb position, not meaning. Stable
         /// for the life of the session, which is what a paused round needs.
         let salt: String
+        /// How many options the build that dealt this round put on a card.
+        /// Stamped because `selected` is a raw index into
+        /// `LingoWeekendDeck.options(for:salt:)`, and a two-element shuffle is
+        /// not a prefix of a three-element one: under a build that changed the
+        /// count, *every* stored `selected` points at a different string, not
+        /// just the index that no longer exists. Always the current count once
+        /// decoded — the round carries on at this build's arity, and a stamp
+        /// left behind would migrate the same session again on every launch.
+        let optionCount: Int
 
         enum CodingKeys: String, CodingKey {
             case deckId, queue, index, selected, finished, knew, knewIds, streak, hypeLine, salt
+            case optionCount
         }
 
         /// Fields the flashcard build wrote and this one does not.
@@ -125,6 +135,7 @@ final class MyTurnStore {
             self.deckId = deckId
             self.queue = queue
             self.salt = UUID().uuidString
+            self.optionCount = LingoWeekendDeck.optionCount
         }
 
         /// Tolerant: this struct sits inside the one JSON blob that holds every
@@ -149,6 +160,20 @@ final class MyTurnStore {
             salt = try c.decodeIfPresent(String.self, forKey: .salt) ?? ""
             let old = try decoder.container(keyedBy: LegacyKeys.self)
             legacy = old.contains(.flipped) || old.contains(.done)
+
+            // The arity migration. Three was the count before 2026-09-23, and
+            // a session written then has no key.
+            let dealtWith = try c.decodeIfPresent(Int.self, forKey: .optionCount) ?? 3
+            optionCount = LingoWeekendDeck.optionCount
+            // An unanswered card is simply re-dealt at the new count, which is
+            // right. An answered one cannot be: `selected` points somewhere
+            // else now, and `answerDrill` already banked `knew`, `knewIds` and
+            // the bucket move, so re-asking it would count the same word twice.
+            // She resumes on the next word with the score she actually had.
+            if dealtWith != optionCount, !finished, selected != nil {
+                selected = nil
+                if index + 1 >= queue.count { finished = true } else { index += 1 }
+            }
         }
     }
 
@@ -720,6 +745,43 @@ func myTurnTolerantDecodeSelfCheck() {
     // reshuffles the options on the card she paused on.
     assert(!fresh.salt.isEmpty && read.salt == fresh.salt,
            "DrillSession.salt does not survive its own encoder, so a resumed round moves the right answer")
+    assert(read.optionCount == LingoWeekendDeck.optionCount,
+           "DrillSession.optionCount does not survive its own encoder, so every relaunch migrates the round again")
+
+    // The arity migration (2026-09-23). A round paused mid-reveal under the
+    // three-option build: `selected` is an index into an order that no longer
+    // exists, and the card it belongs to is already banked. It has to resume on
+    // the NEXT word, with the score untouched and no reveal showing.
+    let midReveal = Data("""
+    {"deckId":"lingo","queue":["offside","var","penalty"],"index":1,"selected":2,"finished":false,\
+    "knew":2,"knewIds":["offside","var"],"salt":"s"}
+    """.utf8)
+    guard let moved = try? JSONDecoder().decode(MyTurnStore.DrillSession.self, from: midReveal) else {
+        assertionFailure("a round paused under the three-option build no longer decodes")
+        return
+    }
+    assert(moved.index == 2 && moved.selected == nil && !moved.finished,
+           "a three-option round resumed on the card she had already answered, at index \(moved.index)")
+    assert(moved.knew == 2 && moved.knewIds == ["offside", "var"],
+           "the arity migration moved her score, and that card was already banked")
+    assert(moved.optionCount == LingoWeekendDeck.optionCount,
+           "the migrated round kept the old stamp, so the next launch advances her again")
+
+    // The same round paused on its last card ends, rather than walking off the
+    // end of the queue.
+    let lastCard = Data("""
+    {"deckId":"lingo","queue":["offside","var"],"index":1,"selected":1,"finished":false,"knew":2,"salt":"s"}
+    """.utf8)
+    assert((try? JSONDecoder().decode(MyTurnStore.DrillSession.self, from: lastCard))?.finished == true,
+           "a three-option round answered on its last card did not finish")
+
+    // And an UNANSWERED card is not migrated: it is simply re-dealt at the new
+    // count, which is the card she is looking at.
+    let unanswered = Data("""
+    {"deckId":"lingo","queue":["offside","var"],"index":0,"finished":false,"knew":0,"salt":"s"}
+    """.utf8)
+    assert((try? JSONDecoder().decode(MyTurnStore.DrillSession.self, from: unanswered))?.index == 0,
+           "an unanswered card was skipped by the arity migration, so she never sees that word")
 }
 
 /// The slip's one persistence rule, against a store that persists nothing.

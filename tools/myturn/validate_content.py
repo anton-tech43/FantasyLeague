@@ -212,7 +212,7 @@ def validate_lingo(d: dict) -> int:
             err(f"lingo: levels must run 1..{levels[-1]} with no gaps, got {levels}")
     if len(terms) < 120:
         err(f"lingo: {len(terms)} terms (launch floor 120)")
-    # The Overheard game's fields (overheard, speaker, gist, decoys, when).
+    # The Overheard game's fields (overheard, speaker, gist, decoy, spare, when).
     # `--lingo-category rules` checks one category and skips the file-wide
     # floors, so a writer can validate their own file before the others exist.
     only = None

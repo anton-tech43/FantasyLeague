@@ -2,11 +2,12 @@
 
 Called from validate_content.py with its err/warn/check_idiom/SUPERLATIVE.
 Kept in its own file because the rules are many and self-contained: what she
-hears (overheard), who says it (speaker), the right option (gist), the two
-wrong ones (decoys) and when the word is dealt (when).
+hears (overheard), who says it (speaker), the right option (gist), the wrong
+one she is shown (decoy), the reviewed reserve she is not (spare) and when the
+word is dealt (when).
 
 Overheard is speech, so only the shapes that encode a dated fact are banned
-there (STALE_FACT). Gist and decoys are definitions and get the full
+there (STALE_FACT). Gist, decoy and spare are definitions and get the full
 SUPERLATIVE regex: "final day" not "the last day".
 
 An entry may also carry player variants: the same card with one
@@ -244,7 +245,7 @@ def check_variant(t: dict, v: dict, idx: int, *, err, check_idiom,
         if not clean:
             err(f"{where}: '{term}' is only matched inside the slot, so the app would bold the player's name: {o}")
 
-    # --- the bubble must not hand over the answer, gist and decoys being inherited
+    # --- the bubble must not hand over the answer, gist and decoy being inherited
     bubble = {w[:5] for w in content_words(strip_slots(o)) if len(w) >= 5} - term_stems - STEM_OK
     leak = (bubble & gist_stems) - decoy_stems
     if leak:
@@ -290,15 +291,15 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
         if only_category and t.get("category") != only_category:
             continue
         o, sp, g, when = t.get("overheard"), t.get("speaker"), t.get("gist"), t.get("when")
-        d, ds = t.get("decoy"), t.get("decoys")
-        if not all([o, sp, g, d, ds, when]):
-            err(f"lingo/{tid}: Overheard entry missing or incomplete (overheard, speaker, gist, decoy, when) — "
+        d, spare = t.get("decoy"), t.get("spare")
+        if not all([o, sp, g, d, spare, when]):
+            err(f"lingo/{tid}: Overheard entry missing or incomplete (overheard, speaker, gist, decoy, spare, when) — "
                 f"add it to tools/myturn/lingo_overheard/{t.get('category')}.py")
             if t.get("playerVariants"):
                 # Said plainly here rather than letting every variant rule fail
                 # against fields that do not exist yet.
                 err(f"lingo/{tid}: has a player variant on an incomplete entry. A variant inherits speaker, "
-                    f"gist, decoys, when and moment, so there is nothing to inherit. Finish the entry first")
+                    f"gist, decoy, when and moment, so there is nothing to inherit. Finish the entry first")
             continue
         complete += 1
         where = f"lingo/{tid}"
@@ -308,9 +309,13 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
         if not isinstance(d, str) or not d.strip():
             err(f"{where}: decoy must be one non-empty string, got {d!r}; a term with no decoy is unplayable")
             d = ""
+        if not isinstance(spare, str) or not spare.strip():
+            err(f"{where}: spare must be one non-empty string, got {spare!r}; without it the walk back to "
+                f"three options is a writing job, not a one-line change")
+            spare = ""
 
         for field, text in (("meaning", t.get("meaning", "")), ("heard", t.get("heard", "")), ("sayIt", t.get("sayIt", "")),
-                            ("overheard", o), ("gist", g), *(("decoy", x) for x in (ds if isinstance(ds, list) else []))):
+                            ("overheard", o), ("gist", g), ("decoy", d), ("spare", spare)):
             if "—" in text or "–" in text:
                 err(f"{where}: {field} has an em-dash, write two sentences: {text[:60]}")
 
@@ -402,14 +407,6 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
         # `spare` is the reviewed reserve, held so three options stay one line
         # away; it gets the format rules and none of the balance ones, because
         # balancing a card against text she never reads proves nothing.
-        # ponytail: `decoys` is the pair the shipped Swift still reads. This
-        # clause goes with the key, when LingoDeck moves to `decoy`.
-        if not isinstance(ds, list) or len(ds) != 2:
-            err(f"{where}: decoys must be exactly 2, got {ds!r}")
-            ds = list(ds or ["", ""])[:2] + ["", ""]
-        elif d and ds[0] != d:
-            err(f"{where}: decoys[0] is not the shipping decoy, rerun build_lingo.py")
-        spare = ds[1] if len(ds) > 1 and isinstance(ds[1], str) else ""
         opts = [("gist", g), ("decoy", d)]
         for field, x in [(f, x) for f, x in opts + [("spare", spare)] if x]:
             if len(x) > LIMITS[field]:
@@ -486,9 +483,7 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
         if only_category and t.get("category") != only_category:
             continue
         neighbours = set(t.get("seeAlso") or []) | {o.get("id") for o in terms if tid in (o.get("seeAlso") or [])}
-        ds = t.get("decoys")
-        ds = ds if isinstance(ds, list) else []
-        for x, shipping in ((t.get("decoy"), True), (ds[1] if len(ds) > 1 else None, False)):
+        for x, shipping in ((t.get("decoy"), True), (t.get("spare"), False)):
             if not isinstance(x, str) or not x:
                 continue
             label = "decoy" if shipping else "spare"
@@ -579,7 +574,7 @@ if __name__ == "__main__":
     ok = dict(id="nutmeg", category="tactics", term="Nutmeg", meaning="Through the legs", heard="Commentary, mostly", level=1,
               sayIt="Through his legs, that", overheard="He got nutmegged there and he knows it.",
               speaker="him", gist="The ball played through his legs",
-              decoy=_decoy, decoys=[_decoy, "The shot that goes in off the post"],
+              decoy=_decoy, spare="The shot that goes in off the post",
               when=["any"], moment="common")
     NEVER = re.compile(r"(?!x)x")
 
@@ -596,26 +591,24 @@ if __name__ == "__main__":
         assert any(needle in m for m in got), f"expected {needle!r}, got {got}"
 
     assert run([ok]) == ([], []), run([ok])
-    # --- arity: one decoy ships, and the pair must still agree with it
+    # --- arity: one decoy ships, and the spare is still written down
     # The list form left in place: truthy, so it clears the completeness gate.
     fires("decoy must be one non-empty string", decoy=[_decoy])
-    fires("decoys must be exactly 2", decoys=[_decoy])
-    fires("decoys[0] is not the shipping decoy", decoys=["The shot that goes in off the post", _decoy])
+    fires("spare must be one non-empty string", spare=[_decoy])
     # --- the band is a floor plus a proportion, so it means the same at 23 chars and at 52
-    fires("length gives it away", decoy="The trick that leaves him flat on the floor, twice over",
-          decoys=["The trick that leaves him flat on the floor, twice over", "x" * 30])
+    fires("length gives it away", decoy="The trick that leaves him flat on the floor, twice over")
     fires("it could not take the decoy's place", "warn",
-          decoys=[_decoy, "The shot that goes in off the post after a deflection"])
+          spare="The shot that goes in off the post after a deflection")
     # --- one article between two options is the whole card
     fires("exactly one option opens with a/an/the", gist="Played through his legs, all ends up")
-    fires("three different options", decoys=[_decoy, _decoy])
+    fires("three different options", spare=_decoy)
     # --- a leak the spare would have excused is still a leak: she never reads the spare
     fires("hands over the answer", overheard="He got nutmegged straight through there.",
-          decoys=[_decoy, "Passing it straight through the middle"])
+          spare="Passing it straight through the middle")
     # --- set level, so no category: the floors fire too and are not what is asserted
     skewed = [dict(ok, id=f"t{i}", overheard=f"He got nutmegged there, number {i} of the night.",
                    gist=f"Ball {i} played through both of his legs",
-                   decoy=f"Trick {i} on the floor", decoys=[f"Trick {i} on the floor", "The post"])
+                   decoy=f"Trick {i} on the floor", spare="The post that keeps it out again")
               for i in range(40)]
     errs, warns = run(skewed, category=None)
     assert any("A solver reading nothing but character length" in m for m in errs), errs
