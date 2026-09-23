@@ -139,7 +139,7 @@ OVERHEARD = {
         speaker="pundit",
         gist="A restart taken from where the offence happened",
         decoys=["A kick awarded for a foul inside the box", "A drop ball restart after a player's hurt"],
-        when=["any"],
+        when=["any", "opp-set-piece"],
         moment="common",
     ),
     "corner": dict(
@@ -147,7 +147,7 @@ OVERHEARD = {
         speaker="him",
         gist="A kick from the flag after a defender puts it out",
         decoys=["A cross from deep while the ball is live", "A free kick given wide, level with the goal"],
-        when=["any"],
+        when=["any", "opp-set-piece"],
         moment="common",
         basic=True,
     ),
@@ -214,7 +214,7 @@ OVERHEARD = {
         moment="rare",
         player=dict(
             slot='ours.keeper',
-            overheard='penalty shootout. dont tell me how it goes. and dont mention {ours.keeper}.',
+            overheard='penalty shootout. dont tell me how it goes. not even if {ours.keeper} saves one.',
             sayIt='"A penalty shootout. Is {ours.keeper} the one who has to save them?"',
         ),
     ),
@@ -265,7 +265,7 @@ OVERHEARD = {
         speaker="him",
         gist="Letting in no goals at all in a match",
         decoys=["A game with no cards and no trouble", "Winning without conceding a penalty"],
-        when=["after-clean-sheet", "after-win", "good-run"],
+        when=["after-clean-sheet", "after-win", "good-run", "opp-clean-sheets"],
         moment="common",
     ),
     "own-goal": dict(
@@ -415,7 +415,7 @@ OVERHEARD = {
         speaker="chat",
         gist="Losing the job when results go bad",
         decoys=["A player dropped from the squad for a game", "The manager walking out for a bigger club"],
-        when=["bad-run", "new-manager", "after-heavy-loss"],
+        when=["bad-run", "new-manager", "after-heavy-loss", "opp-bad-form"],
         moment="anytime",
     ),
 }

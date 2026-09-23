@@ -34,7 +34,7 @@ OVERHEARD = {
         speaker="him",
         gist="Nobody scored, the match finished level",
         decoys=["The game was abandoned, so no score counts", "A draw where both sides scored"],
-        when=["after-draw", "after-clean-sheet"],
+        when=["after-draw", "after-clean-sheet", "opp-clean-sheets", "favourites"],
         moment="rare",
     ),
     "see-the-game-out": dict(
@@ -42,7 +42,7 @@ OVERHEARD = {
         speaker="telly",
         gist="Protect a lead until the final whistle",
         decoys=["Stay on the pitch without getting sent off", "Push for another goal to settle it"],
-        when=["after-win", "after-clean-sheet", "derby", "run-in"],
+        when=["after-win", "after-clean-sheet", "derby", "run-in", "underdog"],
         moment="common",
     ),
     "squeaky-bum-time": dict(
@@ -63,7 +63,7 @@ OVERHEARD = {
         speaker="him",
         gist="A match between two sides chasing the same place",
         decoys=["A match where a win is worth six points", "A game worth double because it is a derby"],
-        when=["title", "relegation", "run-in"],
+        when=["title", "relegation", "run-in", "h2h-we-win"],
         moment="rare",
     ),
     "top-four": dict(
@@ -95,7 +95,7 @@ OVERHEARD = {
         speaker="him",
         gist="A chance so easy it should have been a goal",
         decoys=["A shot dragged wide from a tight angle", "A shot the keeper palms away at full stretch"],
-        when=["any", "after-loss", "after-draw"],
+        when=["any", "after-loss", "after-draw", "opp-close-range"],
         moment="common",
         player=dict(
             slot='theirs.forward',
@@ -108,7 +108,7 @@ OVERHEARD = {
         speaker="pundit",
         gist="A calm, precise shot that beats the keeper",
         decoys=["A goal that takes a big deflection", "A move drilled on the training ground"],
-        when=["after-win", "after-big-win", "good-run"],
+        when=["after-win", "after-big-win", "good-run", "opp-close-range", "opp-good-form"],
         moment="common",
         player=dict(
             slot='theirs.forward',
@@ -121,7 +121,7 @@ OVERHEARD = {
         speaker="telly",
         gist="A goal hit very hard from a long way out",
         decoys=["A shot that flies well over the bar", "A goal that settles a nervy game late on"],
-        when=["any", "after-win", "after-big-win"],
+        when=["any", "after-win", "after-big-win", "opp-long-range"],
         moment="rare",
     ),
     "top-bins": dict(
@@ -129,7 +129,7 @@ OVERHEARD = {
         speaker="him",
         gist="A corner of the goal no keeper can reach",
         decoys=["A shot that creeps in off the inside of the post", "A shot the keeper gets a hand to and can't stop"],
-        when=["any", "after-win", "after-big-win"],
+        when=["any", "after-win", "after-big-win", "opp-long-range"],
         moment="rare",
     ),
     "worldie": dict(
@@ -137,7 +137,7 @@ OVERHEARD = {
         speaker="chat",
         gist="A goal of genuine world-class quality",
         decoys=["A goal scored at the World Cup", "A goal that wins goal of the month"],
-        when=["after-win", "after-big-win"],
+        when=["after-win", "after-big-win", "opp-long-range"],
         moment="rare",
     ),
     "hit-the-woodwork": dict(
@@ -145,7 +145,7 @@ OVERHEARD = {
         speaker="telly",
         gist="The ball struck the post or bar and stayed out",
         decoys=["The ball smashed into the boards behind the goal", "A shot that beat the keeper and went wide"],
-        when=["any", "after-draw", "after-loss"],
+        when=["any", "after-draw", "after-loss", "opp-long-range"],
         moment="common",
     ),
     "row-z": dict(
@@ -153,7 +153,7 @@ OVERHEARD = {
         speaker="him",
         gist="The back of the stand, where a wild shot lands",
         decoys=["A shot that clears the crossbar by inches", "The seats behind the goal at either end"],
-        when=["any", "after-draw"],
+        when=["any", "after-draw", "opp-long-range"],
         moment="common",
     ),
     "howler": dict(
@@ -161,7 +161,7 @@ OVERHEARD = {
         speaker="chat",
         gist="A glaring, embarrassing mistake",
         decoys=["A save so good the crowd roared", "A furious shout at his own defenders"],
-        when=["any", "after-loss", "after-heavy-loss"],
+        when=["any", "after-loss", "after-heavy-loss", "h2h-they-win"],
         moment="rare",
     ),
     "hospital-ball": dict(
@@ -169,7 +169,7 @@ OVERHEARD = {
         speaker="pundit",
         gist="A loose pass that leaves a teammate in trouble",
         decoys=["A heavy touch that gives the ball away", "A challenge bad enough to injure someone"],
-        when=["any", "after-loss", "after-heavy-loss"],
+        when=["any", "after-loss", "after-heavy-loss", "opp-counter"],
         moment="common",
     ),
     "hoof": dict(
@@ -177,11 +177,11 @@ OVERHEARD = {
         speaker="him",
         gist="Boot the ball clear with no particular aim",
         decoys=["Knock it back to the keeper to start again", "Put it out of play to stop the attack"],
-        when=["any", "relegation"],
+        when=["any", "relegation", "underdog"],
         moment="common",
         player=dict(
             slot='ours.keeper',
-            overheard="Just hoof it. I'd not trust anyone here, {ours.keeper} included.",
+            overheard="Just hoof it. There's nothing on for {ours.keeper} back there anyway.",
             sayIt='"Do they just hoof it every time? Even {ours.keeper}?"',
         ),
     ),
@@ -222,7 +222,7 @@ OVERHEARD = {
         speaker="him",
         gist="Taken off for playing badly, not for a rest",
         decoys=["Caught by an arm and pulled back illegally", "Swapped out to save him for the next game"],
-        when=["after-loss", "after-heavy-loss", "bad-run"],
+        when=["after-loss", "after-heavy-loss", "bad-run", "opp-bad-form"],
         moment="common",
     ),
     "nutmeg": dict(
@@ -246,7 +246,7 @@ OVERHEARD = {
         speaker="pundit",
         gist="Switching off and letting an attacker get free",
         decoys=["Losing a header to a much taller player", "Being caught too high up when it turns over"],
-        when=["any", "after-loss", "after-draw", "after-heavy-loss"],
+        when=["any", "after-loss", "after-draw", "after-heavy-loss", "opp-counter"],
         moment="common",
     ),
     "against-the-run-of-play": dict(
@@ -254,15 +254,15 @@ OVERHEARD = {
         speaker="telly",
         gist="A goal for the side who have been worse",
         decoys=["A goal that came from a counter-attack", "A goal scored in the closing minutes"],
-        when=["after-win", "after-loss", "after-draw"],
+        when=["after-win", "after-loss", "after-draw", "opp-counter", "h2h-they-win"],
         moment="common",
     ),
     "smash-and-grab": dict(
-        overheard="Smash and grab, that. Typical of this lot.",
+        overheard="Smash and grab, that. They'll be laughing all the way home.",
         speaker="him",
         gist="A win in a match you were outplayed in",
         decoys=["A tackle that takes the ball and the man", "A late equaliser to rescue a point"],
-        when=["after-win", "after-loss", "derby"],
+        when=["after-win", "after-loss", "derby", "underdog"],
         moment="rare",
     ),
     "game-of-two-halves": dict(
@@ -278,7 +278,7 @@ OVERHEARD = {
         speaker="telly",
         gist="Soaking up heavy pressure near your own goal",
         decoys=["Players lining up in a wall at a free-kick", "Playing the ball back to the keeper to waste time"],
-        when=["after-clean-sheet", "after-win", "europe", "derby"],
+        when=["after-clean-sheet", "after-win", "europe", "derby", "underdog"],
         moment="common",
         player=dict(
             slot='ours.defender',
@@ -291,7 +291,7 @@ OVERHEARD = {
         speaker="him",
         gist="Launching the ball into a crowded penalty area",
         decoys=["Getting it wide to the winger to cross", "Booting it into the corner to run the clock"],
-        when=["any", "after-draw", "relegation"],
+        when=["any", "after-draw", "relegation", "opp-set-piece", "opp-close-range"],
         moment="common",
         player=dict(
             slot='theirs.defender',
@@ -304,20 +304,20 @@ OVERHEARD = {
         speaker="pundit",
         gist="Kicking it long and chasing it, no build-up",
         decoys=["Working the ball wide and crossing it", "Passing it through the middle at speed"],
-        when=["any", "relegation"],
+        when=["any", "relegation", "opp-aerial", "underdog"],
         moment="common",
     ),
     "on-the-break": dict(
-        overheard="They'll hurt you on the break, this lot. Watch.",
+        overheard="Give it away up there and anyone will hurt you on the break. Anyone.",
         speaker="him",
         gist="Attacking at speed before they can get back",
         decoys=["Scoring right after the half-time interval", "Winning the ball high up the pitch"],
-        when=["any", "europe"],
+        when=["any", "europe", "opp-counter"],
         moment="common",
         player=dict(
             slot='theirs.midfielder',
-            overheard="They'll hurt you on the break, this lot. Where does {theirs.midfielder} fit in?",
-            sayIt='"They\'re good on the break. Is {theirs.midfielder} part of that?"',
+            overheard="Give it away and they're off on the break. Where does {theirs.midfielder} fit?",
+            sayIt='"Are they good on the break? Is {theirs.midfielder} part of that?"',
         ),
     ),
     "dead-rubber": dict(
@@ -333,7 +333,7 @@ OVERHEARD = {
         speaker="telly",
         gist="A small club knocking a big one out of a cup",
         decoys=["A tall side winning everything in the air", "A late winner that dumps a team out of a cup"],
-        when=["cup"],
+        when=["cup", "favourites", "underdog"],
         moment="rare",
     ),
     "hairdryer": dict(
@@ -341,7 +341,7 @@ OVERHEARD = {
         speaker="chat",
         gist="A manager screaming at players up close",
         decoys=["A calm team talk to settle everyone down", "A row between players in the dressing room"],
-        when=["bad-run", "new-manager", "after-loss", "after-heavy-loss"],
+        when=["bad-run", "new-manager", "after-loss", "after-heavy-loss", "opp-bad-form"],
         moment="common",
     ),
     "man-of-the-match": dict(
@@ -375,7 +375,7 @@ OVERHEARD = {
         speaker="telly",
         gist="Whatever drops loose after a header",
         decoys=["A cross played in after a short corner", "The second goal that settles a match"],
-        when=["any", "cup", "derby"],
+        when=["any", "cup", "derby", "opp-set-piece", "opp-aerial"],
         moment="common",
     ),
     "unlucky": dict(
@@ -383,7 +383,7 @@ OVERHEARD = {
         speaker="him",
         gist="A shout of sympathy at a player who missed",
         decoys=["A groan when the keeper makes a save", "A shout at the referee for a poor call"],
-        when=["any", "after-loss", "after-draw"],
+        when=["any", "after-loss", "after-draw", "h2h-they-win"],
         moment="common",
     ),
 }

@@ -88,16 +88,29 @@ struct MatchContext: Equatable {
         return String(baseSubtitle[...end]) + " " + refresh
     }
 
-    /// The 19 tags content may carry. A `when` value outside this set never
+    /// The 31 tags content may carry. A `when` value outside this set never
     /// matches a context; the validator is what keeps content inside it.
     /// `new-manager` is inactive: nothing derives it any more (the generator
     /// always writes a manager summary), but content carrying it stays valid —
     /// a tag no context produces simply never matches.
-    static let knownTags: Set<String> = [
+    ///
+    /// The twelve at the bottom are the other team, out of `cards.matchup`
+    /// (2026-09-23). They are the only tags that license a line making a claim
+    /// about the opponent, and they only ever fire for the fixture the card was
+    /// written for — see `matchupTags`.
+    static let knownTags: Set<String> = ([
         "any", "derby", "cup", "europe", "title", "top-four", "relegation",
         "good-run", "bad-run", "new-manager", "window", "early-season", "run-in",
         "after-win", "after-loss", "after-draw", "after-big-win",
         "after-heavy-loss", "after-clean-sheet",
+    ] as Set<String>).union(matchupOnly)
+
+    /// The twelve that only `matchupTags` can produce, named once so the gate
+    /// can be checked by "none of these" rather than by a list copied about.
+    static let matchupOnly: Set<String> = [
+        "opp-set-piece", "opp-counter", "opp-aerial", "opp-long-range",
+        "opp-close-range", "opp-clean-sheets", "opp-good-form", "opp-bad-form",
+        "h2h-we-win", "h2h-they-win", "underdog", "favourites",
     ]
 
     /// How long after kickoff a game still counts as "the game he is in".
@@ -252,7 +265,23 @@ struct MatchContext: Equatable {
         if cup { t.append("cup") }
         if europe { t.append("europe") }
         if let position { t.append(position) }
-        t += season.tags
+        // His club's own form outranks everything about the other team; the
+        // calendar does not. "It is September" is wallpaper next to "the side
+        // you are playing on Saturday scores from corners", so the three
+        // calendar tags drop below the matchup block.
+        let calendar: Set<String> = ["window", "early-season", "run-in"]
+        t += season.tags.filter { !calendar.contains($0) }
+        // The other team: above the calendar, below everything that says what
+        // the weekend is. Everything above is either what the fixture IS (a derby, a cup tie, a
+        // European night) or where her club stands in its own season — the
+        // things she hears about all week, from him and off the telly, and the
+        // things the subtitle is written from. These are a scouting note about
+        // somebody else, true for ninety minutes and then gone, out of the
+        // newest and least-weathered field on the page. A derby still outranks
+        // them: what the fixture IS beats a note on how they play.
+        t += Self.matchupTags(cards?.matchup, opponent: opponent,
+                              fixtureId: Self.fixtureId(cards: cards, opponent: opponent, kickoff: kickoff))
+        t += season.tags.filter { calendar.contains($0) }
         t.append("any")
 
         phase = .before(opponent: opponent, kickoff: kickoff)
@@ -377,21 +406,28 @@ struct MatchContext: Equatable {
         }
     }
 
+    /// Three wins on the bounce, or five without one, out of a form string
+    /// written oldest first. The opponent's form tags read this same function,
+    /// so `good-run` and `opp-good-form` cannot come to disagree about what a
+    /// run is.
+    static func formRun(_ raw: String) -> (good: Bool, bad: Bool) {
+        let form = raw.uppercased().filter { "WDL".contains($0) }
+        let three = form.suffix(3), five = form.suffix(5)
+        return (three.count == 3 && three.allSatisfy { $0 == "W" },
+                five.count == 5 && !five.contains("W"))
+    }
+
     /// Form, the dugout and the calendar: the tags that do not depend on which
     /// side of a match we are on.
     private static func seasonTags(cards: TeamPageCards?, now: Date) -> (tags: [String], deadline: Bool) {
         var t: [String] = []
         let results = (cards?.recentResults ?? []).prefix(3).map(\.outcome)
-        let form = (cards?.form?.recentForm ?? "").uppercased().filter { "WDL".contains($0) }
-        let lastThreeForm = String(form.suffix(3))
-        let lastFiveForm = String(form.suffix(5))
+        let run = formRun(cards?.form?.recentForm ?? "")
         // The results list is the better source; `recentForm` is the fallback
         // for a page that has fewer than three of them, either way round.
         let enough = results.count == 3
-        let goodRun = enough ? results.allSatisfy { $0 == "W" }
-            : (lastThreeForm.count == 3 && lastThreeForm.allSatisfy { $0 == "W" })
-        let badRun = enough ? !results.contains("W")
-            : (lastFiveForm.count == 5 && !lastFiveForm.contains("W"))
+        let goodRun = enough ? results.allSatisfy { $0 == "W" } : run.good
+        let badRun = enough ? !results.contains("W") : run.bad
         if goodRun { t.append("good-run") }
         if badRun { t.append("bad-run") }
 
@@ -401,6 +437,124 @@ struct MatchContext: Equatable {
         if LingoCalendar.earlySeasonMonths.contains(month) { t.append("early-season") }
         if LingoCalendar.runInMonths.contains(month) { t.append("run-in") }
         return (t, w.deadline)
+    }
+
+    // MARK: The other team
+
+    /// Three of the last five is a pattern; one match between two clubs is a
+    /// coincidence, and a line built on it ("we always beat them") is the kind
+    /// of claim he will correct her on.
+    static let h2hPattern = 3
+    static let h2hWindow = 5
+    /// Clean sheets worth a line. About one Premier League game in three ends
+    /// in a clean sheet for a given side (the four team pages cached on this
+    /// machine on 2026-09-23: four in twelve results), so three of a five-game
+    /// run is roughly a one-in-twenty side rather than an ordinary one — and
+    /// three still reads as a good defence if the backend ever counts a longer
+    /// window than the form string implies. Below that it is a coin flip with
+    /// a number attached.
+    static let cleanSheetsWorthSaying = 3
+
+    /// The API-Football id of the fixture this context actually settled on,
+    /// out of `upcoming_fixtures` — the one list on the page that carries ids
+    /// and a status. Nil when the calendar has no live row for it, and nil is
+    /// what closes the gate below: we would rather deal nothing than deal a
+    /// claim we cannot tie to a game.
+    ///
+    /// Twelve hours of tolerance on the kickoff, the same slack the
+    /// postponement cross-check above uses, because a televised kickoff moves.
+    private static func fixtureId(cards: TeamPageCards?, opponent: String, kickoff: Date) -> Int? {
+        (cards?.upcomingFixtures ?? []).first {
+            !$0.isPostponed && sameClub($0.opponent, opponent)
+                && abs((parseISO($0.date) ?? .distantPast).timeIntervalSince(kickoff)) < 12 * 3600
+        }?.fixtureId
+    }
+
+    /// The twelve tags that describe the other team, out of `cards.matchup`.
+    ///
+    /// **The gate is the whole point.** The card is rebuilt against whatever
+    /// the backend thought the next fixture was; `MatchContext` deliberately
+    /// walks away from `next_fixture` when a game is postponed or its calendar
+    /// row has aged out (`LingoFixtures.page("postponed")` and `("phantom")`).
+    /// So the card has to prove it is about the game this context chose, twice
+    /// over: the same fixture id, and a club that passes `sameClub` against the
+    /// opponent we settled on. A tag derived from last week's opponent deals a
+    /// line asserting something false about the wrong club in front of him,
+    /// which is the worst thing this feature can do. No card, no id, a
+    /// different id or a different club: no `opp-*` tags at all, and the round
+    /// falls back to what it dealt before this card existed.
+    ///
+    /// Ordered most concrete first — a set-piece threat is a thing she can
+    /// watch for, "they're the favourites" is small talk — because the deck
+    /// reads this list in order inside its block.
+    ///
+    /// Only the Before context calls this. A result carries no fixture id at
+    /// all (`recent_results` has none), so the gate could never open after a
+    /// game — which is the right answer anyway: the card describes a match that
+    /// has now been played, and "they're dangerous from set pieces" on Sunday
+    /// night is a prediction about something that already happened.
+    static func matchupTags(_ card: MatchupCard?, opponent: String, fixtureId: Int?) -> [String] {
+        guard let card, let fixtureId, card.fixtureId == fixtureId,
+              let named = card.opponent, sameClub(named, opponent) else { return [] }
+
+        var t: [String] = []
+        if let s = card.style {
+            if s.setPiece == true { t.append("opp-set-piece") }
+            if s.counter == true { t.append("opp-counter") }
+            if s.aerial == true { t.append("opp-aerial") }
+            if s.longRange == true { t.append("opp-long-range") }
+            if s.closeRange == true { t.append("opp-close-range") }
+        }
+
+        // A count with no window is not a fact. When the card carries their
+        // form, its length is the window, and a count longer than the window
+        // is an upstream bug rather than a very good defence.
+        let window = (card.theirForm ?? "").uppercased().filter { "WDL".contains($0) }.count
+        if let cs = card.theirCleanSheets, cs >= cleanSheetsWorthSaying,
+           window == 0 || cs <= window {
+            t.append("opp-clean-sheets")
+        }
+
+        let run = formRun(card.theirForm ?? "")
+        if run.good { t.append("opp-good-form") }
+        if run.bad { t.append("opp-bad-form") }
+
+        // Newest first whatever order the card arrived in, then the last five.
+        // A meeting that is not between these two clubs is somebody else's
+        // history and is dropped rather than counted as a draw.
+        var meetings = 0, ours = 0, theirs = 0
+        for m in (card.h2h ?? []).sorted(by: { ($0.date ?? "") > ($1.date ?? "") }).prefix(h2hWindow) {
+            guard let home = m.home, let away = m.away, let goals = parseScore(m.score) else { continue }
+            let weAreHome: Bool
+            if sameClub(away, opponent) { weAreHome = true }
+            else if sameClub(home, opponent) { weAreHome = false }
+            else { continue }
+            meetings += 1
+            let mine = weAreHome ? goals.home : goals.away
+            let hers = weAreHome ? goals.away : goals.home
+            if mine > hers { ours += 1 } else if hers > mine { theirs += 1 }
+        }
+        if meetings >= h2hPattern {
+            if ours >= h2hPattern { t.append("h2h-we-win") }
+            if theirs >= h2hPattern { t.append("h2h-they-win") }
+        }
+
+        switch (card.favourite ?? "").trimmingCharacters(in: .whitespaces).lowercased() {
+        case "us": t.append("favourites")
+        case "them": t.append("underdog")
+        default: break
+        }
+        return t
+    }
+
+    /// "2-1", home first. Nil for anything else, including a game with no
+    /// score written, which then counts as no meeting at all.
+    private static func parseScore(_ raw: String?) -> (home: Int, away: Int)? {
+        let parts = (raw ?? "").replacingOccurrences(of: "\u{2013}", with: "-")
+            .split(separator: "-", omittingEmptySubsequences: false)
+        guard parts.count == 2, let h = Int(parts[0].trimmingCharacters(in: .whitespaces)),
+              let a = Int(parts[1].trimmingCharacters(in: .whitespaces)) else { return nil }
+        return (h, a)
     }
 
     // MARK: Club names
@@ -768,14 +922,24 @@ enum LingoFixtures {
             }}
             """
         case "postponed":
+            // The matchup card is the one the backend wrote for the Chelsea
+            // game before it was called off: the right fixture id for the game
+            // the context settles on (Fulham), the wrong club on it. Every
+            // `opp-*` tag has to stay off — a card that outlives its fixture is
+            // exactly how the round would come to claim something about the
+            // wrong team.
             json = """
             {"schema_version":1,"cards":{
               "next_fixture":{"opponent":"Chelsea","date":"\(at(2 * day))","venue":"home","league_id":39},
+              "matchup":{"fixture_id":900002,"opponent":"Chelsea","their_form":"WWWDL",
+                         "their_clean_sheets":4,"favourite":"them",
+                         "style":{"set_piece":true,"counter":true,"aerial":true,
+                                  "long_range":true,"close_range":true,"verified_at":"2026-09-23"}},
               "upcoming_fixtures":[
                 {"date":"\(at(2 * day))","opponent":"Chelsea","venue":"home","importance_dots":4,
-                 "importance_label":"Postponed","status":"PST","league_id":39},
+                 "importance_label":"Postponed","status":"PST","league_id":39,"fixture_id":900001},
                 {"date":"\(at(9 * day))","opponent":"Fulham","venue":"away","importance_dots":2,
-                 "importance_label":"A winnable one","status":"NS","league_id":39}]
+                 "importance_label":"A winnable one","status":"NS","league_id":39,"fixture_id":900002}]
             }}
             """
         case "phantom":
@@ -787,6 +951,31 @@ enum LingoFixtures {
               "upcoming_fixtures":[
                 {"date":"\(at(6 * day))","opponent":"Fulham","venue":"away","importance_dots":2,
                  "importance_label":"A winnable one","status":"NS","league_id":39}]
+            }}
+            """
+        case "matchup":
+            // A fixture whose matchup card passes the gate: the id on the
+            // calendar row is the id on the card, and the club on the card is
+            // the club the context settles on. Deliberately not a derby and
+            // not a cup tie, so the `opp-*` tags are visible in the list rather
+            // than buried behind the two tags that outrank them.
+            json = """
+            {"schema_version":1,"cards":{
+              "next_fixture":{"opponent":"Chelsea","date":"\(at(3 * day))","venue":"home","league_id":39},
+              "upcoming_fixtures":[
+                {"date":"\(at(3 * day))","opponent":"Chelsea","venue":"home","importance_dots":3,
+                 "importance_label":"A big one","status":"NS","league_id":39,"fixture_id":1387422}],
+              "matchup":{"updated_at":"\(at(-2 * 3600))","fixture_id":1387422,"opponent":"Chelsea",
+                "our_form":"WWDLW","their_form":"DLWWW","our_clean_sheets":2,"their_clean_sheets":3,
+                "their_formations":["4-2-3-1","4-3-3"],
+                "h2h":[{"date":"2026-03-01","home":"Arsenal","away":"Chelsea","score":"2-1"},
+                       {"date":"2025-11-02","home":"Chelsea","away":"Arsenal","score":"0-1"},
+                       {"date":"2025-04-12","home":"Arsenal","away":"Chelsea","score":"3-0"},
+                       {"date":"2024-12-07","home":"Chelsea","away":"Arsenal","score":"2-2"},
+                       {"date":"2024-09-21","home":"Chelsea","away":"Arsenal","score":"1-0"}],
+                "favourite":"them",
+                "style":{"set_piece":true,"counter":false,"aerial":true,"long_range":false,
+                         "close_range":false,"attacks_side":"right","verified_at":"2026-09-23"}}
             }}
             """
         default:
@@ -878,6 +1067,122 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
 
     let none = MatchContext(page: nil, team: .arsenal, now: now)
     assert(none.phase == .any && none.tags == ["any"], "no page should be the any context")
+
+    // --- The other team ---------------------------------------------------
+    // Every `opp-*` tag licenses a line that makes a claim about the opponent,
+    // so each one is checked both ways: the card says it and the tag appears,
+    // the card does not and it does not. The gate is checked hardest of all —
+    // a tag surviving the wrong fixture or the wrong club is a false sentence
+    // about somebody else's team, said out loud, in front of him.
+    func card(_ json: String) -> MatchupCard? {
+        try? JSONDecoder().decode(MatchupCard.self, from: Data(json.utf8))
+    }
+    /// The tags a card yields for the Chelsea game the fixtures above are
+    /// built around. `fixture` defaults to the matching id, so a test that
+    /// says nothing about the gate is testing what it means to test.
+    func oppTags(_ json: String, fixture: Int = 1387422, opponent: String = "Chelsea") -> [String] {
+        MatchContext.matchupTags(card(json), opponent: opponent, fixtureId: fixture)
+    }
+    func gated(_ id: String) -> String {
+        "{\"fixture_id\":1387422,\"opponent\":\"Chelsea\",\(id)}"
+    }
+
+    // The style flags, one at a time, each one on and then off.
+    for (field, tag) in [("set_piece", "opp-set-piece"), ("counter", "opp-counter"),
+                         ("aerial", "opp-aerial"), ("long_range", "opp-long-range"),
+                         ("close_range", "opp-close-range")] {
+        let on = oppTags(gated("\"style\":{\"\(field)\":true}"))
+        assert(on == [tag], "\(field) true gave \(on), not just \(tag)")
+        assert(oppTags(gated("\"style\":{\"\(field)\":false}")).isEmpty,
+               "\(field) false still produced \(tag)")
+        assert(oppTags(gated("\"style\":{}")).isEmpty, "an empty style block produced \(tag)")
+    }
+    assert(oppTags(gated("\"style\":{\"attacks_side\":\"right\"}")).isEmpty,
+           "which side they attack down is not a tag")
+
+    // Their form, against ours: the same string has to mean the same run on
+    // both sides of the fixture, or content written for `good-run` and content
+    // written for `opp-good-form` describe different things.
+    let isoOut = ISO8601DateFormatter()
+    isoOut.formatOptions = [.withInternetDateTime]
+    let kickoff = isoOut.string(from: now.addingTimeInterval(3 * 24 * 3600))
+    for form in ["WWW", "DLWWW", "LDWWL", "LLDDL", "DLDLD", "WDLWD", "", "LLLLL"] {
+        let ourPage = try? JSONDecoder().decode(TeamPageContent.self, from: Data("""
+        {"schema_version":1,"cards":{
+          "next_fixture":{"opponent":"Chelsea","date":"\(kickoff)","venue":"home","league_id":39},
+          "form":{"league_position":5,"league_position_label":"5th","recent_form":"\(form)",
+                  "form_summary":"Mid-table."}}}
+        """.utf8))
+        let ours = MatchContext(page: ourPage, team: .arsenal, now: now).tags
+        let theirs = oppTags(gated("\"their_form\":\"\(form)\""))
+        assert(ours.contains("good-run") == theirs.contains("opp-good-form"),
+               "'\(form)' is a good run for us and not for them, or the other way round")
+        assert(ours.contains("bad-run") == theirs.contains("opp-bad-form"),
+               "'\(form)' is a bad run for us and not for them, or the other way round")
+    }
+
+    // Clean sheets need a number worth saying, and a window to say it in: a
+    // count longer than the form it came with is an upstream bug, not a wall.
+    assert(oppTags(gated("\"their_form\":\"WWDLW\",\"their_clean_sheets\":3")) == ["opp-clean-sheets"],
+           "three clean sheets in five did not tag, or tagged something else")
+    assert(oppTags(gated("\"their_clean_sheets\":2")).isEmpty, "two clean sheets is a coin flip")
+    assert(oppTags(gated("\"their_form\":\"WDL\",\"their_clean_sheets\":4")).isEmpty,
+           "four clean sheets in a three-game window is impossible and was believed anyway")
+
+    // Head to head: three of the last five is a pattern, one match is not.
+    func meetings(_ scores: [(String, String, String)]) -> String {
+        let rows = scores.enumerated().map { i, s in
+            "{\"date\":\"2026-0\(i + 1)-01\",\"home\":\"\(s.0)\",\"away\":\"\(s.1)\",\"score\":\"\(s.2)\"}"
+        }
+        return "\"h2h\":[\(rows.joined(separator: ","))]"
+    }
+    let threeOurs = meetings([("Arsenal", "Chelsea", "2-1"), ("Chelsea", "Arsenal", "0-1"),
+                              ("Arsenal", "Chelsea", "3-0")])
+    assert(oppTags(gated(threeOurs)) == ["h2h-we-win"], "three wins out of three is not a pattern?")
+    let threeTheirs = meetings([("Arsenal", "Chelsea", "0-1"), ("Chelsea", "Arsenal", "2-0"),
+                                ("Arsenal", "Chelsea", "1-3")])
+    assert(oppTags(gated(threeTheirs)) == ["h2h-they-win"], "three defeats out of three is not a pattern?")
+    assert(oppTags(gated(meetings([("Arsenal", "Chelsea", "2-1")]))).isEmpty,
+           "one meeting became a head-to-head record")
+    assert(oppTags(gated(meetings([("Arsenal", "Chelsea", "2-1"), ("Chelsea", "Arsenal", "0-1")]))).isEmpty,
+           "two meetings became a head-to-head record")
+    assert(oppTags(gated(meetings([("Arsenal", "Chelsea", "2-1"), ("Chelsea", "Arsenal", "1-1"),
+                                   ("Arsenal", "Chelsea", "0-2"), ("Chelsea", "Arsenal", "1-0")]))).isEmpty,
+           "one win, one draw and two defeats is not a pattern either way")
+    // A meeting between two other clubs is somebody else's history.
+    assert(oppTags(gated(meetings([("Arsenal", "Fulham", "2-1"), ("Fulham", "Arsenal", "0-1"),
+                                   ("Arsenal", "Fulham", "3-0")]))).isEmpty,
+           "meetings with a club that is not the opponent were counted")
+
+    assert(oppTags(gated("\"favourite\":\"us\"")) == ["favourites"], "favourite us is not favourites")
+    assert(oppTags(gated("\"favourite\":\"them\"")) == ["underdog"], "favourite them is not underdog")
+    assert(oppTags(gated("\"favourite\":\"even\"")).isEmpty, "an even game tagged something")
+
+    // The gate. A card for another fixture, a card for another club, and no
+    // card at all: nothing, every time.
+    assert(oppTags(gated("\"favourite\":\"us\""), fixture: 1387423).isEmpty,
+           "a card written for a different fixture still tagged the round")
+    assert(MatchContext.matchupTags(card(gated("\"favourite\":\"us\"")), opponent: "Chelsea",
+                                    fixtureId: nil).isEmpty,
+           "a context with no fixture id to check against still trusted the card")
+    assert(oppTags(gated("\"favourite\":\"us\""), opponent: "Fulham").isEmpty,
+           "a card naming Chelsea tagged a Fulham game")
+    assert(MatchContext.matchupTags(nil, opponent: "Chelsea", fixtureId: 1387422).isEmpty,
+           "no card produced tags")
+    // And the same gate through the real page: the Chelsea card outlived the
+    // Chelsea fixture, the context has moved on to Fulham.
+    assert(pst.tags.allSatisfy { !MatchContext.matchupOnly.contains($0) },
+           "the postponed page's stale Chelsea card tagged a Fulham game: \(pst.tags)")
+    assert(derby.tags.allSatisfy { !MatchContext.matchupOnly.contains($0) },
+           "a page with no matchup card grew opponent tags: \(derby.tags)")
+
+    // End to end, through the decoder and the whole context.
+    let matchup = MatchContext(page: LingoFixtures.page("matchup", now: now), team: .arsenal, now: now)
+    assert(matchup.tags == ["opp-set-piece", "opp-aerial", "opp-clean-sheets", "opp-good-form",
+                            "h2h-we-win", "underdog", "any"],
+           "the matchup fixture's tags were \(matchup.tags)")
+    assert(Set(matchup.tags).count == matchup.tags.count, "the tag list repeated a tag")
+    assert(matchup.tags.last == "any", "tags must still end with any")
 
     // --- The occasion ----------------------------------------------------
     // What the end card calls the game she is committing a line to. A weekday

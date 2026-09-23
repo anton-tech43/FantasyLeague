@@ -100,6 +100,27 @@ UPDATE team_pages tp SET content = jsonb_set(tp.content, '{cards,manager}',
 FROM teams t WHERE t.id = tp.team_id AND t.manager_name IS NOT NULL;
 ```
 
+### 2a. The style bank a manager change invalidates
+
+`club_style` (migration 112) is hand-verified style of play — set pieces, the counter, aerial duels, goals from range and from close in, the side of the pitch they attack. No feed carries any of it, nothing automated writes it, and it is read straight onto the team page as `cards.matchup.style`. The editorial reference behind it is `tools/myturn/OPPONENT_STYLE_NOTES.md`.
+
+**A manager change invalidates every claim about that club.** The manager decides whether a side rehearses corners, so a club that changes one has no usable history until the new one has a season. Run this straight after updating a manager above:
+
+```bash
+$P "$SUPABASE_DB_URL" -At -F' | ' -c "select s.team_id,t.manager_started_on,s.set_piece,s.counter,s.aerial,s.long_range,s.close_range,s.attacks_side,s.verified_at from club_style s join teams t on t.id=s.team_id where t.manager_started_on > s.verified_at - interval '13 months' and (s.set_piece or s.counter or s.aerial or s.long_range or s.close_range or s.attacks_side is not null)"
+```
+
+Anything it returns is a claim resting on a season the current manager did not manage. Clear it:
+
+```sql
+UPDATE club_style SET set_piece=NULL, counter=NULL, aerial=NULL, long_range=NULL, close_range=NULL,
+       attacks_side=NULL, verified_at=current_date, source_note='Cleared: <manager> appointed <date>.' WHERE team_id='<club>';
+```
+
+Three columns, three meanings: `NULL` = not verified (renders as false, claims nothing), `true` = safe to say, `false` = checked and untrue, recorded so nobody writes the line again. A promoted club has no Premier League baseline and gets a row with nothing set.
+
+Re-read the notes file at midwinter as well, when the season is twenty games old and can carry a claim on its own. It is a read of a published league table, not a pipeline — nothing refreshes it but a person.
+
 ## 3. Squads, players and photos
 
 `players` (api_player_id, team_id, name, position, photo_url) backs scorer faces in the live match box and the full-time articles. It is synced from API-Football's squad payload, which IS reliable, by `sync_players_from_squads()` (migration 084) on the `goaldigger-players-sync` cron at 05:30 UTC.

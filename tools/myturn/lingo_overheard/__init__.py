@@ -21,6 +21,11 @@ WHEN_TAGS = (
     "any", "derby", "cup", "europe", "title", "top-four", "relegation",
     "good-run", "bad-run", "new-manager", "window", "early-season", "run-in",
     "after-win", "after-loss", "after-draw", "after-big-win", "after-heavy-loss", "after-clean-sheet",
+    # Derived from the `matchup` card, so a word about the other team is dealt only on
+    # a week when the card says so. `MatchContext.matchupOnly` is the Swift side.
+    "opp-set-piece", "opp-counter", "opp-aerial", "opp-long-range", "opp-close-range",
+    "opp-clean-sheets", "opp-good-form", "opp-bad-form",
+    "h2h-we-win", "h2h-they-win", "favourites", "underdog",
 )
 SPEAKERS = ("him", "telly", "chat", "pundit")
 MOMENTS = ("anytime", "common", "rare")

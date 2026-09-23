@@ -30,6 +30,12 @@ import {
 import { buildUpcomingFixtures, collectFinishedFixtureIds, dropFinished, FINISHED_STATUSES, FIXTURE_PAST_GRACE_MS, filterFixturesByLeague } from "../_shared/fixture-rollover.ts";
 import { knockoutOutcome } from "../_shared/goal-push.ts";
 import { clubPreMatchVerdict, preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
+import {
+  buildMatchupCard,
+  type ClubStyleRow,
+  type MatchupCard,
+  PREDICTIONS_SOURCE,
+} from "../_shared/matchup-card.ts";
 import { classifyBestThird, type GroupThirdBounds } from "../_shared/best-third.ts";
 import { classifyExactForTeam, coarseThirdPointsBounds, type GroupTeam, type RemainingGame } from "../_shared/group-scenarios.ts";
 import { guaranteedExactlyThird } from "../_shared/detect-consequences.ts";
@@ -1252,7 +1258,35 @@ async function updateDynamicFields(
           delete otk.opponent;
         }
       }
+
+      // The matchup card, from the same fixture the ones_to_know opponent came
+      // from, so the whole card describes one game and cannot disagree with
+      // itself. Nothing is rebuilt from a different opponent's data.
+      if (nextFixture.fixture_id != null) {
+        const matchup = await loadMatchupCard(
+          supabase,
+          team,
+          nextFixture.fixture_id,
+          opponentInfo?.teamName ?? nextFixture.opponent,
+          opponentInfo?.teamId ?? null,
+          now,
+        );
+        if (matchup) cards.matchup = matchup;
+      }
     }
+
+    // Expire the matchup exactly as the Monday colour sentence is expired
+    // above: the moment it is about a fixture that is no longer the next one.
+    // A card naming last week's opponent is the failure this must not have,
+    // and unlike the colour it is a whole card, so it goes rather than being
+    // held back. Only inside this block — an empty fixtures payload (which
+    // API-Football serves for a few minutes during its nightly cache refresh)
+    // reaches neither this nor the rebuild above.
+    const staleMatchup = (cards.matchup as Record<string, unknown> | undefined)?.fixture_id;
+    if (staleMatchup != null && staleMatchup !== nextFixture?.fixture_id) {
+      delete cards.matchup;
+    }
+
     // The league table on the page is the list of top-flight clubs, so an FA
     // Cup third-round tie against one of them gets its third dot.
     const topFlightApiIds = new Set(
@@ -1720,6 +1754,9 @@ async function loadOpponentCardInfo(
   opponentApiId: number,
 ): Promise<
   | {
+    /// Our own slug for them, so a caller can read their other rows
+    /// (club_style, for the matchup card).
+    teamId: string;
     teamName: string;
     manager?: string;
     players: Array<{ name: string; position?: string; one_liner?: string; photo_url?: string }>;
@@ -1762,7 +1799,64 @@ async function loadOpponentCardInfo(
     };
   });
 
-  return { teamName: oppTeam.display_name as string, manager, players };
+  return {
+    teamId: oppTeam.id as string,
+    teamName: oppTeam.display_name as string,
+    manager,
+    players,
+  };
+}
+
+/// The matchup card: what is true of THIS opponent rather than of a generic
+/// one. Two reads, no Claude, no API call —
+///   * the `/predictions` payload data-fetcher bought once for this fixture
+///     (form, clean sheets, formations, previous meetings, the feed's verdict);
+///   * the opponent's hand-verified `club_style` row (migration 112), which is
+///     the only style-of-play data that exists anywhere in this system.
+///
+/// Returns null when we hold no predictions row for the fixture yet — the
+/// fixture id only becomes the "next" one when a game is played, so there is a
+/// window of up to one data-fetcher run before the payload lands. The caller
+/// leaves the card off rather than showing last week's.
+async function loadMatchupCard(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  team: Team,
+  fixtureId: number,
+  opponentName: string,
+  opponentTeamId: string | null,
+  nowIso: string,
+): Promise<MatchupCard | null> {
+  const { data: rows } = await supabase
+    .from("raw_fetch_logs")
+    .select("data")
+    .eq("team_id", team.id)
+    .eq("source", PREDICTIONS_SOURCE)
+    .eq("data->>fixture_id", String(fixtureId))
+    .order("fetched_at", { ascending: false })
+    .limit(1);
+  const payload = rows?.[0]?.data;
+  if (!payload) return null;
+
+  // No row is the normal case for a cup opponent from outside the division,
+  // and it claims nothing rather than guessing.
+  let style: ClubStyleRow | null = null;
+  if (opponentTeamId) {
+    const { data } = await supabase
+      .from("club_style")
+      .select("set_piece, counter, aerial, long_range, close_range, attacks_side, verified_at")
+      .eq("team_id", opponentTeamId)
+      .maybeSingle();
+    style = (data as ClubStyleRow | null) ?? null;
+  }
+
+  return buildMatchupCard({
+    payload,
+    fixtureId,
+    ourApiId: team.api_football_id,
+    opponentName,
+    style,
+    updatedAt: nowIso,
+  });
 }
 
 /// Build the exact-math hint for a WC team page: sound points-only within-

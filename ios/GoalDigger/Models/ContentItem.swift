@@ -430,6 +430,9 @@ struct TeamPageCards: Codable {
     /// feed, so it appears when they enter and goes when they are knocked out.
     /// Nil for everyone else, and the Table tab's toggle hides itself.
     let europeStandings: StandingsCard?
+    /// What is true about this fixture's opponent (2026-09-23). Read only by
+    /// `MatchContext`, and only after the fixture gate.
+    let matchup: MatchupCard?
 
     enum CodingKeys: String, CodingKey {
         case basics
@@ -448,6 +451,7 @@ struct TeamPageCards: Codable {
         case recentResults = "recent_results"
         case standings
         case europeStandings = "europe_standings"
+        case matchup
     }
 
     /// Decode every card on its own. The synthesised decoder threw the moment
@@ -476,6 +480,7 @@ struct TeamPageCards: Codable {
             .compactMap(\.value)
         standings = try? c.decodeIfPresent(StandingsCard.self, forKey: .standings)
         europeStandings = try? c.decodeIfPresent(StandingsCard.self, forKey: .europeStandings)
+        matchup = try? c.decodeIfPresent(MatchupCard.self, forKey: .matchup)
     }
 }
 
@@ -844,6 +849,101 @@ struct TeamPostMatchCard: Codable {
         case state, text
         case talkingPoint = "talking_point"
         case expiresAt = "expires_at"
+    }
+}
+
+// MARK: - Team page — the matchup
+
+/// What is true about *this* fixture's opponent, written per fixture by the
+/// backend (2026-09-23).
+///
+/// Lingo deals one round per fixture out of lines that are shared across all
+/// twenty possible opponents, so a line claiming anything about the other team
+/// is a coin flip. This card is what lets `MatchContext` tag the round with
+/// claims that hold, and `MatchContext.matchupTags` is the only consumer — it
+/// gates every field on the card being about the fixture the context settled
+/// on, by id and by club.
+///
+/// Every field optional, the convention `MyTurnContent.swift` documents: a card
+/// written before a field existed still decodes, and a missing field means the
+/// tag it feeds is simply absent.
+struct MatchupCard: Codable {
+    let updatedAt: String?
+    /// API-Football fixture id. The gate: without it nothing here can be
+    /// trusted to be about the game she is walking into.
+    let fixtureId: Int?
+    let opponent: String?
+    let ourForm: String?
+    let theirForm: String?
+    let ourCleanSheets: Int?
+    let theirCleanSheets: Int?
+    let theirFormations: [String]?
+    /// The recent meetings between the two, newest first once sorted.
+    let h2h: [MatchupMeeting]?
+    /// "us" | "them" | anything else, which tags nothing.
+    let favourite: String?
+    let style: MatchupStyle?
+
+    enum CodingKeys: String, CodingKey {
+        case updatedAt = "updated_at"
+        case fixtureId = "fixture_id"
+        case opponent
+        case ourForm = "our_form"
+        case theirForm = "their_form"
+        case ourCleanSheets = "our_clean_sheets"
+        case theirCleanSheets = "their_clean_sheets"
+        case theirFormations = "their_formations"
+        case h2h
+        case favourite
+        case style
+    }
+
+    /// Field by field, like `TeamPageCards` above: one field written with the
+    /// wrong type upstream costs that field's tag, not the whole card.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        updatedAt = try? c.decodeIfPresent(String.self, forKey: .updatedAt)
+        fixtureId = try? c.decodeIfPresent(Int.self, forKey: .fixtureId)
+        opponent = try? c.decodeIfPresent(String.self, forKey: .opponent)
+        ourForm = try? c.decodeIfPresent(String.self, forKey: .ourForm)
+        theirForm = try? c.decodeIfPresent(String.self, forKey: .theirForm)
+        ourCleanSheets = try? c.decodeIfPresent(Int.self, forKey: .ourCleanSheets)
+        theirCleanSheets = try? c.decodeIfPresent(Int.self, forKey: .theirCleanSheets)
+        theirFormations = try? c.decodeIfPresent([String].self, forKey: .theirFormations)
+        h2h = (try? c.decodeIfPresent([Lossy<MatchupMeeting>].self, forKey: .h2h))?.compactMap(\.value)
+        favourite = try? c.decodeIfPresent(String.self, forKey: .favourite)
+        style = try? c.decodeIfPresent(MatchupStyle.self, forKey: .style)
+    }
+}
+
+/// One past meeting. `score` is written home-away, whoever is home.
+struct MatchupMeeting: Codable {
+    let date: String?
+    let home: String?
+    let away: String?
+    let score: String?
+}
+
+/// How the opponent plays, human-verified upstream — `verified_at` is the
+/// stamp `DATA_SOURCES.md` requires for a field we hold ourselves because no
+/// feed has the answer (API-Football sells no style-of-play data).
+struct MatchupStyle: Codable {
+    let setPiece: Bool?
+    let counter: Bool?
+    let aerial: Bool?
+    let longRange: Bool?
+    let closeRange: Bool?
+    let attacksSide: String?
+    let verifiedAt: String?
+
+    enum CodingKeys: String, CodingKey {
+        case setPiece = "set_piece"
+        case counter
+        case aerial
+        case longRange = "long_range"
+        case closeRange = "close_range"
+        case attacksSide = "attacks_side"
+        case verifiedAt = "verified_at"
     }
 }
 

@@ -403,8 +403,11 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
             err(f"{where}: duplicate when tag")
         if not 1 <= len(when) <= 5:
             err(f"{where}: when needs 1 to 5 tags, got {len(when)}")
-        for w in when:
-            tag_count[w] += 1
+        # Only words that can actually be dealt count towards the floor. A `basic`
+        # word never reaches a round, so tagging one does not thicken the block.
+        if not t.get("basic"):
+            for w in when:
+                tag_count[w] += 1
 
         # --- moment: how often this line's moment actually arrives
         moment = t.get("moment")
@@ -466,7 +469,7 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
         if tag == "any":
             continue
         if tag_count[tag] < MIN_PER_TAG:
-            err(f"lingo: tag '{tag}' has {tag_count[tag]} terms (min {MIN_PER_TAG}), a deck would come up thin")
+            err(f"lingo: tag '{tag}' has {tag_count[tag]} dealt terms (min {MIN_PER_TAG}), a deck would come up thin")
     if tag_count["any"] < MIN_ANY:
         err(f"lingo: only {tag_count['any']} terms carry 'any' (min {MIN_ANY}); the fill pool runs dry")
     for band, floor in (("anytime", MIN_ANYTIME), ("common", MIN_COMMON)):

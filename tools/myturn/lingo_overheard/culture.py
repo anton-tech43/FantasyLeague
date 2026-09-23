@@ -7,7 +7,7 @@ OVERHEARD = {
         speaker="chat",
         gist="Stoppage minutes that suit the bigger side",
         decoys=["Kick-off times chosen to suit the television", "The seasons a famous manager was in charge"],
-        when=["any", "after-loss", "title"],
+        when=["any", "after-loss", "title", "h2h-they-win"],
         moment="common",
     ),
     "the-gaffer": dict(
@@ -15,7 +15,7 @@ OVERHEARD = {
         speaker="him",
         gist="The manager, in old workplace slang",
         decoys=["The club captain who leads on the pitch", "The head of the backroom staff at a club"],
-        when=["any", "new-manager", "bad-run", "after-heavy-loss"],
+        when=["any", "new-manager", "bad-run", "after-heavy-loss", "opp-bad-form"],
         moment="anytime",
         player=dict(
             slot='ours.keeper',
@@ -62,7 +62,7 @@ OVERHEARD = {
         speaker="pundit",
         gist="Pundit-speak for about as good as it gets",
         decoys=["Someone at the top of the scoring charts", "A man voted best on the pitch that day"],
-        when=["good-run", "after-win", "after-big-win", "window"],
+        when=["good-run", "after-win", "after-big-win", "window", "opp-good-form"],
         moment="anytime",
         player=dict(
             slot='theirs.midfielder',
@@ -104,12 +104,12 @@ OVERHEARD = {
         speaker="him",
         gist="To lose your nerve at the crucial moment",
         decoys=["To keep it all in and say nothing about it", "To waste chances in front of goal all game"],
-        when=["title", "run-in", "bad-run", "after-loss"],
+        when=["title", "run-in", "bad-run", "after-loss", "h2h-they-win"],
         moment="anytime",
         player=dict(
             slot='theirs.keeper',
-            overheard="They'll bottle it. They always do, with {theirs.keeper} in goal.",
-            sayIt='"They always bottle it, you said. Is {theirs.keeper} the problem?"',
+            overheard="One of us is going to bottle it here. Might be us, might be {theirs.keeper}.",
+            sayIt='"Who bottles it first, do you reckon? Us or {theirs.keeper}?"',
         ),
     ),
     "banter": dict(
@@ -117,7 +117,7 @@ OVERHEARD = {
         speaker="chat",
         gist="Teasing between fans, mostly good-natured",
         decoys=["Chatter between the players on the pitch", "A row between fans that has gone too far"],
-        when=["any", "derby", "after-win"],
+        when=["any", "derby", "after-win", "h2h-we-win"],
         moment="anytime",
         player=dict(
             slot='ours.forward',
@@ -130,7 +130,7 @@ OVERHEARD = {
         speaker="him",
         gist="Where his mates react to every goal instantly",
         decoys=["An online forum open to all supporters", "Fans posting videos from inside the ground"],
-        when=["any", "derby", "after-win", "after-loss"],
+        when=["any", "derby", "after-win", "after-loss", "h2h-we-win"],
         moment="anytime",
     ),
     "season-ticket": dict(
@@ -170,7 +170,7 @@ OVERHEARD = {
         speaker="pundit",
         gist="The old standing areas, and the fans in them",
         decoys=["The rows of houses behind an old ground", "The banked rows of seating in the top tier"],
-        when=["any", "derby"],
+        when=["any", "derby", "h2h-we-win"],
         moment="common",
     ),
     "chant": dict(
@@ -178,7 +178,7 @@ OVERHEARD = {
         speaker="him",
         gist="A song the crowd sings to a pop tune",
         decoys=["A rhythm the crowd claps without words", "The song a club plays as the teams come out"],
-        when=["any", "derby", "cup"],
+        when=["any", "derby", "cup", "h2h-we-win"],
         moment="common",
     ),
     "half-and-half-scarf": dict(
@@ -186,7 +186,7 @@ OVERHEARD = {
         speaker="chat",
         gist="A souvenir showing both teams' colours",
         decoys=["A ticket that covers both legs of a round", "A scarf swapped with a rival fan at full time"],
-        when=["derby", "cup"],
+        when=["derby", "cup", "h2h-we-win"],
         moment="anytime",
     ),
     "plastic-fan": dict(
@@ -194,7 +194,7 @@ OVERHEARD = {
         speaker="him",
         gist="A fan who only turns up when things go well",
         decoys=["Someone who turns up in a shop-bought kit", "A supporter who watches on TV and nothing else"],
-        when=["any", "derby", "good-run"],
+        when=["any", "derby", "good-run", "opp-good-form"],
         moment="anytime",
     ),
     "glory-hunter": dict(
@@ -202,7 +202,7 @@ OVERHEARD = {
         speaker="chat",
         gist="A fan who picked a club for its trophies",
         decoys=["A player chasing his own goals over the team", "Someone who collects club shirts and badges"],
-        when=["any", "good-run", "title"],
+        when=["any", "good-run", "title", "opp-good-form"],
         moment="anytime",
     ),
     "the-boot-room": dict(
@@ -218,7 +218,7 @@ OVERHEARD = {
         speaker="chat",
         gist="A whole league season without a defeat",
         decoys=["A team that went a season without losing at home", "A side that won three trophies in one year"],
-        when=["title", "good-run"],
+        when=["title", "good-run", "opp-good-form"],
         moment="anytime",
     ),
     "sack-race": dict(
@@ -226,7 +226,7 @@ OVERHEARD = {
         speaker="chat",
         gist="The unofficial contest over which manager goes first",
         decoys=["A charity event before a game at the ground", "The run of games that decides a manager's future"],
-        when=["bad-run", "new-manager", "after-heavy-loss"],
+        when=["bad-run", "new-manager", "after-heavy-loss", "opp-bad-form"],
         moment="anytime",
     ),
     "new-manager-bounce": dict(
@@ -234,7 +234,7 @@ OVERHEARD = {
         speaker="pundit",
         gist="The short run of good results after a change",
         decoys=["The lift in ticket sales after an appointment", "The boost a home crowd gives a struggling side"],
-        when=["new-manager", "good-run"],
+        when=["new-manager", "good-run", "opp-good-form"],
         moment="rare",
     ),
     "silly-season": dict(
@@ -279,7 +279,7 @@ OVERHEARD = {
         speaker="chat",
         gist="Bad result, forget it, on to the next game",
         decoys=["The match is being replayed after a draw", "Fans are heading off to another away trip"],
-        when=["after-loss", "after-heavy-loss", "bad-run", "after-draw"],
+        when=["after-loss", "after-heavy-loss", "bad-run", "after-draw", "opp-bad-form"],
         moment="common",
     ),
     "the-lino": dict(
@@ -311,7 +311,7 @@ OVERHEARD = {
         speaker="pundit",
         gist="The best strike, picked by a viewers' vote",
         decoys=["The award for a player's form over four weeks", "A scoring target a striker is set each month"],
-        when=["any", "after-win", "after-big-win"],
+        when=["any", "after-win", "after-big-win", "opp-long-range"],
         moment="rare",
     ),
     "the-magic-of-the-cup": dict(
@@ -319,7 +319,7 @@ OVERHEARD = {
         speaker="telly",
         gist="The idea that a small club can beat a big one",
         decoys=["A trophy handed over on the pitch at the end", "The extra money a cup run brings a club"],
-        when=["cup"],
+        when=["cup", "underdog"],
         moment="rare",
     ),
     "wembley": dict(

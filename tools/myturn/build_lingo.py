@@ -25,7 +25,7 @@ from lingo_overheard import OVERHEARD, SLOTS, WHEN_TAGS  # noqa: E402
 from lingo_src import LEVEL_OF, LEVELS, TERMS  # noqa: E402
 
 OUT = os.path.join(HERE, "..", "..", "ios", "GoalDigger", "Resources", "MyTurn", "lingo.json")
-VERSION = "2026-09-23.3"
+VERSION = "2026-09-23.5"
 
 # The optional `player` key: one variant, or a list of at most two whose sides
 # differ. It overrides `overheard` and `sayIt` only; speaker, gist, decoys,

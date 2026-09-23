@@ -1,5 +1,5 @@
 {
-  "contentVersion": "2026-09-23.3",
+  "contentVersion": "2026-09-23.5",
   "terms": [
     {
       "id": "premier-league",
@@ -198,7 +198,7 @@
       "term": "Yellow card",
       "meaning": "A warning from the referee. Two in one game and you are sent off.",
       "heard": "\"He's on a yellow\" means the player has to be careful now.",
-      "sayIt": "\"He's on a yellow, he needs to calm down.\"",
+      "sayIt": "\"Is he on a yellow? One more and he's off, isn't it?\"",
       "level": 1,
       "seeAlso": [
         "red-card"
@@ -453,7 +453,7 @@
       "term": "Handball",
       "meaning": "Touching the ball with your hand or arm on purpose, or with an arm stuck out making you bigger. Goalkeepers can use their hands, but only inside their own box.",
       "heard": "\"That's handball all day\" about a ball that brushed a shoulder.",
-      "sayIt": "\"His arm was out. That's handball.\"",
+      "sayIt": "\"Was his arm out? That's handball if it was.\"",
       "level": 2,
       "seeAlso": [
         "the-box"
@@ -488,7 +488,8 @@
         "A drop ball restart after a player's hurt"
       ],
       "when": [
-        "any"
+        "any",
+        "opp-set-piece"
       ],
       "moment": "common"
     },
@@ -509,7 +510,8 @@
         "A free kick given wide, level with the goal"
       ],
       "when": [
-        "any"
+        "any",
+        "opp-set-piece"
       ],
       "moment": "common",
       "basic": true
@@ -567,7 +569,7 @@
       "term": "Clean sheet",
       "meaning": "Letting in no goals in a match. The goalkeeper's favourite statistic, and a defender's.",
       "heard": "\"Another clean sheet\" said with real pride.",
-      "sayIt": "\"Another clean sheet. The defence has been solid.\"",
+      "sayIt": "\"That's a clean sheet. Have they kept many this season?\"",
       "level": 2,
       "overheard": "Another clean sheet, and we didn't half ride our luck.",
       "overheardTerm": "clean sheet",
@@ -580,7 +582,8 @@
       "when": [
         "good-run",
         "after-win",
-        "after-clean-sheet"
+        "after-clean-sheet",
+        "opp-clean-sheets"
       ],
       "moment": "common"
     },
@@ -751,7 +754,7 @@
       "playerVariants": [
         {
           "slot": "ours.keeper",
-          "overheard": "penalty shootout. dont tell me how it goes. and dont mention {ours.keeper}.",
+          "overheard": "penalty shootout. dont tell me how it goes. not even if {ours.keeper} saves one.",
           "sayIt": "\"A penalty shootout. Is {ours.keeper} the one who has to save them?\"",
           "overheardTerm": "penalty shootout"
         }
@@ -823,7 +826,7 @@
       "term": "League Cup",
       "meaning": "The League Cup (Carabao Cup) is the smaller of the two domestic cups, so it takes the name of whichever sponsor is paying. Semi-finals over two legs, final at Wembley.",
       "heard": "\"Good chance to rest people\" from the manager.",
-      "sayIt": "\"It's only the League Cup. He'll rest half the team.\"",
+      "sayIt": "\"It's the League Cup. Will he rest half the team?\"",
       "level": 3,
       "seeAlso": [
         "the-cups",
@@ -1256,7 +1259,9 @@
       ],
       "when": [
         "after-draw",
-        "after-clean-sheet"
+        "after-clean-sheet",
+        "opp-clean-sheets",
+        "favourites"
       ],
       "moment": "rare"
     },
@@ -1266,14 +1271,14 @@
       "term": "Set piece",
       "meaning": "Any restart from a dead ball: corners, free kicks, throw-ins. Teams rehearse them in training all week.",
       "heard": "\"Strong from set pieces\" about tall teams.",
-      "sayIt": "\"They're strong from set pieces. Watch the corners.\"",
+      "sayIt": "\"Are they any good from set pieces? I'll watch the corners.\"",
       "level": 4,
       "seeAlso": [
         "corner",
         "free-kick"
       ],
-      "overheard": "They're a threat from set pieces, this lot. Always have been.",
-      "overheardTerm": "set pieces",
+      "overheard": "Set pieces could decide this one. They usually do at this level.",
+      "overheardTerm": "Set pieces",
       "speaker": "pundit",
       "gist": "A rehearsed routine from a dead ball",
       "decoys": [
@@ -1283,7 +1288,8 @@
       "when": [
         "any",
         "derby",
-        "cup"
+        "cup",
+        "opp-set-piece"
       ],
       "moment": "anytime",
       "playerVariants": [
@@ -1326,7 +1332,7 @@
       "term": "Back four",
       "meaning": "The four defenders in a line in front of the goalkeeper: two centre-backs in the middle, a full-back on each side.",
       "heard": "\"The back four were solid\" is high praise.",
-      "sayIt": "\"The back four have been solid today.\"",
+      "sayIt": "\"Have the back four been solid today? Looked alright to me.\"",
       "level": 5,
       "seeAlso": [
         "full-back",
@@ -1342,7 +1348,8 @@
       ],
       "when": [
         "any",
-        "after-clean-sheet"
+        "after-clean-sheet",
+        "opp-clean-sheets"
       ],
       "moment": "common"
     },
@@ -1352,7 +1359,7 @@
       "term": "Centre-back",
       "meaning": "The two big defenders in the middle. Heading, tackling, shouting at everyone else.",
       "heard": "\"He's a proper centre-back\" means old-fashioned and tough.",
-      "sayIt": "\"He's a proper centre-back. Wins every header.\"",
+      "sayIt": "\"Is he a proper centre-back? Does he win his headers?\"",
       "level": 5,
       "overheard": "We've spent a fortune on that centre-back. Jury's out for me.",
       "overheardTerm": "centre-back",
@@ -1364,7 +1371,9 @@
       ],
       "when": [
         "any",
-        "after-clean-sheet"
+        "after-clean-sheet",
+        "opp-set-piece",
+        "opp-aerial"
       ],
       "moment": "anytime",
       "playerVariants": [
@@ -1403,7 +1412,7 @@
       "term": "Wing-back",
       "meaning": "A full-back who plays higher up the pitch, almost as a winger, because there are three centre-backs behind him.",
       "heard": "When a team plays with a back three.",
-      "sayIt": "\"They're playing wing-backs today, so it's a back three.\"",
+      "sayIt": "\"Are those wing-backs? That means a back three, doesn't it?\"",
       "level": 5,
       "seeAlso": [
         "full-back",
@@ -1461,7 +1470,7 @@
       "term": "Box-to-box",
       "meaning": "A midfielder who runs from his own penalty area to the other one all game. Defends, attacks, never stops.",
       "heard": "\"Proper box-to-box midfielder\" said admiringly.",
-      "sayIt": "\"He's a proper box-to-box player. Everywhere.\"",
+      "sayIt": "\"Is he a box-to-box player, then? Does he get back as well?\"",
       "level": 5,
       "seeAlso": [
         "holding-midfielder"
@@ -1485,7 +1494,7 @@
       "term": "Number ten",
       "meaning": "The creative player just behind the striker who makes the clever passes. Named after the shirt number the best of them wore.",
       "heard": "\"He's a classic ten\" about someone who can't be bothered to defend.",
-      "sayIt": "\"He's playing as the ten today, just behind the striker.\"",
+      "sayIt": "\"Is he playing as the ten today, just behind the striker?\"",
       "level": 5,
       "seeAlso": [
         "playmaker"
@@ -1509,7 +1518,7 @@
       "term": "Playmaker",
       "meaning": "The player everything goes through. Sees passes nobody else sees. Stop him and you stop the team.",
       "heard": "\"He makes them tick\" is the phrase.",
-      "sayIt": "\"He's the one who makes them tick.\"",
+      "sayIt": "\"Which one's their playmaker? Who makes them tick?\"",
       "level": 5,
       "seeAlso": [
         "number-ten"
@@ -1570,7 +1579,7 @@
       "term": "Striker",
       "meaning": "The player whose whole job is scoring goals. Also called a forward, a centre-forward or a number nine.",
       "heard": "\"They need a striker\" about half the clubs in the league.",
-      "sayIt": "\"They need a proper striker, don't they?\"",
+      "sayIt": "\"Have they got a proper striker? Who plays up top for them?\"",
       "level": 5,
       "seeAlso": [
         "false-nine",
@@ -1602,7 +1611,7 @@
         "striker",
         "long-ball"
       ],
-      "overheard": "You need a target man in this league. They've not got one.",
+      "overheard": "You need a target man in this league. Have they got one?",
       "overheardTerm": "target man",
       "speaker": "pundit",
       "gist": "A big forward the ball gets launched at",
@@ -1611,7 +1620,8 @@
         "A forward who chases everything down"
       ],
       "when": [
-        "any"
+        "any",
+        "opp-aerial"
       ],
       "moment": "common",
       "playerVariants": [
@@ -1629,7 +1639,7 @@
       "term": "False nine",
       "meaning": "A striker who drops back into midfield instead of staying up front, so the defenders don't know who to mark.",
       "heard": "In clever tactical chats. Sounds fancier than it is.",
-      "sayIt": "\"He's playing as a false nine, dropping into midfield.\"",
+      "sayIt": "\"Is he playing as a false nine, dropping into midfield?\"",
       "level": 5,
       "seeAlso": [
         "striker"
@@ -1688,13 +1698,13 @@
       "term": "Pressing",
       "meaning": "Chasing the opponent the moment he gets the ball, all over the pitch, to force a mistake. Exhausting when it works and when it doesn't.",
       "heard": "\"They press really well\" about energetic teams.",
-      "sayIt": "\"They press so well. Nobody gets a second on the ball.\"",
+      "sayIt": "\"Are they a pressing side, or is that just them chasing it?\"",
       "level": 6,
       "seeAlso": [
         "high-press",
         "low-block"
       ],
-      "overheard": "It's all about the pressing with this manager. Nothing else matters.",
+      "overheard": "A lot will depend on the pressing, and on how long they can keep it up.",
       "overheardTerm": "pressing",
       "speaker": "pundit",
       "gist": "Hounding whoever has it into a mistake",
@@ -1710,7 +1720,7 @@
       "playerVariants": [
         {
           "slot": "theirs.midfielder",
-          "overheard": "It's all pressing with this manager. Nobody asks if {theirs.midfielder} enjoys it.",
+          "overheard": "A lot depends on the pressing. Nobody asks if {theirs.midfielder} enjoys it.",
           "sayIt": "\"All that pressing. Does {theirs.midfielder} ever stop running?\"",
           "overheardTerm": "pressing"
         }
@@ -1747,7 +1757,7 @@
       "term": "Low block",
       "meaning": "The whole team sitting deep near their own goal, letting the other side have the ball and hoping to hit them on the counter.",
       "heard": "\"They've sat in a low block\" about a team defending a lead.",
-      "sayIt": "\"They're sitting in a low block. Someone needs to unlock it.\"",
+      "sayIt": "\"Are they sitting in a low block? Someone needs to unlock this.\"",
       "level": 6,
       "seeAlso": [
         "park-the-bus",
@@ -1763,7 +1773,9 @@
       ],
       "when": [
         "any",
-        "after-clean-sheet"
+        "after-clean-sheet",
+        "opp-clean-sheets",
+        "favourites"
       ],
       "moment": "common"
     },
@@ -1773,7 +1785,7 @@
       "term": "Park the bus",
       "meaning": "Defending with everyone and attacking with nobody, as if a bus were parked across the goal. Usually to protect a lead.",
       "heard": "Usually as an insult about a boring opponent.",
-      "sayIt": "\"They've parked the bus. This'll be hard work.\"",
+      "sayIt": "\"If they park the bus, this'll be hard work.\"",
       "level": 6,
       "seeAlso": [
         "low-block"
@@ -1789,7 +1801,9 @@
       "when": [
         "any",
         "after-draw",
-        "after-clean-sheet"
+        "after-clean-sheet",
+        "opp-clean-sheets",
+        "favourites"
       ],
       "moment": "common"
     },
@@ -1799,12 +1813,12 @@
       "term": "Counter-attack",
       "meaning": "Winning the ball and racing up the pitch fast before the other team can get back into position.",
       "heard": "\"Dangerous on the counter\" about quick teams.",
-      "sayIt": "\"They're dangerous on the counter. Don't push too many forward.\"",
+      "sayIt": "\"Are they dangerous on the counter? I'd not push too many forward.\"",
       "level": 6,
       "seeAlso": [
         "on-the-break"
       ],
-      "overheard": "They're built for the counter-attack, this lot. It's no accident.",
+      "overheard": "push everyone forward like that and we'll get done on the counter-attack.",
       "overheardTerm": "counter-attack",
       "speaker": "chat",
       "gist": "Breaking forward fast the second you win it",
@@ -1814,7 +1828,8 @@
       ],
       "when": [
         "any",
-        "europe"
+        "europe",
+        "opp-counter"
       ],
       "moment": "anytime"
     },
@@ -1840,7 +1855,8 @@
       "when": [
         "any",
         "after-loss",
-        "after-draw"
+        "after-draw",
+        "favourites"
       ],
       "moment": "common"
     },
@@ -1875,14 +1891,14 @@
       "term": "Long ball",
       "meaning": "Kicking the ball high and far up the pitch instead of passing it along the ground. Simple, direct, unloved.",
       "heard": "\"Route one\" is the same idea, said more rudely.",
-      "sayIt": "\"Long ball again. Not pretty, but it works.\"",
+      "sayIt": "\"Long ball again. Does that ever come off?\"",
       "level": 6,
       "seeAlso": [
         "target-man",
         "route-one",
         "hoof"
       ],
-      "overheard": "Another long ball. That's his way, always has been.",
+      "overheard": "Another long ball. That's four in a row now.",
       "overheardTerm": "long ball",
       "speaker": "him",
       "gist": "Hitting it high and far instead of passing",
@@ -1892,7 +1908,8 @@
       ],
       "when": [
         "any",
-        "relegation"
+        "relegation",
+        "opp-aerial"
       ],
       "moment": "common"
     },
@@ -1917,7 +1934,9 @@
       ],
       "when": [
         "any",
-        "relegation"
+        "relegation",
+        "opp-aerial",
+        "underdog"
       ],
       "moment": "common"
     },
@@ -1938,13 +1957,14 @@
         "Standing goal-side of your man at a corner"
       ],
       "when": [
-        "any"
+        "any",
+        "opp-close-range"
       ],
       "moment": "common",
       "playerVariants": [
         {
           "slot": "ours.defender",
-          "overheard": "Man marking, is it. I'd not give {ours.defender} that job, personally.",
+          "overheard": "Man marking, is it. Who do they give that job to, {ours.defender}?",
           "sayIt": "\"Man marking sounds hard. Could {ours.defender} do that for ninety minutes?\"",
           "overheardTerm": "Man marking"
         }
@@ -1956,7 +1976,7 @@
       "term": "Zonal marking",
       "meaning": "At corners and free kicks, each defender guards a patch of ground instead of a person. Blamed for every goal from a corner.",
       "heard": "Blamed for every goal from a corner.",
-      "sayIt": "\"Zonal marking. Nobody's actually on anyone.\"",
+      "sayIt": "\"Is that zonal marking? Nobody's actually on anyone.\"",
       "level": 6,
       "seeAlso": [
         "man-marking"
@@ -1971,7 +1991,8 @@
       ],
       "when": [
         "any",
-        "after-loss"
+        "after-loss",
+        "opp-set-piece"
       ],
       "moment": "common"
     },
@@ -1995,7 +2016,8 @@
         "A player drifting into a teammate's space"
       ],
       "when": [
-        "any"
+        "any",
+        "opp-close-range"
       ],
       "moment": "common"
     },
@@ -2016,7 +2038,8 @@
         "A cross aimed at the far post"
       ],
       "when": [
-        "any"
+        "any",
+        "opp-counter"
       ],
       "moment": "common"
     },
@@ -2028,7 +2051,7 @@
       "heard": "Modern teams score half their goals this way.",
       "sayIt": "\"Cut it back! Don't shoot from there.\"",
       "level": 7,
-      "overheard": "Another cutback. They score all their goals like that.",
+      "overheard": "Another cutback. Nobody's picking up the runner coming in.",
       "overheardTerm": "cutback",
       "speaker": "him",
       "gist": "A pass pulled square from the byline",
@@ -2037,7 +2060,8 @@
         "A cross floated to the far post"
       ],
       "when": [
-        "any"
+        "any",
+        "opp-close-range"
       ],
       "moment": "common"
     },
@@ -2047,7 +2071,7 @@
       "term": "Inverted full-back",
       "meaning": "A full-back who steps into midfield when his team has the ball, to give them an extra passer in the middle.",
       "heard": "Guardiola fans. Sounds very clever.",
-      "sayIt": "\"The full-back's inverting. He's basically a midfielder now.\"",
+      "sayIt": "\"Is the full-back inverting there? He looks like a midfielder.\"",
       "level": 7,
       "seeAlso": [
         "full-back"
@@ -2071,7 +2095,7 @@
       "term": "Half-space",
       "meaning": "The gap between the middle of the pitch and the wing, where clever attackers like to get the ball because nobody is quite sure who marks them.",
       "heard": "Tactics podcasts. Nod if you hear it.",
-      "sayIt": "\"He keeps finding space in the half-space. Nobody picks him up.\"",
+      "sayIt": "\"Is that the half-space he keeps getting into? Nobody picks him up.\"",
       "level": 7,
       "overheard": "He lives in the half-space, that lad. It's a podcast word, apparently.",
       "overheardTerm": "half-space",
@@ -2105,7 +2129,9 @@
       "when": [
         "any",
         "after-loss",
-        "after-draw"
+        "after-draw",
+        "opp-clean-sheets",
+        "favourites"
       ],
       "moment": "common"
     },
@@ -2160,7 +2186,8 @@
         "derby",
         "run-in",
         "after-win",
-        "after-clean-sheet"
+        "after-clean-sheet",
+        "underdog"
       ],
       "moment": "common"
     },
@@ -2212,7 +2239,7 @@
       "seeAlso": [
         "game-management"
       ],
-      "overheard": "Proper dark arts from this lot tonight. Been at it for years.",
+      "overheard": "Proper dark arts from this lot tonight. The ref has fallen for all of it.",
       "overheardTerm": "dark arts",
       "speaker": "chat",
       "gist": "The sneaky stuff that winds them up",
@@ -2223,7 +2250,8 @@
       "when": [
         "derby",
         "europe",
-        "after-loss"
+        "after-loss",
+        "h2h-they-win"
       ],
       "moment": "common"
     },
@@ -2238,7 +2266,7 @@
       "seeAlso": [
         "counter-attack"
       ],
-      "overheard": "They'll hurt you on the break, this lot. Watch.",
+      "overheard": "Give it away up there and anyone will hurt you on the break. Anyone.",
       "overheardTerm": "on the break",
       "speaker": "him",
       "gist": "Attacking at speed before they can get back",
@@ -2248,14 +2276,15 @@
       ],
       "when": [
         "any",
-        "europe"
+        "europe",
+        "opp-counter"
       ],
       "moment": "common",
       "playerVariants": [
         {
           "slot": "theirs.midfielder",
-          "overheard": "They'll hurt you on the break, this lot. Where does {theirs.midfielder} fit in?",
-          "sayIt": "\"They're good on the break. Is {theirs.midfielder} part of that?\"",
+          "overheard": "Give it away and they're off on the break. Where does {theirs.midfielder} fit?",
+          "sayIt": "\"Are they good on the break? Is {theirs.midfielder} part of that?\"",
           "overheardTerm": "on the break"
         }
       ]
@@ -2282,13 +2311,14 @@
       ],
       "when": [
         "any",
-        "relegation"
+        "relegation",
+        "underdog"
       ],
       "moment": "common",
       "playerVariants": [
         {
           "slot": "ours.keeper",
-          "overheard": "Just hoof it. I'd not trust anyone here, {ours.keeper} included.",
+          "overheard": "Just hoof it. There's nothing on for {ours.keeper} back there anyway.",
           "sayIt": "\"Do they just hoof it every time? Even {ours.keeper}?\"",
           "overheardTerm": "hoof it"
         }
@@ -2315,7 +2345,8 @@
       ],
       "when": [
         "any",
-        "after-draw"
+        "after-draw",
+        "opp-long-range"
       ],
       "moment": "common"
     },
@@ -2341,7 +2372,9 @@
       "when": [
         "any",
         "relegation",
-        "after-draw"
+        "after-draw",
+        "opp-set-piece",
+        "opp-close-range"
       ],
       "moment": "common",
       "playerVariants": [
@@ -2359,7 +2392,7 @@
       "term": "Second ball",
       "meaning": "After a header or a clearance, the loose ball that drops. Winning the second ball means reacting quickest to it.",
       "heard": "\"They won the second ball\" as praise for hard work.",
-      "sayIt": "\"They keep winning the second ball. That's why they're on top.\"",
+      "sayIt": "\"They keep winning the second ball. Is that why they're on top?\"",
       "level": 7,
       "overheard": "It's all about the second ball, this.",
       "overheardTerm": "second ball",
@@ -2372,7 +2405,9 @@
       "when": [
         "any",
         "derby",
-        "cup"
+        "cup",
+        "opp-set-piece",
+        "opp-aerial"
       ],
       "moment": "common"
     },
@@ -2395,7 +2430,8 @@
       "when": [
         "any",
         "after-loss",
-        "after-draw"
+        "after-draw",
+        "opp-close-range"
       ],
       "moment": "common",
       "playerVariants": [
@@ -2429,7 +2465,9 @@
       "when": [
         "good-run",
         "after-win",
-        "after-big-win"
+        "after-big-win",
+        "opp-close-range",
+        "opp-good-form"
       ],
       "moment": "common",
       "playerVariants": [
@@ -2464,7 +2502,8 @@
       "when": [
         "any",
         "after-win",
-        "after-big-win"
+        "after-big-win",
+        "opp-long-range"
       ],
       "moment": "rare"
     },
@@ -2490,7 +2529,8 @@
       "when": [
         "any",
         "after-win",
-        "after-big-win"
+        "after-big-win",
+        "opp-long-range"
       ],
       "moment": "rare"
     },
@@ -2515,7 +2555,8 @@
       ],
       "when": [
         "after-win",
-        "after-big-win"
+        "after-big-win",
+        "opp-long-range"
       ],
       "moment": "rare"
     },
@@ -2575,7 +2616,8 @@
       "when": [
         "any",
         "after-loss",
-        "after-draw"
+        "after-draw",
+        "opp-long-range"
       ],
       "moment": "common"
     },
@@ -2601,7 +2643,8 @@
       "when": [
         "any",
         "after-loss",
-        "after-draw"
+        "after-draw",
+        "h2h-they-win"
       ],
       "moment": "common"
     },
@@ -2677,7 +2720,8 @@
         "any",
         "after-loss",
         "after-draw",
-        "after-heavy-loss"
+        "after-heavy-loss",
+        "opp-counter"
       ],
       "moment": "common"
     },
@@ -2703,7 +2747,9 @@
       "when": [
         "after-win",
         "after-loss",
-        "after-draw"
+        "after-draw",
+        "opp-counter",
+        "h2h-they-win"
       ],
       "moment": "common"
     },
@@ -2718,7 +2764,7 @@
       "seeAlso": [
         "against-the-run-of-play"
       ],
-      "overheard": "Smash and grab, that. Typical of this lot.",
+      "overheard": "Smash and grab, that. They'll be laughing all the way home.",
       "overheardTerm": "Smash and grab",
       "speaker": "him",
       "gist": "A win in a match you were outplayed in",
@@ -2729,7 +2775,8 @@
       "when": [
         "derby",
         "after-win",
-        "after-loss"
+        "after-loss",
+        "underdog"
       ],
       "moment": "rare"
     },
@@ -2755,7 +2802,8 @@
       "when": [
         "any",
         "after-loss",
-        "after-heavy-loss"
+        "after-heavy-loss",
+        "h2h-they-win"
       ],
       "moment": "rare"
     },
@@ -2778,7 +2826,8 @@
       "when": [
         "any",
         "after-loss",
-        "after-heavy-loss"
+        "after-heavy-loss",
+        "opp-counter"
       ],
       "moment": "common"
     },
@@ -2899,7 +2948,8 @@
       "when": [
         "bad-run",
         "after-loss",
-        "after-heavy-loss"
+        "after-heavy-loss",
+        "opp-bad-form"
       ],
       "moment": "common"
     },
@@ -2926,7 +2976,8 @@
         "derby",
         "europe",
         "after-win",
-        "after-clean-sheet"
+        "after-clean-sheet",
+        "underdog"
       ],
       "moment": "common",
       "playerVariants": [
@@ -3009,7 +3060,8 @@
       "when": [
         "title",
         "relegation",
-        "run-in"
+        "run-in",
+        "h2h-we-win"
       ],
       "moment": "rare"
     },
@@ -3215,7 +3267,8 @@
       "when": [
         "bad-run",
         "new-manager",
-        "after-heavy-loss"
+        "after-heavy-loss",
+        "opp-bad-form"
       ],
       "moment": "anytime"
     },
@@ -3242,7 +3295,8 @@
       "when": [
         "bad-run",
         "new-manager",
-        "after-heavy-loss"
+        "after-heavy-loss",
+        "opp-bad-form"
       ],
       "moment": "anytime"
     },
@@ -3267,7 +3321,8 @@
       ],
       "when": [
         "good-run",
-        "new-manager"
+        "new-manager",
+        "opp-good-form"
       ],
       "moment": "rare"
     },
@@ -3294,7 +3349,8 @@
         "any",
         "bad-run",
         "new-manager",
-        "after-heavy-loss"
+        "after-heavy-loss",
+        "opp-bad-form"
       ],
       "moment": "anytime",
       "playerVariants": [
@@ -3362,7 +3418,8 @@
         "bad-run",
         "new-manager",
         "after-loss",
-        "after-heavy-loss"
+        "after-heavy-loss",
+        "opp-bad-form"
       ],
       "moment": "common"
     },
@@ -3389,14 +3446,15 @@
         "title",
         "bad-run",
         "run-in",
-        "after-loss"
+        "after-loss",
+        "h2h-they-win"
       ],
       "moment": "anytime",
       "playerVariants": [
         {
           "slot": "theirs.keeper",
-          "overheard": "They'll bottle it. They always do, with {theirs.keeper} in goal.",
-          "sayIt": "\"They always bottle it, you said. Is {theirs.keeper} the problem?\"",
+          "overheard": "One of us is going to bottle it here. Might be us, might be {theirs.keeper}.",
+          "sayIt": "\"Who bottles it first, do you reckon? Us or {theirs.keeper}?\"",
           "overheardTerm": "bottle it"
         }
       ]
@@ -3556,7 +3614,8 @@
       ],
       "when": [
         "any",
-        "derby"
+        "derby",
+        "h2h-we-win"
       ],
       "moment": "common"
     },
@@ -3582,7 +3641,8 @@
       "when": [
         "any",
         "derby",
-        "cup"
+        "cup",
+        "h2h-we-win"
       ],
       "moment": "common"
     },
@@ -3625,7 +3685,8 @@
       ],
       "when": [
         "derby",
-        "cup"
+        "cup",
+        "h2h-we-win"
       ],
       "moment": "anytime"
     },
@@ -3671,7 +3732,8 @@
       "when": [
         "any",
         "derby",
-        "after-win"
+        "after-win",
+        "h2h-we-win"
       ],
       "moment": "anytime",
       "playerVariants": [
@@ -3706,7 +3768,8 @@
         "any",
         "derby",
         "after-win",
-        "after-loss"
+        "after-loss",
+        "h2h-we-win"
       ],
       "moment": "anytime"
     },
@@ -3733,7 +3796,8 @@
       "when": [
         "any",
         "after-win",
-        "after-big-win"
+        "after-big-win",
+        "opp-long-range"
       ],
       "moment": "rare"
     },
@@ -3802,7 +3866,8 @@
         "bad-run",
         "after-loss",
         "after-draw",
-        "after-heavy-loss"
+        "after-heavy-loss",
+        "opp-bad-form"
       ],
       "moment": "common"
     },
@@ -3812,7 +3877,7 @@
       "term": "Fergie time",
       "meaning": "Generous added time that seems to appear whenever a big club needs a goal. Named for Alex Ferguson's Manchester United, who scored a lot of late winners.",
       "heard": "Sarcastically, by fans of every other club.",
-      "sayIt": "\"Fergie time. Of course they've added six minutes.\"",
+      "sayIt": "\"Fergie time, is it? How long has he added?\"",
       "level": 12,
       "seeAlso": [
         "added-time"
@@ -3828,7 +3893,8 @@
       "when": [
         "any",
         "title",
-        "after-loss"
+        "after-loss",
+        "h2h-they-win"
       ],
       "moment": "common"
     },
@@ -3854,7 +3920,9 @@
         "A late winner that dumps a team out of a cup"
       ],
       "when": [
-        "cup"
+        "cup",
+        "favourites",
+        "underdog"
       ],
       "moment": "rare"
     },
@@ -3906,7 +3974,8 @@
         "The extra money a cup run brings a club"
       ],
       "when": [
-        "cup"
+        "cup",
+        "underdog"
       ],
       "moment": "rare"
     },
@@ -3916,7 +3985,7 @@
       "term": "Hard man",
       "meaning": "A player famous for tough, physical, slightly frightening football. Tackles first, apologises never.",
       "heard": "\"Proper hard man\" about a centre-back or a midfielder who scares people.",
-      "sayIt": "\"He's a proper hard man. You wouldn't want to cross him.\"",
+      "sayIt": "\"Is he a proper hard man? I'd not want to cross him.\"",
       "level": 12,
       "seeAlso": [
         "centre-back"
@@ -3941,7 +4010,7 @@
       "term": "Class act",
       "meaning": "A player or manager admired for how they behave as much as how they play. Good on the pitch, better off it.",
       "heard": "About a player who does charity work or handles a loss with grace.",
-      "sayIt": "\"He's a class act, that one. On and off the pitch.\"",
+      "sayIt": "\"Is he a class act, then? On and off the pitch?\"",
       "level": 12,
       "overheard": "What a player he was. Class act, every time I saw him.",
       "overheardTerm": "Class act",
@@ -3971,7 +4040,7 @@
       "term": "Top, top player",
       "meaning": "Pundit-speak for very good. Two tops is better than one, and nobody knows why.",
       "heard": "Match of the Day, any week.",
-      "sayIt": "\"Top, top player. Genuinely.\"",
+      "sayIt": "\"Top, top player, is he? What makes him that good?\"",
       "level": 12,
       "seeAlso": [
         "top-drawer"
@@ -3988,7 +4057,8 @@
         "good-run",
         "window",
         "after-win",
-        "after-big-win"
+        "after-big-win",
+        "opp-good-form"
       ],
       "moment": "anytime",
       "playerVariants": [
@@ -4022,7 +4092,8 @@
       "when": [
         "any",
         "derby",
-        "good-run"
+        "good-run",
+        "opp-good-form"
       ],
       "moment": "anytime"
     },
@@ -4048,7 +4119,8 @@
       "when": [
         "any",
         "title",
-        "good-run"
+        "good-run",
+        "opp-good-form"
       ],
       "moment": "anytime"
     },
@@ -4092,7 +4164,8 @@
       ],
       "when": [
         "title",
-        "good-run"
+        "good-run",
+        "opp-good-form"
       ],
       "moment": "anytime"
     },

@@ -606,8 +606,14 @@ struct LingoView: View {
     /// Everything Lingo takes, in one place (`MyTurnView` keeps only
     /// `-gdLingoQuery` and `-gdLingoExpand`, which are plain store writes):
     ///
-    ///   `-gdLingoContext derby|cup|after-win|after-loss|postponed|none`
+    ///   `-gdLingoContext derby|cup|after-win|after-loss|postponed|matchup|none`
     ///       pins the weekend, so the hero is the same on every run.
+    ///       `matchup` is the fixture carrying a `cards.matchup` card that
+    ///       passes the gate (the calendar row's `fixture_id` is the card's,
+    ///       and the club on it is the club the context settles on), so the
+    ///       round is dealt with the `opp-*`, `h2h-*` and `underdog` tags
+    ///       live. `postponed` carries a card for the game that was called
+    ///       off, which must tag nothing.
     ///   `-gdLingoOpenCategory rules|tactics|match_situations|culture`
     ///       opens one fold, and clears a *finished* round from an earlier
     ///       launch so the list is what shows. A paused round is left alone.

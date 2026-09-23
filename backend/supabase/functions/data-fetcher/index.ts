@@ -23,6 +23,10 @@ import {
   PLAYER_STATS_SOURCE,
   type PlayerStatsPage,
 } from "../_shared/player-stats.ts";
+import {
+  nextFixtureIdForPredictions,
+  PREDICTIONS_SOURCE,
+} from "../_shared/matchup-card.ts";
 
 // RSS feed sources
 const RSS_FEEDS = [
@@ -165,6 +169,7 @@ async function fetchAPIFootball(
   scope: FetchScope,
   standings: StandingsCache,
   counters: RunCounters,
+  supabase: ReturnType<typeof getSupabaseClient>,
 ): Promise<Array<{ source: string; data: unknown }>> {
   const results: Array<{ source: string; data: unknown }> = [];
   const headers = {
@@ -293,7 +298,64 @@ async function fetchAPIFootball(
     if (data !== null) results.push({ source: `api_football_${endpoint.name}`, data });
   }
 
+  // ── /predictions, once per fixture ──────────────────────────────────────
+  // One call carries everything the matchup card needs: both sides' form and
+  // season record (clean sheets, failed to score, biggest win and loss,
+  // penalties, the formations they have lined up in), the previous meetings
+  // between the two clubs, and the feed's own verdict on who is favourite.
+  //
+  // It is keyed by FIXTURE, not by team, so it rides on the fixtures_next
+  // payload this same run just bought, and it is skipped the moment we already
+  // hold a row for that fixture. That is what keeps it at roughly one call per
+  // club per matchweek rather than one every two hours: the fixture id only
+  // changes when a game has been played.
+  //
+  // Clubs only. A WC country's page is built by a different path that does not
+  // read this, so buying it for one would be quota spent on nothing.
+  const fixturesNext = results.find((r) => r.source === "api_football_fixtures_next")?.data;
+  if (fixturesNext && team.entity_type !== "country") {
+    const fixtureId = nextFixtureIdForPredictions(fixturesNext, new Date());
+    if (fixtureId !== null && !(await hasPredictions(supabase, team.id, fixtureId))) {
+      const data = await get(`/predictions?fixture=${fixtureId}`, "predictions");
+      // The response does not name the fixture it was bought for, so wrap it:
+      // the skip query above and the team page both key off this id.
+      if (data !== null) {
+        results.push({
+          source: PREDICTIONS_SOURCE,
+          data: { fixture_id: fixtureId, ...(data as Record<string, unknown>) },
+        });
+      }
+    }
+  }
+
   return results;
+}
+
+/**
+ * Do we already hold a predictions payload for this fixture?
+ *
+ * A query failure answers "yes". A false negative costs one API call every two
+ * hours per club for as long as the query is broken; erring the other way is
+ * the cheap mistake, exactly as the player-stats gate does.
+ */
+async function hasPredictions(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  teamId: string,
+  fixtureId: number,
+): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("raw_fetch_logs")
+    .select("id")
+    .eq("team_id", teamId)
+    .eq("source", PREDICTIONS_SOURCE)
+    .eq("data->>fixture_id", String(fixtureId))
+    .limit(1);
+
+  if (error) {
+    console.warn(`predictions gate query failed for ${teamId}:`, error.message);
+    return true;
+  }
+  return (data ?? []).length > 0;
 }
 
 /**
@@ -529,7 +591,7 @@ serve(async (req) => {
       // Fetch RSS and API-Football in parallel
       const [rssResults, apiResults, statsResults] = await Promise.all([
         wants(scope, "rss") ? fetchRSSFeeds(team) : Promise.resolve([]),
-        fetchAPIFootball(team, apiFootballKey, scope, standingsCache, counters),
+        fetchAPIFootball(team, apiFootballKey, scope, standingsCache, counters, supabase),
         wantsPlayerStats
           ? fetchPlayerStats(team, apiFootballKey, seasonForLeague(team.league_id!), counters)
           : Promise.resolve([]),
