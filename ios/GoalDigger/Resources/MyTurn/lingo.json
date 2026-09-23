@@ -4263,7 +4263,7 @@
     },
     {
       "id": "first-half-goal",
-      "line": "In before the break. That changes the whole afternoon.",
+      "line": "In before the break. That changes the afternoon.",
       "trigger": {
         "kind": "goal",
         "side": "any",
@@ -4341,7 +4341,7 @@
     },
     {
       "id": "derby-they-score",
-      "line": "Against this lot as well. The group chat will be unbearable.",
+      "line": "Against this lot. The group chat will be unbearable.",
       "trigger": {
         "kind": "goal",
         "side": "them"
@@ -4366,7 +4366,7 @@
     },
     {
       "id": "europe-we-score",
-      "line": "A goal in Europe. This is why he stays up for these.",
+      "line": "A goal in Europe. This is why he stays up.",
       "trigger": {
         "kind": "goal",
         "side": "us"
@@ -4391,7 +4391,7 @@
     },
     {
       "id": "opp-clean-sheets-we-score",
-      "line": "They've not been letting many in. We've cracked them.",
+      "line": "They don't concede many. We've cracked them.",
       "trigger": {
         "kind": "goal",
         "side": "us"
@@ -4416,7 +4416,7 @@
     },
     {
       "id": "bad-run-they-score",
-      "line": "Same every week at the minute. We go again, I suppose.",
+      "line": "Same every week at the minute. We go again.",
       "trigger": {
         "kind": "goal",
         "side": "them"
@@ -4458,7 +4458,7 @@
     },
     {
       "id": "we-score-second-half",
-      "line": "There we go. Whatever he said at half-time has worked.",
+      "line": "Whatever he said at half-time has worked.",
       "trigger": {
         "kind": "goal",
         "side": "us",
@@ -4473,7 +4473,7 @@
     },
     {
       "id": "they-score-first-half",
-      "line": "Conceding before the break. Thanks very much for that.",
+      "line": "Conceding before the break. Thanks for that.",
       "trigger": {
         "kind": "goal",
         "side": "them",
@@ -4502,7 +4502,7 @@
     },
     {
       "id": "our-forward-scores",
-      "line": "That's why he's up front. Man of the match already.",
+      "line": "That's why he's up front. Man of the match.",
       "trigger": {
         "kind": "goal",
         "side": "us",
@@ -4531,7 +4531,7 @@
     },
     {
       "id": "our-midfielder-scores",
-      "line": "From midfield as well. He'll be dining out on that.",
+      "line": "From midfield as well. He'll dine out on that.",
       "trigger": {
         "kind": "goal",
         "side": "us",
@@ -4559,7 +4559,7 @@
     },
     {
       "id": "midfielder-scores-any",
-      "line": "A midfielder off the mark. He'll not get many like that.",
+      "line": "A midfielder off the mark. He'll not get many.",
       "trigger": {
         "kind": "goal",
         "side": "any",
@@ -4587,7 +4587,7 @@
     },
     {
       "id": "their-defender-scores",
-      "line": "Their defender's scored. We were warned about that.",
+      "line": "Their defender's scored. We were warned.",
       "trigger": {
         "kind": "goal",
         "side": "them",
@@ -4601,7 +4601,7 @@
     },
     {
       "id": "defender-scores-any",
-      "line": "A defender on the scoresheet. Somebody's week is made.",
+      "line": "A defender's scored. Nobody saw that coming.",
       "trigger": {
         "kind": "goal",
         "side": "any",
@@ -4643,7 +4643,7 @@
     },
     {
       "id": "halftime-behind",
-      "line": "Behind at the break. The gaffer won't be happy in there.",
+      "line": "Behind at the break. The gaffer won't be happy.",
       "trigger": {
         "kind": "halftime",
         "state": "behind"
@@ -4657,7 +4657,7 @@
     },
     {
       "id": "halftime-clean",
-      "line": "Nothing in at the break. That's half a clean sheet.",
+      "line": "Nothing in at the break. Half a clean sheet.",
       "trigger": {
         "kind": "halftime",
         "conceded": 0
@@ -4672,7 +4672,7 @@
     },
     {
       "id": "halftime-ahead-clean",
-      "line": "Ahead and nothing in. Backs to the wall for forty-five now.",
+      "line": "Ahead and nothing in. Backs to the wall now.",
       "trigger": {
         "kind": "halftime",
         "state": "ahead",
@@ -4757,7 +4757,7 @@
     },
     {
       "id": "title-fulltime-win",
-      "line": "Three points in the run-in. That's a title race, that.",
+      "line": "Three points in the run-in. That's a title race.",
       "trigger": {
         "kind": "fulltime",
         "state": "win"
@@ -5036,7 +5036,7 @@
     },
     {
       "id": "comeback-win",
-      "line": "Behind at half-time and we've won it. Game of two halves.",
+      "line": "Behind at the break, and we've won. Game of two halves.",
       "trigger": {
         "kind": "fulltime",
         "comeback": true
@@ -5050,7 +5050,7 @@
     },
     {
       "id": "win-to-nil",
-      "line": "Won it and kept a clean sheet. That's a proper afternoon.",
+      "line": "Won it, clean sheet. That's a proper afternoon.",
       "trigger": {
         "kind": "fulltime",
         "state": "win",
