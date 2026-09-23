@@ -245,6 +245,36 @@ class APIClient {
         try validateResponse(response)
     }
 
+    /// Called it: the slip she filled in before kick-off.
+    ///
+    /// Same shape and same reason as `registerToken` — a SECURITY DEFINER RPC
+    /// (`save_match_calls`), never a table upsert, because anon has no access
+    /// to `device_tokens` (SEC-1/2, migration 071). The picks land on a column
+    /// of the row that already exists for her device, so Delete My Data keeps
+    /// working untouched.
+    ///
+    /// **Each pick carries its own text.** The content bundle ships in the
+    /// binary and the server has no copy of it, so the push line has to be
+    /// reconstructable from the stored row alone.
+    func saveMatchCalls(token: String, fixtureId: Int, picks: [LingoCall]) async throws {
+        let url = try requireBaseURL().appendingPathComponent("rpc/save_match_calls")
+        struct Body: Encodable {
+            struct Pick: Encodable {
+                let id: String
+                let line: String
+                let trigger: LingoCallTrigger?
+            }
+            let p_apns_token: String
+            let p_fixture_id: Int
+            let p_picks: [Pick]
+        }
+        let body = Body(p_apns_token: token, p_fixture_id: fixtureId,
+                        p_picks: picks.map { .init(id: $0.id, line: $0.line, trigger: $0.trigger) })
+        let request = makeRequest(url: url, method: "POST", body: try JSONEncoder().encode(body))
+        let (_, response) = try await URLSession.shared.data(for: request)
+        try validateResponse(response)
+    }
+
     /// Register a Live Activity push token. `kind` is "push_to_start" (per
     /// install — backend starts the activity at kickoff; fixtureId nil) or
     /// "update" (per running activity — backend updates/ends it; fixtureId set).

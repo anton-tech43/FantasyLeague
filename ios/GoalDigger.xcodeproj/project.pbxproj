@@ -114,6 +114,7 @@
 		DB5039EBD938A4E4B32D5BFC /* Competition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C6A674DCE8CC6E44C5136A /* Competition.swift */; };
 		DF1EDE6C6A0AA125869C7F8D /* InsiderCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C25D6C48090CD68B903A14 /* InsiderCard.swift */; };
 		DFF6288FF22ACD8929487E28 /* LingoOverheardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F3A0B91CD9D833177EB1A31 /* LingoOverheardView.swift */; };
+		CA11ED21CA11ED21CA11ED21 /* LingoCallsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA11ED20CA11ED20CA11ED20 /* LingoCallsView.swift */; };
 		E1306FD7172C8AD374F812D2 /* MyTurnStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B8C8BE4CFA3444C2C316A0 /* MyTurnStore.swift */; };
 		F9D3BF1239833859BA1EFD4D /* SayThisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ADF83F8ECC74099BBB0BB27 /* SayThisView.swift */; };
 /* End PBXBuildFile section */
@@ -166,6 +167,7 @@
 		5DCB2A4C5C03D80779E498AA /* HypeOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HypeOverlay.swift; sourceTree = "<group>"; };
 		61B2720C074D85BD2E44091E /* MyTurn */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; path = MyTurn; sourceTree = "<group>"; };
 		6F3A0B91CD9D833177EB1A31 /* LingoOverheardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LingoOverheardView.swift; sourceTree = "<group>"; };
+		CA11ED20CA11ED20CA11ED20 /* LingoCallsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LingoCallsView.swift; sourceTree = "<group>"; };
 		7053F7511B38A308FC409BEB /* MyTurnContent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyTurnContent.swift; sourceTree = "<group>"; };
 		7239C9DAC195717215AC20F2 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		842AE9AEAF418CB78FA4589A /* glossary.json */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json; path = glossary.json; sourceTree = "<group>"; };
@@ -290,6 +292,7 @@
 				ED6D8160AFC958A96956341D /* SayThisPractiseView.swift */,
 				5DCB2A4C5C03D80779E498AA /* HypeOverlay.swift */,
 				6F3A0B91CD9D833177EB1A31 /* LingoOverheardView.swift */,
+				CA11ED20CA11ED20CA11ED20 /* LingoCallsView.swift */,
 			);
 			name = MyTurn;
 			path = MyTurn;
@@ -799,6 +802,7 @@
 				8B0B08958242D8A2904E2895 /* LingoDeck.swift in Sources */,
 				CA11ED01CA11ED01CA11ED01 /* LingoCalls.swift in Sources */,
 				DFF6288FF22ACD8929487E28 /* LingoOverheardView.swift in Sources */,
+				CA11ED21CA11ED21CA11ED21 /* LingoCallsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

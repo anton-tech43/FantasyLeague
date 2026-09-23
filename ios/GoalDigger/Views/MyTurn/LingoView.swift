@@ -235,6 +235,9 @@ struct LingoView: View {
             .animation(.easeInOut(duration: 0.2), value: store.drillSession?.finished)
             // One build per thing the deck actually depends on.
             .task(id: heroKey) { weekend = buildWeekend() }
+            // A slip that never reached the device row is a slip nothing can
+            // tell her about, so every open of the app has another go.
+            .task { await uploadSlip() }
             .onChange(of: store.lingoExpandedId) { _, new in jump(to: new, proxy: proxy) }
             #if DEBUG
             // One hop after appear: the launch arguments deal a round and answer
@@ -266,8 +269,56 @@ struct LingoView: View {
     private var landing: some View {
         settleRow
         hero
+        callsCard
         searchField
         wordList
+    }
+
+    /// Called it: three lines she might get to say, under the one thing to
+    /// press. Draws nothing at all when this fixture has no slip to offer and
+    /// she has none saved, which is every fixture until `lingo.json` carries
+    /// `calls`.
+    /// The published slip lines, or the harness's three while `lingo.json` has
+    /// no `calls` key to publish.
+    private var calls: [LingoCall] {
+        #if DEBUG
+        if LingoCalls.debugRequested { return LingoCalls.debugCalls }
+        #endif
+        return content.calls ?? []
+    }
+
+    private var callsCard: some View {
+        LingoCallsView(calls: calls, store: store, context: context) { _ in
+            // Her pick is already in the store. The upload is best effort, and
+            // retried on the next open of the tab if it does not land.
+            Task { await uploadSlip() }
+        }
+    }
+
+    /// The slip on the device row, where the goal push can find it.
+    ///
+    /// Never blocks and never throws: a failed upload leaves the local pick
+    /// exactly where it is and the `.task` below tries again next time. Without
+    /// a push token there is nothing to attach it to and nothing to deliver it,
+    /// so it is not an error either.
+    private func uploadSlip() async {
+        #if DEBUG
+        // A slip the screenshot harness planted is not a pick, and the fixture
+        // id under it may not be one either.
+        if LingoCalls.debugRequested { return }
+        #endif
+        guard let slip = store.matchCalls, slip.uploadedAt == nil, slip.fixtureId > 0,
+              let token = UserDefaults.standard.string(forKey: "apnsToken"), !token.isEmpty,
+              APIClient.shared.isConfigured else { return }
+        let byId = Dictionary(calls.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
+        let picks = slip.pickedIds.compactMap { byId[$0] }
+        guard !picks.isEmpty else { return }
+        do {
+            try await APIClient.shared.saveMatchCalls(token: token, fixtureId: slip.fixtureId, picks: picks)
+            store.noteMatchCallsUploaded()
+        } catch {
+            // Deliberately quiet. She has her slip; the next open tries again.
+        }
     }
 
     /// The other half of the commitment loop: the game has been played, so ask
@@ -630,6 +681,17 @@ struct LingoView: View {
     ///   `-gdLingoPending`     plants a committed line for last week's
     ///                         fixture, so the landing shows the settle row
     ///                         without waiting a week for a real one.
+    ///   `-gdLingoCalls`      hangs three fixture lines on the Called it slip.
+    ///                         `lingo.json` carries no `calls` key yet, so
+    ///                         there is nothing published to photograph; the
+    ///                         bands, the tags, the banker rule and the
+    ///                         fixture gate all still apply to these. Pair it
+    ///                         with `-gdLingoContext matchup`, which is a
+    ///                         Before context the calendar has an id for.
+    ///   `-gdLingoCallsPick`   fills that slip in, for the two states a tap
+    ///                         gets to: waiting for the match before it, and
+    ///                         the reveal after it (pair it with
+    ///                         `-gdLingoContext after-win`). Never uploaded.
     ///   `-gdLingoPlayerVariant`
     ///                         names a real player on two of the dealt cards.
     ///                         No published term carries `playerVariants` yet,
@@ -657,6 +719,9 @@ struct LingoView: View {
         // `sameClub` mislabels every derby weekend silently.
         lingoDeckSelfCheck(bundled: content)
         myTurnSaidLineSelfCheck()
+        // The Swift half of the Called it trigger pair, against the same
+        // vectors the Deno resolver's test reads.
+        LingoCalls.selfCheck()
 
         let args = ProcessInfo.processInfo.arguments
         func value(_ flag: String) -> String? {
@@ -699,6 +764,23 @@ struct LingoView: View {
             store.commitLine(offer)
         }
         if args.contains("-gdLingoPending") { debugPending(current) }
+        if args.contains(LingoCalls.debugPickArgument) { debugPickCalls(current) }
+    }
+
+    /// A filled-in slip, for a shot of the two states a tap gets to and simctl
+    /// cannot. Before a game it takes the real offer; after one there is
+    /// nothing to offer, so it plants the same lines against the game that has
+    /// just been played, which is what the reveal draws.
+    private func debugPickCalls(_ context: MatchContext) {
+        let offered = LingoCalls.offer(calls: calls, context: context)
+        let ids = offered.isEmpty ? calls.filter(LingoCalls.usable).map(\.id) : offered.map(\.id)
+        guard !ids.isEmpty else { return }
+        // 900001 is a fixture id no calendar row carries, which is the point: a
+        // harness slip must never be mistaken for one the push could resolve.
+        store.commitMatchCalls(fixtureId: context.fixtureId ?? 900001,
+                               fixtureKey: context.fixtureKey, pickedIds: ids)
+        if store.drillSession?.finished == true { store.endDrill() }
+        showingLanding = true
     }
 
     /// A line committed at last week's fixture, which is what the settle row

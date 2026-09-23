@@ -221,6 +221,42 @@ enum LingoCalls {
 
 #if DEBUG
 extension LingoCalls {
+    // MARK: - Screenshot harness
+
+    /// `-gdLingoCalls`. `lingo.json` carries no `calls` key yet, so there is
+    /// nothing on the device to photograph: this hands the slip three fixture
+    /// lines instead. It changes nothing outside DEBUG and nothing about how a
+    /// published call is offered, resolved or uploaded — the bands, the tags,
+    /// the banker rule and the fixture gate all still apply to these.
+    static let debugArgument = "-gdLingoCalls"
+
+    /// `-gdLingoCallsPick`, which fills the slip in. See `LingoView`.
+    static let debugPickArgument = "-gdLingoCallsPick"
+
+    static var debugRequested: Bool {
+        let args = ProcessInfo.processInfo.arguments
+        return args.contains(debugArgument) || args.contains(debugPickArgument)
+    }
+
+    /// One of each band, with triggers straight out of the contract: a goal for
+    /// us, a clean sheet, and their forward scoring, which is the example the
+    /// contract itself is written around. Nothing here says anything the feed
+    /// cannot confirm.
+    ///
+    /// The clean sheet is deliberately the one a full-time result can resolve
+    /// on its own (`outcomes(after:)`), so the reveal has something to mark.
+    static let debugCalls: [LingoCall] = [
+        LingoCall(id: "debug-we-score", line: "\u{201C}Get in. That's more like it.\u{201D}",
+                  trigger: .init(kind: "goal", side: "us"), band: Band.banker.rawValue,
+                  when: ["any"], termId: nil),
+        LingoCall(id: "debug-clean-sheet", line: "\u{201C}Nothing let in. That'll do.\u{201D}",
+                  trigger: .init(kind: "fulltime", cleanSheet: true), band: Band.likely.rawValue,
+                  when: ["any"], termId: nil),
+        LingoCall(id: "debug-their-forward", line: "\u{201C}We've given him far too much space there.\u{201D}",
+                  trigger: .init(kind: "goal", side: "them", scorerRole: "Attacker"),
+                  band: Band.longshot.rawValue, when: ["any", "opp-set-piece"], termId: "space"),
+    ]
+
     // MARK: - The shared vectors
 
     /// `tools/myturn/call_vectors.json`, referenced by the app target rather

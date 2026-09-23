@@ -222,6 +222,11 @@ final class MyTurnStore {
         var fixtureKey: String = ""
         var pickedIds: [String] = []
         var pickedAt: Date = .distantPast
+        /// When the slip reached the device row. Nil is "not yet", and the next
+        /// open of the tab tries again: the upload is what lets the push tell
+        /// her, and a slip that only ever reached UserDefaults is a feature
+        /// that silently does nothing on a flaky train.
+        var uploadedAt: Date? = nil
 
         init(fixtureId: Int, fixtureKey: String, pickedIds: [String], pickedAt: Date) {
             self.fixtureId = fixtureId
@@ -241,6 +246,7 @@ final class MyTurnStore {
             fixtureKey = try c.decodeIfPresent(String.self, forKey: .fixtureKey) ?? ""
             pickedIds = try c.decodeIfPresent([String].self, forKey: .pickedIds) ?? []
             pickedAt = try c.decodeIfPresent(Date.self, forKey: .pickedAt) ?? .distantPast
+            uploadedAt = try c.decodeIfPresent(Date.self, forKey: .uploadedAt)
         }
 
         /// One fixture, seen from before and from after: `b|Tottenham|2026-10-17`
@@ -609,6 +615,12 @@ final class MyTurnStore {
         guard fixtureId > 0, !pickedIds.isEmpty else { return }
         state.matchCalls = MatchCalls(fixtureId: fixtureId, fixtureKey: fixtureKey,
                                       pickedIds: pickedIds, pickedAt: now)
+    }
+
+    /// The slip reached the device row, so nothing needs to retry it.
+    func noteMatchCallsUploaded(at now: Date = Date()) {
+        guard state.matchCalls != nil else { return }
+        state.matchCalls?.uploadedAt = now
     }
 
     // MARK: Hype
