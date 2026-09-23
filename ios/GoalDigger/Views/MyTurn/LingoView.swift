@@ -239,15 +239,25 @@ struct LingoView: View {
         store.drillSession?.deckId == LingoWeekendDeck.deckId && !showingLanding
     }
 
-    /// The Called It offer owns the whole screen — Anton's "hela sidan, endast
-    /// det i fokus" — whenever there is a slip to offer this fixture, she has
-    /// not acted on it, and she has not closed it this viewing. Above the round
-    /// in the switch, so on opening Lingo it is the first thing she meets and a
-    /// paused round waits behind it.
+    /// The Called It offer is its own full screen — Anton's "en egen helskärm"
+    /// — over everything, tabs and bottom bar included, the moment she comes
+    /// into Lingo and there is a slip to offer she has not acted on or closed.
+    /// It is a `fullScreenCover`, so gating on the active module matters: all
+    /// three My Turn views stay mounted, and without it the cover would present
+    /// while she is on Quiz.
     private var showingCalledIt: Bool {
-        store.matchCalls(for: context) == nil
+        store.lastModule == .lingo
+            && store.matchCalls(for: context) == nil
             && !calledItDismissed
             && !LingoCalls.offer(calls: calls, context: context).isEmpty
+    }
+
+    /// Presenting the cover, and clicking it down. The set closes it the one way
+    /// it can be closed — by marking it dismissed for this viewing — so a swipe
+    /// or a system dismiss lands in the same place as the chevron.
+    private var calledItPresented: Binding<Bool> {
+        Binding(get: { showingCalledIt },
+                set: { if !$0 { calledItDismissed = true } })
     }
 
     /// The reveal, whenever there is one to draw: a round on screen, on a card
@@ -277,17 +287,19 @@ struct LingoView: View {
                     .transition(.opacity)
             }
         }
+        // Its own full screen, over the module tabs and the bottom bar, when she
+        // comes into Lingo with a slip waiting. She answers it through, or
+        // clicks it down to the compact row the landing keeps for her.
+        .fullScreenCover(isPresented: calledItPresented) {
+            calledItTakeover
+        }
     }
 
     private var scroller: some View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: Layout.cardSpacing) {
-                    if showingCalledIt {
-                        // The whole screen, nothing else — the round and the
-                        // words are not even below the fold.
-                        calledItTakeover
-                    } else if showingRound {
+                    if showingRound {
                         LingoOverheardView(
                             content: content, sayThis: sayThis, store: store, context: context,
                             named: weekend?.named ?? [:],

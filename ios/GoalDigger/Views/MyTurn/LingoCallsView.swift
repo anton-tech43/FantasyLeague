@@ -49,9 +49,6 @@ struct LingoCallsView: View {
     /// tab switch, and a relaunch starting again at the first line is correct.
     @State private var picked: Set<String> = []
     @State private var index = LingoCallsView.startIndex
-    /// How tall the offer has to be to fill the screen, measured rather than
-    /// guessed — see `viewportProbe`.
-    @State private var viewport: CGFloat = 0
     @Environment(\.dynamicTypeSize) private var typeSize
 
     private var slip: MyTurnStore.MatchCalls? { store.matchCalls(for: context) }
@@ -136,23 +133,23 @@ struct LingoCallsView: View {
         // none at all means this fixture has nothing to offer, and the card
         // stays off the screen rather than apologising for itself.
         if let call = offered[safe: index] {
-            offerScreen(call, of: offered)
-                // A floor, not a height. It fills the viewport at the sizes she
-                // will actually read at, and at the accessibility sizes it
-                // simply grows past it and she scrolls — which is the only way
-                // the Yes and No can be guaranteed to stay on the screen, since
-                // they are the only way forward.
-                .frame(minHeight: viewport, alignment: .top)
-                .background(viewportProbe)
-                .onPreferenceChange(ViewportHeight.self) { measured in
-                    Task { @MainActor in viewport = measured }
+            // The cover gives it the whole screen. It fills that height, and at
+            // the accessibility sizes it grows past it and the column scrolls —
+            // the only way the Yes and No can be guaranteed to stay reachable,
+            // since they are the only way forward.
+            GeometryReader { geo in
+                ScrollView {
+                    offerScreen(call, of: offered)
+                        .frame(minHeight: geo.size.height, alignment: .top)
                 }
-                // A different fixture is a different slip, and this view stays
-                // mounted across one arriving.
-                .onChange(of: context.fixtureKey) { _, _ in
-                    index = 0
-                    picked = []
-                }
+                .scrollBounceBehavior(.basedOnSize)
+            }
+            // A different fixture is a different slip, and this view stays
+            // mounted across one arriving.
+            .onChange(of: context.fixtureKey) { _, _ in
+                index = 0
+                picked = []
+            }
         }
     }
 
@@ -176,15 +173,15 @@ struct LingoCallsView: View {
                     .font(.jakarta(15, weight: .semiBold))
                     .foregroundColor(.textSecondaryOnCard)
                     .accessibilityLabel("Line \(index + 1) of \(offered.count)")
-                // The way out. Not skipping the slip — it stays exactly where it
-                // is — just stepping off it to the rest of Lingo.
+                // Click it down. Not skipping the slip — it stays exactly where
+                // it is — just stepping off it to the rest of Lingo.
                 Button {
-                    withAnimation(.easeInOut(duration: 0.2)) { onClose() }
+                    onClose()
                 } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 15, weight: .semibold))
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.textSecondaryOnCard)
-                        .frame(width: 30, height: 30)
+                        .frame(width: 32, height: 32)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -231,11 +228,12 @@ struct LingoCallsView: View {
             answerButtons(call, of: offered)
         }
         .padding(.horizontal, 22)
-        .padding(.vertical, 24)
+        .padding(.top, 20)
+        .padding(.bottom, 24)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.cardBackground)
-        .cornerRadius(Layout.cardCornerRadius)
-        .transition(.opacity)
+        // Edge to edge, its own screen. The blush runs under the status bar and
+        // the home indicator; the content stays inside the safe area.
+        .background(Color.cardBackground.ignoresSafeArea())
     }
 
     /// How far the display type scales, and no further. It starts at 34 and 25
@@ -270,36 +268,6 @@ struct LingoCallsView: View {
             VStack(spacing: 12) { yes; no }
         } else {
             HStack(spacing: 12) { yes; no }
-        }
-    }
-
-    /// How tall the offer has to be to reach the bottom of the screen.
-    ///
-    /// `containerRelativeFrame` is the scroll view's visible region, so this is
-    /// the right number on an SE and on a Pro Max without either being written
-    /// down. Invisible, untappable, and laid out in a background, so it cannot
-    /// change what it is measuring.
-    private var viewportProbe: some View {
-        Color.clear
-            .containerRelativeFrame(.vertical)
-            .overlay(
-                GeometryReader { geo in
-                    Color.clear.preference(key: ViewportHeight.self,
-                                           value: max(0, geo.size.height - Self.columnTopInset))
-                }
-            )
-            .allowsHitTesting(false)
-    }
-
-    /// What the Lingo column pads itself by above its first card. Subtracted so
-    /// the bottom of this screen lands on the bottom of the viewport rather
-    /// than that much below it.
-    private static let columnTopInset: CGFloat = 12
-
-    private struct ViewportHeight: PreferenceKey {
-        static let defaultValue: CGFloat = 0
-        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-            value = max(value, nextValue())
         }
     }
 
