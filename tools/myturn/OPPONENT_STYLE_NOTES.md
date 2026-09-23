@@ -64,28 +64,29 @@ dropped to mid-table on it and **Leeds and Brentford** are now the top two. Do n
 win everything in the air" about anyone right now. If we want an aerial line, Everton's is the
 only one with a season behind it, and it has to be dated.
 
-## Where they shoot from
+## Where they score from
 
-A caveat that has to come first: the published table splits **shots**, not goals. Nobody
-publishes goals by zone in a form we can read, so a line here may say where a side shoots from
-and must not say where they score from.
+Goals by zone, not shots. It sits under the Detailed tab rather than the Shot Zones one, which
+is where I first looked and got the wrong table.
 
-Both seasons agree on these, which is what makes them usable:
+Both seasons agree on three, which is what makes them sayable:
 
-- **Bournemouth and Nottingham Forest** shoot from distance more than anyone, around four in ten
-  attempts from outside the box in both seasons. **Newcastle, Aston Villa and Liverpool** are
-  close behind. "They'll shoot from anywhere, this lot" is fair about any of them.
-- **Arsenal and Brentford** do the opposite and work it into the box. Arsenal also took more
-  attempts from inside the six-yard box than anyone last season and are second this season,
-  which sits neatly with their set-piece record and is the most coherent story in the whole file.
-- **Liverpool** almost never shoot from six yards: the same low figure in both seasons, and the
-  steadiest number in the table.
+- **Aston Villa score from range.** About a quarter of their goals came from outside the box
+  last season, the highest share in the league, and they are at the same share this season.
+  The safest claim in this file. "They'll have a go from anywhere" is fair about Villa.
+- **Brentford score from close in.** The lowest share from outside the box last season by some
+  way, and the same this season. Whatever they do, it ends in the six-yard box.
+- **Manchester City score from inside the box** despite having the most of the ball. Worth
+  knowing because "they dominate possession" and "they shoot from distance" sound like they go
+  together and for City they do not.
 
-Moved enough to be worth nothing yet: **Fulham** have gone from shooting at distance to working
-it into the box, and **Tottenham and Crystal Palace** the other way. Five games. Leave them.
+Changed enough to leave alone: **Manchester United** have gone from almost never scoring from
+distance to doing it often, and **Arsenal**'s goals have moved out of the six-yard box this
+season, which fits their set-piece drought above. Both are five games. Note them, do not write
+them.
 
-**Hull, Ipswich and Coventry** shoot from distance a lot, but they are newly promoted and that is
-usually what being outmatched looks like rather than a style. No baseline, so no claim.
+**Fulham** were second for goals from distance last season and have none this season, off five
+goals in total. Baseline stands.
 
 ## Sides of the pitch
 
