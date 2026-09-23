@@ -1,0 +1,106 @@
+{
+  "_comment": "Shared truth for Called It trigger resolution. Read by _shared/match-calls.test.ts AND by LingoCalls' Swift self-check. Neither side may add a case here without the other going green. `side` is relative to the device's followed club. An own goal's side follows API-Football: the event is credited to the BENEFITING team, which is why vector own-goal-credited-to-beneficiary exists.",
+  "vectors": [
+    { "name": "their-forward-scores",
+      "outcome": { "kind": "goal", "side": "them", "scorerRole": "Attacker", "penalty": false, "ownGoal": false, "minute": 34 },
+      "trigger": { "kind": "goal", "side": "them", "scorerRole": "Attacker" },
+      "matches": true },
+
+    { "name": "our-forward-does-not-satisfy-their-forward",
+      "outcome": { "kind": "goal", "side": "us", "scorerRole": "Attacker", "penalty": false, "ownGoal": false, "minute": 34 },
+      "trigger": { "kind": "goal", "side": "them", "scorerRole": "Attacker" },
+      "matches": false },
+
+    { "name": "wrong-role",
+      "outcome": { "kind": "goal", "side": "them", "scorerRole": "Midfielder", "penalty": false, "ownGoal": false, "minute": 34 },
+      "trigger": { "kind": "goal", "side": "them", "scorerRole": "Attacker" },
+      "matches": false },
+
+    { "name": "any-side-any-role-matches-anything",
+      "outcome": { "kind": "goal", "side": "them", "scorerRole": "Defender", "penalty": false, "ownGoal": false, "minute": 7 },
+      "trigger": { "kind": "goal", "side": "any", "scorerRole": "any" },
+      "matches": true },
+
+    { "name": "unknown-scorer-never-satisfies-a-role-trigger",
+      "_why": "The feed publishes the score a beat before the player. A pick must not land on a goal we cannot attribute.",
+      "outcome": { "kind": "goal", "side": "them", "scorerRole": null, "penalty": false, "ownGoal": false, "minute": 34 },
+      "trigger": { "kind": "goal", "side": "them", "scorerRole": "Attacker" },
+      "matches": false },
+
+    { "name": "unknown-scorer-still-satisfies-a-roleless-trigger",
+      "outcome": { "kind": "goal", "side": "them", "scorerRole": null, "penalty": false, "ownGoal": false, "minute": 34 },
+      "trigger": { "kind": "goal", "side": "them", "scorerRole": "any" },
+      "matches": true },
+
+    { "name": "penalty-given",
+      "outcome": { "kind": "goal", "side": "us", "scorerRole": "Attacker", "penalty": true, "ownGoal": false, "minute": 62 },
+      "trigger": { "kind": "goal", "side": "any", "penalty": true },
+      "matches": true },
+
+    { "name": "penalty-trigger-rejects-open-play",
+      "outcome": { "kind": "goal", "side": "us", "scorerRole": "Attacker", "penalty": false, "ownGoal": false, "minute": 62 },
+      "trigger": { "kind": "goal", "side": "any", "penalty": true },
+      "matches": false },
+
+    { "name": "own-goal-credited-to-beneficiary",
+      "_why": "parseGoalEvents credits the event to the side whose score rose, so side=us is the side that BENEFITED.",
+      "outcome": { "kind": "goal", "side": "us", "scorerRole": null, "penalty": false, "ownGoal": true, "minute": 71 },
+      "trigger": { "kind": "goal", "side": "us", "ownGoal": true },
+      "matches": true },
+
+    { "name": "own-goal-trigger-rejects-a-normal-goal",
+      "outcome": { "kind": "goal", "side": "us", "scorerRole": "Defender", "penalty": false, "ownGoal": false, "minute": 71 },
+      "trigger": { "kind": "goal", "side": "us", "ownGoal": true },
+      "matches": false },
+
+    { "name": "late-goal-inside-window",
+      "outcome": { "kind": "goal", "side": "us", "scorerRole": "Attacker", "penalty": false, "ownGoal": false, "minute": 88 },
+      "trigger": { "kind": "goal", "side": "us", "minuteFrom": 85 },
+      "matches": true },
+
+    { "name": "late-goal-outside-window",
+      "outcome": { "kind": "goal", "side": "us", "scorerRole": "Attacker", "penalty": false, "ownGoal": false, "minute": 84 },
+      "trigger": { "kind": "goal", "side": "us", "minuteFrom": 85 },
+      "matches": false },
+
+    { "name": "unknown-minute-never-satisfies-a-minute-window",
+      "outcome": { "kind": "goal", "side": "us", "scorerRole": "Attacker", "penalty": false, "ownGoal": false, "minute": null },
+      "trigger": { "kind": "goal", "side": "us", "minuteFrom": 85 },
+      "matches": false },
+
+    { "name": "level-at-half-time",
+      "outcome": { "kind": "halftime", "state": "level", "conceded": 1 },
+      "trigger": { "kind": "halftime", "state": "level" },
+      "matches": true },
+
+    { "name": "behind-is-not-level",
+      "outcome": { "kind": "halftime", "state": "behind", "conceded": 2 },
+      "trigger": { "kind": "halftime", "state": "level" },
+      "matches": false },
+
+    { "name": "nothing-conceded-by-half-time",
+      "outcome": { "kind": "halftime", "state": "ahead", "conceded": 0 },
+      "trigger": { "kind": "halftime", "conceded": 0 },
+      "matches": true },
+
+    { "name": "full-time-win",
+      "outcome": { "kind": "fulltime", "state": "win", "cleanSheet": false, "comeback": false },
+      "trigger": { "kind": "fulltime", "state": "win" },
+      "matches": true },
+
+    { "name": "clean-sheet-in-a-draw",
+      "outcome": { "kind": "fulltime", "state": "draw", "cleanSheet": true, "comeback": false },
+      "trigger": { "kind": "fulltime", "cleanSheet": true },
+      "matches": true },
+
+    { "name": "comeback",
+      "outcome": { "kind": "fulltime", "state": "win", "cleanSheet": false, "comeback": true },
+      "trigger": { "kind": "fulltime", "comeback": true },
+      "matches": true },
+
+    { "name": "kind-mismatch-never-matches",
+      "outcome": { "kind": "fulltime", "state": "win", "cleanSheet": false, "comeback": false },
+      "trigger": { "kind": "goal", "side": "us" },
+      "matches": false }
+  ]
+}
