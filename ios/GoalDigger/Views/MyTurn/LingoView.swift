@@ -305,7 +305,7 @@ struct LingoView: View {
         #if DEBUG
         // A slip the screenshot harness planted is not a pick, and the fixture
         // id under it may not be one either.
-        if LingoCalls.debugRequested { return }
+        if LingoCalls.debugRequested || LingoCalls.debugPickRequested { return }
         #endif
         guard let slip = store.matchCalls, slip.uploadedAt == nil, slip.fixtureId > 0,
               let token = UserDefaults.standard.string(forKey: "apnsToken"), !token.isEmpty,
@@ -768,12 +768,24 @@ struct LingoView: View {
     }
 
     /// A filled-in slip, for a shot of the two states a tap gets to and simctl
-    /// cannot. Before a game it takes the real offer; after one there is
-    /// nothing to offer, so it plants the same lines against the game that has
-    /// just been played, which is what the reveal draws.
+    /// cannot: waiting for the match, and the reveal afterwards.
+    ///
+    /// It plants the LONGEST line in each band rather than the offer, because
+    /// the thing worth photographing here is the worst case for the layout —
+    /// the content cap is 50 characters and several lines sit exactly on it.
+    /// Where the context can already mark a line (an After context, where
+    /// `outcomes(after:)` has the full-time result), it takes the longest of
+    /// those instead, so the reveal has a badge to show.
     private func debugPickCalls(_ context: MatchContext) {
-        let offered = LingoCalls.offer(calls: calls, context: context)
-        let ids = offered.isEmpty ? calls.filter(LingoCalls.usable).map(\.id) : offered.map(\.id)
+        let outcomes = LingoCalls.outcomes(after: context)
+        let ids: [String] = LingoCalls.Band.allCases.compactMap { band in
+            let pool = calls.filter { LingoCalls.usable($0) && $0.band == band.rawValue }
+            let markable = pool.filter { call in
+                outcomes.contains { LingoCalls.resolve(trigger: call.trigger, outcome: $0) }
+            }
+            return (markable.isEmpty ? pool : markable)
+                .max { ($0.line.count, $0.id) < ($1.line.count, $1.id) }?.id
+        }
         guard !ids.isEmpty else { return }
         // 900001 is a fixture id no calendar row carries, which is the point: a
         // harness slip must never be mistaken for one the push could resolve.

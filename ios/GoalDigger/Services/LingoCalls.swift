@@ -230,13 +230,17 @@ extension LingoCalls {
     /// the banker rule and the fixture gate all still apply to these.
     static let debugArgument = "-gdLingoCalls"
 
-    /// `-gdLingoCallsPick`, which fills the slip in. See `LingoView`.
+    /// `-gdLingoCallsPick`, which fills the slip in out of whatever content is
+    /// loaded — the published calls unless `-gdLingoCalls` is there too. See
+    /// `LingoView.debugPickCalls`.
     static let debugPickArgument = "-gdLingoCallsPick"
 
-    static var debugRequested: Bool {
-        let args = ProcessInfo.processInfo.arguments
-        return args.contains(debugArgument) || args.contains(debugPickArgument)
-    }
+    /// Only the fixture lines. Kept separate from the pick flag so a slip can
+    /// be filled in from the REAL deck, which is what a screenshot of the
+    /// published content needs.
+    static var debugRequested: Bool { ProcessInfo.processInfo.arguments.contains(debugArgument) }
+
+    static var debugPickRequested: Bool { ProcessInfo.processInfo.arguments.contains(debugPickArgument) }
 
     /// One of each band, with triggers straight out of the contract: a goal for
     /// us, a clean sheet, and their forward scoring, which is the example the
