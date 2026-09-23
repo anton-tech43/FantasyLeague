@@ -235,7 +235,7 @@
           "verified": true,
           "question": "How do the three promoted clubs get out of the Championship?",
           "options": [
-            "All three via play-offs",
+            "All three through the play-offs",
             "Top three automatically",
             "Top two plus a play-off winner"
           ],
@@ -625,7 +625,7 @@
           "verified": true,
           "question": "Peter Schmeichel kept goal for which club in the 1990s?",
           "options": [
-            "Aston Villa",
+            "Nottingham Forest",
             "Liverpool",
             "Manchester United"
           ],
@@ -689,9 +689,9 @@
           "verified": true,
           "question": "Roy Keane, the fierce captain known as Keano, led which club in the 1990s and 2000s?",
           "options": [
-            "Liverpool",
+            "Nottingham Forest",
             "Manchester United",
-            "Leeds"
+            "Leeds United"
           ],
           "answer": 1,
           "explanation": "Manchester United, and Ireland. Terrifying midfielder, now a pundit who is terrifying to other pundits.",
@@ -855,9 +855,9 @@
           "verified": true,
           "question": "The North London derby is between Arsenal and which club?",
           "options": [
-            "Chelsea",
+            "Queens Park Rangers",
             "Tottenham Hotspur",
-            "West Ham"
+            "West Ham United"
           ],
           "answer": 1,
           "explanation": "Tottenham. Four miles apart, and the grudge dates to 1913, when Arsenal moved north into Spurs' patch uninvited.",
@@ -969,7 +969,7 @@
           "options": [
             "Newcastle United",
             "Sunderland",
-            "Fulham"
+            "Sheffield Wednesday"
           ],
           "answer": 0,
           "explanation": "Newcastle, for the black and white stripes. The fans are the Toon Army, and they are loud.",
@@ -1017,7 +1017,7 @@
           "options": [
             "Bournemouth",
             "Southampton",
-            "Brighton & Hove Albion"
+            "Brighton"
           ],
           "answer": 2,
           "explanation": "Brighton. The name started as a chant to wind up Crystal Palace fans, who sing 'Eagles'. Rivalry gave them their identity.",
@@ -1176,7 +1176,7 @@
           "question": "Which club is nicknamed the Eagles?",
           "options": [
             "Crystal Palace",
-            "Charlton",
+            "Charlton Athletic",
             "Brighton"
           ],
           "answer": 0,
@@ -1501,7 +1501,7 @@
           "verified": true,
           "question": "Which club plays at the ground known as the Amex?",
           "options": [
-            "Brighton & Hove Albion",
+            "Brighton",
             "Bournemouth",
             "Brentford"
           ],
@@ -1549,9 +1549,9 @@
           "verified": true,
           "question": "Which club's badge features a tree?",
           "options": [
-            "Leeds",
+            "Sheffield Wednesday",
             "Nottingham Forest",
-            "Norwich"
+            "Norwich City"
           ],
           "answer": 1,
           "explanation": "Nottingham Forest. A tree above wavy lines for the River Trent, designed by a fan in a competition in 1973.",
@@ -2384,8 +2384,8 @@
           "question": "What does Bournemouth's badge show?",
           "options": [
             "A footballer heading a ball",
-            "A pier",
-            "A cherry tree"
+            "A pier and a seagull",
+            "A cherry tree above the sea"
           ],
           "answer": 0,
           "explanation": "A player heading the ball, in profile, on the red and black stripes. It was drawn in the 1970s and has barely changed.",
@@ -2480,7 +2480,7 @@
           "question": "What was Bournemouth called before 1971?",
           "options": [
             "Bournemouth & Boscombe Athletic",
-            "Boscombe Wanderers",
+            "Boscombe & Southbourne Wanderers",
             "Bournemouth Rovers"
           ],
           "answer": 0,
@@ -2955,8 +2955,8 @@
           "verified": true,
           "question": "Brighton's owner, Tony Bloom, made his money how?",
           "options": [
-            "Software",
-            "Property",
+            "Property development",
+            "Nightclubs and casinos",
             "Professional gambling"
           ],
           "answer": 2,
@@ -3005,7 +3005,7 @@
           "options": [
             "Manchester United",
             "Liverpool",
-            "Everton"
+            "Tottenham Hotspur"
           ],
           "answer": 0,
           "explanation": "Manchester United, 4-0 in a replay after a 2-2 draw. Gordon Smith could have won the first game late on. 'And Smith must score,' said the commentator. He didn't.",
@@ -3559,7 +3559,7 @@
           "verified": true,
           "question": "Who did Coventry beat in the 1987 FA Cup final?",
           "options": [
-            "Everton",
+            "Nottingham Forest",
             "Tottenham Hotspur",
             "Liverpool"
           ],
@@ -3885,7 +3885,7 @@
           "verified": true,
           "question": "Who are Crystal Palace's fiercest rivals?",
           "options": [
-            "Brighton & Hove Albion",
+            "Brighton",
             "Millwall",
             "Wimbledon"
           ],
@@ -3934,7 +3934,7 @@
           "question": "What is Crystal Palace named after?",
           "options": [
             "A royal residence",
-            "A jeweller",
+            "A Victorian pleasure garden",
             "A glass exhibition building"
           ],
           "answer": 2,
@@ -3965,7 +3965,7 @@
           "verified": true,
           "question": "Palace lost FA Cup finals in 1990 and 2016 to the same club. Which?",
           "options": [
-            "Arsenal",
+            "Tottenham Hotspur",
             "Manchester United",
             "Liverpool"
           ],
@@ -4553,9 +4553,9 @@
           "verified": true,
           "question": "What colours are Fulham's home kit?",
           "options": [
-            "All white",
+            "Black shirts and white shorts",
             "White shirts and black shorts",
-            "Blue and white"
+            "White shirts and blue shorts"
           ],
           "answer": 1,
           "explanation": "White shirts, black shorts. Plain and old-fashioned, like the ground.",
@@ -4763,7 +4763,7 @@
           "options": [
             "A rooftop swimming pool",
             "A cinema",
-            "A bowling alley"
+            "A four-lane bowling alley"
           ],
           "answer": 0,
           "explanation": "A rooftop swimming pool, alongside restaurants and a members' club, at prices that made ordinary fans wince.",
@@ -5135,9 +5135,9 @@
           "verified": true,
           "question": "What is Hull City's mascot called?",
           "options": [
-            "Stripes",
+            "Humber the Tiger",
             "Roary the Tiger",
-            "Tigger"
+            "Amber the Tiger"
           ],
           "answer": 1,
           "explanation": "Roary the Tiger. Not to be confused with a rugby league mascot of the same name across the city.",
@@ -6083,7 +6083,7 @@
           "options": [
             "Trent Alexander-Arnold",
             "Xherdan Shaqiri",
-            "Andy Robertson"
+            "Alex Oxlade-Chamberlain"
           ],
           "answer": 0,
           "explanation": "Trent Alexander-Arnold, a local lad, while Barcelona's defenders were not looking. Divock Origi tapped it in to complete a 4-0 win from 3-0 down.",
@@ -6295,8 +6295,8 @@
           "verified": true,
           "question": "Who are Manchester City's rivals in the Manchester derby?",
           "options": [
-            "Bolton",
-            "Liverpool",
+            "Bolton Wanderers",
+            "Oldham Athletic",
             "Manchester United"
           ],
           "answer": 2,
@@ -6589,7 +6589,7 @@
           "verified": true,
           "question": "Which group of United academy players from the early 1990s is known as the Class of '92?",
           "options": [
-            "Keane, Ince and Cantona",
+            "Bruce, Keane, Ince, Cantona and Hughes",
             "Beckham, Scholes, Giggs and the Nevilles",
             "Rooney, Ronaldo and Nani"
           ],
@@ -6639,7 +6639,7 @@
           "options": [
             "Benfica",
             "Sporting Lisbon",
-            "Porto"
+            "Vitória Guimarães"
           ],
           "answer": 1,
           "explanation": "Sporting Lisbon, aged eighteen, after tormenting United's defenders in a friendly. The players asked Ferguson to sign him on the plane home. He got the number seven.",
@@ -6767,7 +6767,7 @@
           "options": [
             "Liverpool",
             "Manchester City",
-            "Chelsea"
+            "Newcastle United"
           ],
           "answer": 1,
           "explanation": "Manchester City, 2-1 at Wembley, as heavy underdogs, denying City a second double in a row. The manager was sacked months later anyway.",
@@ -7369,7 +7369,7 @@
           "verified": true,
           "question": "What is Nottingham Forest's mascot called?",
           "options": [
-            "Robin",
+            "Robin the Redbreast",
             "Forest Fred",
             "Sherwood the Bear"
           ],
@@ -7745,7 +7745,7 @@
           "options": [
             "American football",
             "Ice hockey",
-            "Baseball"
+            "College basketball"
           ],
           "answer": 0,
           "explanation": "American football, the NFL. The stadium has a second artificial pitch under the grass one; the grass slides out in sections for the games.",
@@ -7941,7 +7941,7 @@
           "verified": true,
           "question": "What was the name of the Netflix documentary series about Sunderland's decline?",
           "options": [
-            "Wearside Blues",
+            "Red and White Til The End",
             "Sunderland 'Til I Die",
             "Haway the Lads"
           ],

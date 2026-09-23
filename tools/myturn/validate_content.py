@@ -229,11 +229,31 @@ OPTIONS_PER_QUESTION = 3
 DETERMINER = re.compile(r"(an?|the)\b", re.I)
 
 
+def longest_option_solver(questions: list[dict]) -> float:
+    """What a solver scores that reads no football, only lengths, and always
+    picks the longest option — splitting ties, so this is its expected hit rate.
+    Its floor is 1 / OPTIONS_PER_QUESTION; anything above that is football it
+    never had to know."""
+    hit = 0.0
+    for q in questions:
+        opts = q.get("options", [])
+        longest = max(len(o) for o in opts)
+        picks = [i for i, o in enumerate(opts) if len(o) == longest]
+        hit += (q.get("answer") in picks) / len(picks)
+    return hit / len(questions)
+
+
+assert longest_option_solver([{"options": ["aa", "b", "c"], "answer": 0}]) == 1.0
+assert longest_option_solver([{"options": ["aa", "b", "c"], "answer": 1}]) == 0.0
+assert longest_option_solver([{"options": ["aa", "bb", "c"], "answer": 0}]) == 0.5
+
+
 def validate_quiz(d: dict) -> tuple[int, int]:
     packs = d.get("packs", [])
     check_ids("quiz packs", [p.get("id", "") for p in packs])
     total = 0
     qids: list[str] = []
+    shape: list[dict] = []
     for p in packs:
         pid = p.get("id", "?")
         if not p.get("label"):
@@ -293,12 +313,27 @@ def validate_quiz(d: dict) -> tuple[int, int]:
             if re.search(r"\b(this season|currently|right now|current manager|current captain|this year)\b", question + " " + expl, re.I):
                 err(f"quiz/{qid}: asks about the present — static content must be finished history: {question}")
         total += len(qs)
+        shape += [q for q in qs if q.get("options") and isinstance(q.get("answer"), int)]
         # 0.6 of 20, not the 0.5 that was right at four options: a slot now holds
         # a third of the answers by design, and eleven of twenty is inside two
         # standard deviations of that, so half the packs would warn on nothing.
         if qs and max(answers.values()) > len(qs) * 0.6:
             warn(f"quiz/{pid}: the correct answer sits in one slot more than 60% of the time")
     check_ids("quiz questions", qids)
+    # The longest option must be no likelier to be right than either other one,
+    # over the whole set. The floor is 33.3% and the standard error at 496
+    # questions is 2.1 points, so the band is 2.5 SD either side: a set written
+    # without a thought for length trips this about once in eighty builds, and a
+    # set that does trip it is handing six points a game to anyone who notices.
+    # Two-sided, because an answer that is reliably the short one reads as
+    # easily as one that is reliably the long one.
+    if shape:
+        s = longest_option_solver(shape)
+        report = f"a solver that reads nothing and always picks the longest option scores {s:.1%} over {len(shape)} questions, against a {1 / OPTIONS_PER_QUESTION:.1%} guess"
+        if not 0.28 <= s <= 0.39:
+            err(f"quiz: {report} — the length of an option is telling her which one is right")
+        elif not 0.30 <= s <= 0.37:
+            warn(f"quiz: {report}")
     if total < 200:
         err(f"quiz: {total} questions (launch floor 200)")
     return len(packs), total
