@@ -1,7 +1,14 @@
 import Foundation
 
+// Every call site is already behind #if DEBUG (checked 2026-09-23: five of
+// them, in ContentDetailView, FeedView and TeamPageView), but the file itself
+// was not, so 222 lines of fixture JSON compiled into the App Store binary.
+// The header below has said "delete this file when connecting to live
+// Supabase" since the beginning; the offline dev path is worth keeping, so it
+// is fenced instead.
+#if DEBUG
+
 /// Mock data for development without backend. Based on the 5 golden examples from CONTENT_EXAMPLES.md.
-/// Delete this file when connecting to live Supabase backend.
 struct MockData {
 
     static let feed: [ContentItem] = [example1, example2, example3, example4, example5, example6Everyone]
@@ -220,3 +227,5 @@ struct MockData {
         return decoder
     }()
 }
+
+#endif

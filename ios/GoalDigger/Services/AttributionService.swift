@@ -25,12 +25,15 @@ enum Attribution {
     /// appears — never during onboarding (the notification prompt lives there;
     /// two system sheets in a row is how you get both declined).
     static func requestTrackingIfNeeded() async {
-        let args = ProcessInfo.processInfo.arguments
         var forced = false
         #if DEBUG
         // Screenshot harness: every harness launch passes -gdPresetTeam, and a
         // system sheet would make those screenshots non-deterministic.
         // -gdForceATT is the escape hatch that proves the sheet still appears.
+        // The arguments are read inside the guard, not above it: in Release
+        // this was an unused local, and a launch-argument read in a shipped
+        // binary invites the reader to wonder what else it is listening for.
+        let args = ProcessInfo.processInfo.arguments
         forced = args.contains("-gdForceATT")
         if !forced, args.contains("-gdSkipATT") || args.contains("-gdPresetTeam") { return }
         #endif
