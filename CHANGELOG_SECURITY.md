@@ -177,4 +177,61 @@ allow-list and is its own change.
 
 ---
 
+## 2026-09-23 — anon cannot execute (migration 116)
+
+**What was wrong.** Seven `SECURITY DEFINER` functions were callable with the
+publishable key from the App Store binary. Two are meant to be
+(`register_device_token`, `register_la_token`). The other five:
+`claim_match_watcher_tick` and `claim_fixture_marker` — the leases match-watcher
+uses to decide whether to run the minute and whether a push has already gone
+out, so one caller a minute silently stops every kickoff, goal, half-time and
+full-time push and Live Activity, while match-watcher reports its ordinary
+"tick already claimed" — plus `prune_departed_players` (DELETEs from `players`)
+and the two full-table syncs, callable in a loop against the smallest instance.
+`SECURITY DEFINER` bypasses RLS by design, so migration 115 did not cover any
+of it.
+
+**Why it existed, and this is the part worth remembering.** Migrations 084,
+095, 096 and 103 had already made this decision and written it:
+
+    REVOKE EXECUTE ON FUNCTION public.claim_match_watcher_tick(timestamptz) FROM PUBLIC;
+    GRANT  EXECUTE ON FUNCTION public.claim_match_watcher_tick(timestamptz) TO service_role;
+
+`FROM PUBLIC` removes the implicit privilege. `anon` and `authenticated` hold
+an **explicit** grant from `ALTER DEFAULT PRIVILEGES`, which `FROM PUBLIC` does
+not touch. Four migrations read as though they had locked the function and none
+had. Migration 108 is the only earlier one that got it right, because it wrote
+`FROM PUBLIC, anon, authenticated`. Same failure shape as 072's wrong policy
+names: a statement that looks like the fix and is not.
+
+Verified before the change: `POST /rest/v1/rpc/sync_players_from_squads` with
+the shipped key returned **HTTP 200**.
+
+**Applied.** EXECUTE revoked from `PUBLIC, anon, authenticated` on eleven
+functions — the five above, the two service tools (`poll_leagues`,
+`check_pipeline_heartbeat`) and the four name-matching helpers from migrations
+110/113 — written one at a time so the file reads as the list of what is
+closed. Default privileges changed so no new function comes out anon-callable;
+**the next migration that adds an RPC must grant it explicitly.** The four
+trigger-returning functions were left alone: PostgREST cannot expose them.
+
+**Every caller was inventoried first.** The two `claim_*` are the only ones of
+the five that travel over PostgREST, from match-watcher, whose client resolves
+`SERVICE_KEY ?? SUPABASE_SERVICE_ROLE_KEY` and runs as `service_role`. The
+three player-sync functions never touch PostgREST at all — pg_cron job bodies
+and manual psql, both as `postgres`. The routines repo makes no RPC calls.
+
+**Verified after applying:** all six previously-open endpoints now answer 401;
+`register_device_token` and `register_la_token` both return 204 with the row
+landing correctly (probes removed); match-watcher kept taking its lease every
+minute with no new failures in `pipeline_health`; `sync_players_from_squads()`,
+`prune_departed_players()` and `poll_leagues()` still run as `postgres`;
+`service_role` and `postgres` retain EXECUTE on all 22 functions; feed, team
+page and the on-device squad quiz screenshotted clean; `db-health.sh` all clear.
+
+Anon-executable surface is now exactly: `register_device_token`,
+`register_la_token`, and three trigger functions that cannot be called.
+
+---
+
 *This changelog is authoritative. If you see a conflict between this document and older content in BUILD_PLAN.md or AGENT_CONTRACTS.md, this document reflects the latest decisions.*

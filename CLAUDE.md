@@ -82,4 +82,14 @@ Defaults: no unrequested abstractions, deletion over addition, boring over cleve
   followed country.
 - **`.claude/worktrees/` copies `backend/.env`**: an abandoned worktree holds a
   live copy of every production secret. Remove worktrees when the work lands.
+- **A `REVOKE EXECUTE ... FROM PUBLIC` does not lock a function.** Supabase's
+  `ALTER DEFAULT PRIVILEGES` gives `anon` and `authenticated` an EXPLICIT grant
+  on every new function and table in `public`, and `FROM PUBLIC` does not touch
+  an explicit grant. Migrations 084, 095, 096 and 103 each wrote the revoke,
+  read as though they had closed the function, and left it callable with the
+  key that ships in the binary until 2026-09-23. Always write
+  `FROM PUBLIC, anon, authenticated`, and check the result rather than the
+  statement: `SELECT has_function_privilege('anon', 'public.f(args)', 'EXECUTE')`.
+  Same for tables, where `MAINTAIN` is additionally invisible in
+  `information_schema.role_table_grants` (mig 115/116).
 - **"The app looks broken"**: run `./scripts/db-health.sh` BEFORE touching code — it separates our bug from our data from Supabase's infrastructure, which all look identical from the app. Interpretation: `db-health-check` skill. How the pieces fit together, written for a non-DBA: `DB_BASICS.md`. The Supabase dashboard's "database unhealthy" is derived from a probe of the PostgREST path, so it goes red when the HTTP layer dies even though Postgres is fine (2026-09-21).
