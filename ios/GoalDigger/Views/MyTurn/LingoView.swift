@@ -811,10 +811,18 @@ struct LingoView: View {
     ///                         derby -gdLingoPlay`.
     ///   `-gdLingoHeroTap`     presses the hero once, two seconds after the
     ///                         screen has settled, through its own closure,
-    ///                         and asserts a round opened. It is the only way
-    ///                         to prove the hero is reachable, since a hero
-    ///                         that is covered by a neighbouring card looks
+    ///                         and asserts a round opened. It proves the hero's
+    ///                         path works; it cannot prove the hero is
+    ///                         REACHABLE, because it calls the closure rather
+    ///                         than delivering a tap. `-gdLingoFrames` is the
+    ///                         one that speaks to being covered.
+    ///   `-gdLingoFrames`      measures the calls card and the hero on a
+    ///                         settled screen and asserts they do not overlap,
+    ///                         since a hero covered by its neighbour looks
     ///                         identical in a screenshot to one that works.
+    ///   `-gdLingoRevealExpand`
+    ///                         opens the reveal popup's `+` on arrival. Pair it
+    ///                         with `-gdLingoAnswer`.
     ///
     /// simctl cannot tap, so these are the only way to a screenshot of
     /// anything past the landing screen.
