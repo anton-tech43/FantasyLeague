@@ -1,5 +1,5 @@
 {
-  "contentVersion": "2026-09-23.5",
+  "contentVersion": "2026-09-23.6",
   "terms": [
     {
       "id": "premier-league",
@@ -4245,6 +4245,838 @@
         "any"
       ],
       "moment": "anytime"
+    }
+  ],
+  "calls": [
+    {
+      "id": "someone-scores",
+      "line": "Told you there'd be a goal in this one.",
+      "trigger": {
+        "kind": "goal",
+        "side": "any",
+        "scorerRole": "any"
+      },
+      "band": "banker",
+      "when": [
+        "any"
+      ]
+    },
+    {
+      "id": "first-half-goal",
+      "line": "In before the break. That changes the whole afternoon.",
+      "trigger": {
+        "kind": "goal",
+        "side": "any",
+        "minuteTo": 45
+      },
+      "band": "banker",
+      "when": [
+        "any"
+      ]
+    },
+    {
+      "id": "second-half-goal",
+      "line": "A game of two halves, this one.",
+      "trigger": {
+        "kind": "goal",
+        "side": "any",
+        "minuteFrom": 46
+      },
+      "band": "banker",
+      "when": [
+        "any"
+      ],
+      "termId": "game-of-two-halves"
+    },
+    {
+      "id": "goal-inside-the-hour",
+      "line": "A goal inside the hour. This one's alive.",
+      "trigger": {
+        "kind": "goal",
+        "side": "any",
+        "minuteTo": 60
+      },
+      "band": "banker",
+      "when": [
+        "any"
+      ]
+    },
+    {
+      "id": "we-score",
+      "line": "Get in! I said we'd get one.",
+      "trigger": {
+        "kind": "goal",
+        "side": "us"
+      },
+      "band": "banker",
+      "when": [
+        "any"
+      ]
+    },
+    {
+      "id": "they-score",
+      "line": "And there it is. I knew we'd let one in.",
+      "trigger": {
+        "kind": "goal",
+        "side": "them"
+      },
+      "band": "banker",
+      "when": [
+        "any"
+      ]
+    },
+    {
+      "id": "forward-scores",
+      "line": "That's what they pay a striker for.",
+      "trigger": {
+        "kind": "goal",
+        "side": "any",
+        "scorerRole": "Attacker"
+      },
+      "band": "banker",
+      "when": [
+        "any"
+      ],
+      "termId": "striker"
+    },
+    {
+      "id": "derby-they-score",
+      "line": "Against this lot as well. The group chat will be unbearable.",
+      "trigger": {
+        "kind": "goal",
+        "side": "them"
+      },
+      "band": "banker",
+      "when": [
+        "derby"
+      ],
+      "termId": "group-chat"
+    },
+    {
+      "id": "cup-we-score",
+      "line": "One more of those and we're into the next round.",
+      "trigger": {
+        "kind": "goal",
+        "side": "us"
+      },
+      "band": "banker",
+      "when": [
+        "cup"
+      ]
+    },
+    {
+      "id": "europe-we-score",
+      "line": "A goal in Europe. This is why he stays up for these.",
+      "trigger": {
+        "kind": "goal",
+        "side": "us"
+      },
+      "band": "banker",
+      "when": [
+        "europe"
+      ]
+    },
+    {
+      "id": "favourites-they-score",
+      "line": "We were supposed to be walking this. Typical.",
+      "trigger": {
+        "kind": "goal",
+        "side": "them"
+      },
+      "band": "banker",
+      "when": [
+        "favourites",
+        "opp-bad-form"
+      ]
+    },
+    {
+      "id": "opp-clean-sheets-we-score",
+      "line": "They've not been letting many in. We've cracked them.",
+      "trigger": {
+        "kind": "goal",
+        "side": "us"
+      },
+      "band": "banker",
+      "when": [
+        "opp-clean-sheets"
+      ]
+    },
+    {
+      "id": "good-run-we-score",
+      "line": "There it is again. The lads cannot stop scoring.",
+      "trigger": {
+        "kind": "goal",
+        "side": "us"
+      },
+      "band": "banker",
+      "when": [
+        "good-run"
+      ],
+      "termId": "the-lads"
+    },
+    {
+      "id": "bad-run-they-score",
+      "line": "Same every week at the minute. We go again, I suppose.",
+      "trigger": {
+        "kind": "goal",
+        "side": "them"
+      },
+      "band": "banker",
+      "when": [
+        "bad-run"
+      ],
+      "termId": "we-go-again"
+    },
+    {
+      "id": "late-goal",
+      "line": "Squeaky bum time. Somebody's heart is about to go.",
+      "trigger": {
+        "kind": "goal",
+        "side": "any",
+        "minuteFrom": 75
+      },
+      "band": "likely",
+      "when": [
+        "title",
+        "run-in"
+      ],
+      "termId": "squeaky-bum-time"
+    },
+    {
+      "id": "we-score-first-half",
+      "line": "Before the break. I'll have that all day.",
+      "trigger": {
+        "kind": "goal",
+        "side": "us",
+        "minuteTo": 45
+      },
+      "band": "likely",
+      "when": [
+        "any",
+        "favourites"
+      ]
+    },
+    {
+      "id": "we-score-second-half",
+      "line": "There we go. Whatever he said at half-time has worked.",
+      "trigger": {
+        "kind": "goal",
+        "side": "us",
+        "minuteFrom": 46
+      },
+      "band": "likely",
+      "when": [
+        "any",
+        "opp-clean-sheets"
+      ],
+      "termId": "half-time"
+    },
+    {
+      "id": "they-score-first-half",
+      "line": "Conceding before the break. Thanks very much for that.",
+      "trigger": {
+        "kind": "goal",
+        "side": "them",
+        "minuteTo": 45
+      },
+      "band": "likely",
+      "when": [
+        "any",
+        "opp-good-form",
+        "opp-close-range"
+      ]
+    },
+    {
+      "id": "they-score-second-half",
+      "line": "Second half and we've gone to sleep again.",
+      "trigger": {
+        "kind": "goal",
+        "side": "them",
+        "minuteFrom": 46
+      },
+      "band": "likely",
+      "when": [
+        "any",
+        "bad-run"
+      ]
+    },
+    {
+      "id": "our-forward-scores",
+      "line": "That's why he's up front. Man of the match already.",
+      "trigger": {
+        "kind": "goal",
+        "side": "us",
+        "scorerRole": "Attacker"
+      },
+      "band": "likely",
+      "when": [
+        "any",
+        "good-run"
+      ],
+      "termId": "man-of-the-match"
+    },
+    {
+      "id": "their-forward-scores",
+      "line": "We've given him far too much space there.",
+      "trigger": {
+        "kind": "goal",
+        "side": "them",
+        "scorerRole": "Attacker"
+      },
+      "band": "likely",
+      "when": [
+        "opp-counter",
+        "opp-close-range"
+      ]
+    },
+    {
+      "id": "our-midfielder-scores",
+      "line": "From midfield as well. He'll be dining out on that.",
+      "trigger": {
+        "kind": "goal",
+        "side": "us",
+        "scorerRole": "Midfielder"
+      },
+      "band": "likely",
+      "when": [
+        "any",
+        "opp-long-range"
+      ]
+    },
+    {
+      "id": "their-midfielder-scores",
+      "line": "A midfielder's done us. That's a sore one.",
+      "trigger": {
+        "kind": "goal",
+        "side": "them",
+        "scorerRole": "Midfielder"
+      },
+      "band": "likely",
+      "when": [
+        "opp-long-range",
+        "opp-counter"
+      ]
+    },
+    {
+      "id": "midfielder-scores-any",
+      "line": "A midfielder off the mark. He'll not get many like that.",
+      "trigger": {
+        "kind": "goal",
+        "side": "any",
+        "scorerRole": "Midfielder"
+      },
+      "band": "likely",
+      "when": [
+        "any",
+        "opp-long-range"
+      ]
+    },
+    {
+      "id": "our-defender-scores",
+      "line": "A defender! He'll not stop going on about this.",
+      "trigger": {
+        "kind": "goal",
+        "side": "us",
+        "scorerRole": "Defender"
+      },
+      "band": "likely",
+      "when": [
+        "any",
+        "opp-set-piece"
+      ]
+    },
+    {
+      "id": "their-defender-scores",
+      "line": "Their defender's scored. We were warned about that.",
+      "trigger": {
+        "kind": "goal",
+        "side": "them",
+        "scorerRole": "Defender"
+      },
+      "band": "likely",
+      "when": [
+        "opp-set-piece",
+        "opp-aerial"
+      ]
+    },
+    {
+      "id": "defender-scores-any",
+      "line": "A defender on the scoresheet. Somebody's week is made.",
+      "trigger": {
+        "kind": "goal",
+        "side": "any",
+        "scorerRole": "Defender"
+      },
+      "band": "likely",
+      "when": [
+        "any",
+        "opp-set-piece",
+        "opp-aerial"
+      ]
+    },
+    {
+      "id": "halftime-level",
+      "line": "Level at half-time. Anyone's game, this.",
+      "trigger": {
+        "kind": "halftime",
+        "state": "level"
+      },
+      "band": "likely",
+      "when": [
+        "any"
+      ],
+      "termId": "half-time"
+    },
+    {
+      "id": "halftime-ahead",
+      "line": "Ahead at the break. Game management from here.",
+      "trigger": {
+        "kind": "halftime",
+        "state": "ahead"
+      },
+      "band": "likely",
+      "when": [
+        "any",
+        "favourites"
+      ],
+      "termId": "game-management"
+    },
+    {
+      "id": "halftime-behind",
+      "line": "Behind at the break. The gaffer won't be happy in there.",
+      "trigger": {
+        "kind": "halftime",
+        "state": "behind"
+      },
+      "band": "likely",
+      "when": [
+        "any",
+        "underdog"
+      ],
+      "termId": "the-gaffer"
+    },
+    {
+      "id": "halftime-clean",
+      "line": "Nothing in at the break. That's half a clean sheet.",
+      "trigger": {
+        "kind": "halftime",
+        "conceded": 0
+      },
+      "band": "likely",
+      "when": [
+        "any",
+        "opp-aerial",
+        "opp-bad-form"
+      ],
+      "termId": "clean-sheet"
+    },
+    {
+      "id": "halftime-ahead-clean",
+      "line": "Ahead and nothing in. Backs to the wall for forty-five now.",
+      "trigger": {
+        "kind": "halftime",
+        "state": "ahead",
+        "conceded": 0
+      },
+      "band": "likely",
+      "when": [
+        "europe",
+        "underdog",
+        "opp-good-form"
+      ],
+      "termId": "backs-to-the-wall"
+    },
+    {
+      "id": "underdog-halftime-level",
+      "line": "Level with this lot at half-time. I'll take that.",
+      "trigger": {
+        "kind": "halftime",
+        "state": "level"
+      },
+      "band": "likely",
+      "when": [
+        "europe",
+        "underdog",
+        "opp-good-form"
+      ],
+      "termId": "half-time"
+    },
+    {
+      "id": "fulltime-win",
+      "line": "Get in. Three points and I called it.",
+      "trigger": {
+        "kind": "fulltime",
+        "state": "win"
+      },
+      "band": "likely",
+      "when": [
+        "any"
+      ],
+      "termId": "points"
+    },
+    {
+      "id": "fulltime-draw",
+      "line": "A point's a point. We've had worse afternoons.",
+      "trigger": {
+        "kind": "fulltime",
+        "state": "draw"
+      },
+      "band": "likely",
+      "when": [
+        "any"
+      ],
+      "termId": "points"
+    },
+    {
+      "id": "fulltime-loss",
+      "line": "Nothing to say about that. We go again.",
+      "trigger": {
+        "kind": "fulltime",
+        "state": "loss"
+      },
+      "band": "likely",
+      "when": [
+        "any",
+        "bad-run"
+      ],
+      "termId": "we-go-again"
+    },
+    {
+      "id": "fulltime-clean-sheet",
+      "line": "Clean sheet. That's the bit that wins you things.",
+      "trigger": {
+        "kind": "fulltime",
+        "cleanSheet": true
+      },
+      "band": "likely",
+      "when": [
+        "any",
+        "opp-bad-form"
+      ],
+      "termId": "clean-sheet"
+    },
+    {
+      "id": "title-fulltime-win",
+      "line": "Three points in the run-in. That's a title race, that.",
+      "trigger": {
+        "kind": "fulltime",
+        "state": "win"
+      },
+      "band": "likely",
+      "when": [
+        "title",
+        "run-in"
+      ],
+      "termId": "title-race"
+    },
+    {
+      "id": "relegation-fulltime-win",
+      "line": "Massive, that. Proper relegation battle points.",
+      "trigger": {
+        "kind": "fulltime",
+        "state": "win"
+      },
+      "band": "likely",
+      "when": [
+        "relegation",
+        "run-in"
+      ],
+      "termId": "relegation-battle"
+    },
+    {
+      "id": "cup-fulltime-win",
+      "line": "Through to the next round. The magic of the cup.",
+      "trigger": {
+        "kind": "fulltime",
+        "state": "win"
+      },
+      "band": "likely",
+      "when": [
+        "cup"
+      ],
+      "termId": "the-magic-of-the-cup"
+    },
+    {
+      "id": "they-score-late",
+      "line": "Don't bottle this now. Please.",
+      "trigger": {
+        "kind": "goal",
+        "side": "them",
+        "minuteFrom": 80
+      },
+      "band": "likely",
+      "when": [
+        "title",
+        "relegation"
+      ],
+      "termId": "bottle-it"
+    },
+    {
+      "id": "penalty-scored",
+      "line": "A penalty, and it's in. I said there'd be one.",
+      "trigger": {
+        "kind": "goal",
+        "side": "any",
+        "penalty": true
+      },
+      "band": "longshot",
+      "when": [
+        "any"
+      ],
+      "termId": "penalty"
+    },
+    {
+      "id": "penalty-us",
+      "line": "Penalty, and he's buried it. Never in doubt.",
+      "trigger": {
+        "kind": "goal",
+        "side": "us",
+        "penalty": true
+      },
+      "band": "longshot",
+      "when": [
+        "any",
+        "favourites"
+      ],
+      "termId": "penalty"
+    },
+    {
+      "id": "penalty-them",
+      "line": "A penalty against us. Of course there is.",
+      "trigger": {
+        "kind": "goal",
+        "side": "them",
+        "penalty": true
+      },
+      "band": "longshot",
+      "when": [
+        "any",
+        "derby"
+      ],
+      "termId": "penalty"
+    },
+    {
+      "id": "penalty-late",
+      "line": "A penalty, this late on. I can't watch.",
+      "trigger": {
+        "kind": "goal",
+        "side": "any",
+        "penalty": true,
+        "minuteFrom": 75
+      },
+      "band": "longshot",
+      "when": [
+        "cup",
+        "derby"
+      ],
+      "termId": "penalty"
+    },
+    {
+      "id": "own-goal-us",
+      "line": "An own goal. We'll take them any way they come.",
+      "trigger": {
+        "kind": "goal",
+        "side": "us",
+        "ownGoal": true
+      },
+      "band": "longshot",
+      "when": [
+        "any"
+      ],
+      "termId": "own-goal"
+    },
+    {
+      "id": "own-goal-them",
+      "line": "Own goal. You cannot legislate for that.",
+      "trigger": {
+        "kind": "goal",
+        "side": "them",
+        "ownGoal": true
+      },
+      "band": "longshot",
+      "when": [
+        "any",
+        "bad-run"
+      ],
+      "termId": "own-goal"
+    },
+    {
+      "id": "keeper-scores",
+      "line": "The keeper's scored. The actual goalkeeper.",
+      "trigger": {
+        "kind": "goal",
+        "side": "any",
+        "scorerRole": "Goalkeeper"
+      },
+      "band": "longshot",
+      "when": [
+        "any"
+      ]
+    },
+    {
+      "id": "late-winner-us",
+      "line": "Fergie time. I don't believe what I've just seen.",
+      "trigger": {
+        "kind": "goal",
+        "side": "us",
+        "minuteFrom": 88
+      },
+      "band": "longshot",
+      "when": [
+        "any",
+        "run-in"
+      ],
+      "termId": "fergie-time"
+    },
+    {
+      "id": "goal-added-time",
+      "line": "Added time and it's gone in. Absolute scenes.",
+      "trigger": {
+        "kind": "goal",
+        "side": "any",
+        "minuteFrom": 90
+      },
+      "band": "longshot",
+      "when": [
+        "any",
+        "run-in"
+      ],
+      "termId": "added-time"
+    },
+    {
+      "id": "they-score-added-time",
+      "line": "Added time. They've gone and nicked one.",
+      "trigger": {
+        "kind": "goal",
+        "side": "them",
+        "minuteFrom": 90
+      },
+      "band": "longshot",
+      "when": [
+        "any",
+        "bad-run",
+        "opp-good-form"
+      ],
+      "termId": "added-time"
+    },
+    {
+      "id": "we-score-added-time",
+      "line": "Added time and we've nicked it. Smash and grab.",
+      "trigger": {
+        "kind": "goal",
+        "side": "us",
+        "minuteFrom": 90
+      },
+      "band": "longshot",
+      "when": [
+        "cup",
+        "underdog"
+      ],
+      "termId": "smash-and-grab"
+    },
+    {
+      "id": "goal-in-first-ten",
+      "line": "Inside ten minutes. We've not even sat down.",
+      "trigger": {
+        "kind": "goal",
+        "side": "any",
+        "minuteTo": 10
+      },
+      "band": "longshot",
+      "when": [
+        "any"
+      ]
+    },
+    {
+      "id": "they-score-first-ten",
+      "line": "Inside ten minutes and we're behind already.",
+      "trigger": {
+        "kind": "goal",
+        "side": "them",
+        "minuteTo": 10
+      },
+      "band": "longshot",
+      "when": [
+        "any",
+        "underdog",
+        "opp-good-form"
+      ]
+    },
+    {
+      "id": "our-forward-early",
+      "line": "Forward's got us going early. Dream start.",
+      "trigger": {
+        "kind": "goal",
+        "side": "us",
+        "scorerRole": "Attacker",
+        "minuteTo": 20
+      },
+      "band": "longshot",
+      "when": [
+        "any",
+        "favourites"
+      ]
+    },
+    {
+      "id": "their-forward-late",
+      "line": "Their forward, this late on. That's cruel.",
+      "trigger": {
+        "kind": "goal",
+        "side": "them",
+        "scorerRole": "Attacker",
+        "minuteFrom": 75
+      },
+      "band": "longshot",
+      "when": [
+        "relegation",
+        "opp-counter",
+        "opp-close-range",
+        "opp-good-form"
+      ]
+    },
+    {
+      "id": "comeback-win",
+      "line": "Behind at half-time and we've won it. Game of two halves.",
+      "trigger": {
+        "kind": "fulltime",
+        "comeback": true
+      },
+      "band": "longshot",
+      "when": [
+        "any",
+        "good-run"
+      ],
+      "termId": "game-of-two-halves"
+    },
+    {
+      "id": "win-to-nil",
+      "line": "Won it and kept a clean sheet. That's a proper afternoon.",
+      "trigger": {
+        "kind": "fulltime",
+        "state": "win",
+        "cleanSheet": true
+      },
+      "band": "longshot",
+      "when": [
+        "any",
+        "opp-bad-form"
+      ],
+      "termId": "clean-sheet"
+    },
+    {
+      "id": "nil-nil",
+      "line": "Nil-nil. Ninety minutes of my life, that.",
+      "trigger": {
+        "kind": "fulltime",
+        "state": "draw",
+        "cleanSheet": true
+      },
+      "band": "longshot",
+      "when": [
+        "any",
+        "opp-clean-sheets"
+      ],
+      "termId": "nil-nil"
     }
   ]
 }

@@ -8,7 +8,8 @@ fields (overheard, speaker, gist, decoys, when, moment) from lingo_overheard.
 commitment never offers a line she had no chance to use. An entry's optional
 `player` key becomes `playerVariants`, each with its own `overheardTerm`, so a
 card can name a real player from the fixture without the app parsing anything.
-The file is written in level order. Then run validate_content.py.
+The file is written in level order, with the Called It lines from lingo_calls.py
+alongside it under `calls`. Then run validate_content.py.
 
 A term with no Overheard entry yet is written without the game fields, so
 the four category files can be filled in parallel; the validator is what
@@ -20,12 +21,13 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+from lingo_calls import CALLS  # noqa: E402
 from lingo_match import term_match  # noqa: E402
 from lingo_overheard import OVERHEARD, SLOTS, WHEN_TAGS  # noqa: E402
 from lingo_src import LEVEL_OF, LEVELS, TERMS  # noqa: E402
 
 OUT = os.path.join(HERE, "..", "..", "ios", "GoalDigger", "Resources", "MyTurn", "lingo.json")
-VERSION = "2026-09-23.5"
+VERSION = "2026-09-23.6"
 
 # The optional `player` key: one variant, or a list of at most two whose sides
 # differ. It overrides `overheard` and `sayIt` only; speaker, gist, decoys,
@@ -93,7 +95,7 @@ for category, tid, term, meaning, heard, say_it, see_also in TERMS:
 terms.sort(key=lambda r: ORDER[r["id"]])
 
 with open(OUT, "w", encoding="utf-8") as f:
-    json.dump({"contentVersion": VERSION, "terms": terms}, f, indent=2, ensure_ascii=False)
+    json.dump({"contentVersion": VERSION, "terms": terms, "calls": CALLS}, f, indent=2, ensure_ascii=False)
     f.write("\n")
 missing = sum(1 for r in terms if "overheard" not in r)
-print(f"wrote {OUT}: {len(terms)} terms, {len(terms) - missing} with Overheard" + (f" ({missing} still to write)" if missing else ""))
+print(f"wrote {OUT}: {len(terms)} terms, {len(terms) - missing} with Overheard, {len(CALLS)} calls" + (f" ({missing} still to write)" if missing else ""))
