@@ -117,24 +117,36 @@ struct LingoCallsView: View {
         Button {
             withAnimation(.easeInOut(duration: 0.25)) { showedCover = true }
         } label: {
-            VStack(alignment: .leading, spacing: 0) {
-                Text("Get ready for the game")
-                    .font(.immersiveHeadline)
-                    .foregroundColor(.textPrimaryOnCard)
-                    .minimumScaleFactor(0.5)
-                    .lineLimit(3)
-                    .padding(.top, 8)
-                Spacer(minLength: 24)
-                HStack {
+            VStack(alignment: .leading, spacing: 22) {
+                // Empty above, the block low on the card, per Anton's sketch.
+                Spacer(minLength: 0)
+                // Set by hand so the lines stack tight and the tracking pulls
+                // in, the way the feed's immersive headline reads — one Text
+                // wraps with the font's own loose leading, which is the
+                // "closeness" that was lost.
+                VStack(alignment: .leading, spacing: -14) {
+                    Text("Get ready")
+                    Text("for the")
+                    Text("game")
+                }
+                .font(.immersiveHeadline)
+                .tracking(-1.5)
+                .foregroundColor(.textPrimaryOnCard)
+                .fixedSize(horizontal: false, vertical: true)
+                // The blocky arrow from the sketch, not a hairline system one,
+                // sitting to the right below the words the way the sketch has it.
+                HStack(spacing: 0) {
                     Spacer(minLength: 0)
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 108, weight: .bold))
+                    Image(systemName: "arrowshape.right.fill")
+                        .font(.system(size: 120, weight: .black))
                         .foregroundColor(.hotRose)
                         .accessibilityHidden(true)
                 }
+                .padding(.trailing, 8)
+                Spacer(minLength: 0).frame(maxHeight: 44)
             }
             .padding(28)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
             .background(Color.cardBackground)
             .cornerRadius(Layout.cardCornerRadius)
             .contentShape(Rectangle())
