@@ -76,16 +76,6 @@ class AppState {
     var hasSeenSeasonPrimer: Bool {
         didSet { UserDefaults.standard.set(hasSeenSeasonPrimer, forKey: "hasSeenSeasonPrimer") }
     }
-    /// V2.0: whether the existing-user "World Cup is coming, who's he
-    /// backing?" sheet has been dismissed (either by picking a country or
-    /// tapping Skip). Shown ONCE on next app launch for V1.x users who
-    /// have hasCompletedOnboarding=true but no selectedCountry. New V2.0
-    /// users skip this entirely because they pick a country during
-    /// onboarding.
-    var hasSeenWCPrompt: Bool {
-        didSet { UserDefaults.standard.set(hasSeenWCPrompt, forKey: "hasSeenWCPrompt") }
-    }
-
     // Navigation
     var deepLinkContentId: UUID?
     /// Transient, session-only. Set by `SeasonPrimerView` CTAs to direct the
@@ -136,7 +126,6 @@ class AppState {
         self.notificationPermissionRequested = UserDefaults.standard.bool(forKey: "notificationPermissionRequested")
         self.calendarSyncEnabled = UserDefaults.standard.bool(forKey: "calendarSyncEnabled")
         self.hasSeenSeasonPrimer = UserDefaults.standard.bool(forKey: "hasSeenSeasonPrimer")
-        self.hasSeenWCPrompt = UserDefaults.standard.bool(forKey: "hasSeenWCPrompt")
 
         // Feed style — persisted, defaults to immersive (one full-screen card
         // per scroll position). The "lands on article" complaint earlier was
@@ -172,7 +161,6 @@ class AppState {
             self.selectedTier = 2
             self.hasCompletedOnboarding = true
             self.hasSeenSeasonPrimer = true
-            self.hasSeenWCPrompt = true
         }
         // `-gdPresetCountry netherlands` adds a country follow on top, which
         // is the only way to reproduce the ten club+country devices and the
@@ -188,7 +176,6 @@ class AppState {
             self.selectedTier = 2
             self.hasCompletedOnboarding = true
             self.hasSeenSeasonPrimer = true
-            self.hasSeenWCPrompt = true
             if CountryFollowing.isEnabled {
                 self.activeContext = .country(country)
             } else if let team = self.selectedTeams.first {
@@ -284,7 +271,6 @@ class AppState {
         notificationPermissionRequested = false
         calendarSyncEnabled = false
         hasSeenSeasonPrimer = false
-        hasSeenWCPrompt = false
         deepLinkContentId = nil
         pendingTabAfterPrimer = nil
         activeContext = .everyoneTalking
@@ -302,7 +288,10 @@ class AppState {
                      // Settings in May 2026 and the codebase in September.
                      // A device that chose "classic" still has it on disk.
                      "feedStyle",
-                     "calendarSyncEnabled", "hasSeenSeasonPrimer", "hasSeenWCPrompt"]
+                     "calendarSyncEnabled", "hasSeenSeasonPrimer",
+                     // Written by the one-time V2.0 country prompt, deleted
+                     // 2026-09-23. Still on disk for everyone it asked.
+                     "hasSeenWCPrompt"]
         keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
         UnreadTracker.shared.clearAll()
         Task { @MainActor in

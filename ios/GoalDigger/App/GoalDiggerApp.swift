@@ -32,7 +32,6 @@ struct GoalDiggerApp: App {
                             case .country(let c):
                                 return CountryFollowing.isEnabled && appState.selectedCountries.contains(c)
                             case .team(let t):    return appState.selectedTeams.contains(t)
-                            case .worldChampionship: return WCSeason.isVisible
                             case .everyoneTalking: return true
                             }
                         }()
@@ -99,19 +98,6 @@ struct RootView: View {
     @Environment(AppState.self) var appState
     @Environment(\.modelContext) private var modelContext
 
-    /// V2.0 migration prompt — fires once for V1.x users who finished
-    /// onboarding before V2.0 and haven't picked a country yet. Skipped
-    /// for new V2.0 users (they pick country during onboarding).
-    private var shouldShowWCPrompt: Bool {
-        // Season-gated: onboarding no longer picks a country (Sept 2026), so
-        // without the gate every new user would get the "pick a WC country"
-        // sheet on first launch for a tournament that ended in July.
-        WCSeason.isVisible
-          && appState.hasCompletedOnboarding
-          && appState.selectedCountry == nil
-          && !appState.hasSeenWCPrompt
-    }
-
     // No in-app paywall. PurchaseManager and PaywallView were kept unreferenced
     // "in case we add an IAP later" and were deleted on 2026-09-23 — two files
     // compiled into every build for a purchase flow the app does not have, and
@@ -148,23 +134,13 @@ struct RootView: View {
                     }
                 )
             } else {
+                // A one-time "pick a World Championship country" sheet hung
+                // off here, for users who onboarded before V2.0 and had no
+                // country yet. That is a version transition which has already
+                // happened and cannot recur, whatever the next tournament is,
+                // so it is the one piece of this that was never an off switch.
+                // Removed 2026-09-23 with the sheet itself.
                 MainTabView()
-                    .sheet(isPresented: Binding(
-                        get: { shouldShowWCPrompt },
-                        set: { newValue in
-                            // Belt-and-braces: if SwiftUI ever flips the
-                            // binding to false via a system-initiated
-                            // dismiss (swipe-down, hardware back) we MUST
-                            // flip hasSeenWCPrompt too, otherwise the
-                            // sheet bounces right back on the next render.
-                            // The view itself sets the flag in both Skip
-                            // and Continue branches before calling dismiss(),
-                            // but this handles the path where neither runs.
-                            if !newValue { appState.hasSeenWCPrompt = true }
-                        }
-                    )) {
-                        WCMigrationSheetView()
-                    }
             }
         }
         .task(id: "cache-schema-purge") {
@@ -213,7 +189,7 @@ struct MainTabView: View {
             return team.rawValue
         case .country(let country):
             return CountryFollowing.isEnabled ? country.rawValue : nil
-        case .worldChampionship, .everyoneTalking:
+        case .everyoneTalking:
             // Club first: with country following off, a club+country user
             // would otherwise get a country page on the His Team tab.
             if CountryFollowing.isEnabled {
@@ -233,7 +209,7 @@ struct MainTabView: View {
             return team.displayName
         case .country(let country):
             return CountryFollowing.isEnabled ? country.displayName : "His Team"
-        case .worldChampionship, .everyoneTalking:
+        case .everyoneTalking:
             return "His Team"
         }
     }

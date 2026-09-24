@@ -18,11 +18,6 @@ struct ContextSwitcherView: View {
             result.append(contentsOf: appState.selectedCountries.map { .country($0) })
         }
         result.append(contentsOf: appState.selectedTeams.map { .team($0) })
-        // Tournament-wide feed, visible for everyone during the World
-        // Championship; self-hides after the final (WCSeason gate).
-        if WCSeason.isVisible {
-            result.append(.worldChampionship)
-        }
         result.append(.everyoneTalking)
         return result
     }
@@ -102,7 +97,7 @@ struct ContextSwitcherView: View {
             TeamCrestView(team: team, size: 16)
         case .country(let country):
             TeamCrestView(country: country, size: 16)
-        case .worldChampionship, .everyoneTalking:
+        case .everyoneTalking:
             Image(systemName: context.iconName)
                 .font(.system(size: 14))
                 .foregroundColor(.hotRose)
@@ -115,10 +110,6 @@ struct ContextSwitcherView: View {
         let items: [ContentItem] = {
             switch context {
             case .team, .country: return teamItems
-            // The switcher only receives the active entity's items +
-            // everyone items; WC items aren't loaded until the context is
-            // opened, so it shows no badge. Acceptable minimal wiring.
-            case .worldChampionship: return []
             case .everyoneTalking: return everyoneItems
             }
         }()
