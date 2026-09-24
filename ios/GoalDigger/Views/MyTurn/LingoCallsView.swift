@@ -27,21 +27,19 @@ struct LingoCallsView: View {
     /// This weekend. Before kick-off it deals the offer; after the match it is
     /// what ties the stored slip to the game that has just been played.
     let context: MatchContext
-    /// The offer as the whole screen, or a compact row on the landing that
-    /// re-opens it. `LingoView` decides which; this only draws it. The filled
-    /// and after states are always the compact card, whatever this says.
+    /// The offer filling the Lingo content, or the compact filled card on the
+    /// landing. `LingoView` decides which; this only draws it.
     var presentation: Presentation = .inline
-    /// The X on the takeover. Drops her to the landing; the slip is untouched
-    /// and she can re-open it from the row it leaves behind.
-    var onClose: () -> Void = {}
-    /// The compact entry's tap: re-open the takeover she closed.
-    var onReopen: () -> Void = {}
     /// She confirmed. The caller sends it to the device row; the pick is
     /// already saved locally by then, so a failed upload costs her nothing.
     let onConfirm: ([LingoCall]) -> Void
     @Environment(AppState.self) private var appState
 
     enum Presentation { case takeover, inline }
+
+    /// The cover comes first — the mockup's "Get ready for the game" and its
+    /// arrow — then the lines. Reset when the fixture changes.
+    @State private var showedCover = false
 
     /// Which lines she has said yes to, before the slip commits, and which one
     /// she is being asked about. Both view state on purpose: a half-walked slip
@@ -60,49 +58,10 @@ struct LingoCallsView: View {
 
     var body: some View {
         if let slip {
-            // She has acted — the compact card, in either presentation.
+            // She has acted — the compact "watching for these" card.
             filled(slip)
-        } else if !played {
-            switch presentation {
-            case .takeover: offer
-            case .inline:   entry
-            }
-        }
-    }
-
-    // MARK: The way back in
-
-    /// The compact row the takeover leaves on the landing after the X. Only
-    /// while there is still an un-acted offer behind it; once she has picked or
-    /// passed, `slip` is non-nil and this branch is never reached.
-    @ViewBuilder
-    private var entry: some View {
-        if !LingoCalls.offer(calls: calls, context: context).isEmpty {
-            Button {
-                withAnimation(.easeInOut(duration: 0.2)) { onReopen() }
-            } label: {
-                HStack(spacing: 14) {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text("Get in the game")
-                            .font(.jakarta(17, weight: .bold))
-                            .foregroundColor(.textPrimaryOnCard)
-                        Text("Pick what you'd say on Saturday")
-                            .font(.jakarta(14, weight: .regular))
-                            .foregroundColor(.textSecondaryOnCard)
-                    }
-                    Spacer(minLength: 0)
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.hotRose)
-                }
-                .padding(16)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.cardBackground)
-                .cornerRadius(Layout.cardCornerRadius)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Get in the game. Pick what you would say on Saturday.")
+        } else if !played, presentation == .takeover {
+            offer
         }
     }
 
@@ -126,31 +85,62 @@ struct LingoCallsView: View {
     /// rather than in the same glance.
     @ViewBuilder
     private var offer: some View {
-        let offered = LingoCalls.offer(calls: calls, context: context)
         // `offer` recomputes on every body evaluation and a content refresh can
         // shrink it under her, so the index is read safely and never trusted.
-        // Fewer than three is a legal slip (there is always a banker in it);
-        // none at all means this fixture has nothing to offer, and the card
-        // stays off the screen rather than apologising for itself.
-        if let call = offered[safe: index] {
-            // The cover gives it the whole screen. It fills that height, and at
-            // the accessibility sizes it grows past it and the column scrolls —
-            // the only way the Yes and No can be guaranteed to stay reachable,
-            // since they are the only way forward.
-            GeometryReader { geo in
-                ScrollView {
-                    offerScreen(call, of: offered)
-                        .frame(minHeight: geo.size.height, alignment: .top)
-                }
-                .scrollBounceBehavior(.basedOnSize)
-            }
-            // A different fixture is a different slip, and this view stays
-            // mounted across one arriving.
-            .onChange(of: context.fixtureKey) { _, _ in
-                index = 0
-                picked = []
+        // Fewer than three is a legal slip (there is always a banker in it).
+        let offered = LingoCalls.offer(calls: calls, context: context)
+        // The card fills the Lingo content height. `containerRelativeFrame`
+        // reads the surrounding scroll view's visible region, which a
+        // GeometryReader cannot do from inside a scroll that sizes to content
+        // (it collapses to nothing there).
+        Group {
+            if !showedCover {
+                coverCard
+            } else if let call = offered[safe: index] {
+                offerScreen(call, of: offered)
             }
         }
+        .containerRelativeFrame(.vertical, alignment: .top)
+        // A different fixture is a different slip, and this view stays mounted
+        // across one arriving.
+        .onChange(of: context.fixtureKey) { _, _ in
+            index = 0
+            picked = []
+            showedCover = false
+        }
+    }
+
+    /// The mockup's cover: the one bold line and the big arrow that starts the
+    /// slip. Same League Spartan Black the feed's immersive card leads with, so
+    /// coming into Lingo on a match week feels like the feed does.
+    private var coverCard: some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.25)) { showedCover = true }
+        } label: {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("Get ready for the game")
+                    .font(.immersiveHeadline)
+                    .foregroundColor(.textPrimaryOnCard)
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(3)
+                    .padding(.top, 8)
+                Spacer(minLength: 24)
+                HStack {
+                    Spacer(minLength: 0)
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 108, weight: .bold))
+                        .foregroundColor(.hotRose)
+                        .accessibilityHidden(true)
+                }
+            }
+            .padding(28)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .background(Color.cardBackground)
+            .cornerRadius(Layout.cardCornerRadius)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Get ready for the game. Start.")
     }
 
     /// The offer, drawn on the brightest surface in the app.
@@ -173,19 +163,6 @@ struct LingoCallsView: View {
                     .font(.jakarta(15, weight: .semiBold))
                     .foregroundColor(.textSecondaryOnCard)
                     .accessibilityLabel("Line \(index + 1) of \(offered.count)")
-                // Click it down. Not skipping the slip — it stays exactly where
-                // it is — just stepping off it to the rest of Lingo.
-                Button {
-                    onClose()
-                } label: {
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.textSecondaryOnCard)
-                        .frame(width: 32, height: 32)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Close. Back to Lingo; your slip is kept.")
             }
             .dynamicTypeSize(...Self.displayCap)
 
@@ -230,10 +207,11 @@ struct LingoCallsView: View {
         .padding(.horizontal, 22)
         .padding(.top, 20)
         .padding(.bottom, 24)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        // Edge to edge, its own screen. The blush runs under the status bar and
-        // the home indicator; the content stays inside the safe area.
-        .background(Color.cardBackground.ignoresSafeArea())
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        // A rounded card filling the Lingo content, with the tabs above it and
+        // the bottom bar below still in view.
+        .background(Color.cardBackground)
+        .cornerRadius(Layout.cardCornerRadius)
     }
 
     /// How far the display type scales, and no further. It starts at 34 and 25
