@@ -119,10 +119,12 @@ struct LingoCallsView: View {
         } label: {
             ZStack {
                 // The big blocky arrow from the sketch, low and to the right,
-                // overlapping the level of the second line.
-                Image(systemName: "arrowshape.right.fill")
-                    .font(.system(size: 150, weight: .black))
-                    .foregroundColor(.hotRose)
+                // overlapping the level of the second line. Drawn rather than a
+                // system symbol: the sketch's is a clean rectangle tail and a
+                // triangle head with sharp edges, not the tapered rounded glyph.
+                BlockArrow()
+                    .fill(Color.hotRose)
+                    .frame(width: 230, height: 150)
                     .accessibilityHidden(true)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
                     .padding(.top, 150)
@@ -471,5 +473,27 @@ struct LingoCallsView: View {
             .stroke(Color.hotRose.opacity(0.35), lineWidth: 1))
         .cornerRadius(Layout.cardCornerRadius)
         .transition(.opacity)
+    }
+}
+
+/// The block arrow on the Called it cover: a rectangle tail into a triangle
+/// head, sharp-edged, the way Anton's sketch draws it rather than the tapered,
+/// rounded system `arrowshape.right.fill`.
+private struct BlockArrow: Shape {
+    func path(in rect: CGRect) -> Path {
+        let w = rect.width, h = rect.height
+        let shaftTop = h * 0.30
+        let shaftBottom = h * 0.70
+        let headStart = w * 0.46   // the triangle head takes the right ~54%
+        var p = Path()
+        p.move(to: CGPoint(x: rect.minX, y: shaftTop))
+        p.addLine(to: CGPoint(x: rect.minX + headStart, y: shaftTop))
+        p.addLine(to: CGPoint(x: rect.minX + headStart, y: rect.minY))       // head top
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))                    // point
+        p.addLine(to: CGPoint(x: rect.minX + headStart, y: rect.maxY))       // head bottom
+        p.addLine(to: CGPoint(x: rect.minX + headStart, y: shaftBottom))
+        p.addLine(to: CGPoint(x: rect.minX, y: shaftBottom))
+        p.closeSubpath()
+        return p
     }
 }
