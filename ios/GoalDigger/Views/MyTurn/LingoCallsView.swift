@@ -499,7 +499,7 @@ struct LingoCallsView: View {
 /// The block arrow on the Called it cover: a rectangle tail into a triangle
 /// head, sharp-edged, the way Anton's sketch draws it rather than the tapered,
 /// rounded system `arrowshape.right.fill`.
-private struct BlockArrow: Shape {
+struct BlockArrow: Shape {
     func path(in rect: CGRect) -> Path {
         // Measured off Anton's sketch: a near-square block arrow (1:1), a shaft
         // that is half the arrow's height, and a head that starts just past the

@@ -47,6 +47,9 @@ struct LingoView: View {
     /// something it actually depends on moves — never on a keystroke in the
     /// search field, which is a deck build over 158 words per character.
     @State private var weekend: Weekend?
+    /// The full-screen hero's arrow nudge, the same slow "go" the calls cover
+    /// has, so the two full-screen cards share the one motif.
+    @State private var heroArrowNudge = false
     #if DEBUG
     /// Set by `-gdLingoContext`, so a screenshot can pin a derby weekend.
     @State private var debugContext: MatchContext?
@@ -441,30 +444,63 @@ struct LingoView: View {
         if let weekend {
             let playable = weekend.ids.count >= LingoWeekendDeck.roundLength
             if playable || continueLabel != nil {
-                MyTurnPractiseButton(
-                    title: weekend.context.title,
-                    subtitle: continueLabel ?? appState.personalise(weekend.context.subtitle),
-                    subtitleLineLimit: 3
-                ) {
-                    pressHero(weekend)
-                }
-                // The room around the hero, which used to sit inside the
-                // button's own body as padding outside its `Button` — measured
-                // frame that was never tappable.
-                .padding(.top, 8)
-                .padding(.bottom, 20)
-                #if DEBUG
-                .lingoFrame("hero")
-                // simctl cannot tap, so `-gdLingoHeroTap` presses it — the
-                // hero's own closure, with the weekend it has actually built.
-                .task(id: weekend.ids) { await debugPressHero(weekend) }
-                #endif
+                fullScreenHero(weekend)
             } else {
                 // The search field below is the whole screen now, so say so
                 // rather than leaving a gap where the hero was.
                 MyTurnEmptyText(text: "Nothing to deal yet. Search for a word you heard.")
             }
         }
+    }
+
+    /// The pink "Before Chelsea" hero, full screen like the blush calls cover —
+    /// Anton's second sketch. Same layout as `coverCard`: the one big line in
+    /// League Spartan (the opponent, here white on rose), the drawn `BlockArrow`
+    /// low-right (dark on the rose, the way the sketch has it), the whole card
+    /// pressing into the round. Fills the Lingo viewport; the glossary scrolls
+    /// below it. No subtitle — the sketch is the line and the arrow, the same
+    /// restraint the calls cover keeps.
+    private func fullScreenHero(_ weekend: Weekend) -> some View {
+        Button {
+            pressHero(weekend)
+        } label: {
+            ZStack {
+                BlockArrow()
+                    .fill(Color.deepMauve)
+                    .frame(width: 150, height: 150)
+                    .offset(x: heroArrowNudge ? 10 : 0)
+                    .animation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true),
+                               value: heroArrowNudge)
+                    .accessibilityHidden(true)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                    .padding(.bottom, 100)
+                    .onAppear { heroArrowNudge = true }
+                // The opponent, set exactly like the feed's immersive headline
+                // and the calls cover: League Spartan Black, the font's own
+                // letter and line spacing, white on the rose.
+                Text(weekend.context.title)
+                    .font(.calledItHeadline)
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .foregroundColor(.warmWhite)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            }
+            .padding(28)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.hotRose)
+            .cornerRadius(Layout.cardCornerRadius)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .containerRelativeFrame(.vertical)
+        .accessibilityLabel("\(weekend.context.title). Start.")
+        #if DEBUG
+        .lingoFrame("hero")
+        // simctl cannot tap, so `-gdLingoHeroTap` presses it — the hero's own
+        // closure, with the weekend it has actually built.
+        .task(id: weekend.ids) { await debugPressHero(weekend) }
+        #endif
     }
 
     /// What the hero does when she presses it.
