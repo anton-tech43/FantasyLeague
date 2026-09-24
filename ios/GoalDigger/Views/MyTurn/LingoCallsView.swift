@@ -126,7 +126,7 @@ struct LingoCallsView: View {
                 // triangle head with sharp edges, not the tapered rounded glyph.
                 BlockArrow()
                     .fill(Color.hotRose)
-                    .frame(width: 230, height: 150)
+                    .frame(width: 200, height: 200)
                     .offset(x: arrowNudge ? 12 : 0)
                     .animation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true),
                                value: arrowNudge)
@@ -500,10 +500,13 @@ struct LingoCallsView: View {
 /// rounded system `arrowshape.right.fill`.
 private struct BlockArrow: Shape {
     func path(in rect: CGRect) -> Path {
+        // Measured off Anton's sketch: a near-square block arrow (1:1), a shaft
+        // that is half the arrow's height, and a head that starts just past the
+        // midline — a chunky triangle, not a wide flat one.
         let w = rect.width, h = rect.height
-        let shaftTop = h * 0.30
-        let shaftBottom = h * 0.70
-        let headStart = w * 0.46   // the triangle head takes the right ~54%
+        let shaftTop = h * 0.25
+        let shaftBottom = h * 0.75    // shaft is the middle 50% of the height
+        let headStart = w * 0.52      // head takes the right ~48%
         var p = Path()
         p.move(to: CGPoint(x: rect.minX, y: shaftTop))
         p.addLine(to: CGPoint(x: rect.minX + headStart, y: shaftTop))
