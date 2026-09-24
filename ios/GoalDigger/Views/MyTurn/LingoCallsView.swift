@@ -148,7 +148,12 @@ struct LingoCallsView: View {
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
                     .foregroundColor(.textPrimaryOnCard)
+                    // Sit the line above the arrow, not level with it. The
+                    // bottom inset lifts the vertically-centred headline off the
+                    // arrow's band. The round hero uses the exact same lift, so
+                    // the two full-screen cards stay identical bar the colour.
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                    .padding(.bottom, 150)
             }
             .padding(28)
             .frame(maxWidth: .infinity, maxHeight: .infinity)

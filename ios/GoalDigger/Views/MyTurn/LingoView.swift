@@ -484,7 +484,10 @@ struct LingoView: View {
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
                     .foregroundColor(.warmWhite)
+                    // The same lift the calls cover gives its headline, so the
+                    // line sits above the arrow and the two cards stay identical.
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                    .padding(.bottom, 150)
             }
             .padding(28)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
