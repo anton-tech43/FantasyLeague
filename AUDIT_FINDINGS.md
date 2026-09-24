@@ -427,3 +427,63 @@ silhouette.
   exploitable. Revoked, defaults fixed so new tables come out SELECT-only, with
   `device_tokens` INSERT/UPDATE kept for 2.2 until migration 107 lands
   (mig 115; details and the verification in `CHANGELOG_SECURITY.md`).
+
+## 2026-09-24 — steelman pass over the 2026-09-23 work
+
+Five read-only Opus reviewers against the previous day's changes. Findings that
+survived verification, and what was done.
+
+### Fixed
+
+- **My B2 fix made B2 worse.** The 76pt floor on the calendar's competition
+  column came out of the club name's budget, and on a 390pt phone at DEFAULT
+  text size the row read "Nottingha / m Forest" — the same mid-word break,
+  moved onto the more important text. Reproduced, then removed: the label's
+  `minimumScaleFactor(0.6)` from the same commit already fits "Champions" in
+  the old width, so the floor bought nothing. The club name now scales rather
+  than splits. Verified at 390pt and 402pt.
+- **The B5 fix reached nobody.** `hype.json`'s body changed without
+  `contentVersion` moving off `2026-09-16.1`. `MyTurnContentService` takes the
+  highest version and re-downloads only on strictly greater, and the server row
+  still served both count-claiming lines at that same version — so anyone who
+  had ever refreshed My Turn kept the bad line. Bumped to `2026-09-23.1` in the
+  bundle and the generator, and republished.
+- **The squad link could name the wrong man, and never healed** (mig 117). The
+  ranking from 113 never looked at the forename, so a lone surname match won
+  outright: `E. Martínez` resolved to *Lautaro* Martínez, `Moisés Caicedo` to
+  J. Caicedo. Combined with 114's trigger that is a DELETE of another player's
+  dossier, not a mislabel — Argentina's card lists both Martínez names and both
+  resolved to the same id. The same rule made honest cards invisible: any
+  same-surname pair (R./Z. Christie, J./T. Fletcher, N./J. Angulo) went NULL
+  and `!inner` never served them. Separately, the FK's `ON DELETE SET NULL`
+  fired nightly through `prune_departed_players()` and nothing ever recomputed,
+  so one missing squad payload cost a dossier permanently; and a rename kept
+  the old id and deleted whatever held it. Fixed by adding the forename
+  initial as a disqualifier, refusing rather than guessing when a card has no
+  forename and several candidates answer to it, always re-resolving instead of
+  trusting a stored id, guarding the delete on a shared name token, and running
+  a `relink_player_cards()` repair nightly after the prune. 338/338 linked, no
+  cross-club links, and the previous day's 334 links all unchanged.
+
+### Corrected, not fixed
+
+- **The B4 commit overstated its defect.** `clearAllData()` sets
+  `hasCompletedOnboarding = false` synchronously, which tears down
+  `MainTabView` — and every module's `@State` with it — before the store wipe
+  runs. Delete My Data could not have left her mid-round. `.id(resetTick)` is
+  harmless but repairs something `RootView` already handled.
+
+### Open
+
+- **`PlayerCardsListView` has no entry point at all.** Nothing appends a
+  `String` to `feedPath` and nothing uses `NavigationLink(value: "playerCards")`,
+  so the screen is unreachable by tapping too — the `.inline` title fix in
+  f2df01d cannot be seen. Either route to it or delete it.
+- **The country-only device still fetches the country feed it is no longer
+  shown**, and a failed country request can surface `errorView` instead of the
+  Everyone empty state (`FeedView.swift:735-745`, `:107`). Its aggregate unread
+  badge is now permanently 0.
+- **Country dossiers are structurally impossible** while the app joins through
+  `players.team_id`, which is always the club. Dormant (countries off, zero
+  country cards); marked with a `// ponytail:` note at `APIClient.swift`
+  naming the upgrade path.

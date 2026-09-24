@@ -327,6 +327,16 @@ class APIClient {
     /// the nightly squad sync rewrites it. So a player who moves drops off his
     /// old club's list the next morning without anybody deleting anything, and
     /// a card we could not place against a squad member is never served at all.
+    ///
+    /// // ponytail: clubs only. `players` is keyed by api_player_id, one row
+    /// per human, and the nightly squad sync sets `team_id` to the CLUB — so
+    /// Isak's row says `liverpool`, never `sweden`, and this join can never
+    /// serve a country a dossier. Harmless today: `CountryFollowing.isEnabled`
+    /// is false and `player_cards` holds no country rows. Whoever turns
+    /// countries back on has to give a country entity its own path — either a
+    /// separate squad table keyed by (entity, player) or an `OR` on a
+    /// nationality column — not a wider filter here, which would let a
+    /// departed club player back onto the club list.
     func fetchPlayerCards(teamId: String) async throws -> [PlayerCard] {
         let url = try buildURL(path: "player_cards", queryItems: [
             URLQueryItem(name: "team_id", value: "eq.\(teamId)"),
