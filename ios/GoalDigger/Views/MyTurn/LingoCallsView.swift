@@ -39,7 +39,9 @@ struct LingoCallsView: View {
 
     /// The cover comes first — the mockup's "Get ready for the game" and its
     /// arrow — then the lines. Reset when the fixture changes.
-    @State private var showedCover = false
+    @State private var showedCover = LingoCallsView.debugSkipCover
+    /// The cover arrow's slow nudge, so it reads as "go" rather than décor.
+    @State private var arrowNudge = false
 
     /// Which lines she has said yes to, before the slip commits, and which one
     /// she is being asked about. Both view state on purpose: a half-walked slip
@@ -125,9 +127,13 @@ struct LingoCallsView: View {
                 BlockArrow()
                     .fill(Color.hotRose)
                     .frame(width: 230, height: 150)
+                    .offset(x: arrowNudge ? 12 : 0)
+                    .animation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true),
+                               value: arrowNudge)
                     .accessibilityHidden(true)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
                     .padding(.top, 150)
+                    .onAppear { arrowNudge = true }
                 // Two lines — "Get ready for" / "the game" — set by hand so the
                 // first fits one line and the two stack tight, the closeness the
                 // feed's immersive headline has and a wrapping Text loses.
@@ -162,36 +168,25 @@ struct LingoCallsView: View {
     /// say, and the button that puts it on her slip.
     private func offerScreen(_ call: LingoCall, of offered: [LingoCall]) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
-                Text("Get in the game")
-                    .font(.jakarta(17, weight: .bold))
-                    .foregroundColor(.textPrimaryOnCard)
-                    .accessibilityAddTraits(.isHeader)
-                Spacer(minLength: 0)
-                Text("\(index + 1) of \(offered.count)")
-                    .font(.jakarta(15, weight: .semiBold))
-                    .foregroundColor(.textSecondaryOnCard)
-                    .accessibilityLabel("Line \(index + 1) of \(offered.count)")
-            }
-            .dynamicTypeSize(...Self.displayCap)
+            // The slip she is building, as pips rather than "1 of 3" — the
+            // filled ones are the picks so far, the wide one is this line.
+            pips(of: offered.count)
 
-            // Capped, so the words sit in the upper half and the leftover room
-            // falls below them. Two equal spacers centred the block and left
-            // the screen reading as one short card with a lot of padding.
-            Spacer(minLength: 28).frame(maxHeight: 96)
+            Spacer(minLength: 28).frame(maxHeight: 88)
 
-            VStack(alignment: .leading, spacing: 14) {
-                // The moment, at headline size. It was a ten-point grey eyebrow
-                // on a card whose whole job is explaining when she gets to say
-                // the thing, which is the wrong way round.
+            VStack(alignment: .leading, spacing: 16) {
+                // The moment, in the same League Spartan the cover leads with,
+                // so answering reads as the next beat of one screen and not a
+                // new one.
                 Text(moment(call))
-                    .font(.jakarta(34, weight: .bold))
+                    .font(.calledItHeadline)
+                    .tracking(-1)
                     .foregroundColor(.textPrimaryOnCard)
-                    .lineSpacing(2)
+                    .minimumScaleFactor(0.55)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
                 Text("\u{201C}\(appState.personalise(call.line))\u{201D}")
-                    .font(.jakarta(25, weight: .medium))
+                    .font(.jakarta(22, weight: .semiBold))
                     .foregroundColor(.hotRose)
                     .lineSpacing(3)
                     .multilineTextAlignment(.leading)
@@ -217,10 +212,28 @@ struct LingoCallsView: View {
         .padding(.top, 20)
         .padding(.bottom, 24)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        // A rounded card filling the Lingo content, with the tabs above it and
-        // the bottom bar below still in view.
+        // The same rounded blush card as the cover, so the flow is one surface.
         .background(Color.cardBackground)
         .cornerRadius(Layout.cardCornerRadius)
+        // Each line arrives from the right, the way the cover's arrow points.
+        .id(call.id)
+        .transition(.asymmetric(
+            insertion: .move(edge: .trailing).combined(with: .opacity),
+            removal: .opacity))
+    }
+
+    /// The slip as a row of pips: one per offered line, filled up to and
+    /// including the one she is on, the current one widened.
+    private func pips(of count: Int) -> some View {
+        HStack(spacing: 6) {
+            ForEach(0..<count, id: \.self) { i in
+                Capsule()
+                    .fill(i <= index ? Color.hotRose : Color.hotRose.opacity(0.18))
+                    .frame(width: i == index ? 26 : 14, height: 6)
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: index)
+        .accessibilityLabel("Line \(index + 1) of \(count)")
     }
 
     /// How far the display type scales, and no further. It starts at 34 and 25
@@ -439,11 +452,11 @@ struct LingoCallsView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.jakarta(17, weight: .bold))
-                .foregroundColor(.warmWhite)
+                .foregroundColor(.textPrimaryOnCard)
                 .accessibilityAddTraits(.isHeader)
             Text(subtitle)
                 .font(.jakarta(14, weight: .regular))
-                .foregroundColor(.warmWhite.opacity(0.75))
+                .foregroundColor(.textSecondaryOnCard)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -457,20 +470,26 @@ struct LingoCallsView: View {
         guard let i = args.firstIndex(of: "-gdLingoCallsIndex"), i + 1 < args.count else { return 0 }
         return Int(args[i + 1]) ?? 0
     }
+    /// `-gdLingoCallsStart` opens straight on the first yes/no line, past the
+    /// cover, for a screenshot of a card simctl cannot tap to.
+    private static var debugSkipCover: Bool {
+        ProcessInfo.processInfo.arguments.contains("-gdLingoCallsStart")
+    }
     #else
     private static let startIndex = 0
+    private static let debugSkipCover = false
     #endif
 
-    /// The same card the settle row and the commitment card are drawn in.
+    /// The compact card she comes back to — the same blush surface as the cover
+    /// and the yes/no cards, so the whole flow is one family rather than a dark
+    /// box tacked under the landing.
     private func card<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             content()
         }
-        .padding(14)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.warmWhite.opacity(0.06))
-        .overlay(RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
-            .stroke(Color.hotRose.opacity(0.35), lineWidth: 1))
+        .background(Color.cardBackground)
         .cornerRadius(Layout.cardCornerRadius)
         .transition(.opacity)
     }

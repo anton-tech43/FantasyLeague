@@ -109,6 +109,10 @@ extension Font {
 
     // Immersive card — League Spartan Black for bold impact headlines
     static let immersiveHeadline = Font.custom("LeagueSpartan-Black", size: 64)
+    // Called it — the one big line on every card in the slip sequence (cover,
+    // the yes/no cards). Same face as the immersive headline, sized for the
+    // Lingo card so the cover and the cards cannot drift apart.
+    static let calledItHeadline = Font.custom("LeagueSpartan-Black", size: 46)
     static let immersiveContext = Font.jakarta(18, weight: .regular)
     static let immersiveHint = Font.jakarta(13, weight: .regular)
 }
