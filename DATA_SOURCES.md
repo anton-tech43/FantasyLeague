@@ -58,7 +58,7 @@ Nothing was done about that line for two weeks, and a QA pass on 2026-09-23 foun
 | `f512b984f93ca6915dd623351b93b531` | 8624 | grey silhouette, "NO PHOTO YET" |
 | `3e52d4ec4bb65b0a2019236c4dabd3fc` | 12934 | dark shield with a slash |
 | `68ac0d5773da5ee81444ade70d89533d` | 29416 | grey camera, "image not available" |
-| `0e3bde19a08632f2e893bc2a835598bc` | 678 | stub served for an unknown coach id |
+| `0e3bde19a08632f2e893bc2a835598bc` | 678 | unknown coach id — and this one really is an **HTTP 404**, verified on ids 0, 999999 and 123456789 |
 
 30 of the 73 were one of these; migration 109 cleared them so the app draws its own silhouette instead. Compare against this table by hash, not by "is it shared" — and re-run it after every manager change, because every one of the 8 clubs was a 2025/2026 appointment. The command is in `109_manager_photo_placeholders.sql`'s header.
 

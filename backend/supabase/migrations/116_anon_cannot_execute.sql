@@ -100,8 +100,15 @@ REVOKE EXECUTE ON FUNCTION public.resolve_player_id(p_team_id text, p_name text)
 -- is ours to change, and it is the one that applies: every function in `public`
 -- is owned by postgres and migrations run as postgres.
 --
--- CONSEQUENCE, for whoever adds the next RPC: a new function will NOT come out
--- callable from the app. Say so explicitly, next to the CREATE FUNCTION:
+-- CORRECTION, 2026-09-24: the line below does NOT close new functions, and the
+-- sentence that used to be here saying it did was wrong. Every function is born
+-- with an implicit EXECUTE to PUBLIC that no ALTER DEFAULT PRIVILEGES on this
+-- database can remove — migration 117 shipped two anon-executable helpers the
+-- very next day. See 118 for the experiment and the detection that replaces it.
+-- Whoever adds the next function must write its REVOKE by hand:
+--     REVOKE EXECUTE ON FUNCTION public.<name>(<args>)
+--       FROM PUBLIC, anon, authenticated;
+-- and an RPC the app calls then needs its GRANT back:
 --     GRANT EXECUTE ON FUNCTION public.<name>(<args>) TO anon, authenticated;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
   REVOKE EXECUTE ON FUNCTIONS FROM anon, authenticated;

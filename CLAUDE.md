@@ -91,5 +91,11 @@ Defaults: no unrequested abstractions, deletion over addition, boring over cleve
   `FROM PUBLIC, anon, authenticated`, and check the result rather than the
   statement: `SELECT has_function_privilege('anon', 'public.f(args)', 'EXECUTE')`.
   Same for tables, where `MAINTAIN` is additionally invisible in
-  `information_schema.role_table_grants` (mig 115/116).
+  `information_schema.role_table_grants` (mig 115/116). **And the default
+  cannot save you for functions**: every function is born with an implicit
+  EXECUTE to PUBLIC that no `ALTER DEFAULT PRIVILEGES` on this database
+  removes (both documented forms tested 2026-09-24), so every `CREATE
+  FUNCTION` needs its own REVOKE. `./scripts/db-health.sh` section 7 fails on
+  any anon-executable function outside the app's three RPCs — that is the
+  backstop, since prevention is not available.
 - **"The app looks broken"**: run `./scripts/db-health.sh` BEFORE touching code — it separates our bug from our data from Supabase's infrastructure, which all look identical from the app. Interpretation: `db-health-check` skill. How the pieces fit together, written for a non-DBA: `DB_BASICS.md`. The Supabase dashboard's "database unhealthy" is derived from a probe of the PostgREST path, so it goes red when the HTTP layer dies even though Postgres is fine (2026-09-21).

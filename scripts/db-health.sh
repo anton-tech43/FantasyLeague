@@ -190,6 +190,39 @@ else
 fi
 
 echo
+echo "── 7. WHAT CAN THE SHIPPED KEY REACH? ────────────────────"
+# A new function is BORN with EXECUTE granted to PUBLIC, and `anon` inherits
+# through PUBLIC. ALTER DEFAULT PRIVILEGES cannot take that away — tested both
+# documented forms on 2026-09-24, and a freshly created function still came out
+# anon-executable. So this cannot be prevented at creation, only noticed: every
+# CREATE FUNCTION needs its own REVOKE, and this is what catches the one that
+# forgets. Migrations 084/095/096/103 went a year without anybody noticing.
+ALLOWED='register_device_token|register_la_token|save_match_calls'
+OPEN=$(q "SELECT string_agg(p.proname, ', ' ORDER BY p.proname)
+            FROM pg_proc p
+           WHERE p.pronamespace = 'public'::regnamespace
+             AND p.prorettype <> 'trigger'::regtype
+             AND has_function_privilege('anon', p.oid, 'EXECUTE')
+             AND p.proname !~ '^($ALLOWED)\$';")
+if [ -z "$OPEN" ]; then
+  note "OK" "only the app's own RPCs are callable by anon"
+else
+  fail "anon can execute: $OPEN  (add REVOKE EXECUTE ... FROM PUBLIC, anon, authenticated)"
+fi
+
+WRITABLE=$(q "SELECT string_agg(DISTINCT c.relname, ', ')
+                FROM information_schema.role_table_grants g
+                JOIN pg_class c ON c.relname = g.table_name
+                 AND c.relnamespace = 'public'::regnamespace
+               WHERE g.grantee IN ('anon','authenticated')
+                 AND g.privilege_type <> 'SELECT';")
+if [ -z "$WRITABLE" ]; then
+  note "OK" "anon cannot write any table"
+else
+  fail "anon can write: $WRITABLE"
+fi
+
+echo
 echo "=========================================================="
 if [ "$FAILED" -eq 0 ]; then
   echo " All clear. Anything marked WARN is worth a glance, not a fix."

@@ -816,13 +816,28 @@ tab shows empty state, so do NOT skip this field when fixtures exist.`;
               : null),
       rivalry: existingCards.rivalry ?? null,
 
-      // Update dynamic cards
-      manager: {
-        updated_at: now,
-        name: input.manager_name,
-        summary: input.manager_summary,
-        ...(input.manager_photo_url ? { photo_url: input.manager_photo_url } : {}),
-      },
+      // Update dynamic cards.
+      //
+      // The verified override wins here too. This path used to take the name
+      // and photo straight from the model's reading of the raw Coaches
+      // payload, which still carries the placeholder coach ids that migration
+      // 109 cleared — so a single `{mode:"full"}` run put the broken image
+      // back on eight clubs' manager cards. `teams.manager_name` is the
+      // human-verified source (mig 085); when it is set, its photo decides,
+      // including deciding there is none.
+      manager: team.manager_name
+        ? {
+          updated_at: now,
+          name: team.manager_name,
+          summary: input.manager_summary,
+          ...(team.manager_photo_url ? { photo_url: team.manager_photo_url } : {}),
+        }
+        : {
+          updated_at: now,
+          name: input.manager_name,
+          summary: input.manager_summary,
+          ...(input.manager_photo_url ? { photo_url: input.manager_photo_url } : {}),
+        },
       ones_to_know: {
         updated_at: now,
         players: input.top_players,
@@ -1350,9 +1365,17 @@ async function updateDynamicFields(
 // on 2026-06-11. REMOVE an entry once API-Football reflects reality (Sweden)
 // or once a full regen is confirmed to populate it from the now-present data
 // (France / Scotland / Uruguay). Photo ids are real API-Football coach ids.
+/// `photoUrl` is OPTIONAL. Five of these entries used to hardcode the exact
+/// URLs migration 109 deleted as placeholders (Scotland 76, Spain 5832, South
+/// Africa 2883, Senegal 17636, New Zealand 8214 — all the grey "NO PHOTO YET"
+/// silhouette), and the block below wrote them back unconditionally on every
+/// refresh. Dormant only because the 48 countries are is_active=false; the
+/// moment migration 079's reverse step runs for the next tournament, the
+/// daily pipeline would have restored the broken image within two hours.
+/// Omit it when we have no real headshot, and the card carries none.
 const COACH_OVERRIDES: Record<
   string,
-  { name: string; photoUrl: string; summary: string }
+  { name: string; photoUrl?: string; summary: string }
 > = {
   sweden: {
     name: "Graham Potter",
@@ -1368,7 +1391,6 @@ const COACH_OVERRIDES: Record<
   },
   scotland: {
     name: "Steve Clarke",
-    photoUrl: "https://media.api-sports.io/football/coachs/76.png",
     summary:
       "Steve Clarke has led Scotland since 2019 and signed a new deal through 2030. He has built a resilient side and taken them back to the game's biggest stage.",
   },
@@ -1381,7 +1403,6 @@ const COACH_OVERRIDES: Record<
   // Found wrong in the 2026-06-11 full coach audit (API-Football data stale):
   spain: {
     name: "Luis de la Fuente",
-    photoUrl: "https://media.api-sports.io/football/coachs/5832.png",
     summary:
       "Luis de la Fuente has coached Spain since 2022 and won Euro 2024. He came up through the Spanish youth setup before taking the senior job.",
   },
@@ -1399,13 +1420,11 @@ const COACH_OVERRIDES: Record<
   },
   south_africa: {
     name: "Hugo Broos",
-    photoUrl: "https://media.api-sports.io/football/coachs/2883.png",
     summary:
       "Hugo Broos, the Belgian coach who won the Africa Cup of Nations with Cameroon, has led South Africa since 2021 and back to the World Championship.",
   },
   senegal: {
     name: "Pape Thiaw",
-    photoUrl: "https://media.api-sports.io/football/coachs/17636.png",
     summary:
       "Pape Thiaw, a former Senegal international, stepped up from within the setup and guided the Lions of Teranga to the World Championship.",
   },
@@ -1423,7 +1442,6 @@ const COACH_OVERRIDES: Record<
   },
   new_zealand: {
     name: "Darren Bazeley",
-    photoUrl: "https://media.api-sports.io/football/coachs/8214.png",
     summary:
       "Darren Bazeley leads New Zealand, guiding the All Whites at the World Championship.",
   },
@@ -1726,10 +1744,14 @@ async function updateWcDynamicFields(
   // placeholder. Applied every refresh so it outlives the weekly full regen.
   const coachOverride = COACH_OVERRIDES[team.id];
   if (coachOverride) {
+    const prev = { ...((cards.manager as Record<string, unknown>) ?? {}) };
+    // No photo in the override means the card gets none — otherwise a
+    // placeholder cleared by migration 109 survives in `prev` for ever.
+    if (!coachOverride.photoUrl) delete prev.photo_url;
     cards.manager = {
-      ...((cards.manager as Record<string, unknown>) ?? {}),
+      ...prev,
       name: coachOverride.name,
-      photo_url: coachOverride.photoUrl,
+      ...(coachOverride.photoUrl ? { photo_url: coachOverride.photoUrl } : {}),
       summary: coachOverride.summary,
       updated_at: nowIso,
     };
