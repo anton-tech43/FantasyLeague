@@ -126,27 +126,29 @@ struct LingoCallsView: View {
                 // triangle head with sharp edges, not the tapered rounded glyph.
                 BlockArrow()
                     .fill(Color.hotRose)
-                    .frame(width: 200, height: 200)
-                    .offset(x: arrowNudge ? 12 : 0)
+                    .frame(width: 150, height: 150)
+                    .offset(x: arrowNudge ? 10 : 0)
                     .animation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true),
                                value: arrowNudge)
                     .accessibilityHidden(true)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
-                    .padding(.top, 150)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                    .padding(.bottom, 100)
                     .onAppear { arrowNudge = true }
                 // Two lines — "Get ready for" / "the game" — set by hand so the
                 // first fits one line and the two stack tight, the closeness the
                 // feed's immersive headline has and a wrapping Text loses.
-                VStack(alignment: .leading, spacing: -6) {
-                    Text("Get ready for")
-                    Text("the game")
-                }
-                .font(.custom("LeagueSpartan-Black", size: 46))
-                .tracking(-1)
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
-                .foregroundColor(.textPrimaryOnCard)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                // One Text with a hard break, styled exactly like the feed's
+                // immersive headline (ImmersiveCard.swift): League Spartan Black,
+                // no custom tracking and no custom line spacing, so the letter
+                // and line distance are the font's own — the same as the feed.
+                // The \n only fixes where the line breaks.
+                Text("Get ready for\nthe game")
+                    .font(.calledItHeadline)
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .foregroundColor(.textPrimaryOnCard)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             }
             .padding(28)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -180,7 +182,6 @@ struct LingoCallsView: View {
                 // new one.
                 Text(moment(call))
                     .font(.calledItHeadline)
-                    .tracking(-1)
                     .foregroundColor(.textPrimaryOnCard)
                     .minimumScaleFactor(0.55)
                     .multilineTextAlignment(.leading)
