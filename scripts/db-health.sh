@@ -24,12 +24,26 @@
 set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-set -a && source "$HERE/backend/.env" && set +a
+# In the cloud (routines) backend/.env is absent and SUPABASE_DB_URL is injected
+# as an env var; source the file only when it exists so the script also runs there.
+[ -f "$HERE/backend/.env" ] && { set -a && source "$HERE/backend/.env" && set +a; }
+# psql is at the Homebrew path on the dev's mac, on PATH in the cloud image.
 PSQL=/opt/homebrew/opt/libpq/bin/psql
+[ -x "$PSQL" ] || PSQL=psql
 export PGCONNECT_TIMEOUT=10
 
-HOST=$(grep -E '^SUPABASE_HOST' "$HERE/ios/GoalDigger/Configuration.xcconfig" | awk -F'= *' '{print $2}' | tr -d ' \r')
-KEY=$(grep -E '^SUPABASE_ANON_KEY' "$HERE/ios/GoalDigger/Configuration.xcconfig" | awk -F'= *' '{print $2}' | tr -d ' \r')
+XCCONFIG="$HERE/ios/GoalDigger/Configuration.xcconfig"
+if [ -f "$XCCONFIG" ]; then
+  HOST=$(grep -E '^SUPABASE_HOST' "$XCCONFIG" | awk -F'= *' '{print $2}' | tr -d ' \r')
+  KEY=$(grep -E '^SUPABASE_ANON_KEY' "$XCCONFIG" | awk -F'= *' '{print $2}' | tr -d ' \r')
+else
+  # Cloud fallback: derive host from SUPABASE_URL, use whatever key the env has.
+  # ponytail: SUPABASE_SERVICE_KEY is the privileged path, not the phone's
+  # publishable key, so section 1 then tests reachability, not the exact anon
+  # grant a phone gets. Add the publishable key to gd-env to restore parity.
+  HOST="${SUPABASE_URL#http*://}"; HOST="${HOST%/}"
+  KEY="${SUPABASE_ANON_KEY:-${SUPABASE_SERVICE_KEY:-}}"
+fi
 REST="https://${HOST}/rest/v1"
 
 FAILED=0
