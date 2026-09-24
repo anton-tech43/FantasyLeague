@@ -234,4 +234,53 @@ Anon-executable surface is now exactly: `register_device_token`,
 
 ---
 
+## 2026-09-24 — what the red-team pass found in 108/115/116, and what is left open
+
+Fixed, and covered in migration 120: `device_tokens` had **no triggers at all**,
+so the rate limit migration 108 rewrote had never run; the INSERT/UPDATE grant
+115 kept for App Store 2.2 was already useless (2.2's tier PATCH is a *filtered*
+UPDATE and 106 revoked the SELECT its WHERE clause needs), so it was pure
+surface and is now revoked; and 116's `ALTER DEFAULT PRIVILEGES` for functions
+does not close a new function, because every function is born with an implicit
+`EXECUTE TO PUBLIC`. Detection replaces prevention — `db-health.sh` section 7.
+
+### Open, with the reasoning rather than a promise
+
+**`net` is the sharpest thing still reachable by `anon`, and the cost of ever
+exposing it is higher than "SSRF".** `anon` holds write privileges on
+`net.http_request_queue` and `net._http_response` (RLS is off on both) and
+EXECUTE on `net.http_post`/`http_get`/`http_delete`. The only thing between the
+shipped publishable key and that is PostgREST's exposed-schema list, which does
+not include `net`. This was already an accepted deferral; what was not written
+down is that **`net.http_request_queue.headers` carries
+`Authorization: Bearer <cron service key>`** for every pg_cron job —
+`match-watcher-1min` writes one every minute — and `anon` holds SELECT on that
+table. So adding `net` to the exposed schemas would not merely open an SSRF
+primitive, it would disclose the service key. It cannot be fixed with a REVOKE:
+`extensions.grant_pg_net_access()` runs on an event trigger and re-grants all of
+it on any `CREATE EXTENSION`. It has to stay closed at the schema-exposure
+layer, and that constraint is now recorded rather than remembered.
+
+**`supabase_admin`'s default privileges for `public` are still permissive**
+(`anon=arwdDxtm` on tables, `X` on functions), so a table created by the
+platform — a `CREATE EXTENSION` landing objects in `public`, which `pg_net`
+already did — would come out writable by anon. Attempted the documented hedge:
+
+    ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
+      REVOKE ... FROM anon, authenticated;
+
+It runs without error as `postgres` and changes nothing — the ACL is byte
+identical afterwards. So this is not ours to close. `db-health.sh` section 7
+lists every table `anon` can write regardless of who created it, which turns an
+invisible gap into a failing check the next morning.
+
+**Duplicate migration version numbers** (`112_club_style` / `112_player_cards_squad_link`,
+`117_match_calls` / `117_player_link_knows_first_names`) would break
+`supabase db push`. Nothing uses it — `schema_migrations` stops at 017 and every
+later migration was applied by hand — so the files are left as the historical
+record they are. The two I added in this pass were renumbered to 120/121 rather
+than adding a third collision.
+
+---
+
 *This changelog is authoritative. If you see a conflict between this document and older content in BUILD_PLAN.md or AGENT_CONTRACTS.md, this document reflects the latest decisions.*

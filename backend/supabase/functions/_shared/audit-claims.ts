@@ -29,6 +29,16 @@ export interface RankInfo {
   rank: number; // 1-based final/current league position
   totalTeams: number; // e.g. 20 for the PL
   leagueId: number; // 39 PL, 1 WC
+  /// True only when every club has played every game. The three contradiction
+  /// rules below say "finished Nth" because they were written to read a FINAL
+  /// table; fed a live one they compare a claim about LAST season's title or
+  /// survival against THIS season's standings. On 2026-09-24, five games in,
+  /// that reported Arsenal — the actual reigning champions — as a
+  /// contradiction twice a night, on sentences that were true
+  /// ("beating Premier League champions Arsenal 3-0"). An audit that cries
+  /// wolf nightly is worse than none, because the real finding is the one
+  /// nobody reads. Omitted means incomplete: fail closed, stay quiet.
+  seasonComplete?: boolean;
 }
 
 export interface AuditFinding {
@@ -212,6 +222,12 @@ export function auditContentClaims(text: string, info: RankInfo): AuditFinding[]
 
   const findings: AuditFinding[] = [];
   const cutoff = info.totalTeams - 2; // 20 -> 18 (18,19,20 relegated)
+
+  // Everything below asserts what a FINAL table says. Mid-season, 18th is not
+  // relegated and 2nd is not "not champions" — see RankInfo.seasonComplete.
+  // ucl_but_outside_top_five is a "warning" that asks a human to verify, so it
+  // is gated too rather than left to fire on an October table.
+  if (!info.seasonComplete) return findings;
 
   const safe = findClaim(text, SAFE_CLAIMS, info.teamId);
   if (safe && info.rank >= cutoff) {

@@ -62,7 +62,14 @@ struct FeedView: View {
         case .worldChampionship:
             return FeedContext.worldChampionshipEntityId
         case .everyoneTalking:
-            return appState.selectedTeam?.rawValue ?? appState.selectedCountry?.rawValue
+            // Club only while country following is off. A country-only device
+            // sits on .everyoneTalking now, and falling back to her country
+            // here kept the live-brief poller running against an entity whose
+            // card can never render, and let a failed country request set
+            // hasError — which shows the error screen instead of the
+            // cross-team empty state.
+            if let team = appState.selectedTeam { return team.rawValue }
+            return CountryFollowing.isEnabled ? appState.selectedCountry?.rawValue : nil
         }
     }
 
@@ -743,7 +750,7 @@ struct FeedView: View {
         case .everyoneTalking:
             if let team = appState.selectedTeam {
                 entityId = team.rawValue
-            } else if let country = appState.selectedCountry {
+            } else if CountryFollowing.isEnabled, let country = appState.selectedCountry {
                 entityId = country.rawValue
             } else {
                 return

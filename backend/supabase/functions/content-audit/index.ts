@@ -31,6 +31,7 @@ const PL_LEAGUE_ID = 39;
 interface StandingsRow {
   rank: number;
   team: { id: number; name: string };
+  all?: { played?: number };
 }
 
 serve(async (req) => {
@@ -87,6 +88,12 @@ serve(async (req) => {
   }
 
   const totalTeams = table.length;
+  // The season is over only when every club has played every game — a 20-team
+  // league is 38. Anything less and the verdict rules stay quiet (see
+  // RankInfo.seasonComplete).
+  const playedByTeam = table.map((r) => r.all?.played ?? 0);
+  const seasonComplete = playedByTeam.length > 0 &&
+    Math.min(...playedByTeam) >= (totalTeams - 1) * 2;
   const rankBySlug = new Map<string, number>();
   for (const row of table) {
     const slug = apiIdToSlug.get(row.team?.id);
@@ -116,6 +123,7 @@ serve(async (req) => {
       rank,
       totalTeams,
       leagueId: PL_LEAGUE_ID,
+      seasonComplete,
     };
     const itemFindings = auditContentClaims(itemAuditText(item), info);
     for (const f of itemFindings) {

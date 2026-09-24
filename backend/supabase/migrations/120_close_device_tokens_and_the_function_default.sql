@@ -1,4 +1,4 @@
--- 118_close_device_tokens_and_the_function_default.sql
+-- 120_close_device_tokens_and_the_function_default.sql
 -- Three things the 2026-09-24 red-team pass found in migrations 108, 115 and 116.
 -- All three are cases of a statement that reads as the fix and is not.
 --
@@ -106,7 +106,7 @@ BEGIN
     THEN bad := bad || ' leaked-117-functions-still-open'; END IF;
   IF NOT has_function_privilege('anon','public.register_device_token(text,text[],text[],integer,text,text)','EXECUTE')
     THEN bad := bad || ' registration-rpc-closed-by-mistake'; END IF;
-  IF bad <> '' THEN RAISE EXCEPTION 'migration 118 self-check failed:%', bad; END IF;
-  RAISE NOTICE 'migration 118 self-check passed';
+  IF bad <> '' THEN RAISE EXCEPTION 'migration 120 self-check failed:%', bad; END IF;
+  RAISE NOTICE 'migration 120 self-check passed';
 END
 $check$;

@@ -1,4 +1,4 @@
--- 119_one_club_per_api_football_id.sql
+-- 121_one_club_per_api_football_id.sql
 -- Stop a second club row appearing for a club we already know.
 --
 -- Migration 117 (the detect-consequences / match-watcher fix) excluded
@@ -40,6 +40,6 @@ BEGIN
      WHERE entity_type <> 'tournament' AND api_football_id IS NOT NULL
      GROUP BY 1 HAVING count(*) > 1) d;
   IF dupes > 0 THEN RAISE EXCEPTION 'still % duplicate non-tournament ids', dupes; END IF;
-  RAISE NOTICE 'migration 119 self-check passed';
+  RAISE NOTICE 'migration 121 self-check passed';
 END
 $check$;

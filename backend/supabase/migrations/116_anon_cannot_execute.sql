@@ -104,7 +104,7 @@ REVOKE EXECUTE ON FUNCTION public.resolve_player_id(p_team_id text, p_name text)
 -- sentence that used to be here saying it did was wrong. Every function is born
 -- with an implicit EXECUTE to PUBLIC that no ALTER DEFAULT PRIVILEGES on this
 -- database can remove — migration 117 shipped two anon-executable helpers the
--- very next day. See 118 for the experiment and the detection that replaces it.
+-- very next day. See 120 for the experiment and the detection that replaces it.
 -- Whoever adds the next function must write its REVOKE by hand:
 --     REVOKE EXECUTE ON FUNCTION public.<name>(<args>)
 --       FROM PUBLIC, anon, authenticated;

@@ -289,16 +289,6 @@ struct MainTabView: View {
                             preloadedItem: dest.preloadedItem
                         )
                     }
-                    .navigationDestination(for: String.self) { destination in
-                        if destination == "playerCards",
-                           let teamId = teamPageEntityId {
-                            // V2.0: WC-only users can navigate here too — use
-                            // teamPageEntityId (country-first fallback) so the
-                            // PlayerCardsListView gets a valid entityId. The
-                            // view itself handles "no rows" empty state.
-                            PlayerCardsListView(teamId: teamId)
-                        }
-                    }
             }
             .tabItem {
                 Label("Feed", systemImage: "house")
