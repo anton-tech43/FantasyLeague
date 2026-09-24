@@ -117,36 +117,31 @@ struct LingoCallsView: View {
         Button {
             withAnimation(.easeInOut(duration: 0.25)) { showedCover = true }
         } label: {
-            VStack(alignment: .leading, spacing: 22) {
-                // Empty above, the block low on the card, per Anton's sketch.
-                Spacer(minLength: 0)
-                // Set by hand so the lines stack tight and the tracking pulls
-                // in, the way the feed's immersive headline reads — one Text
-                // wraps with the font's own loose leading, which is the
-                // "closeness" that was lost.
-                VStack(alignment: .leading, spacing: -14) {
-                    Text("Get ready")
-                    Text("for the")
-                    Text("game")
+            ZStack {
+                // The big blocky arrow from the sketch, low and to the right,
+                // overlapping the level of the second line.
+                Image(systemName: "arrowshape.right.fill")
+                    .font(.system(size: 150, weight: .black))
+                    .foregroundColor(.hotRose)
+                    .accessibilityHidden(true)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+                    .padding(.top, 150)
+                // Two lines — "Get ready for" / "the game" — set by hand so the
+                // first fits one line and the two stack tight, the closeness the
+                // feed's immersive headline has and a wrapping Text loses.
+                VStack(alignment: .leading, spacing: -6) {
+                    Text("Get ready for")
+                    Text("the game")
                 }
-                .font(.immersiveHeadline)
-                .tracking(-1.5)
+                .font(.custom("LeagueSpartan-Black", size: 46))
+                .tracking(-1)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
                 .foregroundColor(.textPrimaryOnCard)
-                .fixedSize(horizontal: false, vertical: true)
-                // The blocky arrow from the sketch, not a hairline system one,
-                // sitting to the right below the words the way the sketch has it.
-                HStack(spacing: 0) {
-                    Spacer(minLength: 0)
-                    Image(systemName: "arrowshape.right.fill")
-                        .font(.system(size: 120, weight: .black))
-                        .foregroundColor(.hotRose)
-                        .accessibilityHidden(true)
-                }
-                .padding(.trailing, 8)
-                Spacer(minLength: 0).frame(maxHeight: 44)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             }
             .padding(28)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.cardBackground)
             .cornerRadius(Layout.cardCornerRadius)
             .contentShape(Rectangle())
