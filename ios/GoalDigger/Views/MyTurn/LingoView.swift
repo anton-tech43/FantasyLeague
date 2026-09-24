@@ -47,9 +47,6 @@ struct LingoView: View {
     /// something it actually depends on moves — never on a keystroke in the
     /// search field, which is a deck build over 158 words per character.
     @State private var weekend: Weekend?
-    /// The full-screen hero's arrow nudge, the same slow "go" the calls cover
-    /// has, so the two full-screen cards share the one motif.
-    @State private var heroArrowNudge = false
     #if DEBUG
     /// Set by `-gdLingoContext`, so a screenshot can pin a derby weekend.
     @State private var debugContext: MatchContext?
@@ -468,13 +465,9 @@ struct LingoView: View {
                 BlockArrow()
                     .fill(Color.deepMauve)
                     .frame(width: 150, height: 150)
-                    .offset(x: heroArrowNudge ? 10 : 0)
-                    .animation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true),
-                               value: heroArrowNudge)
                     .accessibilityHidden(true)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                     .padding(.bottom, 100)
-                    .onAppear { heroArrowNudge = true }
                 // The opponent, set exactly like the feed's immersive headline
                 // and the calls cover: League Spartan Black, the font's own
                 // letter and line spacing, white on the rose.

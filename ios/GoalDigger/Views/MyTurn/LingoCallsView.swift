@@ -40,8 +40,6 @@ struct LingoCallsView: View {
     /// The cover comes first — the mockup's "Get ready for the game" and its
     /// arrow — then the lines. Reset when the fixture changes.
     @State private var showedCover = LingoCallsView.debugSkipCover
-    /// The cover arrow's slow nudge, so it reads as "go" rather than décor.
-    @State private var arrowNudge = false
 
     /// Which lines she has said yes to, before the slip commits, and which one
     /// she is being asked about. Both view state on purpose: a half-walked slip
@@ -127,13 +125,9 @@ struct LingoCallsView: View {
                 BlockArrow()
                     .fill(Color.hotRose)
                     .frame(width: 150, height: 150)
-                    .offset(x: arrowNudge ? 10 : 0)
-                    .animation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true),
-                               value: arrowNudge)
                     .accessibilityHidden(true)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                     .padding(.bottom, 100)
-                    .onAppear { arrowNudge = true }
                 // Two lines — "Get ready for" / "the game" — set by hand so the
                 // first fits one line and the two stack tight, the closeness the
                 // feed's immersive headline has and a wrapping Text loses.
