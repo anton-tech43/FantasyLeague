@@ -257,7 +257,9 @@ struct LingoView: View {
     /// cannot get out of step with the card underneath it, because it is read
     /// off the same session.
     private var reveal: (term: LingoTerm, correct: Bool, last: Bool)? {
-        guard showingRound, let session = store.drillSession, !session.finished,
+        // Not over the slip: when the Called it cover takes the content the
+        // round is not on screen, so neither is its popup.
+        guard showingRound, !showingCalledIt, let session = store.drillSession, !session.finished,
               let selected = session.selected,
               let id = session.queue[safe: session.index],
               let term = weekend?.named[id] ?? content.terms.first(where: { $0.id == id }),
