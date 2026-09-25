@@ -14,8 +14,6 @@ import SwiftUI
 /// every deal while holding them still for the round she is in.
 struct LingoOverheardView: View {
     let content: LingoContent
-    /// For the "Lines that use this" jump on a reveal.
-    let sayThis: SayThisContent
     @Bindable var store: MyTurnStore
     /// This weekend, for the line the end card offers her to use at it.
     let context: MatchContext
@@ -32,6 +30,9 @@ struct LingoOverheardView: View {
     /// four-second look-up is the reason Lingo exists; it cannot cost a round.
     let onPause: () -> Void
     @Environment(AppState.self) private var appState
+    /// The named player's "defender, Arsenal", open over the bubble after a tap
+    /// on his name.
+    @State private var showingRole = false
 
     private func term(_ id: String) -> LingoTerm? { named[id] ?? content.terms.first { $0.id == id } }
 
@@ -123,6 +124,26 @@ struct LingoOverheardView: View {
             .foregroundColor(.warmWhite)
             .lineSpacing(3)
             .fixedSize(horizontal: false, vertical: true)
+            // A tap on the player's name (a link in `snippet`) says who he is.
+            .tint(.hotRose)
+            .environment(\.openURL, OpenURLAction { url in
+                guard url.scheme == Self.roleScheme else { return .systemAction }
+                showingRole = true
+                return .handled
+            })
+            .popover(isPresented: $showingRole) {
+                if let player = term.namedPlayer {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(player.name).font(.jakarta(15, weight: .bold))
+                        Text(player.role.prefix(1).uppercased() + player.role.dropFirst())
+                            .font(.jakarta(14, weight: .regular))
+                    }
+                    .foregroundColor(.charcoal)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .presentationCompactAdaptation(.popover)
+                }
+            }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.warmWhite.opacity(0.08))
@@ -156,10 +177,18 @@ struct LingoOverheardView: View {
     /// plain `range(of:)` and not a matching rule.
     ///
     /// `options(for:)` requires `overheard`, so a card on screen always has one.
+    private static let roleScheme = "goaldigger-role"
+
     private func snippet(_ term: LingoTerm) -> AttributedString {
         var text = AttributedString(term.overheard ?? "")
         if let needle = term.overheardTerm, let range = text.range(of: needle) {
             text[range].font = .jakarta(19, weight: .bold)
+        }
+        // The bubble has no room for "(defender, Arsenal)" — its cap holds it
+        // to three lines — so the name is a tap that shows it instead.
+        if let player = term.namedPlayer, let range = text.range(of: player.name) {
+            text[range].link = URL(string: "\(Self.roleScheme):player")
+            text[range].underlineStyle = Text.LineStyle(pattern: .dot)
         }
         return text
     }
@@ -279,8 +308,6 @@ struct LingoRevealPopup: View {
     let correct: Bool
     /// The last card in the round, so the button says where it goes.
     let last: Bool
-    /// For the "Lines that use this" jump.
-    let sayThis: SayThisContent
     @Bindable var store: MyTurnStore
     @Environment(AppState.self) private var appState
     /// The only state here, and it is about this popup and nothing else.
@@ -339,32 +366,7 @@ struct LingoRevealPopup: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            // Not an exit from the popup: it is still here, with its Next, when
-            // she comes back to Lingo.
-            if let situation = situation {
-                Button {
-                    store.sayThisSituationId = situation.id
-                    withAnimation(.spring(duration: 0.25)) { store.lastModule = .sayThis }
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "text.bubble")
-                            .font(.system(size: 14, weight: .semibold))
-                        Text("Lines that use this")
-                            .font(.jakarta(14, weight: .semiBold))
-                    }
-                    .foregroundColor(.hotRose)
-                    .padding(.vertical, 4)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Lines that use \(term.term), in Say This")
-            }
         }
-    }
-
-    /// The Say This situation whose lines lean on this word, if there is one.
-    private var situation: Situation? {
-        sayThis.situations.first { $0.lines.contains { $0.lingo == term.id } }
     }
 
     #if DEBUG

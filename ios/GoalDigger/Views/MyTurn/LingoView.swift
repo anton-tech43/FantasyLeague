@@ -18,8 +18,6 @@ import SwiftUI
 /// thing, she needs to know what it meant. `level` survives as the sort key.
 struct LingoView: View {
     let content: LingoContent
-    /// For the "Lines that use this" jump on a reveal.
-    let sayThis: SayThisContent
     @Bindable var store: MyTurnStore
     /// The club she follows, for the deal seed and her row in the table.
     let team: Team?
@@ -150,9 +148,8 @@ struct LingoView: View {
         if PlayerSlots.debugRequested { return PlayerSlots.debugInputs }
         #endif
         let opponent = PlayerSlots.opponent(of: context)
-        let theirs = opponent
-            .flatMap { name in Team.allCases.first { MatchContext.sameClub($0.displayName, name) } }
-            .map { live.clubPlayers(teamId: $0.rawValue) } ?? .init()
+        let theirClub = opponent.flatMap { name in Team.allCases.first { MatchContext.sameClub($0.displayName, name) } }
+        let theirs = theirClub.map { live.clubPlayers(teamId: $0.rawValue) } ?? .init()
         return PlayerSlots.Inputs(
             squad: squad.players,
             ourCurated: page?.cards.onesToKnow?.players ?? [],
@@ -160,7 +157,9 @@ struct LingoView: View {
             // The gated opponent side off his own page first — it was written
             // for this fixture — then the opponent's own curated three.
             theirCurated: PlayerSlots.opponentCurated(page: page, context: context) + theirs.curated,
-            opponentKnown: opponent != nil)
+            opponentKnown: opponent != nil,
+            ourTeam: team?.displayName,
+            theirTeam: theirClub?.displayName ?? opponent)
     }
 
     private func buildWeekend() -> Weekend {
@@ -267,7 +266,7 @@ struct LingoView: View {
             scroller
             if let reveal {
                 LingoRevealPopup(term: reveal.term, correct: reveal.correct, last: reveal.last,
-                                 sayThis: sayThis, store: store)
+                                 store: store)
                     .transition(.opacity)
             }
         }
@@ -291,7 +290,7 @@ struct LingoView: View {
                         hero
                     } else if showingRound {
                         LingoOverheardView(
-                            content: content, sayThis: sayThis, store: store, context: context,
+                            content: content, store: store, context: context,
                             named: weekend?.named ?? [:],
                             onDealAgain: dealAgain,
                             onPause: { withAnimation(.easeInOut(duration: 0.2)) { showingLanding = true } })
@@ -457,41 +456,20 @@ struct LingoView: View {
     }
 
     /// The pink "Before Chelsea" hero, full screen like the blush calls cover —
-    /// Anton's second sketch. Same layout as `coverCard`: the one big line in
-    /// League Spartan (the opponent, here white on rose), the drawn `BlockArrow`
-    /// low-right (dark on the rose, the way the sketch has it), the whole card
-    /// pressing into the round. Fills the Lingo viewport; the glossary scrolls
+    /// Anton's second sketch, drawn by the same `SketchCard` so the two differ
+    /// only in colour: the opponent white on rose, the arrow dark, the whole
+    /// card pressing into the round. Fills the Lingo viewport; the glossary scrolls
     /// below it. No subtitle — the sketch is the line and the arrow, the same
     /// restraint the calls cover keeps.
     private func fullScreenHero(_ weekend: Weekend) -> some View {
         Button {
             pressHero(weekend)
         } label: {
-            ZStack {
-                BlockArrow()
-                    .fill(Color.deepMauve)
-                    .frame(width: 150, height: 150)
-                    .accessibilityHidden(true)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                    .padding(.bottom, 100)
-                // The opponent, set exactly like the feed's immersive headline
-                // and the calls cover: League Spartan Black, the font's own
-                // letter and line spacing, white on the rose.
-                Text(weekend.context.title)
-                    .font(.calledItHeadline)
-                    .minimumScaleFactor(0.5)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-                    .foregroundColor(.warmWhite)
-                    // The same lift the calls cover gives its headline, so the
-                    // line sits above the arrow and the two cards stay identical.
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .padding(.bottom, 150)
-            }
-            .padding(28)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.hotRose)
-            .cornerRadius(Layout.cardCornerRadius)
+            // Broken after the first word, the way the sketch sets
+            // "Before" / "Chelsea" on two rows beside the arrow's head.
+            SketchCard(title: weekend.context.title.replacingOccurrences(
+                           of: " ", with: "\n", options: [], range: weekend.context.title.range(of: " ")),
+                       ink: .warmWhite, arrow: .deepMauve, fill: .hotRose)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

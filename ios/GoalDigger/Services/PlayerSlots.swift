@@ -101,6 +101,19 @@ enum PlayerSlots {
         /// False when the context has no opponent to prepare for at all, which
         /// empties every `theirs` slot whatever the caches happen to hold.
         var opponentKnown: Bool = false
+        /// The two clubs by name, for the "(defender, Arsenal)" a name is
+        /// glossed with. Nil prints the position alone.
+        var ourTeam: String? = nil
+        var theirTeam: String? = nil
+    }
+
+    /// What she needs to place a name she has never heard: "defender,
+    /// Arsenal". Only position and club — the two things the data holds (see
+    /// the rules above).
+    static func role(_ slot: Slot, _ inputs: Inputs) -> String {
+        let position = slot.archetype == .keeper ? "goalkeeper" : slot.archetype.rawValue
+        let team = slot.side == .ours ? inputs.ourTeam : inputs.theirTeam
+        return [position, team].compactMap { $0 }.joined(separator: ", ")
     }
 
     // MARK: Names
@@ -275,7 +288,7 @@ enum PlayerSlots {
         let picks = assign(dealt, pools: pools(inputs, print: printer), seed: seed)
         guard !picks.isEmpty else { return dealt }
         return dealt.map { term in
-            picks[term.id].map { term.naming($0.named.display, $0.variant) } ?? term
+            picks[term.id].map { term.naming($0.named.display, $0.variant, role: role($0.named.slot, inputs)) } ?? term
         }
     }
 
@@ -311,12 +324,17 @@ enum PlayerSlots {
                      p(3, "W. Saliba", "Defender", minutes: 300)]
         let base = Inputs(squad: squad,
                           theirPicks: [p(9, "R. Kolo Muani", "Attacker", minutes: 500)],
-                          opponentKnown: true)
+                          opponentKnown: true, ourTeam: "Arsenal", theirTeam: "Chelsea")
         let deck = [t("a", [theirForward]), t("b", [ourMid]), t("c", nil)]
         let out = apply(deck, inputs: base, seed: "f|0")
         guard out.count == 3,
               out[0].overheard?.contains("Kolo Muani") == true,
-              out[0].sayIt?.contains("Kolo Muani") == true,
+              // The line she says glosses the name; the bubble keeps it bare
+              // (it has no room) and carries the role for a tap instead.
+              out[0].sayIt?.contains("Kolo Muani (forward, Chelsea)") == true,
+              out[0].overheard?.contains("(forward") == false,
+              out[0].namedPlayer == LingoTerm.NamedPlayer(name: "Kolo Muani", role: "forward, Chelsea"),
+              out[1].namedPlayer?.role == "midfielder, Arsenal",
               out[1].overheard?.contains("Odegaard") == true,
               out[2] == deck[2] else { return false }
         // The bolded phrase still exists in the resolved line, and does not
@@ -492,6 +510,6 @@ enum PlayerSlots {
             LiveSquadPack.Player(api_player_id: 9, name: "D. Solanke", position: "Attacker",
                                  photo_url: nil, number: nil, appearances: 5, minutes: 420),
         ],
-        opponentKnown: true)
+        opponentKnown: true, ourTeam: "Arsenal", theirTeam: "Tottenham")
     #endif
 }

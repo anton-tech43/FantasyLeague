@@ -117,42 +117,9 @@ struct LingoCallsView: View {
         Button {
             withAnimation(.easeInOut(duration: 0.25)) { showedCover = true }
         } label: {
-            ZStack {
-                // The big blocky arrow from the sketch, low and to the right,
-                // overlapping the level of the second line. Drawn rather than a
-                // system symbol: the sketch's is a clean rectangle tail and a
-                // triangle head with sharp edges, not the tapered rounded glyph.
-                BlockArrow()
-                    .fill(Color.hotRose)
-                    .frame(width: 150, height: 150)
-                    .accessibilityHidden(true)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                    .padding(.bottom, 100)
-                // Two lines — "Get ready for" / "the game" — set by hand so the
-                // first fits one line and the two stack tight, the closeness the
-                // feed's immersive headline has and a wrapping Text loses.
-                // One Text with a hard break, styled exactly like the feed's
-                // immersive headline (ImmersiveCard.swift): League Spartan Black,
-                // no custom tracking and no custom line spacing, so the letter
-                // and line distance are the font's own — the same as the feed.
-                // The \n only fixes where the line breaks.
-                Text("Get ready for\nthe game")
-                    .font(.calledItHeadline)
-                    .minimumScaleFactor(0.5)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-                    .foregroundColor(.textPrimaryOnCard)
-                    // Sit the line above the arrow, not level with it. The
-                    // bottom inset lifts the vertically-centred headline off the
-                    // arrow's band. The round hero uses the exact same lift, so
-                    // the two full-screen cards stay identical bar the colour.
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .padding(.bottom, 150)
-            }
-            .padding(28)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.cardBackground)
-            .cornerRadius(Layout.cardCornerRadius)
+            // "Get ready for" / "the game": the hard break is the sketch's.
+            SketchCard(title: "Get ready for\nthe game", ink: .textPrimaryOnCard,
+                       arrow: .hotRose, fill: .cardBackground)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -517,5 +484,60 @@ struct BlockArrow: Shape {
         p.addLine(to: CGPoint(x: rect.minX, y: shaftBottom))
         p.closeSubpath()
         return p
+    }
+}
+
+/// The two full-screen cards — the blush Called it cover and the pink round
+/// hero — laid out the way Anton's two sketches place them. Every measure is a
+/// fraction of the card, taken off the sketches, so both cards land the same on
+/// every phone and differ only in colour:
+/// - the line: League Spartan Black at 14.5% of the card's width (the sketches'
+///   ~52pt on a 362pt card), inset 16pt, its letters starting at 42% of the
+///   card's height;
+/// - the arrow: square, 39% of the card's width, tip flush with the card's
+///   right edge, and its top three quarters of the way down the two rows of
+///   letters. Anchored to the line, not the card, so the two keep the sketch's
+///   ratio whatever the card's height: the shaft runs under the last row and
+///   the head rises beside it.
+/// The font is sized off the card rather than a token so "Get ready for" fits
+/// its row on every width and minimumScaleFactor never has to fire — the
+/// auto-shrink is what once drew the two cards at different sizes.
+struct SketchCard: View {
+    let title: String
+    let ink: Color
+    let arrow: Color
+    let fill: Color
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width, h = geo.size.height
+            let size = w * 0.145
+            let side = w * 0.39
+            let top = h * 0.42          // where the letters start
+            // Two rows of League Spartan Black measure 1.62x the size from the
+            // top of the letters to the last baseline; the sketch starts the
+            // arrow at 75% of that.
+            let arrowTop = top + size * 1.62 * 0.75
+            ZStack(alignment: .topLeading) {
+                Text(title)
+                    .font(.custom("LeagueSpartan-Black", size: size))
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.5)
+                    .multilineTextAlignment(.leading)
+                    .foregroundColor(ink)
+                    .frame(width: w - 32, alignment: .leading)
+                    // The frame's top sits above the letters by the font's
+                    // ascent over its cap height; pull it up by that so the
+                    // letters, not the box, start at 42%.
+                    .offset(x: 16, y: top - size * 0.2)
+                BlockArrow()
+                    .fill(arrow)
+                    .frame(width: side, height: side)
+                    .offset(x: w - side, y: arrowTop)
+                    .accessibilityHidden(true)
+            }
+        }
+        .background(fill)
+        .cornerRadius(Layout.cardCornerRadius)
     }
 }

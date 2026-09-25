@@ -248,6 +248,9 @@ struct LingoTerm: Codable, Identifiable, Hashable {
     /// Nil on every term until the content build starts emitting them, and nil
     /// forever on a cached file published before they existed.
     let playerVariants: [PlayerVariant]?
+    /// Who the named card names, and his "defender, Arsenal". Never in the
+    /// content file; `naming` fills it on the phone.
+    var namedPlayer: NamedPlayer? = nil
 
     /// This term with `variant`'s lines in place of its own and the slot token
     /// replaced by `named`.
@@ -255,13 +258,25 @@ struct LingoTerm: Codable, Identifiable, Hashable {
     /// The one place the substitution happens, so the bubble, the reveal and
     /// the line the round leaves her with can never disagree about what he
     /// was called.
-    func naming(_ named: String, _ variant: PlayerVariant) -> LingoTerm {
+    ///
+    /// `role` ("defender, Arsenal") glosses the name in `sayIt` — she may never
+    /// have heard of him. The bubble keeps the bare name: its 90-character cap
+    /// is what holds it to three lines, and a gloss would break it on every
+    /// variant. There the role travels in `namedPlayer`, for a tap.
+    func naming(_ named: String, _ variant: PlayerVariant, role: String? = nil) -> LingoTerm {
         let token = "{\(variant.slot)}"
         var copy = self
         copy.overheard = variant.overheard.replacingOccurrences(of: token, with: named)
         copy.overheardTerm = variant.overheardTerm ?? overheardTerm
-        copy.sayIt = variant.sayIt.replacingOccurrences(of: token, with: named)
+        copy.sayIt = variant.sayIt.replacingOccurrences(of: token, with: role.map { "\(named) (\($0))" } ?? named)
+        copy.namedPlayer = role.map { NamedPlayer(name: named, role: $0) }
         return copy
+    }
+
+    /// The real player a named card carries, set only by `naming`.
+    struct NamedPlayer: Codable, Hashable {
+        let name: String
+        let role: String
     }
 }
 

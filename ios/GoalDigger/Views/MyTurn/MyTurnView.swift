@@ -27,7 +27,7 @@ struct MyTurnView: View {
                     SayThisView(content: content.sayThis, lingo: content.lingo, store: store)
                         .opacity(store.lastModule == .sayThis ? 1 : 0)
                         .allowsHitTesting(store.lastModule == .sayThis)
-                    LingoView(content: content.lingo, sayThis: content.sayThis, store: store,
+                    LingoView(content: content.lingo, store: store,
                               team: appState.selectedTeam, page: live.page)
                         .opacity(store.lastModule == .lingo ? 1 : 0)
                         .allowsHitTesting(store.lastModule == .lingo)
