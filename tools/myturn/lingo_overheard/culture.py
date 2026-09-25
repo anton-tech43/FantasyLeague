@@ -21,8 +21,8 @@ OVERHEARD = {
         moment="anytime",
         player=dict(
             slot='ours.keeper',
-            overheard="You'd have to ask the gaffer about {ours.keeper}. I've got no idea.",
-            sayIt='"What\'s the gaffer like with {ours.keeper}? Do you ever hear?"',
+            overheard="In interviews they all say 'the gaffer'. Bet {ours.keeper} does too.",
+            sayIt='"Does {ours.keeper} call the manager the gaffer too, or is that just fans?"',
         ),
     ),
     "the-boss": dict(
@@ -36,7 +36,7 @@ OVERHEARD = {
         player=dict(
             slot='ours.midfielder',
             overheard="Whether {ours.midfielder} plays is the boss's call. Nobody else gets a say.",
-            sayIt='"Is it the boss who decides whether {ours.midfielder} plays, or the coaches?"',
+            sayIt='"Is the boss starting {ours.midfielder} today?"',
         ),
     ),
     "hard-man": dict(
@@ -59,7 +59,7 @@ OVERHEARD = {
         player=dict(
             slot='theirs.keeper',
             overheard="Class act, is he, {theirs.keeper}? I'd have to see more of him.",
-            sayIt='"Is {theirs.keeper} a class act, or is that just what they say?"',
+            sayIt='"What makes someone a class act? Would {theirs.keeper} count?"',
         ),
     ),
     "top-top-player": dict(
@@ -95,7 +95,7 @@ OVERHEARD = {
         moment="anytime",
         player=dict(
             slot='theirs.defender',
-            overheard="Ask a pundit about {theirs.defender} and you'll get ten minutes of it.",
+            overheard="Ask three pundits about {theirs.defender} and you'll get three answers.",
             sayIt='"What do the pundits actually say about {theirs.defender}?"',
         ),
     ),
@@ -118,8 +118,8 @@ OVERHEARD = {
         moment="anytime",
         player=dict(
             slot='theirs.keeper',
-            overheard="One of us is going to bottle it here. Might be us, might be {theirs.keeper}.",
-            sayIt='"Who bottles it first, do you reckon? Us or {theirs.keeper}?"',
+            overheard="If it goes to penalties and {theirs.keeper} bottles it, we're laughing.",
+            sayIt='"Is {theirs.keeper} the type to bottle it, or does he stay calm?"',
         ),
     ),
     "banter": dict(
@@ -132,8 +132,8 @@ OVERHEARD = {
         moment="anytime",
         player=dict(
             slot='ours.forward',
-            overheard='The banter if {ours.forward} misses one of those, though. Imagine.',
-            sayIt='"Is that banter, or would you actually fall out over {ours.forward}?"',
+            overheard='if {ours.forward} misses an easy one today the banter in here will be brutal.',
+            sayIt='"If {ours.forward} misses an easy one, will your mates give you banter?"',
         ),
     ),
     "group-chat": dict(
@@ -299,8 +299,8 @@ OVERHEARD = {
         moment="anytime",
         player=dict(
             slot='ours.forward',
-            overheard="Fantasy football's ruining my life. Ask me about {ours.forward} and see.",
-            sayIt='"Is {ours.forward} good, or is that your fantasy football team talking?"',
+            overheard="Fantasy football's ruining my life. Do I keep {ours.forward} or not?",
+            sayIt='"Do you play fantasy football? Would you have {ours.forward} in your team?"',
         ),
     ),
     "we-go-again": dict(

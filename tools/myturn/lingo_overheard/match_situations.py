@@ -110,8 +110,8 @@ OVERHEARD = {
         moment="common",
         player=dict(
             slot='theirs.forward',
-            overheard='If {theirs.forward} gets a sitter like that, are we in trouble?',
-            sayIt='"Would {theirs.forward} put a sitter like that away, do you think?"',
+            overheard="If {theirs.forward} gets a sitter today, let's hope he misses it.",
+            sayIt='"What a sitter to miss. Would {theirs.forward} have put that away?"',
         ),
     ),
     "clinical-finish": dict(
@@ -124,8 +124,8 @@ OVERHEARD = {
         moment="common",
         player=dict(
             slot='theirs.forward',
-            overheard="Clinical finishing, that is. That's what they pay {theirs.forward} for.",
-            sayIt='"That\'s a clinical finish. Is that what {theirs.forward} is there for?"',
+            overheard='Clinical finish, that. Can {theirs.forward} do that when it matters?',
+            sayIt='"What a clinical finish. Is {theirs.forward} that good in front of goal?"',
         ),
     ),
     "screamer": dict(
@@ -202,7 +202,7 @@ OVERHEARD = {
         player=dict(
             slot='ours.keeper',
             overheard="Just hoof it. There's nothing on for {ours.keeper} back there anyway.",
-            sayIt='"Do they just hoof it every time? Even {ours.keeper}?"',
+            sayIt='"Is {ours.keeper} meant to hoof it, or pass it out from the back?"',
         ),
     ),
     "dive": dict(
@@ -315,7 +315,7 @@ OVERHEARD = {
         player=dict(
             slot='ours.defender',
             overheard='Backs to the wall from here. Get {ours.defender} in the middle of it.',
-            sayIt='"Backs to the wall. Is {ours.defender} the one who heads everything away?"',
+            sayIt='"Backs to the wall. Do you trust {ours.defender} to hold out?"',
         ),
     ),
     "in-the-mixer": dict(
@@ -328,8 +328,8 @@ OVERHEARD = {
         moment="common",
         player=dict(
             slot='theirs.defender',
-            overheard='Get it in the mixer. See if {theirs.defender} fancies it.',
-            sayIt='"In the mixer, that\'s the plan. Does {theirs.defender} like it in there?"',
+            overheard='Get it in the mixer. Make {theirs.defender} deal with it.',
+            sayIt='"Why not just get it in the mixer? See how {theirs.defender} copes with that."',
         ),
     ),
     "route-one": dict(
@@ -351,7 +351,7 @@ OVERHEARD = {
         moment="common",
         player=dict(
             slot='theirs.midfielder',
-            overheard="Give it away and they're off on the break. Where does {theirs.midfielder} fit?",
+            overheard='If they get on the break, is {theirs.midfielder} one of the ones to watch?',
             sayIt='"Are they good on the break? Is {theirs.midfielder} part of that?"',
         ),
     ),
@@ -392,8 +392,8 @@ OVERHEARD = {
         moment="common",
         player=dict(
             slot='ours.midfielder',
-            overheard="{ours.midfielder} could win man of the match every week and they'd still moan.",
-            sayIt='"Would you give {ours.midfielder} man of the match? Or is that just me?"',
+            overheard='Man of the match? Always a scorer. Never a midfielder like {ours.midfielder}.',
+            sayIt='"Can {ours.midfielder} get man of the match without scoring, or does it always go to a scorer?"',
         ),
     ),
     "top-drawer": dict(

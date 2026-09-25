@@ -154,8 +154,8 @@ OVERHEARD = {
         moment="anytime",
         player=dict(
             slot='theirs.midfielder',
-            overheard="A lot depends on the pressing. Nobody asks if {theirs.midfielder} enjoys it.",
-            sayIt='"All that pressing. Does {theirs.midfielder} ever stop running?"',
+            overheard='It comes down to pressing. Can {theirs.midfielder} and their midfield keep it up?',
+            sayIt='"Does {theirs.midfielder} have to do much of the pressing, or is that the forwards\' job?"',
         ),
     ),
     "high-press": dict(
@@ -231,7 +231,7 @@ OVERHEARD = {
         moment="common",
         player=dict(
             slot='ours.defender',
-            overheard="Man marking, is it. Who do they give that job to, {ours.defender}?",
+            overheard="Man marking, is it? That's a job for {ours.defender}, if you ask me.",
             sayIt='"Man marking sounds hard. Could {ours.defender} do that for ninety minutes?"',
         ),
     ),
@@ -341,7 +341,7 @@ OVERHEARD = {
         player=dict(
             slot='ours.keeper',
             overheard="Rotation again. I'd pick {ours.keeper} every single week, me.",
-            sayIt='"All this rotation. Would you pick {ours.keeper} every week?"',
+            sayIt='"Do they rotate the keeper too, or does {ours.keeper} play every game?"',
         ),
     ),
 }

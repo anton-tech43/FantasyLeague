@@ -49,9 +49,9 @@ OVERHEARD = {
         when=["relegation", "run-in"],
         moment="anytime",
         player=dict(
-            slot='ours.forward',
-            overheard="If it's a relegation scrap, does a lad like {ours.forward} stick around?",
-            sayIt='"Would {ours.forward} still be here if it was a relegation scrap?"',
+            slot='theirs.forward',
+            overheard="If they're in a relegation scrap, it's on {theirs.forward} to get them goals.",
+            sayIt='"If they got relegated, would {theirs.forward} stay or move on?"',
         ),
     ),
     "promotion": dict(
@@ -239,7 +239,7 @@ OVERHEARD = {
         player=dict(
             slot='ours.keeper',
             overheard='penalty shootout. dont tell me how it goes. not even if {ours.keeper} saves one.',
-            sayIt='"A penalty shootout. Is {ours.keeper} the one who has to save them?"',
+            sayIt='"If it goes to a penalty shootout, is it down to {ours.keeper} or the ones taking them?"',
         ),
     ),
     "two-legs": dict(
@@ -336,7 +336,7 @@ OVERHEARD = {
         moment="common",
         player=dict(
             slot='ours.midfielder',
-            overheard='Assists, assists, assists. Nobody asks what {ours.midfielder} actually does.',
+            overheard='Everyone counts assists. Nobody sees the rest of what {ours.midfielder} does.',
             sayIt='"Does {ours.midfielder} get many assists, or is it all goals with him?"',
         ),
     ),
@@ -369,8 +369,8 @@ OVERHEARD = {
         moment="anytime",
         player=dict(
             slot='ours.defender',
-            overheard="He never takes the cups seriously. I'd start {ours.defender} in every one.",
-            sayIt='"Do the cups actually matter? Would you even play {ours.defender} in them?"',
+            overheard='In the cups the manager rests people. Will {ours.defender} even play?',
+            sayIt='"Is it a cup game? Does {ours.defender} still play, or do they rest him?"',
         ),
     ),
     "fa-cup": dict(
@@ -401,8 +401,8 @@ OVERHEARD = {
         moment="rare",
         player=dict(
             slot='theirs.forward',
-            overheard='Champions League football is back, and {theirs.forward} is up front for them.',
-            sayIt='"Champions League, and {theirs.forward} up front. Should I be worried?"',
+            overheard='Champions League football is back. Big night for {theirs.forward} and the rest.',
+            sayIt='"Champions League night! Is {theirs.forward} playing, do you know?"',
         ),
     ),
     "europa-league": dict(
@@ -434,7 +434,7 @@ OVERHEARD = {
         player=dict(
             slot='theirs.midfielder',
             overheard="Would you take {theirs.midfielder}? That's your transfer window done.",
-            sayIt='"Would we ever sign someone like {theirs.midfielder} in a transfer window?"',
+            sayIt='"When\'s the next transfer window? Would we ever go for {theirs.midfielder}?"',
         ),
     ),
     "deadline-day": dict(
