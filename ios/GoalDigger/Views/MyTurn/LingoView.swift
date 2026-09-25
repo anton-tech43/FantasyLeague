@@ -283,6 +283,12 @@ struct LingoView: View {
                         // men så att man fortfarande ser menyn". The round and the
                         // words come back once she has been through it.
                         calledItTakeover
+                        // The pink round hero one scroll below the blush cover.
+                        // The cover's own line promises the round is "one scroll
+                        // away", so it lives here too, not only after she acts on
+                        // the slip. Both cards stay full screen (each its own
+                        // containerRelativeFrame), so she scrolls cover → hero.
+                        hero
                     } else if showingRound {
                         LingoOverheardView(
                             content: content, sayThis: sayThis, store: store, context: context,
