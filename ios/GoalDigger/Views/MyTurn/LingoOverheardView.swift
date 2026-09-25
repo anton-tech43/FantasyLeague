@@ -141,6 +141,9 @@ struct LingoOverheardView: View {
                     .foregroundColor(.charcoal)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
+                    // Solid blush, not the system's dark translucent material,
+                    // which blurred into the mauve behind it.
+                    .presentationBackground(Color.cardBackground)
                     .presentationCompactAdaptation(.popover)
                 }
             }
@@ -165,12 +168,19 @@ struct LingoOverheardView: View {
         HStack(alignment: .top, spacing: 10) {
             ForEach(Array(options.options.enumerated()), id: \.offset) { idx, option in
                 MyTurnOptionButton(text: option, index: idx, answer: options.answer,
-                                   selected: session.selected, fillsHeight: true) { picked in
+                                   selected: session.selected, fillsHeight: true,
+                                   missed: session.missed) { picked in
+                    // A wrong pick lights red and leaves the card up: she goes
+                    // on by finding the right one, which then does not count.
                     // The reveal is a popup drawn by `LingoView`, over this whole
                     // screen: answering is what brings it in, so the animation
                     // belongs on the answer and not on the column it covers.
                     withAnimation(.easeInOut(duration: 0.2)) {
-                        store.answerDrill(picked, correct: picked == options.answer)
+                        if picked == options.answer {
+                            store.answerDrill(picked, correct: true)
+                        } else {
+                            store.missDrill(picked)
+                        }
                     }
                 }
             }
@@ -322,7 +332,9 @@ struct LingoRevealPopup: View {
     @State private var showingMeaning = LingoRevealPopup.startExpanded
 
     var body: some View {
-        MyTurnPopup(verdict: correct ? "Right." : "Not that one.",
+        // Not "Not that one." any more: a miss no longer opens this, the right
+        // pick after it does, so the verdict owns up to the second go.
+        MyTurnPopup(verdict: correct ? "Right." : "Got there.",
                     verdictTint: correct ? .hotRose : .warmWhite,
                     exitLabel: last ? "See how you did" : "Next",
                     exit: { withAnimation(.easeInOut(duration: 0.2)) { store.nextDrillCard() } }) {

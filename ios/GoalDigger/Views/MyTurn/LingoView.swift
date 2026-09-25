@@ -258,7 +258,8 @@ struct LingoView: View {
               let id = session.queue[safe: session.index],
               let term = weekend?.named[id] ?? content.terms.first(where: { $0.id == id }),
               let options = LingoWeekendDeck.options(for: term, salt: session.salt) else { return nil }
-        return (term, selected == options.answer, session.index + 1 >= session.queue.count)
+        return (term, selected == options.answer && session.missed == nil,
+                session.index + 1 >= session.queue.count)
     }
 
     var body: some View {
@@ -794,6 +795,7 @@ struct LingoView: View {
         // `sameClub` mislabels every derby weekend silently.
         lingoDeckSelfCheck(bundled: content)
         myTurnSlipSelfCheck()
+        myTurnMissSelfCheck()
         // The Swift half of the Called it trigger pair, against the same
         // vectors the Deno resolver's test reads, and the moment rules against
         // whichever calls are actually loaded.
@@ -939,7 +941,7 @@ struct LingoView: View {
     private func debugAnswer(_ option: Int) {
         guard let s = store.drillSession, !s.finished, let id = s.queue[safe: s.index],
               let opts = debugOptions(id, salt: s.salt) else { return }
-        store.answerDrill(option, correct: option == opts.answer)
+        if option == opts.answer { store.answerDrill(option, correct: true) } else { store.missDrill(option) }
     }
 
     private func debugFinish(right: Int, context: MatchContext?) {
@@ -947,8 +949,8 @@ struct LingoView: View {
         guard let session = store.drillSession else { return }
         for (i, id) in session.queue.enumerated() {
             guard let opts = debugOptions(id, salt: session.salt) else { continue }
-            let correct = i < right
-            store.answerDrill(correct ? opts.answer : (opts.answer + 1) % opts.options.count, correct: correct)
+            if i >= right { store.missDrill((opts.answer + 1) % opts.options.count) }
+            store.answerDrill(opts.answer, correct: true)
             store.nextDrillCard()
         }
     }

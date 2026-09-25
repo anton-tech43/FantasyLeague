@@ -83,6 +83,11 @@ final class MyTurnStore {
         /// The option she picked on the current card, if any. Non-nil means
         /// the reveal is showing and "Next" is the only way on.
         var selected: Int? = nil
+        /// A wrong option she tried on the current card. The card stays up
+        /// with that option lit red until she picks the right one, and the
+        /// word is already banked as missed, so the right pick after it does
+        /// not count.
+        var missed: Int? = nil
         var finished: Bool = false
         /// Right answers this session, for the end screen.
         var knew: Int = 0
@@ -125,7 +130,7 @@ final class MyTurnStore {
         let optionCount: Int
 
         enum CodingKeys: String, CodingKey {
-            case deckId, queue, index, selected, finished, knew, knewIds, streak, hypeLine, salt
+            case deckId, queue, index, selected, missed, finished, knew, knewIds, streak, hypeLine, salt
             case optionCount
         }
 
@@ -153,6 +158,7 @@ final class MyTurnStore {
             queue = try c.decode([String].self, forKey: .queue)
             index = try c.decodeIfPresent(Int.self, forKey: .index) ?? 0
             selected = try c.decodeIfPresent(Int.self, forKey: .selected)
+            missed = try c.decodeIfPresent(Int.self, forKey: .missed)
             finished = try c.decodeIfPresent(Bool.self, forKey: .finished) ?? false
             knew = try c.decodeIfPresent(Int.self, forKey: .knew) ?? 0
             knewIds = try c.decodeIfPresent([String].self, forKey: .knewIds) ?? []
@@ -166,6 +172,8 @@ final class MyTurnStore {
             // a session written then has no key.
             let dealtWith = try c.decodeIfPresent(Int.self, forKey: .optionCount) ?? 3
             optionCount = LingoWeekendDeck.optionCount
+            // A tried-and-wrong index points into the old order too.
+            if dealtWith != optionCount { missed = nil }
             // An unanswered card is simply re-dealt at the new count, which is
             // right. An answered one cannot be: `selected` points somewhere
             // else now, and `answerDrill` already banked `knew`, `knewIds` and
@@ -456,6 +464,8 @@ final class MyTurnStore {
     /// → known); wrong drops it to `learning`, so the next deck prefers it.
     func answerDrill(_ option: Int, correct: Bool) {
         guard var s = state.drillSession, s.selected == nil, s.index < s.queue.count else { return }
+        // The right one found after a wrong one is the way on, not a point.
+        let correct = correct && s.missed == nil
         let cardId = s.queue[s.index]
         s.selected = option
         var deck = state.drillBuckets[s.deckId] ?? [:]
@@ -478,6 +488,21 @@ final class MyTurnStore {
         state.drillSession = s
     }
 
+    /// A wrong pick: the card stays, the option lights red, and she has to
+    /// find the right one to go on. The word is banked as missed here, not on
+    /// the right pick after it, so a pause or a relaunch between the two taps
+    /// cannot turn it into a right answer.
+    func missDrill(_ option: Int) {
+        guard var s = state.drillSession, s.selected == nil, s.missed == nil,
+              s.index < s.queue.count else { return }
+        s.missed = option
+        var deck = state.drillBuckets[s.deckId] ?? [:]
+        deck[s.queue[s.index]] = .learning
+        s.streak = 0
+        state.drillBuckets[s.deckId] = deck
+        state.drillSession = s
+    }
+
     func nextDrillCard() {
         // Only after an answer, the same rule the quiz has: "Next" is the way
         // on from the reveal, not a way to skip a card.
@@ -487,6 +512,7 @@ final class MyTurnStore {
         } else {
             s.index += 1
             s.selected = nil
+            s.missed = nil
         }
         state.drillSession = s
     }
@@ -716,3 +742,22 @@ func myTurnSlipSelfCheck() {
 }
 
 #endif
+
+/// A wrong pick keeps the card up and the right pick after it never scores.
+@MainActor
+func myTurnMissSelfCheck() {
+    let store = MyTurnStore(defaults: nil)
+    store.startDrill(deckId: "lingo", queue: ["offside", "var"])
+    store.missDrill(1)
+    assert(store.drillSession?.selected == nil && store.drillSession?.missed == 1,
+           "a wrong pick moved her on, or was not remembered")
+    store.answerDrill(0, correct: true)
+    assert(store.drillSession?.knew == 0 && store.drillSession?.selected == 0,
+           "the right pick after a wrong one counted as right")
+    store.nextDrillCard()
+    assert(store.drillSession?.index == 1 && store.drillSession?.missed == nil,
+           "the red option followed her onto the next card")
+    store.answerDrill(0, correct: true)
+    assert(store.drillSession?.knew == 1, "a first-time right answer stopped counting")
+    store.endDrill()
+}

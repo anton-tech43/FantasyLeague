@@ -235,20 +235,27 @@ struct MyTurnOptionButton: View {
     /// Stretch to the height it is offered, so options set side by side in a
     /// row (Lingo) come out the same height whatever their text runs to.
     var fillsHeight = false
+    /// A wrong option already tried on this card (Lingo): lit light red and
+    /// out of play while the card waits for the right one.
+    var missed: Int? = nil
     let onPick: (Int) -> Void
 
     var body: some View {
         let answered = selected != nil
         let isCorrect = index == answer
         let isPicked = index == selected
+        let isMissed = index == missed
         let background: Color = {
+            // Solid light red, not a tint: a tint over the blush reads as
+            // grey, and this has to say "not that one" at a glance.
+            if isMissed { return Color(hex: "#F9C9CE") }
             guard answered else { return .cardBackground }
             if isCorrect { return Color.hotRose.opacity(0.18) }
             if isPicked { return Color.red.opacity(0.10) }
             return .cardBackground
         }()
         return Button {
-            guard !answered else { return }
+            guard !answered, !isMissed else { return }
             onPick(index)
             UIImpactFeedbackGenerator(style: isCorrect ? .medium : .light).impactOccurred()
         } label: {
@@ -262,7 +269,7 @@ struct MyTurnOptionButton: View {
                 if answered && isCorrect {
                     Image(systemName: "checkmark.circle.fill").foregroundColor(.hotRose)
                         .accessibilityHidden(true)
-                } else if answered && isPicked {
+                } else if isMissed || (answered && isPicked) {
                     Image(systemName: "xmark.circle.fill").foregroundColor(.red.opacity(0.7))
                         .accessibilityHidden(true)
                 }
@@ -279,11 +286,13 @@ struct MyTurnOptionButton: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        // Not `.disabled` for the missed one: that dims it to grey, and it has
+        // to stay a clear red. The action above ignores a second tap on it.
         .disabled(answered)
         // The tick and the cross are the whole answer for a sighted reader, so
         // VoiceOver needs them said rather than drawn. As a value, not a label:
         // the option's own text stays the label, and the state is what changed.
-        .accessibilityValue(answered ? (isCorrect ? "Correct answer" : (isPicked ? "Your answer, wrong" : "")) : "")
+        .accessibilityValue(isMissed ? "Not that one" : answered ? (isCorrect ? "Correct answer" : (isPicked ? "Your answer, wrong" : "")) : "")
     }
 }
 
