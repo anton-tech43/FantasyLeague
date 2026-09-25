@@ -316,7 +316,9 @@ enum LiveClubPack {
 
     // MARK: Question assembly
 
-    /// One question, or nothing if fewer than three distinct distractors exist.
+    /// One question, or nothing if fewer than two distinct distractors exist.
+    /// Three options, like every static question since 2026-09-23 (Anton: three
+    /// in Quiz); this builder was missed then and kept dealing four.
     /// Options are shuffled with a generator seeded from the id so the order is
     /// stable across launches and re-renders. Shared with `LiveSquadPack`.
     static func question(id: String, difficulty: Int, question: String, answer: String,
@@ -328,9 +330,9 @@ enum LiveClubPack {
         var rng = SeededGenerator(seed: id)
         for d in distractors.shuffled(using: &rng) where d.count <= 40 && !seen.contains(d.lowercased()) {
             seen.insert(d.lowercased()); picks.append(d)
-            if picks.count == 3 { break }
+            if picks.count == 2 { break }
         }
-        guard picks.count == 3, answer.count <= 40 else { return [] }
+        guard picks.count == 2, answer.count <= 40 else { return [] }
         var options = picks + [answer]
         options.shuffle(using: &rng)
         return [MyTurnQuestion(id: id, difficulty: difficulty, question: question, options: options,
