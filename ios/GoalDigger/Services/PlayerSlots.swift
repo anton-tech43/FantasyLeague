@@ -452,12 +452,13 @@ enum PlayerSlots {
 
     // MARK: - Screenshot harness
 
-    /// `-gdLingoPlayerVariant`. No published term carries a `playerVariants`
-    /// key yet, so there is nothing on the device to photograph: this hangs one
-    /// variant on each of the first two dealt words and hands the resolver a
-    /// fixture squad and a fixture opponent, which is enough for a shot of a
-    /// named card. It changes nothing outside DEBUG and nothing about how a
-    /// real variant resolves.
+    /// `-gdLingoPlayerVariant`: a round with two named cards on it, using the
+    /// PUBLISHED named lines, never made-up ones. It deals first one real term
+    /// with a `theirs.forward` variant and one with an `ours` variant (the two
+    /// sides `debugInputs` can fill, one a side as the resolver requires), then
+    /// the rest of the deal. An earlier version pasted a generic "plays up
+    /// front" line onto whatever word came first, which put nonsense like a
+    /// red card asking who plays up front in front of Anton.
     static let debugArgument = "-gdLingoPlayerVariant"
 
     static var debugRequested: Bool { ProcessInfo.processInfo.arguments.contains(debugArgument) }
@@ -471,29 +472,13 @@ enum PlayerSlots {
     /// him: his position, his club, that he is in the squad, his shirt number.
     /// It must also read correctly with him on the bench, because `players`
     /// has no injury or suspension column.
-    static func debugInjected(_ dealt: [LingoTerm]) -> [LingoTerm] {
-        let fixtures = [
-            (slot: "theirs.forward",
-             says: "{theirs.forward} plays up front for them.",
-             asks: "Is {theirs.forward} the one they play up front?"),
-            (slot: "ours.midfielder",
-             says: "{ours.midfielder} is one of ours in midfield.",
-             asks: "Is {ours.midfielder} in midfield for us?"),
-        ]
-        return dealt.enumerated().map { i, term in
-            guard i < fixtures.count, let line = term.overheard else { return term }
-            let f = fixtures[i]
-            return LingoTerm(
-                id: term.id, category: term.category, term: term.term, meaning: term.meaning,
-                heard: term.heard, sayIt: term.sayIt, seeAlso: term.seeAlso, level: term.level,
-                overheard: term.overheard, overheardTerm: term.overheardTerm, speaker: term.speaker,
-                gist: term.gist, decoy: term.decoy, spare: term.spare, when: term.when, basic: term.basic,
-                moment: term.moment,
-                playerVariants: [.init(slot: f.slot,
-                                       overheard: line + " " + f.says,
-                                       overheardTerm: term.overheardTerm,
-                                       sayIt: LiveClubPack.quote(f.asks))])
+    static func debugInjected(_ dealt: [LingoTerm], from all: [LingoTerm]) -> [LingoTerm] {
+        func carrying(_ match: (String) -> Bool) -> LingoTerm? {
+            all.first { $0.playerVariants?.contains { match($0.slot) } == true }
         }
+        let named = [carrying { $0 == "theirs.forward" }, carrying { ["ours.midfielder", "ours.keeper", "ours.defender"].contains($0) }].compactMap { $0 }
+        let rest = dealt.filter { d in !named.contains { $0.id == d.id } }
+        return Array((named + rest).prefix(dealt.count))
     }
 
     /// Arsenal and Spurs, close enough to the real rows to be a fair picture.

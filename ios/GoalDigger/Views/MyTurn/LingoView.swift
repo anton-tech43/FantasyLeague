@@ -171,14 +171,18 @@ struct LingoView: View {
         // The names go on afterwards, over the seven it dealt, in dealt order.
         let byId = Dictionary(content.terms.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
         var plain = deck.ids.compactMap { byId[$0] }
+        var ids = deck.ids
         #if DEBUG
-        if PlayerSlots.debugRequested { plain = PlayerSlots.debugInjected(plain) }
+        if PlayerSlots.debugRequested {
+            plain = PlayerSlots.debugInjected(plain, from: content.terms)
+            ids = plain.map(\.id)
+        }
         #endif
         let resolved = PlayerSlots.apply(plain, inputs: inputs(for: shown),
                                          seed: shown.fixtureKey + "|\(store.lingoDealNonce)")
         var named: [String: LingoTerm] = [:]
         for (before, after) in zip(plain, resolved) where before != after { named[after.id] = after }
-        return Weekend(context: shown, ids: deck.ids, named: named)
+        return Weekend(context: shown, ids: ids, named: named)
     }
 
     /// The whole word list with this round's named cards swapped in. The
@@ -756,12 +760,10 @@ struct LingoView: View {
     ///                         all three, which is the state that stops the
     ///                         same three coming back on every open.
     ///   `-gdLingoPlayerVariant`
-    ///                         names a real player on two of the dealt cards.
-    ///                         No published term carries `playerVariants` yet,
-    ///                         so there is nothing on the device to
-    ///                         photograph: this hangs a `theirs.forward`
-    ///                         variant on the first dealt word and an
-    ///                         `ours.midfielder` one on the second, and hands
+    ///                         names a real player on two of the dealt cards,
+    ///                         with their published lines: it deals a real
+    ///                         term with a `theirs.forward` variant and one
+    ///                         with an `ours` variant first, and hands
     ///                         `PlayerSlots` a fixture squad and a fixture
     ///                         opponent (`PlayerSlots.debugInputs`) so the
     ///                         caches do not have to have landed. It exercises
@@ -831,7 +833,11 @@ struct LingoView: View {
         if args.contains("-gdLingoPlay") {
             // Never over a round in progress: the flag means "show me a round",
             // and re-dealing would make a paused one unreachable.
-            if continueLabel == nil { deal(current) } else { showingLanding = false }
+            // The named-player shot deals the order `debugInjected` built,
+            // which is the weekend's; a plain deal skips the injection.
+            if continueLabel == nil {
+                deal(current, ids: PlayerSlots.debugRequested ? buildWeekend().ids : nil)
+            } else { showingLanding = false }
         }
         if let n = intValue("-gdLingoAnswer") { debugAnswer(n) }
         if let target = intValue("-gdLingoFinish") { debugFinish(right: target, context: current) }
