@@ -49,7 +49,13 @@ psql "$SUPABASE_DB_URL" -c 'select 1'
 ```
 
 **If the DB is unreachable** (no secret, auth fail, timeout): that IS the finding.
-Report it and push — do not skip the pass silently.
+Report it and push — do not skip the pass silently. **Timeout with no error at all
+(psql or a raw TCP connect to port 5432 just hangs, DNS resolves fine)** was seen
+2026-09-25 and is consistent with the cloud environment's network policy silently
+dropping non-HTTP(S) egress rather than Postgres being down — `db-health.sh` and
+`verify-push-eligible.sh` fail the same way for the same reason. Distinguish this from
+a real Supabase outage in the push text; the fix is widening `gd-env`'s allowed
+network access, not anything in this repo.
 
 JSONB null trap (from CLAUDE.md): `WHERE x IS NULL` does not match a JSONB literal
 `null`; use `WHERE x IS NULL OR jsonb_typeof(x) = 'null'`.
@@ -94,9 +100,12 @@ Goal: nothing user-visible states something out of date going into the weekend.
 4. **Store / hardcoded copy**: price is **free** (never £4.99 — it was never restored
    after the World Cup); season strings current. Fix copy that has a known-correct
    value; push anything ambiguous.
-5. **World Cup surfaces are being retired** (branch `claude/retire-world-championship`).
-   Do not treat WC freshness as a permanent item; if a WC surface still exists and is
-   stale, prefer removal per the retirement work over refreshing it.
+5. **World Cup retirement landed** (PR #17, `d1e43e9`, 2026-09-24 — the
+   `claude/retire-world-championship` branch is merged and gone). All 48 country rows and
+   the `world_championship` entity are `is_active = false`, `poll_leagues()` no longer
+   returns league 1, and the client-side date gate (`WCSeason.hideAfter` in
+   `FeedContext.swift`) is deleted. This is no longer a watch item — if a WC surface still
+   turns up stale, treat it as leftover dead code to remove, not a retirement in progress.
 
 ---
 
