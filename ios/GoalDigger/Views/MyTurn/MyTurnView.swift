@@ -232,6 +232,9 @@ struct MyTurnOptionButton: View {
     let answer: Int
     /// The option she picked, if any. Non-nil is the answered state.
     let selected: Int?
+    /// Stretch to the height it is offered, so options set side by side in a
+    /// row (Lingo) come out the same height whatever their text runs to.
+    var fillsHeight = false
     let onPick: (Int) -> Void
 
     var body: some View {
@@ -265,7 +268,7 @@ struct MyTurnOptionButton: View {
                 }
             }
             .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, maxHeight: fillsHeight ? .infinity : nil, alignment: .leading)
             .background(background)
             .background(Color.cardBackground)
             .overlay(

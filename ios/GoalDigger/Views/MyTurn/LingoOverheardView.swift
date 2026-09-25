@@ -159,26 +159,34 @@ struct LingoOverheardView: View {
             .padding(.bottom, 2)
             .accessibilityAddTraits(.isHeader)
 
-        ForEach(Array(options.options.enumerated()), id: \.offset) { idx, option in
-            MyTurnOptionButton(text: option, index: idx, answer: options.answer,
-                               selected: session.selected) { picked in
-                // The reveal is a popup drawn by `LingoView`, over this whole
-                // screen: answering is what brings it in, so the animation
-                // belongs on the answer and not on the column it covers.
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    store.answerDrill(picked, correct: picked == options.answer)
+        // Side by side, the two read as a choice between two rather than a
+        // list to go down. Same height whatever each runs to: the row sizes to
+        // the taller one and both fill it.
+        HStack(alignment: .top, spacing: 10) {
+            ForEach(Array(options.options.enumerated()), id: \.offset) { idx, option in
+                MyTurnOptionButton(text: option, index: idx, answer: options.answer,
+                                   selected: session.selected, fillsHeight: true) { picked in
+                    // The reveal is a popup drawn by `LingoView`, over this whole
+                    // screen: answering is what brings it in, so the animation
+                    // belongs on the answer and not on the column it covers.
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        store.answerDrill(picked, correct: picked == options.answer)
+                    }
                 }
             }
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
+
+    /// The link scheme on a named player in the bubble; a tap on it opens his
+    /// position and club.
+    private static let roleScheme = "goaldigger-role"
 
     /// The line as it was said, with the phrase itself in bold. `overheardTerm`
     /// is emitted by the build script as the literal substring, so this is a
     /// plain `range(of:)` and not a matching rule.
     ///
     /// `options(for:)` requires `overheard`, so a card on screen always has one.
-    private static let roleScheme = "goaldigger-role"
-
     private func snippet(_ term: LingoTerm) -> AttributedString {
         var text = AttributedString(term.overheard ?? "")
         if let needle = term.overheardTerm, let range = text.range(of: needle) {
