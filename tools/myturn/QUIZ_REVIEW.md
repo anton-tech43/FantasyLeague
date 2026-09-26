@@ -141,6 +141,17 @@ Reading all 496 found about a hundred problems that have nothing to do with the
 option count. None of them is fixed here; the cut removed the option in the cases
 marked *(cut)*, which repairs the symptom, not the question.
 
+**Fixed 2026-09-26 (content 2026-09-26.1).** Every item below was fixed in place,
+ids unchanged. Five writers took one quiz_src file each and also cleared the
+same-pack giveaways they found beyond this list (most of the 305 changed
+questions; 56 were replaced outright where the old one could not be saved). Five
+independent reviewers then fact-checked every changed question against sources
+and caught what the writers got wrong (an invented "A140 derby", the stopped
+Munich clock myth, Brown "admitting" the on-pitch team talk was a mistake, the
+Bantams as a wrong answer that was Coventry's old name, and others). Cross-pack
+duplicates between the general and club packs were removed. The lists are kept
+below as the record of what was wrong.
+
 ### A wrong option that is also right
 
 | question | the problem |
