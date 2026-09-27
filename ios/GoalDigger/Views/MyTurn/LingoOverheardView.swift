@@ -73,7 +73,9 @@ struct LingoOverheardView: View {
             } label: {
                 HStack(spacing: 5) {
                     Image(systemName: "chevron.left").font(.system(size: 13, weight: .semibold))
-                    Text("The words").font(.jakarta(15, weight: .medium))
+                    // The round lives in the prep now (2026-09-27), so back
+                    // is back to its cards.
+                    Text("Get ready").font(.jakarta(15, weight: .medium))
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                 }

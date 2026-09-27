@@ -314,6 +314,132 @@ enum LiveClubPack {
         return QuizPack(id: packId, label: "His club, right now", questions: qs)
     }
 
+    // MARK: The opponent
+
+    static let opponentPackId = "live-opponent"
+
+    /// "Get to know Chelsea": the side he is about to watch his club play,
+    /// built from the opponent's own cached page and the league-wide sources.
+    ///
+    /// Facts only. The opponent's page is written for someone who follows
+    /// *them* — its summaries say "[his name]" meaning a Chelsea fan — so no
+    /// prose is lifted from it: every explanation is built here from numbers
+    /// and names. And only the questions that are about the other side: not
+    /// their rival or their next fixture (that is us), not their last title.
+    /// `mine` is his club, kept out of the distractors so her own manager is
+    /// never offered as the other side's.
+    static func buildOpponent(team: Team, page: TeamPageContent, sources: Sources, mine: Team?) -> QuizPack? {
+        let cards = page.cards
+        let club = team.shortName
+        let others = sources.slices.filter { $0.team_id != team.rawValue }
+        var qs: [MyTurnQuestion] = []
+
+        if let m = cards.manager {
+            let wrong = sources.managers
+                .filter { $0.id != team.rawValue && $0.id != mine?.rawValue }
+                .compactMap(\.manager_name).filter { $0 != m.name }
+            qs += question(
+                id: "opp-manager", difficulty: 1,
+                question: "Who manages \(club)?",
+                answer: m.name, distractors: wrong,
+                explanation: "\(m.name). He'll be in the other dugout, and the cameras cut to him every time they score.",
+                why: "After the game, the other manager is the one he'll either blame or grudgingly rate.",
+                useType: .ask, use: quote("What do you make of \(m.name)?"))
+        }
+
+        let row = cards.standings?.entries.first {
+            $0.teamIdApiFootball == team.apiFootballId || MatchContext.sameClub($0.teamName, team.displayName)
+        }
+        if let row, row.rank > 0 {
+            let nearby = [-3, -2, -1, 1, 2, 3, 4].map { row.rank + $0 }.filter { (1...20).contains($0) }
+            qs += question(
+                id: "opp-table-position", difficulty: 2,
+                question: "Where are \(club) in the table right now?",
+                answer: ordinal(row.rank), distractors: nearby.map(ordinal),
+                explanation: "\(club) are \(ordinal(row.rank)) with \(points(row.points)) from \(row.played) games, as of today.",
+                why: "Where they sit tells you whether a draw would be a good result or a bad one.",
+                useType: .ask, use: quote("They're \(ordinal(row.rank)), aren't they? Should we be beating them?"))
+        }
+
+        if let f = cards.form {
+            let letters = f.recentForm.uppercased().filter { "WDL".contains($0) }
+            let w = letters.filter { $0 == "W" }.count, d = letters.filter { $0 == "D" }.count
+            let l = letters.filter { $0 == "L" }.count
+            if letters.count >= 3 {
+                let answer = formLabel(w, d, l)
+                let wrong = [(w + 1, d - 1, l), (w - 1, d + 1, l), (w, d + 1, l - 1),
+                             (w, d - 1, l + 1), (w - 1, d, l + 1), (w + 1, d, l - 1)]
+                    .filter { $0.0 >= 0 && $0.1 >= 0 && $0.2 >= 0 }.map { formLabel($0.0, $0.1, $0.2) }
+                qs += question(
+                    id: "opp-form", difficulty: 2,
+                    question: "How have \(club) been playing lately?",
+                    answer: answer, distractors: wrong,
+                    explanation: "\(answer), as of today.",
+                    why: "Their form is how nervous he'll be before kick-off.",
+                    useType: .ask, use: quote("Are \(club) in form at the moment? Should I be worried?"))
+            }
+        }
+
+        if let scorer = sources.topScorers[team.rawValue], !scorer.tied, scorer.goals > 0 {
+            let name = shortName(scorer.name)
+            qs += question(
+                id: "opp-top-scorer", difficulty: 2,
+                question: "Who's scored most for \(club) this season?",
+                answer: name, distractors: scorer.rivals.map(shortName),
+                explanation: "\(name), with \(scorer.goals) \(scorer.goals == 1 ? "goal" : "goals") for \(club) this season, more than anyone else in their squad.",
+                why: "He's the one to worry about when they come forward.",
+                useType: .say, use: "When they attack: " + quote("Watch \(name). He's their scorer."))
+        }
+
+        if let b = cards.basics {
+            let otherBasics = others.compactMap(\.basics)
+            if let last = b.lastSeason {
+                qs += question(
+                    id: "opp-last-season", difficulty: 2,
+                    question: "How did \(club) do last season?",
+                    answer: last, distractors: otherBasics.compactMap(\.lastSeason),
+                    explanation: "\(last).",
+                    why: "It tells you what kind of side we're up against, before a ball is kicked.",
+                    useType: .ask, use: quote("Were \(club) any good last season?"))
+            }
+            let nick = cleanNickname(b.nickname)
+            qs += question(
+                id: "opp-nickname", difficulty: 1,
+                question: "What are \(club) known as?",
+                answer: b.nickname, distractors: otherBasics.map(\.nickname),
+                explanation: "\(club) are \(b.nickname). The commentators will say it all game.",
+                why: "Half the time nobody says their name, just the nickname.",
+                useType: .say, use: quote("So we're playing the \(nick). Got it."))
+            if let ground = b.stadium {
+                let short = stadiumShort(ground)
+                qs += question(
+                    id: "opp-stadium", difficulty: 1,
+                    question: "Where do \(club) play their home games?",
+                    answer: short, distractors: otherBasics.compactMap(\.stadium).map(stadiumShort),
+                    explanation: "\(ground).",
+                    why: "Whether the game is at theirs or ours changes how he feels about it.",
+                    useType: .ask, use: quote("Is this one at \(short), or at ours?"))
+            }
+        }
+
+        guard qs.count >= 4 else { return nil }
+        return QuizPack(id: opponentPackId, label: "Get to know \(club)", questions: qs)
+    }
+
+    #if DEBUG
+    /// The opponent pack from a fixture page: facts only, opponent ids only,
+    /// and nothing that speaks as though she follows the other side.
+    static func opponentSelfCheck(page: TeamPageContent) -> Bool {
+        let src = Sources(managers: [], slices: [], fetchedAt: Date())
+        guard let pack = buildOpponent(team: .chelsea, page: page, sources: src, mine: .arsenal) else {
+            return page.cards.basics == nil  // too little on the fixture to build is fine, not a failure
+        }
+        let text = pack.questions.flatMap { [$0.question, $0.explanation, $0.why ?? "", $0.use ?? ""] }.joined(separator: " ")
+        return pack.questions.allSatisfy { $0.id.hasPrefix("opp-") && $0.options.count == 3 }
+            && !text.contains("[his") && !text.contains("Come on you")
+    }
+    #endif
+
     // MARK: Question assembly
 
     /// One question, or nothing if fewer than two distinct distractors exist.
@@ -504,6 +630,11 @@ final class LiveClubPackService {
     /// not have to reach into `TeamPageCache` itself. Lingo's weekend context
     /// is built from it (`MatchContext`).
     private(set) var page: TeamPageContent?
+    /// "Get to know Chelsea", for the fixture the prep section is about. Built
+    /// by `refreshOpponent`, which the prep calls with the context's opponent
+    /// (never `next_fixture`'s: the two part company on a postponement).
+    private(set) var opponentPack: QuizPack?
+    private var opponentId: String?
 
     private static let sourcesKey = "myTurnLiveSources.v2"
     private var sources: LiveClubPack.Sources? {
@@ -522,6 +653,7 @@ final class LiveClubPackService {
 
     func clear() {
         pack = nil; leaguePack = nil; teamId = nil; page = nil; sources = nil
+        opponentPack = nil; opponentId = nil
         UserDefaults.standard.removeObject(forKey: Self.sourcesKey)
     }
 
@@ -580,6 +712,26 @@ final class LiveClubPackService {
         }
 
         pack = LiveClubPack.build(team: team, page: content, sources: src, personalise: personalise)
+    }
+
+    /// Build the opponent pack for `opponent`, loading its team page from the
+    /// cache His Team keeps (fetched when stale). Nil opponent, or one that is
+    /// not a club we have a page for (a cup tie against a lower-league side),
+    /// clears it.
+    func refreshOpponent(_ opponent: Team?, mine: Team?) async {
+        opponentId = opponent?.rawValue
+        guard let opponent else { opponentPack = nil; return }
+        var cached = TeamPageCache.load(teamId: opponent.rawValue)
+        if cached == nil || cached!.isStale {
+            if let fresh = try? await APIClient.shared.fetchTeamPage(teamId: opponent.rawValue) {
+                TeamPageCache.save(content: fresh, teamId: opponent.rawValue)
+                cached = TeamPageCache.load(teamId: opponent.rawValue)
+            }
+        }
+        // A newer call for another opponent owns the result.
+        guard opponentId == opponent.rawValue else { return }
+        guard let content = cached?.content, let src = sources else { opponentPack = nil; return }
+        opponentPack = LiveClubPack.buildOpponent(team: opponent, page: content, sources: src, mine: mine)
     }
 
     /// One club's players out of the cached league-wide sources: the two men

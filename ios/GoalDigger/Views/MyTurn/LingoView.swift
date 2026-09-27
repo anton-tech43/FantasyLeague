@@ -24,6 +24,13 @@ struct LingoView: View {
     /// The cached team page, already refreshed by `MyTurnView`'s task. Nil is
     /// fine: the context falls back to "7 words you'll hear at any match."
     let page: TeamPageContent?
+    /// The same view in two places. `.prep` is "Get ready for Chelsea", the
+    /// first segment: the slip, this fixture's seven words and the opponent
+    /// quiz, each a full-screen card. `.dictionary` is the Lingo segment: the
+    /// search and the 158 words, for the four-second look-up mid-match. One
+    /// view rather than two so the round, the slip and the deck keep one home.
+    var mode: Mode = .prep
+    enum Mode { case prep, dictionary }
     @Environment(AppState.self) private var appState
     /// The two device-built caches, for the real players a card can name.
     /// Read-only here: `MyTurnView`'s task owns refreshing them.
@@ -45,6 +52,12 @@ struct LingoView: View {
     /// something it actually depends on moves — never on a keystroke in the
     /// search field, which is a deck build over 158 words per character.
     @State private var weekend: Weekend?
+    /// The opponent quiz, hosted in the prep over its cards while a round of
+    /// it is going and she has not stepped back to them.
+    @State private var showingOpponentQuiz = false
+    /// She pressed the words card this visit. A round already going waits
+    /// behind an unfilled slip, but the one she just asked for opens over it.
+    @State private var pressedRound = false
     #if DEBUG
     /// Set by `-gdLingoContext`, so a screenshot can pin a derby weekend.
     @State private var debugContext: MatchContext?
@@ -213,6 +226,7 @@ struct LingoView: View {
             assertionFailure("startDrill refused a queue of \(queue.count), and the landing screen was about to go with it")
             return
         }
+        pressedRound = true
         withAnimation(.easeInOut(duration: 0.2)) { showingLanding = false }
     }
 
@@ -238,6 +252,11 @@ struct LingoView: View {
         store.drillSession?.deckId == LingoWeekendDeck.deckId && !showingLanding
     }
 
+    /// The round, on screen. Behind an unfilled slip only until she presses
+    /// the words card: before this the slip cover won outright, and a tap on
+    /// the pink card below it dealt a round nobody could see.
+    private var roundOnScreen: Bool { showingRound && (pressedRound || !showingCalledIt) }
+
     /// The Called It offer fills the Lingo content — the first thing she meets
     /// coming into Lingo on a match week — whenever there is a slip to offer she
     /// has not yet acted on. Once she has picked or passed, it gives way to the
@@ -259,7 +278,7 @@ struct LingoView: View {
     private var reveal: (term: LingoTerm, correct: Bool, last: Bool)? {
         // Not over the slip: when the Called it cover takes the content the
         // round is not on screen, so neither is its popup.
-        guard showingRound, !showingCalledIt, let session = store.drillSession, !session.finished,
+        guard roundOnScreen, let session = store.drillSession, !session.finished,
               let selected = session.selected,
               let id = session.queue[safe: session.index],
               let term = weekend?.named[id] ?? content.terms.first(where: { $0.id == id }),
@@ -270,7 +289,14 @@ struct LingoView: View {
 
     var body: some View {
         ZStack {
-            scroller
+            if mode == .prep, showingOpponentQuiz, let pack = live.opponentPack,
+               store.quizRound?.packId == pack.id {
+                QuizView(content: QuizContent(contentVersion: "", packs: []), store: store, clubId: nil,
+                         livePack: nil, squadPack: nil, leaguePack: nil, opponentPack: pack,
+                         onExit: { withAnimation(.easeInOut(duration: 0.2)) { showingOpponentQuiz = false } })
+            } else {
+                scroller
+            }
             if let reveal {
                 LingoRevealPopup(term: reveal.term, correct: reveal.correct, last: reveal.last,
                                  store: store)
@@ -283,7 +309,16 @@ struct LingoView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: Layout.cardSpacing) {
-                    if showingCalledIt {
+                    if mode == .dictionary {
+                        searchField
+                        wordList
+                    } else if roundOnScreen {
+                        LingoOverheardView(
+                            content: content, store: store, context: context,
+                            named: weekend?.named ?? [:],
+                            onDealAgain: dealAgain,
+                            onPause: { withAnimation(.easeInOut(duration: 0.2)) { showingLanding = true } })
+                    } else if showingCalledIt {
                         // Fills the Lingo content, with the module tabs above and
                         // the bottom bar below still in view — Anton's "helskärm
                         // men så att man fortfarande ser menyn". The round and the
@@ -295,12 +330,7 @@ struct LingoView: View {
                         // the slip. Both cards stay full screen (each its own
                         // containerRelativeFrame), so she scrolls cover → hero.
                         hero
-                    } else if showingRound {
-                        LingoOverheardView(
-                            content: content, store: store, context: context,
-                            named: weekend?.named ?? [:],
-                            onDealAgain: dealAgain,
-                            onPause: { withAnimation(.easeInOut(duration: 0.2)) { showingLanding = true } })
+                        opponentCard
                     } else {
                         landing
                     }
@@ -317,16 +347,34 @@ struct LingoView: View {
             // animates its own change instead.
             .coordinateSpace(name: LingoView.frameSpace)
             // One build per thing the deck actually depends on.
-            .task(id: heroKey) { weekend = buildWeekend() }
+            .task(id: mode == .prep ? heroKey : nil) { if mode == .prep { weekend = buildWeekend() } }
             // A slip that never reached the device row is a slip nothing can
             // tell her about, so every open of the app has another go.
-            .task { await uploadSlip() }
-            .onChange(of: store.lingoExpandedId) { _, new in jump(to: new, proxy: proxy) }
+            .task { if mode == .prep { await uploadSlip() } }
+            // The opponent quiz, for whoever this fixture is against.
+            .task(id: opponentTeam) { if mode == .prep { await live.refreshOpponent(opponentTeam, mine: team) } }
+            // A word sent here from Say This or a seeAlso: the dictionary's job.
+            .onChange(of: store.lingoExpandedId) { _, new in if mode == .dictionary { jump(to: new, proxy: proxy) } }
             #if DEBUG
             // One hop after appear: the launch arguments deal a round and answer
             // it, and doing that inside the first body evaluation would mutate
             // state SwiftUI is in the middle of reading.
-            .onAppear { Task { applyLingoArguments() } }
+            .onAppear { Task { mode == .prep ? applyLingoArguments() : applyDictionaryArguments() } }
+            // `-gdPrepFocus hero|opponent` scrolls the prep to that card, and
+            // `-gdPrepOpponentQuiz` opens the opponent quiz: simctl cannot
+            // scroll or tap. Keyed on the pack so it waits for it to build.
+            .task(id: live.opponentPack?.id) {
+                guard mode == .prep, live.opponentPack != nil else { return }
+                let args = ProcessInfo.processInfo.arguments
+                if let i = args.firstIndex(of: "-gdPrepFocus"), i + 1 < args.count {
+                    try? await Task.sleep(for: .milliseconds(600))
+                    proxy.scrollTo("prep-" + args[i + 1], anchor: .top)
+                }
+                if args.contains("-gdPrepOpponentQuiz"), let pack = live.opponentPack {
+                    store.startRound(pack: pack)
+                    showingOpponentQuiz = true
+                }
+            }
             .onPreferenceChange(LingoFramePreference.self) { measured in
                 Task { @MainActor in frames = measured }
             }
@@ -371,8 +419,7 @@ struct LingoView: View {
     private var landing: some View {
         callsCard
         hero
-        searchField
-        wordList
+        opponentCard
     }
 
     /// The published slip lines, or the harness's three while `lingo.json` has
@@ -472,16 +519,13 @@ struct LingoView: View {
         Button {
             pressHero(weekend)
         } label: {
-            // Broken after the first word, the way the sketch sets
-            // "Before" / "Chelsea" on two rows beside the arrow's head.
-            SketchCard(title: weekend.context.title.replacingOccurrences(
-                           of: " ", with: "\n", options: [], range: weekend.context.title.range(of: " ")),
-                       ink: .warmWhite, arrow: .deepMauve, fill: .hotRose)
+            SketchCard(title: heroTitle(weekend), ink: .warmWhite, arrow: .deepMauve, fill: .hotRose)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .containerRelativeFrame(.vertical)
-        .accessibilityLabel("\(weekend.context.title). Start.")
+        .id("prep-hero")
+        .accessibilityLabel("\(heroTitle(weekend).replacingOccurrences(of: "\n", with: " ")). Start.")
         #if DEBUG
         .lingoFrame("hero")
         // simctl cannot tap, so `-gdLingoHeroTap` presses it — the hero's own
@@ -490,10 +534,50 @@ struct LingoView: View {
         #endif
     }
 
+    /// The club this fixture is against, when it is one we have a page for.
+    /// From the context, never `next_fixture` (see `PlayerSlots.opponent`).
+    private var opponentTeam: Team? {
+        PlayerSlots.opponent(of: context).flatMap { name in
+            Team.allCases.first { MatchContext.sameClub($0.displayName, name) }
+        }
+    }
+
+    /// "Get to know Chelsea": the third full-screen card, gold, the colour the
+    /// app already gives matchday. Opens the opponent quiz in place; a round
+    /// already going is picked up rather than dealt again.
+    @ViewBuilder
+    private var opponentCard: some View {
+        if let pack = live.opponentPack, let club = opponentTeam?.shortName {
+            Button {
+                if store.quizRound?.packId != pack.id || store.quizRound?.finished == true {
+                    store.startRound(pack: pack)
+                }
+                withAnimation(.easeInOut(duration: 0.2)) { showingOpponentQuiz = true }
+            } label: {
+                SketchCard(title: "Get to know\n\(club)", ink: .charcoal, arrow: .deepMauve, fill: .gold)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .containerRelativeFrame(.vertical)
+            .id("prep-opponent")
+            .accessibilityLabel("Get to know \(club). A quiz about the side you're playing.")
+        }
+    }
+
+    /// The pink card's line: what it does, the way the blush one says "Prepare
+    /// some sayings for the game". A paused round says it carries on.
+    private func heroTitle(_ weekend: Weekend) -> String {
+        if continueLabel != nil { return "Carry on with\nyour words" }
+        if case .before = weekend.context.phase { return "\(LingoWeekendDeck.roundLength) words for\nthe game" }
+        let title = weekend.context.title
+        return title.replacingOccurrences(of: " ", with: "\n", options: [], range: title.range(of: " "))
+    }
+
     /// What the hero does when she presses it.
     private func pressHero(_ weekend: Weekend) {
         if continueLabel != nil {
-            withAnimation(.easeInOut(duration: 0.2)) { showingLanding = false }
+            pressedRound = true
+        withAnimation(.easeInOut(duration: 0.2)) { showingLanding = false }
         } else {
             deal(weekend.context, ids: weekend.ids)
         }
@@ -789,6 +873,18 @@ struct LingoView: View {
     ///                         with `-gdLingoAnswer`.
     /// simctl cannot tap, so these are the only way to a screenshot of
     /// anything past the landing screen.
+    /// The dictionary's share of the launch arguments: only the fold to open.
+    /// Everything that deals or answers a round belongs to the prep.
+    private func applyDictionaryArguments() {
+        guard !appliedArguments else { return }
+        appliedArguments = true
+        let args = ProcessInfo.processInfo.arguments
+        if let i = args.firstIndex(of: "-gdLingoOpenCategory"), i + 1 < args.count,
+           let category = LingoCategory(rawValue: args[i + 1]) {
+            openCategories.insert(category)
+        }
+    }
+
     private func applyLingoArguments() {
         // `onAppear` fires on every return to the My Turn tab; dealing a round
         // again each time would throw away the one she is on.
@@ -798,6 +894,10 @@ struct LingoView: View {
         // Cheap, and this is the one screen that owns the deck: a wrong
         // `sameClub` mislabels every derby weekend silently.
         lingoDeckSelfCheck(bundled: content)
+        if let fixture = LingoFixtures.page("matchup", now: Date()) {
+            assert(LiveClubPack.opponentSelfCheck(page: fixture),
+                   "the opponent quiz spoke as though she follows the other side, or dealt a wrong-shaped question")
+        }
         myTurnSlipSelfCheck()
         myTurnMissSelfCheck()
         // The Swift half of the Called it trigger pair, against the same

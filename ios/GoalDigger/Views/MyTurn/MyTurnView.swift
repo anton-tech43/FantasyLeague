@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// The toolbox tab. One segmented control, three modules, exactly one visible.
+/// The toolbox tab. One segmented control, four modules, exactly one visible:
+/// the prep for the next game ("Chelsea"), then Quiz, Lingo and Say This.
 ///
 /// All four module views stay mounted (opacity-switched) so scroll position,
 /// search text and an open situation survive a switch without any plumbing;
@@ -25,16 +26,25 @@ struct MyTurnView: View {
 
                 ZStack {
                     SayThisView(content: content.sayThis, lingo: content.lingo, store: store)
-                        .opacity(store.lastModule == .sayThis ? 1 : 0)
-                        .allowsHitTesting(store.lastModule == .sayThis)
+                        .opacity(module == .sayThis ? 1 : 0)
+                        .allowsHitTesting(module == .sayThis)
                     LingoView(content: content.lingo, store: store,
-                              team: appState.selectedTeam, page: live.page)
-                        .opacity(store.lastModule == .lingo ? 1 : 0)
-                        .allowsHitTesting(store.lastModule == .lingo)
+                              team: appState.selectedTeam, page: live.page, mode: .dictionary)
+                        .opacity(module == .lingo ? 1 : 0)
+                        .allowsHitTesting(module == .lingo)
                     QuizView(content: content.quiz, store: store, clubId: appState.selectedTeam?.rawValue,
-                             livePack: live.pack, squadPack: squad.pack, leaguePack: live.leaguePack)
-                        .opacity(store.lastModule == .quiz ? 1 : 0)
-                        .allowsHitTesting(store.lastModule == .quiz)
+                             livePack: live.pack, squadPack: squad.pack, leaguePack: live.leaguePack,
+                             opponentPack: live.opponentPack)
+                        .opacity(module == .quiz ? 1 : 0)
+                        .allowsHitTesting(module == .quiz)
+                    if prepAvailable {
+                        // "Get ready for Chelsea": the slip, this fixture's words
+                        // and the opponent quiz (LingoView's prep mode).
+                        LingoView(content: content.lingo, store: store,
+                                  team: appState.selectedTeam, page: live.page, mode: .prep)
+                            .opacity(module == .prep ? 1 : 0)
+                            .allowsHitTesting(module == .prep)
+                    }
 
                     // Above the module content, so four in a row is seen
                     // wherever she is when it happens.
@@ -54,6 +64,7 @@ struct MyTurnView: View {
             async let club: Void = live.refresh(team: appState.selectedTeam, personalise: personalise)
             async let squadRefresh: Void = squad.refresh(team: appState.selectedTeam, personalise: personalise)
             _ = await (club, squadRefresh)
+            openPrepForNewFixture()
             #if DEBUG
             applyLivePackArguments()
             #endif
@@ -142,9 +153,44 @@ struct MyTurnView: View {
     /// Three fixed segments, full width, no horizontal scroll. Same visual
     /// language as the team page's Info / Calendar / Table control: the
     /// selected segment is a rose pill, the rest are recessed text.
+    /// The prep needs a club: its words, slip and opponent all come from his
+    /// fixture list.
+    private var prepAvailable: Bool { appState.selectedTeam != nil }
+    private var segments: [MyTurnModule] { MyTurnModule.allCases.filter { $0 != .prep || prepAvailable } }
+    /// What is on screen. The stored module can be the prep with no club
+    /// followed (she unfollowed); Quiz stands in rather than a blank.
+    private var module: MyTurnModule { store.lastModule == .prep && !prepAvailable ? .quiz : store.lastModule }
+
+    private var prepContext: MatchContext {
+        MatchContext.current(page: live.page, team: appState.selectedTeam)
+    }
+
+    /// "Chelsea" before and just after the game, "This week" with none coming.
+    private var prepLabel: String {
+        let opponent: String
+        switch prepContext.phase {
+        case .before(let o, _), .after(let o, _, _, _): opponent = o
+        case .any: return MyTurnModule.prep.label
+        }
+        return Team.allCases.first { MatchContext.sameClub($0.displayName, opponent) }?.shortName ?? opponent
+    }
+
+    /// A new fixture opens My Turn on its prep, once.
+    private func openPrepForNewFixture() {
+        guard prepAvailable, case .before = prepContext.phase else { return }
+        #if DEBUG
+        // A screenshot that asked for a module gets that module.
+        if ProcessInfo.processInfo.arguments.contains("-gdMyTurnModule") { return }
+        #endif
+        let key = prepContext.fixtureKey
+        guard store.prepShownFor != key else { return }
+        store.prepShownFor = key
+        store.lastModule = .prep
+    }
+
     private var segmentedControl: some View {
         HStack(spacing: 0) {
-            ForEach(MyTurnModule.allCases) { module in
+            ForEach(segments) { module in
                 Button {
                     withAnimation(.spring(duration: 0.25)) { store.lastModule = module }
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -157,20 +203,20 @@ struct MyTurnView: View {
                     // ViewThatFits does not help here — inside an HStack of
                     // three flexible children it is proposed the ideal width
                     // and always takes the first rung.
-                    Text(typeSize.isAccessibilitySize ? module.shortLabel : module.label)
+                    Text(module == .prep ? prepLabel : typeSize.isAccessibilitySize ? module.shortLabel : module.label)
                         .font(.jakarta(15, weight: .medium))
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
                         .frame(maxWidth: .infinity)
                         .frame(height: 40)
-                        .background(store.lastModule == module ? Color.hotRose : Color.clear)
-                        .foregroundColor(store.lastModule == module ? .warmWhite : .warmWhite.opacity(0.6))
+                        .background(self.module == module ? Color.hotRose : Color.clear)
+                        .foregroundColor(self.module == module ? .warmWhite : .warmWhite.opacity(0.6))
                         .cornerRadius(12)
                         .clipped()
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(module.label)
-                .accessibilityAddTraits(store.lastModule == module ? .isSelected : [])
+                .accessibilityLabel(module == .prep ? "Get ready for \(prepLabel)" : module.label)
+                .accessibilityAddTraits(self.module == module ? .isSelected : [])
             }
         }
     }
@@ -397,5 +443,23 @@ struct MyTurnEmptyText: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 32)
             .padding(.horizontal, 24)
+    }
+}
+
+extension MatchContext {
+    /// The context My Turn is about. The screenshot harness can pin it with
+    /// `-gdLingoContext <fixture>`, the same flag the prep reads, so the
+    /// segment's label and the cards under it agree.
+    static func current(page: TeamPageContent?, team: Team?, now: Date = Date()) -> MatchContext {
+        #if DEBUG
+        let args = ProcessInfo.processInfo.arguments
+        if let i = args.firstIndex(of: "-gdLingoContext"), i + 1 < args.count {
+            let name = args[i + 1]
+            return name == "none"
+                ? MatchContext(page: nil, team: nil, now: now)
+                : MatchContext(page: LingoFixtures.page(name, now: now), team: .arsenal, now: now)
+        }
+        #endif
+        return MatchContext(page: page, team: team, now: now)
     }
 }

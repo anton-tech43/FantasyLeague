@@ -10,9 +10,11 @@ import Foundation
 // not a content bug.
 
 enum MyTurnModule: String, CaseIterable, Identifiable, Codable {
-    // Order is the segment order. Quiz first (2026-09-09): it is the module a
-    // newcomer can use before she knows anything, and the one that teaches the
-    // faces and names the other two assume.
+    // Order is the segment order. The prep first (2026-09-27): what she needs
+    // most is to be ready for the next game, not to learn football in general.
+    // Its label is the opponent ("Chelsea"), set by `MyTurnView`. Then Quiz:
+    // the module a newcomer can use before she knows anything.
+    case prep
     case quiz
     case lingo
     case sayThis = "saythis"
@@ -23,6 +25,7 @@ enum MyTurnModule: String, CaseIterable, Identifiable, Codable {
     /// "Lines" at the largest accessibility sizes rather than truncating.
     var label: String {
         switch self {
+        case .prep:    return "This week"
         case .quiz:    return "Quiz"
         case .lingo:   return "Lingo"
         case .sayThis: return "Say This"

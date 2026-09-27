@@ -16,6 +16,13 @@ struct QuizView: View {
     /// `players` table and the league-wide team-page slices. Either may be nil.
     let squadPack: QuizPack?
     let leaguePack: QuizPack?
+    /// "Get to know Chelsea", built for the fixture the prep is about. Listed
+    /// here as well, so a round started from the prep can be picked up here.
+    var opponentPack: QuizPack? = nil
+    /// Set when the prep section hosts this view for its one pack: the back
+    /// button says where it goes and returns there, and finishing the round
+    /// returns there too, instead of to the pack list.
+    var onExit: (() -> Void)? = nil
 
     /// A round in progress that she has stepped away from to look at the pack
     /// list. Deliberately not persisted: the round itself is (in MyTurnStore),
@@ -23,7 +30,7 @@ struct QuizView: View {
     @State private var paused = false
     @State private var sheetPlayer: QuizPlayer?
 
-    private var livePacks: [QuizPack] { [livePack, squadPack, leaguePack].compactMap { $0 } }
+    private var livePacks: [QuizPack] { [livePack, squadPack, leaguePack, opponentPack].compactMap { $0 } }
     private var allPacks: [QuizPack] { content.packs + livePacks }
 
     /// The basics first: it is the only pack that assumes nothing. Then his
@@ -36,7 +43,7 @@ struct QuizView: View {
             content.packs.first { $0.id == "club-" + id.replacingOccurrences(of: "_", with: "-") }
         }
         guard clubId != nil else { return [basics, leaguePack].compactMap { $0 } + rest }
-        return [basics, squadPack, livePack, history, leaguePack].compactMap { $0 } + rest
+        return [basics, squadPack, livePack, opponentPack, history, leaguePack].compactMap { $0 } + rest
     }
 
     /// What the big button starts. The basics until she has a score on them,
@@ -155,7 +162,8 @@ struct QuizView: View {
 
     // MARK: Pack list
 
-    static let liveIds = [LiveClubPack.packId, LiveSquadPack.packId, LiveSquadPack.leaguePackId]
+    static let liveIds = [LiveClubPack.packId, LiveSquadPack.packId, LiveSquadPack.leaguePackId,
+                          LiveClubPack.opponentPackId]
 
     private func packTitle(_ pack: QuizPack) -> String {
         if Self.liveIds.contains(pack.id) { return pack.label }
@@ -213,10 +221,10 @@ struct QuizView: View {
             // Back, not stop. The round stays exactly where it is — as it does
             // when she leaves the tab or the app. Only "Next pack" on the
             // result screen ends one.
-            Button { paused = true } label: {
+            Button { if let onExit { onExit() } else { paused = true } } label: {
                 HStack(spacing: 5) {
                     Image(systemName: "chevron.left").font(.system(size: 13, weight: .semibold))
-                    Text("Packs").font(.jakarta(15, weight: .medium))
+                    Text(onExit == nil ? "Packs" : "Get ready").font(.jakarta(15, weight: .medium))
                 }
                 .foregroundColor(.warmWhite.opacity(0.75))
                 .padding(.vertical, 4)
@@ -402,8 +410,9 @@ struct QuizView: View {
 
         Button {
             store.endRound()
+            onExit?()
         } label: {
-            Text("Next pack")
+            Text(onExit == nil ? "Next pack" : "Done")
                 .font(.jakarta(16, weight: .semiBold))
                 .foregroundColor(.hotRose)
                 .frame(maxWidth: .infinity)

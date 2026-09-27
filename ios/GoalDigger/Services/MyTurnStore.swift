@@ -263,6 +263,9 @@ final class MyTurnStore {
         /// The slip she filled in before kick-off (2026-09-23). Optional for
         /// the same reason as the two above.
         var matchCalls: MatchCalls? = nil
+        /// The fixture My Turn last opened on the prep for. A new one opens it
+        /// again once; after that she stays wherever she chose to be.
+        var prepShownFor: String? = nil
     }
 
     private var state: Persisted {
@@ -322,6 +325,11 @@ final class MyTurnStore {
     var resetTick: Int = 0
 
     // MARK: Module
+
+    var prepShownFor: String? {
+        get { state.prepShownFor }
+        set { state.prepShownFor = newValue }
+    }
 
     var lastModule: MyTurnModule {
         get { state.lastModule }

@@ -37,7 +37,7 @@ struct LingoCallsView: View {
 
     enum Presentation { case takeover, inline }
 
-    /// The cover comes first — the mockup's "Get ready for the game" and its
+    /// The cover comes first — "Prepare some sayings for the game" and its
     /// arrow — then the lines. Reset when the fixture changes.
     @State private var showedCover = LingoCallsView.debugSkipCover
 
@@ -117,13 +117,14 @@ struct LingoCallsView: View {
         Button {
             withAnimation(.easeInOut(duration: 0.25)) { showedCover = true }
         } label: {
-            // "Get ready for" / "the game": the hard break is the sketch's.
-            SketchCard(title: "Get ready for\nthe game", ink: .textPrimaryOnCard,
+            // Named for what it does (Anton, 2026-09-27): she is picking lines
+            // to say during the match. The breaks are set by hand.
+            SketchCard(title: "Prepare some\nsayings for\nthe game", ink: .textPrimaryOnCard,
                        arrow: .hotRose, fill: .cardBackground)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Get ready for the game. Start.")
+        .accessibilityLabel("Prepare some sayings for the game. Start.")
     }
 
     /// The offer, drawn on the brightest surface in the app.
@@ -514,10 +515,12 @@ struct SketchCard: View {
             let size = w * 0.145
             let side = w * 0.39
             let top = h * 0.42          // where the letters start
-            // Two rows of League Spartan Black measure 1.62x the size from the
-            // top of the letters to the last baseline; the sketch starts the
-            // arrow at 75% of that.
-            let arrowTop = top + size * 1.62 * 0.75
+            // League Spartan Black: 0.72x the size for the first row of letters
+            // and 0.9x for each row after, top of the letters to the last
+            // baseline (two rows measure 1.62x). The sketch starts the arrow
+            // three quarters of the way down that block, however many rows.
+            let rows = CGFloat(max(1, title.split(separator: "\n").count))
+            let arrowTop = top + size * (0.72 + 0.9 * (rows - 1)) * 0.75
             ZStack(alignment: .topLeading) {
                 Text(title)
                     .font(.custom("LeagueSpartan-Black", size: size))
