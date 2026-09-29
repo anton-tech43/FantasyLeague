@@ -37,6 +37,13 @@ extension Color {
     static let badgeNews = Color.hotRose
     static let badgeNewsText = Color.warmWhite
 
+    // Answer states on a multiple-choice option. Green is for a right answer
+    // and nothing else in the app, so it reads as "that one" at a glance.
+    static let answerRight = Color(hex: "#CDEBD3")
+    static let answerRightInk = Color(hex: "#2E8B4E")
+    static let answerWrong = Color(hex: "#F9C9CE")
+    static let answerWrongInk = Color(hex: "#D23A4A")
+
     // Post-match card tints (no green — rose for wins, red for losses)
     static let winTint = Color.hotRose.opacity(0.08)
     static let winBar = Color.hotRose.opacity(0.5)

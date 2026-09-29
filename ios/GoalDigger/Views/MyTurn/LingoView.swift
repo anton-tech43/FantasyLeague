@@ -104,9 +104,14 @@ struct LingoView: View {
 
     /// The seven this context would deal right now.
     private func dealt(_ context: MatchContext?) -> (ids: [String], refresher: Bool) {
-        LingoWeekendDeck.build(
+        // Only promise the deck a named card when there is a man to name, or a
+        // plain "their defender" line takes the slot a fixture word would have.
+        let theirs = context.map(inputs(for:))
+        let canName = theirs.map { $0.opponentKnown && !($0.theirPicks.isEmpty && $0.theirCurated.isEmpty) } ?? false
+        return LingoWeekendDeck.build(
             terms: content.terms, known: known, learning: learning, context: context,
-            seed: LingoWeekendDeck.seed(team: team, context: context, now: Date(), nonce: store.lingoDealNonce))
+            seed: LingoWeekendDeck.seed(team: team, context: context, now: Date(), nonce: store.lingoDealNonce),
+            canNameTheirs: canName)
     }
 
     /// Everything the hero depends on, and nothing else. `store.lingoQuery` is
@@ -191,10 +196,20 @@ struct LingoView: View {
             ids = plain.map(\.id)
         }
         #endif
+        var prep = false
+        if case .before = shown.phase { prep = true }
         let resolved = PlayerSlots.apply(plain, inputs: inputs(for: shown),
-                                         seed: shown.fixtureKey + "|\(store.lingoDealNonce)")
+                                         seed: shown.fixtureKey + "|\(store.lingoDealNonce)",
+                                         max: prep ? PlayerSlots.prepPlayerCards : PlayerSlots.maxPlayerCards)
         var named: [String: LingoTerm] = [:]
         for (before, after) in zip(plain, resolved) where before != after { named[after.id] = after }
+        #if DEBUG
+        // `-gdLingoPrintDeck`: the seven, as dealt, for checking a round
+        // without playing it through on a simulator that cannot tap.
+        if ProcessInfo.processInfo.arguments.contains("-gdLingoPrintDeck") {
+            print("LINGO-DECK \(shown.tags) " + resolved.map { "\($0.id): \($0.overheard ?? "")" }.joined(separator: " | "))
+        }
+        #endif
         return Weekend(context: shown, ids: ids, named: named)
     }
 
@@ -219,10 +234,10 @@ struct LingoView: View {
             assertionFailure("the hero was pressed with nothing to deal, so the tap did nothing")
             return
         }
-        store.startDrill(deckId: LingoWeekendDeck.deckId, queue: queue)
+        store.startDrill(deckId: LingoWeekendDeck.deckId, queue: queue, origin: origin)
         // And only once the round actually exists: leaving the landing screen
         // behind a refused `startDrill` is a blank screen with no way back.
-        guard store.drillSession?.deckId == LingoWeekendDeck.deckId else {
+        guard ownsSession else {
             assertionFailure("startDrill refused a queue of \(queue.count), and the landing screen was about to go with it")
             return
         }
@@ -236,6 +251,7 @@ struct LingoView: View {
         // first fresh seven away between them.
         guard store.drillSession?.finished == true else { return }
         store.lingoDealNonce += 1
+        let context = roundContext
         let ids = dealt(context).ids
         // A content refresh can leave nothing playable. An end card with a
         // button that does nothing is worse than going back to the words.
@@ -248,14 +264,28 @@ struct LingoView: View {
 
     // MARK: Body
 
-    private var showingRound: Bool {
-        store.drillSession?.deckId == LingoWeekendDeck.deckId && !showingLanding
+    /// Which tab's round this view deals and resumes: the prep's is the
+    /// fixture's (nil, as every round was before 2026-09-29), Lingo's is the
+    /// general one. The two share the store's one round slot.
+    private var origin: String? { mode == .dictionary ? "practise" : nil }
+
+    /// The context a round from this tab is dealt for: the fixture in the
+    /// prep, none at all in Lingo — seven from anywhere, nobody named.
+    private var roundContext: MatchContext? { mode == .prep ? context : nil }
+
+    private var ownsSession: Bool {
+        store.drillSession?.deckId == LingoWeekendDeck.deckId && store.drillSession?.origin == origin
     }
+
+    private var showingRound: Bool { ownsSession && !showingLanding }
 
     /// The round, on screen. Behind an unfilled slip only until she presses
     /// the words card: before this the slip cover won outright, and a tap on
-    /// the pink card below it dealt a round nobody could see.
-    private var roundOnScreen: Bool { showingRound && (pressedRound || !showingCalledIt) }
+    /// the pink card below it dealt a round nobody could see. In Lingo only
+    /// once she presses Practise: the tab opens on the words.
+    private var roundOnScreen: Bool {
+        showingRound && (pressedRound || (mode == .prep && !showingCalledIt))
+    }
 
     /// The Called It offer fills the Lingo content — the first thing she meets
     /// coming into Lingo on a match week — whenever there is a slip to offer she
@@ -309,15 +339,17 @@ struct LingoView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: Layout.cardSpacing) {
-                    if mode == .dictionary {
-                        searchField
-                        wordList
-                    } else if roundOnScreen {
+                    if roundOnScreen {
                         LingoOverheardView(
                             content: content, store: store, context: context,
                             named: weekend?.named ?? [:],
                             onDealAgain: dealAgain,
+                            backLabel: mode == .dictionary ? "Lingo" : "Get ready",
                             onPause: { withAnimation(.easeInOut(duration: 0.2)) { showingLanding = true } })
+                    } else if mode == .dictionary {
+                        practiseButton
+                        searchField
+                        wordList
                     } else if showingCalledIt {
                         // Fills the Lingo content, with the module tabs above and
                         // the bottom bar below still in view — Anton's "helskärm
@@ -352,7 +384,9 @@ struct LingoView: View {
             // tell her about, so every open of the app has another go.
             .task { if mode == .prep { await uploadSlip() } }
             // The opponent quiz, for whoever this fixture is against.
-            .task(id: opponentTeam) { if mode == .prep { await live.refreshOpponent(opponentTeam, mine: team) } }
+            .task(id: OpponentKey(team: opponentTeam, meeting: lastMeeting)) {
+                if mode == .prep { await live.refreshOpponent(opponentTeam, mine: team, lastMeeting: lastMeeting) }
+            }
             // A word sent here from Say This or a seeAlso: the dictionary's job.
             .onChange(of: store.lingoExpandedId) { _, new in if mode == .dictionary { jump(to: new, proxy: proxy) } }
             #if DEBUG
@@ -371,7 +405,18 @@ struct LingoView: View {
                     proxy.scrollTo("prep-" + args[i + 1], anchor: .top)
                 }
                 if args.contains("-gdPrepOpponentQuiz"), let pack = live.opponentPack {
-                    store.startRound(pack: pack)
+                    // With `-gdMyTurnQuestion <id>` a one-question round, and
+                    // `-gdQuizAnswer N` answers it, as in the Quiz tab.
+                    if let j = args.firstIndex(of: "-gdMyTurnQuestion"), j + 1 < args.count {
+                        store.startRetryRound(pack: pack, missedIds: [args[j + 1]])
+                    } else {
+                        store.startRound(pack: pack)
+                    }
+                    if let j = args.firstIndex(of: "-gdQuizAnswer"), j + 1 < args.count, let a = Int(args[j + 1]),
+                       let id = store.quizRound?.questionIds.first,
+                       let q = pack.questions.first(where: { $0.id == id }) {
+                        store.answer(a, correct: a == q.answer, questionId: id)
+                    }
                     showingOpponentQuiz = true
                 }
             }
@@ -487,7 +532,7 @@ struct LingoView: View {
     /// "Continue · 3 of 7" while a round is paused, in place of the invitation
     /// to deal a new one.
     private var continueLabel: String? {
-        guard let s = store.drillSession, s.deckId == LingoWeekendDeck.deckId, !s.finished else { return nil }
+        guard ownsSession, let s = store.drillSession, !s.finished else { return nil }
         return "Continue · \(min(s.index + 1, s.queue.count)) of \(s.queue.count)"
     }
 
@@ -532,6 +577,31 @@ struct LingoView: View {
         // closure, with the weekend it has actually built.
         .task(id: weekend.ids) { await debugPressHero(weekend) }
         #endif
+    }
+
+    /// Lingo's one thing to press, the same box Quiz and Say This lead with:
+    /// seven words from anywhere, for practice. The game's own seven live in
+    /// the prep; this is for any other evening.
+    private var practiseButton: some View {
+        MyTurnPractiseButton(title: "Practise",
+                             subtitle: continueLabel ?? "\(LingoWeekendDeck.roundLength) words, any game") {
+            if continueLabel != nil {
+                pressedRound = true
+                withAnimation(.easeInOut(duration: 0.2)) { showingLanding = false }
+            } else {
+                deal(nil)
+            }
+        }
+        .padding(.top, 8)
+        .padding(.bottom, 20)
+    }
+
+    private struct OpponentKey: Hashable { let team: Team?; let meeting: MatchContext.LastMeeting? }
+
+    /// The last time the two met, off his page's matchup card for this fixture.
+    private var lastMeeting: MatchContext.LastMeeting? {
+        guard let opponent = PlayerSlots.opponent(of: context) else { return nil }
+        return MatchContext.lastMeeting(page?.cards.matchup, opponent: opponent, fixtureId: context.fixtureId)
     }
 
     /// The club this fixture is against, when it is one we have a page for.
@@ -883,6 +953,8 @@ struct LingoView: View {
            let category = LingoCategory(rawValue: args[i + 1]) {
             openCategories.insert(category)
         }
+        // `-gdLingoPractise`: press Practise, for a screenshot of the round.
+        if args.contains("-gdLingoPractise") { deal(nil) }
     }
 
     private func applyLingoArguments() {

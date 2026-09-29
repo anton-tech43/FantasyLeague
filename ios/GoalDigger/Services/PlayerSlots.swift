@@ -38,7 +38,9 @@ import Foundation
 ///   the feed lists twice by his whole name is dropped: nothing we can print
 ///   separates Spurs' two "T. Hall".
 /// - At most `maxPlayerCards` of the seven, one a side. One named card is
-///   invisible; three turns a vocabulary round into the squad quiz.
+///   invisible; three turns a vocabulary round into the squad quiz. Before a
+///   game the cap is `prepPlayerCards`, mostly theirs: there the round is
+///   prep for one fixture, and naming their men is the point (2026-09-29).
 enum PlayerSlots {
     // MARK: Slots
 
@@ -80,8 +82,11 @@ enum PlayerSlots {
     /// the content validator's worst-case arithmetic a guarantee rather than a
     /// hope.
     static let nameCap = 22
-    /// Two of the seven.
+    /// Two of the seven, one a side.
     static let maxPlayerCards = 2
+    /// Before a game: up to four, and when both sides have players only one
+    /// of them ours. Prep is about the side he is about to watch.
+    static let prepPlayerCards = 4
 
     // MARK: Inputs
 
@@ -251,21 +256,25 @@ enum PlayerSlots {
     /// its whole build on survives: the first word that can be named is. Each
     /// man is claimed once, no slot is used twice, and when both sides have a
     /// pool the two cards are one a side.
-    static func assign(_ dealt: [LingoTerm], pools: [Slot: [Named]], seed: String) -> [String: Resolved] {
+    static func assign(_ dealt: [LingoTerm], pools: [Slot: [Named]], seed: String,
+                       max: Int = maxPlayerCards) -> [String: Resolved] {
         guard !pools.isEmpty else { return [:] }
         let bothSides = Side.allCases.allSatisfy { side in pools.keys.contains { $0.side == side } }
+        // With both sides in play, one of ours and the rest theirs: at the
+        // default two that is the old one a side.
+        func room(_ side: Side) -> Int { bothSides ? (side == .ours ? 1 : max - 1) : max }
 
         var out: [String: Resolved] = [:]
-        var claimed: Set<String> = [], usedSlots: Set<Slot> = [], usedSides: Set<Side> = []
+        var claimed: Set<String> = [], usedSlots: Set<Slot> = [], perSide: [Side: Int] = [:]
 
-        for term in dealt where out.count < maxPlayerCards {
+        for term in dealt where out.count < max {
             guard let variants = term.playerVariants, !variants.isEmpty else { continue }
             // A term may carry two variants (one a side). Which one it offers
             // first is seeded, so the same fixture deals the same card twice.
             var rng = LiveClubPack.SeededGenerator(seed: seed + "|" + term.id)
             for variant in variants.shuffled(using: &rng) {
                 guard let slot = Slot(variant.slot), !usedSlots.contains(slot),
-                      !(bothSides && usedSides.contains(slot.side)) else { continue }
+                      perSide[slot.side, default: 0] < room(slot.side) else { continue }
                 // The contract says the token appears in `overheard`. This is
                 // downloaded content, so check rather than trust: a variant
                 // that prints no name would spend one of the two cards on a
@@ -273,7 +282,7 @@ enum PlayerSlots {
                 guard variant.overheard.contains("{\(variant.slot)}"),
                       let man = pools[slot]?.first(where: { !claimed.contains($0.key) }) else { continue }
                 out[term.id] = Resolved(variant: variant, named: man)
-                claimed.insert(man.key); usedSlots.insert(slot); usedSides.insert(slot.side)
+                claimed.insert(man.key); usedSlots.insert(slot); perSide[slot.side, default: 0] += 1
                 break
             }
         }
@@ -283,9 +292,9 @@ enum PlayerSlots {
     /// The dealt words, with at most two of them naming a real player.
     /// Returns the input unchanged when nothing resolves, which is the cold
     /// start, the off-season and every term published without a variant.
-    static func apply(_ dealt: [LingoTerm], inputs: Inputs, seed: String,
+    static func apply(_ dealt: [LingoTerm], inputs: Inputs, seed: String, max: Int = maxPlayerCards,
                       print printer: ([String]) -> [String: String] = displayNames) -> [LingoTerm] {
-        let picks = assign(dealt, pools: pools(inputs, print: printer), seed: seed)
+        let picks = assign(dealt, pools: pools(inputs, print: printer), seed: seed, max: max)
         guard !picks.isEmpty else { return dealt }
         return dealt.map { term in
             picks[term.id].map { term.naming($0.named.display, $0.variant, role: role($0.named.slot, inputs)) } ?? term
@@ -410,6 +419,10 @@ enum PlayerSlots {
         guard named.count == maxPlayerCards,
               named.contains(where: { $0.overheard?.contains("Kolo Muani") == true }),
               named.contains(where: { $0.overheard?.contains("Odegaard") == true }) else { return false }
+
+        // The prep cap: more names, but never a second one of ours.
+        let prepped = apply(many, inputs: base, seed: "f|0", max: prepPlayerCards)
+        guard prepped.filter({ $0.overheard?.contains("Odegaard") == true }).count == 1 else { return false }
 
         // Determinism: one seed, one answer. A different seed is still a legal
         // round (two cards, one a side) rather than anything at all.

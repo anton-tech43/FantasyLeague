@@ -28,6 +28,8 @@ struct LingoOverheardView: View {
     /// "The words" on an unfinished round: the round is kept exactly where it
     /// is and the landing screen comes back, the way Quiz's "Packs" works. The
     /// four-second look-up is the reason Lingo exists; it cannot cost a round.
+    /// Where back goes: the prep's cards, or Lingo's words.
+    var backLabel = "Get ready"
     let onPause: () -> Void
     @Environment(AppState.self) private var appState
     /// The named player's "defender, Arsenal", open over the bubble after a tap
@@ -73,9 +75,7 @@ struct LingoOverheardView: View {
             } label: {
                 HStack(spacing: 5) {
                     Image(systemName: "chevron.left").font(.system(size: 13, weight: .semibold))
-                    // The round lives in the prep now (2026-09-27), so back
-                    // is back to its cards.
-                    Text("Get ready").font(.jakarta(15, weight: .medium))
+                    Text(backLabel).font(.jakarta(15, weight: .medium))
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                 }

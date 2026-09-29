@@ -328,7 +328,10 @@ enum LiveClubPack {
     /// their rival or their next fixture (that is us), not their last title.
     /// `mine` is his club, kept out of the distractors so her own manager is
     /// never offered as the other side's.
-    static func buildOpponent(team: Team, page: TeamPageContent, sources: Sources, mine: Team?) -> QuizPack? {
+    /// `lastMeeting` comes off his own page's matchup card, not theirs: only
+    /// his is written for this fixture.
+    static func buildOpponent(team: Team, page: TeamPageContent, sources: Sources, mine: Team?,
+                              lastMeeting: MatchContext.LastMeeting? = nil) -> QuizPack? {
         let cards = page.cards
         let club = team.shortName
         let others = sources.slices.filter { $0.team_id != team.rawValue }
@@ -391,17 +394,25 @@ enum LiveClubPack {
                 useType: .say, use: "When they attack: " + quote("Watch \(name). He's their scorer."))
         }
 
+        // How it went last time they met, which is what he'll bring up. Only
+        // when there's no meeting on the card: where they finished last season
+        // — the place alone. "14th, 47 points" was a question nobody could
+        // make anything of (Anton, 2026-09-29).
+        if let m = lastMeeting, let mine {
+            qs += lastMeetingQuestion(m, club: club, ours: mine.shortName)
+        } else if let last = cards.basics?.lastSeason, let place = leadingPlace(last) {
+            let nearby = [-3, -2, -1, 1, 2, 3, 4].map { place + $0 }.filter { (1...20).contains($0) }
+            qs += question(
+                id: "opp-last-season", difficulty: 2,
+                question: "Where did \(club) finish last season?",
+                answer: ordinal(place), distractors: nearby.map(ordinal),
+                explanation: "\(club) finished \(ordinal(place)) in the Premier League last season.",
+                why: "It tells you what kind of side we're up against, before a ball is kicked.",
+                useType: .ask, use: quote("Were \(club) any good last season?"))
+        }
+
         if let b = cards.basics {
             let otherBasics = others.compactMap(\.basics)
-            if let last = b.lastSeason {
-                qs += question(
-                    id: "opp-last-season", difficulty: 2,
-                    question: "How did \(club) do last season?",
-                    answer: last, distractors: otherBasics.compactMap(\.lastSeason),
-                    explanation: "\(last).",
-                    why: "It tells you what kind of side we're up against, before a ball is kicked.",
-                    useType: .ask, use: quote("Were \(club) any good last season?"))
-            }
             let nick = cleanNickname(b.nickname)
             qs += question(
                 id: "opp-nickname", difficulty: 1,
@@ -426,6 +437,53 @@ enum LiveClubPack {
         return QuizPack(id: opponentPackId, label: "Get to know \(club)", questions: qs)
     }
 
+    /// "We won 4–0", with the flipped result and a draw as the other two, so
+    /// every option is a scoreline that could have happened in that game.
+    static func lastMeetingQuestion(_ m: MatchContext.LastMeeting, club: String, ours: String) -> [MyTurnQuestion] {
+        let hi = max(m.ours, m.theirs), lo = min(m.ours, m.theirs)
+        let score = "\(hi)\u{2013}\(lo)"
+        let answer: String, wrong: [String], line: String
+        if m.ours > m.theirs {
+            answer = "We won \(score)"; wrong = ["They won \(score)", "\(lo)\u{2013}\(lo) draw"]
+            line = "Didn't we beat them \(score) last time?"
+        } else if m.theirs > m.ours {
+            answer = "They won \(score)"; wrong = ["We won \(score)", "\(lo)\u{2013}\(lo) draw"]
+            line = "Didn't they beat us last time? We owe them one."
+        } else {
+            let won = "\(hi + 1)\u{2013}\(hi)"
+            answer = "\(score) draw"; wrong = ["We won \(won)", "They won \(won)"]
+            line = "Wasn't it a draw last time?"
+        }
+        let (home, away) = m.weAreHome ? (ours, club) : (club, ours)
+        let (hg, ag) = m.weAreHome ? (m.ours, m.theirs) : (m.theirs, m.ours)
+        let when = monthYear(m.date).map { ", in \($0)" } ?? ""
+        return question(
+            id: "opp-last-meeting", difficulty: 2,
+            question: "The last time \(ours) played \(club), how did it go?",
+            answer: answer, distractors: wrong,
+            explanation: "\(home) \(hg)\u{2013}\(ag) \(away), at \(m.weAreHome ? "ours" : "theirs")\(when).",
+            why: "He'll remember it, and he'll bring it up before kick-off.",
+            useType: .ask, use: quote(line))
+    }
+
+    /// "14th, 47 points" → 14. Nil for anything that isn't a plain Premier
+    /// League place first — "Champions, 85 points", "Promoted through the
+    /// play-offs, 6th" and "Championship runners-up" all say something the
+    /// place alone would get wrong.
+    static func leadingPlace(_ s: String) -> Int? {
+        guard let r = s.range(of: #"^\d{1,2}(st|nd|rd|th),"#, options: .regularExpression) else { return nil }
+        return Int(s[r].prefix { $0.isNumber })
+    }
+
+    /// "2026-01-31" → "January 2026".
+    static func monthYear(_ ymd: String) -> String? {
+        let parts = ymd.split(separator: "-")
+        guard parts.count >= 2, let y = Int(parts[0]), let m = Int(parts[1]), (1...12).contains(m) else { return nil }
+        // English whatever the phone's language: the rest of the sentence is.
+        let f = DateFormatter(); f.locale = Locale(identifier: "en_GB")
+        return "\(f.standaloneMonthSymbols[m - 1]) \(y)"
+    }
+
     #if DEBUG
     /// The opponent pack from a fixture page: facts only, opponent ids only,
     /// and nothing that speaks as though she follows the other side.
@@ -435,7 +493,16 @@ enum LiveClubPack {
             return page.cards.basics == nil  // too little on the fixture to build is fine, not a failure
         }
         let text = pack.questions.flatMap { [$0.question, $0.explanation, $0.why ?? "", $0.use ?? ""] }.joined(separator: " ")
-        return pack.questions.allSatisfy { $0.id.hasPrefix("opp-") && $0.options.count == 3 }
+        // Leeds 0–4 Arsenal away: ours is the win, and the flip is offered.
+        let meeting = lastMeetingQuestion(.init(date: "2026-01-31", weAreHome: false, ours: 4, theirs: 0),
+                                          club: "Leeds", ours: "Arsenal").first
+        let meetingOK = meeting.map {
+            $0.options[$0.answer] == "We won 4\u{2013}0" && $0.options.contains("They won 4\u{2013}0")
+                && $0.explanation == "Leeds 0\u{2013}4 Arsenal, at theirs, in January 2026."
+        } ?? false
+        return meetingOK && leadingPlace("14th, 47 points") == 14 && leadingPlace("Champions, 85 points") == nil
+            && leadingPlace("Promoted through the play-offs, 6th") == nil
+            && pack.questions.allSatisfy { $0.id.hasPrefix("opp-") && $0.options.count == 3 }
             && !text.contains("[his") && !text.contains("Come on you")
     }
     #endif
@@ -718,7 +785,7 @@ final class LiveClubPackService {
     /// cache His Team keeps (fetched when stale). Nil opponent, or one that is
     /// not a club we have a page for (a cup tie against a lower-league side),
     /// clears it.
-    func refreshOpponent(_ opponent: Team?, mine: Team?) async {
+    func refreshOpponent(_ opponent: Team?, mine: Team?, lastMeeting: MatchContext.LastMeeting? = nil) async {
         opponentId = opponent?.rawValue
         guard let opponent else { opponentPack = nil; return }
         var cached = TeamPageCache.load(teamId: opponent.rawValue)
@@ -731,7 +798,8 @@ final class LiveClubPackService {
         // A newer call for another opponent owns the result.
         guard opponentId == opponent.rawValue else { return }
         guard let content = cached?.content, let src = sources else { opponentPack = nil; return }
-        opponentPack = LiveClubPack.buildOpponent(team: opponent, page: content, sources: src, mine: mine)
+        opponentPack = LiveClubPack.buildOpponent(team: opponent, page: content, sources: src, mine: mine,
+                                                  lastMeeting: lastMeeting)
     }
 
     /// One club's players out of the cached league-wide sources: the two men

@@ -271,10 +271,16 @@ struct QuizView: View {
             if let selected = round.selected {
                 let correct = selected == q.answer
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(correct ? "Right." : "Not that one.")
+                    let right = q.options[q.answer]
+                    // Wrong: say the right answer in the heading, so the name
+                    // under "Not that one." can't be read as hers. Most
+                    // explanations open by repeating the answer; drop that
+                    // echo rather than say the name twice.
+                    Text(correct ? "Right." : "Not that one. It's \(right.trimmingCharacters(in: CharacterSet(charactersIn: "."))).")
                         .font(.jakarta(17, weight: .bold))
                         .foregroundColor(correct ? .hotRose : .warmWhite)
-                    Text(q.explanation)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(correct ? q.explanation : Self.droppingEcho(of: right, from: q.explanation))
                         .font(.jakarta(15, weight: .regular))
                         .foregroundColor(.warmWhite.opacity(0.9))
                         .lineSpacing(3)
@@ -324,6 +330,15 @@ struct QuizView: View {
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
         }
+    }
+
+    /// "Daniel Farke. He'll be in the other dugout…" → "He'll be in the other
+    /// dugout…" once the heading has already named him. Only a leading
+    /// sentence that is exactly the answer goes; anything else is kept whole.
+    static func droppingEcho(of answer: String, from explanation: String) -> String {
+        let bare = answer.trimmingCharacters(in: CharacterSet(charactersIn: "."))
+        guard explanation.hasPrefix(bare + ". ") else { return explanation }
+        return String(explanation.dropFirst(bare.count + 2))
     }
 
     /// The take-away: labelled with what it is for, set apart from the fact.

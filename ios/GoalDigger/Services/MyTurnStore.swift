@@ -128,18 +128,26 @@ final class MyTurnStore {
         /// decoded — the round carries on at this build's arity, and a stamp
         /// left behind would migrate the same session again on every launch.
         let optionCount: Int
+        /// Which tab dealt it: nil is the game prep (every session written
+        /// before 2026-09-29 was one), "practise" is Lingo's general round.
+        /// Each tab only resumes its own, so a round from anywhere never shows
+        /// as "Carry on with your words" under the fixture.
+        // ponytail: one round slot shared by both tabs — starting one replaces
+        // the other. A slot per origin if she ever loses progress this way.
+        var origin: String? = nil
 
         enum CodingKeys: String, CodingKey {
             case deckId, queue, index, selected, missed, finished, knew, knewIds, streak, hypeLine, salt
-            case optionCount
+            case optionCount, origin
         }
 
         /// Fields the flashcard build wrote and this one does not.
         private enum LegacyKeys: String, CodingKey { case flipped, done }
 
-        init(deckId: String, queue: [String]) {
+        init(deckId: String, queue: [String], origin: String? = nil) {
             self.deckId = deckId
             self.queue = queue
+            self.origin = origin
             self.salt = UUID().uuidString
             self.optionCount = LingoWeekendDeck.optionCount
         }
@@ -165,6 +173,7 @@ final class MyTurnStore {
             streak = try c.decodeIfPresent(Int.self, forKey: .streak) ?? 0
             hypeLine = try c.decodeIfPresent(String.self, forKey: .hypeLine)
             salt = try c.decodeIfPresent(String.self, forKey: .salt) ?? ""
+            origin = try? c.decodeIfPresent(String.self, forKey: .origin)
             let old = try decoder.container(keyedBy: LegacyKeys.self)
             legacy = old.contains(.flipped) || old.contains(.done)
 
@@ -463,9 +472,9 @@ final class MyTurnStore {
     /// The queue is stored exactly as dealt — `LingoWeekendDeck` has already
     /// decided which words and in what order, and it knows things the store
     /// does not (this weekend's fixture).
-    func startDrill(deckId: String, queue: [String]) {
+    func startDrill(deckId: String, queue: [String], origin: String? = nil) {
         guard !queue.isEmpty else { return }
-        state.drillSession = DrillSession(deckId: deckId, queue: queue)
+        state.drillSession = DrillSession(deckId: deckId, queue: queue, origin: origin)
     }
 
     /// One tap on an option. Right moves the word up a bucket (new → learning
@@ -768,4 +777,12 @@ func myTurnMissSelfCheck() {
     store.answerDrill(0, correct: true)
     assert(store.drillSession?.knew == 1, "a first-time right answer stopped counting")
     store.endDrill()
+
+    // Which tab dealt it survives a relaunch, and a round written before the
+    // field existed is the game prep's.
+    let practise = MyTurnStore.DrillSession(deckId: "lingo", queue: ["var"], origin: "practise")
+    let back = try? JSONDecoder().decode(MyTurnStore.DrillSession.self, from: JSONEncoder().encode(practise))
+    let old = try? JSONDecoder().decode(MyTurnStore.DrillSession.self,
+                                        from: Data(#"{"deckId":"lingo","queue":["var"],"salt":"s"}"#.utf8))
+    assert(back?.origin == "practise" && old != nil && old?.origin == nil, "a round forgot which tab dealt it")
 }

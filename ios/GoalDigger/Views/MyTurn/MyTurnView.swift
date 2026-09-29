@@ -267,8 +267,8 @@ struct MyTurnRow<Trailing: View>: View {
 }
 
 /// One multiple-choice option, as the quiz and the Overheard round both draw
-/// it: blush card, rose tint and a tick on the right answer once she has
-/// picked, a red cross on hers when it was not, and nothing tappable after.
+/// it: blush card until she picks, then green and a tick on the right answer
+/// and light red with a cross on every other one, and nothing tappable after.
 ///
 /// Shared because the two modules ask the same question in the same shape, and
 /// a tick that looks different in one of them reads as a different meaning.
@@ -294,11 +294,9 @@ struct MyTurnOptionButton: View {
         let background: Color = {
             // Solid light red, not a tint: a tint over the blush reads as
             // grey, and this has to say "not that one" at a glance.
-            if isMissed { return Color(hex: "#F9C9CE") }
+            if isMissed { return .answerWrong }
             guard answered else { return .cardBackground }
-            if isCorrect { return Color.hotRose.opacity(0.18) }
-            if isPicked { return Color.red.opacity(0.10) }
-            return .cardBackground
+            return isCorrect ? .answerRight : .answerWrong
         }()
         return Button {
             guard !answered, !isMissed else { return }
@@ -313,10 +311,10 @@ struct MyTurnOptionButton: View {
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 0)
                 if answered && isCorrect {
-                    Image(systemName: "checkmark.circle.fill").foregroundColor(.hotRose)
+                    Image(systemName: "checkmark.circle.fill").foregroundColor(.answerRightInk)
                         .accessibilityHidden(true)
-                } else if isMissed || (answered && isPicked) {
-                    Image(systemName: "xmark.circle.fill").foregroundColor(.red.opacity(0.7))
+                } else if isMissed || answered {
+                    Image(systemName: "xmark.circle.fill").foregroundColor(.answerWrongInk)
                         .accessibilityHidden(true)
                 }
             }
@@ -326,19 +324,20 @@ struct MyTurnOptionButton: View {
             .background(Color.cardBackground)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(answered && isCorrect ? Color.hotRose : Color.clear, lineWidth: 1.5)
+                    .stroke(answered && isCorrect ? Color.answerRightInk : Color.clear, lineWidth: 1.5)
             )
             .cornerRadius(12)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        // Not `.disabled` for the missed one: that dims it to grey, and it has
-        // to stay a clear red. The action above ignores a second tap on it.
-        .disabled(answered)
+        // Never `.disabled`: that dims every option to grey, tick and cross
+        // included, which made the right answer read as another wrong one. The
+        // action above ignores any tap once answered or missed.
+        .accessibilityAddTraits(answered ? .isStaticText : [])
         // The tick and the cross are the whole answer for a sighted reader, so
         // VoiceOver needs them said rather than drawn. As a value, not a label:
         // the option's own text stays the label, and the state is what changed.
-        .accessibilityValue(isMissed ? "Not that one" : answered ? (isCorrect ? "Correct answer" : (isPicked ? "Your answer, wrong" : "")) : "")
+        .accessibilityValue(isMissed ? "Not that one" : answered ? (isCorrect ? "Correct answer" : (isPicked ? "Your answer, wrong" : "Wrong")) : "")
     }
 }
 

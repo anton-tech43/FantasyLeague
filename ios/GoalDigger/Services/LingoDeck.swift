@@ -572,6 +572,34 @@ struct MatchContext: Equatable {
         return t
     }
 
+    /// The newest scored meeting between his club and this opponent, under the
+    /// same gate as the tags: the card has to be for this fixture and this
+    /// club, or its history is somebody else's.
+    struct LastMeeting: Hashable {
+        /// "YYYY-MM-DD", as the card writes it.
+        let date: String
+        let weAreHome: Bool
+        let ours: Int
+        let theirs: Int
+    }
+
+    static func lastMeeting(_ card: MatchupCard?, opponent: String, fixtureId: Int?) -> LastMeeting? {
+        guard let card, let fixtureId, card.fixtureId == fixtureId,
+              let named = card.opponent, sameClub(named, opponent) else { return nil }
+        for m in (card.h2h ?? []).sorted(by: { ($0.date ?? "") > ($1.date ?? "") }) {
+            guard let date = m.date, let home = m.home, let away = m.away,
+                  let goals = parseScore(m.score) else { continue }
+            let weAreHome: Bool
+            if sameClub(away, opponent) { weAreHome = true }
+            else if sameClub(home, opponent) { weAreHome = false }
+            else { continue }
+            return LastMeeting(date: date, weAreHome: weAreHome,
+                               ours: weAreHome ? goals.home : goals.away,
+                               theirs: weAreHome ? goals.away : goals.home)
+        }
+        return nil
+    }
+
     /// "2-1", home first. Nil for anything else, including a game with no
     /// score written, which then counts as no meeting at all.
     private static func parseScore(_ raw: String?) -> (home: Int, away: Int)? {
@@ -741,8 +769,19 @@ enum LingoWeekendDeck {
     /// Relevance decides *which* seven (her fixture's tag first, then any
     /// active tag, then words for any match) and which come first; difficulty
     /// orders them inside each of those three groups.
+    ///
+    /// Before a game the round is prep for that game and nothing else: the
+    /// calendar tags ("it is September") deal no word, and when the other
+    /// side has players to name, up to `theirsNamed` words that can name one
+    /// come straight after the fixture's own. "promotion with three games to
+    /// spare" before Leeds was the calendar winning a slot on level alone
+    /// (Anton, 2026-09-29); "Make Justin deal with it" was the round working.
+    static let theirsNamed = 3
+    static let calendarTags: Set<String> = ["window", "early-season", "run-in"]
+
     static func build(terms: [LingoTerm], known: Set<String>, learning: Set<String>,
-                      context: MatchContext?, seed: String) -> (ids: [String], refresher: Bool) {
+                      context: MatchContext?, seed: String,
+                      canNameTheirs: Bool = false) -> (ids: [String], refresher: Bool) {
         // `basic` words stay in the list and in search but never get dealt: the
         // first round on a fresh install fills from `any` sorted by level, and
         // asking a grown woman what "kick-off" means at the moment she is
@@ -774,17 +813,31 @@ enum LingoWeekendDeck {
         // easy generic ones.
         var block: [String: Int] = [:]
         var current = 0
-        func take(_ ts: [LingoTerm]) {
-            for t in ts.sorted(by: { key($0) < key($1) }) where picked.count < roundLength {
-                if seen.insert(t.id).inserted { picked.append(t.id); block[t.id] = current }
+        func take(_ ts: [LingoTerm], limit: Int = roundLength) {
+            var added = 0
+            for t in ts.sorted(by: { key($0) < key($1) }) where picked.count < roundLength && added < limit {
+                if seen.insert(t.id).inserted { picked.append(t.id); block[t.id] = current; added += 1 }
             }
         }
 
-        let unknown = playable.filter { !known.contains($0.id) }
+        func notOnlyCalendar(_ t: LingoTerm) -> Bool {
+            let when = Set(t.when ?? [])
+            return when.isEmpty || !when.isSubset(of: calendarTags)
+        }
+        var unknown = playable.filter { !known.contains($0.id) }
+        var prep = false
         if let context {
-            let active = context.tags.filter { $0 != "any" }
+            if case .before = context.phase { prep = true }
+            // Before a game, a word only for the time of year is no prep for
+            // it: dropped from every pass, the last-resort one included.
+            if prep { unknown = unknown.filter(notOnlyCalendar) }
+            let active = context.tags.filter { $0 != "any" && !(prep && calendarTags.contains($0)) }
             if context.sixPointer, let sp = unknown.first(where: { $0.id == sixPointerTermId }) { take([sp]) }
             if let primary = active.first { take(unknown.filter { ($0.when ?? []).contains(primary) }) }
+            if prep && canNameTheirs {
+                take(unknown.filter { t in (t.playerVariants ?? []).contains { $0.slot.hasPrefix("theirs.") } },
+                     limit: theirsNamed)
+            }
             let activeSet = Set(active)
             take(unknown.filter { !Set($0.when ?? []).isDisjoint(with: activeSet) })
             current = 1
@@ -799,10 +852,10 @@ enum LingoWeekendDeck {
         if picked.count < roundLength {
             let knownTerms = playable.filter { known.contains($0.id) }
             if let context {
-                let allow = Set(context.tags)
+                let allow = Set(context.tags).subtracting(prep ? calendarTags : [])
                 take(knownTerms.filter { !Set($0.when ?? []).isDisjoint(with: allow) })
             }
-            take(knownTerms)
+            take(prep ? knownTerms.filter(notOnlyCalendar) : knownTerms)
         }
         // Only call it a refresher when it mostly is one: six new words and one
         // she has seen before is still a week's worth of new words.
@@ -1193,12 +1246,13 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
     assert(none.occasion(now: now) == nil, "no fixture at all was offered a line to use")
 
     // --- The deck --------------------------------------------------------
-    func term(_ id: String, level: Int, when: [String], moment: String? = "common") -> LingoTerm {
+    func term(_ id: String, level: Int, when: [String], moment: String? = "common",
+              variants: [LingoTerm.PlayerVariant]? = nil) -> LingoTerm {
         LingoTerm(id: id, category: .matchSituations, term: id, meaning: "m", heard: "h",
                   sayIt: "Say \(id).", seeAlso: nil, level: level,
                   overheard: "They said \(id).", overheardTerm: id, speaker: .him,
                   gist: "gist \(id)", decoy: "decoy \(id)", spare: "spare \(id)", when: when,
-                  basic: nil, moment: moment, playerVariants: nil)
+                  basic: nil, moment: moment, playerVariants: variants)
     }
     // The derby words sit ABOVE the fillers by difficulty, so "derby first" is
     // a statement about selection and about relevance beating level — with
@@ -1255,6 +1309,24 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
     assert(anywhere.ids.count == LingoWeekendDeck.roundLength, "a deck from anywhere is still seven")
     assert(!anywhere.ids.contains { $0.hasPrefix("deep-cup-") },
            "nil context should ignore the tags: \(anywhere.ids)")
+
+    // Before a game the calendar deals nothing: "promotion" before Leeds in
+    // September was an early-season word winning a slot on level alone. And
+    // with their players to name, the words that can name one come in.
+    let september = Calendar.current.date(from: DateComponents(year: 2026, month: 9, day: 15, hour: 12))!
+    let sepMatchup = MatchContext(page: LingoFixtures.page("matchup", now: september), team: .arsenal, now: september)
+    assert(sepMatchup.tags.contains("early-season"), "the September fixture has no early-season tag to test against")
+    let theirMan = LingoTerm.PlayerVariant(slot: "theirs.defender", overheard: "Make {theirs.defender} deal with it.",
+                                           overheardTerm: nil, sayIt: "Say it.")
+    let named = term("mixer", level: 7, when: ["any"], variants: [theirMan])
+    let calendarOnly = (0..<8).map { term("season-\($0)", level: 1, when: ["early-season", "run-in"]) }
+    let generic = (0..<8).map { term("gen-\($0)", level: 3, when: ["any"]) }
+    let prepDeck = LingoWeekendDeck.build(terms: calendarOnly + generic + [named], known: [], learning: [],
+                                          context: sepMatchup, seed: "s1", canNameTheirs: true)
+    assert(!prepDeck.ids.contains { $0.hasPrefix("season-") }, "a calendar word was dealt before a game: \(prepDeck.ids)")
+    assert(prepDeck.ids.contains("mixer"), "a word that names their man was left out of the prep: \(prepDeck.ids)")
+    let offWeek = LingoWeekendDeck.build(terms: calendarOnly + generic, known: [], learning: [], context: nil, seed: "s1")
+    assert(offWeek.ids.contains { $0.hasPrefix("season-") }, "the general round lost its season words")
 
     let three = LingoWeekendDeck.build(terms: Array(synthetic.prefix(3)), known: [], learning: [],
                                        context: derby, seed: "s1")
