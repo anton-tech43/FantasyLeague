@@ -51,6 +51,21 @@ psql "$SUPABASE_DB_URL" -c 'select 1'
 **If the DB is unreachable** (no secret, auth fail, timeout): that IS the finding.
 Report it and push — do not skip the pass silently.
 
+**Known gap (found 2026-09-29):** the cloud container this routine runs in
+may allow outbound HTTPS to the Supabase project (PostgREST) while its
+network policy blocks raw TCP to the Postgres pooler host — so `psql`
+times out even though the backend is fully up. Don't read that as "DB
+unreachable → backend down": check PostgREST first (`db-health.sh` §1). If
+PostgREST is fine and only direct `psql` times out, that's this
+container's network policy, not an outage — still push (a human needs to
+either broaden the environment's allowed hosts or accept the workaround
+below), but say so precisely rather than reporting the backend as down.
+Reads for A2/A4/A5/A6 can mostly be done anyway via PostgREST + the
+existing RPCs (`rpc/get_pipeline_diagnostics`, `pipeline_health`,
+`client_errors`, `content_items`, service-role key). A3's auto-fix
+(`TRUNCATE net._http_response`) has no PostgREST equivalent — the `net`
+schema isn't exposed — so it stays blocked until raw SQL access works.
+
 JSONB null trap (from CLAUDE.md): `WHERE x IS NULL` does not match a JSONB literal
 `null`; use `WHERE x IS NULL OR jsonb_typeof(x) = 'null'`.
 
@@ -67,6 +82,7 @@ Goal: is the backend actually serving the app, and will it keep serving until Fr
 | A3 | pg_net bloat | row count of `net._http_response` | not growing unbounded | **AUTO-FIX**: truncate it (unlogged log table; this is the known cause of "job startup timeout" that starves pg_cron). Log rows removed. |
 | A4 | Routines producing | latest `content_items` per source (gd-news, gd-insider, gd-season-state, gd-quiz, gd-matchday) | each within its cadence window | a stale routine → **push** (its own repo is `anton-tech43/goaldigger-routines`; do not fix here) |
 | A5 | Push contract | `./scripts/verify-push-eligible.sh` | exit 0, no violations | **push** with the violations |
+|    | ↳ if `psql` can't reach the DB (see gap above), substitute: `content_items?push_eligible=eq.false&pushed_at=not.is.null&created_at=gte.<since>` over PostgREST should return 0 rows | same | same |
 | A6 | API balance sanity | is `team-page-generator` failing with IDLE_TIMEOUT? | function healthy or idle | IDLE_TIMEOUT pattern = **balance depleted, not broken** (`BACKFILL_RULES.md`). Do NOT refire. **Push.** |
 | A7 | Secret hygiene | `./scripts/pre-commit-secret-scan.sh`; `ls .claude/worktrees/` | clean; no stray worktrees holding `.env` | remove abandoned worktrees; **push** if a secret leaked |
 
