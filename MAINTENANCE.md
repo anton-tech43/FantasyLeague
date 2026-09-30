@@ -69,6 +69,23 @@ Goal: is the backend actually serving the app, and will it keep serving until Fr
 | A5 | Push contract | `./scripts/verify-push-eligible.sh` | exit 0, no violations | **push** with the violations |
 | A6 | API balance sanity | is `team-page-generator` failing with IDLE_TIMEOUT? | function healthy or idle | IDLE_TIMEOUT pattern = **balance depleted, not broken** (`BACKFILL_RULES.md`). Do NOT refire. **Push.** |
 | A7 | Secret hygiene | `./scripts/pre-commit-secret-scan.sh`; `ls .claude/worktrees/` | clean; no stray worktrees holding `.env` | remove abandoned worktrees; **push** if a secret leaked |
+| A8 | Content still true | section 8 of `./scripts/db-health.sh` (runs with A1) | the featured players clear their minutes bar, no league claim over an all-competitions total, no club's prose older than 8 days, history under 5 MB | **report only, no push, until ~2026-10-14** — see below |
+
+**A8 is deliberately quiet until the measurement period ends.** Its three content
+checks emit `WARN`, which appears in the report without touching the exit code,
+so A1 stays green. That is because nobody yet knows how often they trip, and an
+alarm calibrated before you know its frequency is one you learn to ignore. Put
+the counts in each report; once there is a fortnight of them, flip the ones that
+have earned it from `warn` to `fail` in `db-health.sh` and they start pushing
+through A1 like everything else. The fourth check — the size of
+`team_page_prose_history` — already `fail`s, because that is a defect in our own
+machinery rather than a judgement about content.
+
+Every other check on this page asks whether the machinery ran. A8 exists because
+on 2026-09-30 the "ones to know" card spent a month naming players who were not
+playing while every job on this page reported green throughout — each one had
+genuinely done its job. `content-audit` is the only other correctness check and
+its findings go to `pipeline_health`, which nothing reads.
 
 Anything in A1/A2/A3 that is a deterministic, reversible cleanup → auto-fix and log.
 Anything that needs a human decision or is outside this repo → push.

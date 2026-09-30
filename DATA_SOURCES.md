@@ -123,6 +123,42 @@ The last one is the pattern to watch: **a date or number that is present in the 
 
 The guards live in `post_news.sh` and `post_team_page.sh` and are listed in the skill. **When a new failure gets through, add a guard and a test for it in the same change** — the prompt alone has never been enough.
 
+### The failure a guard cannot catch: a true sentence about the wrong person
+
+On 2026-09-30 the "ones to know" card was found naming players who were not
+playing — 20 of 60 picks across the active clubs sat outside their own squad's
+top fifteen by minutes, Newcastle's leading on a goalkeeper with no minutes at
+all. Every guard passed, because **nothing on the card was false**. Gyökeres is
+an Arsenal striker; "the one whose job it is to score goals" is true of him.
+
+Two feeds were involved and neither was wrong. API-Football's squad payload is a
+roster — name, age, shirt number, position, photo — and carries no appearances,
+minutes or goals, so a prompt asking for "the 3 most relevant right now" was a
+form question with no form data attached. `players` had held the numbers the
+whole time, refreshed nightly, and they were simply never passed on. The rule on
+top then asked for "captain, top scorer, the big summer signing", which is a
+reputation test, and a reputation test does not change when the season does.
+
+Both paths now pick on minutes, goals and assists — `_shared/featured-players.ts`
+for the Edge function, the rule in `TEAM_PAGE_PROMPT.md` for the weekly routine —
+and `fetch_team_page.sh` welds each player's season onto his squad entry so a
+name cannot be read without its numbers. **Section 8 of `scripts/db-health.sh`
+is the standing check**, along with `team_page_prose_history` (migration 123),
+which keeps 30 days of the routine-written prose so "did this actually change?"
+is a query rather than an inference.
+
+A related trap from the same day, worth stating plainly because it reads as one
+number and is two: **`players.goals` counts every competition and
+`players.league_goals` counts the league.** Handing a model only the first, next
+to a league table, produced three cards claiming league totals that were not
+league totals. There is no league-only assists column at all, so `assists` is
+always all competitions.
+
+**The lesson for this file:** a source can be accurate, current and complete and
+still produce a card that is useless, if it does not carry the dimension the
+surface is actually about. Ask what the customer would notice, not only what
+would be false.
+
 ## The failure nobody was watching: cards that never existed
 
 Every audit this project has run measured the content that shipped. None of them could see

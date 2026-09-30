@@ -96,7 +96,7 @@ we hold `MAINTAIN` on that table but not ownership, so `ALTER TABLE … SET
 ### Section 5 — freshness
 
 Over 12 hours is worth a glance, over 24 is wrong. The usual cause is that
-the claude.ai routines did not run, not that the database is broken.
+the Codex.ai routines did not run, not that the database is broken.
 Content arrives from routines, not from the Edge Functions.
 
 ### Section 6 — connections

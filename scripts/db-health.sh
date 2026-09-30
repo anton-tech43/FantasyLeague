@@ -122,7 +122,7 @@ else
 fi
 
 if [ "$PG_UP" -eq 0 ]; then
-  echo; echo "Postgres unreachable — skipping sections 3-6."; exit 1
+  echo; echo "Postgres unreachable — skipping sections 3-8."; exit 1
 fi
 
 # ----------------------------------------------------------------------
@@ -234,6 +234,118 @@ if [ -z "$WRITABLE" ]; then
   note "OK" "anon cannot write any table"
 else
   fail "anon can write: $WRITABLE"
+fi
+
+echo
+echo "── 8. IS THE CONTENT STILL TRUE? ─────────────────────────"
+# Every other section here asks whether the machinery ran. None of them asks
+# whether what it produced is right, and on 2026-09-30 that gap cost a month:
+# the "ones to know" card named players who were not playing — 20 of 60 picks
+# outside their own squad's top fifteen by minutes, Newcastle leading on a
+# goalkeeper with zero minutes — while every job reported green throughout,
+# because every job had done its job. `content-audit` is the one existing
+# correctness check and its findings go to `pipeline_health`, which nothing
+# reads; these live here instead because this is what a human actually sees,
+# through MAINTENANCE.md row A1.
+#
+# WARN, not FAIL, until the measurement period ends: we do not yet know how
+# often these trip, and an alarm calibrated before you know the frequency is
+# how you train yourself to ignore it. Flip each `warn` to `fail` once the
+# history table has a fortnight of evidence.
+#
+# Unlike section 7, an empty answer here is NOT proof of health — these
+# queries return nothing both when all is well and when the database did not
+# answer. So each one counts the population first and says "could not read"
+# rather than quietly passing.
+
+TOTAL_PICKS=$(q "SELECT count(*) FROM team_pages tp JOIN teams t ON t.id = tp.team_id,
+                   jsonb_array_elements(tp.content->'cards'->'ones_to_know'->'players') p
+                  WHERE t.entity_type = 'club' AND t.is_active;")
+if [ -z "$TOTAL_PICKS" ] || [ "$TOTAL_PICKS" -eq 0 ] 2>/dev/null; then
+  warn "could not read the ones-to-know cards"
+else
+  # 8a. Is the man on the card playing? This asserts the picker's OWN rule —
+  # 90 minutes AND 40% of the squad leader's — rather than a rank cutoff of its
+  # own. The first draft used "outside the top twelve by minutes" and promptly
+  # flagged Brentford's Collins (287 min against a 216 threshold, two goals, the
+  # squad's best rating) and Coventry's Torp (240 against 229, three goal
+  # involvements). Both were correct picks; the check was simply stricter than
+  # the rule it exists to police, which is how a check teaches you to ignore it.
+  #
+  # The constants are duplicated from _shared/featured-players.ts
+  # (MIN_REGULAR_MINUTES, REGULAR_SHARE) and TEAM_PAGE_PROMPT.md. That is
+  # deliberate — an independent restatement is what makes this a check and not
+  # an echo — but the three move together or this starts lying.
+  BENCHED=$(q "WITH card AS (
+                 SELECT tp.team_id, jsonb_array_elements(tp.content->'cards'->'ones_to_know'->'players')->>'name' AS n
+                   FROM team_pages tp JOIN teams t ON t.id = tp.team_id
+                  WHERE t.entity_type = 'club' AND t.is_active),
+               bar AS (
+                 SELECT team_id, GREATEST(90, MAX(minutes) * 0.4) AS floor_minutes
+                   FROM players WHERE minutes IS NOT NULL GROUP BY team_id)
+               SELECT string_agg(c.team_id || '/' || c.n ||
+                        coalesce(' (' || pl.minutes || ' min, needs ' || round(b.floor_minutes) || ')', ' (no stats row)'),
+                        ', ' ORDER BY c.team_id)
+                 FROM card c
+                 LEFT JOIN players pl ON pl.team_id = c.team_id AND pl.name = c.n
+                 LEFT JOIN bar b ON b.team_id = c.team_id
+                WHERE pl.name IS NULL
+                   OR pl.minutes IS NULL
+                   OR pl.minutes < b.floor_minutes;")
+  if [ -z "$BENCHED" ]; then
+    note "OK" "all $TOTAL_PICKS featured players clear their squad's minutes bar"
+  else
+    warn "featured below the minutes bar: $BENCHED"
+  fi
+
+  # 8b. Is a league number actually a league number? Deliberately does not
+  # parse the figure out of the sentence — it flags the risky combination of a
+  # league word beside a player whose two goal columns disagree. That is what
+  # caught Ødegaard ("four goals in five Premier League games", four in all
+  # competitions and two in the league), Groß and Haaland on 2026-09-30.
+  MISCOUNT=$(q "WITH card AS (
+                  SELECT tp.team_id,
+                         jsonb_array_elements(tp.content->'cards'->'ones_to_know'->'players') AS p
+                    FROM team_pages tp JOIN teams t ON t.id = tp.team_id
+                   WHERE t.entity_type = 'club' AND t.is_active)
+                SELECT string_agg(c.team_id || '/' || (c.p->>'name'), ', ' ORDER BY c.team_id)
+                  FROM card c JOIN players pl
+                    ON pl.team_id = c.team_id AND pl.name = c.p->>'name'
+                 WHERE c.p->>'one_liner' ~* '(premier league|league game|in the league)'
+                   AND pl.goals IS DISTINCT FROM pl.league_goals;")
+  if [ -z "$MISCOUNT" ]; then
+    note "OK" "no card names the league beside an all-competitions total"
+  else
+    warn "league claim over an all-competitions number: $MISCOUNT"
+  fi
+fi
+
+# 8c. Has the prose been written at all lately? The routine runs Mondays, so
+# eight days means a Monday was missed — which happened twice in September and
+# went unnoticed for sixteen days.
+STALE=$(q "SELECT string_agg(tp.team_id, ', ' ORDER BY tp.team_id)
+             FROM team_pages tp JOIN teams t ON t.id = tp.team_id
+            WHERE t.entity_type = 'club' AND t.is_active
+              AND (tp.content->>'last_routine_run' IS NULL
+                   OR (tp.content->>'last_routine_run')::timestamptz < NOW() - INTERVAL '8 days');")
+if [ -z "$STALE" ]; then
+  note "OK" "every club's prose was rewritten within the last eight days"
+else
+  warn "prose older than eight days: $STALE"
+fi
+
+# 8d. The canary on the history table itself. Scoped to the prose it should sit
+# in the hundreds of kilobytes; if the trigger ever starts following the
+# two-hourly numeric churn instead it becomes ~8 MB a day, which is how
+# raw_fetch_logs drained the Disk IO budget in June. This one FAILs, because it
+# is a defect in our own machinery rather than a judgement about content.
+HIST=$(q "SELECT pg_total_relation_size('public.team_page_prose_history');")
+if [ -z "$HIST" ]; then
+  warn "could not read the prose history size"
+elif [ "$HIST" -gt 5242880 ]; then
+  fail "team_page_prose_history is $((HIST / 1048576)) MB — the trigger is following numeric churn, check its scope"
+else
+  note "OK" "prose history is $((HIST / 1024)) kB"
 fi
 
 echo
