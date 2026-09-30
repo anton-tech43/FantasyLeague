@@ -39,6 +39,7 @@ import {
 import { classifyBestThird, type GroupThirdBounds } from "../_shared/best-third.ts";
 import { classifyExactForTeam, coarseThirdPointsBounds, type GroupTeam, type RemainingGame } from "../_shared/group-scenarios.ts";
 import { guaranteedExactlyThird } from "../_shared/detect-consequences.ts";
+import { formatSquadStats, pickFeaturedPlayers, type PlayerStatRow } from "../_shared/featured-players.ts";
 
 // ============================================================
 // SYSTEM PROMPT
@@ -686,6 +687,35 @@ async function generateFullPage(
     }
   }
 
+  // Who is actually playing. The squad payload above is a roster — names,
+  // ages, shirt numbers, photos — and carries no appearances, minutes, goals
+  // or rating, so a prompt asking for "the 3 most relevant right now" was a
+  // form question with no form data attached and got answered from
+  // reputation. `players` has held the numbers all along, refreshed nightly
+  // by goaldigger-player-stats-sync; they were simply never passed on.
+  const { data: squadStats } = await supabase
+    .from("players")
+    .select("name, position, minutes, appearances, starts, goals, assists, rating, captain")
+    .eq("team_id", team.id);
+
+  const squadRows: PlayerStatRow[] = squadStats ?? [];
+  const featured = pickFeaturedPlayers(squadRows);
+  const statsTable = formatSquadStats(squadRows);
+
+  // Pre-selected rather than merely informed. Same move as the coach
+  // pre-filter above and for the same reason: a deterministic answer beats a
+  // judgement call the model has no basis for. When `players` cannot support
+  // a confident ranking — a season rollover, a stats sync that has not run,
+  // and every WC country, none of which have club-season minutes — this is
+  // empty and the instruction below falls back to the original wording.
+  const featuredBlock = featured
+    ? `Season to date, most-used first:\n${statsTable}\n\n` +
+      `FEATURED PLAYERS — use exactly these three, in this order, for top_players:\n` +
+      featured.map((p, i) => `${i + 1}. ${p.name} (${p.position ?? "?"})`).join("\n")
+    : statsTable
+    ? `Season to date, most-used first:\n${statsTable}`
+    : "";
+
   // V2.0: league_context tells Claude whether this is a PL club or WC country.
   // The voice + structure stay identical (team page = team page); only the
   // labels shift (Premier League table vs WC group stage, club season vs
@@ -728,11 +758,21 @@ ${wrapExternalData(`Coaches (pre-filtered to the single current head coach when 
 
 ${wrapExternalData(`Teams (deterministic team metadata — venue.name is the home stadium, venue.city is the city, country.name is the country): ${teamsData || "not available"}`, "api_football")}
 
+${featuredBlock ? wrapExternalData(featuredBlock, "goaldigger_player_stats") : ""}
+
 ${existingBasicsBlock}
 
 Context flags: ${contextFlags.join(", ") || "none"}
 
-Generate the team page content. For top_players, pick the 3 most relevant right now.
+Generate the team page content.
+${featured
+  ? `For top_players, use exactly the three named in FEATURED PLAYERS above, in
+that order — do not substitute a better-known name. Write each one_liner from
+that player's own numbers in the table above: what he has actually done this
+season, in the present tense of a season already under way. Never describe a
+player by what he might do, what he cost, or how excited anyone was before the
+season started.`
+  : `For top_players, pick the 3 most relevant right now.`}
 Each player object should include photo_url set to the player.photo URL
 from the Squad data above when available, this is the API-Football headshot
 CDN URL (example: https://media.api-sports.io/football/players/1460.png). If
@@ -784,6 +824,31 @@ tab shows empty state, so do NOT skip this field when fixtures exist.`;
 
   const input = toolUse.input as Record<string, unknown>;
   const now = new Date().toISOString();
+
+  // Did the pre-selection survive the model? Deliberately a loud check and
+  // not a silent repair: substituting the right name onto a one-liner written
+  // about somebody else would put a confident false sentence on the card,
+  // which is worse than the pick it replaced. The whole reason this card was
+  // wrong for a month is that nothing ever looked at the result, so the
+  // failure gets written somewhere a human reads instead of being swallowed.
+  if (featured) {
+    const returned = (input.top_players as Array<{ name?: string }> | undefined) ?? [];
+    const substituted = returned
+      .map((p) => p.name ?? "")
+      .filter((name) => !featured.some((f) => f.name === name));
+    if (substituted.length > 0) {
+      // 'partial': the page itself generated, but one of its cards did not
+      // come back as specified. No 'warning' status exists in the taxonomy
+      // and this is exactly what 'partial' is for.
+      await logPipelineEvent(supabase, {
+        stage: "generate",
+        status: "partial",
+        team_id: team.id,
+        message: `top_players ignored the pre-selection: ${substituted.join(", ")} ` +
+          `not in ${featured.map((f) => f.name).join(", ")}`,
+      });
+    }
+  }
 
   // existing / existingCards are hoisted above the prompt build so the
   // basics-preservation block can read them. Reused here for the rivalry
