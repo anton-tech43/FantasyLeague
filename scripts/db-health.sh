@@ -298,25 +298,33 @@ else
     warn "featured below the minutes bar: $BENCHED"
   fi
 
-  # 8b. Is a league number actually a league number? Deliberately does not
-  # parse the figure out of the sentence — it flags the risky combination of a
-  # league word beside a player whose two goal columns disagree. That is what
-  # caught Ødegaard ("four goals in five Premier League games", four in all
-  # competitions and two in the league), Groß and Haaland on 2026-09-30.
-  MISCOUNT=$(q "WITH card AS (
-                  SELECT tp.team_id,
-                         jsonb_array_elements(tp.content->'cards'->'ones_to_know'->'players') AS p
-                    FROM team_pages tp JOIN teams t ON t.id = tp.team_id
-                   WHERE t.entity_type = 'club' AND t.is_active)
-                SELECT string_agg(c.team_id || '/' || (c.p->>'name'), ', ' ORDER BY c.team_id)
-                  FROM card c JOIN players pl
-                    ON pl.team_id = c.team_id AND pl.name = c.p->>'name'
-                 WHERE c.p->>'one_liner' ~* '(premier league|league game|in the league)'
-                   AND pl.goals IS DISTINCT FROM pl.league_goals;")
-  if [ -z "$MISCOUNT" ]; then
-    note "OK" "no card names the league beside an all-competitions total"
+  # 8b. Does a card claim a rank we cannot see? We hold this club's squad and
+  # the league table — never a league-wide player ranking — so "the most in the
+  # Premier League", "the league's top scorer" and their kin are ungrounded by
+  # construction, whatever the numbers happen to be. That is exactly how
+  # Haaland's card came to read "Seven goals in five games, which is the most in
+  # the Premier League": seven is his all-competitions tally, five is his league
+  # tally, and no column here can settle the superlative either way.
+  #
+  # An earlier draft flagged any league word beside a player whose `goals` and
+  # `league_goals` disagree. It was 7 false positives out of 8 the moment the
+  # cards were rewritten, because the prompt fix had taught the model to
+  # separate the figures itself — "Four goals this season, including two in the
+  # Premier League" is right and was flagged anyway. That line is held by the
+  # prompt, not by a linter; this check keeps only the part a linter can settle.
+  UNGROUNDED=$(q "WITH card AS (
+                    SELECT tp.team_id,
+                           jsonb_array_elements(tp.content->'cards'->'ones_to_know'->'players') AS p
+                      FROM team_pages tp JOIN teams t ON t.id = tp.team_id
+                     WHERE t.entity_type = 'club' AND t.is_active)
+                  SELECT string_agg(c.team_id || '/' || (c.p->>'name'), ', ' ORDER BY c.team_id)
+                    FROM card c
+                   WHERE c.p->>'one_liner' ~* '(most|top|best|highest|leading|first|only)[^.]{0,40}(in|of) the (premier )?league'
+                      OR c.p->>'one_liner' ~* 'league.{0,20}(top scorer|leading scorer|golden boot)';")
+  if [ -z "$UNGROUNDED" ]; then
+    note "OK" "no card claims a league-wide ranking we do not hold"
   else
-    warn "league claim over an all-competitions number: $MISCOUNT"
+    warn "claims a league-wide rank we cannot verify: $UNGROUNDED"
   fi
 fi
 
