@@ -39,7 +39,7 @@ import {
 import { classifyBestThird, type GroupThirdBounds } from "../_shared/best-third.ts";
 import { classifyExactForTeam, coarseThirdPointsBounds, type GroupTeam, type RemainingGame } from "../_shared/group-scenarios.ts";
 import { guaranteedExactlyThird } from "../_shared/detect-consequences.ts";
-import { formatSquadStats, pickFeaturedPlayers, type PlayerStatRow } from "../_shared/featured-players.ts";
+import { formatSquadStats, pickFeaturedPlayers, sameName, type PlayerStatRow } from "../_shared/featured-players.ts";
 
 // ============================================================
 // SYSTEM PROMPT
@@ -695,7 +695,7 @@ async function generateFullPage(
   // by goaldigger-player-stats-sync; they were simply never passed on.
   const { data: squadStats } = await supabase
     .from("players")
-    .select("name, position, minutes, appearances, starts, goals, assists, rating, captain")
+    .select("name, position, minutes, appearances, starts, goals, league_goals, league_starts, assists, rating, captain")
     .eq("team_id", team.id);
 
   const squadRows: PlayerStatRow[] = squadStats ?? [];
@@ -835,7 +835,7 @@ tab shows empty state, so do NOT skip this field when fixtures exist.`;
     const returned = (input.top_players as Array<{ name?: string }> | undefined) ?? [];
     const substituted = returned
       .map((p) => p.name ?? "")
-      .filter((name) => !featured.some((f) => f.name === name));
+      .filter((name) => !featured.some((f) => sameName(f.name, name)));
     if (substituted.length > 0) {
       // 'partial': the page itself generated, but one of its cards did not
       // come back as specified. No 'warning' status exists in the taxonomy

@@ -2,6 +2,7 @@ import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import {
   formatSquadStats,
   pickFeaturedPlayers,
+  sameName,
   type PlayerStatRow,
 } from "./featured-players.ts";
 
@@ -14,7 +15,7 @@ import {
 const ARSENAL: PlayerStatRow[] = [
   { name: "Gabriel Magalhães", position: "Defender", appearances: 8, starts: 8, minutes: 679, goals: 0, assists: 0, rating: 6.94 },
   { name: "David Raya", position: "Goalkeeper", appearances: 7, starts: 7, minutes: 634, goals: 0, assists: 0, rating: 7.15 },
-  { name: "M. Ødegaard", position: "Midfielder", appearances: 8, starts: 7, minutes: 570, goals: 4, assists: 0, rating: 7.79, captain: true },
+  { name: "M. Ødegaard", position: "Midfielder", appearances: 8, starts: 7, league_starts: 5, minutes: 570, goals: 4, league_goals: 2, assists: 0, rating: 7.79, captain: true },
   { name: "D. Rice", position: "Midfielder", appearances: 7, starts: 6, minutes: 553, goals: 0, assists: 2, rating: 7.27 },
   { name: "K. Havertz", position: "Attacker", appearances: 7, starts: 6, minutes: 530, goals: 3, assists: 0, rating: 6.93 },
   { name: "B. Saka", position: "Midfielder", appearances: 7, starts: 6, minutes: 525, goals: 3, assists: 0, rating: 7.23 },
@@ -84,8 +85,19 @@ Deno.test("the stats table carries what a truthful one-liner needs", () => {
   // Ordered by minutes, so a truncated tail loses the least important players.
   assertEquals(first.startsWith("Gabriel Magalhães"), true);
   assertEquals(first.includes("679 mins"), true);
+  // The competition must be on the face of the number, not inferred.
+  assertEquals(table.includes("4G all comps (2 league)"), true);
   assertEquals(table.includes("M. Ødegaard"), true);
   assertEquals(table.includes("captain"), true);
   // A player who has not played is not described at all.
   assertEquals(formatSquadStats([{ name: "Unused", minutes: 0 }]), "");
+});
+
+Deno.test("a doubled space is not a substitution", () => {
+  // API-Football sent `J.  McGinn` and `Ilyas  Ansah`; migration 122 squeezes
+  // them on ingest, but the guard compares free text and must not report a
+  // correct pick as the model ignoring it.
+  assertEquals(sameName("J.  McGinn", "J. McGinn"), true);
+  assertEquals(sameName(" B. Saka ", "b. saka"), true);
+  assertEquals(sameName("B. Saka", "B. Sako"), false);
 });

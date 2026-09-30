@@ -32,6 +32,9 @@ export interface PlayerStatRow {
   appearances?: number | null;
   starts?: number | null;
   goals?: number | null;
+  /** League only. `goals` counts every competition — the two differ often. */
+  league_goals?: number | null;
+  league_starts?: number | null;
   assists?: number | null;
   rating?: number | null;
   captain?: boolean | null;
@@ -65,6 +68,17 @@ export const REGULAR_SHARE = 0.4;
 export const MIN_ELIGIBLE = 5;
 
 const num = (v: number | null | undefined): number => (typeof v === "number" ? v : 0);
+
+/**
+ * Compare two spellings of the same player. API-Football has sent a doubled
+ * space more than once (`J.  McGinn`, `Ilyas  Ansah`); migration 122 squeezes
+ * it on ingest, but a caller reconciling our pick against a model's output is
+ * comparing free text, and a whitespace difference there would report a
+ * correct pick as a substitution. A check that cries wolf gets ignored.
+ */
+export const sameName = (a: string, b: string): boolean =>
+  a.trim().replace(/\s+/g, " ").toLowerCase() ===
+    b.trim().replace(/\s+/g, " ").toLowerCase();
 
 /** Attacking contribution: the single number this card is really about. */
 const involvement = (p: PlayerStatRow): number => num(p.goals) + num(p.assists);
@@ -115,8 +129,12 @@ export function formatSquadStats(squad: PlayerStatRow[]): string {
         `${num(p.appearances)} apps`,
         `${num(p.starts)} starts`,
         `${num(p.minutes)} mins`,
-        `${num(p.goals)}G`,
-        `${num(p.assists)}A`,
+        // Labelled, because a bare "4G" beside a league table reads as four
+        // league goals. Ødegaard had four in all competitions and two in the
+        // league on 2026-09-30, and the first card written from an unlabelled
+        // number said "four goals in five Premier League games".
+        `${num(p.goals)}G all comps (${num(p.league_goals)} league)`,
+        `${num(p.assists)}A all comps`,
         p.rating ? `rating ${p.rating}` : "unrated",
         p.captain ? "captain" : "",
       ].filter(Boolean).join(", ")
