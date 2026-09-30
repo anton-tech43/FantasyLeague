@@ -487,3 +487,56 @@ survived verification, and what was done.
   `players.team_id`, which is always the club. Dormant (countries off, zero
   country cards); marked with a `// ponytail:` note at `APIClient.swift`
   naming the upgrade path.
+
+---
+
+## 2026-09-30 — the "ones to know" card named players who were not playing
+
+Reported by Anton from the onboarding screen: Arsenal's three featured players
+led with a striker who had not played in the last game. The interesting part is
+what the investigation ruled out.
+
+**Not staleness.** `ones_to_know` had been rewritten two days earlier
+(`last_routine_run` 2026-09-28T02:43:57Z, the Monday 02:30 slot) and the player
+stats synced the night before. Every scheduled job did exactly what it was
+supposed to. A refresh that cannot change its mind is not a refresh, and that is
+what this was: the same question asked weekly with the same missing information,
+returning the same answer every time.
+
+**Not an Arsenal problem.** Across the 20 active clubs, 60 picks:
+
+| | |
+|---|---|
+| In their club's top 3 by minutes | 10 |
+| In the top 8 | 24 |
+| **Outside the top 15** | **20** |
+| Zero minutes all season | 1 (Newcastle's card led on the goalkeeper) |
+
+Palace's card carried a winger on 24 minutes, Villa's one on 36, City's one on
+60, Arsenal's a striker with two starts and no goals.
+
+**The cause, in two places that both had to be fixed.** `top_players` was chosen
+from a roster with no numbers on it — the API-Football squad payload carries
+names, ages, shirt numbers and photos and nothing else — so the pick came down
+to which name the model recognised. `TEAM_PAGE_PROMPT.md` then made it explicit:
+"captain, top scorer, **the big summer signing**". A reputation test does not
+change when the season does.
+
+The Edge function was only half of it. `post_team_page.sh` writes
+`ones_to_know` directly from the Monday routine, so fixing
+`team-page-generator` alone would have left the weekly path untouched. Both now
+pick on minutes, goals and assists (`_shared/featured-players.ts`, and the rule
+in `TEAM_PAGE_PROMPT.md`); `fetch_team_page.sh` welds each man's season onto his
+squad entry from `players`, which has held the numbers all along.
+
+**Why no audit caught it.** Nothing on the card was false. Gyökeres is an
+Arsenal striker; "the one whose job it is to score goals" is true. The
+stale-data-audit skill checks whether a name has *left the club*;
+`content-audit` checks league-position claims against the table. Neither can
+ask whether a player is actually playing, because neither was built to test
+relevance — only truth. That gap is now section 4a of the skill, with the SQL.
+
+A previous pass had already been here and treated the symptom: on 2026-09-07 the
+same card called Gyökeres "the big summer signing" a year after he arrived, and
+the fix was a rule about what "summer" means rather than a change to how the
+three are chosen.

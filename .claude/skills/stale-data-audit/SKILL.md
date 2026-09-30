@@ -206,6 +206,42 @@ $P "$SUPABASE_DB_URL" -At -F' | ' -c "select tp.team_id, p->>'name', (select str
 
 An empty third column means that player has left. Compare on surname: the squad feed abbreviates first names (`V. Gyökeres`), the cards spell them out.
 
+### 4a. Still at the club is not the same as still playing
+
+The check above asks whether a name has left. It cannot ask whether he plays, and
+that is the question this card is actually about — so run both. On 2026-09-30 every
+name on every card passed the departure check and **20 of 60 picks were outside
+their own squad's top fifteen by minutes**: Newcastle led on a goalkeeper with zero
+minutes, Arsenal on a striker with two starts and no goals, Palace on a winger with
+24 minutes. Nothing was false. `ones_to_know` had been regenerated two days earlier
+and the stats synced the night before. The cause was that `top_players` was picked
+from a roster with no numbers on it, under a rule that asked for "captain, top
+scorer, the big summer signing" — a reputation test, which does not change when the
+season does, so a weekly rewrite returned the same three every Monday.
+
+```bash
+$P "$SUPABASE_DB_URL" -At -F' | ' -c "
+with card as (select tp.team_id, jsonb_array_elements(tp.content->'cards'->'ones_to_know'->'players')->>'name' n
+              from team_pages tp join teams t on t.id=tp.team_id where t.league_id=39 and t.is_active),
+     ranked as (select team_id, name, minutes, row_number() over (partition by team_id order by minutes desc nulls last) rk
+                from players where minutes is not null)
+select c.team_id, c.n, r.minutes, r.rk from card c left join ranked r on r.team_id=c.team_id and r.name=c.n
+where r.rk is null or r.rk > 12 order by r.rk desc nulls first"
+```
+
+Expect no rows. Anything returned is a player the card is telling her to watch for
+who is not on the pitch. Both the routine (`TEAM_PAGE_PROMPT.md`) and the Edge
+function (`_shared/featured-players.ts`) now pick on minutes, goals and assists, so a
+row here means one of those two regressed — check which surface wrote the card before
+assuming both did. A `rk` of null means no stats row at all, which is the
+`minutes IS NULL` case the pickers treat as unproven, not as a zero.
+
+The wider lesson for this skill: **an audit that only tests truth will pass a card
+that is useless.** The same gap sat in `content-audit`, which checks a title claim
+against the table and would happily approve a true sentence about a player nobody
+has seen since August. When you add a surface here, ask what a customer would notice
+about it, not only what would be false.
+
 ## 5. Player dossiers
 
 `player_cards` (T3 bottom sheet) is written by `gd-player-dossier` for whoever is in `ones_to_know`, so it lags a change there by one run and keeps rows for players who have left.
