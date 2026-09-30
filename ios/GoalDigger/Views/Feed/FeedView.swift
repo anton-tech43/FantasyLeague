@@ -415,6 +415,7 @@ struct FeedView: View {
 
     private var immersiveFeed: some View {
         GeometryReader { geo in
+          ScrollViewReader { proxy in
             ScrollView(.vertical) {
                 LazyVStack(spacing: 0) {
                     // Live brief sits as the first item INSIDE the
@@ -480,6 +481,19 @@ struct FeedView: View {
             .background(Color.deepMauve)
             .scrollContentBackground(.hidden)
             .refreshable { await refresh() }
+            #if DEBUG
+            // `-gdFeedIndex N` lands on the Nth card once the feed has loaded,
+            // so a screenshot can reach any card without a swipe (simctl cannot tap).
+            .task(id: bodyItems.count) {
+                let args = ProcessInfo.processInfo.arguments
+                if let i = args.firstIndex(of: "-gdFeedIndex"), i + 1 < args.count,
+                   let n = Int(args[i + 1]), n < bodyItems.count {
+                    try? await Task.sleep(for: .milliseconds(600))
+                    proxy.scrollTo(bodyItems[n].id, anchor: .top)
+                }
+            }
+            #endif
+          }
         }
     }
 
