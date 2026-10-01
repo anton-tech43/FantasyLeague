@@ -201,20 +201,31 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
 // to storage with a column on `players` and this table goes.
 enum PlayerPortrait {
     private static let table: [String: [String: String]] = [
-        // Named off each sticker's own label (Anton's second set). Martinelli
-        // is in the set and in no club's squad in our data, so he is left out.
+        // Named off the label drawn on each sticker, never the file name: the
+        // bench zip's file names were shifted one along against their own
+        // labels. Martinelli is in the first set and in no club's squad in our
+        // data, so he is left out.
         "arsenal": [
             "arteta": "bw-arsenal-arteta",
             "calafiori": "bw-arsenal-calafiori",
+            "dowman": "bw-arsenal-dowman",
+            "eze": "bw-arsenal-eze",
+            "gyokeres": "bw-arsenal-gyokeres",
             "havertz": "bw-arsenal-havertz",
+            "hincapie": "bw-arsenal-hincapie",
+            "kepa": "bw-arsenal-kepa",
             "lewis-skelly": "bw-arsenal-lewis-skelly",
+            "madueke": "bw-arsenal-madueke",
             "magalhaes": "bw-arsenal-magalhaes",
+            "merino": "bw-arsenal-merino",
             "odegaard": "bw-arsenal-odegaard",
             "raya": "bw-arsenal-raya",
             "rice": "bw-arsenal-rice",
             "saka": "bw-arsenal-saka",
             "saliba": "bw-arsenal-saliba",
             "timber": "bw-arsenal-timber",
+            "tzolis": "bw-arsenal-tzolis",
+            "zubimendi": "bw-arsenal-zubimendi",
         ],
     ]
 
@@ -252,6 +263,9 @@ enum PlayerPortrait {
             && asset(club: "arsenal", name: "M. Ødegaard") == "bw-arsenal-odegaard"
             && asset(club: "arsenal", name: "Gabriel Magalhães") == "bw-arsenal-magalhaes"
             && asset(club: "arsenal", name: "M. Lewis-Skelly") == "bw-arsenal-lewis-skelly"
+            && asset(club: "arsenal", name: "V. Gyökeres") == "bw-arsenal-gyokeres"
+            && asset(club: "arsenal", name: "Kepa") == "bw-arsenal-kepa"
+            && asset(club: "arsenal", name: "P. Hincapié") == "bw-arsenal-hincapie"
             && assetName(source(club: "arsenal", name: "Mikel Arteta")) == "bw-arsenal-arteta"
             && assetName("https://media.api-sports.io/x.png") == nil
     }

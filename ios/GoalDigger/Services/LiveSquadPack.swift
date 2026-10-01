@@ -127,7 +127,6 @@ enum LiveSquadPack {
         // disagree about what to call the same man on two screens.
         let printable = PlayerSlots.displayNames(named.map(\.name))
         func display(_ p: Player) -> String { printable[p.name] ?? LiveClubPack.shortName(p.name) }
-        let allNames = named.filter { printable[$0.name] != nil }.map(display)
         let hooks = PlayerHooks.build(players: named, club: club, played: played, name: display)
         var qs: [MyTurnQuestion] = []
 
@@ -181,13 +180,16 @@ enum LiveSquadPack {
             // and a silhouette is not one: "Who is this?" over the grey figure
             // api-sports serves for a player it has no photo of is unanswerable.
             if let photo {
-                let sameShirt = named.filter { $0.position == p.position && $0.name != p.name && printable[$0.name] != nil }
+                // Wrong answers from the men being asked about: a youth player
+                // who has never played is no help learning these faces.
+                let sameShirt = asked.filter { $0.position == p.position && $0.name != p.name && printable[$0.name] != nil }
                     .map(display)
                 qs += LiveClubPack.question(
                     id: "squad-photo-\(p.api_player_id)", difficulty: p.isFringe ? 3 : 2,
                     question: "Who is this?",
                     answer: short,
-                    distractors: sameShirt.count >= 3 ? sameShirt : allNames,
+                    distractors: sameShirt.count >= 3 ? sameShirt
+                        : asked.filter { printable[$0.name] != nil && $0.name != p.name }.map(display),
                     explanation: who,
                     why: p.isFringe
                         ? "One of the squad players. If he comes on late, you will be the one who knows the name."
