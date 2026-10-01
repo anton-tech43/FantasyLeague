@@ -276,6 +276,29 @@ else
   # (MIN_REGULAR_MINUTES, REGULAR_SHARE) and TEAM_PAGE_PROMPT.md. That is
   # deliberate — an independent restatement is what makes this a check and not
   # an echo — but the three move together or this starts lying.
+  # Match through resolve_player_id (migration 117), never on the raw string.
+  # The cards spell first names out and the squad feed abbreviates them, and
+  # which form a card uses varies run to run: on 2026-10-01 a rewrite took the
+  # exact-match rate from 60/60 to 11/60 without a single bad pick, and an
+  # earlier draft of this check duly reported 49 false positives. The resolver
+  # already handles the abbreviation, the accents and the shared surnames.
+  UNKNOWN=$(q "WITH card AS (
+                 SELECT tp.team_id, jsonb_array_elements(tp.content->'cards'->'ones_to_know'->'players')->>'name' AS n
+                   FROM team_pages tp JOIN teams t ON t.id = tp.team_id
+                  WHERE t.entity_type = 'club' AND t.is_active)
+               SELECT string_agg(c.team_id || '/' || c.n, ', ' ORDER BY c.team_id)
+                 FROM card c WHERE public.resolve_player_id(c.team_id, c.n) IS NULL;")
+  if [ -z "$UNKNOWN" ]; then
+    note "OK" "every featured name resolves to someone in the squad"
+  else
+    # Spelling a name out means supplying a forename the squad feed only gives
+    # as an initial, and the model will invent one: on 2026-10-01 Ipswich's card
+    # named "Omari Clarke" for a squad holding `J. Clarke`, and Hull's "Riyad
+    # Belloumi" for `M. Belloumi`. A wrong first name on a real player is the
+    # kind of thing she repeats and is corrected on.
+    warn "featured name matches nobody in the squad: $UNKNOWN"
+  fi
+
   BENCHED=$(q "WITH card AS (
                  SELECT tp.team_id, jsonb_array_elements(tp.content->'cards'->'ones_to_know'->'players')->>'name' AS n
                    FROM team_pages tp JOIN teams t ON t.id = tp.team_id
@@ -284,14 +307,13 @@ else
                  SELECT team_id, GREATEST(90, MAX(minutes) * 0.4) AS floor_minutes
                    FROM players WHERE minutes IS NOT NULL GROUP BY team_id)
                SELECT string_agg(c.team_id || '/' || c.n ||
-                        coalesce(' (' || pl.minutes || ' min, needs ' || round(b.floor_minutes) || ')', ' (no stats row)'),
+                        ' (' || coalesce(pl.minutes::text, 'no') || ' min, needs ' || round(b.floor_minutes) || ')',
                         ', ' ORDER BY c.team_id)
                  FROM card c
-                 LEFT JOIN players pl ON pl.team_id = c.team_id AND pl.name = c.n
-                 LEFT JOIN bar b ON b.team_id = c.team_id
-                WHERE pl.name IS NULL
-                   OR pl.minutes IS NULL
-                   OR pl.minutes < b.floor_minutes;")
+                 JOIN players pl ON pl.team_id = c.team_id
+                                AND pl.api_player_id = public.resolve_player_id(c.team_id, c.n)
+                 JOIN bar b ON b.team_id = c.team_id
+                WHERE pl.minutes IS NULL OR pl.minutes < b.floor_minutes;")
   if [ -z "$BENCHED" ]; then
     note "OK" "all $TOTAL_PICKS featured players clear their squad's minutes bar"
   else
@@ -312,6 +334,12 @@ else
   # separate the figures itself — "Four goals this season, including two in the
   # Premier League" is right and was flagged anyway. That line is held by the
   # prompt, not by a linter; this check keeps only the part a linter can settle.
+  #
+  # The squad exclusion is the same lesson a second time. Ranking a player
+  # against his own squad is both allowed and checkable, and the first regex
+  # flagged "the most of anyone in the squad in the league" because the tail
+  # matched. Against the league is the ungrounded claim; against the squad is
+  # the one the prompt asks for.
   UNGROUNDED=$(q "WITH card AS (
                     SELECT tp.team_id,
                            jsonb_array_elements(tp.content->'cards'->'ones_to_know'->'players') AS p
@@ -319,8 +347,9 @@ else
                      WHERE t.entity_type = 'club' AND t.is_active)
                   SELECT string_agg(c.team_id || '/' || (c.p->>'name'), ', ' ORDER BY c.team_id)
                     FROM card c
-                   WHERE c.p->>'one_liner' ~* '(most|top|best|highest|leading|first|only)[^.]{0,40}(in|of) the (premier )?league'
-                      OR c.p->>'one_liner' ~* 'league.{0,20}(top scorer|leading scorer|golden boot)';")
+                   WHERE (c.p->>'one_liner' ~* '(most|top|best|highest|leading|first|only)[^.]{0,40}(in|of) the (premier )?league([^a-z]|$)'
+                      OR c.p->>'one_liner' ~* 'league.{0,20}(top scorer|leading scorer|golden boot)')
+                     AND c.p->>'one_liner' !~* '(in|of|at|within) the (squad|club|side|team)';")
   if [ -z "$UNGROUNDED" ]; then
     note "OK" "no card claims a league-wide ranking we do not hold"
   else
