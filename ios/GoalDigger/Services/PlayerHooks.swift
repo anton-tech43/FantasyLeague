@@ -97,7 +97,13 @@ enum PlayerHooks {
                     fact: assistLeaders > 1
                         ? "\(him) has set up \(a) goals for \(club) this season, joint top for assists in the squad."
                         : "\(him) has set up \(a) goals for \(club) this season, more than anyone else in the squad.",
-                    use: LiveClubPack.quote("Is \(him) the one making their goals?"),
+                    // Say what she knows, then ask the next thing. "Is he the
+                    // one making their goals?" under "four assists this
+                    // season" asked what the card had just told her (Anton,
+                    // 2026-10-01).
+                    use: (p.goals ?? 0) == 0
+                        ? LiveClubPack.quote("\(a) assists already. Does \(him) ever score himself?")
+                        : LiveClubPack.quote("\(a) assists and \(goalWord(p.goals ?? 0)) too. Is \(him) their best player right now?"),
                     useType: .ask))
             }
             if p.captain == true {
@@ -138,7 +144,7 @@ enum PlayerHooks {
             if let a = p.age, a == youngest {
                 hooks.append(Hook(
                     fact: "\(him) is \(a), the youngest in \(club)'s squad this season.",
-                    use: LiveClubPack.quote("How old is \(him)?"),
+                    use: LiveClubPack.quote("\(him)'s only \(a). Is he going to be a big player for them?"),
                     useType: .ask))
             } else if let a = p.age, a == oldest {
                 hooks.append(Hook(
@@ -150,7 +156,7 @@ enum PlayerHooks {
             if fringe {
                 hooks.append(Hook(
                     fact: "\(him) has not started a league game for \(club) this season.",
-                    use: LiveClubPack.quote("Has \(him) started a game yet?"),
+                    use: LiveClubPack.quote("\(him) hasn't started a game yet, has he? Is he injured, or just not picked?"),
                     useType: .ask))
             }
             // Last resort, and only when there is nothing about his football to
@@ -158,7 +164,7 @@ enum PlayerHooks {
             if hooks.isEmpty, let n = p.nationality, !n.isEmpty {
                 hooks.append(Hook(
                     fact: "\(him) is from \(n). He is in \(club)'s squad this season.",
-                    use: LiveClubPack.quote("Where's \(him) from?"),
+                    use: LiveClubPack.quote("\(him)'s from \(n), isn't he? Does he play for them too?"),
                     useType: .ask))
             }
 
@@ -228,6 +234,16 @@ enum PlayerHooks {
             p(21, "R. Regular", goals: 1, assists: 1, starts: 4, minutes: 400, apps: 4),
         ], club: "Arsenal", played: 4)
         guard fact(onlyNation, 20).contains("from Sweden") else { return false }
+
+        // 11b: the line builds on the fact rather than asking it back. An
+        // assist leader with no goals is asked whether he scores, not
+        // whether he makes their goals.
+        let maker = build(players: [
+            p(22, "T. Tzolis", goals: 0, assists: 4, starts: 4, minutes: 400, apps: 4),
+            p(23, "S. Scorer", goals: 3, assists: 1, starts: 4, minutes: 390, apps: 4),
+        ], club: "Arsenal", played: 4)
+        guard maker[22]?.hooks.first(where: { $0.fact.contains("set up 4") })?.use.contains("ever score") == true
+        else { return false }
 
         // 12: every line fits, and nobody smuggles in an em-dash.
         for verdict in Array(v.values) + Array(t.values) + Array(onlyNation.values) {
