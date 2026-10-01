@@ -207,16 +207,21 @@ enum LiveSquadPack {
                     id: "squad-number-\(p.api_player_id)", difficulty: 3,
                     question: "What number does \(short) wear?",
                     answer: "\(n)",
-                    distractors: named.compactMap(\.number).filter { $0 != n }.map(String.init),
+                    distractors: asked.compactMap { Self.shirtNumber(of: $0, in: named) }.filter { $0 != n }.map(String.init),
                     explanation: who,
                     why: "The shirt number is the quickest way to find one man among eleven.",
                     useType: .ask,
                     use: LiveClubPack.quote("Is that \(short), number \(n)?"),
-                    player: person
+                    // Every question about a man shows him, not only "Who is
+                    // this?": the face, the name and the number land together
+                    // (Anton, 2026-10-01).
+                    image: photo, player: person
                 )
             }
 
-            if p.position != nil {
+            // A keeper's position question over a photo of him in the keeper's
+            // kit answers itself.
+            if p.position != nil, !(label == "Goalkeeper" && photo != nil) {
                 // "Everything goes through Dowman" is the right line for a man
                 // who plays every week and a strange one for a sixteen-year-old
                 // who has not. A fringe player gets the honest question; a man
@@ -241,10 +246,12 @@ enum LiveSquadPack {
                     id: "squad-pos-\(p.api_player_id)", difficulty: p.isFringe ? 3 : 1,
                     question: "What position does \(short) play?",
                     answer: label,
-                    distractors: LiveClubPack.positionDistractors(for: label),
+                    // Over his photo in an outfield shirt, "Goalkeeper" is no
+                    // wrong answer at all: the three lines are the question.
+                    distractors: LiveClubPack.positionDistractors(for: label).filter { photo == nil || $0 != "Goalkeeper" },
                     explanation: who,
                     why: why, useType: useType2, use: use2,
-                    player: person
+                    image: photo, player: person
                 )
             }
         }

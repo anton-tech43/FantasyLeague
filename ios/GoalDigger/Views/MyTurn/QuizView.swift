@@ -252,7 +252,7 @@ struct QuizView: View {
                     .frame(height: 230)
                     .frame(maxWidth: .infinity)
                     .padding(.bottom, 8)
-                    .accessibilityLabel("Photo to identify")
+                    .accessibilityLabel(q.question == "Who is this?" ? "Photo to identify" : "Photo of him")
             } else if let image = q.image.flatMap(URL.init(string:)) {
                 AsyncImage(url: image) { phase in
                     if let img = phase.image {
