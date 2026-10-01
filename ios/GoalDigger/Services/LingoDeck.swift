@@ -781,7 +781,8 @@ enum LingoWeekendDeck {
 
     static func build(terms: [LingoTerm], known: Set<String>, learning: Set<String>,
                       context: MatchContext?, seed: String,
-                      canNameTheirs: Bool = false) -> (ids: [String], refresher: Bool) {
+                      canNameTheirs: Bool = false,
+                      avoid: Set<String> = []) -> (ids: [String], refresher: Bool) {
         // `basic` words stay in the list and in search but never get dealt: the
         // first round on a fresh install fills from `any` sorted by level, and
         // asking a grown woman what "kick-off" means at the moment she is
@@ -824,7 +825,10 @@ enum LingoWeekendDeck {
             let when = Set(t.when ?? [])
             return when.isEmpty || !when.isSubset(of: calendarTags)
         }
-        var unknown = playable.filter { !known.contains($0.id) }
+        // `avoid`: the seven she has just played for the game. A practise
+        // round straight after must not deal them again, which it otherwise
+        // would first — right once, they are all `learning`. Filler only.
+        var unknown = playable.filter { !known.contains($0.id) && !avoid.contains($0.id) }
         var prep = false
         if let context {
             if case .before = context.phase { prep = true }
@@ -834,17 +838,24 @@ enum LingoWeekendDeck {
             let active = context.tags.filter { $0 != "any" && !(prep && calendarTags.contains($0)) }
             if context.sixPointer, let sp = unknown.first(where: { $0.id == sixPointerTermId }) { take([sp]) }
             if let primary = active.first { take(unknown.filter { ($0.when ?? []).contains(primary) }) }
-            if prep && canNameTheirs {
-                take(unknown.filter { t in (t.playerVariants ?? []).contains { $0.slot.hasPrefix("theirs.") } },
-                     limit: theirsNamed)
-            }
             let activeSet = Set(active)
+            if prep && canNameTheirs {
+                // Only a word that fits this game, or any game: "if they're in
+                // a relegation scrap" before a mid-table side named a Leeds
+                // striker on a situation nobody is in.
+                let fits = activeSet.union(["any"])
+                take(unknown.filter { t in
+                    (t.playerVariants ?? []).contains { $0.slot.hasPrefix("theirs.") }
+                        && !Set(t.when ?? []).isDisjoint(with: fits)
+                }, limit: theirsNamed)
+            }
             take(unknown.filter { !Set($0.when ?? []).isDisjoint(with: activeSet) })
             current = 1
             take(unknown.filter { ($0.when ?? []).contains("any") })
         }
         current = 1
         take(unknown)
+        take(playable.filter { avoid.contains($0.id) && !known.contains($0.id) })
 
         // Never fewer than seven while seven playable words exist: a short
         // round reads as a bug, and a refresher is a real thing to offer.
@@ -1327,6 +1338,12 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
     assert(prepDeck.ids.contains("mixer"), "a word that names their man was left out of the prep: \(prepDeck.ids)")
     let offWeek = LingoWeekendDeck.build(terms: calendarOnly + generic, known: [], learning: [], context: nil, seed: "s1")
     assert(offWeek.ids.contains { $0.hasPrefix("season-") }, "the general round lost its season words")
+    // Straight after the game's seven, practise deals around them, even
+    // though every one of them is now `learning` and would otherwise lead.
+    let justPlayed = Set(offWeek.ids)
+    let after = LingoWeekendDeck.build(terms: calendarOnly + generic, known: [], learning: justPlayed,
+                                       context: nil, seed: "s1", avoid: justPlayed)
+    assert(justPlayed.isDisjoint(with: after.ids), "practise dealt the seven she had just played: \(after.ids)")
 
     let three = LingoWeekendDeck.build(terms: Array(synthetic.prefix(3)), known: [], learning: [],
                                        context: derby, seed: "s1")

@@ -78,12 +78,14 @@ struct HypeCard: View {
             if let scoreLine {
                 Text(scoreLine)
                     .font(.jakarta(20, weight: .bold))
-                    .foregroundColor(.charcoal)
+                    .foregroundColor(.warmWhite)
             }
             if let hype {
+                // White on the rose, like every other rose surface in the
+                // app; charcoal there read as a different card (2026-10-01).
                 Text(hype)
                     .font(.jakarta(20, weight: .bold))
-                    .foregroundColor(.charcoal)
+                    .foregroundColor(.warmWhite)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }

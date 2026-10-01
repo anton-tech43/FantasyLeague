@@ -166,13 +166,12 @@ struct MyTurnView: View {
     }
 
     /// "Chelsea" before and just after the game, "This week" with none coming.
+    /// "Pregame talk" before a game, not the opponent's name: she may not
+    /// know yet who they are playing, and the section is what tells her
+    /// (Anton, 2026-10-01). Otherwise "This week".
     private var prepLabel: String {
-        let opponent: String
-        switch prepContext.phase {
-        case .before(let o, _), .after(let o, _, _, _): opponent = o
-        case .any: return MyTurnModule.prep.label
-        }
-        return Team.allCases.first { MatchContext.sameClub($0.displayName, opponent) }?.shortName ?? opponent
+        if case .before = prepContext.phase { return "Pregame talk" }
+        return MyTurnModule.prep.label
     }
 
     /// A new fixture opens My Turn on its prep, once.
@@ -215,7 +214,7 @@ struct MyTurnView: View {
                         .clipped()
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(module == .prep ? "Get ready for \(prepLabel)" : module.label)
+                .accessibilityLabel(module == .prep ? prepLabel : module.label)
                 .accessibilityAddTraits(self.module == module ? .isSelected : [])
             }
         }

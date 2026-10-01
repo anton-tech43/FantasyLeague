@@ -111,7 +111,8 @@ struct LingoView: View {
         return LingoWeekendDeck.build(
             terms: content.terms, known: known, learning: learning, context: context,
             seed: LingoWeekendDeck.seed(team: team, context: context, now: Date(), nonce: store.lingoDealNonce),
-            canNameTheirs: canName)
+            canNameTheirs: canName,
+            avoid: context == nil ? Set(store.prepRoundDone?.ids ?? []) : [])
     }
 
     /// Everything the hero depends on, and nothing else. `store.lingoQuery` is
@@ -234,7 +235,8 @@ struct LingoView: View {
             assertionFailure("the hero was pressed with nothing to deal, so the tap did nothing")
             return
         }
-        store.startDrill(deckId: LingoWeekendDeck.deckId, queue: queue, origin: origin)
+        store.startDrill(deckId: LingoWeekendDeck.deckId, queue: queue, origin: origin,
+                         fixtureKey: mode == .prep ? (context ?? self.context).fixtureKey : nil)
         // And only once the round actually exists: leaving the landing screen
         // behind a refused `startDrill` is a blank screen with no way back.
         guard ownsSession else {
@@ -355,14 +357,14 @@ struct LingoView: View {
                         // the bottom bar below still in view — Anton's "helskärm
                         // men så att man fortfarande ser menyn". The round and the
                         // words come back once she has been through it.
-                        calledItTakeover
-                        // The pink round hero one scroll below the blush cover.
-                        // The cover's own line promises the round is "one scroll
-                        // away", so it lives here too, not only after she acts on
-                        // the slip. Both cards stay full screen (each its own
-                        // containerRelativeFrame), so she scrolls cover → hero.
-                        hero
+                        // Get to know them, the words, then the sayings (Anton,
+                        // 2026-10-01): she can't pick lines for a game against
+                        // a side she has never heard of. Each card is full
+                        // screen (its own containerRelativeFrame), so she
+                        // scrolls down through the three.
                         opponentCard
+                        hero
+                        calledItTakeover
                     } else {
                         landing
                     }
@@ -386,6 +388,14 @@ struct LingoView: View {
             // The opponent quiz, for whoever this fixture is against.
             .task(id: OpponentKey(team: opponentTeam, meeting: lastMeeting)) {
                 if mode == .prep { await live.refreshOpponent(opponentTeam, mine: team, lastMeeting: lastMeeting) }
+            }
+            // "Carry on with your words" dealt a practise round and sent her
+            // here: put it on screen.
+            .onChange(of: store.practiseHandoff, initial: true) { _, handoff in
+                guard mode == .dictionary, handoff else { return }
+                store.practiseHandoff = false
+                pressedRound = true
+                showingLanding = false
             }
             // A word sent here from Say This or a seeAlso: the dictionary's job.
             .onChange(of: store.lingoExpandedId) { _, new in if mode == .dictionary { jump(to: new, proxy: proxy) } }
@@ -462,9 +472,9 @@ struct LingoView: View {
     /// glossary, which is the one thing this module promised not to do.
     @ViewBuilder
     private var landing: some View {
-        callsCard
-        hero
         opponentCard
+        hero
+        callsCard
     }
 
     /// The published slip lines, or the harness's three while `lingo.json` has
@@ -544,7 +554,9 @@ struct LingoView: View {
     private var hero: some View {
         if let weekend {
             let playable = weekend.ids.count >= LingoWeekendDeck.roundLength
-            if playable || continueLabel != nil {
+            if continueLabel == nil, store.prepRoundDone?.fixtureKey == weekend.context.fixtureKey {
+                carryOnCard
+            } else if playable || continueLabel != nil {
                 fullScreenHero(weekend)
             } else {
                 // The search field below is the whole screen now, so say so
@@ -604,6 +616,33 @@ struct LingoView: View {
         return MatchContext.lastMeeting(page?.cards.matchup, opponent: opponent, fixtureId: context.fixtureId)
     }
 
+    /// The game's seven, done: the card goes small, and pressing it carries
+    /// on in Lingo with seven she has not just played — the same seven again
+    /// under the same card was the round repeating itself (2026-10-01).
+    private var carryOnCard: some View {
+        MyTurnPractiseButton(title: "Carry on with your words",
+                             subtitle: "Done for the game. Seven more in Lingo.",
+                             systemImage: "arrow.right") { carryOn() }
+        .padding(.vertical, 8)
+        .id("prep-hero")
+        #if DEBUG
+        // `-gdPrepCarryOn` presses it: simctl cannot tap.
+        .task {
+            guard ProcessInfo.processInfo.arguments.contains("-gdPrepCarryOn") else { return }
+            try? await Task.sleep(for: .seconds(1))
+            carryOn()
+        }
+        #endif
+    }
+
+    private func carryOn() {
+        let ids = dealt(nil).ids
+        guard !ids.isEmpty else { return }
+        store.startDrill(deckId: LingoWeekendDeck.deckId, queue: ids, origin: "practise")
+        store.practiseHandoff = true
+        withAnimation(.spring(duration: 0.25)) { store.lastModule = .lingo }
+    }
+
     /// The club this fixture is against, when it is one we have a page for.
     /// From the context, never `next_fixture` (see `PlayerSlots.opponent`).
     private var opponentTeam: Team? {
@@ -612,8 +651,8 @@ struct LingoView: View {
         }
     }
 
-    /// "Get to know Chelsea": the third full-screen card, gold, the colour the
-    /// app already gives matchday. Opens the opponent quiz in place; a round
+    /// "Get to know Chelsea": the first full-screen card, blush with the rose
+    /// arrow (Anton, 2026-10-01). Opens the opponent quiz in place; a round
     /// already going is picked up rather than dealt again.
     @ViewBuilder
     private var opponentCard: some View {
@@ -624,7 +663,7 @@ struct LingoView: View {
                 }
                 withAnimation(.easeInOut(duration: 0.2)) { showingOpponentQuiz = true }
             } label: {
-                SketchCard(title: "Get to know\n\(club)", ink: .charcoal, arrow: .deepMauve, fill: .gold)
+                SketchCard(title: "Get to know\n\(club)", ink: .textPrimaryOnCard, arrow: .hotRose, fill: .cardBackground)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -1028,8 +1067,8 @@ struct LingoView: View {
     /// This waits for a settled screen, and it stays in the tree, which a print
     /// does not.
     ///
-    /// The rule it holds, in the order the landing screen is in now: the hero
-    /// starts at or after the calls card ends. Two views that overlap are two
+    /// The rule it holds, in the order the landing screen is in now: the calls
+    /// card starts at or after the hero ends. Two views that overlap are two
     /// views where the one on top takes the taps, and a hero covered by its
     /// neighbour is indistinguishable in a screenshot from one that works.
     private func checkFrames() async {
@@ -1047,8 +1086,9 @@ struct LingoView: View {
         // No slip for this fixture is a legal screen — then the hero leads and
         // there is nothing to overlap with.
         guard let calls = frames["calls"], calls.height > 0 else { return }
-        assert(hero.minY >= calls.maxY - 0.5,
-               "the hero starts at \(hero.minY) and the calls card ends at \(calls.maxY): they overlap, so whichever is on top is taking the other's taps")
+        // The calls card sits below the hero since 2026-10-01.
+        assert(calls.minY >= hero.maxY - 0.5,
+               "the calls card starts at \(calls.minY) and the hero ends at \(hero.maxY): they overlap, so whichever is on top is taking the other's taps")
     }
 
     /// `-gdLingoHeroTap`: press the hero, once, with the weekend on screen.

@@ -1,5 +1,5 @@
 {
-  "contentVersion": "2026-09-26.1",
+  "contentVersion": "2026-10-01.1",
   "terms": [
     {
       "id": "premier-league",
@@ -196,15 +196,7 @@
       "when": [
         "any"
       ],
-      "moment": "common",
-      "playerVariants": [
-        {
-          "slot": "theirs.defender",
-          "overheard": "If {theirs.defender} picks up a yellow card early, he's in bother all afternoon.",
-          "sayIt": "\"If {theirs.defender} gets a yellow card, does he have to be careful after?\"",
-          "overheardTerm": "yellow card"
-        }
-      ]
+      "moment": "common"
     },
     {
       "id": "red-card",
@@ -1196,7 +1188,7 @@
         {
           "slot": "ours.defender",
           "overheard": "Set pieces, then. Get {ours.defender} up there and hope for the best.",
-          "sayIt": "\"Set piece. Does {ours.defender} go up for these, or stay back?\"",
+          "sayIt": "\"{ours.defender} usually goes up for these, doesn't he?\"",
           "overheardTerm": "Set pieces"
         }
       ]
@@ -1257,7 +1249,7 @@
       "heard": "\"He's a proper centre-back\" means old-fashioned and tough.",
       "sayIt": "\"Is he a proper centre-back? Does he win his headers?\"",
       "level": 5,
-      "overheard": "We've spent a fortune on that centre-back. Jury's out for me.",
+      "overheard": "We spent a fortune on that centre-back. Still not sure he's worth it.",
       "overheardTerm": "centre-back",
       "speaker": "him",
       "gist": "A defender in the middle who wins headers",
@@ -1828,12 +1820,12 @@
       "term": "Zonal marking",
       "meaning": "At corners and free kicks, each defender guards a patch of ground instead of a person. Blamed for every goal from a corner.",
       "heard": "Blamed for every goal from a corner.",
-      "sayIt": "\"Is that zonal marking? Nobody's actually on anyone.\"",
+      "sayIt": "\"Are you more man-marking or zonal, at corners?\"",
       "level": 6,
       "seeAlso": [
         "man-marking"
       ],
-      "overheard": "That's zonal marking for you. I've no time for it.",
+      "overheard": "That's zonal marking for you. Just give each of them a man to pick up.",
       "overheardTerm": "zonal marking",
       "speaker": "him",
       "gist": "Each defender guards a patch of grass",
@@ -1887,7 +1879,15 @@
         "any",
         "opp-counter"
       ],
-      "moment": "common"
+      "moment": "common",
+      "playerVariants": [
+        {
+          "slot": "theirs.defender",
+          "overheard": "One good through ball and {theirs.defender} is chasing it. That's how we get in.",
+          "sayIt": "\"Is {theirs.defender} quick, or can we get in behind him?\"",
+          "overheardTerm": "through ball"
+        }
+      ]
     },
     {
       "id": "cutback",
@@ -2214,7 +2214,7 @@
       "term": "Second ball",
       "meaning": "After a header or a clearance, the loose ball that drops. Winning the second ball means reacting quickest to it.",
       "heard": "\"They won the second ball\" as praise for hard work.",
-      "sayIt": "\"They keep winning the second ball. Is that why they're on top?\"",
+      "sayIt": "\"We've got to be better on the second ball.\"",
       "level": 7,
       "overheard": "It's all about the second ball, this.",
       "overheardTerm": "second ball",

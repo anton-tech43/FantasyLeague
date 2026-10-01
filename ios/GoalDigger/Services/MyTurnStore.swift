@@ -135,10 +135,13 @@ final class MyTurnStore {
         // ponytail: one round slot shared by both tabs — starting one replaces
         // the other. A slot per origin if she ever loses progress this way.
         var origin: String? = nil
+        /// The game a prep round was dealt for, so finishing it can be
+        /// remembered against that game (`prepRoundDone`). Nil for practise.
+        var fixtureKey: String? = nil
 
         enum CodingKeys: String, CodingKey {
             case deckId, queue, index, selected, missed, finished, knew, knewIds, streak, hypeLine, salt
-            case optionCount, origin
+            case optionCount, origin, fixtureKey
         }
 
         /// Fields the flashcard build wrote and this one does not.
@@ -174,6 +177,7 @@ final class MyTurnStore {
             hypeLine = try c.decodeIfPresent(String.self, forKey: .hypeLine)
             salt = try c.decodeIfPresent(String.self, forKey: .salt) ?? ""
             origin = try? c.decodeIfPresent(String.self, forKey: .origin)
+            fixtureKey = try? c.decodeIfPresent(String.self, forKey: .fixtureKey)
             let old = try decoder.container(keyedBy: LegacyKeys.self)
             legacy = old.contains(.flipped) || old.contains(.done)
 
@@ -275,6 +279,16 @@ final class MyTurnStore {
         /// The fixture My Turn last opened on the prep for. A new one opens it
         /// again once; after that she stays wherever she chose to be.
         var prepShownFor: String? = nil
+        /// The game's seven, once she has played them through: which fixture
+        /// and which words. The prep card goes small after it, and the next
+        /// practise round in Lingo deals around these rather than the same
+        /// seven again (Anton, 2026-10-01).
+        var prepRoundDone: PrepRoundDone? = nil
+    }
+
+    struct PrepRoundDone: Codable, Equatable {
+        let fixtureKey: String
+        let ids: [String]
     }
 
     private var state: Persisted {
@@ -317,6 +331,7 @@ final class MyTurnStore {
         lingoQuery = ""
         streakTick = 0
         lingoDealNonce = 0
+        practiseHandoff = false
         defaults?.removeObject(forKey: Self.key)
         resetTick += 1
     }
@@ -344,6 +359,16 @@ final class MyTurnStore {
         get { state.lastModule }
         set { state.lastModule = newValue }
     }
+
+    var prepRoundDone: PrepRoundDone? {
+        get { state.prepRoundDone }
+        set { state.prepRoundDone = newValue }
+    }
+
+    /// Set by the prep's "Carry on with your words" when it has dealt a
+    /// practise round and moved her to Lingo; Lingo puts the round on screen
+    /// and clears it. Not persisted: a handoff only means something now.
+    var practiseHandoff = false
 
     // MARK: Say This
 
@@ -472,9 +497,11 @@ final class MyTurnStore {
     /// The queue is stored exactly as dealt — `LingoWeekendDeck` has already
     /// decided which words and in what order, and it knows things the store
     /// does not (this weekend's fixture).
-    func startDrill(deckId: String, queue: [String], origin: String? = nil) {
+    func startDrill(deckId: String, queue: [String], origin: String? = nil, fixtureKey: String? = nil) {
         guard !queue.isEmpty else { return }
-        state.drillSession = DrillSession(deckId: deckId, queue: queue, origin: origin)
+        var s = DrillSession(deckId: deckId, queue: queue, origin: origin)
+        s.fixtureKey = fixtureKey
+        state.drillSession = s
     }
 
     /// One tap on an option. Right moves the word up a bucket (new → learning
@@ -526,6 +553,11 @@ final class MyTurnStore {
         guard var s = state.drillSession, s.selected != nil else { return }
         if s.index + 1 >= s.queue.count {
             s.finished = true
+            // The game's seven, played through: the prep card goes small and
+            // Lingo's next practise deals around them.
+            if s.origin == nil, let key = s.fixtureKey {
+                state.prepRoundDone = PrepRoundDone(fixtureKey: key, ids: s.queue)
+            }
         } else {
             s.index += 1
             s.selected = nil
@@ -785,4 +817,12 @@ func myTurnMissSelfCheck() {
     let old = try? JSONDecoder().decode(MyTurnStore.DrillSession.self,
                                         from: Data(#"{"deckId":"lingo","queue":["var"],"salt":"s"}"#.utf8))
     assert(back?.origin == "practise" && old != nil && old?.origin == nil, "a round forgot which tab dealt it")
+
+    // Finishing the game's seven is remembered against that game.
+    store.startDrill(deckId: "lingo", queue: ["var"], fixtureKey: "b|Leeds|2026-10-3")
+    store.answerDrill(0, correct: true)
+    store.nextDrillCard()
+    assert(store.prepRoundDone == .init(fixtureKey: "b|Leeds|2026-10-3", ids: ["var"]),
+           "a finished prep round was not remembered, so its card never goes small")
+    store.endDrill()
 }

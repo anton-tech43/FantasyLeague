@@ -118,9 +118,11 @@ struct LingoCallsView: View {
             withAnimation(.easeInOut(duration: 0.25)) { showedCover = true }
         } label: {
             // Named for what it does (Anton, 2026-09-27): she is picking lines
-            // to say during the match. The breaks are set by hand.
-            SketchCard(title: "Prepare some\nsayings for\nthe game", ink: .textPrimaryOnCard,
-                       arrow: .hotRose, fill: .cardBackground)
+            // to say during the match. The breaks are set by hand. Gold and
+            // last in the prep since 2026-10-01: getting to know the other
+            // side comes first, in the blush.
+            SketchCard(title: "Prepare some\nsayings for\nthe game", ink: .charcoal,
+                       arrow: .deepMauve, fill: .gold)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

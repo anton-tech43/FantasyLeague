@@ -186,11 +186,6 @@ OVERHEARD = {
         spare="A ban from the next match, straight away",
         when=["any"],
         moment="common",
-        player=dict(
-            slot='theirs.defender',
-            overheard="If {theirs.defender} picks up a yellow card early, he's in bother all afternoon.",
-            sayIt='"If {theirs.defender} gets a yellow card, does he have to be careful after?"',
-        ),
     ),
     "red-card": dict(
         overheard="Red card. Well, that's the game gone.",

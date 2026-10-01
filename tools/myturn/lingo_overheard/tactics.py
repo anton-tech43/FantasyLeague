@@ -21,7 +21,7 @@ OVERHEARD = {
         moment="common",
     ),
     "centre-back": dict(
-        overheard="We've spent a fortune on that centre-back. Jury's out for me.",
+        overheard="We spent a fortune on that centre-back. Still not sure he's worth it.",
         speaker="him",
         gist="A defender in the middle who wins headers",
         decoy="A midfielder who shields the defence behind him",
@@ -236,7 +236,7 @@ OVERHEARD = {
         ),
     ),
     "zonal-marking": dict(
-        overheard="That's zonal marking for you. I've no time for it.",
+        overheard="That's zonal marking for you. Just give each of them a man to pick up.",
         speaker="him",
         gist="Each defender guards a patch of grass",
         decoy="Switching off and losing concentration",
@@ -255,7 +255,7 @@ OVERHEARD = {
         player=dict(
             slot='ours.defender',
             overheard='Set pieces, then. Get {ours.defender} up there and hope for the best.',
-            sayIt='"Set piece. Does {ours.defender} go up for these, or stay back?"',
+            sayIt='"{ours.defender} usually goes up for these, doesn\'t he?"',
         ),
     ),
     "overlap": dict(
@@ -275,6 +275,11 @@ OVERHEARD = {
         spare="A cross aimed at the far post",
         when=["any", "opp-counter"],
         moment="common",
+        player=dict(
+            slot='theirs.defender',
+            overheard="One good through ball and {theirs.defender} is chasing it. That's how we get in.",
+            sayIt='"Is {theirs.defender} quick, or can we get in behind him?"',
+        ),
     ),
     "cutback": dict(
         overheard="Another cutback. Nobody's picking up the runner coming in.",
