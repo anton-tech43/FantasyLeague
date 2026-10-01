@@ -169,6 +169,16 @@ struct RootView: View {
 }
 
 struct MainTabView: View {
+    /// DEBUG `-gdOpenItemTalk`: with `-gdOpenItem`, the item opens scrolled to
+    /// "Things to say", so a screenshot can show the full talking points.
+    private var deepLinkScrollsToTalk: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("-gdOpenItemTalk")
+        #else
+        false
+        #endif
+    }
+
     @Environment(AppState.self) var appState
     @State private var selectedTab = 0
     @State private var feedPath = NavigationPath()
@@ -337,7 +347,7 @@ struct MainTabView: View {
                 let isEveryone = appState.activeContext == .everyoneTalking
                 feedPath.append(ContentDetailDestination(
                     contentId: id,
-                    scrollToTalkingPoints: false,
+                    scrollToTalkingPoints: deepLinkScrollsToTalk,
                     isEveryoneContext: isEveryone
                 ))
                 appState.deepLinkContentId = nil
@@ -384,7 +394,7 @@ struct MainTabView: View {
                 let isEveryone = appState.activeContext == .everyoneTalking
                 feedPath.append(ContentDetailDestination(
                     contentId: id,
-                    scrollToTalkingPoints: false,
+                    scrollToTalkingPoints: deepLinkScrollsToTalk,
                     isEveryoneContext: isEveryone
                 ))
                 appState.deepLinkContentId = nil
