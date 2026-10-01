@@ -1297,8 +1297,7 @@ struct TeamPageView: View {
             Image(asset)
                 .resizable()
                 .scaledToFit()
-                .frame(height: 260)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .frame(height: 280)
                 .accessibilityHidden(true)
         } else {
             playerAvatar(player: player, size: 160)

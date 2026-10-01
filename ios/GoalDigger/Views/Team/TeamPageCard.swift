@@ -201,8 +201,20 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
 // to storage with a column on `players` and this table goes.
 enum PlayerPortrait {
     private static let table: [String: [String: String]] = [
+        // Named off each sticker's own label (Anton's second set). Martinelli
+        // is in the set and in no club's squad in our data, so he is left out.
         "arsenal": [
             "arteta": "bw-arsenal-arteta",
+            "calafiori": "bw-arsenal-calafiori",
+            "havertz": "bw-arsenal-havertz",
+            "lewis-skelly": "bw-arsenal-lewis-skelly",
+            "magalhaes": "bw-arsenal-magalhaes",
+            "odegaard": "bw-arsenal-odegaard",
+            "raya": "bw-arsenal-raya",
+            "rice": "bw-arsenal-rice",
+            "saka": "bw-arsenal-saka",
+            "saliba": "bw-arsenal-saliba",
+            "timber": "bw-arsenal-timber",
         ],
     ]
 
@@ -237,6 +249,9 @@ enum PlayerPortrait {
         asset(club: "arsenal", name: "Mikel Arteta") == "bw-arsenal-arteta"
             && asset(club: "chelsea", name: "Mikel Arteta") == nil
             && surname("M. Ødegaard") == "odegaard"
+            && asset(club: "arsenal", name: "M. Ødegaard") == "bw-arsenal-odegaard"
+            && asset(club: "arsenal", name: "Gabriel Magalhães") == "bw-arsenal-magalhaes"
+            && asset(club: "arsenal", name: "M. Lewis-Skelly") == "bw-arsenal-lewis-skelly"
             && assetName(source(club: "arsenal", name: "Mikel Arteta")) == "bw-arsenal-arteta"
             && assetName("https://media.api-sports.io/x.png") == nil
     }
