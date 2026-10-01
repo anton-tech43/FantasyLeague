@@ -243,7 +243,18 @@ struct QuizView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.bottom, 4)
 
-            if let image = q.image.flatMap(URL.init(string:)) {
+            if let asset = PlayerPortrait.assetName(q.image) {
+                // A bundled black-and-white portrait: shown whole, not cropped
+                // to a circle — the shirt is half of who he is.
+                Image(asset)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 220)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .frame(maxWidth: .infinity)
+                    .padding(.bottom, 8)
+                    .accessibilityLabel("Photo to identify")
+            } else if let image = q.image.flatMap(URL.init(string:)) {
                 AsyncImage(url: image) { phase in
                     if let img = phase.image {
                         img.resizable().scaledToFill()

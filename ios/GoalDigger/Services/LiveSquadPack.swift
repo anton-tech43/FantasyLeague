@@ -72,6 +72,18 @@ enum LiveSquadPack {
 
     // MARK: His squad
 
+    /// His number, when it is his. The feed carries stale numbers for fringe
+    /// players — Arsenal's squad lists Ødegaard and a youth player both on 8 —
+    /// so a shared number belongs to the one man who plays regularly (300+
+    /// minutes) when exactly one of them does, and to nobody otherwise.
+    static func shirtNumber(of p: Player, in squad: [Player]) -> Int? {
+        guard let n = p.number else { return nil }
+        let sharing = squad.filter { $0.number == n }
+        if sharing.count == 1 { return n }
+        let regulars = sharing.filter { ($0.minutes ?? 0) >= 300 }
+        return regulars.count == 1 && regulars[0].api_player_id == p.api_player_id ? n : nil
+    }
+
     /// - Parameters:
     ///   - played: the club's league games played, from the team page's
     ///     standings. Under three and no hook claims anything.
@@ -90,6 +102,17 @@ enum LiveSquadPack {
             && Player.standing(appearances: 4) == .regular
             && Player.standing(appearances: nil) == .unknown)
         assert(PlayerHooks.selfCheck(), "PlayerHooks copy table broke")
+        assert(PlayerPortrait.selfCheck(), "the bundled portrait lookup broke")
+        do {
+            func p(_ id: Int, _ n: Int?, _ m: Int?) -> Player {
+                Player(api_player_id: id, name: "P\(id)", position: nil, photo_url: nil, number: n,
+                       appearances: nil, minutes: m)
+            }
+            let squad = [p(1, 8, 570), p(2, 8, 26), p(3, 30, 0), p(4, 30, nil), p(5, 7, 10)]
+            assert(shirtNumber(of: squad[0], in: squad) == 8 && shirtNumber(of: squad[1], in: squad) == nil
+                   && shirtNumber(of: squad[2], in: squad) == nil && shirtNumber(of: squad[4], in: squad) == 7,
+                   "a shared shirt number went to the wrong man")
+        }
         #endif
 
         // A surname is a name only when one man in the squad has it —
@@ -111,7 +134,13 @@ enum LiveSquadPack {
         // The manager: a person, so he belongs with the people. The name
         // question stays in `LiveClubPack`, where "who runs the club" is part of
         // the state of the club.
-        if let m = manager, let photo = m.photoURL, !photo.isEmpty, !silhouettes.contains(photo) {
+        // A bundled portrait first (Arsenal's black-and-white set, 2026-10-01),
+        // then the feed's photo.
+        let managerPhoto = manager.flatMap { m in
+            PlayerPortrait.source(club: team.rawValue, name: m.name)
+                ?? m.photoURL.flatMap { !$0.isEmpty && !silhouettes.contains($0) ? $0 : nil }
+        }
+        if let m = manager, let photo = managerPhoto {
             qs += LiveClubPack.question(
                 id: "squad-manager-photo", difficulty: 2,
                 question: "Who is this?",
@@ -124,7 +153,11 @@ enum LiveSquadPack {
             )
         }
 
-        for p in named where printable[p.name] != nil {
+        // With a set of bundled portraits, the pack is those men: the point
+        // is learning who is who, and their number (Anton, 2026-10-01).
+        let portrayed = named.filter { PlayerPortrait.asset(club: team.rawValue, name: $0.name) != nil }
+        let asked = portrayed.count >= 4 ? portrayed : named
+        for p in asked where printable[p.name] != nil {
             let short = display(p)
             let label = LiveClubPack.positionLabel(p.position ?? "")
             let card = match(p.name, in: cards)
@@ -133,10 +166,11 @@ enum LiveSquadPack {
             // squad payload can show three men on 1. A number several men wear
             // is not a fact about any of them: it is left out of the
             // explanation and the player card as well as the question.
-            let number = p.number.flatMap { n in named.filter { $0.number == n }.count == 1 ? n : nil }
+            let number = Self.shirtNumber(of: p, in: named)
             let hook = hooks[p.api_player_id]?.top
+            let photo = PlayerPortrait.source(club: team.rawValue, name: p.name) ?? p.photo
             let person = QuizPlayer(name: short, position: label, number: number,
-                                    age: card?.age ?? p.age, photoURL: p.photo,
+                                    age: card?.age ?? p.age, photoURL: photo,
                                     summary: summary, vibe: card?.vibe,
                                     goals: p.goals, assists: p.assists, starts: p.starts,
                                     nationality: p.nationality, hook: hook?.fact)
@@ -146,7 +180,7 @@ enum LiveSquadPack {
             // A photo is the only question that cannot be asked without one,
             // and a silhouette is not one: "Who is this?" over the grey figure
             // api-sports serves for a player it has no photo of is unanswerable.
-            if let photo = p.photo {
+            if let photo {
                 let sameShirt = named.filter { $0.position == p.position && $0.name != p.name && printable[$0.name] != nil }
                     .map(display)
                 qs += LiveClubPack.question(

@@ -38,7 +38,14 @@ struct PlayerCardModal: View {
             Color.cardBackground.ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 10) {
-                if let photoURL, let url = URL(string: photoURL) {
+                if let asset = PlayerPortrait.assetName(photoURL) {
+                    Image(asset)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 76, height: 76, alignment: .top)
+                        .clipShape(Circle())
+                        .accessibilityHidden(true)
+                } else if let photoURL, let url = URL(string: photoURL) {
                     AsyncImage(url: url) { phase in
                         if let img = phase.image {
                             img.resizable().scaledToFill()

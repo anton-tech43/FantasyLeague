@@ -19,6 +19,9 @@ struct TeamPageView: View {
     @State private var hasError = false
     @State private var presentedPlayer: PlayerCard?
     @State private var expandedCard: TeamCardType?
+    /// Which of the ones to know is on screen.
+    @State private var onesIndex = 0
+    @State private var squad = LiveSquadService.shared
     @State private var showLastGames = false
     /// Which table the Table tab is showing, by competition label. Nil means
     /// the club's own league, which is the default and the common case.
@@ -33,7 +36,7 @@ struct TeamPageView: View {
     private var dateColumnWidth: CGFloat { min(dateColumnScale, 110) }
     private var importanceColumnWidth: CGFloat { min(importanceColumnScale, 150) }
 
-    private enum TeamCardType: Hashable {
+    private enum TeamCardType: String, Hashable {
         case basics, manager, onesToKnow, rivalry, form, season, comingUp
     }
 
@@ -138,7 +141,10 @@ struct TeamPageView: View {
                         let args = ProcessInfo.processInfo.arguments
                         var target = expandedCard
                         if let i = args.firstIndex(of: "-gdTeamScrollTo"), i + 1 < args.count,
-                           args[i + 1] == "comingUp" { target = .comingUp }
+                           let card = TeamCardType(rawValue: args[i + 1]) { target = card }
+                        // `-gdTeamOnesIndex N`: the Nth of the ones to know.
+                        if let i = args.firstIndex(of: "-gdTeamOnesIndex"), i + 1 < args.count,
+                           let n = Int(args[i + 1]) { onesIndex = n }
                         guard let target else { return }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                             withAnimation { proxy.scrollTo(target, anchor: .top) }
@@ -158,6 +164,12 @@ struct TeamPageView: View {
         .toolbarBackground(Color.appBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .task { await loadTeamPage() }
+        // His club's squad rows, for the shirt numbers. Only for the club My
+        // Turn's squad pack is for: the service caches one club.
+        .task(id: teamId) {
+            guard let team = appState.selectedTeam, team.rawValue == teamId else { return }
+            await squad.refresh(team: team, personalise: { appState.personalise($0) })
+        }
         .sheet(item: $presentedPlayer) { player in
             PlayerCardModal(player: player)
         }
@@ -320,7 +332,10 @@ struct TeamPageView: View {
         // landed in the data (team-page-generator's fallback for missing
         // API-Football coach data). Otherwise the card would render the
         // literal string to users.
-        if let manager = cards.manager, manager.name != "<UNKNOWN>" {
+        if let manager = cards.manager, manager.name != "<UNKNOWN>",
+           let portrait = PlayerPortrait.asset(club: teamId, name: manager.name) {
+            managerFeature(manager, portrait: portrait).id(TeamCardType.manager)
+        } else if let manager = cards.manager, manager.name != "<UNKNOWN>" {
             TeamPageCard(
                 title: "The manager",
                 primaryText: manager.name,
@@ -340,45 +355,11 @@ struct TeamPageView: View {
             )
         }
 
-        // Card 3: Ones to know
+        // Card 3: Ones to know — one man at a time, big, and the next one a
+        // swipe or a tap away (Anton, 2026-10-01: three in a list was too
+        // small closed and too much open).
         if let onesToKnow = cards.onesToKnow, !onesToKnow.players.isEmpty {
-            TeamPageCard(
-                title: "Ones to know",
-                primaryText: onesToKnow.players.prefix(3).map(\.name).joined(separator: ", "),
-                zone2Label: "Your opener:",
-                talkingPoint: onesToKnow.talkingPoint.map { appState.personalise($0) },
-                isExpanded: expandedCard == .onesToKnow,
-                onTap: { toggleCard(.onesToKnow) },
-                zone1Collapsed: { EmptyView() },
-                zone1Expanded: {
-                    // Always tappable. Diacritic-folded + lowercased contains
-                    // so "Odegaard" matches "Martin Ødegaard" and "Saka"
-                    // matches "Bukayo Saka". Stub-with-empty-summary triggers
-                    // PlayerCardModal's .empty branch when no dossier exists.
-                    let foldedPlayerCards: [(card: PlayerCard, foldedName: String)] = playerCards.map {
-                        ($0, $0.playerName.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current))
-                    }
-                    VStack(alignment: .leading, spacing: 4) {
-                        ForEach(Array(onesToKnow.players.prefix(3))) { player in
-                            let onesName = player.name.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
-                            let matchingCard = foldedPlayerCards.first { entry in
-                                entry.foldedName.contains(onesName) || onesName.contains(entry.foldedName)
-                            }?.card
-
-                            Button {
-                                presentedPlayer = matchingCard ?? PlayerCard.stub(
-                                    teamId: teamId,
-                                    playerName: player.name,
-                                    position: player.position
-                                )
-                            } label: {
-                                playerRow(player: player, tappable: true)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                }
-            )
+            onesToKnowCarousel(onesToKnow).id(TeamCardType.onesToKnow)
         }
 
         // Card 4: The rivalry
@@ -1157,6 +1138,207 @@ struct TeamPageView: View {
                 playerRow(player: player, tappable: false)
             }
         }
+    }
+
+    // MARK: - The manager and the ones to know, big
+
+    /// The manager, already open: the black-and-white portrait large, the
+    /// name, what he is like, and the line to drop. Nothing to tap — closed,
+    /// the card was a name and a thumbnail (Anton, 2026-10-01).
+    private func managerFeature(_ manager: ManagerCard, portrait: String) -> some View {
+        VStack(spacing: 0) {
+            ZStack(alignment: .bottomTrailing) {
+                Color.deepMauve
+                Image(portrait)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 250)
+                    .offset(x: 18)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("THE MANAGER")
+                        .font(.jakarta(11, weight: .semiBold)).tracking(0.5)
+                        .foregroundColor(.mutedText)
+                    Text(manager.name)
+                        .font(.jakarta(26, weight: .bold))
+                        .foregroundColor(.warmWhite)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }
+            .frame(height: 250)
+            .clipped()
+
+            Text(appState.personalise(manager.summary))
+                .font(.jakarta(15, weight: .regular))
+                .foregroundColor(.warmWhite.opacity(0.9))
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.deepMauve)
+
+            if let point = manager.talkingPoint {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Drop this:")
+                        .font(.jakarta(13, weight: .bold))
+                    Text(appState.personalise(point))
+                        .font(.jakarta(14, weight: .mediumItalic))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .foregroundColor(.warmWhite)
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.hotRose)
+            }
+        }
+        .cornerRadius(16)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.hotRose.opacity(0.5), lineWidth: 2).padding(1))
+        .accessibilityElement(children: .combine)
+    }
+
+    /// One of the ones to know at a time: his picture big, his number and
+    /// name under it, the one-liner, and the pink strip opening his dossier.
+    /// A swipe or the arrow brings the next one.
+    private func onesToKnowCarousel(_ onesToKnow: OnesToKnowCard) -> some View {
+        let players = Array(onesToKnow.players.prefix(3))
+        let index = min(onesIndex, players.count - 1)
+        let player = players[index]
+        let number = shirtNumber(player.name)
+        return VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("ONES TO KNOW")
+                        .font(.jakarta(11, weight: .semiBold)).tracking(0.5)
+                        .foregroundColor(.mutedText)
+                    Spacer()
+                    Text("\(index + 1) of \(players.count)")
+                        .font(.jakarta(12, weight: .medium))
+                        .foregroundColor(.mutedText)
+                }
+
+                HStack(spacing: 8) {
+                    carouselArrow("chevron.left", enabled: index > 0) { onesIndex = index - 1 }
+                    portrait(player)
+                        .frame(maxWidth: .infinity)
+                    carouselArrow("chevron.right", enabled: index + 1 < players.count) { onesIndex = index + 1 }
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        if let number {
+                            Text("\(number)")
+                                .font(.jakarta(26, weight: .extraBold))
+                                .foregroundColor(.hotRose)
+                        }
+                        Text(player.name)
+                            .font(.jakarta(22, weight: .bold))
+                            .foregroundColor(.warmWhite)
+                    }
+                    Text(player.position.capitalized)
+                        .font(.jakarta(13, weight: .medium))
+                        .foregroundColor(.warmWhite.opacity(0.55))
+                    if let oneLiner = player.oneLiner {
+                        Text(appState.personalise(oneLiner))
+                            .font(.jakarta(15, weight: .regular))
+                            .foregroundColor(.warmWhite.opacity(0.9))
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.top, 4)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .id(player.name)
+                .transition(.opacity)
+            }
+            .padding(16)
+            .background(Color.deepMauve)
+            .contentShape(Rectangle())
+            // Swipe left for the next one, right for the one before.
+            .gesture(DragGesture(minimumDistance: 30).onEnded { drag in
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    if drag.translation.width < -30, index + 1 < players.count { onesIndex = index + 1 }
+                    if drag.translation.width > 30, index > 0 { onesIndex = index - 1 }
+                }
+            })
+
+            Button { presentedPlayer = dossier(for: player) } label: {
+                VStack(alignment: .leading, spacing: 6) {
+                    if let point = onesToKnow.talkingPoint, index == 0 {
+                        Text("Your opener:")
+                            .font(.jakarta(13, weight: .bold))
+                        Text(appState.personalise(point))
+                            .font(.jakarta(13, weight: .mediumItalic))
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.bottom, 4)
+                    }
+                    HStack {
+                        Text("More about \(player.name.split(separator: " ").last.map(String.init) ?? player.name)")
+                            .font(.jakarta(14, weight: .semiBold))
+                        Spacer()
+                        Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold))
+                    }
+                }
+                .foregroundColor(.warmWhite)
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.hotRose)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+        .cornerRadius(16)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.hotRose, lineWidth: 2).padding(1))
+    }
+
+    @ViewBuilder
+    private func portrait(_ player: TopPlayer) -> some View {
+        if let asset = PlayerPortrait.asset(club: teamId, name: player.name) {
+            Image(asset)
+                .resizable()
+                .scaledToFit()
+                .frame(height: 260)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .accessibilityHidden(true)
+        } else {
+            playerAvatar(player: player, size: 160)
+                .frame(height: 200)
+        }
+    }
+
+    private func carouselArrow(_ symbol: String, enabled: Bool, action: @escaping () -> Void) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) { action() }
+        } label: {
+            Image(systemName: symbol)
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(enabled ? .hotRose : .clear)
+                .frame(width: 32, height: 64)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
+        .accessibilityLabel(symbol == "chevron.right" ? "Next player" : "Previous player")
+    }
+
+    /// His shirt number off the squad table, matched on the folded surname
+    /// when one man in the squad has it, under the squad pack's rule for a
+    /// number the feed gives two men (`LiveSquadPack.shirtNumber`).
+    private func shirtNumber(_ name: String) -> Int? {
+        let rows = squad.players.filter { $0.team_id == nil || $0.team_id == teamId }
+        guard let key = PlayerPortrait.surname(name) else { return nil }
+        let hits = rows.filter { PlayerPortrait.surname($0.name) == key }
+        guard hits.count == 1 else { return nil }
+        return LiveSquadPack.shirtNumber(of: hits[0], in: rows)
+    }
+
+    /// The dossier the old list opened: folded contains, either way round,
+    /// and a stub when there is none so the sheet says so.
+    private func dossier(for player: TopPlayer) -> PlayerCard {
+        let fold = { (s: String) in s.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current) }
+        let name = fold(player.name)
+        return playerCards.first { fold($0.playerName).contains(name) || name.contains(fold($0.playerName)) }
+            ?? PlayerCard.stub(teamId: teamId, playerName: player.name, position: player.position)
     }
 
     private func playerRow(player: TopPlayer, tappable: Bool) -> some View {

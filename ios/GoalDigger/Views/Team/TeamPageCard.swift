@@ -190,3 +190,55 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
         .padding(talkingPoint != nil ? 16 : 10)
     }
 }
+
+// MARK: - Bundled portraits
+
+/// Black-and-white portraits bundled in the app: a test on Arsenal (Anton,
+/// 2026-10-01). Keyed by club id and folded surname, the same surname rule the
+/// squad pack matches dossiers on, so "M. Ødegaard" and "Martin Ødegaard" are
+/// one man.
+// ponytail: bundled for one club, by hand. If the look sticks, the images move
+// to storage with a column on `players` and this table goes.
+enum PlayerPortrait {
+    private static let table: [String: [String: String]] = [
+        "arsenal": [
+            "arteta": "bw-arsenal-arteta",
+        ],
+    ]
+
+    /// Marks a quiz image as a bundled asset rather than a URL.
+    static let scheme = "asset:"
+
+    static func asset(club: String?, name: String) -> String? {
+        guard let club, let byName = table[club], let key = surname(name) else { return nil }
+        return byName[key]
+    }
+
+    /// `asset(...)` as a quiz image string, which is otherwise a URL.
+    static func source(club: String?, name: String) -> String? {
+        asset(club: club, name: name).map { scheme + $0 }
+    }
+
+    static func assetName(_ source: String?) -> String? {
+        guard let source, source.hasPrefix(scheme) else { return nil }
+        return String(source.dropFirst(scheme.count))
+    }
+
+    /// Folded, and ø spelled o: it has no decomposition, so diacritic
+    /// folding leaves "Ødegaard" as "ødegaard".
+    static func surname(_ name: String) -> String? {
+        name.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .init(identifier: "en"))
+            .lowercased().replacingOccurrences(of: "ø", with: "o")
+            .split(separator: " ").last.map(String.init)
+    }
+
+    #if DEBUG
+    static func selfCheck() -> Bool {
+        asset(club: "arsenal", name: "Mikel Arteta") == "bw-arsenal-arteta"
+            && asset(club: "chelsea", name: "Mikel Arteta") == nil
+            && surname("M. Ødegaard") == "odegaard"
+            && assetName(source(club: "arsenal", name: "Mikel Arteta")) == "bw-arsenal-arteta"
+            && assetName("https://media.api-sports.io/x.png") == nil
+    }
+    #endif
+}
