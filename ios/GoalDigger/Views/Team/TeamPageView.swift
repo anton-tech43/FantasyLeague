@@ -21,6 +21,9 @@ struct TeamPageView: View {
     @State private var expandedCard: TeamCardType?
     /// Which of the ones to know is on screen.
     @State private var onesIndex = 0
+    /// The pink strip under the one on screen, open downwards with more on
+    /// him and his own opener. Stays open as she swipes to the next.
+    @State private var onesOpen = false
     @State private var squad = LiveSquadService.shared
     @State private var showLastGames = false
     /// Which table the Table tab is showing, by competition label. Nil means
@@ -145,6 +148,8 @@ struct TeamPageView: View {
                         // `-gdTeamOnesIndex N`: the Nth of the ones to know.
                         if let i = args.firstIndex(of: "-gdTeamOnesIndex"), i + 1 < args.count,
                            let n = Int(args[i + 1]) { onesIndex = n }
+                        // `-gdTeamOnesOpen`: the pink strip open.
+                        if args.contains("-gdTeamOnesOpen") { onesOpen = true }
                         guard let target else { return }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                             withAnimation { proxy.scrollTo(target, anchor: .top) }
@@ -1262,21 +1267,50 @@ struct TeamPageView: View {
                 }
             })
 
-            Button { presentedPlayer = dossier(for: player) } label: {
-                VStack(alignment: .leading, spacing: 6) {
-                    if let point = onesToKnow.talkingPoint, index == 0 {
-                        Text("Your opener:")
-                            .font(.jakarta(13, weight: .bold))
-                        Text(appState.personalise(point))
-                            .font(.jakarta(13, weight: .mediumItalic))
-                            .fixedSize(horizontal: false, vertical: true)
-                            .padding(.bottom, 4)
-                    }
+            // Opens downwards, the way every other card's pink strip does.
+            // It used to put up a white sheet from nowhere (Anton,
+            // 2026-10-01), and the card-wide "Your opener" read as being
+            // about nobody in particular: each man has his own now, in here.
+            Button {
+                withAnimation(.spring(duration: 0.3)) { onesOpen.toggle() }
+            } label: {
+                VStack(alignment: .leading, spacing: 10) {
                     HStack {
-                        Text("More about \(player.name.split(separator: " ").last.map(String.init) ?? player.name)")
+                        Text("More about \(surnameShown(player.name))")
                             .font(.jakarta(14, weight: .semiBold))
                         Spacer()
-                        Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold))
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 13, weight: .semibold))
+                            .rotationEffect(.degrees(onesOpen ? 180 : 0))
+                    }
+                    if onesOpen {
+                        let card = dossier(for: player)
+                        if !card.summary.isEmpty {
+                            Text(appState.personalise(card.summary))
+                                .font(.jakarta(14, weight: .regular))
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        if let form = card.form, !form.isEmpty {
+                            Text(appState.personalise(form))
+                                .font(.jakarta(13, weight: .regular))
+                                .opacity(0.85)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Your opener:")
+                                .font(.jakarta(13, weight: .bold))
+                            Text(appState.personalise(opener(for: player)))
+                                .font(.jakarta(14, weight: .mediumItalic))
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(.top, 2)
+                        HStack {
+                            Spacer()
+                            Text("Tap to close ›")
+                                .font(.jakarta(11, weight: .regular))
+                                .opacity(0.7)
+                            Spacer()
+                        }
                     }
                 }
                 .foregroundColor(.warmWhite)
@@ -1285,6 +1319,7 @@ struct TeamPageView: View {
                 .background(Color.hotRose)
                 .contentShape(Rectangle())
             }
+            .accessibilityHint(onesOpen ? "Closes" : "Opens more about him and a line to say")
             .buttonStyle(.plain)
         }
         .cornerRadius(16)
@@ -1331,8 +1366,33 @@ struct TeamPageView: View {
         return LiveSquadPack.shirtNumber(of: hits[0], in: rows)
     }
 
-    /// The dossier the old list opened: folded contains, either way round,
-    /// and a stub when there is none so the sheet says so.
+    /// "Ødegaard" out of "Martin Ødegaard" or "M. Ødegaard".
+    private func surnameShown(_ name: String) -> String {
+        name.split(separator: " ").last.map(String.init) ?? name
+    }
+
+    /// His own line to say: the squad pack's strongest fact about him this
+    /// season ("Saka has three league goals already…"), the same one the
+    /// quiz teaches, or the line for his position when the facts are thin.
+    private func opener(for player: TopPlayer) -> String {
+        let rows = squad.players.filter { $0.team_id == nil || $0.team_id == teamId }
+        let key = PlayerPortrait.surname(player.name)
+        let hits = rows.filter { PlayerPortrait.surname($0.name) == key }
+        let row = hits.count == 1 ? hits[0] : nil
+        let team = Team(rawValue: teamId)
+        if let row, let team {
+            let played = content?.cards.standings?.entries
+                .first { $0.teamIdApiFootball == team.apiFootballId || $0.teamName == team.displayName }?.played
+            if let use = PlayerHooks.build(players: rows, club: team.shortName, played: played)[row.api_player_id]?.top?.use {
+                return use
+            }
+        }
+        let label = LiveClubPack.positionLabel(row?.position ?? player.position)
+        return LiveClubPack.positionUse(label, short: surnameShown(player.name))
+    }
+
+    /// The dossier: folded contains, either way round, and an empty stub when
+    /// there is none.
     private func dossier(for player: TopPlayer) -> PlayerCard {
         let fold = { (s: String) in s.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current) }
         let name = fold(player.name)
