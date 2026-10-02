@@ -205,7 +205,10 @@ enum LiveClubPack {
             )
         }
 
-        if let next = cards.nextFixture {
+        // Not once it has kicked off: the card names the game just played
+        // until the next refresh, up to two hours after the final whistle.
+        if let next = cards.nextFixture,
+           ISO8601DateFormatter().date(from: next.date).map({ $0 > Date.gdNow }) ?? true {
             let opponent = clubShort(next.opponent)
             qs += question(
                 id: "live-next-opponent", difficulty: 2,
