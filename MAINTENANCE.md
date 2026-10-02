@@ -51,6 +51,15 @@ psql "$SUPABASE_DB_URL" -c 'select 1'
 **If the DB is unreachable** (no secret, auth fail, timeout): that IS the finding.
 Report it and push — do not skip the pass silently.
 
+**Known as of 2026-10-02: raw Postgres (ports 5432 and 6543 on the pooler) timed out
+from `gd-env`, while HTTPS (443) to the same host, and PostgREST itself, worked fine.**
+That is an environment network-policy gap (HTTPS-only egress), not a Supabase outage —
+confirmed by `db-health.sh` section 1 (PostgREST) passing while section 2 (psql) hung.
+If this still reproduces, don't spend the run re-diagnosing it: it means the environment's
+Network access setting needs a broader level (an HTTPS-only allowlist proxy cannot forward
+a raw Postgres connection), report it per the rule above, and skip straight to whatever in
+Pass A/B doesn't require `psql` (see the 2026-10-02 report for what that was).
+
 JSONB null trap (from CLAUDE.md): `WHERE x IS NULL` does not match a JSONB literal
 `null`; use `WHERE x IS NULL OR jsonb_typeof(x) = 'null'`.
 
@@ -111,9 +120,11 @@ Goal: nothing user-visible states something out of date going into the weekend.
 4. **Store / hardcoded copy**: price is **free** (never £4.99 — it was never restored
    after the World Cup); season strings current. Fix copy that has a known-correct
    value; push anything ambiguous.
-5. **World Cup surfaces are being retired** (branch `claude/retire-world-championship`).
-   Do not treat WC freshness as a permanent item; if a WC surface still exists and is
-   stale, prefer removal per the retirement work over refreshing it.
+5. **World Cup surfaces are retired** (merged 2026-09-24, `d1e43e9` / PR #17 — the
+   `claude/retire-world-championship` branch is gone, already deleted post-merge; don't
+   go looking for it). `world_championship` and all 48 country rows are `is_active=false`
+   at the DB level and the ~290 lines of client UI they gated are deleted. Nothing left
+   to refresh here; if a new tournament surface shows up later it will need its own line.
 
 ---
 
