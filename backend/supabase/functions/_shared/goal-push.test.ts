@@ -15,6 +15,7 @@ import {
   renderHalfTimePush,
   renderKickoffSoonPush,
   seededRng,
+  withSaying,
   toStoredGoalEvents,
 } from "./goal-push.ts";
 import {
@@ -24,12 +25,21 @@ import {
   GOAL_BOTH,
   GOAL_CONCEDED,
   GOAL_SCORED,
+  FT_SAY_DRAW,
+  FT_SAY_LOSS,
+  FT_SAY_WIN,
   HT_AHEAD,
   HT_BEHIND,
   HT_LEVEL,
+  HT_SAY_AHEAD,
+  HT_SAY_BEHIND,
+  HT_SAY_LEVEL,
   KICKOFF_SOON,
 } from "./goal-push-copy.ts";
 import { WC_COUNTRY_META } from "./wc-countries.ts";
+
+/// What withSaying makes of a body with rng zero: the first line to say.
+const said = (body: string, pool: readonly string[]) => `${body} Say: \u201C${pool[0]}\u201D`;
 
 const MEX = { id: "mexico", name: "Mexico", flag: "🇲🇽" };
 const RSA = { id: "south_africa", name: "S. Africa", flag: "🇿🇦" };
@@ -129,14 +139,14 @@ Deno.test("renderGoalPush: 'both' shares one neutral body across both slugs", ()
 Deno.test("renderHalfTimePush: ahead/behind pools by perspective, score follower-first", () => {
   const copy = renderHalfTimePush({ home: MEX, away: RSA, homeGoals: 2, awayGoals: 0, rng: zero });
   eq(copy.title, "Half-time: Mexico 2-0 S. Africa", "title carries home-away scoreline");
-  eq(copy.bodies.mexico, interpolate(HT_AHEAD[0], { score: "2-0", team: "Mexico" }), "leader from HT_AHEAD");
-  eq(copy.bodies.south_africa, interpolate(HT_BEHIND[0], { score: "0-2", team: "S. Africa" }), "trailer from HT_BEHIND");
+  eq(copy.bodies.mexico, said(interpolate(HT_AHEAD[0], { score: "2-0", team: "Mexico" }), HT_SAY_AHEAD), "leader from HT_AHEAD");
+  eq(copy.bodies.south_africa, said(interpolate(HT_BEHIND[0], { score: "0-2", team: "S. Africa" }), HT_SAY_BEHIND), "trailer from HT_BEHIND");
 });
 
 Deno.test("renderHalfTimePush: level draws both sides from HT_LEVEL", () => {
   const copy = renderHalfTimePush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 1, rng: zero });
-  eq(copy.bodies.mexico, interpolate(HT_LEVEL[0], { score: "1-1", team: "Mexico" }), "home from HT_LEVEL");
-  eq(copy.bodies.south_africa, interpolate(HT_LEVEL[0], { score: "1-1", team: "S. Africa" }), "away from HT_LEVEL");
+  eq(copy.bodies.mexico, said(interpolate(HT_LEVEL[0], { score: "1-1", team: "Mexico" }), HT_SAY_LEVEL), "home from HT_LEVEL");
+  eq(copy.bodies.south_africa, said(interpolate(HT_LEVEL[0], { score: "1-1", team: "S. Africa" }), HT_SAY_LEVEL), "away from HT_LEVEL");
 });
 
 // ============================================================
@@ -146,14 +156,14 @@ Deno.test("renderHalfTimePush: level draws both sides from HT_LEVEL", () => {
 Deno.test("renderFullTimePush: win/loss pools by perspective", () => {
   const copy = renderFullTimePush({ home: MEX, away: RSA, homeGoals: 2, awayGoals: 0, rng: zero });
   eq(copy.title, "Full-time: Mexico 2-0 S. Africa", "title carries the scoreline");
-  eq(copy.bodies.mexico, interpolate(FT_WIN[0], { score: "2-0", team: "Mexico" }), "winner from FT_WIN");
-  eq(copy.bodies.south_africa, interpolate(FT_LOSS[0], { score: "0-2", team: "S. Africa" }), "loser from FT_LOSS");
+  eq(copy.bodies.mexico, said(interpolate(FT_WIN[0], { score: "2-0", team: "Mexico" }), FT_SAY_WIN), "winner from FT_WIN");
+  eq(copy.bodies.south_africa, said(interpolate(FT_LOSS[0], { score: "0-2", team: "S. Africa" }), FT_SAY_LOSS), "loser from FT_LOSS");
 });
 
 Deno.test("renderFullTimePush: draw draws both sides from FT_DRAW", () => {
   const copy = renderFullTimePush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 1, rng: zero });
-  eq(copy.bodies.mexico, interpolate(FT_DRAW[0], { score: "1-1", team: "Mexico" }), "home from FT_DRAW");
-  eq(copy.bodies.south_africa, interpolate(FT_DRAW[0], { score: "1-1", team: "S. Africa" }), "away from FT_DRAW");
+  eq(copy.bodies.mexico, said(interpolate(FT_DRAW[0], { score: "1-1", team: "Mexico" }), FT_SAY_DRAW), "home from FT_DRAW");
+  eq(copy.bodies.south_africa, said(interpolate(FT_DRAW[0], { score: "1-1", team: "S. Africa" }), FT_SAY_DRAW), "away from FT_DRAW");
 });
 
 Deno.test("renderFullTimePush: shootout — pens pick the pools and the {score}", () => {
@@ -161,8 +171,8 @@ Deno.test("renderFullTimePush: shootout — pens pick the pools and the {score}"
     home: MEX, away: RSA, homeGoals: 1, awayGoals: 1, pens: { home: 4, away: 2 }, rng: zero,
   });
   eq(copy.title, "Full-time: Mexico 1-1 S. Africa (4-2 on pens)", "title carries goals + shootout");
-  eq(copy.bodies.mexico, interpolate(FT_WIN[0], { score: "4-2", team: "Mexico" }), "shootout winner from FT_WIN, never drew");
-  eq(copy.bodies.south_africa, interpolate(FT_LOSS[0], { score: "2-4", team: "S. Africa" }), "shootout loser from FT_LOSS");
+  eq(copy.bodies.mexico, said(interpolate(FT_WIN[0], { score: "4-2", team: "Mexico" }), FT_SAY_WIN), "shootout winner from FT_WIN, never drew");
+  eq(copy.bodies.south_africa, said(interpolate(FT_LOSS[0], { score: "2-4", team: "S. Africa" }), FT_SAY_LOSS), "shootout loser from FT_LOSS");
   assert(!copy.title.includes("–") && !copy.title.includes("—"), "no em/en dashes");
 });
 
@@ -170,11 +180,11 @@ Deno.test("renderFullTimePush: away shootout winner + null pens keeps draw behav
   const away = renderFullTimePush({
     home: MEX, away: RSA, homeGoals: 0, awayGoals: 0, pens: { home: 3, away: 5 }, rng: zero,
   });
-  eq(away.bodies.south_africa, interpolate(FT_WIN[0], { score: "5-3", team: "S. Africa" }), "away shootout winner from FT_WIN");
-  eq(away.bodies.mexico, interpolate(FT_LOSS[0], { score: "3-5", team: "Mexico" }), "home from FT_LOSS");
+  eq(away.bodies.south_africa, said(interpolate(FT_WIN[0], { score: "5-3", team: "S. Africa" }), FT_SAY_WIN), "away shootout winner from FT_WIN");
+  eq(away.bodies.mexico, said(interpolate(FT_LOSS[0], { score: "3-5", team: "Mexico" }), FT_SAY_LOSS), "home from FT_LOSS");
   const nullPens = renderFullTimePush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 1, pens: null, rng: zero });
   eq(nullPens.title, "Full-time: Mexico 1-1 S. Africa", "null pens = unchanged title");
-  eq(nullPens.bodies.mexico, interpolate(FT_DRAW[0], { score: "1-1", team: "Mexico" }), "null pens = draw pool");
+  eq(nullPens.bodies.mexico, said(interpolate(FT_DRAW[0], { score: "1-1", team: "Mexico" }), FT_SAY_DRAW), "null pens = draw pool");
 });
 
 // ============================================================
@@ -469,4 +479,17 @@ Deno.test("seededRng: the same fixture and score draw the same line, the next go
     const x = r();
     assert(x >= 0 && x < 1, "in [0,1)");
   }
+});
+
+Deno.test("withSaying: every HT/FT line fits, and the line to say survives a long body", () => {
+  for (const pool of [HT_SAY_AHEAD, HT_SAY_BEHIND, HT_SAY_LEVEL, FT_SAY_WIN, FT_SAY_LOSS, FT_SAY_DRAW]) {
+    for (const line of pool) {
+      assert(!line.includes("\u2014") && !line.includes("\u2013"), `dash in "${line}"`);
+      assert(line.length <= 60, `"${line}" is too long to sit behind a colour line`);
+    }
+  }
+  const long = "x".repeat(200);
+  const copy = renderHalfTimePush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 1, rng: zero });
+  assert(copy.bodies.mexico.length <= 178, "an HT body overflowed the lock screen");
+  eq(withSaying(long, HT_SAY_LEVEL, zero), `Say: \u201C${HT_SAY_LEVEL[0]}\u201D`, "the colour line goes first");
 });

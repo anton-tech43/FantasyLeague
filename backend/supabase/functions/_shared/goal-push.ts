@@ -16,6 +16,9 @@ import { competitionName, parseRound, roundLabel } from "./league-helpers.ts";
 import {
   FT_DRAW,
   FT_LOSS,
+  FT_SAY_DRAW,
+  FT_SAY_LOSS,
+  FT_SAY_WIN,
   FT_WIN,
   GOAL_BOTH,
   GOAL_CONCEDED,
@@ -23,6 +26,9 @@ import {
   HT_AHEAD,
   HT_BEHIND,
   HT_LEVEL,
+  HT_SAY_AHEAD,
+  HT_SAY_BEHIND,
+  HT_SAY_LEVEL,
   KICKOFF_SOON,
 } from "./goal-push-copy.ts";
 
@@ -413,8 +419,12 @@ export function renderHalfTimePush(args: {
   return {
     title: `Half-time: ${home.name} ${homeGoals}-${awayGoals} ${away.name}`,
     bodies: {
-      [home.id]: appendClause(periodBody(HT_AHEAD, HT_BEHIND, HT_LEVEL, homeGoals, awayGoals, home.name, rng), competition),
-      [away.id]: appendClause(periodBody(HT_AHEAD, HT_BEHIND, HT_LEVEL, awayGoals, homeGoals, away.name, rng), competition),
+      [home.id]: withSaying(
+        appendClause(periodBody(HT_AHEAD, HT_BEHIND, HT_LEVEL, homeGoals, awayGoals, home.name, rng), competition),
+        sayPool(HT_SAY_AHEAD, HT_SAY_BEHIND, HT_SAY_LEVEL, homeGoals, awayGoals), rng),
+      [away.id]: withSaying(
+        appendClause(periodBody(HT_AHEAD, HT_BEHIND, HT_LEVEL, awayGoals, homeGoals, away.name, rng), competition),
+        sayPool(HT_SAY_AHEAD, HT_SAY_BEHIND, HT_SAY_LEVEL, awayGoals, homeGoals), rng),
     },
   };
 }
@@ -446,10 +456,33 @@ export function renderFullTimePush(args: {
   return {
     title,
     bodies: {
-      [home.id]: appendClause(periodBody(FT_WIN, FT_LOSS, FT_DRAW, h, a, home.name, rng), competitionBySide?.[home.id]),
-      [away.id]: appendClause(periodBody(FT_WIN, FT_LOSS, FT_DRAW, a, h, away.name, rng), competitionBySide?.[away.id]),
+      [home.id]: withSaying(
+        appendClause(periodBody(FT_WIN, FT_LOSS, FT_DRAW, h, a, home.name, rng), competitionBySide?.[home.id]),
+        sayPool(FT_SAY_WIN, FT_SAY_LOSS, FT_SAY_DRAW, h, a), rng),
+      [away.id]: withSaying(
+        appendClause(periodBody(FT_WIN, FT_LOSS, FT_DRAW, a, h, away.name, rng), competitionBySide?.[away.id]),
+        sayPool(FT_SAY_WIN, FT_SAY_LOSS, FT_SAY_DRAW, a, h), rng),
     },
   };
+}
+
+/// What a lock-screen notification shows before it truncates, near enough.
+export const SAYING_BODY_BUDGET = 178;
+
+/// The pool of lines to say for this follower's side of the score.
+function sayPool(
+  lead: readonly string[], trail: readonly string[], level: readonly string[], mine: number, theirs: number,
+): readonly string[] {
+  return mine > theirs ? lead : mine < theirs ? trail : level;
+}
+
+/// The HT/FT body with one line for her to say on the end. If both will not
+/// fit what the lock screen shows, the line to say is kept and the colour
+/// line goes: it is the reason this push carries anything at all.
+export function withSaying(body: string, pool: readonly string[], rng: () => number): string {
+  const say = `Say: \u201C${pick(pool, rng)}\u201D`;
+  const both = `${body} ${say}`;
+  return both.length <= SAYING_BODY_BUDGET ? both : say;
 }
 
 /// Shared body builder for the HT and FT pushes: picks from the leading /

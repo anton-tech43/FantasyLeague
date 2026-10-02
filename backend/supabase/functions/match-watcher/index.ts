@@ -70,10 +70,8 @@ import {
 } from "../_shared/goal-push.ts";
 import {
   halfTimeGoals,
-  matchedCalls,
   type Outcome,
   type ScorerRole,
-  withCallLine,
 } from "../_shared/match-calls.ts";
 
 const FINISHED_STATUSES = new Set(["FT", "AET", "PEN"]);
@@ -390,6 +388,9 @@ async function sendPlayingTeamPush(
     /// sheet and comeback cannot be derived by flipping a single Outcome.
     /// Absent (kickoff, and a tick where both sides scored) means no pick can
     /// resolve and the bodies go out untouched.
+    // ponytail: still computed per side, read by nothing since saved
+    // sayings stopped being pushed (2026-10-02). Kept for the next feature
+    // that wants the per-side outcome; delete if none has by the next pass.
     outcomeByTeam?: Record<string, Outcome>;
     /// The factual lead this push's bodies already start with ("Pedri 47'."),
     /// the ONE part of the body that survives when a pick lands. Goals only;
@@ -481,32 +482,12 @@ async function sendPlayingTeamPush(
       if (!country) continue; // matched on stale scalar only — not actually following
       const body = args.copy.bodies[country];
       if (!body) continue; // follower of a team not in this match — shouldn't happen
-      // "Called it". Her slip is stored on THIS row and carries its own text,
-      // so no lookup and no content bundle is needed here. The outcome is read
-      // from this device's perspective (country is the team it follows), a
-      // stale fixture id resolves to nothing, and a malformed blob resolves to
-      // nothing rather than throwing inside the send loop. Only the first
-      // landed pick is named: the body has room for one line, not three.
-      //
-      // When one lands, her line REPLACES the rotating pool line; only the
-      // scorer lead survives. See withCallLine.
-      const outcome = args.outcomeByTeam?.[country];
-      const landed = outcome ? matchedCalls(t.match_calls, args.fixtureId, outcome)[0] : undefined;
-      const finalBody = landed
-        ? withCallLine({ body, scorerLead: args.scorerLead, pick: landed })
-        : body;
-      // A landed pick that changed nothing was dropped for overflow, which
-      // means an authored line is longer than MAX_CALL_LINE allows behind this
-      // push's scorer lead. Silent, otherwise: the push still goes out, reads
-      // fine, and simply never mentions the thing she called. Say it where an
-      // audit looks, once per device, so the content cap gets fixed rather
-      // than rediscovered.
-      if (landed && finalBody === body) {
-        console.warn(
-          `called-it ${args.label} fixture=${args.fixtureId}: pick ${landed.id} dropped, ` +
-            `line is ${landed.line.length} chars behind a ${(args.scorerLead ?? "").length}-char lead`,
-        );
-      }
+      // Her saved sayings are not pushed (Anton, 2026-10-02). A goal push lands
+      // a minute or two after the goal, too late to say anything in the
+      // moment; the slip is hers to read in the app. The break and the final
+      // whistle carry a line to say for everyone instead (withSaying, in the
+      // HT/FT copy), which needs nothing saved.
+      const finalBody = body;
       const contentId = args.contentIdByCountry?.[country] ?? `live-${args.label}-${args.fixtureId}`;
       const payload = buildAPNsPayload(
         "", // teamShortName fallback unused — we pass pushTitle below

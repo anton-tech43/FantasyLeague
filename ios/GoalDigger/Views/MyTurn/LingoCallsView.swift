@@ -243,11 +243,10 @@ struct LingoCallsView: View {
         }
     }
 
-    /// The promise, in the state where it is still ahead of her. It is off the
-    /// offer at Anton's word — the screen that asks her a question carries the
-    /// question and nothing else — so the first time she reads it is on the
-    /// slip she has just filled in, and the wording must not move after that.
-    private static let promise = "We'll tell you the moment one comes up."
+    /// What the open slip says under its heading. No promise of a push: the
+    /// lines are not pushed (a goal push lands a minute or two late), they
+    /// are hers to read here before and during the game (Anton, 2026-10-02).
+    private static let promise = "Have a look before kick-off, and keep them handy during the game."
 
     /// "For Saturday" — the occasion reads as a weekday inside the week and as
     /// "the Fulham game" beyond it, so it has to sit behind "For", which is the

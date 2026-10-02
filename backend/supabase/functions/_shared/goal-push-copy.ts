@@ -448,3 +448,48 @@ export const KICKOFF_SOON: readonly string[] = [
   "{team} play {opp} in half an hour. Game face on.",
   "Not long now. {team} vs {opp} kicks off in 30 minutes.",
 ];
+
+// ── A line to say, on the half-time and full-time pushes ──
+//
+// The break and the final whistle are the two moments with time to talk, and
+// she gets the score there anyway, so the push carries one line she can say
+// to him (Anton, 2026-10-02). Not a separate push, and nothing she has to have
+// saved: a goal push arrives a minute or two after the goal, too late to say
+// anything in the moment, but half-time lasts fifteen minutes and full-time
+// the rest of the evening. Her voice to him, first person; no em-dashes.
+
+export const HT_SAY_AHEAD: readonly string[] = [
+  "Half the job done. Don't let them back in it.",
+  "Ahead at the break. Game management from here.",
+  "Keep doing that and we're fine. Don't change a thing.",
+];
+
+export const HT_SAY_LEVEL: readonly string[] = [
+  "Level at half-time. Anyone's game, this.",
+  "Still all to play for. We need a goal.",
+  "I'll take that. Second half's ours.",
+];
+
+export const HT_SAY_BEHIND: readonly string[] = [
+  "Plenty of time. One goal changes everything.",
+  "We've come back from worse. Forty-five minutes.",
+  "Behind at the break. The gaffer won't be happy.",
+];
+
+export const FT_SAY_WIN: readonly string[] = [
+  "Get in. Three points.",
+  "Massive, that. Three points.",
+  "Told you. Never in doubt.",
+];
+
+export const FT_SAY_DRAW: readonly string[] = [
+  "A point's a point. We've had worse afternoons.",
+  "Could've been worse. We go again.",
+  "Not a bad point, that. We'll take it.",
+];
+
+export const FT_SAY_LOSS: readonly string[] = [
+  "Nothing to say about that. We go again.",
+  "Not our day. Next one.",
+  "Gutted. Forget that one.",
+];
