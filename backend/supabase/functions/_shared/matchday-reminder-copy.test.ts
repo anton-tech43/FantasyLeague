@@ -1,7 +1,7 @@
 // Deno tests for the matchday-reminder copy.
 //   deno test backend/supabase/functions/_shared/matchday-reminder-copy.test.ts
 
-import { dayWord, renderMatchdayReminder } from "./matchday-reminder-copy.ts";
+import { dayWord, isLondonTomorrow, londonHour, renderMatchdayReminder, renderPrepReminder } from "./matchday-reminder-copy.ts";
 
 function assert(c: boolean, m: string): void {
   if (!c) throw new Error("assertion failed: " + m);
@@ -108,4 +108,25 @@ Deno.test("tz: 'today'/'tomorrow' follows the reader's calendar date", () => {
   eq(dayWord(kickoff, now), "tomorrow", "London (default)");
   eq(dayWord(kickoff, now, "Europe/Stockholm"), "tomorrow", "Stockholm");
   eq(dayWord(kickoff, now, "America/New_York"), "today", "New York");
+});
+
+Deno.test("renderPrepReminder: names the opponent, says tomorrow, no dashes", () => {
+  for (let i = 0; i < 4; i++) {
+    const c = renderPrepReminder({ opponent: "Leeds", rng: () => i / 4 });
+    if (c.title !== "Leeds tomorrow") throw new Error(`title ${c.title}`);
+    if (!c.body.includes("Leeds") || !c.body.toLowerCase().includes("tomorrow")) throw new Error(c.body);
+    if (/[–—]/.test(c.body)) throw new Error(`dash in ${c.body}`);
+  }
+});
+
+Deno.test("isLondonTomorrow / londonHour: London's calendar, either side of the clocks", () => {
+  // 08:00 UTC on 2 Oct is 09:00 BST; a 3 Oct 14:00 kickoff is tomorrow.
+  const now = new Date("2026-10-02T08:00:00Z");
+  if (londonHour(now) !== 9) throw new Error(`BST hour ${londonHour(now)}`);
+  if (!isLondonTomorrow(new Date("2026-10-03T14:00:00Z"), now)) throw new Error("3 Oct not tomorrow");
+  if (isLondonTomorrow(new Date("2026-10-02T19:00:00Z"), now)) throw new Error("today counted as tomorrow");
+  // 23:30 UTC on 3 Oct is 00:30 BST on the 4th: not tomorrow.
+  if (isLondonTomorrow(new Date("2026-10-03T23:30:00Z"), now)) throw new Error("London midnight missed");
+  // Winter: 09:00 GMT is 09:00 UTC.
+  if (londonHour(new Date("2026-12-05T09:00:00Z")) !== 9) throw new Error("GMT hour");
 });

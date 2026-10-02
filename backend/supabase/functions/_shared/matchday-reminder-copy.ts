@@ -163,3 +163,34 @@ export function renderPreMatchBuildup(args: {
     immersiveContext: contextByVerdict,
   };
 }
+
+// ── The day-before push: "Leeds tomorrow" → Pre-game ────────────────────────
+// Since My Turn has a Pre-game section for each fixture (get to know them,
+// seven words, sayings), the morning before a game says so and opens it
+// (Anton, 2026-10-02). The message is always the same, here's what you need
+// before the game, have a look now; the wording varies. No em-dashes.
+
+const PREP_BODIES: Array<(opp: string) => string> = [
+  (opp) => `You face ${opp} tomorrow. Get the pre-game talk in, it takes two minutes.`,
+  (opp) => `Get to know your competition: ${opp}, tomorrow. Two minutes and you're ready.`,
+  (opp) => `${opp} tomorrow. Know who they are before he tells you.`,
+  (opp) => `Big one tomorrow against ${opp}. Your pre-game is ready when you are.`,
+];
+
+export function renderPrepReminder(args: { opponent: string; rng?: () => number }): MatchdayReminderCopy {
+  const { opponent, rng = Math.random } = args;
+  return { title: `${opponent} tomorrow`, body: pick(PREP_BODIES, rng)(opponent) };
+}
+
+/// "Tomorrow" in London: the fixture's London date is the day after `now`'s.
+export function isLondonTomorrow(kickoff: Date, now: Date): boolean {
+  const day = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: DEFAULT_TZ }).format(d);
+  return day(kickoff) === day(new Date(now.getTime() + 24 * 60 * 60 * 1000));
+}
+
+/// The hour it is in London, for a cron that runs at 07 and 08 UTC and sends
+/// only at 09:00 London, whichever side of the clocks changing it is.
+export function londonHour(now: Date): number {
+  return Number(new Intl.DateTimeFormat("en-GB", { timeZone: DEFAULT_TZ, hour: "2-digit", hourCycle: "h23" })
+    .format(now));
+}

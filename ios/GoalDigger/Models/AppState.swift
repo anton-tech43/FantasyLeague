@@ -85,6 +85,9 @@ class AppState {
     /// re-appear (e.g., scenePhase change) doesn't snap back.
     /// NOT persisted.
     var pendingTabAfterPrimer: Int?
+    /// Set by a tap on the day-before push ("Leeds tomorrow"): open My Turn
+    /// on Pre-game. Consumed by the tab view.
+    var pendingOpenPrep = false
 
     // Feed context — session-only, not persisted. Resets to .team(selectedTeam) on app launch.
     var activeContext: FeedContext = .everyoneTalking

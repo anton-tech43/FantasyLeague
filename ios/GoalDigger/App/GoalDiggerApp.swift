@@ -171,6 +171,12 @@ struct RootView: View {
 struct MainTabView: View {
     /// DEBUG `-gdOpenItemTalk`: with `-gdOpenItem`, the item opens scrolled to
     /// "Things to say", so a screenshot can show the full talking points.
+    private func openPrep() {
+        appState.pendingOpenPrep = false
+        MyTurnStore.shared.lastModule = .prep
+        selectedTab = 2
+    }
+
     private var deepLinkScrollsToTalk: Bool {
         #if DEBUG
         ProcessInfo.processInfo.arguments.contains("-gdOpenItemTalk")
@@ -341,6 +347,10 @@ struct MainTabView: View {
             // where the notification prompt already asks for something.
             await Attribution.requestTrackingIfNeeded()
         }
+        // The day-before push: My Turn, on Pre-game. Here and in onAppear, for
+        // the same reason the article deep link is: a cold launch sets it
+        // before this view mounts.
+        .onChange(of: appState.pendingOpenPrep) { _, open in if open { openPrep() } }
         .onChange(of: appState.deepLinkContentId) { _, newId in
             if let id = newId {
                 selectedTab = 0
@@ -384,6 +394,7 @@ struct MainTabView: View {
                 appState.deepLinkContentId = id
             }
             #endif
+            if appState.pendingOpenPrep { openPrep() }
             // Cold-launch deep-link catch. If the user tapped a notification
             // while the app was killed, AppDelegate sets deepLinkContentId
             // during launch — which may run BEFORE this view first mounts.

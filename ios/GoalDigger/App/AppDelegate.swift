@@ -117,7 +117,10 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                                 didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
         let userInfo = response.notification.request.content.userInfo
-        if let contentId = userInfo["content_id"] as? String,
+        // The day-before push opens Pre-game rather than an article.
+        if let contentId = userInfo["content_id"] as? String, contentId.hasPrefix("myturn-prep") {
+            AppState.shared.pendingOpenPrep = true
+        } else if let contentId = userInfo["content_id"] as? String,
            let uuid = UUID(uuidString: contentId) {
             // Route to correct feed context before navigation
             if userInfo["everyone_talking"] as? Bool == true {
