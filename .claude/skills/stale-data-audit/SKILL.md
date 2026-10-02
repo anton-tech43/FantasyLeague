@@ -147,6 +147,17 @@ Do the same for the 20 manager photos, and **hash against the table in `DATA_SOU
 $P "$SUPABASE_DB_URL" -At -c "select count(*) from players where name like '%&%'"   # expect 0
 ```
 
+### 3a. Shirt numbers and portraits
+
+- **Shirt numbers come from the Premier League, not API-Football.**
+  - The feed's squad numbers were wrong for ~30 players (2026-10-02).
+  - `official-squads` (cron 05:50 UTC, migration 127) reads the PL's own squad list per club. It sets `players.official_number` and `in_official_squad`.
+  - The app shows only official numbers and asks number questions only about players in the squad.
+- **Check:** `select team_id, count(*) filter (where in_official_squad), max(official_checked_at)::date from players group by 1`. Every club should be checked today.
+- **After a window, re-cut the portraits.**
+  - A portrait (`bw-<club>-<surname>`) of a player who left still shows in the squad quiz, under the old club.
+  - Re-run `tools/portraits/import_sheet.py` on new sheets, or delete the leaver's imageset (see `tools/audit/README.md`).
+
 ## 4. Team pages
 
 `team_pages.content.cards` mixes three lifetimes, and only the first refreshes itself.
@@ -291,6 +302,8 @@ $P "$SUPABASE_DB_URL" -At -F' | ' -c "select team_id,count(*),max(created_at)::d
 ```
 
 `phase` must match the calendar: `pre_season` in July, `mid_season` from late August, `run_in` from April, `off_season` in June. A phase that disagrees with the date means `gd-season-state` (`trig_01TES8jphjFvp8Qf9e87bDoF`) has not run.
+
+**My Turn, end to end:** run `tools/audit/` (README there). It dumps every question for all 20 clubs from the simulator, today and after the next match, and fact-checks them against the raw feed. A friendly as "next up" (Villa v Sevilla, 2026-10-02) and a ground or photo gone stale were caught this way and nowhere else.
 
 ## 7. Hardcoded lists and season labels
 
