@@ -95,6 +95,18 @@ def form_label(w, d, l, n): return f"Won {w}, drew {d}, lost {l} of the last {['
 issues = []; manual = []
 def bad(club, where, msg): issues.append((club, where, msg))
 def man(club, where, msg): manual.append((club, where, msg))
+# The CDN's placeholder images (DATA_SOURCES.md): HTTP 200, never a 404.
+PLACEHOLDERS = {"f512b984f93ca6915dd623351b93b531", "3e52d4ec4bb65b0a2019236c4dabd3fc",
+                "68ac0d5773da5ee81444ade70d89533d", "0e3bde19a08632f2e893bc2a835598bc",
+                "430d67fd79ad0a355b212d5780886e34"}
+_ph = {}
+def placeholder(url):
+    if not url.startswith("http"): return False      # a bundled portrait
+    if url not in _ph:
+        import hashlib, urllib.request
+        try: _ph[url] = hashlib.md5(urllib.request.urlopen(url, timeout=15).read()).hexdigest() in PLACEHOLDERS
+        except Exception: _ph[url] = False
+    return _ph[url]
 def basics_off(T, qid, answer):
     """The answer against the club's live page, which the app should be
     reading fresh (a stale cache said Goodison Park, 2026-10-02)."""
@@ -137,6 +149,7 @@ for f in sorted(glob.glob(f"{S}/dumps/myturn-audit-*-{label}.json")):
         if q["id"] == "opp-manager":
             if not same(q["answer"], teams[T]["manager_name"]): bad(club, w, f"answer {q['answer']} vs teams.manager_name {teams[T]['manager_name']}")
             if not q["image"]: bad(club, w, "no manager photo")
+            elif placeholder(q["image"]): bad(club, w, f"manager photo is a CDN placeholder: {q['image']}")
         elif q["id"] == "opp-table-position":
             t = table(T)
             if not t or q["answer"] != ordinal(t["rank"]): bad(club, w, f"answer {q['answer']} vs standings {t}")

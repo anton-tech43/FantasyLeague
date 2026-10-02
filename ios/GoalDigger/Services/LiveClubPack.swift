@@ -876,15 +876,8 @@ final class LiveClubPackService {
 
         // Manager photo: check the bytes once per URL. Player photos are not
         // checked — all 60 PL ones-to-know photos were real on 2026-09-08.
-        if let photo = content.cards.manager?.photoURL, let url = URL(string: photo),
-           !src.silhouettes.contains(photo), !(checkedPhotos.contains(photo)) {
-            checkedPhotos.insert(photo)
-            if let (data, _) = try? await URLSession.shared.data(from: url), LiveClubPack.isSilhouette(data) {
-                src.silhouettes.append(photo)
-                sources = src
-            }
-            guard teamId == requested else { return }
-        }
+        if await checkManagerPhoto(content) { src = sources ?? src }
+        guard teamId == requested else { return }
 
         pack = LiveClubPack.build(team: team, page: content, sources: src, personalise: personalise)
     }
@@ -912,6 +905,10 @@ final class LiveClubPackService {
         }
         // A newer call for another opponent owns the result.
         guard opponentId == opponent.rawValue else { return }
+        // His manager is asked about over his photo too: Sunderland's was the
+        // "NO PHOTO YET" placeholder in Brighton's quiz (2026-10-02).
+        if let content = cached?.content { _ = await checkManagerPhoto(content) }
+        guard opponentId == opponent.rawValue else { return }
         guard let content = cached?.content, let src = sources else { opponentPack = nil; return }
         opponentPack = LiveClubPack.buildOpponent(team: opponent, page: content, sources: src, mine: mine,
                                                   lastMeeting: lastMeeting)
@@ -928,6 +925,17 @@ final class LiveClubPackService {
     }
 
     private var checkedPhotos: Set<String> = []
+
+    /// Fetch a page's manager photo once per URL; a CDN placeholder goes into
+    /// `sources.silhouettes`, which every builder skips. True when it did.
+    private func checkManagerPhoto(_ content: TeamPageContent) async -> Bool {
+        guard let photo = content.cards.manager?.photoURL, let url = URL(string: photo),
+              sources?.silhouettes.contains(photo) == false, !checkedPhotos.contains(photo) else { return false }
+        checkedPhotos.insert(photo)
+        guard let (data, _) = try? await URLSession.shared.data(from: url), LiveClubPack.isSilhouette(data) else { return false }
+        sources?.silhouettes.append(photo)
+        return true
+    }
 
     private static func fetchSources() async throws -> LiveClubPack.Sources {
         let ids = Team.allCases.map(\.rawValue).joined(separator: ",")
