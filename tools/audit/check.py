@@ -30,8 +30,8 @@ def fold0(s):
     return " ".join(re.sub(r"[^a-z0-9 ]+", " ", "".join(c for c in s if not unicodedata.combining(c)).replace("ø", "o")).split())
 def fold(s):
     f = fold0(s)
-    for k, v in ALIAS.items():
-        if f == k or f.startswith(k + " "): f = f.replace(k, v, 1)
+    for k, v in ALIAS.items():   # anywhere, as a whole phrase ("Drew 1-1 with Man Utd")
+        f = re.sub(rf"(^| ){k}( |$)", rf"\g<1>{v}\g<2>", f)
     return f
 def raw_same(a, b):
     a, b = fold(a), fold(b)
@@ -95,6 +95,14 @@ def form_label(w, d, l, n): return f"Won {w}, drew {d}, lost {l} of the last {['
 issues = []; manual = []
 def bad(club, where, msg): issues.append((club, where, msg))
 def man(club, where, msg): manual.append((club, where, msg))
+def basics_off(T, qid, answer):
+    """The answer against the club's live page, which the app should be
+    reading fresh (a stale cache said Goodison Park, 2026-10-02)."""
+    b = ((pages.get(T) or {}).get("cards") or {}).get("basics") or {}
+    field = {"stadium": "stadium", "nickname": "nickname", "last-title": "last_title"}.get(qid.split("-", 1)[1])
+    if not field or not b.get(field): return None
+    want = b[field].split(",")[0].strip()
+    return None if fold(want) in fold(answer) or fold(answer) in fold(want) else f"{answer} vs page {b[field]}"
 
 label = sys.argv[2] if len(sys.argv) > 2 else "now"
 for f in sorted(glob.glob(f"{S}/dumps/myturn-audit-*-{label}.json")):
@@ -163,6 +171,7 @@ for f in sorted(glob.glob(f"{S}/dumps/myturn-audit-*-{label}.json")):
             if pt and not any(same(pt.get(s, {}).get("name", ""), ph.get("opponent", "")) for s in ("home", "away")):
                 bad(club, w, f"h2h is from a predictions payload for {pt.get('home',{}).get('name')} v {pt.get('away',{}).get('name')}, not this fixture")
         elif q["id"] in ("opp-nickname", "opp-stadium"):
+            if (e := basics_off(T, q["id"], q["answer"])): bad(club, w, e)
             man(club, w, f"{q['question']} -> {q['answer']}")
         elif q["id"] == "opp-last-season":
             e = last_table.get(teams[T]["api_football_id"])
@@ -203,6 +212,8 @@ for f in sorted(glob.glob(f"{S}/dumps/myturn-audit-*-{label}.json")):
             n, tied, g = top_scorer(club)
             if tied or not n or surname(n) not in fold(q["answer"]): bad(club, w, f"{q['answer']} vs players {n} ({g}, tied={tied})")
         else:
+            if q["id"] in ("live-stadium", "live-nickname", "live-last-title") and (e := basics_off(club, q["id"].replace("live-", "x-"), q["answer"])):
+                bad(club, w, e)
             man(club, w, f"{q['question']} -> {q['answer']}")
     # ── His squad ──
     rows = squad_rows(club)
