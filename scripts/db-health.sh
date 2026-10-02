@@ -428,7 +428,32 @@ else
   warn "cards 5 and 6 say the same thing: $ECHOED"
 fi
 
-# 8f. Is any club's manager still coming from the feed we do not trust?
+# 8f. Does a rivalry card say a rival is absent who is in fact here? `rivalry`
+# is hand-seeded alongside `basics` and preserved by every writer, so it carries
+# whatever was true the day it was written. Promotion makes it false silently:
+# Newcastle's card said "Sunderland are not in the Premier League right now"
+# while Sunderland's own card, two rows away, said "Both are in the Premier
+# League this season, so [his name] gets the fixture back". The derby was back
+# and half our data had not noticed.
+#
+# Precise because it only fires when the named rival is an ACTIVE club.
+# Forest's card says Derby and Leicester are absent and both genuinely are, so
+# it stays quiet.
+GONE=$(q "SELECT string_agg(DISTINCT tp.team_id || ' says ' || r.display_name || ' is away', ', ')
+            FROM team_pages tp
+            JOIN teams t ON t.id = tp.team_id
+            JOIN teams r ON r.entity_type = 'club' AND r.is_active AND r.id <> tp.team_id
+             AND tp.content->'cards'->'rivalry'->>'text' LIKE '%' || r.display_name || '%'
+           WHERE t.entity_type = 'club' AND t.is_active
+             AND tp.content->'cards'->'rivalry'->>'text'
+                 ~* '(not in the premier league|neither is in|outside the premier league|not in the top flight)';")
+if [ -z "$GONE" ]; then
+  note "OK" "no rivalry card writes off a club that is actually in the league"
+else
+  warn "rivalry card contradicts the team list: $GONE"
+fi
+
+# 8g. Is any club's manager still coming from the feed we do not trust?
 # `/coachs` omits sitting managers and lists assistants as if they were head
 # coaches — DATA_SOURCES.md has the evidence, and it is how the app once showed
 # Bournemouth's assistant as its manager. The fix was `teams.manager_name`
@@ -445,7 +470,7 @@ else
   fail "no verified manager, so the unreliable /coachs feed decides: $UNVERIFIED  (set teams.manager_name)"
 fi
 
-# 8g. The canary on the history table itself. Scoped to the prose it should sit
+# 8h. The canary on the history table itself. Scoped to the prose it should sit
 # in the hundreds of kilobytes; if the trigger ever starts following the
 # two-hourly numeric churn instead it becomes ~8 MB a day, which is how
 # raw_fetch_logs drained the Disk IO budget in June. This one FAILs, because it
