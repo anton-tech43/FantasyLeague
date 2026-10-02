@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
     let title: String
@@ -193,49 +194,36 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
 
 // MARK: - Bundled portraits
 
-/// Black-and-white portraits bundled in the app: a test on Arsenal (Anton,
-/// 2026-10-01). Keyed by club id and folded surname, the same surname rule the
-/// squad pack matches dossiers on, so "M. Ødegaard" and "Martin Ødegaard" are
-/// one man.
-// ponytail: bundled for one club, by hand. If the look sticks, the images move
-// to storage with a column on `players` and this table goes.
+/// Black-and-white portraits bundled in the app, found by name: the asset for
+/// a man is `bw-<club id>-<key>`, where the key is his folded surname
+/// ("bw-arsenal-odegaard"), or his whole folded name when two men in the
+/// squad share a surname. `tools/portraits/import.py` writes them under the
+/// same rule, off the label printed on each sticker, so a new club or a new
+/// signing is an import and no code (Anton, 2026-10-02).
+// ponytail: bundled in the app. If the look sticks for every club, the images
+// move to storage with a column on `players`.
 enum PlayerPortrait {
-    private static let table: [String: [String: String]] = [
-        // Named off the label drawn on each sticker, never the file name: the
-        // bench zip's file names were shifted one along against their own
-        // labels. Martinelli is in the first set and in no club's squad in our
-        // data, so he is left out.
-        "arsenal": [
-            "arteta": "bw-arsenal-arteta",
-            "calafiori": "bw-arsenal-calafiori",
-            "dowman": "bw-arsenal-dowman",
-            "eze": "bw-arsenal-eze",
-            "gyokeres": "bw-arsenal-gyokeres",
-            "havertz": "bw-arsenal-havertz",
-            "hincapie": "bw-arsenal-hincapie",
-            "kepa": "bw-arsenal-kepa",
-            "lewis-skelly": "bw-arsenal-lewis-skelly",
-            "madueke": "bw-arsenal-madueke",
-            "magalhaes": "bw-arsenal-magalhaes",
-            "merino": "bw-arsenal-merino",
-            "odegaard": "bw-arsenal-odegaard",
-            "raya": "bw-arsenal-raya",
-            "rice": "bw-arsenal-rice",
-            "saka": "bw-arsenal-saka",
-            "saliba": "bw-arsenal-saliba",
-            "timber": "bw-arsenal-timber",
-            "tzolis": "bw-arsenal-tzolis",
-            "zubimendi": "bw-arsenal-zubimendi",
-        ],
-    ]
+    // Packs are built off the main actor too, so the cache takes a lock
+    // rather than an actor. `UIImage(named:)` is safe from any thread.
+    nonisolated(unsafe) private static var known: [String: Bool] = [:]
+    private static let lock = NSLock()
+
+    private static func exists(_ asset: String) -> Bool {
+        lock.lock(); defer { lock.unlock() }
+        if let hit = known[asset] { return hit }
+        let hit = UIImage(named: asset) != nil
+        known[asset] = hit
+        return hit
+    }
+
+    static func asset(club: String?, name: String) -> String? {
+        guard let club else { return nil }
+        let candidates = [fullKey(name), surname(name)].compactMap { $0 }.map { "bw-\(club)-\($0)" }
+        return candidates.first(where: exists)
+    }
 
     /// Marks a quiz image as a bundled asset rather than a URL.
     static let scheme = "asset:"
-
-    static func asset(club: String?, name: String) -> String? {
-        guard let club, let byName = table[club], let key = surname(name) else { return nil }
-        return byName[key]
-    }
 
     /// `asset(...)` as a quiz image string, which is otherwise a URL.
     static func source(club: String?, name: String) -> String? {
@@ -250,9 +238,20 @@ enum PlayerPortrait {
     /// Folded, and ø spelled o: it has no decomposition, so diacritic
     /// folding leaves "Ødegaard" as "ødegaard".
     static func surname(_ name: String) -> String? {
-        name.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .init(identifier: "en"))
-            .lowercased().replacingOccurrences(of: "ø", with: "o")
-            .split(separator: " ").last.map(String.init)
+        folded(name).split(separator: " ").last.map(String.init)
+    }
+
+    /// "Ryan Christie" → "ryan-christie", for the club with two Christies.
+    static func fullKey(_ name: String) -> String? {
+        let parts = folded(name).split(separator: " ")
+        return parts.count > 1 ? parts.joined(separator: "-") : nil
+    }
+
+    private static func folded(_ name: String) -> String {
+        let f = name.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .init(identifier: "en"))
+            .lowercased().replacingOccurrences(of: "ø", with: "o").replacingOccurrences(of: "æ", with: "ae")
+        return String(f.map { $0.isLetter || $0.isNumber || $0 == "-" ? $0 : " " })
+            .split(separator: " ").joined(separator: " ")
     }
 
     #if DEBUG
