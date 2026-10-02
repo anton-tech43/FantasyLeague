@@ -420,7 +420,7 @@ struct LingoView: View {
                     if let j = args.firstIndex(of: "-gdMyTurnQuestion"), j + 1 < args.count {
                         store.startRetryRound(pack: pack, missedIds: [args[j + 1]])
                     } else {
-                        store.startRound(pack: pack)
+                        store.startRound(pack: pack, fixtureKey: context.fixtureKey)
                     }
                     if let j = args.firstIndex(of: "-gdQuizAnswer"), j + 1 < args.count, let a = Int(args[j + 1]),
                        let id = store.quizRound?.questionIds.first,
@@ -428,6 +428,19 @@ struct LingoView: View {
                         store.answer(a, correct: a == q.answer, questionId: id)
                     }
                     showingOpponentQuiz = true
+                }
+                // `-gdPrepOpponentDone`: play the opponent quiz through, all
+                // but one right, and come back to the prep with it done.
+                if args.contains("-gdPrepOpponentDone"), let pack = live.opponentPack {
+                    store.startRound(pack: pack, fixtureKey: context.fixtureKey)
+                    let byId = Dictionary(pack.questions.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
+                    for (i, id) in (store.quizRound?.questionIds ?? []).enumerated() {
+                        guard let q = byId[id] else { continue }
+                        let pick = i == 0 ? (q.answer + 1) % q.options.count : q.answer
+                        store.answer(pick, correct: pick == q.answer, questionId: id)
+                        store.nextQuestion()
+                    }
+                    store.endRound()
                 }
             }
             .onPreferenceChange(LingoFramePreference.self) { measured in
@@ -656,10 +669,25 @@ struct LingoView: View {
     /// already going is picked up rather than dealt again.
     @ViewBuilder
     private var opponentCard: some View {
-        if let pack = live.opponentPack, let club = opponentTeam?.shortName {
+        if let pack = live.opponentPack, let club = opponentTeam?.shortName,
+           let done = store.opponentQuizDone, done.fixtureKey == context.fixtureKey,
+           !(store.quizRound?.packId == pack.id && store.quizRound?.finished == false) {
+            // Done for this game: small, like the words card once played, in
+            // its own blush (Anton, 2026-10-02). Pressing it goes again.
+            MyTurnPractiseButton(title: "You know \(club)",
+                                 subtitle: "\(done.score) of \(done.total) right. Go again?",
+                                 systemImage: "checkmark",
+                                 fill: .cardBackground, ink: .textPrimaryOnCard,
+                                 badge: .hotRose, badgeInk: .warmWhite) {
+                store.startRound(pack: pack, fixtureKey: context.fixtureKey)
+                withAnimation(.easeInOut(duration: 0.2)) { showingOpponentQuiz = true }
+            }
+            .padding(.vertical, 8)
+            .id("prep-opponent")
+        } else if let pack = live.opponentPack, let club = opponentTeam?.shortName {
             Button {
                 if store.quizRound?.packId != pack.id || store.quizRound?.finished == true {
-                    store.startRound(pack: pack)
+                    store.startRound(pack: pack, fixtureKey: context.fixtureKey)
                 }
                 withAnimation(.easeInOut(duration: 0.2)) { showingOpponentQuiz = true }
             } label: {

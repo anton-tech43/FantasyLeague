@@ -47,6 +47,8 @@ struct LingoCallsView: View {
     /// tab switch, and a relaunch starting again at the first line is correct.
     @State private var picked: Set<String> = []
     @State private var index = LingoCallsView.startIndex
+    /// The filled slip is a small gold row until she opens it.
+    @State private var slipOpen = false
     @Environment(\.dynamicTypeSize) private var typeSize
 
     private var slip: MyTurnStore.MatchCalls? { store.matchCalls(for: context) }
@@ -302,8 +304,33 @@ struct LingoCallsView: View {
     /// watching, and what the app can work out for itself afterwards is the
     /// full-time result and nothing else (`LingoCalls.outcomes(after:)`), so a
     /// cross here would be a claim the app cannot stand behind.
+    /// Done, the card goes small in its own gold, like the words card once
+    /// played (Anton, 2026-10-02), and opens in place onto the lines.
     @ViewBuilder
     private func filled(_ slip: MyTurnStore.MatchCalls) -> some View {
+        let mine = picks(slip)
+        if !(mine.isEmpty && played) {
+            let landed = LingoCalls.matched(stored: slip, fixtureId: slip.fixtureId, calls: mine,
+                                            outcomes: LingoCalls.outcomes(after: context)).count
+            let summary = mine.isEmpty ? "None of those took your fancy. Three more next game."
+                : played ? "\(landed) of \(mine.count) came up."
+                : "\(when)\(mine.count == 1 ? "1 line" : "\(mine.count) lines") on your slip."
+            VStack(spacing: 8) {
+                MyTurnPractiseButton(title: played ? "What you called" : "Your sayings are ready",
+                                     subtitle: summary,
+                                     systemImage: played ? "flag.checkered" : "checkmark",
+                                     fill: .gold, ink: .charcoal, badge: .deepMauve, badgeInk: .gold,
+                                     trailingSymbol: slipOpen ? "chevron.up" : "chevron.down") {
+                    withAnimation(.spring(duration: 0.3)) { slipOpen.toggle() }
+                }
+                if slipOpen && !mine.isEmpty { slipCard(slip) }
+            }
+            .padding(.vertical, 8)
+        }
+    }
+
+    @ViewBuilder
+    private func slipCard(_ slip: MyTurnStore.MatchCalls) -> some View {
         let mine = picks(slip)
         if mine.isEmpty {
             // She walked the slip and fancied none of it. Stored, so the same

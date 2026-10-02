@@ -45,6 +45,9 @@ final class MyTurnStore {
         /// The hype line for this round's result screen, picked once when the
         /// round finished so the card does not reshuffle on every redraw.
         var hypeLine: String? = nil
+        /// The game an opponent round was dealt for, so finishing it can be
+        /// remembered against that game (`opponentQuizDone`). Nil otherwise.
+        var fixtureKey: String? = nil
 
         init(packId: String, questionIds: [String]) {
             self.packId = packId
@@ -66,6 +69,7 @@ final class MyTurnStore {
             finished = try c.decodeIfPresent(Bool.self, forKey: .finished) ?? false
             streak = try c.decodeIfPresent(Int.self, forKey: .streak) ?? 0
             hypeLine = try c.decodeIfPresent(String.self, forKey: .hypeLine)
+            fixtureKey = try? c.decodeIfPresent(String.self, forKey: .fixtureKey)
         }
     }
 
@@ -284,6 +288,15 @@ final class MyTurnStore {
         /// practise round in Lingo deals around these rather than the same
         /// seven again (Anton, 2026-10-01).
         var prepRoundDone: PrepRoundDone? = nil
+        /// "Get to know Leeds", played through for this game, and how it went.
+        /// Its card goes small after, like the words' (Anton, 2026-10-02).
+        var opponentQuizDone: OpponentQuizDone? = nil
+    }
+
+    struct OpponentQuizDone: Codable, Equatable {
+        let fixtureKey: String
+        let score: Int
+        let total: Int
     }
 
     struct PrepRoundDone: Codable, Equatable {
@@ -365,6 +378,8 @@ final class MyTurnStore {
         set { state.prepRoundDone = newValue }
     }
 
+    var opponentQuizDone: OpponentQuizDone? { state.opponentQuizDone }
+
     /// Set by the prep's "Carry on with your words" when it has dealt a
     /// practise round and moved her to Lingo; Lingo puts the round on screen
     /// and clears it. Not persisted: a handoff only means something now.
@@ -413,7 +428,7 @@ final class MyTurnStore {
 
     /// Ten questions, easier first, avoiding ones she has already seen in
     /// this pack until the pack runs out — so the first weeks do not repeat.
-    func startRound(pack: QuizPack) {
+    func startRound(pack: QuizPack, fixtureKey: String? = nil) {
         let seen = Set(progress(for: pack.id).seenQuestionIds)
         var pool = pack.questions.filter { !seen.contains($0.id) }
         if pool.count < 10 {
@@ -425,7 +440,9 @@ final class MyTurnStore {
         // round of nothing, and the question screen indexes into it.
         let picked = Array(pool.shuffled().prefix(10)).sorted { $0.difficulty < $1.difficulty }
         guard !picked.isEmpty else { return }
-        state.quizRound = QuizRound(packId: pack.id, questionIds: picked.map(\.id))
+        var round = QuizRound(packId: pack.id, questionIds: picked.map(\.id))
+        round.fixtureKey = fixtureKey
+        state.quizRound = round
     }
 
     /// A round of only the questions she missed, in the same pack.
@@ -465,6 +482,10 @@ final class MyTurnStore {
             if round.questionIds.count == 10 { p.best = max(p.best, round.score) }
             p.seenQuestionIds.append(contentsOf: round.questionIds.filter { !p.seenQuestionIds.contains($0) })
             state.quizProgress[round.packId] = p
+            if let key = round.fixtureKey {
+                state.opponentQuizDone = OpponentQuizDone(fixtureKey: key, score: round.score,
+                                                          total: round.questionIds.count)
+            }
         } else {
             round.index += 1
             round.selected = nil
@@ -817,6 +838,17 @@ func myTurnMissSelfCheck() {
     let old = try? JSONDecoder().decode(MyTurnStore.DrillSession.self,
                                         from: Data(#"{"deckId":"lingo","queue":["var"],"salt":"s"}"#.utf8))
     assert(back?.origin == "practise" && old != nil && old?.origin == nil, "a round forgot which tab dealt it")
+
+    // Finishing "Get to know" is remembered against the game, with the score.
+    let pack = QuizPack(id: "live-opponent", label: "Get to know Leeds", questions:
+        LiveClubPack.question(id: "opp-a", difficulty: 1, question: "q", answer: "a", distractors: ["b", "c"],
+                              explanation: "e", why: "w", useType: .ask, use: "u"))
+    store.startRound(pack: pack, fixtureKey: "b|Leeds|2026-10-10")
+    store.answer(pack.questions[0].answer, correct: true, questionId: "opp-a")
+    store.nextQuestion()
+    assert(store.opponentQuizDone == .init(fixtureKey: "b|Leeds|2026-10-10", score: 1, total: 1),
+           "a finished opponent quiz was not remembered, so its card never goes small")
+    store.endRound()
 
     // Finishing the game's seven is remembered against that game.
     store.startDrill(deckId: "lingo", queue: ["var"], fixtureKey: "b|Leeds|2026-10-3")

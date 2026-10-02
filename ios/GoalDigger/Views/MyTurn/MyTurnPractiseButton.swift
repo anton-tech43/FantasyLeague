@@ -17,6 +17,14 @@ struct MyTurnPractiseButton: View {
     /// subtitle is a whole sentence about the weekend ("1st against 2nd.
     /// Proper six-pointer. 7 words for it.") and truncates at two.
     var subtitleLineLimit: Int = 2
+    /// The surface and its text, so a prep card that has gone small keeps
+    /// its own colour: blush for "Get to know", gold for the sayings.
+    var fill: Color = .hotRose
+    var ink: Color = .warmWhite
+    var badge: Color = .warmWhite
+    var badgeInk: Color = .hotRose
+    /// "chevron.down" for a row that opens in place rather than moving on.
+    var trailingSymbol: String = "chevron.right"
     let action: () -> Void
 
     var body: some View {
@@ -27,28 +35,28 @@ struct MyTurnPractiseButton: View {
             HStack(spacing: 16) {
                 Image(systemName: systemImage)
                     .font(.system(size: 22, weight: .bold))
-                    .foregroundColor(.hotRose)
+                    .foregroundColor(badgeInk)
                     .frame(width: 52, height: 52)
-                    .background(Circle().fill(Color.warmWhite))
+                    .background(Circle().fill(badge))
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(.jakarta(20, weight: .bold))
-                        .foregroundColor(.warmWhite)
+                        .foregroundColor(ink)
                     Text(subtitle)
                         .font(.jakarta(14, weight: .regular))
-                        .foregroundColor(.warmWhite.opacity(0.85))
+                        .foregroundColor(ink.opacity(0.85))
                         .lineLimit(subtitleLineLimit)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)
-                Image(systemName: "chevron.right")
+                Image(systemName: trailingSymbol)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.warmWhite.opacity(0.8))
+                    .foregroundColor(ink.opacity(0.8))
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 22)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.hotRose)
+            .background(fill)
             .cornerRadius(20)
             .contentShape(Rectangle())
         }
