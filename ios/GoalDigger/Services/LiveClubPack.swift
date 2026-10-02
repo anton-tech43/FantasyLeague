@@ -1,6 +1,7 @@
 import CryptoKit
 import Foundation
 import Observation
+import UIKit
 
 /// "His club, right now" — the one quiz pack that is built on the device from
 /// live data instead of shipped as JSON.
@@ -55,6 +56,9 @@ enum LiveClubPack {
         let display_name: String
         let short_name: String
         let manager_name: String?
+        /// What the supporters call themselves, where they have a name of
+        /// their own (teams.fan_name, human-verified, migration 128).
+        let fan_name: String?
     }
 
     struct Sources: Codable {
@@ -250,7 +254,9 @@ enum LiveClubPack {
                     // was asked of clubs that had not won.
                     use: quote(w * 2 > letters.count ? "We've been flying lately, haven't we?"
                                : l * 2 > letters.count ? "It's been a rough few weeks, hasn't it?"
-                               : "Up and down lately. What's going wrong?")
+                               : w > l ? "More good days than bad lately. Happy with it?"
+                               : l > w ? "Up and down lately. What's going wrong?"
+                               : "Up and down lately. What do they need to fix?")
                 )
             }
         }
@@ -315,6 +321,10 @@ enum LiveClubPack {
                 use: quote("Come on you \(nick)!")
             )
             }
+            qs += fanQuestion(id: "live-fans", team: team, club: club, sources: sources, options: 3,
+                              why: "It's what he calls himself and everyone he watches with.",
+                              after: "He'll say it about himself and the people he watches with.",
+                              use: { "Does that make you one of the \($0) then?" })
             if let ground = b.stadium {
                 let short = stadiumShort(ground)
                 qs += question(
@@ -324,7 +334,8 @@ enum LiveClubPack {
                     explanation: "\(ground). When he says \"we're at home\", this is where he means.",
                     why: "Home or away is the first thing he'll say about any fixture.",
                     useType: .ask,
-                    use: quote("Have you ever been to \(withArticle(short))?")
+                    use: quote("Have you ever been to \(withArticle(short))?"),
+                    answerImage: groundImage(team)
                 )
             }
         }
@@ -337,7 +348,10 @@ enum LiveClubPack {
                 question: "Who are \(club)'s big rivals?",
                 answer: rival,
                 distractors: others.compactMap(\.rival).filter { $0 != team.displayName && $0 != team.shortName },
-                explanation: clip(personalise(r.text), 170),
+                // No sentence ends inside the cap: say the fact, not nothing.
+                explanation: clip(personalise(r.text), 170).isEmpty
+                    ? "\(rival). The derby is the game that matters most to him."
+                    : clip(personalise(r.text), 170),
                 why: "The derby is the one match he'll be unbearable about, win or lose.",
                 useType: .say,
                 use: quote("Forget the table. Just beat \(rivalShort).")
@@ -374,9 +388,10 @@ enum LiveClubPack {
         // one in three was a guess (Anton, 2026-10-02).
         func two(id: String, difficulty: Int, question q: String, answer: String, distractors: [String],
                  explanation: String, why: String, useType: QuestionUseType, use: String,
-                 image: String? = nil) -> [MyTurnQuestion] {
+                 image: String? = nil, answerImage: String? = nil) -> [MyTurnQuestion] {
             question(id: id, difficulty: difficulty, question: q, answer: answer, distractors: distractors,
-                     explanation: explanation, why: why, useType: useType, use: use, image: image, options: 2)
+                     explanation: explanation, why: why, useType: useType, use: use, image: image, options: 2,
+                     answerImage: answerImage)
         }
 
         if let m = cards.manager {
@@ -478,6 +493,10 @@ enum LiveClubPack {
                 why: "Half the time nobody says their name, just the nickname.",
                 useType: .say, use: quote("So we're playing the \(nick). Got it."))
             }
+            qs += fanQuestion(id: "opp-fans", team: team, club: club, sources: sources, options: 2, excluding: mine,
+                              why: "The name he'll use for the people in the away end.",
+                              after: "It's what they call themselves, and what he'll call them.",
+                              use: { "So it's us against the \($0)." })
             if let ground = b.stadium {
                 let short = stadiumShort(ground)
                 qs += two(
@@ -486,7 +505,8 @@ enum LiveClubPack {
                     answer: short, distractors: otherBasics.compactMap(\.stadium).map(stadiumShort),
                     explanation: "\(ground).",
                     why: "Whether the game is at theirs or ours changes how he feels about it.",
-                    useType: .ask, use: quote("Have you ever been to \(withArticle(short))?"))
+                    useType: .ask, use: quote("Have you ever been to \(withArticle(short))?"),
+                    answerImage: groundImage(team))
             }
         }
 
@@ -618,7 +638,8 @@ enum LiveClubPack {
     static func question(id: String, difficulty: Int, question: String, answer: String,
                          distractors: [String], explanation: String, why: String,
                          useType: QuestionUseType, use: String, image: String? = nil,
-                         player: QuizPlayer? = nil, options optionCount: Int = 3) -> [MyTurnQuestion] {
+                         player: QuizPlayer? = nil, options optionCount: Int = 3,
+                         answerImage: String? = nil) -> [MyTurnQuestion] {
         var seen: Set<String> = [answer.lowercased()]
         var picks: [String] = []
         var rng = SeededGenerator(seed: id)
@@ -631,7 +652,30 @@ enum LiveClubPack {
         options.shuffle(using: &rng)
         return [MyTurnQuestion(id: id, difficulty: difficulty, question: question, options: options,
                                answer: options.firstIndex(of: answer)!, explanation: explanation,
-                               why: why, use: use, useType: useType, image: image, player: player)]
+                               why: why, use: use, useType: useType, image: image, player: player,
+                               answerImage: answerImage)]
+    }
+
+    /// "What do Arsenal fans call themselves?", only for a club whose fans
+    /// have a name of their own; the wrong answers are other clubs' names.
+    static func fanQuestion(id: String, team: Team, club: String, sources: Sources, options: Int,
+                            excluding mine: Team? = nil, why: String, after: String,
+                            use: (String) -> String) -> [MyTurnQuestion] {
+        guard let fans = sources.managers.first(where: { $0.id == team.rawValue })?.fan_name, !fans.isEmpty else { return [] }
+        // Not his own club's: "Gooners" offered as Liverpool's would be his.
+        let others = sources.managers.filter { $0.id != team.rawValue && $0.id != mine?.rawValue }.compactMap(\.fan_name)
+        let the = fans.hasSuffix("Army") ? "the \(fans)" : fans
+        return question(id: id, difficulty: 1, question: "What do \(club) fans call themselves?",
+                        answer: fans, distractors: others,
+                        explanation: "\(club) fans are \(the). \(after)",
+                        why: why, useType: .say, use: quote(use(fans)),
+                        options: options)
+    }
+
+    /// The bundled sticker of a club's ground, when there is one.
+    static func groundImage(_ team: Team) -> String? {
+        let name = "ground-\(team.rawValue)"
+        return UIImage(named: name) == nil ? nil : PlayerPortrait.scheme + name
     }
 
     // MARK: Text helpers
@@ -813,7 +857,7 @@ final class LiveClubPackService {
     private(set) var opponentPack: QuizPack?
     private var opponentId: String?
 
-    private static let sourcesKey = "myTurnLiveSources.v2"
+    private static let sourcesKey = "myTurnLiveSources.v3"  // v3: fan_name (mig 128)
     private var sources: LiveClubPack.Sources? {
         didSet {
             if let sources, let data = try? JSONEncoder().encode(sources) {
@@ -947,7 +991,7 @@ final class LiveClubPackService {
             URLQueryItem(name: "team_id", value: "in.(\(ids))"),
         ])
         let managersData = try await APIClient.shared.rawGET(path: "teams", queryItems: [
-            URLQueryItem(name: "select", value: "id,display_name,short_name,manager_name"),
+            URLQueryItem(name: "select", value: "id,display_name,short_name,manager_name,fan_name"),
             URLQueryItem(name: "is_active", value: "eq.true"),
             URLQueryItem(name: "league_id", value: "eq.39"),
         ])

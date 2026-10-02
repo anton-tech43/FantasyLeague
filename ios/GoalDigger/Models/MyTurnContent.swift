@@ -454,12 +454,17 @@ struct MyTurnQuestion: Codable, Identifiable, Hashable {
     let image: String?
     /// Who the question is about, when it is about a person.
     let player: QuizPlayer?
+    /// A picture shown with the answer, not the question: a ground's sticker
+    /// carries its name on the stand, so above the options it would answer
+    /// "Where do they play?" for her.
+    let answerImage: String?
 
     init(id: String, difficulty: Int, verified: Bool = true, question: String, options: [String], answer: Int,
          explanation: String, why: String? = nil, use: String? = nil, useType: QuestionUseType? = nil,
-         image: String? = nil, player: QuizPlayer? = nil) {
+         image: String? = nil, player: QuizPlayer? = nil, answerImage: String? = nil) {
         self.id = id; self.difficulty = difficulty; self.verified = verified; self.question = question
         self.options = options; self.answer = answer; self.explanation = explanation
         self.why = why; self.use = use; self.useType = useType; self.image = image; self.player = player
+        self.answerImage = answerImage
     }
 }

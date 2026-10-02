@@ -328,6 +328,13 @@ struct QuizView: View {
                         else { store.nextQuestion() }
                     }
                 ) {
+                    if let asset = PlayerPortrait.assetName(q.answerImage) {
+                        Image(asset)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: .infinity, maxHeight: 150)
+                            .accessibilityHidden(true)
+                    }
                     // Most explanations open by repeating the answer; the
                     // heading has already said it.
                     Text(correct ? q.explanation : Self.droppingEcho(of: right, from: q.explanation))

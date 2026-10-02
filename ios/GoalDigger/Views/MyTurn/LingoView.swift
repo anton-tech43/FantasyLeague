@@ -1207,7 +1207,7 @@ struct LingoView: View {
         guard args.contains("-gdAuditDump"), mode == .prep, let weekend else { return }
         func q(_ x: MyTurnQuestion) -> [String: Any] {
             ["id": x.id, "question": x.question, "options": x.options, "answer": x.options[safe: x.answer] ?? "?",
-             "explanation": x.explanation, "why": x.why ?? "", "use": x.use ?? "", "image": x.image ?? ""]
+             "explanation": x.explanation, "why": x.why ?? "", "use": x.use ?? "", "image": x.image ?? "", "answerImage": x.answerImage ?? ""]
         }
         func pack(_ p: QuizPack?) -> Any { p.map { ["id": $0.id, "label": $0.label, "questions": $0.questions.map(q)] } ?? NSNull() }
         func term(_ id: String) -> [String: Any] {
