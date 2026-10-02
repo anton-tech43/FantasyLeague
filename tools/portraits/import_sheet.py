@@ -182,6 +182,11 @@ def cut(img, box, cx=None):
         labf, nf = ndimage.label(filled)
         if nf:
             st = labf == pick(labf, nf, filled, centre)
+            # A gap of a pixel or two in the outline over a dark shirt lets the
+            # fill leak out, leaving the shirt see-through (Röhl, 2026-10-02):
+            # close the gaps first, kept only when that fills a lot more.
+            closed = ndimage.binary_fill_holes(close_edges(ndimage.binary_closing(st, iterations=2)))
+            if closed.sum() > 1.2 * st.sum(): st = closed
             # Real only if the inside is the player, not the whole cell.
             if st.sum() >= 0.25 * (crop.shape[0] * (r - l)) and (lum[st] < 200).mean() > 0.45 \
                     and st.sum() < 0.95 * st.size:
