@@ -863,9 +863,10 @@ final class LiveClubPackService {
 
         // Team page: the cache His Team already keeps, refreshed when stale.
         var cached = TeamPageCache.load(teamId: team.rawValue)
-        if cached == nil || cached!.isStale {
+        if cached == nil || cached!.isStale || !Self.fetchedThisLaunch.contains(team.rawValue) {
             if let fresh = try? await APIClient.shared.fetchTeamPage(teamId: team.rawValue) {
                 TeamPageCache.save(content: fresh, teamId: team.rawValue)
+                Self.fetchedThisLaunch.insert(team.rawValue)
                 cached = TeamPageCache.load(teamId: team.rawValue)
             }
             guard teamId == requested else { return }
@@ -892,13 +893,20 @@ final class LiveClubPackService {
     /// cache His Team keeps (fetched when stale). Nil opponent, or one that is
     /// not a club we have a page for (a cup tie against a lower-league side),
     /// clears it.
+    /// Pages fetched since launch. A cached page is used straight away only
+    /// once it has been fetched this launch: a fact fixed on the server (the
+    /// Everton ground, 2026-10-02) otherwise stayed wrong in the quiz for up
+    /// to a day, since only His Team refreshed sooner. Offline, the cache.
+    private static var fetchedThisLaunch: Set<String> = []
+
     func refreshOpponent(_ opponent: Team?, mine: Team?, lastMeeting: MatchContext.LastMeeting? = nil) async {
         opponentId = opponent?.rawValue
         guard let opponent else { opponentPack = nil; return }
         var cached = TeamPageCache.load(teamId: opponent.rawValue)
-        if cached == nil || cached!.isStale {
+        if cached == nil || cached!.isStale || !Self.fetchedThisLaunch.contains(opponent.rawValue) {
             if let fresh = try? await APIClient.shared.fetchTeamPage(teamId: opponent.rawValue) {
                 TeamPageCache.save(content: fresh, teamId: opponent.rawValue)
+                Self.fetchedThisLaunch.insert(opponent.rawValue)
                 cached = TeamPageCache.load(teamId: opponent.rawValue)
             }
         }
