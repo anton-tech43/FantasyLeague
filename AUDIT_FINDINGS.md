@@ -540,3 +540,45 @@ A previous pass had already been here and treated the symptom: on 2026-09-07 the
 same card called Gyökeres "the big summer signing" a year after he arrived, and
 the fix was a rule about what "summer" means rather than a change to how the
 three are chosen.
+
+### 2026-10-02 — the hand-seeded cards had never been read
+
+Anton found two errors in one club's `fun_fact` by reading it. That card group
+— `basics` and `rivalry` — is seeded in migration 004 and **every writer since
+is built to preserve it**, so no automated check had ever looked at its prose.
+A sweep found eight defects across the twenty clubs:
+
+| Club | Card | Claimed | Actually |
+|---|---|---|---|
+| Arsenal | basics | "an entire 49-game Premier League season" | The season was 38 games; the 49-match run spanned 2002-03, 2003-04 and 2004-05 |
+| Leeds | basics | two titles "in the early 70s" | 1968-69 and 1973-74 |
+| Leeds | basics | "back in 2020" beside `pl_since` 2025 | Both true, irreconcilable for a newcomer |
+| Sunderland | basics | "longest title drought among former champions" | False. Huddersfield 1926, Newcastle 1927, Sheffield Wednesday 1930 |
+| Brighton | basics | "this gorgeous stadium by the sea" | The Amex is ~5 miles inland, dug into the Downs |
+| Ipswich | basics | describes the 2024 promotion only | They went down and came back up again |
+| Coventry | basics | "the CBS Arena is right in the heart of Coventry" | It is 4.5-6 miles out at Rowley's Green, 800 yards from M6 J3 |
+| Newcastle | rivalry | "Sunderland are not in the Premier League right now" | They came up in 2025; **Sunderland's own card says the opposite** |
+
+Plus two softened on review: both Tyne-Wear cards said "twelve miles apart",
+which is the drive — ten is the figure a fan quotes. Brighton's "just outside
+the city" was wrong in the other direction: Falmer is inside the Brighton and
+Hove boundary, just outside the built-up area.
+
+**Three of these were self-contradictions inside our own data** — Leeds' year
+against its own `pl_since`, Newcastle's claim against Sunderland's row,
+Sunderland's superlative against Newcastle's `last_title` of 1926-27. None
+needed a web lookup to disprove. They are now four checks in `db-health.sh`
+section 8.
+
+**Why nothing caught it, and why a nightly check is only half an answer.**
+Static text that nothing rewrites produces the same verdict every night
+forever. The checks added here watch the part that genuinely drifts — a
+promotion year disagreeing with `pl_since`, a rivalry card writing off a club
+that is in the league, a club with no human-verified manager. The prose itself
+needs a dated human pass, which is now §4b of the stale-data-audit skill.
+
+**Not a finding, checked and cleared:** five relegated clubs still have
+`team_pages` rows carrying last season's copy. They are unreachable — the iOS
+`Team` enum holds exactly the twenty active clubs, and `AppState` decodes a
+stored team with `compactMap`, so a user who followed Burnley loses the
+selection rather than seeing a stale page.
