@@ -150,7 +150,7 @@ OVERHEARD = {
         gist="Hounding whoever has it into a mistake",
         decoy="Newspapers and TV crowding round the club",
         spare="Playing the ball forward at every chance",
-        when=["any", "good-run"],
+        when=["any", "good-run", "opp-bad-form"],
         moment="anytime",
         player=dict(
             slot='theirs.midfielder',
@@ -164,7 +164,7 @@ OVERHEARD = {
         gist="Winning it back right on top of their keeper",
         decoy="Launching the ball up in the air and chasing",
         spare="Sitting deep and waiting for a chance to break",
-        when=["any", "good-run"],
+        when=["any", "good-run", "opp-bad-form"],
         moment="rare",
     ),
     "low-block": dict(
@@ -173,7 +173,7 @@ OVERHEARD = {
         gist="Defending deep, letting the other lot have it",
         decoy="Playing with three at the back instead of four",
         spare="Dropping the back line deep to protect a win",
-        when=["any", "after-clean-sheet", "favourites", "opp-clean-sheets"],
+        when=["any", "after-clean-sheet", "favourites", "opp-clean-sheets", "opp-good-form"],
         moment="common",
     ),
     "park-the-bus": dict(
@@ -191,7 +191,7 @@ OVERHEARD = {
         gist="Breaking forward fast the second you win it",
         decoy="Throwing bodies forward after going behind",
         spare="Pushing everyone forward chasing a late goal",
-        when=["any", "europe", "opp-counter"],
+        when=["any", "europe", "opp-counter", "opp-good-form"],
         moment="anytime",
     ),
     "possession": dict(
@@ -200,7 +200,7 @@ OVERHEARD = {
         gist="The share of the game a side has the ball",
         decoy="The number of times a side touches the ball",
         spare="The count of shots each side has on target",
-        when=["any", "after-draw", "after-loss", "favourites"],
+        when=["any", "after-draw", "after-loss", "favourites", "opp-bad-form"],
         moment="common",
     ),
     "tiki-taka": dict(

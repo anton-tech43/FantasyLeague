@@ -141,7 +141,7 @@ OVERHEARD = {
         gist="The big rectangle in front of each goal",
         decoy="The dugout where the manager and subs sit",
         spare="The six-yard area a keeper kicks from",
-        when=["any"],
+        when=["any", "opp-bad-form"],
         moment="common",
         player=dict(
             slot='theirs.keeper',
@@ -290,7 +290,7 @@ OVERHEARD = {
         gist="Letting in no goals at all in a match",
         decoy="Ninety minutes with no cards and no trouble",
         spare="Winning without conceding a penalty",
-        when=["after-clean-sheet", "after-win", "good-run", "opp-clean-sheets"],
+        when=["after-clean-sheet", "after-win"],
         moment="common",
     ),
     "own-goal": dict(
@@ -451,12 +451,12 @@ OVERHEARD = {
         moment="anytime",
     ),
     "sacked": dict(
-        overheard="hes getting sacked in the morning and about time too.",
+        overheard="he's getting sacked in the morning and about time too.",
         speaker="chat",
         gist="Losing the job when results go bad",
         decoy="Being dropped from the squad for a game",
         spare="The manager walking out for a bigger club",
-        when=["bad-run", "new-manager", "after-heavy-loss", "opp-bad-form"],
+        when=["bad-run", "after-heavy-loss"],
         moment="anytime",
     ),
 }

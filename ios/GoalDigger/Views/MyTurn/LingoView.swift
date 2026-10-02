@@ -91,7 +91,7 @@ struct LingoView: View {
         #if DEBUG
         if let debugContext { return debugContext }
         #endif
-        return MatchContext(page: page, team: team, now: Date())
+        return MatchContext(page: page, team: team, now: .gdNow)
     }
 
     private var known: Set<String> {
@@ -110,7 +110,7 @@ struct LingoView: View {
         let canName = theirs.map { $0.opponentKnown && !($0.theirPicks.isEmpty && $0.theirCurated.isEmpty) } ?? false
         return LingoWeekendDeck.build(
             terms: content.terms, known: known, learning: learning, context: context,
-            seed: LingoWeekendDeck.seed(team: team, context: context, now: Date(), nonce: store.lingoDealNonce),
+            seed: LingoWeekendDeck.seed(team: team, context: context, now: .gdNow, nonce: store.lingoDealNonce),
             canNameTheirs: canName,
             avoid: context == nil ? Set(store.prepRoundDone?.ids ?? []) : [])
     }
@@ -136,7 +136,7 @@ struct LingoView: View {
     }
 
     private var heroKey: HeroKey {
-        let day = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        let day = Calendar.current.dateComponents([.year, .month, .day], from: .gdNow)
         #if DEBUG
         let debug = debugContext.map { "\($0.title)|\($0.fixtureKey)|\($0.tags.joined(separator: ","))" }
         #else
@@ -407,6 +407,12 @@ struct LingoView: View {
             // `-gdPrepFocus hero|opponent` scrolls the prep to that card, and
             // `-gdPrepOpponentQuiz` opens the opponent quiz: simctl cannot
             // scroll or tap. Keyed on the pack so it waits for it to build.
+            // The audit dump, again whenever a pack or the deck lands, after
+            // the screen has had a moment: the last write is the full one.
+            .task(id: "\(live.opponentPack?.questions.count ?? -1)|\(live.pack?.questions.count ?? -1)|\(squad.pack?.questions.count ?? -1)|\(live.leaguePack?.questions.count ?? -1)|\(weekend?.ids.joined() ?? "")") {
+                try? await Task.sleep(for: .seconds(2))
+                auditDump()
+            }
             .task(id: live.opponentPack?.id) {
                 guard mode == .prep, live.opponentPack != nil else { return }
                 let args = ProcessInfo.processInfo.arguments
@@ -1190,6 +1196,57 @@ struct LingoView: View {
         guard let s = store.drillSession, !s.finished, let id = s.queue[safe: s.index],
               let opts = debugOptions(id, salt: s.salt) else { return }
         if option == opts.answer { store.answerDrill(option, correct: true) } else { store.missDrill(option) }
+    }
+
+    /// `-gdAuditDump`: everything the prep would show this club, and the
+    /// packs Quiz would deal, as JSON in Documents, for the pre-launch audit
+    /// to read for all twenty clubs rather than photograph. `-gdAuditLabel`
+    /// names the file.
+    private func auditDump() {
+        let args = ProcessInfo.processInfo.arguments
+        guard args.contains("-gdAuditDump"), mode == .prep, let weekend else { return }
+        func q(_ x: MyTurnQuestion) -> [String: Any] {
+            ["id": x.id, "question": x.question, "options": x.options, "answer": x.options[safe: x.answer] ?? "?",
+             "explanation": x.explanation, "why": x.why ?? "", "use": x.use ?? "", "image": x.image ?? ""]
+        }
+        func pack(_ p: QuizPack?) -> Any { p.map { ["id": $0.id, "label": $0.label, "questions": $0.questions.map(q)] } ?? NSNull() }
+        func term(_ id: String) -> [String: Any] {
+            let t = weekend.named[id] ?? content.terms.first { $0.id == id }
+            return ["id": id, "term": t?.term ?? "?", "overheard": t?.overheard ?? "", "sayIt": t?.sayIt ?? "",
+                    "gist": t?.gist ?? "", "decoy": t?.decoy ?? "", "when": t?.when ?? [],
+                    "named": t?.namedPlayer.map { ["name": $0.name, "role": $0.role] } ?? NSNull()]
+        }
+        let c = weekend.context
+        var phase: [String: Any] = ["kind": "any"]
+        switch c.phase {
+        case .before(let o, let k): phase = ["kind": "before", "opponent": o, "kickoff": ISO8601DateFormatter().string(from: k)]
+        case .after(let o, let out, let ts, let os):
+            phase = ["kind": "after", "opponent": o, "outcome": out ?? "", "teamScore": ts ?? -1, "oppScore": os ?? -1]
+        case .any: break
+        }
+        let slip = LingoCalls.offer(calls: calls, context: context).map {
+            ["id": $0.id, "band": $0.band ?? "", "line": $0.line, "kind": $0.trigger?.kind ?? "",
+             "situation": $0.situation ?? LingoCalls.moment($0.trigger)] as [String: Any]
+        }
+        let dump: [String: Any] = [
+            "team": team?.rawValue ?? "", "now": ISO8601DateFormatter().string(from: .gdNow),
+            "context": ["phase": phase, "title": c.title, "tags": c.tags, "fixtureId": c.fixtureId ?? -1,
+                        "fixtureKey": c.fixtureKey, "sixPointer": c.sixPointer],
+            "opponentTeam": opponentTeam?.rawValue ?? NSNull(),
+            "lastMeeting": lastMeeting.map { ["date": $0.date, "weAreHome": $0.weAreHome, "ours": $0.ours, "theirs": $0.theirs] } ?? NSNull(),
+            "opponentPack": pack(live.opponentPack),
+            "clubPack": pack(live.pack), "leaguePack": pack(live.leaguePack), "squadPack": pack(squad.pack),
+            "words": weekend.ids.map(term),
+            "slip": slip,
+            "practise": dealt(nil).ids.map(term),
+        ]
+        let label = args.firstIndex(of: "-gdAuditLabel").flatMap { args[safe: $0 + 1] } ?? "now"
+        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("myturn-audit-\(team?.rawValue ?? "none")-\(label).json")
+        if let data = try? JSONSerialization.data(withJSONObject: dump, options: [.prettyPrinted, .sortedKeys]) {
+            try? data.write(to: url)
+            print("AUDIT-DUMP \(url.path)")
+        }
     }
 
     private func debugFinish(right: Int, context: MatchContext?) {

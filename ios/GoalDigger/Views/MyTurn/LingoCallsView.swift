@@ -252,7 +252,7 @@ struct LingoCallsView: View {
     /// "the Fulham game" beyond it, so it has to sit behind "For", which is the
     /// one preposition both spellings take.
     private var when: String {
-        context.occasion(now: Date()).map { "For \($0). " } ?? ""
+        context.occasion(now: .gdNow).map { "For \($0). " } ?? ""
     }
 
     /// Yes puts it on the slip, no does not, and both move her on. Past the
@@ -352,7 +352,7 @@ struct LingoCallsView: View {
                 // place it is answered. Both read back what she picked; neither
                 // asks her whether she said it.
                 heading("Get in the game", subtitle: played
-                        ? "What you called\(context.occasion(now: Date()).map { " for \($0)" } ?? "")."
+                        ? "What you called\(context.occasion(now: .gdNow).map { " for \($0)" } ?? "")."
                         : "\(when)\(Self.promise)")
 
                 ForEach(mine) { call in

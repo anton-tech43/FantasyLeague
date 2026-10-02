@@ -247,7 +247,7 @@ OVERHEARD = {
         gist="Taken off for playing badly, not for a rest",
         decoy="Caught by an arm and pulled back illegally",
         spare="Swapped out to save him for the next game",
-        when=["after-loss", "after-heavy-loss", "bad-run", "opp-bad-form"],
+        when=["after-loss", "after-heavy-loss", "bad-run"],
         moment="common",
     ),
     "nutmeg": dict(
@@ -310,7 +310,7 @@ OVERHEARD = {
         gist="Soaking up heavy pressure near your own goal",
         decoy="Players lining up in a wall at a free-kick",
         spare="Playing the ball back to the keeper to waste time",
-        when=["after-clean-sheet", "after-win", "europe", "derby", "underdog"],
+        when=["after-win", "europe", "derby", "underdog", "opp-good-form"],
         moment="common",
         player=dict(
             slot='ours.defender',
@@ -370,7 +370,7 @@ OVERHEARD = {
         gist="A small club knocking a big one out of a cup",
         decoy="A tall side winning everything in the air",
         spare="A late winner that dumps a team out of a cup",
-        when=["cup", "favourites", "underdog"],
+        when=["cup"],
         moment="rare",
     ),
     "hairdryer": dict(
@@ -379,7 +379,7 @@ OVERHEARD = {
         gist="A manager screaming at players up close",
         decoy="A calm team talk to settle everyone down",
         spare="A row between players in the dressing room",
-        when=["bad-run", "new-manager", "after-loss", "after-heavy-loss", "opp-bad-form"],
+        when=["bad-run", "after-loss", "after-heavy-loss"],
         moment="common",
     ),
     "man-of-the-match": dict(

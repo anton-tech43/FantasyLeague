@@ -1,5 +1,5 @@
 {
-  "contentVersion": "2026-10-01.1",
+  "contentVersion": "2026-10-02.1",
   "terms": [
     {
       "id": "premier-league",
@@ -370,7 +370,8 @@
       "decoy": "The dugout where the manager and subs sit",
       "spare": "The six-yard area a keeper kicks from",
       "when": [
-        "any"
+        "any",
+        "opp-bad-form"
       ],
       "moment": "common",
       "playerVariants": [
@@ -526,10 +527,8 @@
       "decoy": "Ninety minutes with no cards and no trouble",
       "spare": "Winning without conceding a penalty",
       "when": [
-        "good-run",
         "after-win",
-        "after-clean-sheet",
-        "opp-clean-sheets"
+        "after-clean-sheet"
       ],
       "moment": "common"
     },
@@ -1576,7 +1575,8 @@
       "spare": "Playing the ball forward at every chance",
       "when": [
         "any",
-        "good-run"
+        "good-run",
+        "opp-bad-form"
       ],
       "moment": "anytime",
       "playerVariants": [
@@ -1607,7 +1607,8 @@
       "spare": "Sitting deep and waiting for a chance to break",
       "when": [
         "any",
-        "good-run"
+        "good-run",
+        "opp-bad-form"
       ],
       "moment": "rare"
     },
@@ -1633,6 +1634,7 @@
         "any",
         "after-clean-sheet",
         "opp-clean-sheets",
+        "opp-good-form",
         "favourites"
       ],
       "moment": "common"
@@ -1683,7 +1685,8 @@
       "when": [
         "any",
         "europe",
-        "opp-counter"
+        "opp-counter",
+        "opp-good-form"
       ],
       "moment": "anytime"
     },
@@ -1708,6 +1711,7 @@
         "any",
         "after-loss",
         "after-draw",
+        "opp-bad-form",
         "favourites"
       ],
       "moment": "common"
@@ -2728,8 +2732,7 @@
       "when": [
         "bad-run",
         "after-loss",
-        "after-heavy-loss",
-        "opp-bad-form"
+        "after-heavy-loss"
       ],
       "moment": "common"
     },
@@ -2754,7 +2757,7 @@
         "derby",
         "europe",
         "after-win",
-        "after-clean-sheet",
+        "opp-good-form",
         "underdog"
       ],
       "moment": "common",
@@ -3014,7 +3017,7 @@
       "seeAlso": [
         "sack-race"
       ],
-      "overheard": "hes getting sacked in the morning and about time too.",
+      "overheard": "he's getting sacked in the morning and about time too.",
       "overheardTerm": "sacked",
       "speaker": "chat",
       "gist": "Losing the job when results go bad",
@@ -3022,9 +3025,7 @@
       "spare": "The manager walking out for a bigger club",
       "when": [
         "bad-run",
-        "new-manager",
-        "after-heavy-loss",
-        "opp-bad-form"
+        "after-heavy-loss"
       ],
       "moment": "anytime"
     },
@@ -3048,9 +3049,7 @@
       "spare": "The run of games that decides a manager's future",
       "when": [
         "bad-run",
-        "new-manager",
-        "after-heavy-loss",
-        "opp-bad-form"
+        "after-heavy-loss"
       ],
       "moment": "anytime"
     },
@@ -3072,9 +3071,7 @@
       "decoy": "The lift in ticket sales after an appointment",
       "spare": "The boost a home crowd gives a struggling side",
       "when": [
-        "good-run",
-        "new-manager",
-        "opp-good-form"
+        "new-manager"
       ],
       "moment": "rare"
     },
@@ -3162,10 +3159,8 @@
       "spare": "A row between players in the dressing room",
       "when": [
         "bad-run",
-        "new-manager",
         "after-loss",
-        "after-heavy-loss",
-        "opp-bad-form"
+        "after-heavy-loss"
       ],
       "moment": "common"
     },
@@ -3197,7 +3192,7 @@
       "playerVariants": [
         {
           "slot": "theirs.keeper",
-          "overheard": "If it goes to penalties and {theirs.keeper} bottles it, we're laughing.",
+          "overheard": "If {theirs.keeper} bottles it under the high balls, we're laughing.",
           "sayIt": "\"Is {theirs.keeper} the type to bottle it, or does he stay calm?\"",
           "overheardTerm": "bottles it"
         }
@@ -3424,7 +3419,7 @@
       "heard": "\"Proud of the lads\" after a hard game.",
       "sayIt": "\"The lads did well today.\"",
       "level": 11,
-      "overheard": "Buzzing for the lads tonight. Been a long few weeks.",
+      "overheard": "Buzzing for the lads. Been a long few weeks.",
       "overheardTerm": "lads",
       "speaker": "chat",
       "gist": "The team, as the players and fans call it",
@@ -3568,7 +3563,7 @@
       "heard": "Player interviews after a defeat, and his text the morning after.",
       "sayIt": "\"One of those days. We go again.\"",
       "level": 11,
-      "overheard": "We go again Tuesday. Kick-off's at eight, apparently.",
+      "overheard": "We go again next week. Nothing else for it.",
       "overheardTerm": "We go again",
       "speaker": "chat",
       "gist": "Bad result forgotten and on to the next game",
@@ -3578,8 +3573,7 @@
         "bad-run",
         "after-loss",
         "after-draw",
-        "after-heavy-loss",
-        "opp-bad-form"
+        "after-heavy-loss"
       ],
       "moment": "common"
     },
@@ -3628,9 +3622,7 @@
       "decoy": "A tall side winning everything in the air",
       "spare": "A late winner that dumps a team out of a cup",
       "when": [
-        "cup",
-        "favourites",
-        "underdog"
+        "cup"
       ],
       "moment": "rare"
     },
@@ -3678,8 +3670,7 @@
       "decoy": "A trophy handed over on the pitch at the end",
       "spare": "The extra money a cup run brings a club",
       "when": [
-        "cup",
-        "underdog"
+        "cup"
       ],
       "moment": "rare"
     },
@@ -3787,9 +3778,7 @@
       "spare": "A supporter who watches on TV and nothing else",
       "when": [
         "any",
-        "derby",
-        "good-run",
-        "opp-good-form"
+        "derby"
       ],
       "moment": "anytime"
     },
@@ -3812,9 +3801,7 @@
       "spare": "Someone who collects club shirts and badges",
       "when": [
         "any",
-        "title",
-        "good-run",
-        "opp-good-form"
+        "title"
       ],
       "moment": "anytime"
     },
@@ -3853,9 +3840,7 @@
       "decoy": "A team that went a season without losing at home",
       "spare": "A side that won three trophies in one year",
       "when": [
-        "title",
-        "good-run",
-        "opp-good-form"
+        "title"
       ],
       "moment": "anytime"
     },

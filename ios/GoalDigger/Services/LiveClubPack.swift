@@ -123,16 +123,25 @@ enum LiveClubPack {
                 .filter { $0.id != team.rawValue }
                 .compactMap(\.manager_name)
                 .filter { $0 != m.name }
+            // The page's prose is colour and is not in her mouth: the line she
+            // says is ours, from the table, never a talking point that narrates
+            // him ("which Tom will find impressive").
             let summary = clip(personalise(m.summary), 150)
-            let tp = m.talkingPoint.map(personalise)
+            let rank = cards.standings?.entries.first {
+                $0.teamIdApiFootball == team.apiFootballId || MatchContext.sameClub($0.teamName, team.displayName)
+            }?.rank
+            let surname = m.name.split(separator: " ").last.map(String.init) ?? m.name
+            let line = rank.map { $0 <= 4 ? "\(surname)'s got us flying. Is he staying long?"
+                : $0 >= 17 ? "Is \(surname) under pressure yet?" : "What do you make of \(surname) so far?" }
+                ?? "What do you make of \(surname) so far?"
             qs += question(
                 id: "live-manager-name", difficulty: 1,
                 question: "Who manages \(club)?",
                 answer: m.name, distractors: rivalsManagers,
-                explanation: summary,
+                explanation: (["\(m.name) is \(club)'s manager.", summary].filter { !$0.isEmpty }).joined(separator: " "),
                 why: "The manager is the one he'll praise or blame after every single match.",
-                useType: tp == nil ? .ask : .say,
-                use: tp.map { quote($0) } ?? quote("Is \(m.name) under pressure yet?")
+                useType: .ask,
+                use: quote(line)
             )
         }
 
@@ -153,7 +162,10 @@ enum LiveClubPack {
                 explanation: "\(club) are \(ordinal(row.rank)) with \(points(row.points)) from \(row.played) games.",
                 why: "The table is the first thing he checks, and it moves every weekend.",
                 useType: .ask,
-                use: quote("Are \(club) still \(ordinal(row.rank))?")
+                // Not "Are we still 8th?", which asks what the card just said.
+                use: quote(row.rank <= 4 ? "Can we stay up there till May?"
+                           : row.rank >= 18 ? "How worried should we be about the table?"
+                           : "Where do you reckon we'll finish this season?")
             )
             qs += question(
                 id: "live-points", difficulty: 3,
@@ -163,7 +175,13 @@ enum LiveClubPack {
                 explanation: "\(points(row.points)) from \(row.played) games, which has them \(ordinal(row.rank)) as of today.",
                 why: "Three for a win, one for a draw. The number is the whole season in one figure.",
                 useType: .impress,
-                use: quote("\(points(row.points)) from \(row.played). That's a decent start.")
+                // The verdict follows the points per game, not a fixed line:
+                // "a decent start" was said of clubs in the bottom three.
+                use: quote("\(points(row.points)) from \(row.played). " + {
+                    let ppg = row.played > 0 ? Double(row.points) / Double(row.played) : 0
+                    return ppg >= 2.3 ? "That's a brilliant start." : ppg >= 1.6 ? "That's a good start."
+                        : ppg >= 1.1 ? "That's a decent start." : "That's not the start we wanted."
+                }())
             )
         }
 
@@ -181,7 +199,9 @@ enum LiveClubPack {
                 explanation: "\(club) played \(clubShort(last.opponent)) \(last.venue == "home" ? "at home" : "away") and it finished \(last.teamScore)-\(last.oppScore). That is the game he is still talking about.",
                 why: "The last result decides what kind of week he has had.",
                 useType: .ask,
-                use: quote("Have you got over the \(clubShort(last.opponent)) game yet?")
+                use: quote(last.outcome == "W" ? "Still buzzing about the \(clubShort(last.opponent)) game?"
+                           : last.outcome == "D" ? "Was the draw with \(clubShort(last.opponent)) fair?"
+                           : "Have you got over the \(clubShort(last.opponent)) game yet?")
             )
         }
 
@@ -219,10 +239,15 @@ enum LiveClubPack {
                     id: "live-form", difficulty: 2,
                     question: "How have \(club) been playing?",
                     answer: answer, distractors: wrong,
-                    explanation: "\(answer), as of today. \(clip(personalise(f.formSummary), 110))",
+                    explanation: ["\(answer), as of today.", clip(personalise(f.formSummary), 110)]
+                        .filter { !$0.isEmpty }.joined(separator: " "),
                     why: "Form is the mood. It explains why he is fine or unbearable this week.",
                     useType: .ask,
-                    use: quote("Are \(club) actually playing well, or just winning?")
+                    // The line follows the form: "playing well, or just winning?"
+                    // was asked of clubs that had not won.
+                    use: quote(w * 2 > letters.count ? "We've been flying lately, haven't we?"
+                               : l * 2 > letters.count ? "It's been a rough few weeks, hasn't it?"
+                               : "Up and down lately. What's going wrong?")
                 )
             }
         }
@@ -263,19 +288,20 @@ enum LiveClubPack {
                     ? (.ask, quote("Have \(club) ever come close to winning it?"))
                     : reigning
                         ? (.say, quote("Reigning champions. No pressure, then."))
-                        : (.impress, quote("\(club) haven't won the league since \(year), have they?"))
+                        : (.ask, quote("Do you think we'll win it again soon?"))
                 qs += question(
                     id: "live-last-title", difficulty: 3,
                     question: "When did \(club) last win the league?",
                     answer: title, distractors: otherBasics.compactMap(\.lastTitle),
                     explanation: never
-                        ? "\(club) have not won the top-flight title. \(b.nickname) fans know exactly how long the wait is."
-                        : "\(club) were champions in \(year). " + (b.lastSeason.map { "Last season: \($0)." } ?? ""),
+                        ? "\(club) have never won the top-flight title."
+                        : "\(club) were champions in \(year).",
                     why: "It's the first thing a rival fan brings up, so he has an answer ready.",
                     useType: use.0, use: use.1
                 )
             }
             let nick = cleanNickname(b.nickname)
+            if !b.nickname.lowercased().contains(club.lowercased()) {
             qs += question(
                 id: "live-nickname", difficulty: 1,
                 question: "What are \(club) known as?",
@@ -285,6 +311,7 @@ enum LiveClubPack {
                 useType: .say,
                 use: quote("Come on you \(nick)!")
             )
+            }
             if let ground = b.stadium {
                 let short = stadiumShort(ground)
                 qs += question(
@@ -294,7 +321,7 @@ enum LiveClubPack {
                     explanation: "\(ground). When he says \"we're at home\", this is where he means.",
                     why: "Home or away is the first thing he'll say about any fixture.",
                     useType: .ask,
-                    use: quote("Have you ever been to \(short)?")
+                    use: quote("Have you ever been to \(withArticle(short))?")
                 )
             }
         }
@@ -438,6 +465,8 @@ enum LiveClubPack {
         if let b = cards.basics {
             let otherBasics = others.compactMap(\.basics)
             let nick = cleanNickname(b.nickname)
+            // "What are Spurs known as? Spurs (or Lilywhites)" answers itself.
+            if !b.nickname.lowercased().contains(club.lowercased()) {
             qs += two(
                 id: "opp-nickname", difficulty: 1,
                 question: "What are \(club) known as?",
@@ -445,6 +474,7 @@ enum LiveClubPack {
                 explanation: "\(club) are \(b.nickname). The commentators will say it all game.",
                 why: "Half the time nobody says their name, just the nickname.",
                 useType: .say, use: quote("So we're playing the \(nick). Got it."))
+            }
             if let ground = b.stadium {
                 let short = stadiumShort(ground)
                 qs += two(
@@ -453,7 +483,7 @@ enum LiveClubPack {
                     answer: short, distractors: otherBasics.compactMap(\.stadium).map(stadiumShort),
                     explanation: "\(ground).",
                     why: "Whether the game is at theirs or ours changes how he feels about it.",
-                    useType: .ask, use: quote("Is this one at \(short), or at ours?"))
+                    useType: .ask, use: quote("Have you ever been to \(withArticle(short))?"))
             }
         }
 
@@ -469,14 +499,14 @@ enum LiveClubPack {
         let answer: String, wrong: [String], line: String
         if m.ours > m.theirs {
             answer = "We won \(score)"; wrong = ["They won \(score)", "\(lo)\u{2013}\(lo) draw"]
-            line = "Didn't we beat them \(score) last time?"
+            line = "We beat them \(score) last time. Can we do it again?"
         } else if m.theirs > m.ours {
             answer = "They won \(score)"; wrong = ["We won \(score)", "\(lo)\u{2013}\(lo) draw"]
-            line = "Didn't they beat us last time? We owe them one."
+            line = "They beat us last time. Is this the revenge game?"
         } else {
             let won = "\(hi + 1)\u{2013}\(hi)"
             answer = "\(score) draw"; wrong = ["We won \(won)", "They won \(won)"]
-            line = "Wasn't it a draw last time?"
+            line = "It was a draw last time. Can we beat them this time?"
         }
         let (home, away) = m.weAreHome ? (ours, club) : (club, ours)
         let (hg, ag) = m.weAreHome ? (m.ours, m.theirs) : (m.theirs, m.ours)
@@ -555,6 +585,7 @@ enum LiveClubPack {
                                           club: "Leeds", ours: "Arsenal").first
         let meetingOK = meeting.map {
             $0.options[$0.answer] == "We won 4\u{2013}0" && $0.options.contains("They won 4\u{2013}0")
+                && ($0.use ?? "").contains("Can we do it again")
                 && $0.explanation == "Leeds 0\u{2013}4 Arsenal, at theirs, in January 2026."
         } ?? false
         let form = formFromResults([
@@ -646,18 +677,27 @@ enum LiveClubPack {
         return "Won \(w), drew \(d), lost \(l) of the last \(words[safe: n] ?? "\(n)")"
     }
 
-    /// Cut at a sentence end under the cap; else at a word, with an ellipsis.
+    /// The whole sentences that fit under the cap, or nothing. Never a cut
+    /// with an ellipsis: the pre-launch audit found ~40 answers a club ending
+    /// "…as Hull adapt to Premier…" (2026-10-02). A caller that needs text
+    /// leads with its own fact and treats this as the optional colour.
     static func clip(_ text: String, _ cap: Int) -> String {
         let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard t.count > cap else { return t }
         let head = String(t.prefix(cap))
-        if let end = head.lastIndex(where: { ".!?".contains($0) }), head.distance(from: head.startIndex, to: end) > cap / 3 {
+        if let end = head.lastIndex(where: { ".!?".contains($0) }) {
             return String(head[...end])
         }
-        if let space = head.lastIndex(of: " ") {
-            return String(head[..<space]).trimmingCharacters(in: .punctuationCharacters) + "…"
-        }
-        return head + "…"
+        return ""
+    }
+
+    /// "Gtech Community Stadium" → "the Gtech Community Stadium"; "Anfield",
+    /// "Villa Park" and "The City Ground" stay as they are.
+    static func withArticle(_ ground: String) -> String {
+        let g = ground.trimmingCharacters(in: .whitespaces)
+        if g.lowercased().hasPrefix("the ") { return g }
+        let needs = ["Stadium", "Arena", "Ground", "Community"].contains { g.contains($0) }
+        return needs ? "the " + g : g
     }
 
     /// "M. Ødegaard" → "Ødegaard"; "E. Smith Rowe" → "Smith Rowe";
@@ -903,7 +943,8 @@ final class LiveClubPackService {
             URLQueryItem(name: "limit", value: "1500"),
         ])
         let decoder = JSONDecoder()
-        let rows = (try? decoder.decode([LiveSquadPack.Player].self, from: playersData)) ?? []
+        let rows = ((try? decoder.decode([LiveSquadPack.Player].self, from: playersData)) ?? [])
+            .filter { $0.in_official_squad != false }
 
         // Pick a handful per club, then spend the photo checks only on those.
         // Whoever comes back a silhouette drops out and the next man stands in.

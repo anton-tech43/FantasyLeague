@@ -64,6 +64,11 @@ struct MatchContext: Equatable {
     /// pick; the last is always `any`.
     let tags: [String]
     let sixPointer: Bool
+    /// Words this fixture rules out whatever their tags say: the other two
+    /// European competitions on a European night, and extra time, shootouts
+    /// and aggregates in a league phase that has none (pre-launch audit,
+    /// 2026-10-02: Arsenal's Champions League round dealt "Europa League").
+    var excludedTermIds: Set<String> = []
     /// Set by the view after `LingoWeekendDeck.build` reports that the deck
     /// fell back to words she already knows, because it changes the subtitle.
     var refresher: Bool = false
@@ -297,6 +302,17 @@ struct MatchContext: Equatable {
         phase = .before(opponent: opponent, kickoff: kickoff)
         tags = t
         sixPointer = six
+        if europe {
+            let own: String? = leagueId == 2 ? "champions-league" : leagueId == 3 ? "europa-league"
+                : leagueId == 848 ? "conference-league" : nil
+            var out = Set(["champions-league", "europa-league", "conference-league"])
+            if let own { out.remove(own) }
+            let leaguePhase = (round ?? "").localizedCaseInsensitiveContains("league") || round == nil
+            if leaguePhase { out.formUnion(["extra-time", "penalty-shootout", "two-legs", "aggregate"]) }
+            excludedTermIds = out
+        } else if !cup {
+            excludedTermIds = ["extra-time", "penalty-shootout", "two-legs", "aggregate"]
+        }
         fixtureKey = "b|\(opponent)|\(Self.dayStamp(kickoff))"
         // The matchup TAGS stay gated on the strict id above — an opponent note
         // is only shown when the upcoming row confirms the fixture. The slip is
@@ -787,7 +803,10 @@ enum LingoWeekendDeck {
         // first round on a fresh install fills from `any` sorted by level, and
         // asking a grown woman what "kick-off" means at the moment she is
         // deciding whether to keep the app is the app talking down to her.
-        let playable = terms.filter { $0.basic != true && options(for: $0) != nil }
+        // Six-pointer only when the fixture is one; its tags otherwise deal
+        // it before any title or relegation game (Fulham, 19th v 11th).
+        let ruledOut: Set<String> = context.map { $0.excludedTermIds.union($0.sixPointer ? [] : [sixPointerTermId]) } ?? []
+        let playable = terms.filter { $0.basic != true && options(for: $0) != nil && !ruledOut.contains($0.id) }
         guard !playable.isEmpty else { return ([], false) }
 
         let top = terms.compactMap(\.level).max() ?? 1

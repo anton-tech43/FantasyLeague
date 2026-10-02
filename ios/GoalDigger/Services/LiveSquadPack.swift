@@ -49,6 +49,10 @@ enum LiveSquadPack {
         /// for a player it has no photo of. Absent from the feed, so it decodes
         /// as nil on the first fetch and is filled in before the pack is built.
         var photoIsPlaceholder: Bool? = nil
+        /// False when the Premier League's own squad list does not have him
+        /// (migration 127, the official-squads function): a youth player the
+        /// feed carries but the club has not registered. Nil is unchecked.
+        var in_official_squad: Bool? = nil
 
         /// Where he stands in the squad. Nil appearances is *unknown*, not
         /// zero: Saliba's stats had not synced, and "Is Saliba going to get a
@@ -103,6 +107,17 @@ enum LiveSquadPack {
             && Player.standing(appearances: nil) == .unknown)
         assert(PlayerHooks.selfCheck(), "PlayerHooks copy table broke")
         assert(PlayerPortrait.selfCheck(), "the bundled portrait lookup broke")
+        // The audit's copy rules (2026-10-02), as checks.
+        assert(possessive("Spurs") == "Spurs'" && possessive("Arsenal") == "Arsenal's", "possessive")
+        assert(plausibleAge(2025) == nil && plausibleAge(34) == 34, "a birth year passed as an age")
+        assert(!positionsAgree(feed: "Forward", dossier: "wide midfielder")
+               && !positionsAgree(feed: "Midfielder", dossier: "right-back")
+               && positionsAgree(feed: "Defender", dossier: "centre-back")
+               && positionsAgree(feed: "Forward", dossier: "striker"), "position disagreement not caught")
+        assert(LiveClubPack.clip("One. Two that is far too long to fit.", 10) == "One."
+               && LiveClubPack.clip("No full stop anywhere in this long text", 10) == "", "clip cut mid-sentence")
+        assert(LiveClubPack.withArticle("Stadium of Light") == "the Stadium of Light"
+               && LiveClubPack.withArticle("Anfield") == "Anfield", "stadium article")
         do {
             func p(_ id: Int, _ n: Int?, _ m: Int?) -> Player {
                 Player(api_player_id: id, name: "P\(id)", position: nil, photo_url: nil, number: n,
@@ -169,12 +184,12 @@ enum LiveSquadPack {
             let hook = hooks[p.api_player_id]?.top
             let photo = PlayerPortrait.source(club: team.rawValue, name: p.name) ?? p.photo
             let person = QuizPlayer(name: short, position: label, number: number,
-                                    age: card?.age ?? p.age, photoURL: photo,
+                                    age: plausibleAge(p.age ?? card?.age), photoURL: photo,
                                     summary: summary, vibe: card?.vibe,
                                     goals: p.goals, assists: p.assists, starts: p.starts,
                                     nationality: p.nationality, hook: hook?.fact)
             let who = whoHeIs(short: short, club: club, label: label, number: number,
-                              age: card?.age ?? p.age, summary: summary, hook: hook?.fact)
+                              age: p.age ?? card?.age, summary: summary, hook: hook?.fact)
 
             // A photo is the only question that cannot be asked without one,
             // and a silhouette is not one: "Who is this?" over the grey figure
@@ -202,7 +217,9 @@ enum LiveSquadPack {
                 )
             }
 
-            if let n = number {
+            // Only over his photo: "What number does Luka Bentt wear?" with
+            // nothing to look at teaches nothing (Anton: show the player).
+            if let n = number, photo != nil {
                 qs += LiveClubPack.question(
                     id: "squad-number-\(p.api_player_id)", difficulty: 3,
                     question: "What number does \(short) wear?",
@@ -221,7 +238,8 @@ enum LiveSquadPack {
 
             // A keeper's position question over a photo of him in the keeper's
             // kit answers itself.
-            if p.position != nil, !(label == "Goalkeeper" && photo != nil) {
+            if p.position != nil, photo != nil, label != "Goalkeeper",
+               positionsAgree(feed: label, dossier: card?.position) {
                 // "Everything goes through Dowman" is the right line for a man
                 // who plays every week and a strange one for a sixteen-year-old
                 // who has not. A fringe player gets the honest question; a man
@@ -263,25 +281,41 @@ enum LiveSquadPack {
     /// Dossier first when there is one, then the hook as one sentence. With no
     /// dossier the hook leads and the template says what he does. With neither,
     /// the template is all she gets, so it keeps the club and the role.
+    /// Facts only: who he is, his number, the hook, his age. The dossier's
+    /// prose stays in "Who he is" and out of the answer: the pre-launch audit
+    /// (2026-10-02) found it cut off mid-sentence, giving a stale shirt number
+    /// or age next to the real one, calling Hull's fourth Premier League
+    /// season their first, and, where a squad has two Mileys or two Angulos,
+    /// describing the other one.
     private static func whoHeIs(short: String, club: String, label: String,
                                 number: Int?, age: Int?, summary: String?, hook: String?) -> String {
-        var parts: [String] = []
-        let hasSummary = !(summary ?? "").isEmpty
-        if hasSummary { parts.append(LiveClubPack.clip(summary!, hook == nil ? 160 : 120)) }
+        let role = label == "Goalkeeper" ? "is \(possessive(club)) goalkeeper" : "plays as a \(label.lowercased()) for \(club)"
+        var parts = ["\(short) \(role)" + (number.map { ", number \($0)" } ?? "") + "."]
         if let hook { parts.append(hook) }
-
-        if parts.isEmpty {
-            let role = label == "Goalkeeper" ? "is \(club)'s goalkeeper" : "plays as a \(label.lowercased()) for \(club)"
-            parts.append("\(short) \(role)" + (number.map { ", in the number \($0) shirt" } ?? "") + ".")
-        } else if !hasSummary {
-            let role = label == "Goalkeeper" ? "He is \(club)'s goalkeeper" : "He plays as a \(label.lowercased()) for \(club)"
-            parts.append(role + (number.map { ", number \($0)" } ?? "") + ".")
-        } else if let number {
-            parts.append("Number \(number).")
-        }
         // The hook may already have said how old he is.
-        if let age, !(hook ?? "").contains(" is \(age),") { parts.append("He's \(age).") }
+        if let age = plausibleAge(age), !(hook ?? "").contains(" is \(age),") { parts.append("He's \(age).") }
         return parts.joined(separator: " ")
+    }
+
+    /// "Spurs'" and "Leeds'", not "Spurs's".
+    static func possessive(_ club: String) -> String { club.hasSuffix("s") ? club + "'" : club + "'s" }
+
+    /// The feed has sent a birth year as an age ("Slade is 2025"). Anything a
+    /// footballer could not be is no age at all.
+    static func plausibleAge(_ age: Int?) -> Int? { age.flatMap { (15...45).contains($0) ? $0 : nil } }
+
+    /// The dossier's own word for his position, when it says one that is not
+    /// the feed's. "Plays wide midfielder" over the answer "Forward" had both
+    /// options right; such a man gets no position question.
+    static func positionsAgree(feed label: String, dossier: String?) -> Bool {
+        guard let d = dossier?.lowercased(), !d.isEmpty else { return true }
+        let says: String? = d.contains("goalkeeper") || d.contains("keeper") ? "Goalkeeper"
+            : d.contains("back") || d.contains("defender") ? "Defender"
+            : d.contains("wing") || d.contains("wide") ? nil
+            : d.contains("midfield") ? "Midfielder"
+            : d.contains("striker") || d.contains("forward") || d.contains("attack") ? "Forward" : label
+        guard let says else { return false }     // a winger is two answers at once
+        return says == label || (says == "Forward" && ["Striker", "Winger"].contains(label))
     }
 
     /// `players.name` comes abbreviated ("M. Ødegaard"); `player_cards` is
@@ -342,8 +376,8 @@ enum LiveSquadPack {
             // the face is the test, so naming the club gives nothing away.
             let hook: String?
             if isTopScorer, let g = leader?.goals, g > 0 {
-                hook = p.appearances.map { "\(club)'s top scorer this season, \(g) in \($0) games." }
-                    ?? "\(club)'s top scorer this season, \(g) so far."
+                hook = p.appearances.map { "\(possessive(club)) top scorer this season, \(g) in \($0) games." }
+                    ?? "\(possessive(club)) top scorer this season, \(g) so far."
             } else if let s = p.starts ?? p.appearances, s > 0 {
                 hook = "He has started \(s) games for \(club) this season."
             } else {
@@ -353,15 +387,18 @@ enum LiveSquadPack {
             // A team-mate is never a distractor. She should be picking out a
             // face, not working out which of four men could be at that club.
             let awayNames = named.filter { $0.teamId != teamId }.map { LiveClubPack.shortName($0.player.name) }
-            let liner = LiveClubPack.clip(personalise(oneLiner(p.name, in: liners[teamId] ?? []) ?? ""), 130)
-            let role = label == "Goalkeeper" ? "is \(club)'s goalkeeper" : "plays as a \(label.lowercased()) for \(club)"
+            // No one-liner from the other club's page: it was written for that
+            // club's fans ("the player Tom needs to know first", said to an
+            // Arsenal fan about Palace's striker).
+            let liner = ""
+            let role = label == "Goalkeeper" ? "is \(possessive(club)) goalkeeper" : "plays as a \(label.lowercased()) for \(club)"
             let who = ["\(short) \(role).", hook, liner.isEmpty ? nil : liner]
                 .compactMap { $0 }.joined(separator: " ")
             // The photo question already carries the hook in its text, so its
             // explanation does not say it a second time.
             let whoWithoutHook = ["\(short) \(role).", liner.isEmpty ? nil : liner]
                 .compactMap { $0 }.joined(separator: " ")
-            let person = QuizPlayer(name: short, position: label, number: p.number, age: p.age,
+            let person = QuizPlayer(name: short, position: label, number: p.number, age: plausibleAge(p.age),
                                     photoURL: p.photo, summary: liner.isEmpty ? nil : liner, vibe: nil,
                                     goals: p.goals, assists: p.assists, starts: p.starts,
                                     nationality: p.nationality, hook: hook)
@@ -523,9 +560,11 @@ final class LiveSquadService {
                 URLQueryItem(name: "is_active", value: "eq.true"),
                 URLQueryItem(name: "league_id", value: "eq.39"),
             ])
-            let players = (try? await rows).flatMap {
+            // Not asked about: anyone the official squad list says is not
+            // registered ("What number does Luka Bentt wear?").
+            let players = ((try? await rows).flatMap {
                 try? JSONDecoder().decode([LiveSquadPack.Player].self, from: $0)
-            } ?? []
+            } ?? []).filter { $0.in_official_squad != false }
             let names = (try? await managers).flatMap {
                 try? JSONDecoder().decode([[String: String?]].self, from: $0)
             }?.compactMap { $0["manager_name"] ?? nil } ?? []

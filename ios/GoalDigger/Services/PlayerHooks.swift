@@ -63,7 +63,7 @@ enum PlayerHooks {
         let keepers = players.filter { ($0.position ?? "").lowercased() == "goalkeeper" }
         let maxSaves = keepers.compactMap(\.saves).filter { $0 > 0 }.max()
         let saveLeaders = maxSaves.map { m in keepers.filter { $0.saves == m }.count } ?? 0
-        let ages = players.compactMap(\.age)
+        let ages = players.compactMap { LiveSquadPack.plausibleAge($0.age) }
         let youngest: Int? = { guard let m = ages.min(), m <= 19, ages.filter({ $0 == m }).count == 1 else { return nil }; return m }()
         let oldest: Int? = { guard let m = ages.max(), m >= 33, ages.filter({ $0 == m }).count == 1 else { return nil }; return m }()
 
@@ -87,8 +87,8 @@ enum PlayerHooks {
                         ? "\(him) has \(goalWord(g)) for \(club) this season, joint top scorer in the squad."
                         : "\(him) has \(goalWord(g)) for \(club) this season, more than anyone else in the squad.",
                     use: joint
-                        ? "When his name comes up: " + LiveClubPack.quote("He's joint top scorer for them this season.")
-                        : "When he gets the ball: " + LiveClubPack.quote("That's \(him), he's got their goals this season."),
+                        ? "When his name comes up: " + LiveClubPack.quote("Is he scoring today, do you reckon?")
+                        : "When he gets the ball: " + LiveClubPack.quote("Go on, \(him). Get us another one."),
                     useType: .say))
             }
             if let a = p.assists, let m = maxAssists, a == m, a >= 2 {
@@ -103,7 +103,7 @@ enum PlayerHooks {
                     // 2026-10-01).
                     use: (p.goals ?? 0) == 0
                         ? LiveClubPack.quote("\(a) assists already. Does \(him) ever score himself?")
-                        : LiveClubPack.quote("\(a) assists and \(goalWord(p.goals ?? 0)) too. Is \(him) their best player right now?"),
+                        : LiveClubPack.quote("\(a) assists and \(goalWord(p.goals ?? 0)) too. Is \(him) our best player right now?"),
                     useType: .ask))
             }
             if p.captain == true {
@@ -117,21 +117,21 @@ enum PlayerHooks {
                 star = true
                 hooks.append(Hook(
                     fact: "\(him) has been on the pitch longer than anyone else at \(club) this season.",
-                    use: LiveClubPack.quote("\(him) plays every week, doesn't he?"),
+                    use: LiveClubPack.quote("What would we do without \(him)?"),
                     useType: .ask))
             }
             if let s = p.saves, let m = maxSaves, s == m, saveLeaders == 1 {
                 star = true
                 hooks.append(Hook(
                     fact: "\(him) has made \(s) saves for \(club) this season.",
-                    use: "When he keeps one out: " + LiveClubPack.quote("He's kept them in a few games already."),
+                    use: "When he keeps one out: " + LiveClubPack.quote("He's kept us in a few games already."),
                     useType: .say))
             }
             if let g = p.goals, g >= 2, maxGoals != g {
                 hooks.append(Hook(
                     fact: apps.map { "\(him) has \(goalWord(g)) in \($0) games for \(club) this season." }
                         ?? "\(him) has \(goalWord(g)) for \(club) this season.",
-                    use: "When he shoots: " + LiveClubPack.quote("He's scored a few already this season."),
+                    use: "When he shoots: " + LiveClubPack.quote("Go on, \(him), get another one."),
                     useType: .say))
             }
             if let s = starts, s == played, played >= 3 {
@@ -141,12 +141,12 @@ enum PlayerHooks {
                     use: LiveClubPack.quote("Does \(him) ever get a rest?"),
                     useType: .ask))
             }
-            if let a = p.age, a == youngest {
+            if let a = LiveSquadPack.plausibleAge(p.age), a == youngest {
                 hooks.append(Hook(
                     fact: "\(him) is \(a), the youngest in \(club)'s squad this season.",
                     use: LiveClubPack.quote("\(him)'s only \(a). Is he going to be a big player for them?"),
                     useType: .ask))
-            } else if let a = p.age, a == oldest {
+            } else if let a = LiveSquadPack.plausibleAge(p.age), a == oldest {
                 hooks.append(Hook(
                     fact: "\(him) is \(a), the oldest in \(club)'s squad this season.",
                     use: LiveClubPack.quote("\(him) is still going at \(a)."),
@@ -162,9 +162,10 @@ enum PlayerHooks {
             // Last resort, and only when there is nothing about his football to
             // say. "\(nationality) international" is not derivable from the feed.
             if hooks.isEmpty, let n = p.nationality, !n.isEmpty {
+                // The fact is the nationality; the line asks the next thing.
                 hooks.append(Hook(
-                    fact: "\(him) is from \(n). He is in \(club)'s squad this season.",
-                    use: LiveClubPack.quote("\(him)'s from \(n), isn't he? Does he play for them too?"),
+                    fact: "\(him) is from \(country(n)). He is in \(LiveSquadPack.possessive(club)) squad this season.",
+                    use: LiveClubPack.quote("Is \(him) going to get a game soon?"),
                     useType: .ask))
             }
 
@@ -175,6 +176,12 @@ enum PlayerHooks {
     }
 
     private static func goalWord(_ n: Int) -> String { n == 1 ? "1 goal" : "\(n) goals" }
+
+    /// "the Netherlands", "the USA": the countries that take an article.
+    static func country(_ n: String) -> String {
+        ["Netherlands", "USA", "United States", "Czech Republic", "Republic of Ireland", "Ivory Coast",
+         "Dominican Republic", "Gambia", "DR Congo", "Philippines"].contains(n) ? "the " + n : n
+    }
 
     // MARK: - Table test
 

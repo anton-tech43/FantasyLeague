@@ -444,11 +444,24 @@ struct MyTurnEmptyText: View {
     }
 }
 
+extension Date {
+    /// Now, or in DEBUG the moment `-gdNow <ISO>` names, so the audit can see
+    /// what the prep shows the day after a game and the week after.
+    static var gdNow: Date {
+        #if DEBUG
+        let args = ProcessInfo.processInfo.arguments
+        if let i = args.firstIndex(of: "-gdNow"), i + 1 < args.count,
+           let d = ISO8601DateFormatter().date(from: args[i + 1]) { return d }
+        #endif
+        return Date()
+    }
+}
+
 extension MatchContext {
     /// The context My Turn is about. The screenshot harness can pin it with
     /// `-gdLingoContext <fixture>`, the same flag the prep reads, so the
     /// segment's label and the cards under it agree.
-    static func current(page: TeamPageContent?, team: Team?, now: Date = Date()) -> MatchContext {
+    static func current(page: TeamPageContent?, team: Team?, now: Date = .gdNow) -> MatchContext {
         #if DEBUG
         let args = ProcessInfo.processInfo.arguments
         if let i = args.firstIndex(of: "-gdLingoContext"), i + 1 < args.count {
