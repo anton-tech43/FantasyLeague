@@ -371,7 +371,81 @@ else
   warn "prose older than eight days: $STALE"
 fi
 
-# 8d. The canary on the history table itself. Scoped to the prose it should sit
+# 8d. Does a club's fun fact contradict its own promotion year? `basics` is
+# hand-seeded (migration 004) and nothing ever rewrites it, while `pl_since`
+# right beside it IS maintained. So they drift apart every time a club goes
+# down and comes back, and the card then tells a newcomer two different stories
+# at once: Leeds' fun fact had them "clawing their way back in 2020" over a
+# `pl_since` of 2025, both true — promoted 2020, relegated 2023, promoted 2025 —
+# and impossible to reconcile if you are new to this. Expect this to fire every
+# May, which is exactly why it is worth having.
+#
+# Word boundaries matter here: the first version used a bare `up` as one of the
+# trigger words and matched inside "European C-up-", reporting Villa's 1982
+# European Cup and Forest's 1979 as promotion years.
+MIXED=$(q "SELECT string_agg(tp.team_id || ' (fact says ' || f.yr || ', pl_since says ' || s.yr || ')', ', ' ORDER BY tp.team_id)
+             FROM team_pages tp JOIN teams t ON t.id = tp.team_id
+             CROSS JOIN LATERAL (SELECT substring(tp.content->'cards'->'basics'->>'fun_fact'
+                                   from '\\m(?:back|returned?|promoted|climbed)\\M[^.]{0,40}?([12][09][0-9][0-9])') AS yr) f
+             CROSS JOIN LATERAL (SELECT substring(tp.content->'cards'->'basics'->>'pl_since'
+                                   from '([12][09][0-9][0-9])') AS yr) s
+            WHERE t.entity_type = 'club' AND t.is_active
+              AND f.yr IS NOT NULL AND s.yr IS NOT NULL AND f.yr <> s.yr;")
+if [ -z "$MIXED" ]; then
+  note "OK" "no club's fun fact argues with its own pl_since"
+else
+  warn "fun fact and pl_since give different years: $MIXED"
+fi
+
+# 8e. Do cards 5 and 6 say the same thing twice? "How they're doing"
+# (form_summary) sits directly above "The season so far" (season.summary) in
+# TeamPageView, and both are written in the same run from the same numbers, so
+# they restate each other unless somebody is watching: Hull's read "Two wins
+# and two draws in five, sitting eighth" and then "sitting eighth with eight
+# points after five games... Two wins, two draws, one loss". 75% of the first
+# card's vocabulary repeated immediately underneath it.
+#
+# Words of four letters or more only, so "the" and "with" do not carry the
+# score. 60% is calibrated on the 2026-10-02 sample, where the spread ran from
+# 10% (Coventry, fine) to 75% (Hull, not fine).
+ECHOED=$(q "WITH p AS (
+              SELECT tp.team_id,
+                regexp_split_to_array(lower(regexp_replace(tp.content->'cards'->'form'->>'form_summary','[^a-zA-Z ]','','g')),'\s+') AS a,
+                regexp_split_to_array(lower(regexp_replace(tp.content->'cards'->'season'->>'summary','[^a-zA-Z ]','','g')),'\s+') AS b
+                FROM team_pages tp JOIN teams t ON t.id = tp.team_id
+               WHERE t.entity_type = 'club' AND t.is_active
+                 AND tp.content->'cards'->'form'->>'form_summary' IS NOT NULL
+                 AND tp.content->'cards'->'season'->>'summary' IS NOT NULL)
+            SELECT string_agg(team_id || ' (' || pct || '%)', ', ' ORDER BY pct DESC)
+              FROM (SELECT team_id, round(100.0 *
+                      (SELECT count(DISTINCT x) FROM unnest(a) x WHERE x = ANY(b) AND length(x) > 3) /
+                      NULLIF((SELECT count(DISTINCT x) FROM unnest(a) x WHERE length(x) > 3), 0)) AS pct
+                      FROM p) q
+             WHERE pct >= 60;")
+if [ -z "$ECHOED" ]; then
+  note "OK" "no club repeats its form card in its season card"
+else
+  warn "cards 5 and 6 say the same thing: $ECHOED"
+fi
+
+# 8f. Is any club's manager still coming from the feed we do not trust?
+# `/coachs` omits sitting managers and lists assistants as if they were head
+# coaches — DATA_SOURCES.md has the evidence, and it is how the app once showed
+# Bournemouth's assistant as its manager. The fix was `teams.manager_name`
+# (migration 085), human-verified, and team-page-generator prefers it: when it
+# is set, that row's name AND photo decide, including deciding there is no
+# photo. All 20 clubs are covered today, so the feed branch is dead code — but
+# it is one newly promoted club away from being live again, and the symptom
+# would be a real person's face attached to the wrong job.
+UNVERIFIED=$(q "SELECT string_agg(id, ', ' ORDER BY id) FROM teams
+                 WHERE entity_type = 'club' AND is_active AND manager_name IS NULL;")
+if [ -z "$UNVERIFIED" ]; then
+  note "OK" "every club's manager is the human-verified one, not the feed's"
+else
+  fail "no verified manager, so the unreliable /coachs feed decides: $UNVERIFIED  (set teams.manager_name)"
+fi
+
+# 8g. The canary on the history table itself. Scoped to the prose it should sit
 # in the hundreds of kilobytes; if the trigger ever starts following the
 # two-hourly numeric churn instead it becomes ~8 MB a day, which is how
 # raw_fetch_logs drained the Disk IO budget in June. This one FAILs, because it

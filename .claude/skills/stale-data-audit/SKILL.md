@@ -162,6 +162,35 @@ $P "$SUPABASE_DB_URL" -At -F' | ' -c "select c.key, count(*), min(left(c.value->
 $P "$SUPABASE_DB_URL" -At -c "select id from teams where league_id=39 and is_active and id not in (select team_id from team_pages)"
 ```
 
+### 4b. `basics.fun_fact` has never been checked by anything
+
+Read all twenty fun facts out loud, against a source, at every rollover. Nothing
+else will: `basics` is hand-seeded (migration 004), every writer is built to
+*preserve* it, and no automated check had ever read its prose until 2026-10-02.
+On that day five of the twenty were wrong, and they had been wrong since April.
+
+| Club | Claimed | Actually |
+|---|---|---|
+| Arsenal | "an entire 49-game Premier League season unbeaten" | The season was **38** games; the 49-game run spanned three seasons |
+| Leeds | Two titles "in the early 70s" | 1968-69 and 1973-74 — one in the sixties, one mid-decade |
+| Leeds | "back in 2020" beside `pl_since` of 2025 | Both true (up 2020, down 2023, up 2025) and irreconcilable for a newcomer |
+| Sunderland | "the longest title drought among former champions" | False — Huddersfield 1926, Newcastle 1927, Sheffield Wednesday 1930 all wait longer. **Our own Newcastle row says 1926-27** |
+| Brighton | "this gorgeous stadium by the sea" | The Amex is five miles inland, built into the South Downs |
+
+**Why a nightly check is the wrong tool for this surface.** Static text that
+nothing rewrites produces the same verdict every night forever: either silence
+or a permanent red line you learn to scroll past. What `db-health.sh` section 8
+checks instead is the part that genuinely *drifts* — a fun fact whose promotion
+year disagrees with the `pl_since` beside it, which will happen again every May
+that a club goes down and comes back. The prose itself needs a dated human pass,
+and this is it.
+
+The Sunderland one is the lesson worth carrying: it was a **superlative about
+other clubs**, and we hold no data about other clubs' histories, so nothing
+could have settled it from inside the database. A claim whose subject is outside
+our own data is a claim we cannot check — treat one in curated copy as a defect
+waiting to happen, however confident it sounds.
+
 `basics.last_season` and `basics.last_title` go stale the day a season ends and nothing rewrites them. Read all twenty at once; the set is self-checking, because the PL positions must be 1 to 20 with the relegated three missing and no duplicates, the points must fall with the rank, and the promoted clubs must say something Championship-shaped:
 
 ```bash
