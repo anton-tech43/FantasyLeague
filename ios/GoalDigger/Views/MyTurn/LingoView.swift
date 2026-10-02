@@ -364,7 +364,7 @@ struct LingoView: View {
                         // scrolls down through the three.
                         opponentCard
                         hero
-                        calledItTakeover
+                        calledItTakeover.id("prep-calls")
                     } else {
                         landing
                     }

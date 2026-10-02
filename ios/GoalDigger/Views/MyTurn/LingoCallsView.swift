@@ -223,18 +223,18 @@ struct LingoCallsView: View {
         let yes = Button {
             answer(call, yes: true, of: offered)
         } label: {
-            answerLabel("Yes", filled: true)
+            answerLabel("Save for the game", filled: true)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Yes. Puts this line on your slip.")
+        .accessibilityLabel("Save for the game. Puts this line on your slip.")
 
         let no = Button {
             answer(call, yes: false, of: offered)
         } label: {
-            answerLabel("No", filled: false)
+            answerLabel("Ignore for now", filled: false)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("No. Leaves this one off.")
+        .accessibilityLabel("Ignore for now. Leaves this one off.")
 
         if typeSize >= .accessibility2 {
             VStack(spacing: 12) { yes; no }
@@ -271,8 +271,10 @@ struct LingoCallsView: View {
 
     private func answerLabel(_ text: String, filled: Bool) -> some View {
         Text(text)
-            .font(.jakarta(18, weight: .bold))
+            .font(.jakarta(16, weight: .bold))
             .foregroundColor(filled ? .warmWhite : .hotRose)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 8)
             .frame(maxWidth: .infinity)
             .frame(minHeight: 56)
             .padding(.vertical, 4)
@@ -312,7 +314,7 @@ struct LingoCallsView: View {
         if !(mine.isEmpty && played) {
             let landed = LingoCalls.matched(stored: slip, fixtureId: slip.fixtureId, calls: mine,
                                             outcomes: LingoCalls.outcomes(after: context)).count
-            let summary = mine.isEmpty ? "None of those took your fancy. Three more next game."
+            let summary = mine.isEmpty ? "None of those took your fancy. More next game."
                 : played ? "\(landed) of \(mine.count) came up."
                 : "\(when)\(mine.count == 1 ? "1 line" : "\(mine.count) lines") on your slip."
             VStack(spacing: 8) {
@@ -339,7 +341,7 @@ struct LingoCallsView: View {
             // and nothing to undo: not picking costs nothing.
             if !played {
                 card {
-                    heading("Get in the game", subtitle: "\(when)None of those took your fancy. There'll be three more for the next one.")
+                    heading("Get in the game", subtitle: "\(when)None of those took your fancy. There'll be more for the next one.")
                 }
             }
         } else {

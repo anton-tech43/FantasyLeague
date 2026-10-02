@@ -365,7 +365,7 @@ enum LingoCalls {
         func best(_ band: Band, avoiding chosen: [LingoCall]) -> LingoCall? {
             let banded = pool.filter { call in
                 call.band == band.rawValue && !tags(call).isDisjoint(with: allow)
-                    && !chosen.contains { clash(call, $0) }
+                    && !chosen.contains { $0.id == call.id || clash(call, $0) }
             }
             guard !banded.isEmpty else { return nil }
             // A line about the game she is actually walking into beats a line
@@ -378,10 +378,19 @@ enum LingoCalls {
 
         guard let banker = best(.banker, avoiding: []) else { return [] }
         var slip = [banker]
-        if let likely = best(.likely, avoiding: slip) { slip.append(likely) }
-        if let longshot = best(.longshot, avoiding: slip) { slip.append(longshot) }
+        // Up to seven, like the seven words (Anton, 2026-10-02): the first
+        // three are still one of each band, then two more likelies, a banker
+        // and a long shot, as far as the pool goes without two lines landing
+        // on the same moment (match-watcher only ever uses one per push).
+        for band in [Band.likely, .longshot, .likely, .banker, .likely, .longshot] where slip.count < slipSize {
+            if let next = best(band, avoiding: slip) { slip.append(next) }
+        }
         return slip
     }
+
+    /// How many lines a slip offers. `save_match_calls` takes up to seven
+    /// (migration 124).
+    static let slipSize = 7
 
     /// One seeded draw per call, so the offer does not move under her.
     private static func draw(_ fixtureKey: String, _ call: LingoCall) -> (UInt64, String) {
