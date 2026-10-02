@@ -35,6 +35,26 @@
 -- repo entirely over PostgREST. Only a trigger sees all four, and only a content
 -- comparison survives the writers that leave the timestamp alone.
 
+-- CORRECTED 2026-10-02 after an adversarial review. Three claims below are
+-- wrong and migration 124 carries the fixes; they are left in place because
+-- this file is the record of what ran.
+--   * The self-check at the bottom cannot fail for the bug it guards against.
+--     It counts rows and never reads them, so a trigger recording NEW instead
+--     of OLD passes it. 124 has the assertion it should have had.
+--   * "03:30 and 03:35 are free" is false — `content-audit-nightly` has been at
+--     30 3 since migration 059. 124 moves these to 03:40 and 03:45.
+--   * match-watcher is named below as a writer this trigger must catch. It
+--     writes only `cards.post_match`, which is outside the prose scope, so it
+--     can never produce a row. The argument holds for post_team_page.sh's
+--     external PATCH, which is the real reason a trigger was needed.
+--   * The "dynamic writes produce no history" framing is slightly too broad:
+--     `updateWcDynamicFields` sets `cards.manager.summary` on every WC refresh,
+--     which IS in scope. Harmless only because COACH_OVERRIDES are constants
+--     and the 48 countries are inactive.
+--   * The autovacuum note calls this table update-churn-dominated. It is not
+--     (n_tup_upd = 0); the dead tuples come from the nightly DELETE. The
+--     settings are right, the reason given is not.
+
 BEGIN;
 
 CREATE TABLE IF NOT EXISTS public.team_page_prose_history (
