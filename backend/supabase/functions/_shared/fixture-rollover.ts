@@ -104,7 +104,17 @@ export const FIXTURE_PAST_GRACE_MS = 3 * 60 * 60_000;
 /// Competitions the app covers. Anything else in the feed (a friendly, a
 /// tournament we do not follow) used to reach the Calendar tab as a row
 /// labelled "Fixture", which tells her nothing.
-const CALENDAR_LEAGUES: number[] = [39, ...COVERED_CUP_LEAGUES];
+export const CALENDAR_LEAGUES: number[] = [39, ...COVERED_CUP_LEAGUES];
+
+/// A competition the app covers: the league and the cups, the same set the
+/// Calendar tab keeps (CALENDAR_LEAGUES). A friendly is not "next up": on
+/// 2026-10-02 Aston Villa's page, and so their whole Pre-game in My Turn, was
+/// about a friendly with Sevilla while the Calendar showed Brentford.
+export function isCoveredFixture(item: unknown): boolean {
+  const league = (item as Record<string, unknown>)?.league as Record<string, unknown> | undefined;
+  return CALENDAR_LEAGUES.includes(league?.id as number);
+}
+
 
 /// A season, not a month. `next=20` from the fetcher, 15 rows on the page:
 /// enough that a January FA Cup tie and the Christmas programme are visible in

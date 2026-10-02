@@ -27,7 +27,7 @@ import {
   renderOpponentDetail,
   renderThisWeek,
 } from "../_shared/stakes-templates.ts";
-import { buildUpcomingFixtures, collectFinishedFixtureIds, dropFinished, FINISHED_STATUSES, FIXTURE_PAST_GRACE_MS, filterFixturesByLeague } from "../_shared/fixture-rollover.ts";
+import { buildUpcomingFixtures, collectFinishedFixtureIds, isCoveredFixture, dropFinished, FINISHED_STATUSES, FIXTURE_PAST_GRACE_MS, filterFixturesByLeague } from "../_shared/fixture-rollover.ts";
 import { knockoutOutcome } from "../_shared/goal-push.ts";
 import { clubPreMatchVerdict, preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
 import {
@@ -2110,7 +2110,11 @@ function parseRecentResults(
   try {
     let response = (data as Record<string, unknown>).response as unknown[];
     if (!Array.isArray(response)) return [];
-    if (leagueId != null) response = filterFixturesByLeague(response, leagueId);
+    // A club's results are its league and covered cups: a friendly is not
+    // form. Bournemouth's "last three" read Liverpool, Real Sociedad,
+    // Brentford, and the opponent quiz told her how they had been playing
+    // from a pre-season-style friendly (pre-launch audit, 2026-10-02).
+    response = leagueId != null ? filterFixturesByLeague(response, leagueId) : response.filter(isCoveredFixture);
     const out: ParsedResult[] = [];
     for (const item of response) {
       const rec = item as Record<string, unknown>;
@@ -2245,12 +2249,14 @@ function extractNextFixture(
         const fi = (item as Record<string, unknown>).fixture as Record<string, unknown> | undefined;
         const id = fi?.id as number | undefined;
         if (id != null && finishedIds.has(id)) return false;
+        if (!isCoveredFixture(item)) return false;
         const t = Date.parse((fi?.date as string) ?? "");
         return Number.isNaN(t) || t >= floor;
       }) as Record<string, unknown> | undefined;
       if (!fixture) return null;
     } else {
-      fixture = response[0] as Record<string, unknown>;
+      fixture = response.find(isCoveredFixture) as Record<string, unknown> | undefined;
+      if (!fixture) return null;
     }
     const fixtureInfo = fixture.fixture as Record<string, unknown>;
     const teams = fixture.teams as Record<string, Record<string, unknown>>;

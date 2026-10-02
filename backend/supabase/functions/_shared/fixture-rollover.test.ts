@@ -6,6 +6,7 @@ import {
   collectFinishedFixtureIds,
   dropFinished,
   filterFixturesByLeague,
+  isCoveredFixture,
 } from "./fixture-rollover.ts";
 
 function assert(c: boolean, m: string): void {
@@ -173,4 +174,11 @@ Deno.test("buildUpcomingFixtures: drops what fixtures_last says is already playe
 Deno.test("buildUpcomingFixtures: empty or malformed payload keeps the existing card", () => {
   eq(buildUpcomingFixtures({ response: [] }, 42, NOW, undefined), null, "empty => null");
   eq(buildUpcomingFixtures(null, 42, NOW, undefined), null, "junk => null");
+});
+
+Deno.test("isCoveredFixture: league and covered cups, never a friendly", () => {
+  const fx = (id: number) => ({ league: { id } });
+  if (!isCoveredFixture(fx(39)) || !isCoveredFixture(fx(2))) throw new Error("league or Champions League dropped");
+  if (isCoveredFixture(fx(667))) throw new Error("a club friendly counted as next up (Villa v Sevilla, 2026-10-02)");
+  if (isCoveredFixture({})) throw new Error("a fixture with no league counted");
 });
