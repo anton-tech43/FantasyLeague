@@ -170,7 +170,7 @@ struct MyTurnView: View {
     /// know yet who they are playing, and the section is what tells her
     /// (Anton, 2026-10-01). Otherwise "This week".
     private var prepLabel: String {
-        if case .before = prepContext.phase { return "Pregame talk" }
+        if case .before = prepContext.phase { return "Pre-game" }
         return MyTurnModule.prep.label
     }
 

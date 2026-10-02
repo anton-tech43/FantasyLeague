@@ -48,6 +48,9 @@ final class MyTurnStore {
         /// The game an opponent round was dealt for, so finishing it can be
         /// remembered against that game (`opponentQuizDone`). Nil otherwise.
         var fixtureKey: String? = nil
+        /// What she picked on each question so far, in order, so she can step
+        /// back and read an answer again (Anton, 2026-10-02).
+        var picks: [Int] = []
 
         init(packId: String, questionIds: [String]) {
             self.packId = packId
@@ -70,6 +73,7 @@ final class MyTurnStore {
             streak = try c.decodeIfPresent(Int.self, forKey: .streak) ?? 0
             hypeLine = try c.decodeIfPresent(String.self, forKey: .hypeLine)
             fixtureKey = try? c.decodeIfPresent(String.self, forKey: .fixtureKey)
+            picks = (try? c.decodeIfPresent([Int].self, forKey: .picks)) ?? []
         }
     }
 
@@ -456,6 +460,7 @@ final class MyTurnStore {
     func answer(_ option: Int, correct: Bool, questionId: String) {
         guard var round = state.quizRound, round.selected == nil else { return }
         round.selected = option
+        if round.picks.count == round.index { round.picks.append(option) }
         if correct {
             round.score += 1
             round.streak += 1

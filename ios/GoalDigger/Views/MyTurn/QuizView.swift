@@ -29,6 +29,8 @@ struct QuizView: View {
     /// and a relaunch should drop her back into the question, not the list.
     @State private var paused = false
     @State private var sheetPlayer: QuizPlayer?
+    /// An earlier question she has stepped back to, to read its answer again.
+    @State private var reviewIndex: Int?
 
     private var livePacks: [QuizPack] { [livePack, squadPack, leaguePack, opponentPack].compactMap { $0 } }
     private var allPacks: [QuizPack] { content.packs + livePacks }
@@ -63,6 +65,7 @@ struct QuizView: View {
     }
 
     var body: some View {
+        ZStack {
         ScrollView {
             VStack(alignment: .leading, spacing: Layout.cardSpacing) {
                 if let round, let pack = roundPack, !paused {
@@ -89,6 +92,10 @@ struct QuizView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: round?.index)
         .animation(.easeInOut(duration: 0.2), value: round?.finished)
+            answerPopup
+        }
+        .animation(.easeInOut(duration: 0.2), value: round?.selected)
+        .onChange(of: round?.packId) { _, _ in reviewIndex = nil }
         .sheet(item: $sheetPlayer) { person in
             PlayerCardModal(
                 player: PlayerCard(teamId: clubId, playerName: person.name, position: person.position,
@@ -233,9 +240,26 @@ struct QuizView: View {
             .buttonStyle(.plain)
             .accessibilityLabel("Back to the packs. Your round stays where it is.")
 
-            Text("Question \(round.index + 1) of \(round.questionIds.count)")
-                .font(.sectionHeader).tracking(1)
-                .foregroundColor(.mutedText)
+            HStack {
+                Text("Question \(round.index + 1) of \(round.questionIds.count)")
+                    .font(.sectionHeader).tracking(1)
+                    .foregroundColor(.mutedText)
+                Spacer()
+                // Back a question, to read its answer again.
+                if round.index > 0, round.picks.count >= round.index {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) { reviewIndex = round.index - 1 }
+                    } label: {
+                        Text("\u{2039} Previous")
+                            .font(.jakarta(14, weight: .semiBold))
+                            .foregroundColor(.hotRose)
+                            .padding(.vertical, 4)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Previous question. Read its answer again.")
+                }
+            }
 
             Text(q.question)
                 .font(.jakarta(20, weight: .bold))
@@ -278,18 +302,34 @@ struct QuizView: View {
                 }
             }
 
-            if let selected = round.selected {
+        }
+    }
+
+    // MARK: The answer, as a popup
+
+    /// The answer comes up over the question, the way Lingo's does, rather
+    /// than being appended under the options (Anton, 2026-10-02). In review
+    /// it is the earlier question's, with the way back to where she was.
+    @ViewBuilder
+    private var answerPopup: some View {
+        if let round, !round.finished, !paused, let pack = roundPack {
+            let i = reviewIndex ?? round.index
+            if let qid = round.questionIds[safe: i], let q = pack.questions.first(where: { $0.id == qid }),
+               let selected = reviewIndex == nil ? round.selected : round.picks[safe: i] {
                 let correct = selected == q.answer
-                VStack(alignment: .leading, spacing: 8) {
-                    let right = q.options[q.answer]
-                    // Wrong: say the right answer in the heading, so the name
-                    // under "Not that one." can't be read as hers. Most
-                    // explanations open by repeating the answer; drop that
-                    // echo rather than say the name twice.
-                    Text(correct ? "Right." : "Not that one. It's \(right.trimmingCharacters(in: CharacterSet(charactersIn: "."))).")
-                        .font(.jakarta(17, weight: .bold))
-                        .foregroundColor(correct ? .hotRose : .warmWhite)
-                        .fixedSize(horizontal: false, vertical: true)
+                let right = q.options[q.answer]
+                MyTurnPopup(
+                    verdict: correct ? "Right." : "Not that one. It's \(right.trimmingCharacters(in: CharacterSet(charactersIn: "."))).",
+                    verdictTint: correct ? .hotRose : .warmWhite,
+                    exitLabel: reviewIndex != nil ? "Back to question \(round.index + 1)"
+                        : round.index + 1 >= round.questionIds.count ? "See the score" : "Next",
+                    exit: {
+                        if reviewIndex != nil { withAnimation(.easeInOut(duration: 0.2)) { reviewIndex = nil } }
+                        else { store.nextQuestion() }
+                    }
+                ) {
+                    // Most explanations open by repeating the answer; the
+                    // heading has already said it.
                     Text(correct ? q.explanation : Self.droppingEcho(of: right, from: q.explanation))
                         .font(.jakarta(15, weight: .regular))
                         .foregroundColor(.warmWhite.opacity(0.9))
@@ -300,7 +340,6 @@ struct QuizView: View {
                             .font(.jakarta(13, weight: .italic))
                             .foregroundColor(.warmWhite.opacity(0.65))
                             .fixedSize(horizontal: false, vertical: true)
-                            .padding(.top, 2)
                     }
                     if let use = q.use {
                         useLine(use, type: q.useType)
@@ -320,24 +359,18 @@ struct QuizView: View {
                         .buttonStyle(.plain)
                         .accessibilityLabel("Who \(person.name) is")
                     }
-                    Button {
-                        store.nextQuestion()
-                    } label: {
-                        Text(round.index + 1 >= round.questionIds.count ? "See the score" : "Next")
-                            .font(.jakarta(16, weight: .semiBold))
-                            .foregroundColor(.warmWhite)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 46)
-                            .background(Color.hotRose)
-                            .cornerRadius(Layout.buttonCornerRadius)
+                    // One further back from a review, the way she came.
+                    if let r = reviewIndex, r > 0 {
+                        Button { withAnimation(.easeInOut(duration: 0.2)) { reviewIndex = r - 1 } } label: {
+                            Text("\u{2039} The one before")
+                                .font(.jakarta(14, weight: .semiBold))
+                                .foregroundColor(.hotRose)
+                                .padding(.vertical, 4)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
-                    .padding(.top, 4)
                 }
-                .padding(14)
-                .background(Color.warmWhite.opacity(0.06))
-                .cornerRadius(Layout.cardCornerRadius)
-                .transition(.opacity.combined(with: .move(edge: .bottom)))
+                .transition(.opacity)
             }
         }
     }

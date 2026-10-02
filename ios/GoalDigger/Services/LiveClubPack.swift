@@ -44,6 +44,10 @@ enum LiveClubPack {
         /// Squad-mates, most-played first, for the question's wrong answers.
         /// Same source as `name`, so they are printed the same way.
         var rivals: [String] = []
+        /// His photo once checked not to be the CDN silhouette, and his shirt
+        /// number under the squad pack's rule. Nil until a fetch fills them.
+        var photo: String? = nil
+        var number: Int? = nil
     }
 
     struct ClubManager: Codable {
@@ -336,18 +340,29 @@ enum LiveClubPack {
         let club = team.shortName
         let others = sources.slices.filter { $0.team_id != team.rawValue }
         var qs: [MyTurnQuestion] = []
+        // Two options, not three: she knows nothing about the other side, and
+        // one in three was a guess (Anton, 2026-10-02).
+        func two(id: String, difficulty: Int, question q: String, answer: String, distractors: [String],
+                 explanation: String, why: String, useType: QuestionUseType, use: String,
+                 image: String? = nil) -> [MyTurnQuestion] {
+            question(id: id, difficulty: difficulty, question: q, answer: answer, distractors: distractors,
+                     explanation: explanation, why: why, useType: useType, use: use, image: image, options: 2)
+        }
 
         if let m = cards.manager {
             let wrong = sources.managers
                 .filter { $0.id != team.rawValue && $0.id != mine?.rawValue }
                 .compactMap(\.manager_name).filter { $0 != m.name }
-            qs += question(
+            qs += two(
                 id: "opp-manager", difficulty: 1,
                 question: "Who manages \(club)?",
                 answer: m.name, distractors: wrong,
                 explanation: "\(m.name). He'll be in the other dugout, and the cameras cut to him every time they score.",
                 why: "After the game, the other manager is the one he'll either blame or grudgingly rate.",
-                useType: .ask, use: quote("What do you make of \(m.name)?"))
+                useType: .ask, use: quote("What do you make of \(m.name)?"),
+                // His face, so she knows him when the camera finds him.
+                image: PlayerPortrait.source(club: team.rawValue, name: m.name)
+                    ?? m.photoURL.flatMap { !$0.isEmpty && !sources.silhouettes.contains($0) ? $0 : nil })
         }
 
         let row = cards.standings?.entries.first {
@@ -355,7 +370,7 @@ enum LiveClubPack {
         }
         if let row, row.rank > 0 {
             let nearby = [-3, -2, -1, 1, 2, 3, 4].map { row.rank + $0 }.filter { (1...20).contains($0) }
-            qs += question(
+            qs += two(
                 id: "opp-table-position", difficulty: 2,
                 question: "Where are \(club) in the table right now?",
                 answer: ordinal(row.rank), distractors: nearby.map(ordinal),
@@ -364,7 +379,12 @@ enum LiveClubPack {
                 useType: .ask, use: quote("They're \(ordinal(row.rank)), aren't they? Should we be beating them?"))
         }
 
-        if let f = cards.form {
+        // The form, told through the games themselves: "Leeds have played
+        // Wolves, Fulham and Burnley" with how it went, rather than a W/D/L
+        // count she could only guess at (Anton, 2026-10-02).
+        if let results = cards.recentResults, results.count >= 3 {
+            qs += formFromResults(Array(results.prefix(3)), club: club)
+        } else if let f = cards.form {
             let letters = f.recentForm.uppercased().filter { "WDL".contains($0) }
             let w = letters.filter { $0 == "W" }.count, d = letters.filter { $0 == "D" }.count
             let l = letters.filter { $0 == "L" }.count
@@ -373,7 +393,7 @@ enum LiveClubPack {
                 let wrong = [(w + 1, d - 1, l), (w - 1, d + 1, l), (w, d + 1, l - 1),
                              (w, d - 1, l + 1), (w - 1, d, l + 1), (w + 1, d, l - 1)]
                     .filter { $0.0 >= 0 && $0.1 >= 0 && $0.2 >= 0 }.map { formLabel($0.0, $0.1, $0.2) }
-                qs += question(
+                qs += two(
                     id: "opp-form", difficulty: 2,
                     question: "How have \(club) been playing lately?",
                     answer: answer, distractors: wrong,
@@ -385,13 +405,17 @@ enum LiveClubPack {
 
         if let scorer = sources.topScorers[team.rawValue], !scorer.tied, scorer.goals > 0 {
             let name = shortName(scorer.name)
-            qs += question(
+            // His face from the question on, and his number in the answer: what
+            // she needs is to spot him on Saturday (Anton, 2026-10-02).
+            let shirt = scorer.number.map { ", number \($0)," } ?? ","
+            qs += two(
                 id: "opp-top-scorer", difficulty: 2,
                 question: "Who's scored most for \(club) this season?",
                 answer: name, distractors: scorer.rivals.map(shortName),
-                explanation: "\(name), with \(scorer.goals) \(scorer.goals == 1 ? "goal" : "goals") for \(club) this season, more than anyone else in their squad.",
+                explanation: "\(name)\(shirt) with \(scorer.goals) \(scorer.goals == 1 ? "goal" : "goals") for \(club) this season, more than anyone else in their squad.",
                 why: "He's the one to worry about when they come forward.",
-                useType: .say, use: "When they attack: " + quote("Watch \(name). He's their scorer."))
+                useType: .say, use: "When they attack: " + quote("Watch \(name). He's their scorer."),
+                image: PlayerPortrait.source(club: team.rawValue, name: scorer.name) ?? scorer.photo)
         }
 
         // How it went last time they met, which is what he'll bring up. Only
@@ -402,7 +426,7 @@ enum LiveClubPack {
             qs += lastMeetingQuestion(m, club: club, ours: mine.shortName)
         } else if let last = cards.basics?.lastSeason, let place = leadingPlace(last) {
             let nearby = [-3, -2, -1, 1, 2, 3, 4].map { place + $0 }.filter { (1...20).contains($0) }
-            qs += question(
+            qs += two(
                 id: "opp-last-season", difficulty: 2,
                 question: "Where did \(club) finish last season?",
                 answer: ordinal(place), distractors: nearby.map(ordinal),
@@ -414,7 +438,7 @@ enum LiveClubPack {
         if let b = cards.basics {
             let otherBasics = others.compactMap(\.basics)
             let nick = cleanNickname(b.nickname)
-            qs += question(
+            qs += two(
                 id: "opp-nickname", difficulty: 1,
                 question: "What are \(club) known as?",
                 answer: b.nickname, distractors: otherBasics.map(\.nickname),
@@ -423,7 +447,7 @@ enum LiveClubPack {
                 useType: .say, use: quote("So we're playing the \(nick). Got it."))
             if let ground = b.stadium {
                 let short = stadiumShort(ground)
-                qs += question(
+                qs += two(
                     id: "opp-stadium", difficulty: 1,
                     question: "Where do \(club) play their home games?",
                     answer: short, distractors: otherBasics.compactMap(\.stadium).map(stadiumShort),
@@ -460,10 +484,43 @@ enum LiveClubPack {
         return question(
             id: "opp-last-meeting", difficulty: 2,
             question: "The last time \(ours) played \(club), how did it go?",
-            answer: answer, distractors: wrong,
+            answer: answer, distractors: Array(wrong.prefix(1)),
             explanation: "\(home) \(hg)\u{2013}\(ag) \(away), at \(m.weAreHome ? "ours" : "theirs")\(when).",
             why: "He'll remember it, and he'll bring it up before kick-off.",
-            useType: .ask, use: quote(line))
+            useType: .ask, use: quote(line), options: 2)
+    }
+
+    /// Their last three, by name: "Leeds have played Wolves, Fulham and
+    /// Burnley. How did it go?" The answer is how many they won, drew and
+    /// lost, against its mirror; the explanation is the three scores, and the
+    /// line to say is the mood of it.
+    static func formFromResults(_ results: [RecentResult], club: String) -> [MyTurnQuestion] {
+        let w = results.filter { $0.outcome == "W" }.count
+        let d = results.filter { $0.outcome == "D" }.count
+        let l = results.filter { $0.outcome == "L" }.count
+        let answer = formLabel(w, d, l)
+        // The mirror swaps wins and losses; level ones tip one way instead.
+        let mirror = w != l ? formLabel(l, d, w) : d > 0 ? formLabel(w + 1, d - 1, l) : formLabel(w + 1, d, l - 1)
+        let names = results.map(\.opponent)
+        let list = names.count == 3 ? "\(names[0]), \(names[1]) and \(names[2])" : names.joined(separator: ", ")
+        let told = results.map { r -> String in
+            let score = "\(r.teamScore)\u{2013}\(r.oppScore)"
+            switch r.outcome {
+            case "W": return "beat \(r.opponent) \(score)"
+            case "L": return "lost \(score) to \(r.opponent)"
+            default: return "drew \(score) with \(r.opponent)"
+            }
+        }.joined(separator: ", ")
+        let line = w >= 2 ? "They've been flying lately, haven't they?"
+            : l >= 2 ? "They've had a rough few weeks, haven't they?"
+            : "They've been up and down lately, haven't they?"
+        return question(
+            id: "opp-form", difficulty: 2,
+            question: "\(club) have played \(list). How did it go?",
+            answer: answer, distractors: [mirror],
+            explanation: "They \(told).",
+            why: "Their form is how nervous he'll be before kick-off.",
+            useType: .say, use: quote(line), options: 2)
     }
 
     /// "14th, 47 points" → 14. Nil for anything that isn't a plain Premier
@@ -500,9 +557,19 @@ enum LiveClubPack {
             $0.options[$0.answer] == "We won 4\u{2013}0" && $0.options.contains("They won 4\u{2013}0")
                 && $0.explanation == "Leeds 0\u{2013}4 Arsenal, at theirs, in January 2026."
         } ?? false
-        return meetingOK && leadingPlace("14th, 47 points") == 14 && leadingPlace("Champions, 85 points") == nil
+        let form = formFromResults([
+            RecentResult(date: "2026-09-27", opponent: "Wolves", venue: "home", teamScore: 2, oppScore: 0),
+            RecentResult(date: "2026-09-20", opponent: "Fulham", venue: "away", teamScore: 1, oppScore: 1),
+            RecentResult(date: "2026-09-13", opponent: "Burnley", venue: "home", teamScore: 3, oppScore: 1)],
+            club: "Leeds").first
+        let formOK = form.map {
+            $0.question == "Leeds have played Wolves, Fulham and Burnley. How did it go?"
+                && $0.options[$0.answer] == "Won 2, drew 1, lost 0 of the last three"
+                && $0.options.count == 2 && $0.explanation.hasPrefix("They beat Wolves 2\u{2013}0")
+        } ?? false
+        return meetingOK && formOK && leadingPlace("14th, 47 points") == 14 && leadingPlace("Champions, 85 points") == nil
             && leadingPlace("Promoted through the play-offs, 6th") == nil
-            && pack.questions.allSatisfy { $0.id.hasPrefix("opp-") && $0.options.count == 3 }
+            && pack.questions.allSatisfy { $0.id.hasPrefix("opp-") && $0.options.count == 2 }
             && !text.contains("[his") && !text.contains("Come on you")
     }
     #endif
@@ -517,15 +584,15 @@ enum LiveClubPack {
     static func question(id: String, difficulty: Int, question: String, answer: String,
                          distractors: [String], explanation: String, why: String,
                          useType: QuestionUseType, use: String, image: String? = nil,
-                         player: QuizPlayer? = nil) -> [MyTurnQuestion] {
+                         player: QuizPlayer? = nil, options optionCount: Int = 3) -> [MyTurnQuestion] {
         var seen: Set<String> = [answer.lowercased()]
         var picks: [String] = []
         var rng = SeededGenerator(seed: id)
         for d in distractors.shuffled(using: &rng) where d.count <= 40 && !seen.contains(d.lowercased()) {
             seen.insert(d.lowercased()); picks.append(d)
-            if picks.count == 2 { break }
+            if picks.count == optionCount - 1 { break }
         }
-        guard picks.count == 2, answer.count <= 40 else { return [] }
+        guard picks.count == optionCount - 1, answer.count <= 40 else { return [] }
         var options = picks + [answer]
         options.shuffle(using: &rng)
         return [MyTurnQuestion(id: id, difficulty: difficulty, question: question, options: options,
@@ -841,12 +908,19 @@ final class LiveClubPackService {
         // Pick a handful per club, then spend the photo checks only on those.
         // Whoever comes back a silhouette drops out and the next man stands in.
         let checked = await LiveSquadService.flagPlaceholders(LiveSquadPack.leagueCandidates(from: rows))
+        // Each club's top scorer is asked about over his photo, so his photo
+        // gets the same silhouette check: twenty more small fetches a day.
+        var scorers = LiveSquadPack.topScorers(from: rows)
+        let scorerRows = rows.filter { p in p.team_id.flatMap { scorers[$0]?.name } == p.name }
+        for p in await LiveSquadService.flagPlaceholders(scorerRows) where p.photoIsPlaceholder != true {
+            if let t = p.team_id { scorers[t]?.photo = p.photo_url }
+        }
         return LiveClubPack.Sources(
             managers: try decoder.decode([LiveClubPack.ClubManager].self, from: managersData),
             slices: try decoder.decode([LiveClubPack.Slice].self, from: slicesData),
             fetchedAt: Date(),
             leaguePicks: LiveSquadPack.leaguePicks(from: checked),
-            topScorers: LiveSquadPack.topScorers(from: rows)
+            topScorers: scorers
         )
     }
 }

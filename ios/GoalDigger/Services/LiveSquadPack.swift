@@ -448,7 +448,8 @@ enum LiveSquadPack {
             let rivals = ps.filter { $0.name != one.name && !$0.name.isEmpty }
                 .sorted { ($0.minutes ?? 0) > ($1.minutes ?? 0) }.prefix(6).map(\.name)
             out[teamId] = LiveClubPack.TopScorer(team_id: teamId, name: one.name, goals: best,
-                                                 tied: level.count > 1, rivals: Array(rivals))
+                                                 tied: level.count > 1, rivals: Array(rivals),
+                                                 number: shirtNumber(of: one, in: ps))
         }
         return out
     }
