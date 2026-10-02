@@ -28,7 +28,8 @@ OCR = Path(__file__).with_name("ocr_boxes.swift")
 MAX_H = 700
 
 def fold(s):
-    s = unicodedata.normalize("NFD", (s or "").lower())
+    s = (s or "").translate(str.maketrans("АВЕКМНОРСТХУаеорсху", "ABEKMHOPCTXYaeopcxy"))
+    s = unicodedata.normalize("NFD", s.lower())
     s = "".join(c for c in s if not unicodedata.combining(c))
     for a, b in (("ø", "o"), ("æ", "ae"), ("ı", "i"), ("ł", "l"), ("đ", "d"), ("ß", "ss")):
         s = s.replace(a, b)
@@ -155,7 +156,7 @@ def whole(img, b, cell_w, cell_top=0):
     crop[:, :, 3] = np.where(keep, np.where(alpha < 250, alpha, 255), 0)
     im = Image.fromarray(crop)
     if im.height > MAX_H: im = im.resize((round(im.width * MAX_H / im.height), MAX_H), Image.LANCZOS)
-    return im.convert("LA")
+    return trim_plate(im.convert("LA"))
 
 def cut(img, box, cx=None):
     """The sticker over one label. The area is widened past the cell, since a
@@ -233,7 +234,22 @@ def finish(crop, sticker, alpha, centre=None, cell=None):
     im = Image.fromarray(out)
     im = im.crop(im.getbbox())
     if im.height > MAX_H: im = im.resize((round(im.width * MAX_H / im.height), MAX_H), Image.LANCZOS)
-    return im.convert("LA")
+    return trim_plate(im.convert("LA"))
+
+def trim_plate(im):
+    """Drop the plate's white top edge where it hangs under the shirt: the
+    bottom rows (a few) that are paper white. A white kit is not: photo
+    white is shaded, under a tenth of it is past 240 (Fulham, Spurs)."""
+    a = np.array(im)
+    lum, alpha = a[:, :, 0].astype(int), a[:, :, -1]
+    cut = a.shape[0]
+    while cut > a.shape[0] - 12:
+        on = alpha[cut - 1] > 128
+        if on.sum() >= 5 and (lum[cut - 1][on] > 240).mean() < 0.3: break
+        cut -= 1
+    if cut == a.shape[0] - 12: return im      # twelve rows of it: not a plate
+    im = im.crop((0, 0, im.width, cut))
+    return im.crop(im.getbbox()) if im.getbbox() else im
 
 def close_edges(ring):
     ring = ring.copy()
@@ -271,7 +287,14 @@ def match_official(text, official):
     if len(hits) > 1: hits = [o for o in hits if toks <= tokset(o)] or [o for o in hits if t.split()[0] in tokset(o)]
     if len(hits) == 1: return hits[0]
     hits = [o for o in official if len(toks & tokset(o)) >= 2]
-    return hits[0] if len(hits) == 1 else None
+    if len(hits) == 1: return hits[0]
+    # The OCR misreads a letter or two, or cuts the end off ("BRODKS",
+    # "CALVERT-LEWI"): the closest whole name, if it is close and alone.
+    near = sorted(((difflib.SequenceMatcher(None, t, fold(o["name"]["display"])).ratio(), i)
+                   for i, o in enumerate(official)), reverse=True)
+    if near and near[0][0] >= 0.85 and (len(near) == 1 or near[0][0] - near[1][0] >= 0.1):
+        return official[near[0][1]]
+    return None
 
 def match_row(official_player, rows):
     """Our players row for an official man: the same logic as official-squads."""
