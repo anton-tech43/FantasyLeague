@@ -113,14 +113,14 @@ for f in sorted(glob.glob(f"{S}/dumps/myturn-audit-*-{label}.json")):
     nxt_comp = [x for x in nxt if "Friendl" not in x["league"]]
     # ── Opponent ──
     if ph["kind"] == "before":
-        truth = nxt[0] if nxt else None
-        if not truth: bad(club, "opponent", f"app says {ph['opponent']}, feed has no next fixture")
+        # A friendly is never "next up" (Villa v Sevilla, 2026-10-02).
+        truth = nxt_comp[0] if nxt_comp else None
+        friendly = next((x for x in nxt if "Friendl" in x["league"] and same(ph["opponent"], x["opp"])), None)
+        if friendly: bad(club, "opponent", f"prep is about a FRIENDLY ({friendly['opp']}, {friendly['date']:%d %b})")
+        if not truth: bad(club, "opponent", f"app says {ph['opponent']}, feed has no next competitive fixture")
         else:
             if not same(ph["opponent"], truth["opp"]):
                 bad(club, "opponent", f"app: {ph['opponent']} {ph['kickoff']} / feed next: {truth['opp']} {truth['date']:%Y-%m-%d %H:%M} ({truth['league']})")
-            if "Friendl" in truth["league"]:
-                bad(club, "opponent", f"prep is about a FRIENDLY ({truth['opp']}, {truth['date']:%d %b}); next competitive: "
-                    + (f"{nxt_comp[0]['opp']} {nxt_comp[0]['date']:%d %b} ({nxt_comp[0]['league']})" if nxt_comp else "none"))
             k = datetime.fromisoformat(ph["kickoff"].replace("Z", "+00:00"))
             if abs((k - truth["date"]).total_seconds()) > 60 and same(ph["opponent"], truth["opp"]):
                 bad(club, "kickoff", f"app {k} vs feed {truth['date']}")
@@ -188,8 +188,8 @@ for f in sorted(glob.glob(f"{S}/dumps/myturn-audit-*-{label}.json")):
             want = ordinal(t["rank"]) if q["id"] == "live-table-position" else str(t["points"])
             if q["answer"] != want: bad(club, w, f"{q['answer']} vs standings {t}")
         elif q["id"] == "live-next-opponent":
-            truth = nxt[0]["opp"] if nxt else None
-            if not truth or not same(q["answer"], truth): bad(club, w, f"{q['answer']} vs feed next {truth} ({nxt[0]['league'] if nxt else ''})")
+            truth = nxt_comp[0]["opp"] if nxt_comp else None
+            if not truth or not same(q["answer"], truth): bad(club, w, f"{q['answer']} vs feed next competitive {truth}")
         elif q["id"] == "live-last-result":
             r = last_results(club)
             if r:
