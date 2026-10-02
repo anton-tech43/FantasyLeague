@@ -173,6 +173,11 @@ for f in sorted(glob.glob(f"{S}/dumps/myturn-audit-*-{label}.json")):
             if not q["image"]: man(club, w, "no scorer photo yet (fills on the next sources fetch)")
         elif q["id"] == "opp-last-meeting":
             p = (preds.get(club) or {}).get("response", [{}])[0]
+            pt = p.get("teams", {})
+            # A predictions payload for another fixture (Palace's cup tie) has
+            # another h2h: nothing to check against, so it goes to the web pass.
+            if pt and not any(same(pt.get(s, {}).get("name", ""), ph.get("opponent", "")) for s in ("home", "away")):
+                man(club, w, f"{q['answer']} ({q['explanation']}): predictions payload is for {pt.get('home',{}).get('name')} v {pt.get('away',{}).get('name')}, check on the web"); continue
             h2h = sorted([h for h in p.get("h2h", []) if h["goals"]["home"] is not None], key=lambda h: h["fixture"]["date"], reverse=True)
             if not h2h: man(club, w, "no raw h2h to check against"); continue
             h = h2h[0]; ours = teams[club]["api_football_id"]
@@ -180,9 +185,6 @@ for f in sorted(glob.glob(f"{S}/dumps/myturn-audit-*-{label}.json")):
             my, th = (h["goals"]["home"], h["goals"]["away"]) if mh else (h["goals"]["away"], h["goals"]["home"])
             want = f"We won {max(my,th)}–{min(my,th)}" if my > th else f"They won {max(my,th)}–{min(my,th)}" if th > my else f"{my}–{th} draw"
             if q["answer"] != want: bad(club, w, f"answer {q['answer']} vs raw h2h {h['fixture']['date'][:10]} {h['teams']['home']['name']} {h['goals']['home']}-{h['goals']['away']} {h['teams']['away']['name']}")
-            pt = p.get("teams", {})
-            if pt and not any(same(pt.get(s, {}).get("name", ""), ph.get("opponent", "")) for s in ("home", "away")):
-                bad(club, w, f"h2h is from a predictions payload for {pt.get('home',{}).get('name')} v {pt.get('away',{}).get('name')}, not this fixture")
         elif q["id"] in ("opp-nickname", "opp-stadium"):
             if (e := basics_off(T, q["id"], q["answer"])): bad(club, w, e)
             man(club, w, f"{q['question']} -> {q['answer']}")
