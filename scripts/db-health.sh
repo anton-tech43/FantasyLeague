@@ -56,6 +56,21 @@ fail() { FAILED=1; note "FAIL" "$1"; }
 # stack of shell errors.
 q() { $PSQL "$SUPABASE_DB_URL" -X -t -A -F'|' -c "$1" 2>/dev/null | head -1; }
 
+# Section 8's variant, and the difference matters more than it looks. `q` gives
+# an empty string both when a query returns no rows and when it could not run,
+# and every content check below reads "no rows" as "all is well" — so a renamed
+# column or a dropped table makes the whole section report green. That is the
+# precise failure this section exists to catch, built into the section itself
+# (found by review, 2026-10-02: seven of eight checks passed with deliberately
+# broken SQL, including the one that can FAIL). `qx` emits a sentinel instead,
+# and every caller has to decide what to do about it.
+QERR='__query_failed__'
+qx() {
+  local out rc
+  out=$($PSQL "$SUPABASE_DB_URL" -X -t -A -F'|' -c "$1" 2>/dev/null); rc=$?
+  if [ "$rc" -ne 0 ]; then printf '%s' "$QERR"; else printf '%s' "$out" | head -1; fi
+}
+
 echo "=========================================================="
 echo " GoalDigger backend health — $(date -u '+%Y-%m-%d %H:%M UTC')"
 echo "=========================================================="
@@ -258,7 +273,7 @@ echo "── 8. IS THE CONTENT STILL TRUE? ────────────�
 # answer. So each one counts the population first and says "could not read"
 # rather than quietly passing.
 
-TOTAL_PICKS=$(q "SELECT count(*) FROM team_pages tp JOIN teams t ON t.id = tp.team_id,
+TOTAL_PICKS=$(qx "SELECT count(*) FROM team_pages tp JOIN teams t ON t.id = tp.team_id,
                    jsonb_array_elements(tp.content->'cards'->'ones_to_know'->'players') p
                   WHERE t.entity_type = 'club' AND t.is_active;")
 if [ -z "$TOTAL_PICKS" ] || [ "$TOTAL_PICKS" -eq 0 ] 2>/dev/null; then
@@ -276,19 +291,25 @@ else
   # (MIN_REGULAR_MINUTES, REGULAR_SHARE) and TEAM_PAGE_PROMPT.md. That is
   # deliberate — an independent restatement is what makes this a check and not
   # an echo — but the three move together or this starts lying.
+  #
+  # The league-start clause was added 2026-10-02 with the picker's: the card is
+  # a league card, and Coventry's top pick was a midfielder with two cup goals
+  # and no league start at all.
   # Match through resolve_player_id (migration 117), never on the raw string.
   # The cards spell first names out and the squad feed abbreviates them, and
   # which form a card uses varies run to run: on 2026-10-01 a rewrite took the
   # exact-match rate from 60/60 to 11/60 without a single bad pick, and an
   # earlier draft of this check duly reported 49 false positives. The resolver
   # already handles the abbreviation, the accents and the shared surnames.
-  UNKNOWN=$(q "WITH card AS (
+  UNKNOWN=$(qx "WITH card AS (
                  SELECT tp.team_id, jsonb_array_elements(tp.content->'cards'->'ones_to_know'->'players')->>'name' AS n
                    FROM team_pages tp JOIN teams t ON t.id = tp.team_id
                   WHERE t.entity_type = 'club' AND t.is_active)
                SELECT string_agg(c.team_id || '/' || c.n, ', ' ORDER BY c.team_id)
                  FROM card c WHERE public.resolve_player_id(c.team_id, c.n) IS NULL;")
-  if [ -z "$UNKNOWN" ]; then
+  if [ "${UNKNOWN}" = "$QERR" ]; then
+  warn "could not read — this check did not run"
+elif [ -z "${UNKNOWN}" ]; then
     note "OK" "every featured name resolves to someone in the squad"
   else
     # Spelling a name out means supplying a forename the squad feed only gives
@@ -299,22 +320,42 @@ else
     warn "featured name matches nobody in the squad: $UNKNOWN"
   fi
 
-  BENCHED=$(q "WITH card AS (
+  BENCHED=$(qx "WITH card AS (
                  SELECT tp.team_id, jsonb_array_elements(tp.content->'cards'->'ones_to_know'->'players')->>'name' AS n
                    FROM team_pages tp JOIN teams t ON t.id = tp.team_id
                   WHERE t.entity_type = 'club' AND t.is_active),
                bar AS (
-                 SELECT team_id, GREATEST(90, MAX(minutes) * 0.4) AS floor_minutes
-                   FROM players WHERE minutes IS NOT NULL GROUP BY team_id)
+                 SELECT team_id, GREATEST(90, MAX(minutes) * 0.4) AS floor_minutes,
+                        MAX(appearances) AS leader_apps
+                   FROM players WHERE minutes IS NOT NULL GROUP BY team_id),
+               -- The picker applies the bar only when it trusts the data. If it
+               -- returns null the generator lets Claude choose freely and the
+               -- bar was never the rule, so asserting it then is pure wolf-cry:
+               -- simulated at a season rollover this flagged all 60 picks, every
+               -- August, for a rule that was not in force.
+               applies AS (
+                 SELECT b.team_id FROM bar b
+                  WHERE b.leader_apps >= 3
+                    AND (SELECT count(*) FROM players p
+                          WHERE p.team_id = b.team_id
+                            AND p.minutes >= b.floor_minutes
+                            AND coalesce(p.league_starts, 0) >= 1) >= 5)
                SELECT string_agg(c.team_id || '/' || c.n ||
-                        ' (' || coalesce(pl.minutes::text, 'no') || ' min, needs ' || round(b.floor_minutes) || ')',
+                        CASE WHEN coalesce(pl.league_starts, 0) < 1
+                             THEN ' (no league start — a cup record on a league page)'
+                             ELSE ' (' || coalesce(pl.minutes::text, 'no') || ' min, needs ' || round(b.floor_minutes) || ')'
+                        END,
                         ', ' ORDER BY c.team_id)
                  FROM card c
                  JOIN players pl ON pl.team_id = c.team_id
                                 AND pl.api_player_id = public.resolve_player_id(c.team_id, c.n)
                  JOIN bar b ON b.team_id = c.team_id
-                WHERE pl.minutes IS NULL OR pl.minutes < b.floor_minutes;")
-  if [ -z "$BENCHED" ]; then
+                 JOIN applies a ON a.team_id = c.team_id
+                WHERE pl.minutes IS NULL OR pl.minutes < b.floor_minutes
+                   OR coalesce(pl.league_starts, 0) < 1;")
+  if [ "${BENCHED}" = "$QERR" ]; then
+  warn "could not read — this check did not run"
+elif [ -z "${BENCHED}" ]; then
     note "OK" "all $TOTAL_PICKS featured players clear their squad's minutes bar"
   else
     warn "featured below the minutes bar: $BENCHED"
@@ -340,7 +381,7 @@ else
   # flagged "the most of anyone in the squad in the league" because the tail
   # matched. Against the league is the ungrounded claim; against the squad is
   # the one the prompt asks for.
-  UNGROUNDED=$(q "WITH card AS (
+  UNGROUNDED=$(qx "WITH card AS (
                     SELECT tp.team_id,
                            jsonb_array_elements(tp.content->'cards'->'ones_to_know'->'players') AS p
                       FROM team_pages tp JOIN teams t ON t.id = tp.team_id
@@ -350,7 +391,9 @@ else
                    WHERE (c.p->>'one_liner' ~* '(most|top|best|highest|leading|first|only)[^.]{0,40}(in|of) the (premier )?league([^a-z]|$)'
                       OR c.p->>'one_liner' ~* 'league.{0,20}(top scorer|leading scorer|golden boot)')
                      AND c.p->>'one_liner' !~* '(in|of|at|within) the (squad|club|side|team)';")
-  if [ -z "$UNGROUNDED" ]; then
+  if [ "${UNGROUNDED}" = "$QERR" ]; then
+  warn "could not read — this check did not run"
+elif [ -z "${UNGROUNDED}" ]; then
     note "OK" "no card claims a league-wide ranking we do not hold"
   else
     warn "claims a league-wide rank we cannot verify: $UNGROUNDED"
@@ -360,12 +403,14 @@ fi
 # 8c. Has the prose been written at all lately? The routine runs Mondays, so
 # eight days means a Monday was missed — which happened twice in September and
 # went unnoticed for sixteen days.
-STALE=$(q "SELECT string_agg(tp.team_id, ', ' ORDER BY tp.team_id)
+STALE=$(qx "SELECT string_agg(tp.team_id, ', ' ORDER BY tp.team_id)
              FROM team_pages tp JOIN teams t ON t.id = tp.team_id
             WHERE t.entity_type = 'club' AND t.is_active
               AND (tp.content->>'last_routine_run' IS NULL
                    OR (tp.content->>'last_routine_run')::timestamptz < NOW() - INTERVAL '8 days');")
-if [ -z "$STALE" ]; then
+if [ "${STALE}" = "$QERR" ]; then
+  warn "could not read — this check did not run"
+elif [ -z "${STALE}" ]; then
   note "OK" "every club's prose was rewritten within the last eight days"
 else
   warn "prose older than eight days: $STALE"
@@ -383,7 +428,7 @@ fi
 # Word boundaries matter here: the first version used a bare `up` as one of the
 # trigger words and matched inside "European C-up-", reporting Villa's 1982
 # European Cup and Forest's 1979 as promotion years.
-MIXED=$(q "SELECT string_agg(tp.team_id || ' (fact says ' || f.yr || ', pl_since says ' || s.yr || ')', ', ' ORDER BY tp.team_id)
+MIXED=$(qx "SELECT string_agg(tp.team_id || ' (fact says ' || f.yr || ', pl_since says ' || s.yr || ')', ', ' ORDER BY tp.team_id)
              FROM team_pages tp JOIN teams t ON t.id = tp.team_id
              CROSS JOIN LATERAL (SELECT substring(tp.content->'cards'->'basics'->>'fun_fact'
                                    from '\\m(?:back|returned?|promoted|climbed)\\M[^.]{0,40}?([12][09][0-9][0-9])') AS yr) f
@@ -391,7 +436,9 @@ MIXED=$(q "SELECT string_agg(tp.team_id || ' (fact says ' || f.yr || ', pl_since
                                    from '([12][09][0-9][0-9])') AS yr) s
             WHERE t.entity_type = 'club' AND t.is_active
               AND f.yr IS NOT NULL AND s.yr IS NOT NULL AND f.yr <> s.yr;")
-if [ -z "$MIXED" ]; then
+if [ "${MIXED}" = "$QERR" ]; then
+  warn "could not read — this check did not run"
+elif [ -z "${MIXED}" ]; then
   note "OK" "no club's fun fact argues with its own pl_since"
 else
   warn "fun fact and pl_since give different years: $MIXED"
@@ -408,7 +455,7 @@ fi
 # Words of four letters or more only, so "the" and "with" do not carry the
 # score. 60% is calibrated on the 2026-10-02 sample, where the spread ran from
 # 10% (Coventry, fine) to 75% (Hull, not fine).
-ECHOED=$(q "WITH p AS (
+ECHOED=$(qx "WITH p AS (
               SELECT tp.team_id,
                 regexp_split_to_array(lower(regexp_replace(tp.content->'cards'->'form'->>'form_summary','[^a-zA-Z ]','','g')),'\s+') AS a,
                 regexp_split_to_array(lower(regexp_replace(tp.content->'cards'->'season'->>'summary','[^a-zA-Z ]','','g')),'\s+') AS b
@@ -422,7 +469,9 @@ ECHOED=$(q "WITH p AS (
                       NULLIF((SELECT count(DISTINCT x) FROM unnest(a) x WHERE length(x) > 3), 0)) AS pct
                       FROM p) q
              WHERE pct >= 60;")
-if [ -z "$ECHOED" ]; then
+if [ "${ECHOED}" = "$QERR" ]; then
+  warn "could not read — this check did not run"
+elif [ -z "${ECHOED}" ]; then
   note "OK" "no club repeats its form card in its season card"
 else
   warn "cards 5 and 6 say the same thing: $ECHOED"
@@ -439,7 +488,7 @@ fi
 # Precise because it only fires when the named rival is an ACTIVE club.
 # Forest's card says Derby and Leicester are absent and both genuinely are, so
 # it stays quiet.
-GONE=$(q "SELECT string_agg(DISTINCT tp.team_id || ' says ' || r.display_name || ' is away', ', ')
+GONE=$(qx "SELECT string_agg(DISTINCT tp.team_id || ' says ' || r.display_name || ' is away', ', ')
             FROM team_pages tp
             JOIN teams t ON t.id = tp.team_id
             JOIN teams r ON r.entity_type = 'club' AND r.is_active AND r.id <> tp.team_id
@@ -447,7 +496,9 @@ GONE=$(q "SELECT string_agg(DISTINCT tp.team_id || ' says ' || r.display_name ||
            WHERE t.entity_type = 'club' AND t.is_active
              AND tp.content->'cards'->'rivalry'->>'text'
                  ~* '(not in the premier league|neither is in|outside the premier league|not in the top flight)';")
-if [ -z "$GONE" ]; then
+if [ "${GONE}" = "$QERR" ]; then
+  warn "could not read — this check did not run"
+elif [ -z "${GONE}" ]; then
   note "OK" "no rivalry card writes off a club that is actually in the league"
 else
   warn "rivalry card contradicts the team list: $GONE"
@@ -462,9 +513,11 @@ fi
 # photo. All 20 clubs are covered today, so the feed branch is dead code — but
 # it is one newly promoted club away from being live again, and the symptom
 # would be a real person's face attached to the wrong job.
-UNVERIFIED=$(q "SELECT string_agg(id, ', ' ORDER BY id) FROM teams
+UNVERIFIED=$(qx "SELECT string_agg(id, ', ' ORDER BY id) FROM teams
                  WHERE entity_type = 'club' AND is_active AND manager_name IS NULL;")
-if [ -z "$UNVERIFIED" ]; then
+if [ "${UNVERIFIED}" = "$QERR" ]; then
+  warn "could not read — this check did not run"
+elif [ -z "${UNVERIFIED}" ]; then
   note "OK" "every club's manager is the human-verified one, not the feed's"
 else
   fail "no verified manager, so the unreliable /coachs feed decides: $UNVERIFIED  (set teams.manager_name)"
@@ -475,8 +528,8 @@ fi
 # two-hourly numeric churn instead it becomes ~8 MB a day, which is how
 # raw_fetch_logs drained the Disk IO budget in June. This one FAILs, because it
 # is a defect in our own machinery rather than a judgement about content.
-HIST=$(q "SELECT pg_total_relation_size('public.team_page_prose_history');")
-if [ -z "$HIST" ]; then
+HIST=$(qx "SELECT pg_total_relation_size('public.team_page_prose_history');")
+if [ "$HIST" = "$QERR" ] || [ -z "$HIST" ]; then
   warn "could not read the prose history size"
 elif [ "$HIST" -gt 5242880 ]; then
   fail "team_page_prose_history is $((HIST / 1048576)) MB — the trigger is following numeric churn, check its scope"

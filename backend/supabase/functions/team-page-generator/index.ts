@@ -39,7 +39,7 @@ import {
 import { classifyBestThird, type GroupThirdBounds } from "../_shared/best-third.ts";
 import { classifyExactForTeam, coarseThirdPointsBounds, type GroupTeam, type RemainingGame } from "../_shared/group-scenarios.ts";
 import { guaranteedExactlyThird } from "../_shared/detect-consequences.ts";
-import { formatSquadStats, pickFeaturedPlayers, sameName, type PlayerStatRow } from "../_shared/featured-players.ts";
+import { describeSubstitution, formatSquadStats, pickFeaturedPlayers, type PlayerStatRow } from "../_shared/featured-players.ts";
 
 // ============================================================
 // SYSTEM PROMPT
@@ -708,13 +708,13 @@ async function generateFullPage(
   // a confident ranking — a season rollover, a stats sync that has not run,
   // and every WC country, none of which have club-season minutes — this is
   // empty and the instruction below falls back to the original wording.
-  const featuredBlock = featured
-    ? `Season to date, most-used first:\n${statsTable}\n\n` +
-      `FEATURED PLAYERS — use exactly these three, in this order, for top_players:\n` +
-      featured.map((p, i) => `${i + 1}. ${p.name} (${p.position ?? "?"})`).join("\n")
-    : statsTable
-    ? `Season to date, most-used first:\n${statsTable}`
-    : "";
+  // The numbers and the instruction are emitted SEPARATELY on purpose. The
+  // stats come from a feed and belong inside wrapExternalData; the
+  // pre-selection is our own instruction, and the system prompt tells the model
+  // that anything inside that fence is untrusted and that embedded
+  // instructions must be ignored (index.ts:87-88). Putting "use exactly these
+  // three" in there — where the three names appeared and nowhere else — was
+  // asking the model to obey something it had just been told to discount.
 
   // V2.0: league_context tells Claude whether this is a PL club or WC country.
   // The voice + structure stay identical (team page = team page); only the
@@ -758,7 +758,11 @@ ${wrapExternalData(`Coaches (pre-filtered to the single current head coach when 
 
 ${wrapExternalData(`Teams (deterministic team metadata — venue.name is the home stadium, venue.city is the city, country.name is the country): ${teamsData || "not available"}`, "api_football")}
 
-${featuredBlock ? wrapExternalData(featuredBlock, "goaldigger_player_stats") : ""}
+${statsTable ? wrapExternalData(`Season to date, most-used first:\n${statsTable}`, "goaldigger_player_stats") : ""}
+${featured
+  ? `FEATURED PLAYERS — use exactly these three, in this order, for top_players:\n` +
+    featured.map((p, i) => `${i + 1}. ${p.name} (${p.position ?? "?"})`).join("\n")
+  : ""}
 
 ${existingBasicsBlock}
 
@@ -833,10 +837,8 @@ tab shows empty state, so do NOT skip this field when fixtures exist.`;
   // failure gets written somewhere a human reads instead of being swallowed.
   if (featured) {
     const returned = (input.top_players as Array<{ name?: string }> | undefined) ?? [];
-    const substituted = returned
-      .map((p) => p.name ?? "")
-      .filter((name) => !featured.some((f) => sameName(f.name, name)));
-    if (substituted.length > 0) {
+    const substituted = describeSubstitution(featured, returned);
+    if (substituted) {
       // 'partial': the page itself generated, but one of its cards did not
       // come back as specified. No 'warning' status exists in the taxonomy
       // and this is exactly what 'partial' is for.
@@ -844,8 +846,7 @@ tab shows empty state, so do NOT skip this field when fixtures exist.`;
         stage: "generate",
         status: "partial",
         team_id: team.id,
-        message: `top_players ignored the pre-selection: ${substituted.join(", ")} ` +
-          `not in ${featured.map((f) => f.name).join(", ")}`,
+        message: `top_players ignored the pre-selection: ${substituted}`,
       });
     }
   }
