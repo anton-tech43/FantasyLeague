@@ -69,6 +69,8 @@ def last_results(tid):
     out = []
     for r in sorted(resp, key=lambda x: x["fixture"]["date"], reverse=True):
         if r["fixture"]["status"]["short"] not in ("FT", "AET", "PEN"): continue
+        # Friendlies are not results the app counts (team-page-generator drops them).
+        if "Friendl" in r["league"]["name"]: continue
         h, a = r["teams"]["home"], r["teams"]["away"]
         mine_home = h["id"] == api
         g = r["goals"]; my = g["home"] if mine_home else g["away"]; th = g["away"] if mine_home else g["home"]
@@ -157,6 +159,9 @@ for f in sorted(glob.glob(f"{S}/dumps/myturn-audit-*-{label}.json")):
                 bad(club, w, f"explanation '{q['explanation']}' vs {t}")
         elif q["id"] == "opp-form":
             r = last_results(T)[:3]
+            # Under three competitive results in the feed, the app asks the
+            # page's five-game league form instead: not checkable from here.
+            if len(r) < 3: man(club, w, f"{q['answer']} (league form, feed has {len(r)} results)"); continue
             names = [x["opp"] for x in r]
             if not all(fold(n) in fold(q["question"]) or surname(n) in fold(q["question"]) for n in names):
                 bad(club, w, f"question '{q['question']}' vs last three {names}")
