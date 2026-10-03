@@ -463,7 +463,9 @@ final class MyTurnStore {
     #endif
 
     func startRetryRound(pack: QuizPack, missedIds: [String]) {
-        let byId = Dictionary(uniqueKeysWithValues: pack.questions.map { ($0.id, $0) })
+        // Not uniqueKeysWithValues: a repeated id (downloaded or device-built
+        // pack) would trap. First one wins.
+        let byId = Dictionary(pack.questions.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let qs = missedIds.compactMap { byId[$0] }.sorted { $0.difficulty < $1.difficulty }
         guard !qs.isEmpty else { return }
         state.quizRound = QuizRound(packId: pack.id, questionIds: qs.map(\.id))

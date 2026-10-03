@@ -576,9 +576,18 @@ struct InfoCardView: View {
         }
     }
 
+    /// Same template as TeamPageView's kickoff line, so the phone's 12/24-hour
+    /// choice is kept ("Wed 7 Oct at 6:00 pm" / "at 18:00"); a fixed "HH:mm"
+    /// forced 24-hour on every phone (QA NEW-18). English month and weekday
+    /// whatever the phone's language, because the copy around it is English:
+    /// en_GB names with the device's own hour cycle.
     private static let kickoffFmt: DateFormatter = {
+        var c = Locale.Components(locale: Locale(identifier: "en_GB"))
+        c.hourCycle = Locale.current.hourCycle
         let f = DateFormatter()
-        f.dateFormat = "EEE d MMM, HH:mm"
+        f.locale = Locale(components: c)
+        f.setLocalizedDateFormatFromTemplate("EEE d MMM jm")
+        f.amSymbol = "am"; f.pmSymbol = "pm"
         return f
     }()
 }

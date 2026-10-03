@@ -58,6 +58,35 @@ SUPERLATIVE = re.compile(
     r"|\bstill\b|\bnever\b(?! walk alone)",
     re.I)
 
+# House copy rule (ARCHITECTURE.md §2): app-visible text says "World
+# Championship", never "World Cup", and carries no em or en dash. Checked over
+# EVERY string in every file rather than per field, so a field added later
+# cannot slip past it. 19 "World Cup"s shipped in quiz.json and lingo.json
+# before this existed (QA NEW-8, 2026-10-04). "world champion(s)" is fine.
+HOUSE_COPY = (
+    (re.compile(r"\bworld[\s-]*cups?\b", re.I), 'says "World Cup"; app copy says "World Championship"'),
+    (re.compile("[\u2014\u2013]"), "has an em or en dash; write two sentences, or a hyphen in a scoreline"),
+)
+
+
+def house_copy_violations(data, path: str):
+    """(path, reason, text) for every string under `data` breaking HOUSE_COPY."""
+    if isinstance(data, str):
+        for pat, why in HOUSE_COPY:
+            if pat.search(data):
+                yield path, why, data
+    elif isinstance(data, dict):
+        for k, v in data.items():
+            yield from house_copy_violations(v, f"{path}.{k}")
+    elif isinstance(data, list):
+        for i, v in enumerate(data):
+            yield from house_copy_violations(v, f"{path}[{i}]")
+
+
+assert [p for p, _, _ in house_copy_violations({"a": ["fine", "the World Cup"]}, "x")] == ["x.a[1]"]
+assert len(list(house_copy_violations("won 2\u20130 \u2014 again", "x"))) == 1
+assert not list(house_copy_violations(["world champions in 1966", "4-0", "World Championship"], "x"))
+
 errors: list[str] = []
 warnings: list[str] = []
 
@@ -83,6 +112,8 @@ def load(name: str) -> dict:
         return {}
     if not re.match(r"^\d{4}-\d{2}-\d{2}\.\d+$", str(data.get("contentVersion", ""))):
         err(f"{name}: contentVersion must look like 2026-09-07.1")
+    for path, why, text in house_copy_violations(data, name):
+        err(f"{path}: {why}: {text[:70]}")
     return data
 
 

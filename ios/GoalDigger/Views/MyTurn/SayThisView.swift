@@ -26,7 +26,9 @@ struct SayThisView: View {
     @State private var showingPractise = false
 
     private var lingoById: [String: LingoTerm] {
-        Dictionary(uniqueKeysWithValues: lingo.terms.map { ($0.id, $0) })
+        // Not uniqueKeysWithValues: a repeated id in downloaded content would
+        // trap on every render. First one wins.
+        Dictionary(lingo.terms.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
     }
 
     private var selected: Situation? {

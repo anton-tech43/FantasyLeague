@@ -514,20 +514,22 @@ enum LiveClubPack {
         return QuizPack(id: opponentPackId, label: "Get to know \(club)", questions: qs)
     }
 
-    /// "We won 4–0", with the flipped result and a draw as the other two, so
+    /// "We won 4-0", with the flipped result and a draw as the other two, so
     /// every option is a scoreline that could have happened in that game.
+    /// A plain hyphen in every scoreline: no em or en dashes in app copy
+    /// (house rule, QA NEW-15).
     static func lastMeetingQuestion(_ m: MatchContext.LastMeeting, club: String, ours: String) -> [MyTurnQuestion] {
         let hi = max(m.ours, m.theirs), lo = min(m.ours, m.theirs)
-        let score = "\(hi)\u{2013}\(lo)"
+        let score = "\(hi)-\(lo)"
         let answer: String, wrong: [String], line: String
         if m.ours > m.theirs {
-            answer = "We won \(score)"; wrong = ["They won \(score)", "\(lo)\u{2013}\(lo) draw"]
+            answer = "We won \(score)"; wrong = ["They won \(score)", "\(lo)-\(lo) draw"]
             line = "We beat them \(score) last time. Can we do it again?"
         } else if m.theirs > m.ours {
-            answer = "They won \(score)"; wrong = ["We won \(score)", "\(lo)\u{2013}\(lo) draw"]
+            answer = "They won \(score)"; wrong = ["We won \(score)", "\(lo)-\(lo) draw"]
             line = "They beat us last time. Is this the revenge game?"
         } else {
-            let won = "\(hi + 1)\u{2013}\(hi)"
+            let won = "\(hi + 1)-\(hi)"
             answer = "\(score) draw"; wrong = ["We won \(won)", "They won \(won)"]
             line = "It was a draw last time. Can we beat them this time?"
         }
@@ -538,7 +540,7 @@ enum LiveClubPack {
             id: "opp-last-meeting", difficulty: 2,
             question: "The last time \(ours) played \(club), how did it go?",
             answer: answer, distractors: Array(wrong.prefix(1)),
-            explanation: "\(home) \(hg)\u{2013}\(ag) \(away), at \(m.weAreHome ? "ours" : "theirs")\(when).",
+            explanation: "\(home) \(hg)-\(ag) \(away), at \(m.weAreHome ? "ours" : "theirs")\(when).",
             why: "He'll remember it, and he'll bring it up before kick-off.",
             useType: .ask, use: quote(line), options: 2)
     }
@@ -557,7 +559,7 @@ enum LiveClubPack {
         let names = results.map(\.opponent)
         let list = names.count == 3 ? "\(names[0]), \(names[1]) and \(names[2])" : names.joined(separator: ", ")
         let told = results.map { r -> String in
-            let score = "\(r.teamScore)\u{2013}\(r.oppScore)"
+            let score = "\(r.teamScore)-\(r.oppScore)"
             switch r.outcome {
             case "W": return "beat \(r.opponent) \(score)"
             case "L": return "lost \(score) to \(r.opponent)"
@@ -603,13 +605,13 @@ enum LiveClubPack {
             return page.cards.basics == nil  // too little on the fixture to build is fine, not a failure
         }
         let text = pack.questions.flatMap { [$0.question, $0.explanation, $0.why ?? "", $0.use ?? ""] }.joined(separator: " ")
-        // Leeds 0–4 Arsenal away: ours is the win, and the flip is offered.
+        // Leeds 0-4 Arsenal away: ours is the win, and the flip is offered.
         let meeting = lastMeetingQuestion(.init(date: "2026-01-31", weAreHome: false, ours: 4, theirs: 0),
                                           club: "Leeds", ours: "Arsenal").first
         let meetingOK = meeting.map {
-            $0.options[$0.answer] == "We won 4\u{2013}0" && $0.options.contains("They won 4\u{2013}0")
+            $0.options[$0.answer] == "We won 4-0" && $0.options.contains("They won 4-0")
                 && ($0.use ?? "").contains("Can we do it again")
-                && $0.explanation == "Leeds 0\u{2013}4 Arsenal, at theirs, in January 2026."
+                && $0.explanation == "Leeds 0-4 Arsenal, at theirs, in January 2026."
         } ?? false
         let form = formFromResults([
             RecentResult(date: "2026-09-27", opponent: "Wolves", venue: "home", teamScore: 2, oppScore: 0),
@@ -619,7 +621,7 @@ enum LiveClubPack {
         let formOK = form.map {
             $0.question == "Leeds have played Wolves, Fulham and Burnley. How did it go?"
                 && $0.options[$0.answer] == "Won 2, drew 1, lost 0 of the last three"
-                && $0.options.count == 2 && $0.explanation.hasPrefix("They beat Wolves 2\u{2013}0")
+                && $0.options.count == 2 && $0.explanation.hasPrefix("They beat Wolves 2-0")
         } ?? false
         return meetingOK && formOK && leadingPlace("14th, 47 points") == 14 && leadingPlace("Champions, 85 points") == nil
             && leadingPlace("Promoted through the play-offs, 6th") == nil

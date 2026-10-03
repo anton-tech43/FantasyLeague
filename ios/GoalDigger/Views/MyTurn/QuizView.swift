@@ -317,9 +317,14 @@ struct QuizView: View {
             if let qid = round.questionIds[safe: i], let q = pack.questions.first(where: { $0.id == qid }),
                let selected = reviewIndex == nil ? round.selected : round.picks[safe: i] {
                 let correct = selected == q.answer
-                let right = q.options[q.answer]
+                // Safe subscript: remote content is validated before it is
+                // swapped in, and a live pack is built on the phone, but a bad
+                // index must cost a blank line, never a crash on every launch.
+                let right = q.options[safe: q.answer] ?? ""
                 MyTurnPopup(
-                    verdict: correct ? "Right." : "Not that one. It's \(right.trimmingCharacters(in: CharacterSet(charactersIn: "."))).",
+                    // The answer stands as its own sentence, so it keeps its own
+                    // capital: "It's \(right)" read "It's The goalkeeper." (QA).
+                    verdict: correct ? "Right." : "Not that one. \(right.trimmingCharacters(in: CharacterSet(charactersIn: "."))).",
                     verdictTint: .warmWhite,
                     exitLabel: reviewIndex != nil ? "Back to question \(round.index + 1)"
                         : round.index + 1 >= round.questionIds.count ? "See the score" : "Next",

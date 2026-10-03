@@ -279,7 +279,7 @@ SPURS = [
      "2008, the League Cup, beating Chelsea 2-1 at Wembley. Seventeen years of jokes followed, including a whole genre about Spurs bottling things.",
      "'Spursy' became an adjective in those years. Knowing why is knowing the club's self-image.",
      "say", "\"Seventeen years without a trophy. 'Spursy' became an actual word.\""),
-    (2, "Which Tottenham midfielder's tears at the 1990 World Cup made him a national hero?", ["Paul Gascoigne", "Chris Waddle", "Glenn Hoddle"], 0,
+    (2, "Which Tottenham midfielder's tears at the 1990 World Championship made him a national hero?", ["Paul Gascoigne", "Chris Waddle", "Glenn Hoddle"], 0,
      "Paul Gascoigne, Gazza, booked in the semi-final against West Germany, which meant he would miss the final. He cried on the pitch and the country fell for him.",
      "Gazza's tears are the moment English football became loveable again. He'll know the clip.",
      "ask", "Ask him: \"Are you old enough to remember Gazza crying in 1990?\""),

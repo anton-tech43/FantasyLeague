@@ -322,7 +322,7 @@ OVERHEARD = {
         moment="common",
     ),
     "wags": dict(
-        overheard="My mum still goes on about the WAGs at that 2006 World Cup.",
+        overheard="My mum still goes on about the WAGs at that 2006 World Championship.",
         speaker="chat",
         gist="Tabloid slang for players' wives and girlfriends",
         decoy="Photographers who chase the players about",

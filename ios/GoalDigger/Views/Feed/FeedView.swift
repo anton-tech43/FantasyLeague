@@ -105,13 +105,16 @@ struct FeedView: View {
                 EveryoneEmptyStateCard(
                     cardHeight: screenHeight * Layout.immersiveCardHeightRatio,
                     teamName: appState.selectedTeam?.shortName
-                        ?? appState.selectedCountry?.shortName ?? "your team",
+                        ?? (CountryFollowing.isEnabled ? appState.selectedCountry?.shortName : nil)
+                        ?? "your team",
                     onBackToTeam: {
                         // iOS-9: fall back to a followed country for WC-only users
-                        // (no club) so the button isn't a no-op.
+                        // (no club) so the button isn't a no-op. Only while
+                        // country following is on: with it off a country context
+                        // is invalid and the app repairs it away on foreground.
                         if let team = appState.selectedTeam {
                             switchContext(to: .team(team))
-                        } else if let country = appState.selectedCountry {
+                        } else if CountryFollowing.isEnabled, let country = appState.selectedCountry {
                             switchContext(to: .country(country))
                         }
                     }
@@ -170,17 +173,23 @@ struct FeedView: View {
             // currentQuiz nil so the card simply doesn't render.
             await loadSaturdayQuiz()
         }
-        .onChange(of: appState.selectedTeam) { oldTeam, newTeam in
-            guard oldTeam != newTeam, newTeam != nil else { return }
-            // Clear stale team data and reload for the new team
+        .onChange(of: activeEntityId) { _, newEntity in
+            // Keyed on the entity `teamItems` belongs to, not selectedTeam
+            // (.first): following [A, B] on B and removing B in Settings moves
+            // the context to A while `.first` stays A, and the old trigger
+            // never fired, so B's stories stayed up under A's name.
+            // Clear stale entity data and reload for the new one.
             teamItems = []
             teamOffset = 0
             teamCanLoadMore = true
-            isLoading = true
             freshnessCardDismissed = false
             matchdayPlayers = []
-            liveBrief = nil   // drop stale live card from prior team
-            currentQuiz = nil // and stale quiz card for prior team
+            countryNextFixture = nil
+            emptyStateInsider = nil
+            liveBrief = nil   // drop stale live card from prior entity
+            currentQuiz = nil // and stale quiz card for prior entity
+            guard newEntity != nil else { return }
+            isLoading = true
             Task { await loadTeamFeed() }
         }
         .onChange(of: scenePhase) { oldPhase, newPhase in
@@ -317,14 +326,15 @@ struct FeedView: View {
 
     @ViewBuilder
     private var aggregateUnreadBadge: some View {
-        // V2.0: pass empty countryItems — FeedView in this build only loads
-        // ONE set of items at a time (for activeContext). The aggregate badge
-        // under-reports unread for the inactive country/team when a user has
-        // both selected. Acceptable trade-off; V2.1 will split the lists.
+        // FeedView holds ONE team/country list at a time (activeEntityId's).
+        // UnreadTracker counts each context only over items whose teamId is
+        // its own, so a followed club or country that is not loaded counts
+        // zero instead of borrowing the loaded one's stories. The badge
+        // under-reports for an unloaded context; it never mislabels.
         let badgeText = UnreadTracker.shared.aggregateBadgeText(
             activeContext: appState.activeContext,
             teamItems: teamItems,
-            countryItems: [],
+            countryItems: teamItems,
             everyoneItems: everyoneItems,
             selectedTeams: appState.selectedTeams,
             selectedCountries: appState.selectedCountries
@@ -371,7 +381,7 @@ struct FeedView: View {
     /// quiz is team-specific). Sits BELOW LiveMatchCard in render order
     /// — during a live match the live card takes visual priority.
     private var shouldShowQuiz: Bool {
-        currentQuiz != nil &&
+        currentQuiz?.questions.isEmpty == false &&
         TierGating.isAvailable(.saturdayQuiz, tier: appState.selectedTier) &&
         appState.activeContext != .everyoneTalking
     }
@@ -623,6 +633,7 @@ struct FeedView: View {
         // (handled automatically via @State — session only)
 
         let previous = appState.activeContext
+        let previousEntity = activeEntityId
         UnreadTracker.shared.markViewed(appState.activeContext)
         appState.activeContext = context
         UnreadTracker.shared.markViewed(context)
@@ -635,20 +646,12 @@ struct FeedView: View {
         Task {
             switch context {
             case .team, .country:
-                // Always reload. `teamItems` still holds the PREVIOUS
-                // entity's stories, so the old `if teamItems.isEmpty` guard
-                // skipped the reload and left the immersive feed showing the
-                // wrong team until a manual pull-to-refresh (reported bug
-                // 2026-06-01). Clear stale state and refetch for the new
-                // entity, mirroring onChange(of: selectedTeam).
-                teamItems = []
-                teamOffset = 0
-                teamCanLoadMore = true
-                isLoading = true
-                matchdayPlayers = []
-                liveBrief = nil
-                currentQuiz = nil
-                await loadTeamFeed()
+                // A different entity is cleared and reloaded by
+                // onChange(of: activeEntityId), so `teamItems` can never show
+                // the previous entity's stories (reported bug 2026-06-01).
+                // The same entity (back from Everyone Talking) refreshes in
+                // place; reloading it here as well raced two loads.
+                if activeEntityId == previousEntity { await loadTeamFeed() }
             case .everyoneTalking:
                 if everyoneItems.isEmpty { await loadEveryoneFeed() }
             }
@@ -672,20 +675,13 @@ struct FeedView: View {
         // always selectedTeam. Keying on selectedTeam flashed the old team's
         // cached feed when the user had switched to a country (or vice versa)
         // until the fresh fetch returned.
-        let cacheEntityId: String = {
-            switch appState.activeContext {
-            case .country(let c): return c.rawValue
-            case .team(let t): return t.rawValue
-            case .everyoneTalking:
-                return appState.selectedTeam?.rawValue ?? appState.selectedCountry?.rawValue ?? ""
-            }
-        }()
+        let cacheEntityId = activeEntityId ?? ""
         let cached = CacheService.shared.fetchCachedFeed(
             teamId: cacheEntityId,
             in: modelContext
         )
-        if !cached.isEmpty {
-            teamItems = cached
+        if !cached.isEmpty, teamItems.isEmpty {
+            teamItems = Self.applyTierFilter(Self.uniqued(cached), tier: appState.selectedTier)
             isLoading = false
         }
 
@@ -707,30 +703,21 @@ struct FeedView: View {
     }
 
     private func loadTeamFeed() async {
-        // V2.0: pick the right entity based on activeContext. Country takes
-        // precedence when the user is in WC mode; otherwise fall back to the
-        // team selection. Returns early if neither is set.
-        let entityId: String
-        switch appState.activeContext {
-        case .country(let c): entityId = c.rawValue
-        case .team(let t):    entityId = t.rawValue
-        case .everyoneTalking:
-            if let team = appState.selectedTeam {
-                entityId = team.rawValue
-            } else if CountryFollowing.isEnabled, let country = appState.selectedCountry {
-                entityId = country.rawValue
-            } else {
-                return
-            }
-        }
-        let teamId = entityId
+        // The entity comes from activeContext (see activeEntityId); returns
+        // early when there is none. Captured BEFORE the await: a club switch or
+        // a Settings change while the request is in flight changes
+        // activeEntityId, and the stale response must not land in `teamItems`
+        // under the new entity's name. The newer load owns the state then.
+        guard let teamId = activeEntityId else { return }
+        var isStale: Bool { activeEntityId != teamId }
         do {
             let fetched = try await APIClient.shared.fetchFeed(teamId: teamId, limit: pageSize, offset: 0)
+            if isStale { return }
             // Sunday Brief (V1.1 C2) is T2+. Filter client-side so a T1
             // user never sees the card even if it slipped into the response.
             // Server-side push gating in notification-sender stops the
             // notification; this guard handles the feed render.
-            teamItems = Self.applyTierFilter(fetched, tier: appState.selectedTier)
+            teamItems = Self.applyTierFilter(Self.uniqued(fetched), tier: appState.selectedTier)
             teamOffset = fetched.count
             teamCanLoadMore = fetched.count == pageSize
             hasError = false
@@ -740,12 +727,15 @@ struct FeedView: View {
             // Always fetched in country context so the next match is shown
             // whether or not there are news items.
             if case .country = appState.activeContext {
-                countryNextFixture = (try? await APIClient.shared.fetchTeamSeasonState(teamId: teamId))?
+                let next = (try? await APIClient.shared.fetchTeamSeasonState(teamId: teamId))?
                     .fixturesForSync.first(where: { $0.kickoffTime > Date() })
+                if isStale { return }
+                countryNextFixture = next
             } else {
                 countryNextFixture = nil
             }
         } catch {
+            if isStale { return }
             if teamItems.isEmpty {
                 #if DEBUG
                 let mockItems = MockData.feed.filter { $0.teamId == teamId }
@@ -771,6 +761,7 @@ struct FeedView: View {
         if teamItems.isEmpty,
            TierGating.isAvailable(.insiderCard, tier: appState.selectedTier) {
             let items = (try? await APIClient.shared.fetchInsiderItems(teamId: teamId, limit: 1)) ?? []
+            if isStale { return }
             emptyStateInsider = items.first
         } else {
             emptyStateInsider = nil
@@ -783,7 +774,9 @@ struct FeedView: View {
         // entity (teamId) so a country matchday gets the country's players,
         // not the club's. (bug 2026-06-01)
         if teamItems.contains(where: { $0.type == .matchday }) {
-            matchdayPlayers = (try? await APIClient.shared.fetchPlayerCards(teamId: teamId)) ?? []
+            let players = (try? await APIClient.shared.fetchPlayerCards(teamId: teamId)) ?? []
+            if isStale { return }
+            matchdayPlayers = players
         }
     }
 
@@ -792,13 +785,13 @@ struct FeedView: View {
         if everyoneItems.isEmpty {
             let cached = CacheService.shared.fetchCachedEveryoneFeed(in: modelContext)
             if !cached.isEmpty {
-                everyoneItems = cached
+                everyoneItems = Self.applyTierFilter(Self.uniqued(cached), tier: appState.selectedTier)
             }
         }
 
         do {
             let fetched = try await APIClient.shared.fetchEveryoneFeed(limit: pageSize, offset: 0)
-            everyoneItems = Self.applyTierFilter(fetched, tier: appState.selectedTier)
+            everyoneItems = Self.applyTierFilter(Self.uniqued(fetched), tier: appState.selectedTier)
             everyoneOffset = fetched.count
             everyoneCanLoadMore = fetched.count == pageSize
             // Cache everyone items alongside team items
@@ -834,7 +827,10 @@ struct FeedView: View {
             guard everyoneCanLoadMore else { return }
             do {
                 let fetched = try await APIClient.shared.fetchEveryoneFeed(limit: pageSize, offset: everyoneOffset)
-                everyoneItems.append(contentsOf: Self.applyTierFilter(fetched, tier: appState.selectedTier))
+                // Offset paging shifts when a story is published between
+                // pages, so page N+1 can repeat the tail of page N. A repeated
+                // id breaks ForEach(id:), so drop what is already shown.
+                everyoneItems = Self.uniqued(everyoneItems + Self.applyTierFilter(fetched, tier: appState.selectedTier))
                 everyoneOffset += fetched.count
                 everyoneCanLoadMore = fetched.count == pageSize
                 CacheService.shared.upsertItems(fetched, in: modelContext)
@@ -850,7 +846,11 @@ struct FeedView: View {
     private func loadMoreEntity(teamId: String) async {
         do {
             let fetched = try await APIClient.shared.fetchFeed(teamId: teamId, limit: pageSize, offset: teamOffset)
-            teamItems.append(contentsOf: Self.applyTierFilter(fetched, tier: appState.selectedTier))
+            // The context changed while this page was in flight: it belongs
+            // to the previous entity, whose list has already been replaced.
+            guard activeEntityId == teamId else { return }
+            // Same de-dup as the Everyone feed above: offset paging can repeat ids.
+            teamItems = Self.uniqued(teamItems + Self.applyTierFilter(fetched, tier: appState.selectedTier))
             teamOffset += fetched.count
             teamCanLoadMore = fetched.count == pageSize
             CacheService.shared.upsertItems(fetched, in: modelContext)
@@ -859,6 +859,14 @@ struct FeedView: View {
             print("⚠️ loadMore failed: \(error.localizedDescription)")
             #endif
         }
+    }
+
+    /// First occurrence of each id, order kept. ForEach(id: \.element.id)
+    /// misrenders (and logs) on a repeated id, which offset paging produces
+    /// whenever a story lands between two page fetches.
+    static func uniqued(_ items: [ContentItem]) -> [ContentItem] {
+        var seen = Set<UUID>()
+        return items.filter { seen.insert($0.id).inserted }
     }
 
     // MARK: - Tier filter

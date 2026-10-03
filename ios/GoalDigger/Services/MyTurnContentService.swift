@@ -37,6 +37,9 @@ final class MyTurnContentService {
         lingo   = Self.loadBest("lingo")   ?? LingoContent(contentVersion: "0", terms: [], calls: nil)
         quiz    = Self.loadBest("quiz")    ?? QuizContent(contentVersion: "0", packs: [])
         hype    = Self.loadBest("hype")    ?? HypeContent(contentVersion: "0", categories: [:])
+        #if DEBUG
+        myTurnPayloadSelfCheck()
+        #endif
     }
 
     // MARK: Loading
@@ -60,9 +63,10 @@ final class MyTurnContentService {
         (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["contentVersion"] as? String
     }
 
-    /// Newest of bundled vs cached, decoded. A cached file that fails to decode
-    /// is deleted so it cannot poison future launches.
-    private static func loadBest<T: Decodable>(_ module: String) -> T? {
+    /// Newest of bundled vs cached, decoded and usable. A cached file that fails
+    /// to decode, or decodes but breaks an invariant the views index on, is
+    /// deleted so it cannot poison future launches.
+    private static func loadBest<T: Decodable & MyTurnPayload>(_ module: String) -> T? {
         let decoder = JSONDecoder()
         let bundled = bundledURL(module).flatMap { try? Data(contentsOf: $0) }
         let cached = try? Data(contentsOf: cachedURL(module))
@@ -70,7 +74,7 @@ final class MyTurnContentService {
         if let b = bundled, let v = version(of: b) { candidates.append((v, b)) }
         if let c = cached, let v = version(of: c) { candidates.append((v, c)) }
         for (_, data) in candidates.sorted(by: { $0.0 > $1.0 }) {
-            if let decoded = try? decoder.decode(T.self, from: data) { return decoded }
+            if let decoded = try? decoder.decode(T.self, from: data), decoded.isUsable { return decoded }
             if data == cached { try? FileManager.default.removeItem(at: cachedURL(module)) }
         }
         return nil
@@ -148,21 +152,22 @@ final class MyTurnContentService {
         }
     }
 
-    /// Decode first, write second, swap third — a body that does not decode
-    /// never touches disk or memory.
+    /// Decode first, validate second, write third, swap fourth: a body that
+    /// does not decode, or decodes but would trap a view (QA NEW-16), never
+    /// touches disk or memory, and what she has now stays.
     private func apply(module: String, data: Data) {
         switch module {
         case "saythis":
-            guard let c = try? decoder.decode(SayThisContent.self, from: data) else { return }
+            guard let c = try? decoder.decode(SayThisContent.self, from: data), c.isUsable else { return }
             store(module, data); sayThis = c
         case "lingo":
-            guard let c = try? decoder.decode(LingoContent.self, from: data) else { return }
+            guard let c = try? decoder.decode(LingoContent.self, from: data), c.isUsable else { return }
             store(module, data); lingo = c
         case "quiz":
-            guard let c = try? decoder.decode(QuizContent.self, from: data) else { return }
+            guard let c = try? decoder.decode(QuizContent.self, from: data), c.isUsable else { return }
             store(module, data); quiz = c
         case "hype":
-            guard let c = try? decoder.decode(HypeContent.self, from: data) else { return }
+            guard let c = try? decoder.decode(HypeContent.self, from: data), c.isUsable else { return }
             store(module, data); hype = c
         default:
             return
@@ -179,3 +184,65 @@ final class MyTurnContentService {
         try? data.write(to: url, options: .atomic)
     }
 }
+
+// MARK: - Validation
+
+/// What a decoded body must satisfy before it replaces content the app is
+/// already rendering. Decoding proves the shape; this proves the invariants
+/// the views index on. A published answer index out of range, an empty option
+/// list or a repeated id decoded fine, was cached to disk, and then trapped on
+/// every launch (QA NEW-16). Mirrors the hard half of validate_content.py,
+/// which the bundled files pass in CI; remote bodies are checked here because
+/// nothing forces a publish through that script.
+protocol MyTurnPayload {
+    var isUsable: Bool { get }
+}
+
+private func allUnique(_ ids: [String]) -> Bool { Set(ids).count == ids.count }
+
+extension QuizContent: MyTurnPayload {
+    var isUsable: Bool {
+        let questions = packs.flatMap(\.questions)
+        return !questions.isEmpty
+            && allUnique(packs.map(\.id))
+            && allUnique(questions.map(\.id))
+            && questions.allSatisfy { !$0.options.isEmpty && $0.options.indices.contains($0.answer) }
+    }
+}
+
+extension SayThisContent: MyTurnPayload {
+    var isUsable: Bool {
+        !situations.isEmpty
+            && allUnique(situations.map(\.id))
+            && allUnique(situations.flatMap(\.lines).map(\.id))
+    }
+}
+
+extension LingoContent: MyTurnPayload {
+    var isUsable: Bool {
+        !terms.isEmpty && allUnique(terms.map(\.id))
+    }
+}
+
+extension HypeContent: MyTurnPayload {
+    /// No index into it anywhere: a missing or empty category falls back to
+    /// the bare score. Nothing to reject.
+    var isUsable: Bool { true }
+}
+
+#if DEBUG
+/// Self-check, run once from MyTurnContentService.init in DEBUG builds.
+func myTurnPayloadSelfCheck() {
+    func q(_ id: String, _ options: [String], _ answer: Int) -> MyTurnQuestion {
+        MyTurnQuestion(id: id, difficulty: 1, question: "Q", options: options, answer: answer, explanation: "E")
+    }
+    func pack(_ qs: [MyTurnQuestion]) -> QuizContent {
+        QuizContent(contentVersion: "1", packs: [QuizPack(id: "p", label: "P", questions: qs)])
+    }
+    assert(pack([q("a", ["x", "y"], 1)]).isUsable, "a valid quiz was rejected")
+    assert(!pack([q("a", ["x", "y"], 2)]).isUsable, "an out-of-range answer was accepted")
+    assert(!pack([q("a", [], 0)]).isUsable, "an empty option list was accepted")
+    assert(!pack([q("a", ["x"], 0), q("a", ["y"], 0)]).isUsable, "a repeated question id was accepted")
+    assert(!pack([]).isUsable, "an empty quiz was accepted")
+}
+#endif

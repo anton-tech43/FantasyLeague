@@ -1,5 +1,5 @@
 {
-  "contentVersion": "2026-10-02.1",
+  "contentVersion": "2026-10-04.1",
   "terms": [
     {
       "id": "premier-league",
@@ -2365,7 +2365,7 @@
       "overheardTerm": "Worldie",
       "speaker": "chat",
       "gist": "A goal of genuine world-class quality",
-      "decoy": "A goal scored at the World Cup",
+      "decoy": "A goal scored at a World Championship",
       "spare": "A goal that wins goal of the month",
       "when": [
         "after-win",
@@ -3900,11 +3900,11 @@
       "id": "wags",
       "category": "culture",
       "term": "WAGs",
-      "meaning": "Old tabloid slang for players' wives and girlfriends, from the 2006 World Cup era. Mostly retired now, thankfully.",
-      "heard": "In stories about the 2006 World Cup.",
+      "meaning": "Old tabloid slang for players' wives and girlfriends, from the 2006 World Championship era. Mostly retired now, thankfully.",
+      "heard": "In stories about the 2006 World Championship.",
       "sayIt": "\"Please tell me nobody says WAGs any more.\"",
       "level": 12,
-      "overheard": "My mum still goes on about the WAGs at that 2006 World Cup.",
+      "overheard": "My mum still goes on about the WAGs at that 2006 World Championship.",
       "overheardTerm": "WAGs",
       "speaker": "chat",
       "gist": "Tabloid slang for players' wives and girlfriends",

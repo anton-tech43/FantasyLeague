@@ -24,9 +24,25 @@ class UnreadTracker {
     }
 
     /// Count of items published after the last viewed timestamp for a context.
+    ///
+    /// A club or country context counts only items whose `teamId` is its own.
+    /// FeedView loads one team/country list at a time, and every caller passed
+    /// that list for every followed entity, so following two clubs showed club
+    /// A's unread stories as club B's (QA iOS-3). An entity whose items are not
+    /// in `items` now counts zero, which hides its badge rather than lying.
+    /// `fetchFeed` filters on `team_id = eq.<entity>`, so this is exact.
     func unreadCount(for context: FeedContext, items: [ContentItem]) -> Int {
         let lastViewed = lastViewedAt(for: context)
-        return items.filter { $0.publishedAt > lastViewed }.count
+        let ownId: String? = {
+            switch context {
+            case .team(let team):       return team.rawValue
+            case .country(let country): return country.rawValue
+            case .everyoneTalking:      return nil
+            }
+        }()
+        return items.filter { item in
+            item.publishedAt > lastViewed && (ownId == nil || item.teamId == ownId)
+        }.count
     }
 
     /// Formatted badge text. Returns nil if count is 0.
@@ -38,13 +54,10 @@ class UnreadTracker {
 
     /// Total unread across all non-active contexts. Used for the pill aggregate badge.
     ///
-    /// V2.0: country contexts now contribute symmetrically. A user with both
-    /// a PL team and a WC country gets their cross-context badge to count
-    /// both inactive contexts. Pass `countryItems: []` if the caller doesn't
-    /// have a separate countryItems array loaded (e.g. FeedView in V2.0,
-    /// which only loads one set of items for the active context) — the
-    /// country contribution then resolves to zero and the badge under-
-    /// reports for the inactive context. Splitting the lists is V2.1.
+    /// V2.0: country contexts now contribute symmetrically. Each followed
+    /// entity counts only its own items (see `unreadCount`), so passing the one
+    /// loaded list as both `teamItems` and `countryItems` is safe: entities
+    /// that are not loaded contribute zero.
     func totalUnread(
         activeContext: FeedContext,
         teamItems: [ContentItem],

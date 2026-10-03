@@ -103,16 +103,18 @@ struct SaturdayQuizCard: View {
 
     @ViewBuilder
     private var expandedView: some View {
-        if showResult {
-            resultCard
+        // Index-guarded: the quiz comes from the server, and a refresh can
+        // swap in a shorter (or empty) one while this card keeps its state.
+        // Past the end there is nothing left to ask, so show the score.
+        if !showResult, let question = quiz.questions[safe: currentIndex] {
+            questionView(question)
         } else {
-            questionView
+            resultCard
         }
     }
 
-    private var questionView: some View {
-        let question = quiz.questions[currentIndex]
-        return VStack(alignment: .leading, spacing: 12) {
+    private func questionView(_ question: QuizQuestion) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
             // Header: tracker + progress
             HStack(spacing: 6) {
                 Image(systemName: "list.bullet.clipboard")

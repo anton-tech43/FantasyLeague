@@ -1,5 +1,5 @@
 {
-  "contentVersion": "2026-09-26.1",
+  "contentVersion": "2026-10-04.1",
   "packs": [
     {
       "id": "the-basics",
@@ -315,7 +315,7 @@
           "verified": true,
           "question": "Which is the oldest cup competition in the world?",
           "options": [
-            "The World Cup",
+            "The World Championship",
             "The FA Cup",
             "The League Cup"
           ],
@@ -352,7 +352,7 @@
             "FIFA"
           ],
           "answer": 0,
-          "explanation": "UEFA, European football's governing body. FIFA runs the World Cup. Neither is loved.",
+          "explanation": "UEFA, European football's governing body. FIFA runs the World Championship. Neither is loved.",
           "why": "Midweek European nights are a separate mood. Knowing who runs them is the first step.",
           "useType": "say",
           "use": "\"UEFA night. Different anthem, different vibe.\""
@@ -1902,7 +1902,7 @@
             "Villa Fields"
           ],
           "answer": 1,
-          "explanation": "Villa Park, their home since 1897, in the Aston district. It hosted games at the 1966 World Cup and dozens of FA Cup semi-finals.",
+          "explanation": "Villa Park, their home since 1897, in the Aston district. It hosted games at the 1966 World Championship and dozens of FA Cup semi-finals.",
           "why": "Villa Park is one of the grand old grounds, and fans say the name with pride.",
           "useType": "say",
           "use": "\"Villa Park's one of the proper old grounds, isn't it?\""
@@ -2103,7 +2103,7 @@
           "id": "club-aston-villa-14",
           "difficulty": 2,
           "verified": true,
-          "question": "Which goalkeeper was playing for Villa when he won the 2022 World Cup with Argentina?",
+          "question": "Which goalkeeper was playing for Villa when he won the 2022 World Championship with Argentina?",
           "options": [
             "Gerónimo Rulli",
             "Franco Armani",
@@ -2111,9 +2111,9 @@
           ],
           "answer": 2,
           "explanation": "Emiliano Martínez, who also won the award for best goalkeeper at the tournament and celebrated it in a way that upset a lot of people.",
-          "why": "A World Cup winner between the posts is a bragging right few clubs have.",
+          "why": "A world champion between the posts is a bragging right few clubs have.",
           "useType": "say",
-          "use": "\"Villa had a World Cup winner in goal. Not many clubs can say that.\""
+          "use": "\"Villa had a world champion in goal. Not many clubs can say that.\""
         },
         {
           "id": "club-aston-villa-15",
@@ -2774,7 +2774,7 @@
           "question": "Christian Eriksen joined Brentford in 2022 after collapsing on the pitch at which tournament?",
           "options": [
             "Euro 2020",
-            "2018 World Cup",
+            "2018 World Championship",
             "Euro 2016"
           ],
           "answer": 0,
@@ -3065,17 +3065,17 @@
           "id": "club-brighton-13",
           "difficulty": 2,
           "verified": true,
-          "question": "Which Brighton midfielder moved to Liverpool in 2023, months after winning the World Cup?",
+          "question": "Which Brighton midfielder moved to Liverpool in 2023, months after winning the World Championship?",
           "options": [
             "Yves Bissouma",
             "Marc Cucurella",
             "Alexis Mac Allister"
           ],
           "answer": 2,
-          "explanation": "Alexis Mac Allister, a World Cup winner with Argentina in December 2022 while a Brighton player. Sold to Liverpool for about £35 million.",
-          "why": "A World Cup winner in a Brighton shirt is a fact that surprises people.",
+          "explanation": "Alexis Mac Allister, a world champion with Argentina in December 2022 while a Brighton player. Sold to Liverpool for about £35 million.",
+          "why": "A world champion in a Brighton shirt is a fact that surprises people.",
           "useType": "impress",
-          "use": "\"Brighton had a World Cup winner in their team. Mac Allister, before Liverpool bought him.\""
+          "use": "\"Brighton had a world champion in their team. Mac Allister, before Liverpool bought him.\""
         },
         {
           "id": "club-brighton-14",
@@ -5242,10 +5242,10 @@
             "Graham Taylor"
           ],
           "answer": 1,
-          "explanation": "Alf Ramsey, who arrived in 1955 with the club in the third tier and went on to win the World Cup with England. His statue stands outside the ground.",
-          "why": "Ipswich gave England its first World Cup-winning manager. That is a national-level fact.",
+          "explanation": "Alf Ramsey, who arrived in 1955 with the club in the third tier and went on to win the World Championship with England. His statue stands outside the ground.",
+          "why": "Ipswich gave England the manager who won the 1966 World Championship. A national-level fact.",
           "useType": "impress",
-          "use": "\"Alf Ramsey won England their first World Cup. He learned how at Ipswich.\""
+          "use": "\"Alf Ramsey made England world champions in 1966. He learned how at Ipswich.\""
         },
         {
           "id": "club-ipswich-7",
@@ -7549,7 +7549,7 @@
           "id": "club-spurs-8",
           "difficulty": 2,
           "verified": true,
-          "question": "Which Tottenham midfielder's tears at the 1990 World Cup made him a national hero?",
+          "question": "Which Tottenham midfielder's tears at the 1990 World Championship made him a national hero?",
           "options": [
             "Glenn Hoddle",
             "Chris Waddle",
