@@ -450,6 +450,18 @@ final class MyTurnStore {
     }
 
     /// A round of only the questions she missed, in the same pack.
+    #if DEBUG
+    /// Screenshot harness: put one question first in the running round.
+    func debugMoveFirst(_ id: String) {
+        guard let round = state.quizRound, let i = round.questionIds.firstIndex(of: id) else { return }
+        var ids = round.questionIds
+        ids.insert(ids.remove(at: i), at: 0)
+        var moved = QuizRound(packId: round.packId, questionIds: ids)
+        moved.fixtureKey = round.fixtureKey
+        state.quizRound = moved
+    }
+    #endif
+
     func startRetryRound(pack: QuizPack, missedIds: [String]) {
         let byId = Dictionary(uniqueKeysWithValues: pack.questions.map { ($0.id, $0) })
         let qs = missedIds.compactMap { byId[$0] }.sorted { $0.difficulty < $1.difficulty }

@@ -427,6 +427,10 @@ struct LingoView: View {
                         store.startRetryRound(pack: pack, missedIds: [args[j + 1]])
                     } else {
                         store.startRound(pack: pack, fixtureKey: context.fixtureKey)
+                        // `-gdMyTurnFirst <id>`: a full round, that question first.
+                        if let j = args.firstIndex(of: "-gdMyTurnFirst"), j + 1 < args.count {
+                            store.debugMoveFirst(args[j + 1])
+                        }
                     }
                     if let j = args.firstIndex(of: "-gdQuizAnswer"), j + 1 < args.count, let a = Int(args[j + 1]),
                        let id = store.quizRound?.questionIds.first,

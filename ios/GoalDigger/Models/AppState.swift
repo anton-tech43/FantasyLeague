@@ -164,6 +164,11 @@ class AppState {
             self.selectedTier = 2
             self.hasCompletedOnboarding = true
             self.hasSeenSeasonPrimer = true
+            // With `-gdOnboardingStep N`: his club chosen, onboarding still
+            // running, so a later step (the calendar) shows his fixtures.
+            if args.contains("-gdOnboardingStep") { self.hasCompletedOnboarding = false }
+            // `-gdTier N`: a different dedication level (the Saturday quiz is T3+).
+            if let j = args.firstIndex(of: "-gdTier"), j + 1 < args.count, let t = Int(args[j + 1]) { self.selectedTier = t }
         }
         // `-gdPresetCountry netherlands` adds a country follow on top, which
         // is the only way to reproduce the ten club+country devices and the

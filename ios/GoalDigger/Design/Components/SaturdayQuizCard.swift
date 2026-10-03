@@ -44,6 +44,16 @@ struct SaturdayQuizCard: View {
         .animation(.easeInOut(duration: 0.2), value: currentIndex)
         .animation(.easeInOut(duration: 0.2), value: selectedAnswer)
         .animation(.easeInOut(duration: 0.2), value: showResult)
+        #if DEBUG
+        // `-gdSatQuizOpen [N]`: open, and with N answer the first question.
+        .onAppear {
+            let args = ProcessInfo.processInfo.arguments
+            guard let i = args.firstIndex(of: "-gdSatQuizOpen") else { return }
+            isExpanded = true
+            if let q = args.firstIndex(of: "-gdSatQuizIndex"), q + 1 < args.count, let k = Int(args[q + 1]) { currentIndex = k }
+            if i + 1 < args.count, let n = Int(args[i + 1]) { selectedAnswer = n }
+        }
+        #endif
     }
 
     // MARK: - Collapsed pill
