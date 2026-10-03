@@ -15,7 +15,6 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         )
         Settings.shared.isAutoLogAppEventsEnabled = true
         Settings.shared.isAdvertiserIDCollectionEnabled = true
-        Attribution.syncTrackingStatus()
         #if DEBUG
         Attribution.selfCheck()
         #endif
@@ -56,28 +55,27 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         }
         #endif
 
-        // Retry token registration if a previous attempt failed silently.
-        // Scenario: user completed onboarding while offline / Supabase was
-        // having a moment → registerToken POST threw → apnsTokenRegistered
-        // never set. Without this, the token-equality guard in
-        // NotificationService.handleTokenRegistration would prevent ANY
-        // future POST. Re-asking iOS to deliver the token redrives the
-        // whole pipeline (delivery → handleTokenRegistration → retry POST).
-        let hasStoredToken = UserDefaults.standard.string(forKey: "apnsToken") != nil
-        let alreadyRegistered = UserDefaults.standard.bool(forKey: "apnsTokenRegistered")
-        if hasStoredToken && !alreadyRegistered {
-            Task { @MainActor in
-                let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
-                if status == .authorized || status == .provisional {
-                    UIApplication.shared.registerForRemoteNotifications()
-                }
+        // Ask iOS for the APNs token on EVERY launch while authorized, as Apple
+        // advises: the token can change (restore, new device) and this is the
+        // only way the app hears about it. Delivery goes through
+        // handleTokenRegistration, whose token + scope guard keeps an unchanged
+        // token from re-POSTing, and which also retries a POST that failed.
+        Task { @MainActor in
+            let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+            if status == .authorized || status == .provisional {
+                UIApplication.shared.registerForRemoteNotifications()
             }
         }
 
         // Observe Live Activity tokens (push-to-start + per-activity update
-        // tokens) so the backend can start/update live WC match activities on
-        // the Lock Screen + Dynamic Island. Idempotent; safe at every launch.
-        LiveActivityManager.shared.start()
+        // tokens) so the backend can start/update live match activities on
+        // the Lock Screen + Dynamic Island. Idempotent. Not before onboarding:
+        // the push-to-start token would register with nothing followed (and
+        // recreate a server row right after Delete My Data).
+        // OnboardingFlow.completeOnboarding starts it for a new install.
+        if AppState.shared.hasCompletedOnboarding {
+            LiveActivityManager.shared.start()
+        }
 
         return true
     }

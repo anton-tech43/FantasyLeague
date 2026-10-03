@@ -1,4 +1,5 @@
 import SwiftUI
+import EventKit
 
 @Observable
 class AppState {
@@ -88,6 +89,10 @@ class AppState {
     /// Set by a tap on the day-before push ("Leeds tomorrow"): open My Turn
     /// on Pre-game. Consumed by the tab view.
     var pendingOpenPrep = false
+    /// Set after Delete My Data has wiped this phone. Shown by RootView, since
+    /// the wipe sends her back to onboarding and takes Settings (and any alert
+    /// it was showing) off screen. Session-only.
+    var showDataDeletedNotice = false
 
     // Feed context — session-only, not persisted. Resets to .team(selectedTeam) on app launch.
     var activeContext: FeedContext = .everyoneTalking
@@ -127,7 +132,13 @@ class AppState {
         self.selectedTier = UserDefaults.standard.integer(forKey: "selectedTier").clamped(to: 1...3, default: 2)
         self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
         self.notificationPermissionRequested = UserDefaults.standard.bool(forKey: "notificationPermissionRequested")
-        self.calendarSyncEnabled = UserDefaults.standard.bool(forKey: "calendarSyncEnabled")
+        // Calendar access revoked in iOS Settings (iOS relaunches the app when
+        // it does that): the toggle must not keep saying On over a sync that
+        // can no longer run. didSet doesn't fire in init, so persist by hand.
+        let calendarOn = UserDefaults.standard.bool(forKey: "calendarSyncEnabled")
+            && EKEventStore.authorizationStatus(for: .event) == .fullAccess
+        UserDefaults.standard.set(calendarOn, forKey: "calendarSyncEnabled")
+        self.calendarSyncEnabled = calendarOn
         self.hasSeenSeasonPrimer = UserDefaults.standard.bool(forKey: "hasSeenSeasonPrimer")
 
         // Feed style — persisted, defaults to immersive (one full-screen card
@@ -263,11 +274,13 @@ class AppState {
         UserDefaults.standard.synchronize()
     }
 
-    /// Clear all local data (for "Delete My Data" flow)
+    /// Clear all local data (for "Delete My Data" flow): everything the app
+    /// put on this phone, not just what Settings shows.
     func clearAllData() {
-        // Clear team page cache before resetting teams
-        for team in selectedTeams {
-            TeamPageCache.clear(teamId: team.rawValue)
+        // Every cached team page, including clubs and countries followed
+        // before the current pair.
+        for key in UserDefaults.standard.dictionaryRepresentation().keys where key.hasPrefix("teamPage_") {
+            UserDefaults.standard.removeObject(forKey: key)
         }
         herName = ""
         hisName = ""
@@ -306,6 +319,12 @@ class AppState {
             MyTurnStore.shared.clearAll()
             LiveClubPackService.shared.clear()
             LiveSquadService.shared.clear()
+            // What the app put outside itself: the fixtures calendars (only
+            // with access already granted, never a prompt), any match on the
+            // Lock Screen, and the APNs registration (its token key went above).
+            try? CalendarSyncService.shared.removeAllGoalDiggerCalendars()
+            UIApplication.shared.unregisterForRemoteNotifications()
+            await LiveActivityManager.shared.endAll()
         }
     }
 }

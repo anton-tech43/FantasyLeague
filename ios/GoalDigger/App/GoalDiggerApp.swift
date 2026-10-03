@@ -62,6 +62,11 @@ struct GoalDiggerApp: App {
                         // registration and, if the followed country has a live
                         // match with no running activity, start one locally.
                         LiveActivityManager.shared.syncForegroundActivity()
+                        // Re-send the push registration if anything it carries
+                        // changed while she was away (timezone after a trip, a
+                        // POST that failed last time). No-op when unchanged:
+                        // the scope guard in handleTokenRegistration returns.
+                        NotificationService.shared.reregisterForFollowChange()
                         // Keep his fixtures calendar current on every return to
                         // the app: add new games, drop finished ones. Throttled
                         // + no-op unless sync is on and access is granted.
@@ -142,6 +147,16 @@ struct RootView: View {
                 // Removed 2026-09-23 with the sheet itself.
                 MainTabView()
             }
+        }
+        // Delete My Data confirmation. Lives here, not in Settings: the wipe
+        // flips her back to onboarding, which takes Settings off screen.
+        .alert("Data Deleted", isPresented: Binding(
+            get: { appState.showDataDeletedNotice },
+            set: { appState.showDataDeletedNotice = $0 }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Your data has been deleted from our servers and this phone. You'll no longer receive notifications.")
         }
         .task(id: "cache-schema-purge") {
             // Drop cached rows from a previous app version with an older
@@ -293,7 +308,11 @@ struct MainTabView: View {
             // country following off) has no page worth opening.
             if let teamId = teamPageEntityId {
                 NavigationStack {
+                    // .id: a new club is a new page. Without it SwiftUI kept
+                    // the view's @State and showed the previous club's cards
+                    // under the new name until relaunch.
                     TeamPageView(teamId: teamId)
+                        .id(teamId)
                         // V2.0 WC preview surface: TeamPageView's Calendar
                         // tab can navigate to a preview content_item's
                         // detail view via NavigationLink(value:

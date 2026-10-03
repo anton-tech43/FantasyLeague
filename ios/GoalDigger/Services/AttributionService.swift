@@ -2,9 +2,14 @@ import UIKit
 import AppTrackingTransparency
 import FBSDKCoreKit
 
-/// App-install attribution for Meta ads: ATT consent + the SDK's advertiser
-/// tracking flag. No events are logged from here — `isAutoLogAppEventsEnabled`
-/// makes the SDK log `fb_mobile_activate_app` itself on every foreground.
+/// App-install attribution for Meta ads: the ATT consent prompt. No events are
+/// logged from here — `isAutoLogAppEventsEnabled` makes the SDK log
+/// `fb_mobile_activate_app` itself on every foreground.
+///
+/// There is no advertiser-tracking flag to set. `isAdvertiserTrackingEnabled`'s
+/// setter is deprecated with Meta's note that FBSDK v17+ on iOS 17+ ignores it
+/// and reads `ATTrackingManager.trackingAuthorizationStatus` itself; the
+/// deployment target is 17.0, so it was dead on every device. Removed 2026-10-04.
 @MainActor
 enum Attribution {
     /// Return value of `ApplicationDelegate.application(_:didFinishLaunchingWithOptions:)`.
@@ -13,13 +18,6 @@ enum Attribution {
     static var sdkLaunched = false
 
     private static let promptedKey = "attPrompted"
-
-    /// Re-tell the SDK the user's standing ATT answer. Must run on every launch:
-    /// the flag lives in the SDK's memory, not in UserDefaults.
-    static func syncTrackingStatus() {
-        Settings.shared.isAdvertiserTrackingEnabled =
-            ATTrackingManager.trackingAuthorizationStatus == .authorized
-    }
 
     /// Show the ATT sheet once per install, 1.5 s after the main tab view
     /// appears — never during onboarding (the notification prompt lives there;
@@ -47,10 +45,9 @@ enum Attribution {
         // iOS silently denies the request unless the app is frontmost.
         guard UIApplication.shared.applicationState == .active else { return }
 
-        let status = await withCheckedContinuation { (c: CheckedContinuation<ATTrackingManager.AuthorizationStatus, Never>) in
+        _ = await withCheckedContinuation { (c: CheckedContinuation<ATTrackingManager.AuthorizationStatus, Never>) in
             ATTrackingManager.requestTrackingAuthorization { c.resume(returning: $0) }
         }
-        Settings.shared.isAdvertiserTrackingEnabled = (status == .authorized)
         // Also set when the status was already determined — the sheet never
         // shows twice, so neither should we ever ask again.
         UserDefaults.standard.set(true, forKey: promptedKey)

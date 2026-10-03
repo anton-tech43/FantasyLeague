@@ -43,19 +43,24 @@ final class LiveActivityManager {
 
     /// Re-assert the push-to-start registration. V2.2: the single PTS token
     /// carries ALL followed countries and clubs, so it triggers for whichever
-    /// plays. Empty arrays are fine — the backend broadcasts WC knockout Live
-    /// Activities to every registered token, so every device registers even
-    /// with nothing followed. Safe to call repeatedly — backend upserts on the
-    /// token.
+    /// plays. Safe to call repeatedly — backend upserts on the token.
+    ///
+    /// Never before onboarding has finished: the token stream keeps running
+    /// after Delete My Data, and a registration then would recreate the
+    /// server row she just deleted.
     func registerPushToStartIfPossible() async {
-        guard let token = UserDefaults.standard.string(forKey: Self.ptsTokenKey) else { return }
+        guard await Self.onboarded,
+              let token = UserDefaults.standard.string(forKey: Self.ptsTokenKey) else { return }
         try? await APIClient.shared.registerLiveActivityToken(
             token, kind: "push_to_start", fixtureId: nil,
             countryIds: Self.followedCountryIds, teamIds: Self.followedTeamIds)
     }
 
-    private static var followedCountryIds: [String] { AppState.shared.selectedCountries.map(\.rawValue) }
-    private static var followedTeamIds: [String] { AppState.shared.selectedTeams.map(\.rawValue) }
+    // AppState is main-thread state; these used to be read from whatever
+    // thread the token Task happened to run on.
+    @MainActor private static var onboarded: Bool { AppState.shared.hasCompletedOnboarding }
+    @MainActor private static var followedCountryIds: [String] { AppState.shared.selectedCountries.map(\.rawValue) }
+    @MainActor private static var followedTeamIds: [String] { AppState.shared.selectedTeams.map(\.rawValue) }
 
     // MARK: Per-activity update tokens
 
@@ -70,6 +75,7 @@ final class LiveActivityManager {
     private func observeToken(of activity: Activity<MatchActivityAttributes>) {
         Task {
             for await tokenData in activity.pushTokenUpdates {
+                guard await Self.onboarded else { continue }
                 try? await APIClient.shared.registerLiveActivityToken(
                     tokenData.gdHexString, kind: "update",
                     fixtureId: activity.attributes.fixtureId,
@@ -82,35 +88,60 @@ final class LiveActivityManager {
 
     /// On foreground: re-assert the push-to-start registration, and if a
     /// followed team has a live match with no running activity, start one
-    /// locally (which vends its update token to the backend).
+    /// locally (which vends its update token to the backend). Then end any
+    /// running activity whose match is no longer live, so a missed end push
+    /// can't leave a frozen score on the Lock Screen.
+    @MainActor
     func syncForegroundActivity() {
-        guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
+        guard Self.onboarded, ActivityAuthorizationInfo().areActivitiesEnabled else { return }
         Task { await registerPushToStartIfPossible() }
-        let followedIds = Self.followedCountryIds + Self.followedTeamIds
+        // Each followed team — any could be live (e.g. his Arsenal and her
+        // Sweden) — then, tournament-wide, whichever World Championship match
+        // is live right now, for every user. startOrUpdate is keyed by
+        // fixtureId, so two live matches each get their own activity and a
+        // followed country's WC match is an update, not a second activity.
+        // live-match-current matches on home/away id, so a club slug works the
+        // same as a country slug.
+        let entityIds = Self.followedCountryIds + Self.followedTeamIds
+            + [FeedContext.worldChampionshipEntityId]
         Task {
-            // Check each followed team — any could be live (e.g. his Arsenal
-            // and her Sweden). startOrUpdate is keyed by fixtureId so two live
-            // matches each get their own activity. live-match-current matches
-            // on home/away id, so a club slug works the same as a country slug.
-            for entityId in followedIds {
-                guard let snap = try? await APIClient.shared.fetchCurrentLiveMatch(countryId: entityId),
-                      snap.isLive else { continue }
-                startOrUpdate(from: snap)
+            var liveFixtureIds: Set<Int> = []
+            var everyAnswerIn = true
+            for entityId in entityIds {
+                do {
+                    guard let snap = try await APIClient.shared.fetchCurrentLiveMatch(countryId: entityId),
+                          snap.isLive else { continue }
+                    liveFixtureIds.insert(snap.fixtureId)
+                    startOrUpdate(from: snap)
+                } catch {
+                    everyAnswerIn = false
+                }
             }
-            // Tournament-wide: whichever World Championship match is live
-            // right now, for every user. If it's also a followed country's
-            // match, the fixtureId key in startOrUpdate dedupes it into an
-            // update rather than a second activity.
-            if let snap = try? await APIClient.shared.fetchCurrentLiveMatch(
-                   countryId: FeedContext.worldChampionshipEntityId),
-               snap.isLive {
-                startOrUpdate(from: snap)
+            // Only on a complete set of answers: a failed fetch is not proof
+            // the match ended, and ending a live activity is worse than
+            // leaving one up.
+            guard everyAnswerIn else { return }
+            for activity in Activity<MatchActivityAttributes>.activities
+            where activity.activityState == .active
+                && !liveFixtureIds.contains(activity.attributes.fixtureId) {
+                await activity.end(nil, dismissalPolicy: .immediate)
             }
         }
     }
 
+    /// End every running activity (Delete My Data).
+    func endAll() async {
+        for activity in Activity<MatchActivityAttributes>.activities {
+            await activity.end(nil, dismissalPolicy: .immediate)
+        }
+    }
+
     private func startOrUpdate(from snap: LiveMatchSnapshot) {
-        let content = ActivityContent(state: snap.contentState, staleDate: nil)
+        // Stale once no update has landed for longer than a whole match with
+        // extra time and penalties, so a dead activity says so instead of
+        // showing a score that might be hours old.
+        let content = ActivityContent(state: snap.contentState,
+                                      staleDate: Date().addingTimeInterval(150 * 60))
 
         if let existing = Activity<MatchActivityAttributes>.activities
             .first(where: { $0.attributes.fixtureId == snap.fixtureId }) {

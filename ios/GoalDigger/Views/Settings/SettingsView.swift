@@ -10,7 +10,6 @@ struct SettingsView: View {
     @State private var showCountryPicker = false
     @State private var showTierPicker = false
     @State private var showDeleteConfirmation = false
-    @State private var showDeleteSuccess = false
     @State private var showDeleteError = false
     @State private var isDeleting = false
     @State private var editingHerName = false
@@ -123,15 +122,7 @@ struct SettingsView: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This will remove your data from our servers and you'll stop receiving notifications. This can't be undone.")
-        }
-        .alert("Data Deleted", isPresented: $showDeleteSuccess) {
-            Button("OK") {
-                appState.clearAllData()
-                CacheService.shared.clearAll(in: modelContext)
-            }
-        } message: {
-            Text("Your data has been deleted. You'll no longer receive notifications.")
+            Text("This removes your data from our servers and clears everything GoalDigger keeps on this phone, including its calendars. You'll stop receiving notifications and start again from the beginning. This can't be undone.")
         }
         .alert("Couldn't Delete", isPresented: $showDeleteError) {
             Button("OK", role: .cancel) {}
@@ -294,6 +285,26 @@ struct SettingsView: View {
                                 .foregroundColor(.hotRose)
                                 .font(.system(size: 14))
                         }
+                    } else if notificationStatus == .notDetermined {
+                        // "I'll do this later" in onboarding leaves the system
+                        // prompt unasked, and iOS Settings may not list the app
+                        // yet, so ask here instead of sending her there.
+                        Button {
+                            Task {
+                                _ = await NotificationService.shared.requestPermission()
+                                appState.notificationPermissionRequested = true
+                                notificationStatus = await NotificationService.shared.checkNotificationStatus()
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text("Off")
+                                    .font(.feedHeadline)
+                                    .foregroundColor(.textPrimaryOnCard)
+                                Text("Turn on")
+                                    .font(.feedTimestamp)
+                                    .foregroundColor(.hotRose)
+                            }
+                        }
                     } else {
                         Button {
                             if let url = URL(string: UIApplication.openSettingsURLString) {
@@ -340,7 +351,9 @@ struct SettingsView: View {
                 if isSyncingCalendar {
                     ProgressView().tint(.hotRose)
                 } else {
-                    Toggle("", isOn: Binding(
+                    // The label is hidden on screen (the row says it) but is
+                    // what VoiceOver reads; an empty one left an unnamed switch.
+                    Toggle("Add \(appState.pPossessive) fixtures to your calendar", isOn: Binding(
                         get: { appState.calendarSyncEnabled },
                         set: { newValue in
                             if newValue {
@@ -523,19 +536,29 @@ struct SettingsView: View {
             // No token registered (rare — user never granted notification
             // permission). Nothing to delete server-side; clearing local state
             // is enough.
-            showDeleteSuccess = true
+            wipeThisPhone()
             return
         }
 
         do {
             try await APIClient.shared.deleteMyData(token: token)
-            showDeleteSuccess = true
+            wipeThisPhone()
         } catch {
             #if DEBUG
             print("⚠️ deleteMyData failed: \(error)")
             #endif
             showDeleteError = true
         }
+    }
+
+    /// The server copy is gone, so the local one goes now. It used to wait for
+    /// OK on the success alert, and a swipe-away before that left every name,
+    /// follow and token on the phone. The wipe returns her to onboarding,
+    /// which removes this screen, so RootView shows the confirmation.
+    private func wipeThisPhone() {
+        appState.clearAllData()
+        CacheService.shared.clearAll(in: modelContext)
+        appState.showDataDeletedNotice = true
     }
 }
 
@@ -555,7 +578,7 @@ struct TeamPickerSheet: View {
 
                 ScrollView {
                     VStack(spacing: Layout.cardSpacing) {
-                        Text("Follow up to 2 clubs.")
+                        Text("Follow one or two clubs.")
                             .font(.feedTimestamp)
                             .foregroundColor(.textSecondaryOnCard)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -584,8 +607,12 @@ struct TeamPickerSheet: View {
                         .foregroundColor(.hotRose)
                 }
                 ToolbarItem(placement: .confirmationAction) {
+                    // A club is required, as in onboarding. With no follow left
+                    // the re-register has nothing to send and returns early,
+                    // so the server would go on pushing the old club.
                     Button("Done") { apply() }
-                        .foregroundColor(.hotRose)
+                        .foregroundColor(picks.isEmpty ? Color.hotRose.opacity(0.4) : Color.hotRose)
+                        .disabled(picks.isEmpty)
                 }
             }
             .onAppear { picks = appState.selectedTeams }
@@ -604,10 +631,12 @@ struct TeamPickerSheet: View {
     private func apply() {
         appState.selectedTeams = picks
         CacheService.shared.clearAll(in: modelContext)
-        // Keep the active feed context valid if its club was removed.
+        // Keep the active feed context valid if its club was removed. Club
+        // first; a country only while CountryFollowing is on (its feed is
+        // empty otherwise), the same order as the foreground repair.
         if case .team(let t) = appState.activeContext, !picks.contains(t) {
-            appState.activeContext = appState.selectedCountries.first.map { FeedContext.country($0) }
-                ?? picks.first.map { FeedContext.team($0) }
+            appState.activeContext = picks.first.map { FeedContext.team($0) }
+                ?? (CountryFollowing.isEnabled ? appState.selectedCountries.first.map { FeedContext.country($0) } : nil)
                 ?? .everyoneTalking
         }
         appState.isContextSwitcherOpen = false

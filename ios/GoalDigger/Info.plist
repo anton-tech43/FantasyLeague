@@ -60,7 +60,7 @@
 	<key>SUPABASE_ANON_KEY</key>
 	<string>$(SUPABASE_ANON_KEY)</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
-	<string>We add his team's fixtures to your calendar so you're never blindsided. You can turn this off anytime in Settings.</string>
+	<string>We add the fixtures you follow to your calendar so you're never blindsided. You can turn this off anytime in Settings.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>NSSupportsLiveActivitiesFrequentUpdates</key>

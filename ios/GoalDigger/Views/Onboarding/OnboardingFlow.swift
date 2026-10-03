@@ -70,6 +70,8 @@ struct OnboardingFlow: View {
             VStack(spacing: 0) {
                 // Progress dots + back button row
                 HStack {
+                    // 44pt square: the 14pt chevron alone was the whole tap
+                    // target, and VoiceOver read it as "chevron left".
                     if step != .welcome {
                         Button {
                             if let prev = OnboardingStep(rawValue: step.rawValue - 1) {
@@ -79,9 +81,12 @@ struct OnboardingFlow: View {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(.hotRose)
+                                .frame(width: 44, height: 44, alignment: .leading)
+                                .contentShape(Rectangle())
                         }
+                        .accessibilityLabel("Back")
                     } else {
-                        Spacer().frame(width: 14)
+                        Spacer().frame(width: 44, height: 44)
                     }
 
                     Spacer()
@@ -94,10 +99,11 @@ struct OnboardingFlow: View {
                     Spacer()
 
                     // Balance the back button width
-                    Spacer().frame(width: 14)
+                    Spacer().frame(width: 44)
                 }
+                // No top padding: it was 12 around a ~17pt chevron, and the
+                // 44pt button now supplies that room itself.
                 .padding(.horizontal, Layout.screenPadding)
-                .padding(.top, 12)
 
                 // Screen content
                 switch step {
@@ -145,6 +151,16 @@ struct OnboardingFlow: View {
         }
         UnreadTracker.shared.markViewed(.everyoneTalking)
 
+        // Land on her club. AppState chose the context at launch, when a new
+        // install followed nothing, so it was still the cross-club feed and
+        // stayed there until the next relaunch. Same order as the foreground
+        // repair: club first, a country only while that feature is on.
+        if let team = appState.selectedTeam {
+            appState.activeContext = .team(team)
+        } else if CountryFollowing.isEnabled, let country = appState.selectedCountry {
+            appState.activeContext = .country(country)
+        }
+
         // V1.3: MeetTeam + MeetManager cards now cover what SeasonPrimer used
         // to show (table verdict, form summary, manager) — primer ends up
         // saying things the user already read. Mark it seen so RootView skips
@@ -162,6 +178,9 @@ struct OnboardingFlow: View {
         // ONB-3: cover the case where the APNs token hasn't been delivered yet
         // (slow network / sim) — redrive so registration happens this session.
         NotificationService.shared.redriveTokenIfNeeded()
+        // Live Activity tokens wait for this moment (AppDelegate skips them
+        // before onboarding), so a new install registers this session.
+        LiveActivityManager.shared.start()
         // Force-flush the whole onboarding set (names + team + country + tier
         // + flag) to disk NOW. UserDefaults writes are async; without this, a
         // user who finishes onboarding and immediately force-quits before

@@ -19,6 +19,9 @@ TARGET   = 'GoalDigger'
 # Folder references (blue folders) copied into the bundle as directories, so
 # Bundle.main.url(forResource:withExtension:subdirectory:) works.
 RESOURCE_FOLDERS = ['GoalDigger/Resources/MyTurn']
+# Single files copied into the app bundle (app target only, never the widget).
+# PrivacyInfo.xcprivacy must sit at the bundle root for App Store review.
+RESOURCE_FILES = ['GoalDigger/PrivacyInfo.xcprivacy']
 # Directories whose sources belong to another target (or none).
 SKIP_DIRS = ['GoalDigger/LiveActivity']
 
@@ -82,6 +85,17 @@ RESOURCE_FOLDERS.each do |rel|
   ref.last_known_file_type = 'folder'
   target.resources_build_phase.add_file_reference(ref, true)
   puts "  + folder   #{rel}"
+  added += 1
+end
+
+# --- Resource files -------------------------------------------------------
+RESOURCE_FILES.each do |rel|
+  abs = File.join(SRC_ROOT, rel)
+  next unless File.exist?(abs)
+  next if known.include?(abs)
+  ref = app_group.new_file(abs)   # all current entries sit directly in GoalDigger/
+  target.resources_build_phase.add_file_reference(ref, true)
+  puts "  + resource #{rel}"
   added += 1
 end
 

@@ -50,8 +50,10 @@ class NotificationService {
         // Without the scope check, changing a follow never updated the backend
         // (the token value is unchanged), so pushes kept targeting the old set
         // until a reinstall. Sorted so order-only changes don't force a re-POST.
+        // The timezone is part of the scope because registerToken sends it
+        // (p_timezone): a trip abroad has to reach the server too.
         let scope = "\(countryIds.sorted().joined(separator: ","))" +
-            "|\(teamIds.sorted().joined(separator: ","))|\(tier)"
+            "|\(teamIds.sorted().joined(separator: ","))|\(tier)|\(TimeZone.current.identifier)"
         let lastScope = UserDefaults.standard.string(forKey: "lastRegisteredScope")
         if unchanged && alreadyRegistered && scope == lastScope { return }
         Task {
@@ -67,8 +69,12 @@ class NotificationService {
                     UserDefaults.standard.set(scope, forKey: "lastRegisteredScope")
                 }
             } catch {
-                // Leave apnsTokenRegistered false; next launch or token-changed
-                // event will retry. Avoid a silent permanent black hole.
+                // Clear the flag, it may still be true from an older token. The
+                // new token is already stored, so leaving it true made the guard
+                // above return early on every later call: a permanent black hole.
+                await MainActor.run {
+                    UserDefaults.standard.set(false, forKey: "apnsTokenRegistered")
+                }
                 #if DEBUG
                 print("⚠️ registerToken failed: \(error)")
                 #endif

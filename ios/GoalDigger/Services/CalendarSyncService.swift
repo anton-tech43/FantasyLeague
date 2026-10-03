@@ -52,7 +52,11 @@ final class CalendarSyncService {
         store.reset()
 
         // V2.2: sync the union of every followed country + club. Calendars for
-        // entities no longer followed are pruned in step 1 below.
+        // entities no longer followed are pruned in step 1 below. Countries
+        // only while CountryFollowing is on: every caller passes the stored
+        // list, and a country page has had no fixtures since July, so it only
+        // ever made an empty "GoalDigger - <country>" calendar.
+        let countries = CountryFollowing.isEnabled ? countries : []
         let followed: [(shortName: String, teamId: String)] =
             countries.map { (shortName: $0.shortName, teamId: $0.rawValue) } +
             teams.map { (shortName: $0.shortName, teamId: $0.rawValue) }
@@ -96,8 +100,11 @@ final class CalendarSyncService {
         try? await resync(teams: teams, countries: countries)
     }
 
-    /// Remove every "GoalDigger - *" calendar from the store (toggle-off).
+    /// Remove every "GoalDigger - *" calendar from the store (toggle-off,
+    /// Delete My Data). Without access there is nothing we can see or remove,
+    /// and this must never be the thing that triggers the prompt.
     func removeAllGoalDiggerCalendars() throws {
+        guard EKEventStore.authorizationStatus(for: .event) == .fullAccess else { return }
         store.reset() // fresh view, so we see (and remove) the real current set
         for c in store.calendars(for: .event) where c.title.hasPrefix(titlePrefix) {
             try store.removeCalendar(c, commit: false)
