@@ -119,7 +119,9 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
     @ViewBuilder
     private func headerImage(size: CGFloat) -> some View {
         ZStack {
-            Circle().fill(Color.hotRose.opacity(0.15))
+            // A badge sits on a light disc: Spurs' navy vanished on mauve.
+            Circle().fill(leadingImageURL?.path.contains("/teams/") == true
+                          ? Color.cardBackground : Color.hotRose.opacity(0.15))
             AsyncImage(url: leadingImageURL) { phase in
                 if case .success(let image) = phase {
                     // A club badge is shown whole; a headshot fills the circle.

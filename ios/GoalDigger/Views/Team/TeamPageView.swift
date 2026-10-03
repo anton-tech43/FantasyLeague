@@ -392,6 +392,7 @@ struct TeamPageView: View {
                     }
                 }
             )
+            .id(TeamCardType.rivalry)
         }
 
         // Card 5: How they're doing
