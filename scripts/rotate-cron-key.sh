@@ -23,8 +23,10 @@ NEW=$(openssl rand -hex 40)
 old_digest=$(printf %s "$SUPABASE_SERVICE_ROLE_KEY" | shasum -a 256 | cut -c1-10)
 
 (cd backend && supabase secrets set CRON_AUTH_KEY="$NEW" --project-ref "$REF" >/dev/null)
-"$PSQL" "$SUPABASE_DB_URL" -X -q -v ON_ERROR_STOP=1 -v new="$NEW" \
-  -c "select vault.update_secret((select id from vault.secrets where name = 'cron_service_key'), :'new');" >/dev/null
+# Via stdin, not -c: psql only substitutes :'new' in SQL it reads itself.
+"$PSQL" "$SUPABASE_DB_URL" -X -q -v ON_ERROR_STOP=1 -v new="$NEW" >/dev/null <<'SQL'
+select vault.update_secret((select id from vault.secrets where name = 'cron_service_key'), :'new');
+SQL
 
 # backend/.env: replace the old value in place (BSD sed).
 sed -i '' "s|^SUPABASE_SERVICE_ROLE_KEY=.*|SUPABASE_SERVICE_ROLE_KEY=$NEW|" backend/.env
