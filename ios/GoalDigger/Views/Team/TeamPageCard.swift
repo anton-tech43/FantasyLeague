@@ -122,7 +122,12 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
             Circle().fill(Color.hotRose.opacity(0.15))
             AsyncImage(url: leadingImageURL) { phase in
                 if case .success(let image) = phase {
-                    image.resizable().scaledToFill()
+                    // A club badge is shown whole; a headshot fills the circle.
+                    if leadingImageURL?.path.contains("/teams/") == true {
+                        image.resizable().scaledToFit().padding(size * 0.14)
+                    } else {
+                        image.resizable().scaledToFill()
+                    }
                 } else {
                     Image(systemName: "person.fill")
                         .font(.system(size: size * 0.45))

@@ -386,7 +386,7 @@ struct LingoView: View {
             // tell her about, so every open of the app has another go.
             .task { if mode == .prep { await uploadSlip() } }
             // The opponent quiz, for whoever this fixture is against.
-            .task(id: OpponentKey(team: opponentTeam, meeting: lastMeeting)) {
+            .task(id: OpponentKey(team: opponentTeam, meeting: lastMeeting, ready: live.hasSources)) {
                 if mode == .prep { await live.refreshOpponent(opponentTeam, mine: team, lastMeeting: lastMeeting) }
             }
             // "Carry on with your words" dealt a practise round and sent her
@@ -627,7 +627,7 @@ struct LingoView: View {
         .padding(.bottom, 20)
     }
 
-    private struct OpponentKey: Hashable { let team: Team?; let meeting: MatchContext.LastMeeting? }
+    private struct OpponentKey: Hashable { let team: Team?; let meeting: MatchContext.LastMeeting?; let ready: Bool }
 
     /// The last time the two met, off his page's matchup card for this fixture.
     private var lastMeeting: MatchContext.LastMeeting? {

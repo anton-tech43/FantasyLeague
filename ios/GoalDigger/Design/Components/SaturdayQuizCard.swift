@@ -141,7 +141,7 @@ struct SaturdayQuizCard: View {
 
                 Text(question.explainer)
                     .font(.jakarta(14, weight: .regular))
-                    .foregroundColor(.textSecondaryOnCard)
+                    .foregroundColor(.textPrimaryOnCard)
                     .lineSpacing(3)
                     .fixedSize(horizontal: false, vertical: true)
                     .transition(.opacity)
@@ -255,7 +255,7 @@ struct SaturdayQuizCard: View {
 
             Text(scoreCommentary(for: score))
                 .font(.jakarta(15, weight: .regular))
-                .foregroundColor(.textSecondaryOnCard)
+                .foregroundColor(.textPrimaryOnCard)
                 .lineSpacing(3)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -333,12 +333,12 @@ struct SaturdayQuizCard: View {
     }
 
     /// Sister-voice one-liner under the big score. No '?' or '!'.
+    /// By share, not by count: the quiz went from three questions to five.
     private func scoreCommentary(for score: Int) -> String {
-        switch score {
-        case 3: return "Top of the table. You've been paying attention."
-        case 2: return "Solid. One slip but you're across the weekend."
-        case 1: return "One on the board. Worth a scroll back through this week."
-        default: return "A reset week. The cards are still here when you want them."
-        }
+        let n = max(1, quiz.questions.count)
+        if score == n { return "Top of the table. You've been paying attention." }
+        if score * 2 >= n { return "Solid. A slip or two but you're across the weekend." }
+        if score > 0 { return "On the board. Worth a scroll back through this week." }
+        return "A reset week. The cards are still here when you want them."
     }
 }

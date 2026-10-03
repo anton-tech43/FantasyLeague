@@ -35,7 +35,7 @@ struct ContentDetailView: View {
                             if let scorers = item.scorers, !scorers.isEmpty {
                                 scorersSection(scorers)
                             }
-                            if let cards = item.infoCards, !cards.isEmpty {
+                            if let cards = item.infoCards.map(notRepeatingHeadline), !cards.isEmpty {
                                 infoCardsSection(cards)
                             }
                             talkingPointsSection(item)
@@ -154,6 +154,22 @@ struct ContentDetailView: View {
             return item.everyoneTalkingHeadline ?? item.headline
         }
         return appState.personalise(item.headline)
+    }
+
+    /// Good to know cards that are not the headline said again. The news
+    /// routine's own check let "THE LINK" through as a copy of the Wilshere
+    /// headline (2026-10-03): a card most of whose long words are already in
+    /// either headline is one she has just read.
+    private func notRepeatingHeadline(_ cards: [InfoCard]) -> [InfoCard] {
+        guard let item else { return cards }
+        let words = { (s: String) in
+            Set(s.lowercased().split { !$0.isLetter }.map(String.init).filter { $0.count >= 5 })
+        }
+        let head = words(item.headline).union(words(item.everyoneTalkingHeadline ?? ""))
+        return cards.filter { card in
+            let w = words(card.text)
+            return card.isToImpress || w.isEmpty || Double(w.intersection(head).count) / Double(w.count) < 0.6
+        }
     }
 
     private var displayBody: String {
@@ -419,34 +435,30 @@ struct SectionHeaderView: View {
 struct TalkingPointCard: View {
     let text: String
 
+    /// Pink with black text: the lines she says stand apart from the facts
+    /// above them (Anton, 2026-10-03).
     var body: some View {
-        HStack(spacing: 0) {
-            RoundedRectangle(cornerRadius: 2)
-                .fill(Color.hotRose)
-                .frame(width: 3)
+        VStack(alignment: .leading, spacing: 4) {
+            Text(text)
+                .font(.talkingPointText)
+                .foregroundColor(.charcoal)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(text)
-                    .font(.talkingPointText)
-                    .foregroundColor(.textPrimaryOnCard)
-
-                HStack(spacing: 4) {
-                    Spacer()
-                    CopyButton(text: text)
-                    ShareLink(item: text, preview: SharePreview("From GoalDigger")) {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.hotRose)
-                            .frame(width: 32, height: 32)
-                            .contentShape(Rectangle())
-                    }
-                    .accessibilityLabel("Share talking point")
+            HStack(spacing: 4) {
+                Spacer()
+                CopyButton(text: text, tint: .charcoal)
+                ShareLink(item: text, preview: SharePreview("From GoalDigger")) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.charcoal)
+                        .frame(width: 32, height: 32)
+                        .contentShape(Rectangle())
                 }
+                .accessibilityLabel("Share talking point")
             }
-            .padding(14)
         }
-        .background(Color.hotRose.opacity(0.06))
-        .background(Color.cardBackground)
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.hotRose)
         .cornerRadius(12)
     }
 }

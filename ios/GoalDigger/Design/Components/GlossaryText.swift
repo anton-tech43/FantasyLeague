@@ -61,7 +61,9 @@ struct GlossaryText: View {
             if cursor < range.lowerBound {
                 result += AttributedString(String(raw[cursor..<range.lowerBound]))
             }
-            var matched = AttributedString(String(raw[range]))
+            // Non-breaking spaces: a term never splits over two lines
+            // ("Premier / League" in the onboarding title, 2026-10-03).
+            var matched = AttributedString(String(raw[range]).replacingOccurrences(of: " ", with: "\u{00A0}"))
             matched.underlineStyle = .single
             // hot rose works on both dark mauve body backgrounds and blush cards.
             matched.foregroundColor = .hotRose

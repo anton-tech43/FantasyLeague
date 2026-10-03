@@ -337,7 +337,7 @@ struct LingoRevealPopup: View {
         // Not "Not that one." any more: a miss no longer opens this, the right
         // pick after it does, so the verdict owns up to the second go.
         MyTurnPopup(verdict: correct ? "Right." : "Got there.",
-                    verdictTint: correct ? .hotRose : .warmWhite,
+                    verdictTint: .warmWhite,
                     exitLabel: last ? "See how you did" : "Next",
                     exit: { withAnimation(.easeInOut(duration: 0.2)) { store.nextDrillCard() } }) {
             Text(term.term)

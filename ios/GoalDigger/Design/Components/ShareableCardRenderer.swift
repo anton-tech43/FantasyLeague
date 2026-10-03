@@ -10,6 +10,7 @@ import UIKit
 /// flips the icon to a checkmark briefly to confirm.
 struct CopyButton: View {
     let text: String
+    var tint: Color = .hotRose
     @State private var justCopied = false
 
     var body: some View {
@@ -24,7 +25,7 @@ struct CopyButton: View {
         } label: {
             Image(systemName: justCopied ? "checkmark" : "doc.on.doc")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.hotRose)
+                .foregroundColor(tint)
                 .frame(width: 32, height: 32)
                 .contentShape(Rectangle())
         }

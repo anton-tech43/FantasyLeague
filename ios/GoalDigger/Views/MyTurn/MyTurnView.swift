@@ -360,7 +360,7 @@ struct MyTurnPopup<Content: View>: View {
     /// "Right." / "Not that one." — and where VoiceOver lands when it opens,
     /// because the popup arrives without her having moved.
     let verdict: String
-    var verdictTint: Color = .hotRose
+    var verdictTint: Color = .warmWhite
     /// The one way out, and what its button says.
     let exitLabel: String
     let exit: () -> Void

@@ -80,6 +80,16 @@ enum LiveSquadPack {
     /// players — Arsenal's squad lists Ødegaard and a youth player both on 8 —
     /// so a shared number belongs to the one man who plays regularly (300+
     /// minutes) when exactly one of them does, and to nobody otherwise.
+    /// A shown name's number ("M. Ødegaard"): matched on the folded surname
+    /// when exactly one man in the club's squad has it.
+    static func shirtNumber(named name: String, team: String, in players: [Player]) -> Int? {
+        let rows = players.filter { $0.team_id == nil || $0.team_id == team }
+        guard let key = PlayerPortrait.surname(name) else { return nil }
+        let hits = rows.filter { PlayerPortrait.surname($0.name) == key }
+        guard hits.count == 1 else { return nil }
+        return shirtNumber(of: hits[0], in: rows)
+    }
+
     static func shirtNumber(of p: Player, in squad: [Player]) -> Int? {
         guard let n = p.number else { return nil }
         let sharing = squad.filter { $0.number == n }

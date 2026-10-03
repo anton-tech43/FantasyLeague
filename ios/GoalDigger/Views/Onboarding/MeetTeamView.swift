@@ -27,6 +27,8 @@ struct MeetTeamView: View {
     let onContinue: () -> Void
 
     @State private var content: TeamPageContent?
+    /// For his shirt number, as His Team shows it.
+    @State private var squad = LiveSquadService.shared
     @State private var isLoading: Bool = true
 
     var body: some View {
@@ -65,6 +67,7 @@ struct MeetTeamView: View {
             .padding(.bottom, 40)
         }
         .task { await loadTeamPage() }
+        .task { await squad.refresh(team: Team(rawValue: entityId), personalise: { appState.personalise($0) }) }
     }
 
     // MARK: - Sections
@@ -116,10 +119,18 @@ struct MeetTeamView: View {
             HStack(alignment: .center, spacing: 16) {
                 playerAvatar(player: player)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(player.name)
-                        .font(.feedHeadline)
-                        .foregroundColor(.textPrimaryOnCard)
-                    Text(player.position)
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        if let n = LiveSquadPack.shirtNumber(named: player.name, team: entityId, in: squad.players) {
+                            Text("\(n)")
+                                .font(.jakarta(22, weight: .extraBold))
+                                .foregroundColor(.hotRose)
+                                .accessibilityLabel("Number \(n)")
+                        }
+                        Text(player.name)
+                            .font(.feedHeadline)
+                            .foregroundColor(.textPrimaryOnCard)
+                    }
+                    Text(player.position.capitalized)
                         .font(.jakarta(13, weight: .regular))
                         .foregroundColor(.textSecondaryOnCard)
                 }

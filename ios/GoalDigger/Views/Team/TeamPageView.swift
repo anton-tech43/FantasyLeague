@@ -378,6 +378,7 @@ struct TeamPageView: View {
                 isExpanded: expandedCard == .rivalry,
                 onTap: { toggleCard(.rivalry) },
                 hidePrimaryWhenExpanded: true,
+                leadingImageURL: rivalry.rivalCrestURL,
                 zone1Collapsed: { EmptyView() },
                 zone1Expanded: {
                     VStack(alignment: .leading, spacing: 8) {
@@ -655,6 +656,7 @@ struct TeamPageView: View {
                     text: "No upcoming fixtures yet. Check back closer to kickoff."
                 )
             } else {
+                importanceLegend
                 ForEach(fixtures) { fixture in
                     let preview = previewByFixtureId[previewKey(for: fixture)]
                     calendarRow(fixture, preview: preview)
@@ -830,6 +832,27 @@ struct TeamPageView: View {
     }
 
     /// Dots + label (+ chevron hint when the row is tappable).
+    /// One line above the list saying what the dots on every row are, so the
+    /// rows themselves stay uncluttered (2026-10-03: nothing said).
+    private var importanceLegend: some View {
+        HStack(spacing: 8) {
+            HStack(spacing: 3) {
+                ForEach(1...5, id: \.self) { dot in
+                    Circle()
+                        .fill(dot <= 3 ? Color.hotRose : Color.mutedText.opacity(0.3))
+                        .frame(width: 6, height: 6)
+                }
+            }
+            Text("How big the game is: more dots, bigger game")
+                .font(.feedTimestamp)
+                .foregroundColor(.warmWhite.opacity(0.6))
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("The dots show how big each game is. More dots, bigger game.")
+    }
+
     private func calendarImportanceColumn(_ f: UpcomingFixture, hasPreview: Bool) -> some View {
         VStack(alignment: .trailing, spacing: 4) {
             HStack(spacing: 3) {
@@ -1359,11 +1382,7 @@ struct TeamPageView: View {
     /// when one man in the squad has it, under the squad pack's rule for a
     /// number the feed gives two men (`LiveSquadPack.shirtNumber`).
     private func shirtNumber(_ name: String) -> Int? {
-        let rows = squad.players.filter { $0.team_id == nil || $0.team_id == teamId }
-        guard let key = PlayerPortrait.surname(name) else { return nil }
-        let hits = rows.filter { PlayerPortrait.surname($0.name) == key }
-        guard hits.count == 1 else { return nil }
-        return LiveSquadPack.shirtNumber(of: hits[0], in: rows)
+        LiveSquadPack.shirtNumber(named: name, team: teamId, in: squad.players)
     }
 
     /// "Ødegaard" out of "Martin Ødegaard" or "M. Ødegaard".
@@ -1391,12 +1410,13 @@ struct TeamPageView: View {
         return LiveClubPack.positionUse(label, short: surnameShown(player.name))
     }
 
-    /// The dossier: folded contains, either way round, and an empty stub when
-    /// there is none.
+    /// The dossier, matched on the folded surname when one card has it, and
+    /// an empty stub when none does. A contains-match missed "M. Ødegaard"
+    /// against "Martin Ødegaard", so Ødegaard and Saka had no "More about".
     private func dossier(for player: TopPlayer) -> PlayerCard {
-        let fold = { (s: String) in s.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current) }
-        let name = fold(player.name)
-        return playerCards.first { fold($0.playerName).contains(name) || name.contains(fold($0.playerName)) }
+        let key = PlayerPortrait.surname(player.name)
+        let hits = playerCards.filter { key != nil && PlayerPortrait.surname($0.playerName) == key }
+        return (hits.count == 1 ? hits.first : nil)
             ?? PlayerCard.stub(teamId: teamId, playerName: player.name, position: player.position)
     }
 

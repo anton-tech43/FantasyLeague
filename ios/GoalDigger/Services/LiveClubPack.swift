@@ -866,6 +866,11 @@ final class LiveClubPackService {
         }
     }
 
+    /// Whether the league-wide sources are in. The opponent quiz cannot be
+    /// built without them, and is rebuilt when this flips (Pre-game showed no
+    /// "Get to know Leeds" on a launch where they came in second, 2026-10-03).
+    var hasSources: Bool { sources != nil }
+
     private init() {
         if let data = UserDefaults.standard.data(forKey: Self.sourcesKey) {
             sources = try? JSONDecoder().decode(LiveClubPack.Sources.self, from: data)
@@ -944,10 +949,16 @@ final class LiveClubPackService {
         guard let opponent else { opponentPack = nil; return }
         var cached = TeamPageCache.load(teamId: opponent.rawValue)
         if cached == nil || cached!.isStale || !Self.fetchedThisLaunch.contains(opponent.rawValue) {
-            if let fresh = try? await APIClient.shared.fetchTeamPage(teamId: opponent.rawValue) {
-                TeamPageCache.save(content: fresh, teamId: opponent.rawValue)
-                Self.fetchedThisLaunch.insert(opponent.rawValue)
-                cached = TeamPageCache.load(teamId: opponent.rawValue)
+            // Once more after a moment when there is nothing cached to fall
+            // back on: one dropped request was a missing card till relaunch.
+            for attempt in 0..<(cached == nil ? 2 : 1) {
+                if attempt > 0 { try? await Task.sleep(for: .seconds(2)) }
+                if let fresh = try? await APIClient.shared.fetchTeamPage(teamId: opponent.rawValue) {
+                    TeamPageCache.save(content: fresh, teamId: opponent.rawValue)
+                    Self.fetchedThisLaunch.insert(opponent.rawValue)
+                    cached = TeamPageCache.load(teamId: opponent.rawValue)
+                    break
+                }
             }
         }
         // A newer call for another opponent owns the result.

@@ -585,6 +585,18 @@ struct TopPlayer: Codable, Identifiable {
 }
 
 struct RivalryCard: Codable {
+    /// The rival's badge: a Premier League club off `Team`, and the four
+    /// rivals outside it by their API-Football id (checked 2026-10-03).
+    var rivalCrestURL: URL? {
+        guard let rival else { return nil }
+        if let t = Team.allCases.first(where: {
+            $0.displayName.caseInsensitiveCompare(rival) == .orderedSame
+                || $0.shortName.caseInsensitiveCompare(rival) == .orderedSame
+        }) { return t.crestURL }
+        let outside = ["Birmingham City": 54, "Southampton": 41, "Norwich City": 71, "Derby County": 69]
+        return outside[rival].flatMap { URL(string: "https://media.api-sports.io/football/teams/\($0).png") }
+    }
+
     let updatedAt: String?
     let text: String
     let talkingPoint: String?

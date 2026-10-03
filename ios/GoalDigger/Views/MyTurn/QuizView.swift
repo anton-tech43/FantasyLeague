@@ -320,7 +320,7 @@ struct QuizView: View {
                 let right = q.options[q.answer]
                 MyTurnPopup(
                     verdict: correct ? "Right." : "Not that one. It's \(right.trimmingCharacters(in: CharacterSet(charactersIn: "."))).",
-                    verdictTint: correct ? .hotRose : .warmWhite,
+                    verdictTint: .warmWhite,
                     exitLabel: reviewIndex != nil ? "Back to question \(round.index + 1)"
                         : round.index + 1 >= round.questionIds.count ? "See the score" : "Next",
                     exit: {
