@@ -72,18 +72,20 @@ echo "✓ get_cron_service_key() accessor exists."
 KEY_PREFIX=$(psql "$DB_URL" -At -c "SELECT LEFT(get_cron_service_key(), 3);")
 KEY_LEN=$(psql "$DB_URL" -At -c "SELECT LENGTH(get_cron_service_key());")
 
-if [[ "$KEY_PREFIX" != "eyJ" ]]; then
-    echo "❌ Vault key is NOT JWT shape (prefix=${KEY_PREFIX}, len=${KEY_LEN})." >&2
-    echo "   Supabase gateway will return 401 on every cron tick." >&2
-    echo "   Fix: vault.update_secret() with the legacy service_role JWT from" >&2
-    echo "   backend/.env (SUPABASE_SERVICE_ROLE_KEY). See IOS_GOTCHAS.md #14." >&2
+# Since 2026-10-04 the key is a random secret, not a JWT: the old JWT sat in
+# the public git history. Every cron target deploys --no-verify-jwt, so the
+# gateway never parses it; require-service-auth.ts compares it as a string.
+# A legacy JWT here again means someone restored the leaked value.
+if [[ "$KEY_PREFIX" == "eyJ" ]]; then
+    echo "❌ Vault key is a JWT again (len=${KEY_LEN}); the leaked legacy key may be back." >&2
+    echo "   Rotate with ./scripts/rotate-cron-key.sh" >&2
     exit 1
 fi
-if [[ "$KEY_LEN" -lt 100 ]]; then
-    echo "❌ Vault key length ${KEY_LEN} is too short for a JWT (expect ~219)." >&2
+if [[ "$KEY_LEN" -lt 32 ]]; then
+    echo "❌ Vault key length ${KEY_LEN} is too short (expect 80)." >&2
     exit 1
 fi
-echo "✓ Vault key is JWT shape (prefix=eyJ, len=${KEY_LEN})."
+echo "✓ Vault key is a random secret (len=${KEY_LEN})."
 
 # -----------------------------------------------------------------------------
 # Check 4: Recent HTTP responses — are cron calls actually succeeding?
