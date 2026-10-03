@@ -532,10 +532,12 @@ struct SettingsView: View {
         // Privacy-impact: a silent failure here would tell the user their data
         // is gone when it isn't. Surface server errors as an alert so the user
         // can retry.
-        guard let token = UserDefaults.standard.string(forKey: "apnsToken") else {
-            // No token registered (rare — user never granted notification
-            // permission). Nothing to delete server-side; clearing local state
-            // is enough.
+        // A device that never allowed notifications can still hold a Live
+        // Activity token on the server, so either token is reason to call.
+        let token = UserDefaults.standard.string(forKey: "apnsToken")
+        let laToken = UserDefaults.standard.string(forKey: "liveActivityPushToStartToken")
+        guard token != nil || laToken != nil else {
+            // Nothing was ever registered; clearing local state is enough.
             wipeThisPhone()
             return
         }

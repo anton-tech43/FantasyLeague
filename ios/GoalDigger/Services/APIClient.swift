@@ -562,12 +562,13 @@ class APIClient {
 
     // MARK: - Delete My Data
 
-    func deleteMyData(token: String) async throws {
+    func deleteMyData(token: String?) async throws {
         let url = try requireFunctionsBaseURL().appendingPathComponent("delete-my-data")
         // SEC-6: also send the Live Activity push-to-start token so the server
-        // deletes that row too (it holds followed-country data under a different
-        // token). Best-effort — omitted if the device never vended one.
-        var payload: [String: Any] = ["apns_token": token]
+        // deletes that row too (it holds follow data under a different token).
+        // Either token alone is enough; the server needs at least one.
+        var payload: [String: Any] = [:]
+        if let token { payload["apns_token"] = token }
         if let laToken = UserDefaults.standard.string(forKey: "liveActivityPushToStartToken"),
            !laToken.isEmpty {
             payload["la_token"] = laToken

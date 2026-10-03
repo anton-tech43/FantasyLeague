@@ -23,15 +23,18 @@ serve(async (req) => {
     // holds followed-country data). The client sends its push-to-start token.
     const laToken = body.la_token as string | undefined;
 
-    if (!apnsToken || typeof apnsToken !== "string") {
+    // Either token on its own is a valid request: a device that never allowed
+    // notifications can still hold a Live Activity token (QA 2026-10-04).
+    if (apnsToken === undefined && laToken === undefined) {
       return new Response(
-        JSON.stringify({ error: "apns_token is required" }),
+        JSON.stringify({ error: "apns_token or la_token is required" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
     // Validate token format (64-char hex)
-    if (!/^[a-fA-F0-9]{64}$/.test(apnsToken)) {
+    if (apnsToken !== undefined &&
+        (typeof apnsToken !== "string" || !/^[a-fA-F0-9]{64}$/.test(apnsToken))) {
       return new Response(
         JSON.stringify({ error: "Invalid token format" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
@@ -41,11 +44,13 @@ serve(async (req) => {
     const supabase = getSupabaseClient();
 
     // Delete the device token row
-    const { data, error } = await supabase
-      .from("device_tokens")
-      .delete()
-      .eq("apns_token", apnsToken)
-      .select("id");
+    const { data, error } = apnsToken === undefined
+      ? { data: [], error: null }
+      : await supabase
+        .from("device_tokens")
+        .delete()
+        .eq("apns_token", apnsToken)
+        .select("id");
 
     if (error) {
       console.error("Delete failed:", error.message);
@@ -57,7 +62,7 @@ serve(async (req) => {
 
     // Best-effort: delete the Live Activity token(s) for this device too.
     let laDeleted = 0;
-    if (laToken && /^[a-fA-F0-9]{16,}$/.test(laToken)) {
+    if (typeof laToken === "string" && /^[a-fA-F0-9]{16,512}$/.test(laToken)) {
       const { data: laData, error: laErr } = await supabase
         .from("live_activity_tokens")
         .delete()
