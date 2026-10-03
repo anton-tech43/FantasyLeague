@@ -5,23 +5,33 @@ struct WelcomeView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer()
+            FittingScrollView {
+                VStack(spacing: 0) {
+                    Spacer()
 
-            VStack(spacing: 16) {
-                Image(systemName: "bubble.left")
-                    .font(.system(size: 60))
-                    .foregroundStyle(Color.hotRose)
+                    VStack(spacing: 16) {
+                        Image(systemName: "bubble.left")
+                            .font(.system(size: 60))
+                            .foregroundStyle(Color.hotRose)
+                            .accessibilityHidden(true)
 
-                GoalDiggerWordmark(size: .jakarta(34, weight: .bold))
+                        GoalDiggerWordmark(size: .jakarta(34, weight: .bold))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.4)
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel("GoalDigger")
+                            .accessibilityAddTraits(.isHeader)
 
-                Text("You're here. He has no idea.\nLet's get you ready.")
-                    .font(.onboardingBody)
-                    .foregroundColor(.textOnDark.opacity(0.8))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, Layout.screenPadding)
+                        Text("You're here. He has no idea.\nLet's get you ready.")
+                            .font(.onboardingBody)
+                            .foregroundColor(.textOnDark.opacity(0.8))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, Layout.screenPadding)
+                    }
+
+                    Spacer()
+                }
             }
-
-            Spacer()
 
             Button("Let's go") { onContinue() }
                 .buttonStyle(PrimaryButtonStyle())

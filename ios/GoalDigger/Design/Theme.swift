@@ -23,7 +23,10 @@ extension Color {
 
     // Derived text colors
     static let textPrimaryOnCard = Color.charcoal
-    static let textSecondaryOnCard = Color.mutedText
+    // mutedText, darkened at the same hue: #9B8FA0 on softBlush is 2.76:1,
+    // this is 4.74:1 (WCAG AA for body text). mutedText itself stays, it is
+    // 5.2:1 on deepMauve and the dark surfaces use it.
+    static let textSecondaryOnCard = Color(hex: "#75677A")
     static let textTertiary = Color.mutedText
 
     // Derived utility colors
@@ -193,11 +196,50 @@ struct PrimaryButtonStyle: ButtonStyle {
         configuration.label
             .font(.jakarta(17, weight: .semiBold))
             .foregroundColor(.white)
+            .multilineTextAlignment(.center)
+            .padding(.vertical, 8)
             .frame(maxWidth: .infinity)
-            .frame(height: Layout.buttonHeight)
+            // minHeight: a fixed 50 clipped the label at accessibility text sizes.
+            .frame(minHeight: Layout.buttonHeight)
             .background(isEnabled ? Color.hotRose : Color.hotRose.opacity(0.4))
             .cornerRadius(Layout.buttonCornerRadius)
             .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
+/// A Spacer-laid-out screen that scrolls only when it has to. The content is
+/// given at least the full height, so its Spacers lay it out exactly as a
+/// plain VStack would; at accessibility text sizes or with the keyboard up it
+/// runs taller than that and scrolls instead of pushing off the screen.
+struct FittingScrollView<Content: View>: View {
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        GeometryReader { geo in
+            ScrollView {
+                content.frame(maxWidth: .infinity, minHeight: geo.size.height)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+    }
+}
+
+/// The system switch on a softBlush card. Its off-track is a translucent grey
+/// that all but vanishes on blush (1.5:1), leaving a white knob on a white-ish
+/// card. A mutedText capsule behind the translucent track darkens it to about
+/// 3:1; when on, the opaque rose track covers it. Still the native Toggle, so
+/// VoiceOver and the tap target are unchanged.
+struct CardToggleStyle: ToggleStyle {
+    @MainActor private static let switchSize = UISwitch().intrinsicContentSize
+
+    func makeBody(configuration: Configuration) -> some View {
+        Toggle(configuration)
+            .tint(.hotRose)
+            .background(alignment: .trailing) {
+                Capsule()
+                    .fill(Color.mutedText)
+                    .frame(width: Self.switchSize.width, height: Self.switchSize.height)
+            }
     }
 }

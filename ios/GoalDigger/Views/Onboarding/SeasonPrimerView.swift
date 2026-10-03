@@ -77,34 +77,41 @@ struct SeasonPrimerView: View {
 
     @ViewBuilder
     private func primerContent(stateLine: String, feelingLine: String) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Lots of top breathing room. The card should feel quiet.
-            Spacer()
-                .frame(height: 80)
+        VStack(spacing: 0) {
+            // Scrolls only when the copy outgrows the screen (accessibility
+            // text sizes); the CTAs stay pinned below.
+            FittingScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    // Lots of top breathing room. The card should feel quiet.
+                    Spacer()
+                        .frame(height: 80)
 
-            // The punchy headline. 2-5 words from the routine.
-            Text(appState.personalise(stateLine))
-                .font(.onboardingTitle)
-                .foregroundColor(.textOnDark)
-                .multilineTextAlignment(.leading)
-                .padding(.horizontal, Layout.screenPadding)
+                    // The punchy headline. 2-5 words from the routine.
+                    Text(appState.personalise(stateLine))
+                        .font(.onboardingTitle)
+                        .foregroundColor(.textOnDark)
+                        .multilineTextAlignment(.leading)
+                        .padding(.horizontal, Layout.screenPadding)
 
-            // Generous gap between title and body.
-            Spacer()
-                .frame(height: 24)
+                    // Generous gap between title and body.
+                    Spacer()
+                        .frame(height: 24)
 
-            // One sentence (or two short ones) of emotional translation.
-            // Wrap in GlossaryText so any jargon ("run-in", "clean sheet")
-            // is tappable — defensive in case the LLM uses one despite the
-            // prompt asking it not to.
-            GlossaryText(raw: appState.personalise(feelingLine))
-                .font(.onboardingBody)
-                .foregroundColor(.textOnDark.opacity(0.85))
-                .lineSpacing(6)
-                .multilineTextAlignment(.leading)
-                .padding(.horizontal, Layout.screenPadding)
+                    // One sentence (or two short ones) of emotional translation.
+                    // Wrap in GlossaryText so any jargon ("run-in", "clean sheet")
+                    // is tappable — defensive in case the LLM uses one despite the
+                    // prompt asking it not to.
+                    GlossaryText(raw: appState.personalise(feelingLine))
+                        .font(.onboardingBody)
+                        .foregroundColor(.textOnDark.opacity(0.85))
+                        .lineSpacing(6)
+                        .multilineTextAlignment(.leading)
+                        .padding(.horizontal, Layout.screenPadding)
 
-            Spacer()
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
 
             // Two CTAs — restored on request after first sim test.
             // Primary nudges her to learn more about the team (the higher-

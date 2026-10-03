@@ -45,6 +45,10 @@ struct TeamCrestView: View {
             }
         }
         .frame(width: size, height: size)
+        // Decorative: every caller prints the name beside it, and VoiceOver
+        // read the fallback as "shield". A caller where the crest is the only
+        // label must give its container an accessibilityLabel.
+        .accessibilityHidden(true)
     }
 
     private var fallback: some View {

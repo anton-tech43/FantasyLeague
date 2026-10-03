@@ -364,7 +364,7 @@ struct SettingsView: View {
                         }
                     ))
                     .labelsHidden()
-                    .tint(.hotRose)
+                    .toggleStyle(CardToggleStyle())
                 }
             }
         }
@@ -460,7 +460,9 @@ struct SettingsView: View {
             Text(header)
                 .font(.jakarta(11, weight: .semiBold))
                 .tracking(1)
-                .foregroundColor(.hotRose.opacity(0.7))
+                // #EA4E8A: hot rose lightened to 4.55:1 on mauve; the old 70%
+                // rose was 2.6:1 for 11pt text (QA NEW-12).
+                .foregroundColor(Color(hex: "#EA4E8A"))
                 .padding(.leading, 4)
 
             content()

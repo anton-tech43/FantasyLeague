@@ -23,11 +23,13 @@ struct HowItWorksView: View {
     /// AppState.personalise (see AppState.swift:100). Same source of truth
     /// as the rest of the app's name-replacement.
     private var scenarios: [Scenario] {
-        [
+        // "team" for one club (the usual case), "teams" for two follows.
+        let teams = appState.selectedTeams.count + appState.selectedCountries.count == 1 ? "team" : "teams"
+        return [
             .init(
                 icon: "dot.radiowaves.left.and.right",
-                title: "We watch \(appState.pPossessive) teams for you",
-                body: appState.personalise("Every match and every story about [his name's] teams, turned into plain English. No jargon, no homework.")
+                title: "We watch \(appState.pPossessive) \(teams) for you",
+                body: appState.personalise("Every match and every story about [his name's] \(teams), turned into plain English. No jargon, no homework.")
             ),
             .init(
                 icon: "bubble.left.and.bubble.right.fill",
@@ -87,6 +89,7 @@ struct HowItWorksView: View {
                     .font(.system(size: 18))
                     .foregroundColor(.hotRose)
             }
+            .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 4) {
                 Text(scenario.title)
                     .font(.feedHeadline)

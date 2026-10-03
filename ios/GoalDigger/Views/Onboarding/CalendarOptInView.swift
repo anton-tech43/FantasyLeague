@@ -33,47 +33,52 @@ struct CalendarOptInView: View {
 
     var body: some View {
         VStack(spacing: 24) {
-            Spacer()
+            FittingScrollView {
+                VStack(spacing: 24) {
+                    Spacer()
 
-            ZStack {
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [Color.hotRose.opacity(0.15), Color.clear],
-                            center: .center,
-                            startRadius: 10,
-                            endRadius: 80
-                        )
-                    )
-                    .frame(width: 160, height: 160)
+                    ZStack {
+                        Circle()
+                            .fill(
+                                RadialGradient(
+                                    colors: [Color.hotRose.opacity(0.15), Color.clear],
+                                    center: .center,
+                                    startRadius: 10,
+                                    endRadius: 80
+                                )
+                            )
+                            .frame(width: 160, height: 160)
 
-                Image(systemName: "calendar")
-                    .font(.system(size: 60))
-                    .foregroundStyle(Color.hotRose)
+                        Image(systemName: "calendar")
+                            .font(.system(size: 60))
+                            .foregroundStyle(Color.hotRose)
+                    }
+                    .padding(.bottom, 8)
+                    .accessibilityHidden(true)
+
+                    Text("Want \(appState.pPossessive) matches\nin your calendar?")
+                        .font(.onboardingTitle)
+                        .foregroundColor(.textOnDark)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, Layout.screenPadding)
+
+                    Text(bodyText)
+                        .font(.onboardingBody)
+                        .foregroundColor(.textOnDark.opacity(0.8))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, Layout.screenPadding)
+
+                    if let syncErrorMessage {
+                        Text(syncErrorMessage)
+                            .font(.jakarta(13, weight: .regular))
+                            .foregroundColor(.hotRose)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, Layout.screenPadding)
+                    }
+
+                    Spacer()
+                }
             }
-            .padding(.bottom, 8)
-
-            Text("Want \(appState.pPossessive) matches\nin your calendar?")
-                .font(.onboardingTitle)
-                .foregroundColor(.textOnDark)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, Layout.screenPadding)
-
-            Text(bodyText)
-                .font(.onboardingBody)
-                .foregroundColor(.textOnDark.opacity(0.8))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, Layout.screenPadding)
-
-            if let syncErrorMessage {
-                Text(syncErrorMessage)
-                    .font(.jakarta(13, weight: .regular))
-                    .foregroundColor(.hotRose)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, Layout.screenPadding)
-            }
-
-            Spacer()
 
             VStack(spacing: 12) {
                 if fixtures?.isEmpty == true && !isLoadingFixtures {

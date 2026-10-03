@@ -24,19 +24,25 @@ struct MyTurnView: View {
                     .padding(.top, 8)
                     .padding(.bottom, 4)
 
+                // Opacity keeps the hidden modules mounted (their state
+                // survives a switch); accessibilityHidden keeps VoiceOver
+                // from reading the three you cannot see.
                 ZStack {
                     SayThisView(content: content.sayThis, lingo: content.lingo, store: store)
                         .opacity(module == .sayThis ? 1 : 0)
                         .allowsHitTesting(module == .sayThis)
+                        .accessibilityHidden(module != .sayThis)
                     LingoView(content: content.lingo, store: store,
                               team: appState.selectedTeam, page: live.page, mode: .dictionary)
                         .opacity(module == .lingo ? 1 : 0)
                         .allowsHitTesting(module == .lingo)
+                        .accessibilityHidden(module != .lingo)
                     QuizView(content: content.quiz, store: store, clubId: appState.selectedTeam?.rawValue,
                              livePack: live.pack, squadPack: squad.pack, leaguePack: live.leaguePack,
                              opponentPack: live.opponentPack)
                         .opacity(module == .quiz ? 1 : 0)
                         .allowsHitTesting(module == .quiz)
+                        .accessibilityHidden(module != .quiz)
                     if prepAvailable {
                         // "Get ready for Chelsea": the slip, this fixture's words
                         // and the opponent quiz (LingoView's prep mode).
@@ -44,6 +50,7 @@ struct MyTurnView: View {
                                   team: appState.selectedTeam, page: live.page, mode: .prep)
                             .opacity(module == .prep ? 1 : 0)
                             .allowsHitTesting(module == .prep)
+                            .accessibilityHidden(module != .prep)
                     }
 
                     // Above the module content, so four in a row is seen

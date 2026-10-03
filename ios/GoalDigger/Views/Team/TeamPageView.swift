@@ -240,14 +240,20 @@ struct TeamPageView: View {
                     }
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 } label: {
+                    // Shrinks to fit rather than "Cale…" at the largest text
+                    // sizes; minHeight lets the pill grow with the text.
                     Text(tab.rawValue)
                         .font(.jakarta(15, weight: .medium))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                        .padding(.horizontal, 4)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 40)
+                        .frame(minHeight: 40)
                         .background(activeTab == tab ? Color.hotRose : Color.clear)
                         .foregroundColor(activeTab == tab ? .warmWhite : .warmWhite.opacity(0.6))
                         .cornerRadius(12)
                 }
+                .accessibilityAddTraits(activeTab == tab ? .isSelected : [])
             }
         }
     }
@@ -498,11 +504,16 @@ struct TeamPageView: View {
             leadingImageURL: crest,
             footerLabel: "Pre game talk ›",
             zone1Collapsed: {
-                HStack(spacing: 8) {
+                // One line of date + chips; stacked and wrapping at the
+                // accessibility sizes, where the row cut the date to "Sat, 10…".
+                let row = dynamicTypeSize.isAccessibilitySize
+                    ? AnyLayout(VStackLayout(alignment: .leading, spacing: 6))
+                    : AnyLayout(HStackLayout(spacing: 8))
+                row {
                     Text(formattedFixtureDate(fixture.date))
                         .font(.jakarta(13, weight: .regular))
                         .foregroundColor(.warmWhite.opacity(0.7))
-                        .lineLimit(1)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
                     // Which competition. "Hull City, home" on a League Cup
                     // night was indistinguishable from a league Saturday.
                     if let competition = fixture.competitionShort {
@@ -598,6 +609,7 @@ struct TeamPageView: View {
     /// instead of an out-of-place "9:00pm".
     private static let kickoffLineFmt: DateFormatter = {
         let f = DateFormatter()
+        f.locale = copyLocale
         f.setLocalizedDateFormatFromTemplate("EEE d MMM jm")
         f.amSymbol = "am"; f.pmSymbol = "pm"
         return f
@@ -887,14 +899,23 @@ struct TeamPageView: View {
     // Cached formatters — DateFormatter() init is expensive (locale/calendar
     // setup) and each calendar row needs all three. Allocating fresh per
     // call would be ~24 inits per render with 8 fixtures.
+    /// English weekday and month names whatever the phone's language (the copy
+    /// around them is English, "lör 10 okt" was the Swedish result), with the
+    /// phone's own 12/24-hour choice. Same as ContentDetailView (QA NEW-18).
+    private static let copyLocale: Locale = {
+        var c = Locale.Components(locale: Locale(identifier: "en_GB"))
+        c.hourCycle = Locale.current.hourCycle
+        return Locale(components: c)
+    }()
     private static let dayOfWeekFmt: DateFormatter = {
-        let f = DateFormatter(); f.dateFormat = "EEE"; return f
+        let f = DateFormatter(); f.locale = copyLocale; f.dateFormat = "EEE"; return f
     }()
     private static let dayMonthFmt: DateFormatter = {
-        let f = DateFormatter(); f.dateFormat = "d MMM"; return f
+        let f = DateFormatter(); f.locale = copyLocale; f.dateFormat = "d MMM"; return f
     }()
     private static let kickoffTimeFmt: DateFormatter = {
         let f = DateFormatter()
+        f.locale = copyLocale
         f.setLocalizedDateFormatFromTemplate("jm")
         f.amSymbol = "am"; f.pmSymbol = "pm"
         return f

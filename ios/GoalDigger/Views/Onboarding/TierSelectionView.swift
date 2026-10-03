@@ -25,65 +25,26 @@ struct TierSelectionView: View {
 
     var body: some View {
         VStack(spacing: 24) {
-            Spacer()
+            FittingScrollView {
+                VStack(spacing: 24) {
+                    Spacer()
 
-            Text("How far do you\nwant to take this?")
-                .font(.onboardingTitle)
-                .foregroundColor(.textOnDark)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, Layout.screenPadding)
+                    Text("How far do you\nwant to take this?")
+                        .font(.onboardingTitle)
+                        .foregroundColor(.textOnDark)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, Layout.screenPadding)
 
-            VStack(spacing: Layout.cardSpacing) {
-                ForEach(tiers, id: \.number) { tier in
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            selected = tier.number
+                    VStack(spacing: Layout.cardSpacing) {
+                        ForEach(tiers, id: \.number) { tier in
+                            tierRow(tier)
                         }
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    } label: {
-                        VStack(alignment: .leading, spacing: 6) {
-                            HStack {
-                                Image(systemName: tier.icon)
-                                    .font(.system(size: 16))
-                                    .foregroundColor(tier.number == 3 ? .tierGold : .hotRose)
-                                    .frame(width: 24)
-
-                                Text(tier.label)
-                                    .font(.feedHeadline)
-                                    .foregroundColor(.textPrimaryOnCard)
-
-                                Spacer()
-
-                                if selected == tier.number {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(tier.number == 3 ? .tierGold : .hotRose)
-                                }
-                            }
-                            Text(tier.description)
-                                .font(.onboardingBody)
-                                .foregroundColor(.textSecondaryOnCard)
-                                .multilineTextAlignment(.leading)
-                                .padding(.leading, 24 + 8) // align with text after icon
-                        }
-                        .padding(Layout.cardPadding)
-                        .background(Color.cardBackground)
-                        .cornerRadius(Layout.cardCornerRadius)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
-                                .stroke(
-                                    selected == tier.number
-                                        ? (tier.number == 3 ? Color.tierGold : Color.hotRose)
-                                        : Color.clear,
-                                    lineWidth: 2
-                                )
-                        )
-                        .shadow(color: Color.cardShadowColor, radius: Layout.cardShadowRadius, y: Layout.cardShadowY)
                     }
+                    .padding(.horizontal, Layout.screenPadding)
+
+                    Spacer()
                 }
             }
-            .padding(.horizontal, Layout.screenPadding)
-
-            Spacer()
 
             Button(buttonText) {
                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
@@ -97,5 +58,58 @@ struct TierSelectionView: View {
         // ONB-6: reflect the saved tier on (re)appear so back-navigating to this
         // step doesn't silently reset a tier-3 user to the default of 2.
         .onAppear { selected = appState.selectedTier }
+    }
+
+    private func tierRow(_ tier: (number: Int, icon: String, label: String, description: String)) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                selected = tier.number
+            }
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        } label: {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Image(systemName: tier.icon)
+                        .font(.system(size: 16))
+                        .foregroundColor(tier.number == 3 ? .tierGold : .hotRose)
+                        .frame(width: 24)
+                        .accessibilityHidden(true)
+
+                    Text(tier.label)
+                        .font(.feedHeadline)
+                        .foregroundColor(.textPrimaryOnCard)
+
+                    Spacer()
+
+                    if selected == tier.number {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(tier.number == 3 ? .tierGold : .hotRose)
+                            .accessibilityHidden(true)
+                    }
+                }
+                Text(tier.description)
+                    .font(.onboardingBody)
+                    .foregroundColor(.textSecondaryOnCard)
+                    .multilineTextAlignment(.leading)
+                    // Wrap, never "…": between the Spacers this was squeezed
+                    // to one truncated line even at the default text size.
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.leading, 24 + 8) // align with text after icon
+            }
+            .padding(Layout.cardPadding)
+            .background(Color.cardBackground)
+            .cornerRadius(Layout.cardCornerRadius)
+            .overlay(
+                RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
+                    .stroke(
+                        selected == tier.number
+                            ? (tier.number == 3 ? Color.tierGold : Color.hotRose)
+                            : Color.clear,
+                        lineWidth: 2
+                    )
+            )
+            .shadow(color: Color.cardShadowColor, radius: Layout.cardShadowRadius, y: Layout.cardShadowY)
+        }
+        .accessibilityAddTraits(selected == tier.number ? .isSelected : [])
     }
 }

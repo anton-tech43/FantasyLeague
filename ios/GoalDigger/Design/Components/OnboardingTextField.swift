@@ -26,8 +26,11 @@ struct OnboardingTextField: UIViewRepresentable {
         // even when backgroundColor is .clear; matching the outer fill makes them invisible.
         tf.backgroundColor = UIColor(Color.cardBackground)
         tf.borderStyle = .none
-        tf.font = UIFont(name: "PlusJakartaSans-Medium", size: 20)
-            ?? .systemFont(ofSize: 20, weight: .medium)
+        // 20pt at the default size, scaled with Dynamic Type like .title3. The
+        // callers size the field with a matching @ScaledMetric.
+        tf.font = UIFontMetrics(forTextStyle: .title3).scaledFont(
+            for: UIFont(name: "PlusJakartaSans-Medium", size: 20) ?? .systemFont(ofSize: 20, weight: .medium))
+        tf.adjustsFontForContentSizeCategory = true
         tf.textColor = UIColor(Color.textPrimaryOnCard)
         tf.tintColor = UIColor(Color.hotRose)
         tf.attributedPlaceholder = NSAttributedString(

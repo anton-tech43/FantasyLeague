@@ -73,7 +73,8 @@ struct CountrySelectionView: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.mutedText)
                     .font(.system(size: 14))
-                TextField("Search \(appState.pPossessive) country...", text: $searchText)
+                TextField("Search \(appState.pPossessive) country", text: $searchText,
+                          prompt: Text("Search \(appState.pPossessive) country...").foregroundColor(.textSecondaryOnCard))
                     .font(.jakarta(17, weight: .regular))
                     .foregroundColor(.textPrimaryOnCard)
                     .autocorrectionDisabled()
@@ -152,7 +153,7 @@ struct CountrySelectionView: View {
                     .foregroundColor(.textSecondaryOnCard)
             }
         }
-        .tint(.hotRose)
+        .toggleStyle(CardToggleStyle())
         .padding(Layout.cardPadding)
         .background(Color.cardBackground)
         .cornerRadius(Layout.cardCornerRadius)
@@ -169,6 +170,7 @@ struct CountrySelectionView: View {
                 .font(.sectionHeader)
                 .foregroundColor(.textOnDark.opacity(0.5))
                 .tracking(1.2)
+                .accessibilityAddTraits(.isHeader)
             Spacer()
         }
         .padding(.top, 8)
@@ -201,6 +203,7 @@ struct CountrySelectionView: View {
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.hotRose)
+                        .accessibilityHidden(true)
                 }
             }
             .padding(Layout.cardPadding)
@@ -212,5 +215,6 @@ struct CountrySelectionView: View {
             )
             .shadow(color: Color.cardShadowColor, radius: Layout.cardShadowRadius, y: Layout.cardShadowY)
         }
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

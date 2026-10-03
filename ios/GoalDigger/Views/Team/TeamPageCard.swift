@@ -25,18 +25,26 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
     var footerLabel: String? = nil
     @ViewBuilder let zone1Collapsed: () -> CollapsedContent
     @ViewBuilder let zone1Expanded: () -> ExpandedContent
+    /// One line at the usual sizes; at the accessibility sizes the collapsed
+    /// lines wrap instead ("Leeds (HO…" at the largest size).
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    private var collapsedLineLimit: Int? { dynamicTypeSize.isAccessibilitySize ? nil : 1 }
 
     var body: some View {
         VStack(spacing: 0) {
-            // Zone 1 — deepMauve content area
+            // Zone 1 — deepMauve content area. Collapsed, it is one button
+            // to VoiceOver; open, its lines read one by one and zone 2 is
+            // the button that closes it.
             zone1View
                 .contentShape(Rectangle())
                 .onTapGesture { onTap() }
+                .modifier(TapZoneAccessibility(isButton: !isExpanded, isExpanded: isExpanded, action: onTap))
 
             // Zone 2 — hotRose talking point area
             zone2View
                 .contentShape(Rectangle())
                 .onTapGesture { onTap() }
+                .modifier(TapZoneAccessibility(isButton: true, isExpanded: isExpanded, action: onTap))
         }
         .cornerRadius(16)
         .clipped()
@@ -69,7 +77,7 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
                     Text(primaryText)
                         .font(.jakarta(15, weight: .bold))
                         .foregroundColor(.warmWhite)
-                        .lineLimit(1)
+                        .lineLimit(collapsedLineLimit)
 
                     zone1Collapsed()
                 }
@@ -169,7 +177,7 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
             Text(footerLabel ?? talkingPoint ?? "Tap for more ›")
                 .font(.jakarta(13, weight: .regular))
                 .foregroundColor(.warmWhite)
-                .lineLimit(1)
+                .lineLimit(collapsedLineLimit)
             Spacer()
         }
         .padding(.horizontal, 16)
@@ -196,6 +204,27 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
             }
         }
         .padding(talkingPoint != nil ? 16 : 10)
+    }
+}
+
+/// A tappable zone of the card, as VoiceOver sees it: one combined button that
+/// says whether the card is open. When `isButton` is false (an open zone 1,
+/// whose lines may hold their own controls) nothing is changed.
+private struct TapZoneAccessibility: ViewModifier {
+    let isButton: Bool
+    let isExpanded: Bool
+    let action: () -> Void
+
+    func body(content: Content) -> some View {
+        if isButton {
+            content
+                .accessibilityElement(children: .combine)
+                .accessibilityAddTraits(.isButton)
+                .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")
+                .accessibilityAction { action() }
+        } else {
+            content
+        }
     }
 }
 

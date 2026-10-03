@@ -10,6 +10,7 @@ struct OptionalPLTeamView: View {
     @State private var picks: [Team] = []
     @State private var wantsSecond = false
     @State private var searchText = ""
+    @Environment(\.dynamicTypeSize) private var typeSize
     let onContinue: () -> Void
 
     /// Single-replace until the user opts into a second club, then toggle (cap 2).
@@ -32,12 +33,16 @@ struct OptionalPLTeamView: View {
             .sorted { $0.displayName < $1.displayName }
     }
 
-    var body: some View {
+    /// Icon, question and search. Pinned above the list at the usual sizes;
+    /// at accessibility sizes it alone filled the screen and left no room for
+    /// the list, so there it scrolls away with the clubs.
+    private var header: some View {
         VStack(spacing: 16) {
             Image(systemName: "shield")
                 .font(.system(size: 28))
                 .foregroundColor(.hotRose.opacity(0.6))
                 .padding(.top, 8)
+                .accessibilityHidden(true)
 
             GlossaryText(raw: "Which Premier League team does \(appState.hisName.isEmpty ? appState.pSubject : appState.hisName) follow?")
                 .font(.onboardingTitle)
@@ -56,7 +61,10 @@ struct OptionalPLTeamView: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.mutedText)
                     .font(.system(size: 14))
-                TextField("Search \(appState.pPossessive) team...", text: $searchText)
+                    .accessibilityHidden(true)
+                // The system placeholder grey vanished on the blush field.
+                TextField("Search \(appState.pPossessive) team", text: $searchText,
+                          prompt: Text("Search \(appState.pPossessive) team...").foregroundColor(.textSecondaryOnCard))
                     .font(.jakarta(17, weight: .regular))
                     .foregroundColor(.textPrimaryOnCard)
                     .autocorrectionDisabled()
@@ -69,8 +77,19 @@ struct OptionalPLTeamView: View {
                     .stroke(Color.hotRose.opacity(0.3), lineWidth: 1)
             )
             .padding(.horizontal, Layout.screenPadding)
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 16) {
+            if !typeSize.isAccessibilitySize {
+                header
+            }
 
             ScrollView {
+                if typeSize.isAccessibilitySize {
+                    header.padding(.bottom, 16)
+                }
                 LazyVStack(spacing: Layout.cardSpacing) {
                     ForEach(filteredTeams) { team in
                         let isSelected = picks.contains(team)
@@ -97,6 +116,7 @@ struct OptionalPLTeamView: View {
                                 if isSelected {
                                     Image(systemName: "checkmark.circle.fill")
                                         .foregroundColor(.hotRose)
+                                        .accessibilityHidden(true)
                                 }
                             }
                             .padding(Layout.cardPadding)
@@ -108,6 +128,7 @@ struct OptionalPLTeamView: View {
                             )
                             .shadow(color: Color.cardShadowColor, radius: Layout.cardShadowRadius, y: Layout.cardShadowY)
                         }
+                        .accessibilityAddTraits(isSelected ? .isSelected : [])
                     }
                 }
                 .padding(.horizontal, Layout.screenPadding)
@@ -156,7 +177,7 @@ struct OptionalPLTeamView: View {
                     .foregroundColor(.textSecondaryOnCard)
             }
         }
-        .tint(.hotRose)
+        .toggleStyle(CardToggleStyle())
         .padding(Layout.cardPadding)
         .background(Color.cardBackground)
         .cornerRadius(Layout.cardCornerRadius)

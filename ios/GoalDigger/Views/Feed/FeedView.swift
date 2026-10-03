@@ -105,8 +105,7 @@ struct FeedView: View {
                 EveryoneEmptyStateCard(
                     cardHeight: screenHeight * Layout.immersiveCardHeightRatio,
                     teamName: appState.selectedTeam?.shortName
-                        ?? (CountryFollowing.isEnabled ? appState.selectedCountry?.shortName : nil)
-                        ?? "your team",
+                        ?? (CountryFollowing.isEnabled ? appState.selectedCountry?.shortName : nil),
                     onBackToTeam: {
                         // iOS-9: fall back to a followed country for WC-only users
                         // (no club) so the button isn't a no-op. Only while

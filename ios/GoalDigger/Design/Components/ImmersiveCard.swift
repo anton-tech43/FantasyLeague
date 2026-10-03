@@ -158,11 +158,22 @@ struct ImmersiveCard: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // To VoiceOver zone 1 is one button that opens the story; zone 2
+            // keeps its share button separate, so only its talking point
+            // carries the button trait (see zone2).
             zone1
                 .frame(height: cardHeight * Layout.immersiveZone1Ratio)
                 .clipped()
                 .contentShape(Rectangle())
                 .onTapGesture { onZone1Tap() }
+                // Spelled out rather than .combine: the headline is a UILabel
+                // (TightHeadline). Still a heading, so the rotor steps card
+                // to card.
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel([competitionLabel, headline, contextLine].compactMap { $0 }.joined(separator: ". "))
+                .accessibilityHint("Press for more info and things to say")
+                .accessibilityAddTraits([.isButton, .isHeader])
+                .accessibilityAction { onZone1Tap() }
             zone2
                 .frame(height: cardHeight * Layout.immersiveZone2Ratio)
                 .contentShape(Rectangle())
@@ -283,6 +294,8 @@ struct ImmersiveCard: View {
                     Text(talkingPoint)
                         .font(.jakarta(20, weight: .mediumItalic))
                         .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityAddTraits(.isButton)
+                        .accessibilityAction { onZone2Tap() }
                 }
 
                 Spacer()
@@ -303,6 +316,7 @@ struct ImmersiveCard: View {
                     Spacer()
                 }
                 .padding(.bottom, 16)
+                .accessibilityHidden(true) // a swipe cue; VoiceOver scrolls on its own
             }
             .padding(.horizontal, 24)
             .padding(.top, 16)
