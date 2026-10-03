@@ -57,13 +57,13 @@ struct CountrySelectionView: View {
                 .foregroundColor(.hotRose.opacity(0.6))
                 .padding(.top, 8)
 
-            GlossaryText(raw: "Who is \(appState.hisName.isEmpty ? appState.pSubject : appState.hisName) backing at the World Championship?")
+            GlossaryText(raw: "Which national team does \(appState.hisName.isEmpty ? appState.pSubject : appState.hisName) support?")
                 .font(.onboardingTitle)
                 .foregroundColor(.textOnDark)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Layout.screenPadding)
 
-            Text("\(appState.pPossessiveCap) country. Your new month.")
+            Text("\(appState.pPossessiveCap) country, every time they play.")
                 .font(.onboardingBody)
                 .foregroundColor(.textOnDark.opacity(0.8))
                 .padding(.horizontal, Layout.screenPadding)
