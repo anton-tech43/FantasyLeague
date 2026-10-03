@@ -139,13 +139,8 @@ struct ImmersiveCard: View {
     // MARK: - Body
 
     private func headlineText(size: CGFloat) -> some View {
-        Text(headline)
-            .font(.custom("LeagueSpartan-Black", size: size))
-            .tracking(-0.05 * size)
-            .lineLimit(3)
-            .minimumScaleFactor(0.9)   // last-resort only; the size is measured
-            .fixedSize(horizontal: false, vertical: true)
-            .foregroundColor(.warmWhite)
+        TightHeadline(text: headline, size: size)
+            .accessibilityAddTraits(.isHeader)
     }
 
     /// The largest step at which the headline, tracked at -0.05 em, wraps
@@ -153,11 +148,10 @@ struct ImmersiveCard: View {
     static func headlineSize(_ text: String, width: CGFloat) -> CGFloat {
         for size: CGFloat in [64, 56, 48, 42, 36, 32] {
             guard let font = UIFont(name: "LeagueSpartan-Black", size: size) else { return 48 }
-            let rect = (text as NSString).boundingRect(
-                with: CGSize(width: width, height: .greatestFiniteMagnitude),
-                options: [.usesLineFragmentOrigin],
-                attributes: [.font: font, .kern: -0.05 * size], context: nil)
-            if rect.height <= font.lineHeight * 3 + 1 { return size }
+            let rect = NSAttributedString(string: text, attributes: TightHeadline.attributes(font: font, size: size))
+                .boundingRect(with: CGSize(width: width, height: .greatestFiniteMagnitude),
+                              options: [.usesLineFragmentOrigin], context: nil)
+            if rect.height <= TightHeadline.lineHeight * size * 3 + 1 { return size }
         }
         return 32
     }
@@ -314,5 +308,45 @@ struct ImmersiveCard: View {
             .padding(.top, 16)
         }
         .foregroundColor(zone2TextColor)
+    }
+}
+
+/// The feed headline in UIKit: SwiftUI cannot set a line height under the
+/// font's own (League Spartan Black is 0.92 em, and negative lineSpacing is
+/// ignored), and Anton wanted the lines closer (2026-10-04). Tracking -0.05 em.
+struct TightHeadline: UIViewRepresentable {
+    let text: String
+    let size: CGFloat
+    static let lineHeight: CGFloat = 0.85
+
+    static func attributes(font: UIFont, size: CGFloat) -> [NSAttributedString.Key: Any] {
+        let p = NSMutableParagraphStyle()
+        p.minimumLineHeight = lineHeight * size
+        p.maximumLineHeight = lineHeight * size
+        p.lineBreakMode = .byWordWrapping
+        return [.font: font, .kern: -0.05 * size, .paragraphStyle: p,
+                .foregroundColor: UIColor(Color.warmWhite),
+                // The squeezed line takes its height off the ascender: lift
+                // nothing, keep the descender, so no row clips at the top.
+                .baselineOffset: (font.lineHeight - lineHeight * size) / 2]
+    }
+
+    func makeUIView(context: Context) -> UILabel {
+        let l = UILabel()
+        l.numberOfLines = 3
+        l.lineBreakMode = .byTruncatingTail
+        l.clipsToBounds = false
+        l.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        return l
+    }
+
+    func updateUIView(_ l: UILabel, context: Context) {
+        let font = UIFont(name: "LeagueSpartan-Black", size: size) ?? .systemFont(ofSize: size, weight: .black)
+        l.attributedText = NSAttributedString(string: text, attributes: Self.attributes(font: font, size: size))
+    }
+
+    func sizeThatFits(_ proposal: ProposedViewSize, uiView: UILabel, context: Context) -> CGSize? {
+        let w = proposal.width ?? UIScreen.main.bounds.width
+        return CGSize(width: w, height: uiView.sizeThatFits(CGSize(width: w, height: .greatestFiniteMagnitude)).height)
     }
 }
