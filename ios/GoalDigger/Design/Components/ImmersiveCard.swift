@@ -325,14 +325,27 @@ struct TightHeadline: UIViewRepresentable {
         p.maximumLineHeight = lineHeight * size
         p.lineBreakMode = .byWordWrapping
         return [.font: font, .kern: -0.05 * size, .paragraphStyle: p,
-                .foregroundColor: UIColor(Color.warmWhite),
-                // The squeezed line takes its height off the ascender: lift
-                // nothing, keep the descender, so no row clips at the top.
-                .baselineOffset: (font.lineHeight - lineHeight * size) / 2]
+                .foregroundColor: UIColor(Color.warmWhite)]
     }
 
-    func makeUIView(context: Context) -> UILabel {
-        let l = UILabel()
+    /// The squeezed line takes its height off the top, so the first row's
+    /// ascenders stuck out above the label and were cut (the top of "bitter
+    /// blow", 2026-10-04). The label draws that much lower and is that much
+    /// taller.
+    final class Label: UILabel {
+        var topRoom: CGFloat = 0
+        override func drawText(in rect: CGRect) {
+            // Moved down, not shrunk: a shorter rect dropped the third row.
+            super.drawText(in: rect.offsetBy(dx: 0, dy: topRoom))
+        }
+        override func sizeThatFits(_ size: CGSize) -> CGSize {
+            let s = super.sizeThatFits(size)
+            return CGSize(width: s.width, height: s.height + topRoom)
+        }
+    }
+
+    func makeUIView(context: Context) -> Label {
+        let l = Label()
         l.numberOfLines = 3
         l.lineBreakMode = .byTruncatingTail
         l.clipsToBounds = false
@@ -340,12 +353,13 @@ struct TightHeadline: UIViewRepresentable {
         return l
     }
 
-    func updateUIView(_ l: UILabel, context: Context) {
+    func updateUIView(_ l: Label, context: Context) {
         let font = UIFont(name: "LeagueSpartan-Black", size: size) ?? .systemFont(ofSize: size, weight: .black)
+        l.topRoom = max(0, font.lineHeight - Self.lineHeight * size) + 2
         l.attributedText = NSAttributedString(string: text, attributes: Self.attributes(font: font, size: size))
     }
 
-    func sizeThatFits(_ proposal: ProposedViewSize, uiView: UILabel, context: Context) -> CGSize? {
+    func sizeThatFits(_ proposal: ProposedViewSize, uiView: Label, context: Context) -> CGSize? {
         let w = proposal.width ?? UIScreen.main.bounds.width
         return CGSize(width: w, height: uiView.sizeThatFits(CGSize(width: w, height: .greatestFiniteMagnitude)).height)
     }
