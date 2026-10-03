@@ -138,6 +138,30 @@ struct ImmersiveCard: View {
 
     // MARK: - Body
 
+    private func headlineText(size: CGFloat) -> some View {
+        Text(headline)
+            .font(.custom("LeagueSpartan-Black", size: size))
+            .tracking(-0.05 * size)
+            .lineLimit(3)
+            .minimumScaleFactor(0.9)   // last-resort only; the size is measured
+            .fixedSize(horizontal: false, vertical: true)
+            .foregroundColor(.warmWhite)
+    }
+
+    /// The largest step at which the headline, tracked at -0.05 em, wraps
+    /// into three lines or fewer at this width.
+    static func headlineSize(_ text: String, width: CGFloat) -> CGFloat {
+        for size: CGFloat in [64, 56, 48, 42, 36, 32] {
+            guard let font = UIFont(name: "LeagueSpartan-Black", size: size) else { return 48 }
+            let rect = (text as NSString).boundingRect(
+                with: CGSize(width: width, height: .greatestFiniteMagnitude),
+                options: [.usesLineFragmentOrigin],
+                attributes: [.font: font, .kern: -0.05 * size], context: nil)
+            if rect.height <= font.lineHeight * 3 + 1 { return size }
+        }
+        return 32
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             zone1
@@ -177,11 +201,12 @@ struct ImmersiveCard: View {
                 }
 
                 // Headline
-                Text(headline)
-                    .font(.immersiveHeadline)
-                    .minimumScaleFactor(0.5)
-                    .lineLimit(3)
-                    .foregroundColor(.warmWhite)
+                // -50 tracking (-0.05 em): letters and the gaps between words
+                // sit tighter (Anton, 2026-10-04). Fitted by stepping the size
+                // down rather than minimumScaleFactor, which shrinks the glyphs
+                // but not the tracking, so a long headline's letters collided.
+                // Line height stays the font's own 0.92 em, already under 1.0.
+                headlineText(size: Self.headlineSize(headline, width: UIScreen.main.bounds.width - 48))  // the card's 20pt padding each side, and its border
 
                 // Context/analogy line — the "girl reference". The whole thing
                 // has to land or the wit dies, so no truncation. We let it wrap
