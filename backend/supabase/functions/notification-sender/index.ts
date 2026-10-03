@@ -9,7 +9,7 @@
 // Quiet hours are handled by iOS Do Not Disturb on the device, not server-side.
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { deactivateTokens, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
+import { deactivateTokens, fetchAllRows, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
 import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { sendPushNotification, buildAPNsPayload } from "../_shared/apns-client.ts";
@@ -132,6 +132,23 @@ serve(async (req) => {
       const category = getCategoryFromType(item.type, item.emotional_context);
       const isResult = category === "RESULT";
 
+      // Claim before send (QA-08). The routine trigger, its curl retry and the
+      // sweep can all reach the same item; a conditional UPDATE lets exactly one
+      // invocation own the push. force_push skips the claim on purpose: it is a
+      // deliberate replay of an item that was already pushed.
+      let claimed = false;
+      if (!forcePush) {
+        const { data: claim, error: claimErr } = await supabase
+          .from("content_items")
+          .update({ pushed_at: new Date().toISOString() })
+          .eq("id", item.id)
+          .is("pushed_at", null)
+          .select("id");
+        if (claimErr) throw new Error(`Failed to claim item ${item.id}: ${claimErr.message}`);
+        if (!claim || claim.length === 0) continue; // already pushed or claimed elsewhere
+        claimed = true;
+      }
+
       // Guard A — never send a push with an empty push_title. The 2026-06-05
       // audit found 17 (backfilled) items with null push_title; a real one
       // would render a blank/broken lock-screen ping. Publish to the feed +
@@ -217,33 +234,33 @@ serve(async (req) => {
       // follower path — it rarely needs page 2, but correctness is free.
       const isTournament = teamEntityTypes[teamId] === "tournament";
       const affected: string[] = isTournament ? (item.affected_team_ids ?? []) : [];
-      const TOKEN_PAGE_SIZE = 1000;
       // deno-lint-ignore no-explicit-any
-      const tokens: any[] = [];
-      for (let from = 0; ; from += TOKEN_PAGE_SIZE) {
-        let pageQuery = supabase
-          .from("device_tokens")
-          .select("apns_token, tier, apns_environment, country_id, country_ids")
-          .eq("is_active", true)
-          .order("apns_token")
-          .range(from, from + TOKEN_PAGE_SIZE - 1);
-        if (!isTournament) {
-          pageQuery = pageQuery.or(
+      let allTokens: any[];
+      try {
+        allTokens = await fetchAllRows((from, to) => {
+          const pageQuery = supabase
+            .from("device_tokens")
+            .select("apns_token, tier, apns_environment, country_id, country_ids")
+            .eq("is_active", true)
+            .order("apns_token")
+            .range(from, to);
+          return isTournament ? pageQuery : pageQuery.or(
             `team_id.eq.${teamId},country_id.eq.${teamId},team_ids.cs.{${teamId}},country_ids.cs.{${teamId}}`,
           );
-        }
-        const { data: page, error: pageErr } = await pageQuery;
+        });
+      } catch (e) {
         // Throw rather than continue: a mid-pagination error would otherwise
         // look like "no more devices" and mark the item pushed with a partial
-        // (or empty) audience. Unpushed items get retried by the sweep.
-        if (pageErr) throw new Error(`Failed to fetch device tokens: ${pageErr.message}`);
-        for (const t of page ?? []) {
-          if (affected.includes(t.country_id)) continue;
-          if ((t.country_ids ?? []).some((c: string) => affected.includes(c))) continue;
-          tokens.push(t);
+        // (or empty) audience. Release the claim so the sweep retries it.
+        if (claimed) {
+          await supabase.from("content_items").update({ pushed_at: null }).eq("id", item.id);
         }
-        if (!page || page.length < TOKEN_PAGE_SIZE) break;
+        throw new Error(`Failed to fetch device tokens: ${e instanceof Error ? e.message : e}`);
       }
+      const tokens = allTokens.filter((t) =>
+        !affected.includes(t.country_id) &&
+        !(t.country_ids ?? []).some((c: string) => affected.includes(c))
+      );
 
       if (tokens.length === 0) {
         // No devices — still mark as published so it appears in the feed,
@@ -452,6 +469,7 @@ serve(async (req) => {
       }
 
       // Mark pushed_at always (we attempted; outcome is recorded in successCount).
+      // The claim already set it; this refreshes it to the send time.
       // Mark status=published only if it wasn't already (routine items come in
       // pre-published; we don't want to overwrite their original timestamp).
       const update: Record<string, string> = { pushed_at: new Date().toISOString() };

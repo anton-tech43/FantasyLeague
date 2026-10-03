@@ -20,7 +20,6 @@ export const FETCH_ONLY_KEYS = [
   "standings",
   "fixtures",
   "injuries",
-  "transfers",
   "squad",
   "coachs",
   "rss",

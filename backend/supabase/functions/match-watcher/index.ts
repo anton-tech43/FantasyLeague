@@ -16,7 +16,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
-import { deactivateTokens, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
+import { deactivateTokens, fetchAllRows, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
 import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts";
 import {
   seasonForLeague,
@@ -421,14 +421,26 @@ async function sendPlayingTeamPush(
       return 0;
     }
     const playing = `${args.homeTeamId},${args.awayTeamId}`;
-    const { data: tokens, error: tokensErr } = await supabase
-      .from("device_tokens")
-      .select("apns_token, tier, country_id, country_ids, team_id, team_ids, apns_environment, match_calls")
-      .or(
-        `country_id.in.(${playing}),country_ids.ov.{${playing}},` +
-          `team_id.in.(${playing}),team_ids.ov.{${playing}}`,
-      )
-      .eq("is_active", true);
+    // Paged (QA-04): one PostgREST response caps at 1000 rows, and a big
+    // club's goal push would silently reach only the first thousand.
+    let tokens: Array<Record<string, unknown>> = [];
+    let tokensErr: { message: string } | null = null;
+    try {
+      tokens = await fetchAllRows((from, to) =>
+        supabase
+          .from("device_tokens")
+          .select("apns_token, tier, country_id, country_ids, team_id, team_ids, apns_environment, match_calls")
+          .or(
+            `country_id.in.(${playing}),country_ids.ov.{${playing}},` +
+              `team_id.in.(${playing}),team_ids.ov.{${playing}}`,
+          )
+          .eq("is_active", true)
+          .order("apns_token")
+          .range(from, to)
+      );
+    } catch (e) {
+      tokensErr = { message: e instanceof Error ? e.message : String(e) };
+    }
     if (tokensErr) {
       // The fired marker is already persisted, so this push is lost, not
       // retried. Say so where an audit looks: a silent zero here is
@@ -719,7 +731,9 @@ async function handleRequest(req: Request): Promise<Response> {
     console.error("poll_leagues() failed, falling back to always-on home leagues:", compsErr.message);
     await supabase.from("pipeline_health").insert({
       team_id: null,
-      stage: "match_watcher",
+      // "watch", not "match_watcher": pipeline_health_stage_check has no
+      // match_watcher, so this failure row was itself rejected and never landed.
+      stage: "watch",
       status: "failure",
       target: "poll_leagues",
       error_class: "rpc_failed",
@@ -822,6 +836,7 @@ async function handleRequest(req: Request): Promise<Response> {
   let goalPushSends = 0;
   const upsertErrors: Array<{ fixture_id: number; message: string }> = [];
   const priorErrors: Array<{ fixture_id: number; message: string }> = [];
+  const fixtureErrors: Array<{ fixture_id: number | null; message: string }> = [];
   let skippedFixtures = 0; // unknown team / no league id — expected, not an anomaly
   // Full-time page refreshes to run once this tick is done deciding. Collected
   // rather than fired inline: five of our clubs can whistle inside the same
@@ -830,1448 +845,1473 @@ async function handleRequest(req: Request): Promise<Response> {
   const pageRefreshQueue: Array<{ fixtureId: number; teamIds: string[] }> = [];
 
   for (const fx of fixtures) {
-    const fixtureId = fx.fixture.id;
-    const status = fx.fixture.status.short;
-    const homeApiId = fx.teams.home.id;
-    const awayApiId = fx.teams.away.id;
-    const homeTeamId = teamIdMap.get(homeApiId);
-    const awayTeamId = teamIdMap.get(awayApiId);
-    const homeGoals = fx.goals.home;
-    const awayGoals = fx.goals.away;
-    const kickoffTime = fx.fixture.date;
-    const fixtureLeagueId = fx.league?.id;
+    // One malformed fixture (a missing `fixture.status`, a null `teams`) used
+    // to throw out of this loop and abort the tick for every other match,
+    // live pushes included (QA-11). Isolate it, record it, carry on.
+    try {
+      const fixtureId = fx.fixture.id;
+      const status = fx.fixture.status.short;
+      const homeApiId = fx.teams.home.id;
+      const awayApiId = fx.teams.away.id;
+      const homeTeamId = teamIdMap.get(homeApiId);
+      const awayTeamId = teamIdMap.get(awayApiId);
+      const homeGoals = fx.goals.home;
+      const awayGoals = fx.goals.away;
+      const kickoffTime = fx.fixture.date;
+      const fixtureLeagueId = fx.league?.id;
 
-    // A covered cup fixture where one side is ours and the other is a club we
-    // have never seen: register the opponent as an inactive row so the tie
-    // resolves from the next tick. Seeding a list by hand would be wrong within
-    // a season — the Champions League draw changes every round. Sixty seconds
-    // of delay on a match we poll for two hours is a fair price for a list that
-    // maintains itself.
-    if (
-      fixtureLeagueId && COVERED_CUP_LEAGUES.includes(fixtureLeagueId) &&
-      ((homeTeamId && !awayTeamId) || (!homeTeamId && awayTeamId))
-    ) {
-      const unknown = homeTeamId ? fx.teams.away : fx.teams.home;
-      const slug = unknown.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/_+$/, "");
-      const { error: regErr } = await supabase.from("teams").upsert({
-        id: slug,
-        display_name: unknown.name,
-        // The Live Activity and the FT push show this. "Atletico Madri" was
-        // the 14-char slice; the whole name fits the strap up to about 20.
-        short_name: unknown.name.length <= 20 ? unknown.name : unknown.name.split(" ")[0],
-        api_football_id: unknown.id,
-        entity_type: "club",
-        league_id: fixtureLeagueId,
-        is_active: false,
-      }, { onConflict: "id", ignoreDuplicates: true });
-      if (regErr) {
-        console.warn(`could not register cup opponent ${unknown.name}:`, regErr.message);
-      } else {
-        console.log(`registered cup opponent ${slug} (${unknown.name}) for league ${fixtureLeagueId}`);
-      }
-      skippedFixtures++;
-      continue;
-    }
-
-    // Defensive: skip fixtures where either team isn't one of our 20.
-    // Should never happen for league=39 but cheap to check.
-    if (!homeTeamId || !awayTeamId) { skippedFixtures++; continue; }
-
-    // A covered cup round is thirty-odd matches; only the ones our clubs are
-    // playing belong on this path. Bayern v Real Madrid matters to the app, but
-    // as tournament content written from the fixture feed — not as a live state
-    // row and a push nobody subscribes to.
-    if (!activeTeamIds.has(homeTeamId) && !activeTeamIds.has(awayTeamId)) {
-      skippedFixtures++;
-      continue;
-    }
-    // V2.0: skip fixtures with no league context — match_status_state.league_id
-    // is NOT NULL with no FK, so writing `?? 0` would create ghost rows that
-    // pollute diagnostics. A fixture with no league.id is unactionable anyway.
-    if (!fixtureLeagueId) {
-      console.warn(`match-watcher: skipping fixture ${fixtureId} — no league.id`);
-      skippedFixtures++;
-      continue;
-    }
-
-    const { data: prior, error: priorErr } = await supabase
-      .from("match_status_state")
-      .select("status, home_goals, away_goals, fired_finished_at, briefs_fired, matchday_fire_capped, la_started, la_sig, la_ended, goal_events, ht_home, ht_away")
-      .eq("fixture_id", fixtureId)
-      .maybeSingle();
-    if (priorErr) {
-      // A17 (audit 2026-09): a failed lookup used to fall through as prior=null,
-      // i.e. "first observation" — which by design NEVER fires (no FT push, no
-      // gd-matchday) and would also overwrite briefs_fired with []. Under DB
-      // latency that silently swallowed whole matches. Skip this fixture for
-      // this tick instead; the next tick re-observes it with correct prior state.
-      console.warn(`prior lookup failed for ${fixtureId}; skipping this tick:`, priorErr.message);
-      priorErrors.push({ fixture_id: fixtureId, message: priorErr.message });
-      continue;
-    }
-
-    // Only fire when we OBSERVE a transition firsthand.
-    // First observation never fires (avoids mass-fire on initial deploy).
-    // matchday_fire_capped (mig 042) now means "abandoned as stale" — set only
-    // once the match is too old for a matchday push; see retry policy below.
-    const justFinished =
-      FINISHED_STATUSES.has(status) &&
-      prior !== null &&
-      !prior.fired_finished_at &&
-      !prior.matchday_fire_capped;
-
-    // Retry policy for matchday_fire. Migration 042's original cap gave up
-    // PERMANENTLY after 5 failures / 2h and needed a manual re-fire — the wrong
-    // trade-off for a team that won't touch RUNBOOK.md by hand. We now use
-    // spaced backoff + a staleness deadline (see _shared/matchday-retry.ts):
-    // the every-minute flood is still gone, but when the routine API recovers
-    // (daily quota reset, outage clears) the next spaced attempt lands the
-    // content on its own. matchday_fire_capped is now set ONLY when the match
-    // is too old to matter, as a terminal marker for the SLA heartbeat.
-    //
-    // pipeline_health is the source of truth for attempt history. Query both
-    // perspective targets (matchday_fire:<team>:<fixture>) over the staleness
-    // window; backoff escalates off whichever perspective has failed most.
-    let matchdayWentStale = false;
-    let matchdayBackoffHold = false;
-    if (justFinished) {
-      const lookbackIso = new Date(Date.now() - MATCHDAY_STALENESS_MS).toISOString();
-      const { data: priorFailures } = await supabase
-        .from("pipeline_health")
-        .select("target, created_at")
-        .eq("stage", "matchday_fire")
-        .eq("status", "failure")
-        .like("target", `matchday_fire:%:${fixtureId}`)
-        .gte("created_at", lookbackIso);
-      const failuresByTarget = new Map<string, number[]>();
-      for (const r of priorFailures ?? []) {
-        const tsList = failuresByTarget.get(r.target) ?? [];
-        tsList.push(new Date(r.created_at).getTime());
-        failuresByTarget.set(r.target, tsList);
-      }
-      const decision = decideMatchdayRetry({
-        nowMs: Date.now(),
-        kickoffMs: new Date(kickoffTime).getTime(),
-        failureTimesByTarget: [...failuresByTarget.values()],
-      });
-      matchdayWentStale = decision.action === "stale";
-      matchdayBackoffHold = decision.action === "hold";
-      if (matchdayWentStale) {
-        console.log(
-          `matchday_fire abandoned for fixture ${fixtureId}: match older than ` +
-          `staleness deadline, a "just finished" push no longer makes sense`,
-        );
-        // Terminal marker + one visible pipeline_health row so a postmortem
-        // shows WHY we stopped (vs a silent give-up). Best-effort.
-        try {
-          await supabase.from("pipeline_health").insert({
-            stage: "matchday_fire",
-            status: "failure",
-            target: `matchday_fire:abandoned:${fixtureId}`,
-            error_class: "abandoned_stale",
-            message: "Backoff exhausted past staleness deadline; capped, no re-fire",
-          });
-        } catch (_e) { /* observability is best-effort */ }
-      } else if (matchdayBackoffHold) {
-        console.log(
-          `matchday_fire holding for fixture ${fixtureId}: inside backoff ` +
-          `window, will retry automatically`,
-        );
-      }
-    }
-
-    const shouldFireMatchday = justFinished && !matchdayWentStale && !matchdayBackoffHold;
-
-    // ─── V1.1 C5: live-brief trigger detection ────────────────────────
-    // For LIVE fixtures, decide which (if any) trigger label to fire
-    // this minute. The briefs_fired JSONB array on match_status_state is
-    // the idempotency guard — once a label is in the array, we won't
-    // re-fire it. First observation also skips (we don't know how long
-    // we've been past the trigger window).
-    const elapsed = fx.fixture.status.elapsed;
-    const briefsFired: string[] = Array.isArray(prior?.briefs_fired)
-      ? prior!.briefs_fired as string[]
-      : [];
-    const isLive = LIVE_STATUSES.has(status);
-    const newTriggers: string[] = [];
-    // Markers for direct-push idempotency (HT_PUSH / FT_PUSH). Kept SEPARATE
-    // from newTriggers: newTriggers drives the paid gd-live-brief routine fire
-    // loop below, so polluting it would fire a spurious (billed) routine. These
-    // markers only ever land in briefs_fired for the once-per-window guard.
-    // Markers that describe STATE (a goal waiting for its scorer), written with
-    // the upsert. Push markers are no longer written here: each push claims its
-    // own in the database at send time (claim_fixture_marker, migration 103).
-    const stateMarkers: string[] = [];
-    // Full time is an event, not a schedule. The two clubs that just played get
-    // their standings and fixtures re-fetched from the whistle instead of at the
-    // next two-hourly cron slot — which on a Saturday teatime was an hour and
-    // forty minutes of the app pushing a score over a table that disagreed with
-    // it. PAGE_REFRESH lands in briefs_fired alongside the push markers so a
-    // re-observed full time does not buy the table twice.
-    const pageRefreshTargets = planPageRefresh({
-      status,
-      priorStatus: (prior?.status as string | undefined) ?? null,
-      briefsFired,
-      homeTeamId,
-      awayTeamId,
-      activeTeamIds,
-      leagueId: fixtureLeagueId,
-    });
-    // The marker is written AFTER the refresh call at the end of the tick
-    // (success is final, a failure counts an attempt), not here.
-    // country_id → the just-written FT result article id, so the FT push can
-    // deep-link straight to it (the post_match block below populates this a few
-    // steps before the push fires, same tick).
-    const wcResultItemIds: Record<string, string> = {};
-    // Live-box scorers (068): set ONLY on a tick that fetched /fixtures/events
-    // (i.e. a detected goal). Stays null on quiet ticks so the upsert leaves
-    // match_status_state.goal_events untouched rather than clobbering it.
-    let goalEventsStored: StoredGoalEvent[] | null = null;
-    // PUSH-2: live alert pushes (goal/HT/FT/kickoff) are COLLECTED here and fired
-    // only AFTER the end-of-tick state upsert succeeds — so a failed upsert can
-    // never leave us having pushed without persisting the marker/score (which
-    // would re-fire duplicate alerts next tick). At-most-once by construction:
-    // a send failure after a good upsert is a missed push, never a duplicate.
-    const pendingAlertPushes: Array<{
-      args: Parameters<typeof sendPlayingTeamPush>[1];
-      isGoal: boolean;
-    }> = [];
-    // Tournament-feed rows (team_id='world_championship', migration 076).
-    // Collected like pendingAlertPushes and inserted only AFTER the state
-    // upsert succeeds — same at-most-once discipline. Double-guarded: the
-    // UNIQUE(team_id, match_id) constraint makes any re-detected insert a
-    // 23505 no-op.
-    const pendingTournamentItems: Array<Record<string, unknown>> = [];
-
-    if (isLive && prior !== null && liveBriefConfigured) {
-      // HT trigger: status == "HT" (the literal break) OR status == "2H"
-      // AND we haven't fired HT yet (catches the case where we missed
-      // the HT window because the cron didn't tick during the break).
+      // A covered cup fixture where one side is ours and the other is a club we
+      // have never seen: register the opponent as an inactive row so the tie
+      // resolves from the next tick. Seeding a list by hand would be wrong within
+      // a season — the Champions League draw changes every round. Sixty seconds
+      // of delay on a match we poll for two hours is a fair price for a list that
+      // maintains itself.
       if (
-        !briefsFired.includes("HT") &&
-        (status === "HT" || status === "2H")
+        fixtureLeagueId && COVERED_CUP_LEAGUES.includes(fixtureLeagueId) &&
+        ((homeTeamId && !awayTeamId) || (!homeTeamId && awayTeamId))
       ) {
-        newTriggers.push("HT");
-      }
-      // 75' trigger DROPPED 2026-05-17 — fired 2 per match × 2 perspectives = 4
-      // routine runs each, doubling live_brief budget for marginal UX value.
-      // HT is the high-leverage in-match moment (gives her something to send
-      // him at half-time). 75' was redundant for most users and ate quota
-      // that match-day matchday_fire runs needed. Quota cap is 25/day; a busy
-      // PL Saturday with 6 matches needs every run for matchday output.
-      // See IMPLEMENTATION_PROGRESS Lesson 63 (routine quota economics).
-    }
-
-    // (STARTING_XI trigger removed — see env-vars comment above.)
-
-    // Track per-perspective fire success. We only mark fired_finished_at
-    // when BOTH home and away routine POSTs succeed — otherwise the failed
-    // perspective never retries on the next tick, and half the audience for
-    // this fixture silently gets no matchday content. The routine post-script
-    // should idempotently upsert content_items on (team_id, match_id) so the
-    // re-fire on the successful side is a no-op rather than a duplicate row.
-    let homeFireOk = false;
-    let awayFireOk = false;
-    if (shouldFireMatchday) {
-      // Fire the routine for both teams. Each fan sees the match through their lens.
-      for (const [teamId, opponent, isHome] of [
-        [homeTeamId, awayTeamId, true],
-        [awayTeamId, homeTeamId, false],
-      ] as const) {
-        // WC matchday content is now deterministic (the post_match block below
-        // writes the result article + talking points). gd-matchday produces
-        // nothing for country entities, so firing it for WC is pure wasted
-        // routine quota (which busy WC days need for gd-live-brief). Skip the
-        // fire and just mark this perspective OK so the deterministic
-        // consequence + post_match block still runs and fired_finished_at sets.
-        if (fixtureLeagueId === WC_LEAGUE_ID) {
-          if (isHome) homeFireOk = true;
-          else awayFireOk = true;
-          continue;
+        const unknown = homeTeamId ? fx.teams.away : fx.teams.home;
+        const slug = unknown.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/_+$/, "");
+        const { error: regErr } = await supabase.from("teams").upsert({
+          id: slug,
+          display_name: unknown.name,
+          // The Live Activity and the FT push show this. "Atletico Madri" was
+          // the 14-char slice; the whole name fits the strap up to about 20.
+          short_name: unknown.name.length <= 20 ? unknown.name : unknown.name.split(" ")[0],
+          api_football_id: unknown.id,
+          entity_type: "club",
+          league_id: fixtureLeagueId,
+          is_active: false,
+        }, { onConflict: "id", ignoreDuplicates: true });
+        if (regErr) {
+          console.warn(`could not register cup opponent ${unknown.name}:`, regErr.message);
+        } else {
+          console.log(`registered cup opponent ${slug} (${unknown.name}) for league ${fixtureLeagueId}`);
         }
-        const score = isHome
-          ? `${homeGoals}-${awayGoals}`
-          : `${awayGoals}-${homeGoals}`;
-        // The competition travels with the trigger. Without it gd-matchday
-        // curled the Premier League table for a League Cup tie and had no way
-        // to name the round it had just been won or lost.
-        const roundRaw = fx.league?.round ?? "";
-        const text = [
-          `team_id=${teamId}`,
-          `fixture_id=${fixtureId}`,
-          `status=finished`,
-          `opponent=${opponent}`,
-          `score=${score}`,
-          `kickoff_time=${kickoffTime}`,
-          `league_id=${fixtureLeagueId}`,
-          `competition=${competitionName(fixtureLeagueId)}`,
-          roundRaw ? `round=${roundRaw}` : null,
-        ].filter(Boolean).join("; ");
+        skippedFixtures++;
+        continue;
+      }
 
-        let matchdayHttpStatus: number | null = null;
-        let matchdayBodyExcerpt: string | null = null;
-        let matchdaySuccess = false;
-        let matchdayThrew = false;
-        try {
-          const fireResp = await fetch(routineUrl, {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${routineToken}`,
-              "anthropic-beta": "experimental-cc-routine-2026-04-01",
-              "anthropic-version": "2023-06-01",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ text }),
-          });
-          matchdayHttpStatus = fireResp.status;
-          if (fireResp.ok) {
-            firesDispatched++;
-            matchdaySuccess = true;
+      // Defensive: skip fixtures where either team isn't one of our 20.
+      // Should never happen for league=39 but cheap to check.
+      if (!homeTeamId || !awayTeamId) { skippedFixtures++; continue; }
+
+      // A covered cup round is thirty-odd matches; only the ones our clubs are
+      // playing belong on this path. Bayern v Real Madrid matters to the app, but
+      // as tournament content written from the fixture feed — not as a live state
+      // row and a push nobody subscribes to.
+      if (!activeTeamIds.has(homeTeamId) && !activeTeamIds.has(awayTeamId)) {
+        skippedFixtures++;
+        continue;
+      }
+      // V2.0: skip fixtures with no league context — match_status_state.league_id
+      // is NOT NULL with no FK, so writing `?? 0` would create ghost rows that
+      // pollute diagnostics. A fixture with no league.id is unactionable anyway.
+      if (!fixtureLeagueId) {
+        console.warn(`match-watcher: skipping fixture ${fixtureId} — no league.id`);
+        skippedFixtures++;
+        continue;
+      }
+
+      const { data: prior, error: priorErr } = await supabase
+        .from("match_status_state")
+        .select("status, home_goals, away_goals, fired_finished_at, briefs_fired, matchday_fire_capped, la_started, la_sig, la_ended, goal_events, ht_home, ht_away")
+        .eq("fixture_id", fixtureId)
+        .maybeSingle();
+      if (priorErr) {
+        // A17 (audit 2026-09): a failed lookup used to fall through as prior=null,
+        // i.e. "first observation" — which by design NEVER fires (no FT push, no
+        // gd-matchday) and would also overwrite briefs_fired with []. Under DB
+        // latency that silently swallowed whole matches. Skip this fixture for
+        // this tick instead; the next tick re-observes it with correct prior state.
+        console.warn(`prior lookup failed for ${fixtureId}; skipping this tick:`, priorErr.message);
+        priorErrors.push({ fixture_id: fixtureId, message: priorErr.message });
+        continue;
+      }
+
+      // Only fire when we OBSERVE a transition firsthand.
+      // First observation never fires (avoids mass-fire on initial deploy).
+      // matchday_fire_capped (mig 042) now means "abandoned as stale" — set only
+      // once the match is too old for a matchday push; see retry policy below.
+      const justFinished =
+        FINISHED_STATUSES.has(status) &&
+        prior !== null &&
+        !prior.fired_finished_at &&
+        !prior.matchday_fire_capped;
+
+      // Retry policy for matchday_fire. Migration 042's original cap gave up
+      // PERMANENTLY after 5 failures / 2h and needed a manual re-fire — the wrong
+      // trade-off for a team that won't touch RUNBOOK.md by hand. We now use
+      // spaced backoff + a staleness deadline (see _shared/matchday-retry.ts):
+      // the every-minute flood is still gone, but when the routine API recovers
+      // (daily quota reset, outage clears) the next spaced attempt lands the
+      // content on its own. matchday_fire_capped is now set ONLY when the match
+      // is too old to matter, as a terminal marker for the SLA heartbeat.
+      //
+      // pipeline_health is the source of truth for attempt history. Query both
+      // perspective targets (matchday_fire:<team>:<fixture>) over the staleness
+      // window; backoff escalates off whichever perspective has failed most.
+      let matchdayWentStale = false;
+      let matchdayBackoffHold = false;
+      if (justFinished) {
+        const lookbackIso = new Date(Date.now() - MATCHDAY_STALENESS_MS).toISOString();
+        const { data: priorFailures } = await supabase
+          .from("pipeline_health")
+          .select("target, created_at")
+          .eq("stage", "matchday_fire")
+          .eq("status", "failure")
+          .like("target", `matchday_fire:%:${fixtureId}`)
+          .gte("created_at", lookbackIso);
+        const failuresByTarget = new Map<string, number[]>();
+        for (const r of priorFailures ?? []) {
+          const tsList = failuresByTarget.get(r.target) ?? [];
+          tsList.push(new Date(r.created_at).getTime());
+          failuresByTarget.set(r.target, tsList);
+        }
+        const decision = decideMatchdayRetry({
+          nowMs: Date.now(),
+          kickoffMs: new Date(kickoffTime).getTime(),
+          failureTimesByTarget: [...failuresByTarget.values()],
+        });
+        matchdayWentStale = decision.action === "stale";
+        matchdayBackoffHold = decision.action === "hold";
+        if (matchdayWentStale) {
+          console.log(
+            `matchday_fire abandoned for fixture ${fixtureId}: match older than ` +
+            `staleness deadline, a "just finished" push no longer makes sense`,
+          );
+          // Terminal marker + one visible pipeline_health row so a postmortem
+          // shows WHY we stopped (vs a silent give-up). Best-effort.
+          try {
+            await supabase.from("pipeline_health").insert({
+              stage: "matchday_fire",
+              status: "failure",
+              target: `matchday_fire:abandoned:${fixtureId}`,
+              error_class: "abandoned_stale",
+              message: "Backoff exhausted past staleness deadline; capped, no re-fire",
+            });
+          } catch (_e) { /* observability is best-effort */ }
+        } else if (matchdayBackoffHold) {
+          console.log(
+            `matchday_fire holding for fixture ${fixtureId}: inside backoff ` +
+            `window, will retry automatically`,
+          );
+        }
+      }
+
+      const shouldFireMatchday = justFinished && !matchdayWentStale && !matchdayBackoffHold;
+
+      // ─── V1.1 C5: live-brief trigger detection ────────────────────────
+      // For LIVE fixtures, decide which (if any) trigger label to fire
+      // this minute. The briefs_fired JSONB array on match_status_state is
+      // the idempotency guard — once a label is in the array, we won't
+      // re-fire it. First observation also skips (we don't know how long
+      // we've been past the trigger window).
+      const elapsed = fx.fixture.status.elapsed;
+      const briefsFired: string[] = Array.isArray(prior?.briefs_fired)
+        ? prior!.briefs_fired as string[]
+        : [];
+      const isLive = LIVE_STATUSES.has(status);
+      const newTriggers: string[] = [];
+      // Markers for direct-push idempotency (HT_PUSH / FT_PUSH). Kept SEPARATE
+      // from newTriggers: newTriggers drives the paid gd-live-brief routine fire
+      // loop below, so polluting it would fire a spurious (billed) routine. These
+      // markers only ever land in briefs_fired for the once-per-window guard.
+      // Markers that describe STATE (a goal waiting for its scorer), written with
+      // the upsert. Push markers are no longer written here: each push claims its
+      // own in the database at send time (claim_fixture_marker, migration 103).
+      const stateMarkers: string[] = [];
+      // Full time is an event, not a schedule. The two clubs that just played get
+      // their standings and fixtures re-fetched from the whistle instead of at the
+      // next two-hourly cron slot — which on a Saturday teatime was an hour and
+      // forty minutes of the app pushing a score over a table that disagreed with
+      // it. PAGE_REFRESH lands in briefs_fired alongside the push markers so a
+      // re-observed full time does not buy the table twice.
+      const pageRefreshTargets = planPageRefresh({
+        status,
+        priorStatus: (prior?.status as string | undefined) ?? null,
+        briefsFired,
+        homeTeamId,
+        awayTeamId,
+        activeTeamIds,
+        leagueId: fixtureLeagueId,
+      });
+      // The marker is written AFTER the refresh call at the end of the tick
+      // (success is final, a failure counts an attempt), not here.
+      // country_id → the just-written FT result article id, so the FT push can
+      // deep-link straight to it (the post_match block below populates this a few
+      // steps before the push fires, same tick).
+      const wcResultItemIds: Record<string, string> = {};
+      // Live-box scorers (068): set ONLY on a tick that fetched /fixtures/events
+      // (i.e. a detected goal). Stays null on quiet ticks so the upsert leaves
+      // match_status_state.goal_events untouched rather than clobbering it.
+      let goalEventsStored: StoredGoalEvent[] | null = null;
+      // PUSH-2: live alert pushes (goal/HT/FT/kickoff) are COLLECTED here and fired
+      // only AFTER the end-of-tick state upsert succeeds — so a failed upsert can
+      // never leave us having pushed without persisting the marker/score (which
+      // would re-fire duplicate alerts next tick). At-most-once by construction:
+      // a send failure after a good upsert is a missed push, never a duplicate.
+      const pendingAlertPushes: Array<{
+        args: Parameters<typeof sendPlayingTeamPush>[1];
+        isGoal: boolean;
+      }> = [];
+      // Tournament-feed rows (team_id='world_championship', migration 076).
+      // Collected like pendingAlertPushes and inserted only AFTER the state
+      // upsert succeeds — same at-most-once discipline. Double-guarded: the
+      // UNIQUE(team_id, match_id) constraint makes any re-detected insert a
+      // 23505 no-op.
+      const pendingTournamentItems: Array<Record<string, unknown>> = [];
+
+      if (isLive && prior !== null && liveBriefConfigured) {
+        // HT trigger: status == "HT" (the literal break) OR status == "2H"
+        // AND we haven't fired HT yet (catches the case where we missed
+        // the HT window because the cron didn't tick during the break).
+        if (
+          !briefsFired.includes("HT") &&
+          (status === "HT" || status === "2H")
+        ) {
+          newTriggers.push("HT");
+        }
+        // 75' trigger DROPPED 2026-05-17 — fired 2 per match × 2 perspectives = 4
+        // routine runs each, doubling live_brief budget for marginal UX value.
+        // HT is the high-leverage in-match moment (gives her something to send
+        // him at half-time). 75' was redundant for most users and ate quota
+        // that match-day matchday_fire runs needed. Quota cap is 25/day; a busy
+        // PL Saturday with 6 matches needs every run for matchday output.
+        // See IMPLEMENTATION_PROGRESS Lesson 63 (routine quota economics).
+      }
+
+      // (STARTING_XI trigger removed — see env-vars comment above.)
+
+      // Track per-perspective fire success. We only mark fired_finished_at
+      // when BOTH home and away routine POSTs succeed — otherwise the failed
+      // perspective never retries on the next tick, and half the audience for
+      // this fixture silently gets no matchday content. The routine post-script
+      // should idempotently upsert content_items on (team_id, match_id) so the
+      // re-fire on the successful side is a no-op rather than a duplicate row.
+      let homeFireOk = false;
+      let awayFireOk = false;
+      if (shouldFireMatchday) {
+        // Fire the routine for both teams. Each fan sees the match through their lens.
+        for (const [teamId, opponent, isHome] of [
+          [homeTeamId, awayTeamId, true],
+          [awayTeamId, homeTeamId, false],
+        ] as const) {
+          // WC matchday content is now deterministic (the post_match block below
+          // writes the result article + talking points). gd-matchday produces
+          // nothing for country entities, so firing it for WC is pure wasted
+          // routine quota (which busy WC days need for gd-live-brief). Skip the
+          // fire and just mark this perspective OK so the deterministic
+          // consequence + post_match block still runs and fired_finished_at sets.
+          // Same for a cup opponent we only registered so the tie resolves
+          // (Napoli in Napoli v Arsenal, is_active=false): nobody follows it, so
+          // a billed gd-matchday run for it writes for no one (QA-12).
+          if (fixtureLeagueId === WC_LEAGUE_ID || !activeTeamIds.has(teamId)) {
             if (isHome) homeFireOk = true;
             else awayFireOk = true;
-            console.log(`fired routine for ${teamId}/${fixtureId}`);
-          } else {
-            const body = await fireResp.text().catch(() => "");
-            matchdayBodyExcerpt = body.slice(0, 200);
-            console.error(
-              `fire failed for ${teamId}/${fixtureId}: ${fireResp.status} ${matchdayBodyExcerpt}`,
-            );
+            continue;
           }
-        } catch (e) {
-          matchdayThrew = true;
-          matchdayBodyExcerpt = e instanceof Error ? e.message.slice(0, 200) : null;
-          console.error(`fire threw for ${teamId}/${fixtureId}:`, e);
-        }
-        await logFire(supabase, {
-          stage: "matchday_fire",
-          teamId,
-          fixtureId,
-          httpStatus: matchdayHttpStatus,
-          success: matchdaySuccess,
-          threw: matchdayThrew,
-          bodyExcerpt: matchdayBodyExcerpt,
-        });
-      }
+          const score = isHome
+            ? `${homeGoals}-${awayGoals}`
+            : `${awayGoals}-${homeGoals}`;
+          // The competition travels with the trigger. Without it gd-matchday
+          // curled the Premier League table for a League Cup tie and had no way
+          // to name the round it had just been won or lost.
+          const roundRaw = fx.league?.round ?? "";
+          const text = [
+            `team_id=${teamId}`,
+            `fixture_id=${fixtureId}`,
+            `status=finished`,
+            `opponent=${opponent}`,
+            `score=${score}`,
+            `kickoff_time=${kickoffTime}`,
+            `league_id=${fixtureLeagueId}`,
+            `competition=${competitionName(fixtureLeagueId)}`,
+            roundRaw ? `round=${roundRaw}` : null,
+          ].filter(Boolean).join("; ");
 
-      // Cross-team consequence layer (Lesson 74). Pure math, zero
-      // routine quota, idempotent via the (team_id, consequence_type)
-      // unique index. Gated on bothFiresOk so a failed matchday_fire
-      // retries the whole sequence on the next tick.
-      if (homeFireOk && awayFireOk) {
-        try {
-          const consequences = await detectConsequences(supabase, {
-            fixtureId,
-            leagueId: fixtureLeagueId,
-            homeTeamId,
-            awayTeamId,
-            homeApiId: fx.teams.home.id,
-            awayApiId: fx.teams.away.id,
-            homeGoals: homeGoals ?? 0,
-            awayGoals: awayGoals ?? 0,
-            homeDisplayName: fx.teams.home.name,
-            awayDisplayName: fx.teams.away.name,
-            round: fx.league?.round,   // B2: knockout-stage gate in detectConsequences
-          });
-
-          // Batch-resolve affected teams in ONE query rather than per-
-          // consequence (the alternative was 1-6 sequential roundtrips
-          // per FT).
-          const teamRowsById = new Map<string, Team>();
-          if (consequences.length > 0) {
-            const { data: teamRows } = await supabase
-              .from("teams")
-              .select("id, display_name, short_name, api_football_id, entity_type, league_id")
-              .in("id", consequences.map((c) => c.team_id));
-            // DB columns are wider than the Team type (short_name nullable,
-            // entity_type a free string); renderConsequence only reads
-            // display_name, so coerce to satisfy Team without behaviour change.
-            for (const t of teamRows ?? []) {
-              teamRowsById.set(t.id, {
-                ...t,
-                short_name: t.short_name ?? "",
-                entity_type: t.entity_type as "club" | "country" | undefined,
-              });
-            }
-          }
-
-          for (const c of consequences) {
-            const team = teamRowsById.get(c.team_id);
-            if (!team) {
-              console.warn(`consequence for unknown team_id=${c.team_id}, skipping`);
-              continue;
-            }
-
-            const rendered = renderConsequence(c, team);
-
-            // Every Edge insert goes through buildContentItem: it repairs what
-            // it can (length, case, headline rows) and throws on what it
-            // cannot. Before this, 412 of 412 edge-written World Cup cards
-            // shipped with no immersive_headline and no immersive_context and
-            // rendered as half a card — nothing on this side validated anything.
-            //
-            // A throw here must never take down the tick. This loop also fires
-            // the goal/FT pushes for every other followed team, and losing
-            // those to a copy problem on one consequence card would be a much
-            // worse trade than losing the card.
-            let item: Record<string, unknown>;
-            try {
-              item = buildContentItem({
-              team_id: c.team_id,
-              type: "news",
-              consequence_type: c.consequence_type,
-              // Rival-result rows are idempotent per (team_id, match_id) via
-              // the existing unique_matchday_content constraint — one per
-              // affected team per triggering fixture. The once-per-type index
-              // excludes WC_RIVAL_RESULT (migration 060) so each matchday's
-              // rival result lands. Math consequences keep match_id null.
-              match_id: c.consequence_type === "WC_RIVAL_RESULT" ? String(fixtureId) : null,
-              // Which competition the card is about, so the feed can badge it
-              // instead of leaving the reader to infer it from the club names.
-              league_id: fixtureLeagueId,
-              headline: rendered.headline,
-              body: rendered.body,
-              push_text: rendered.push_text,
-              push_title: rendered.push_title,
-              // WC_RIVAL_RESULT is scoped to the rival's OWN feed only: a Czech
-              // fan sees "a result in your group" on the Czech feed, but it must
-              // NOT enter the shared "Football" (everyone_talking) feed — there
-              // it read as a confusing near-duplicate ("...in Czech's group" /
-              // "...in Korea's group") with no group context. The single neutral
-              // result for the Football feed comes from the playing-team article
-              // below. Math consequences (TITLE_WON etc.) stay everyone-worthy.
-              everyone_talking: c.consequence_type !== "WC_RIVAL_RESULT",
-              everyone_talking_headline: rendered.everyone_talking_headline,
-              // "Your move" prompts. WC_RIVAL_RESULT now ships a safe open
-              // talking point so the section is never empty (was []); other
-              // consequence types still render none.
-              // The card's own headline + girl ref. Without these two the
-              // immersive feed falls back to `headline.lowercased()` with a
-              // blank line under it.
-              immersive_headline: rendered.immersive_headline,
-              immersive_context: rendered.immersive_context,
-              // A consequence type with no prompts of its own still needs zone
-              // 2 to say something — seven World Cup cards rendered it empty,
-              // and they were both semi-finals, the third-place match and the
-              // final.
-              talking_points: rendered.talking_points.length > 0
-                ? rendered.talking_points
-                : [`Ask him what that changes for ${team.short_name || team.display_name}.`],
-              status: "published",
-              published_at: new Date().toISOString(),
-              });
-            } catch (e) {
+          let matchdayHttpStatus: number | null = null;
+          let matchdayBodyExcerpt: string | null = null;
+          let matchdaySuccess = false;
+          let matchdayThrew = false;
+          try {
+            const fireResp = await fetch(routineUrl, {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${routineToken}`,
+                "anthropic-beta": "experimental-cc-routine-2026-04-01",
+                "anthropic-version": "2023-06-01",
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ text }),
+            });
+            matchdayHttpStatus = fireResp.status;
+            if (fireResp.ok) {
+              firesDispatched++;
+              matchdaySuccess = true;
+              if (isHome) homeFireOk = true;
+              else awayFireOk = true;
+              console.log(`fired routine for ${teamId}/${fixtureId}`);
+            } else {
+              const body = await fireResp.text().catch(() => "");
+              matchdayBodyExcerpt = body.slice(0, 200);
               console.error(
-                `consequence card for ${c.team_id}/${c.consequence_type} failed validation, skipping it:`,
-                (e as Error).message,
+                `fire failed for ${teamId}/${fixtureId}: ${fireResp.status} ${matchdayBodyExcerpt}`,
               );
+            }
+          } catch (e) {
+            matchdayThrew = true;
+            matchdayBodyExcerpt = e instanceof Error ? e.message.slice(0, 200) : null;
+            console.error(`fire threw for ${teamId}/${fixtureId}:`, e);
+          }
+          await logFire(supabase, {
+            stage: "matchday_fire",
+            teamId,
+            fixtureId,
+            httpStatus: matchdayHttpStatus,
+            success: matchdaySuccess,
+            threw: matchdayThrew,
+            bodyExcerpt: matchdayBodyExcerpt,
+          });
+        }
+
+        // Cross-team consequence layer (Lesson 74). Pure math, zero
+        // routine quota, idempotent via the (team_id, consequence_type)
+        // unique index. Gated on bothFiresOk so a failed matchday_fire
+        // retries the whole sequence on the next tick.
+        if (homeFireOk && awayFireOk) {
+          try {
+            const consequences = await detectConsequences(supabase, {
+              fixtureId,
+              leagueId: fixtureLeagueId,
+              homeTeamId,
+              awayTeamId,
+              homeApiId: fx.teams.home.id,
+              awayApiId: fx.teams.away.id,
+              homeGoals: homeGoals ?? 0,
+              awayGoals: awayGoals ?? 0,
+              homeDisplayName: fx.teams.home.name,
+              awayDisplayName: fx.teams.away.name,
+              round: fx.league?.round,   // B2: knockout-stage gate in detectConsequences
+            });
+
+            // Batch-resolve affected teams in ONE query rather than per-
+            // consequence (the alternative was 1-6 sequential roundtrips
+            // per FT).
+            const teamRowsById = new Map<string, Team>();
+            if (consequences.length > 0) {
+              const { data: teamRows } = await supabase
+                .from("teams")
+                .select("id, display_name, short_name, api_football_id, entity_type, league_id")
+                .in("id", consequences.map((c) => c.team_id));
+              // DB columns are wider than the Team type (short_name nullable,
+              // entity_type a free string); renderConsequence only reads
+              // display_name, so coerce to satisfy Team without behaviour change.
+              for (const t of teamRows ?? []) {
+                teamRowsById.set(t.id, {
+                  ...t,
+                  short_name: t.short_name ?? "",
+                  entity_type: t.entity_type as "club" | "country" | undefined,
+                });
+              }
+            }
+
+            for (const c of consequences) {
+              const team = teamRowsById.get(c.team_id);
+              if (!team) {
+                console.warn(`consequence for unknown team_id=${c.team_id}, skipping`);
+                continue;
+              }
+
+              const rendered = renderConsequence(c, team);
+
+              // Every Edge insert goes through buildContentItem: it repairs what
+              // it can (length, case, headline rows) and throws on what it
+              // cannot. Before this, 412 of 412 edge-written World Cup cards
+              // shipped with no immersive_headline and no immersive_context and
+              // rendered as half a card — nothing on this side validated anything.
+              //
+              // A throw here must never take down the tick. This loop also fires
+              // the goal/FT pushes for every other followed team, and losing
+              // those to a copy problem on one consequence card would be a much
+              // worse trade than losing the card.
+              let item: Record<string, unknown>;
+              try {
+                item = buildContentItem({
+                team_id: c.team_id,
+                type: "news",
+                consequence_type: c.consequence_type,
+                // Rival-result rows are idempotent per (team_id, match_id) via
+                // the existing unique_matchday_content constraint — one per
+                // affected team per triggering fixture. The once-per-type index
+                // excludes WC_RIVAL_RESULT (migration 060) so each matchday's
+                // rival result lands. Math consequences keep match_id null.
+                match_id: c.consequence_type === "WC_RIVAL_RESULT" ? String(fixtureId) : null,
+                // Which competition the card is about, so the feed can badge it
+                // instead of leaving the reader to infer it from the club names.
+                league_id: fixtureLeagueId,
+                headline: rendered.headline,
+                body: rendered.body,
+                push_text: rendered.push_text,
+                push_title: rendered.push_title,
+                // WC_RIVAL_RESULT is scoped to the rival's OWN feed only: a Czech
+                // fan sees "a result in your group" on the Czech feed, but it must
+                // NOT enter the shared "Football" (everyone_talking) feed — there
+                // it read as a confusing near-duplicate ("...in Czech's group" /
+                // "...in Korea's group") with no group context. The single neutral
+                // result for the Football feed comes from the playing-team article
+                // below. Math consequences (TITLE_WON etc.) stay everyone-worthy.
+                everyone_talking: c.consequence_type !== "WC_RIVAL_RESULT",
+                everyone_talking_headline: rendered.everyone_talking_headline,
+                // "Your move" prompts. WC_RIVAL_RESULT now ships a safe open
+                // talking point so the section is never empty (was []); other
+                // consequence types still render none.
+                // The card's own headline + girl ref. Without these two the
+                // immersive feed falls back to `headline.lowercased()` with a
+                // blank line under it.
+                immersive_headline: rendered.immersive_headline,
+                immersive_context: rendered.immersive_context,
+                // A consequence type with no prompts of its own still needs zone
+                // 2 to say something — seven World Cup cards rendered it empty,
+                // and they were both semi-finals, the third-place match and the
+                // final.
+                talking_points: rendered.talking_points.length > 0
+                  ? rendered.talking_points
+                  : [`Ask him what that changes for ${team.short_name || team.display_name}.`],
+                status: "published",
+                published_at: new Date().toISOString(),
+                });
+              } catch (e) {
+                console.error(
+                  `consequence card for ${c.team_id}/${c.consequence_type} failed validation, skipping it:`,
+                  (e as Error).message,
+                );
+                await logFire(supabase, {
+                  stage: "consequence_fire",
+                  teamId: c.team_id,
+                  fixtureId,
+                  trigger: c.consequence_type,
+                  httpStatus: 500,
+                  success: false,
+                  threw: true,
+                  bodyExcerpt: (e as Error).message.slice(0, 200),
+                  status: "failure",
+                });
+                continue;
+              }
+
+              const { error } = await supabase.from("content_items").insert(item);
+
+              // Postgres unique-violation code 23505 = idempotent no-op
+              // (consequence already fired on an earlier match).
+              const isDedup = error?.code === "23505";
+              const consequenceStatus: "success" | "failure" | "skipped" = isDedup
+                ? "skipped"
+                : error
+                  ? "failure"
+                  : "success";
+
               await logFire(supabase, {
                 stage: "consequence_fire",
                 teamId: c.team_id,
                 fixtureId,
                 trigger: c.consequence_type,
-                httpStatus: 500,
-                success: false,
-                threw: true,
-                bodyExcerpt: (e as Error).message.slice(0, 200),
-                status: "failure",
+                httpStatus: error ? (isDedup ? 200 : 500) : 200,
+                success: !error,
+                threw: false,
+                bodyExcerpt: error?.message?.slice(0, 200) ?? null,
+                status: consequenceStatus,
               });
-              continue;
+
+              if (!error) {
+                console.log(
+                  `consequence_fire success: ${c.team_id} ${c.consequence_type} (triggered by fixture ${fixtureId})`,
+                );
+              }
             }
 
-            const { error } = await supabase.from("content_items").insert(item);
+            // Deterministic post_match card for the two PLAYING WC teams.
+            // Uses the live FT score (accurate immediately, unlike the
+            // standings table which lags the data-fetch). Tone follows the
+            // post-result group situation: through/won reads upbeat; top-two
+            // gone reads muted and respectful, never "enjoy it". Zero Claude.
+            if (fixtureLeagueId === WC_LEAGUE_ID) {
+              const wcCtx = await loadPostResultWcContext(supabase, {
+                leagueId: fixtureLeagueId,
+                homeTeamId,
+                homeApiId: fx.teams.home.id,
+                awayApiId: fx.teams.away.id,
+                homeGoals: homeGoals ?? 0,
+                awayGoals: awayGoals ?? 0,
+                round: fx.league?.round,
+              });
+              // wcCtx is null for knockout rounds (group math doesn't apply) —
+              // but knockouts still need result items, with stakes copy instead
+              // of group-situation prose. Round convention as detect-consequences
+              // (empty/missing round conservatively counts as group stage, and
+              // with wcCtx also null nothing fires — no phantom knockout copy).
+              const roundLc = (fx.league?.round ?? "").toLowerCase();
+              const isKnockoutRound = roundLc.length > 0 && !roundLc.includes("group");
+              if (wcCtx || isKnockoutRound) {
+                const hg = homeGoals ?? 0;
+                const ag = awayGoals ?? 0;
+                // Shootout / extra-time awareness: knockouts finish AET or PEN,
+                // and level goals after a shootout are a WIN, not a draw.
+                const pen = fx.score?.penalty;
+                const pens = status === "PEN" &&
+                    typeof pen?.home === "number" && typeof pen?.away === "number" &&
+                    pen.home !== pen.away
+                  ? { home: pen.home, away: pen.away }
+                  : null;
+                const aet = status === "AET";
+                // true = home won, false = away won, null = draw (group stage,
+                // or a PEN row whose shootout scores the API hasn't filled yet).
+                const homeWon: boolean | null = pens
+                  ? pens.home > pens.away
+                  : hg > ag
+                    ? true
+                    : hg < ag
+                      ? false
+                      : null;
+                const pw = pens ? Math.max(pens.home, pens.away) : 0;
+                const pl = pens ? Math.min(pens.home, pens.away) : 0;
+                // Neutral, winner-first result for the shared "Football" feed
+                // (the single item everyone sees), carried by the home row below.
+                const winName = homeWon ? fx.teams.home.name : fx.teams.away.name;
+                const loseName = homeWon ? fx.teams.away.name : fx.teams.home.name;
+                const neutralResult = homeWon === null
+                  ? `${fx.teams.home.name} and ${fx.teams.away.name} drew ${hg}-${ag}`
+                  : pens && hg === ag
+                    ? `${winName} beat ${loseName} ${pw}-${pl} on penalties after a ${hg}-${ag} draw`
+                    : `${winName} beat ${loseName} ${homeWon ? hg : ag}-${homeWon ? ag : hg}${aet ? " after extra time" : ""}`;
 
-            // Postgres unique-violation code 23505 = idempotent no-op
-            // (consequence already fired on an earlier match).
-            const isDedup = error?.code === "23505";
-            const consequenceStatus: "success" | "failure" | "skipped" = isDedup
-              ? "skipped"
-              : error
-                ? "failure"
-                : "success";
+                const playing = [
+                  { slug: homeTeamId, apiId: fx.teams.home.id, name: fx.teams.home.name, oppName: fx.teams.away.name, gf: hg, ga: ag, won: homeWon },
+                  { slug: awayTeamId, apiId: fx.teams.away.id, name: fx.teams.away.name, oppName: fx.teams.home.name, gf: ag, ga: hg, won: homeWon === null ? null : !homeWon },
+                ];
+                // B3: one lookup for both teams' strength_rank (FIFA for WC
+                // countries) → deterministic "as expected / upset / surprise"
+                // framing appended to each perspective's body. C1 may later
+                // enrich this same row.
+                const { data: rankRows } = await supabase
+                  .from("teams")
+                  .select("id, strength_rank")
+                  .in("id", [homeTeamId, awayTeamId]);
+                const rankBySlug = new Map<string, number | null>();
+                for (const r of rankRows ?? []) {
+                  rankBySlug.set(r.id as string, (r.strength_rank as number | null) ?? null);
+                }
+                // Goal scorers + minutes for the post-game article (075). Read the
+                // list persisted during the match, but re-fetch events first if a
+                // late goal's scorer never resolved (a stoppage-time goal whose
+                // player the API published after the last live tick — otherwise
+                // the FT summary shows "Goal" with no face forever). No unresolved
+                // scorer → no fetch. Persist the corrected list so the live/FT
+                // surfaces agree.
+                const resolvedFtEvents = await resolveScorers(
+                  supabase,
+                  fixtureId,
+                  apiFootballKey,
+                  prior?.goal_events as StoredGoalEvent[] | null | undefined,
+                  homeApiId,
+                  awayApiId,
+                );
+                if (resolvedFtEvents !== (prior?.goal_events ?? null)) {
+                  goalEventsStored = resolvedFtEvents;
+                }
+                const ftScorers = formatScorers(
+                  resolvedFtEvents,
+                  fx.teams.home.name,
+                  fx.teams.away.name,
+                );
+                for (const p of playing) {
+                  // A cup opponent is in `teams` purely so the fixture resolves.
+                  // Writing Napoli an article, or a card on a team page nobody can
+                  // open, would be noise in the shared feed and a lie in the data.
+                  if (!activeTeamIds.has(p.slug)) continue;
+                  const state: PostMatchState = p.won === null ? "draw" : p.won ? "win" : "loss";
+                  const isHome = p.slug === homeTeamId;
+                  const perspectiveHeadline = pens && state !== "draw" && p.gf === p.ga
+                    ? (state === "win"
+                      ? `${p.name} beat ${p.oppName} ${pw}-${pl} on penalties`
+                      : `${p.name} lost ${pl}-${pw} on penalties to ${p.oppName}`)
+                    : state === "win"
+                      ? `${p.name} beat ${p.oppName} ${p.gf}-${p.ga}${aet ? " after extra time" : ""}`
+                      : state === "loss"
+                        ? `${p.name} lost ${p.gf}-${p.ga} to ${p.oppName}${aet ? " after extra time" : ""}`
+                        : `${p.name} drew ${p.gf}-${p.ga} with ${p.oppName}`;
 
+                  // The feed article: group stage keeps renderPostMatch's
+                  // situation-aware prose + team_pages card; knockouts (no group
+                  // math) get result + a deterministic stakes line. "Final" must
+                  // be the literal round name — semis and the 3rd place match
+                  // also contain the word.
+                  let baseBody: string;
+                  let talkingPoint: string;
+                  if (wcCtx) {
+                    const pm = renderPostMatch({
+                      teamName: p.name,
+                      opponentName: p.oppName,
+                      teamScore: p.gf,
+                      oppScore: p.ga,
+                      state,
+                      situation: groupSituation(wcCtx.group, p.apiId),
+                      bestThird: wcCtx.bestThirdByApiId.get(p.apiId),
+                    });
+                    await writeTeamPostMatch(supabase, p.slug, pm, 48, fixtureId);
+                    baseBody = pm.text;
+                    talkingPoint = pm.talking_point;
+                  } else {
+                    // Round-aware stakes: a semi loser still has the 3rd place
+                    // match, and the bronze match has no "next round" — generic
+                    // through/over copy is factually wrong for both.
+                    const isFinal = roundLc.trim() === "final";
+                    const isSemi = roundLc.includes("semi");
+                    const isBronze = roundLc.includes("3rd") || roundLc.includes("third");
+                    const stakes = state === "draw"
+                      ? null // PEN row missing shootout data — claim nothing wrong
+                      : state === "win"
+                        ? (isFinal
+                          ? "They are champions of the world."
+                          : isBronze
+                            ? "They finish third in the world."
+                            : "They are through to the next round.")
+                        : (isFinal
+                          ? "Beaten in the final."
+                          : isSemi
+                            ? "They will play for third place."
+                            : isBronze
+                              ? "They finish fourth."
+                              : "Their World Championship is over.");
+                    baseBody = stakes ? `${perspectiveHeadline}. ${stakes}` : `${perspectiveHeadline}.`;
+                    talkingPoint = state === "draw"
+                      ? "It went the full distance. Ask him how he got through it."
+                      : state === "win"
+                        ? (isFinal
+                          ? "His team are world champions. This is as big as it gets."
+                          : isBronze
+                            ? "Third place at a World Championship. Ask him if that softens it."
+                            : "Ask him how far he thinks they can go now.")
+                        : (isFinal
+                          ? "So close. He will not forget this one for a while."
+                          : isSemi
+                            ? "The final slipped away, but there is still a medal match. Ask him if he can face it."
+                            : isBronze
+                              ? "Fourth in the world stings. He might need a minute."
+                              : "Their run is over. He might need a minute.");
+                  }
+
+                  // B3: append the ranking framing to this team's result body.
+                  const oppSlug = p.slug === homeTeamId ? awayTeamId : homeTeamId;
+                  const framing = resultFraming(
+                    rankBySlug.get(p.slug) ?? null,
+                    rankBySlug.get(oppSlug) ?? null,
+                    p.gf,
+                    p.ga,
+                    WC_FAVORITE_GAP,
+                  );
+                  const resultBody = framing ? `${baseBody} ${framing.note}` : baseBody;
+                  const { data: inserted, error: itemErr } = await supabase
+                    .from("content_items")
+                    .insert({
+                      team_id: p.slug,
+                      type: "matchday",
+                      match_id: String(fixtureId),
+                      league_id: fixtureLeagueId,
+                      match_result: perspectiveHeadline,
+                      headline: perspectiveHeadline,
+                      body: resultBody,
+                      talking_points: [talkingPoint],
+                      // The lock-screen alert is sent directly by the FT push
+                      // below; this feed article must NOT be re-pushed by
+                      // notification-sender's sweep (double-ping). Feed-only.
+                      push_eligible: false,
+                      goal_events: ftScorers.length > 0 ? ftScorers : null,
+                      everyone_talking: isHome,
+                      everyone_talking_headline: isHome ? neutralResult : null,
+                      everyone_talking_body: isHome
+                        ? `${neutralResult}. ${wcCtx ? "Full-time in their World Championship group." : "Full-time at the World Championship."}`
+                        : null,
+                      status: "published",
+                      published_at: new Date().toISOString(),
+                    })
+                    .select("id")
+                    .maybeSingle();
+                  if (!itemErr && inserted?.id) {
+                    wcResultItemIds[p.slug] = inserted.id as string;
+                  } else if (itemErr && itemErr.code !== "23505") {
+                    // 23505 = already written this match (idempotent no-op).
+                    console.error(`wc result item insert failed for ${p.slug}/${fixtureId} (non-fatal):`, itemErr.message);
+                  }
+                }
+
+                // Tournament-feed neutral result (076): same neutral copy +
+                // photo-bearing scorers, one row on the shared feed. Inserted
+                // post-upsert like the alert pushes (at-most-once).
+                pendingTournamentItems.push({
+                  team_id: "world_championship",
+                  type: "matchday",
+                  match_id: String(fixtureId),
+                  match_result: neutralResult,
+                  headline: neutralResult,
+                  body: `${neutralResult}. Full-time at the World Championship.`,
+                  goal_events: ftScorers.length > 0 ? ftScorers : null,
+                  affected_team_ids: [homeTeamId, awayTeamId],
+                  push_eligible: false,
+                  everyone_talking: false,
+                  status: "published",
+                  published_at: new Date().toISOString(),
+                });
+              }
+            }
+          } catch (e) {
+            // Detector itself threw — never block the rest of the tick.
+            // Phase J observability captures this as a system-level error.
+            console.error(`consequence detection threw for fixture ${fixtureId}:`, e);
             await logFire(supabase, {
               stage: "consequence_fire",
-              teamId: c.team_id,
+              teamId: homeTeamId, // best-effort tag
               fixtureId,
-              trigger: c.consequence_type,
-              httpStatus: error ? (isDedup ? 200 : 500) : 200,
-              success: !error,
-              threw: false,
-              bodyExcerpt: error?.message?.slice(0, 200) ?? null,
-              status: consequenceStatus,
+              httpStatus: 500,
+              success: false,
+              threw: true,
+              bodyExcerpt: e instanceof Error ? e.message.slice(0, 200) : String(e).slice(0, 200),
             });
+          }
+        }
+      }
 
-            if (!error) {
-              console.log(
-                `consequence_fire success: ${c.team_id} ${c.consequence_type} (triggered by fixture ${fixtureId})`,
+      // V1.1 C5: fire gd-live-brief for any new in-match trigger windows.
+      // One fire per (team, trigger) pair — both home and away teams get
+      // briefs, each tailored to their own perspective. Only HT today
+      // (75' was dropped 2026-05-17, see briefsFired comment above).
+      for (const trigger of newTriggers) {
+        if (!liveBriefUrl || !liveBriefToken) continue;
+        for (const [teamId, _opponentTeamId, _isHome] of [
+          [homeTeamId, awayTeamId, true],
+          [awayTeamId, homeTeamId, false],
+        ] as const) {
+          // No billed live brief for an unfollowed cup opponent (QA-12).
+          if (!activeTeamIds.has(teamId)) continue;
+          const homeName = fx.teams.home.name;
+          const awayName = fx.teams.away.name;
+          const briefMinute = elapsed ?? (trigger === "HT" ? 46 : 75);
+          // Compose the payload the routine expects. Semicolon-separated
+          // key=value pairs match the existing gd-matchday convention.
+          // home_goals and away_goals always refer to the literal home/away
+          // teams (NOT user/opponent). The routine derives user-vs-opponent
+          // by matching `user_team_id` against `home_team_id`/`away_team_id`.
+          const text = [
+            `home_team_id=${homeTeamId}`,
+            `away_team_id=${awayTeamId}`,
+            `home_team_name=${homeName}`,
+            `away_team_name=${awayName}`,
+            `user_team_id=${teamId}`,
+            `home_goals=${homeGoals ?? 0}`,
+            `away_goals=${awayGoals ?? 0}`,
+            `minute=${briefMinute}`,
+            `trigger=${trigger}`,
+            `fixture_id=${fixtureId}`,
+          ].join("; ");
+
+          let liveHttpStatus: number | null = null;
+          let liveBodyExcerpt: string | null = null;
+          let liveSuccess = false;
+          let liveThrew = false;
+          try {
+            const fireResp = await fetch(liveBriefUrl, {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${liveBriefToken}`,
+                "anthropic-beta": "experimental-cc-routine-2026-04-01",
+                "anthropic-version": "2023-06-01",
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ text }),
+            });
+            liveHttpStatus = fireResp.status;
+            if (fireResp.ok) {
+              liveBriefFires++;
+              liveSuccess = true;
+              console.log(`live-brief fired for ${teamId}/${fixtureId} [${trigger}]`);
+            } else {
+              const body = await fireResp.text().catch(() => "");
+              liveBodyExcerpt = body.slice(0, 200);
+              console.error(
+                `live-brief fire failed for ${teamId}/${fixtureId} [${trigger}]: ${fireResp.status} ${liveBodyExcerpt}`,
               );
             }
+          } catch (e) {
+            liveThrew = true;
+            liveBodyExcerpt = e instanceof Error ? e.message.slice(0, 200) : null;
+            console.error(`live-brief fire threw for ${teamId}/${fixtureId} [${trigger}]:`, e);
           }
-
-          // Deterministic post_match card for the two PLAYING WC teams.
-          // Uses the live FT score (accurate immediately, unlike the
-          // standings table which lags the data-fetch). Tone follows the
-          // post-result group situation: through/won reads upbeat; top-two
-          // gone reads muted and respectful, never "enjoy it". Zero Claude.
-          if (fixtureLeagueId === WC_LEAGUE_ID) {
-            const wcCtx = await loadPostResultWcContext(supabase, {
-              leagueId: fixtureLeagueId,
-              homeTeamId,
-              homeApiId: fx.teams.home.id,
-              awayApiId: fx.teams.away.id,
-              homeGoals: homeGoals ?? 0,
-              awayGoals: awayGoals ?? 0,
-              round: fx.league?.round,
-            });
-            // wcCtx is null for knockout rounds (group math doesn't apply) —
-            // but knockouts still need result items, with stakes copy instead
-            // of group-situation prose. Round convention as detect-consequences
-            // (empty/missing round conservatively counts as group stage, and
-            // with wcCtx also null nothing fires — no phantom knockout copy).
-            const roundLc = (fx.league?.round ?? "").toLowerCase();
-            const isKnockoutRound = roundLc.length > 0 && !roundLc.includes("group");
-            if (wcCtx || isKnockoutRound) {
-              const hg = homeGoals ?? 0;
-              const ag = awayGoals ?? 0;
-              // Shootout / extra-time awareness: knockouts finish AET or PEN,
-              // and level goals after a shootout are a WIN, not a draw.
-              const pen = fx.score?.penalty;
-              const pens = status === "PEN" &&
-                  typeof pen?.home === "number" && typeof pen?.away === "number" &&
-                  pen.home !== pen.away
-                ? { home: pen.home, away: pen.away }
-                : null;
-              const aet = status === "AET";
-              // true = home won, false = away won, null = draw (group stage,
-              // or a PEN row whose shootout scores the API hasn't filled yet).
-              const homeWon: boolean | null = pens
-                ? pens.home > pens.away
-                : hg > ag
-                  ? true
-                  : hg < ag
-                    ? false
-                    : null;
-              const pw = pens ? Math.max(pens.home, pens.away) : 0;
-              const pl = pens ? Math.min(pens.home, pens.away) : 0;
-              // Neutral, winner-first result for the shared "Football" feed
-              // (the single item everyone sees), carried by the home row below.
-              const winName = homeWon ? fx.teams.home.name : fx.teams.away.name;
-              const loseName = homeWon ? fx.teams.away.name : fx.teams.home.name;
-              const neutralResult = homeWon === null
-                ? `${fx.teams.home.name} and ${fx.teams.away.name} drew ${hg}-${ag}`
-                : pens && hg === ag
-                  ? `${winName} beat ${loseName} ${pw}-${pl} on penalties after a ${hg}-${ag} draw`
-                  : `${winName} beat ${loseName} ${homeWon ? hg : ag}-${homeWon ? ag : hg}${aet ? " after extra time" : ""}`;
-
-              const playing = [
-                { slug: homeTeamId, apiId: fx.teams.home.id, name: fx.teams.home.name, oppName: fx.teams.away.name, gf: hg, ga: ag, won: homeWon },
-                { slug: awayTeamId, apiId: fx.teams.away.id, name: fx.teams.away.name, oppName: fx.teams.home.name, gf: ag, ga: hg, won: homeWon === null ? null : !homeWon },
-              ];
-              // B3: one lookup for both teams' strength_rank (FIFA for WC
-              // countries) → deterministic "as expected / upset / surprise"
-              // framing appended to each perspective's body. C1 may later
-              // enrich this same row.
-              const { data: rankRows } = await supabase
-                .from("teams")
-                .select("id, strength_rank")
-                .in("id", [homeTeamId, awayTeamId]);
-              const rankBySlug = new Map<string, number | null>();
-              for (const r of rankRows ?? []) {
-                rankBySlug.set(r.id as string, (r.strength_rank as number | null) ?? null);
-              }
-              // Goal scorers + minutes for the post-game article (075). Read the
-              // list persisted during the match, but re-fetch events first if a
-              // late goal's scorer never resolved (a stoppage-time goal whose
-              // player the API published after the last live tick — otherwise
-              // the FT summary shows "Goal" with no face forever). No unresolved
-              // scorer → no fetch. Persist the corrected list so the live/FT
-              // surfaces agree.
-              const resolvedFtEvents = await resolveScorers(
-                supabase,
-                fixtureId,
-                apiFootballKey,
-                prior?.goal_events as StoredGoalEvent[] | null | undefined,
-                homeApiId,
-                awayApiId,
-              );
-              if (resolvedFtEvents !== (prior?.goal_events ?? null)) {
-                goalEventsStored = resolvedFtEvents;
-              }
-              const ftScorers = formatScorers(
-                resolvedFtEvents,
-                fx.teams.home.name,
-                fx.teams.away.name,
-              );
-              for (const p of playing) {
-                // A cup opponent is in `teams` purely so the fixture resolves.
-                // Writing Napoli an article, or a card on a team page nobody can
-                // open, would be noise in the shared feed and a lie in the data.
-                if (!activeTeamIds.has(p.slug)) continue;
-                const state: PostMatchState = p.won === null ? "draw" : p.won ? "win" : "loss";
-                const isHome = p.slug === homeTeamId;
-                const perspectiveHeadline = pens && state !== "draw" && p.gf === p.ga
-                  ? (state === "win"
-                    ? `${p.name} beat ${p.oppName} ${pw}-${pl} on penalties`
-                    : `${p.name} lost ${pl}-${pw} on penalties to ${p.oppName}`)
-                  : state === "win"
-                    ? `${p.name} beat ${p.oppName} ${p.gf}-${p.ga}${aet ? " after extra time" : ""}`
-                    : state === "loss"
-                      ? `${p.name} lost ${p.gf}-${p.ga} to ${p.oppName}${aet ? " after extra time" : ""}`
-                      : `${p.name} drew ${p.gf}-${p.ga} with ${p.oppName}`;
-
-                // The feed article: group stage keeps renderPostMatch's
-                // situation-aware prose + team_pages card; knockouts (no group
-                // math) get result + a deterministic stakes line. "Final" must
-                // be the literal round name — semis and the 3rd place match
-                // also contain the word.
-                let baseBody: string;
-                let talkingPoint: string;
-                if (wcCtx) {
-                  const pm = renderPostMatch({
-                    teamName: p.name,
-                    opponentName: p.oppName,
-                    teamScore: p.gf,
-                    oppScore: p.ga,
-                    state,
-                    situation: groupSituation(wcCtx.group, p.apiId),
-                    bestThird: wcCtx.bestThirdByApiId.get(p.apiId),
-                  });
-                  await writeTeamPostMatch(supabase, p.slug, pm, 48, fixtureId);
-                  baseBody = pm.text;
-                  talkingPoint = pm.talking_point;
-                } else {
-                  // Round-aware stakes: a semi loser still has the 3rd place
-                  // match, and the bronze match has no "next round" — generic
-                  // through/over copy is factually wrong for both.
-                  const isFinal = roundLc.trim() === "final";
-                  const isSemi = roundLc.includes("semi");
-                  const isBronze = roundLc.includes("3rd") || roundLc.includes("third");
-                  const stakes = state === "draw"
-                    ? null // PEN row missing shootout data — claim nothing wrong
-                    : state === "win"
-                      ? (isFinal
-                        ? "They are champions of the world."
-                        : isBronze
-                          ? "They finish third in the world."
-                          : "They are through to the next round.")
-                      : (isFinal
-                        ? "Beaten in the final."
-                        : isSemi
-                          ? "They will play for third place."
-                          : isBronze
-                            ? "They finish fourth."
-                            : "Their World Championship is over.");
-                  baseBody = stakes ? `${perspectiveHeadline}. ${stakes}` : `${perspectiveHeadline}.`;
-                  talkingPoint = state === "draw"
-                    ? "It went the full distance. Ask him how he got through it."
-                    : state === "win"
-                      ? (isFinal
-                        ? "His team are world champions. This is as big as it gets."
-                        : isBronze
-                          ? "Third place at a World Championship. Ask him if that softens it."
-                          : "Ask him how far he thinks they can go now.")
-                      : (isFinal
-                        ? "So close. He will not forget this one for a while."
-                        : isSemi
-                          ? "The final slipped away, but there is still a medal match. Ask him if he can face it."
-                          : isBronze
-                            ? "Fourth in the world stings. He might need a minute."
-                            : "Their run is over. He might need a minute.");
-                }
-
-                // B3: append the ranking framing to this team's result body.
-                const oppSlug = p.slug === homeTeamId ? awayTeamId : homeTeamId;
-                const framing = resultFraming(
-                  rankBySlug.get(p.slug) ?? null,
-                  rankBySlug.get(oppSlug) ?? null,
-                  p.gf,
-                  p.ga,
-                  WC_FAVORITE_GAP,
-                );
-                const resultBody = framing ? `${baseBody} ${framing.note}` : baseBody;
-                const { data: inserted, error: itemErr } = await supabase
-                  .from("content_items")
-                  .insert({
-                    team_id: p.slug,
-                    type: "matchday",
-                    match_id: String(fixtureId),
-                    league_id: fixtureLeagueId,
-                    match_result: perspectiveHeadline,
-                    headline: perspectiveHeadline,
-                    body: resultBody,
-                    talking_points: [talkingPoint],
-                    // The lock-screen alert is sent directly by the FT push
-                    // below; this feed article must NOT be re-pushed by
-                    // notification-sender's sweep (double-ping). Feed-only.
-                    push_eligible: false,
-                    goal_events: ftScorers.length > 0 ? ftScorers : null,
-                    everyone_talking: isHome,
-                    everyone_talking_headline: isHome ? neutralResult : null,
-                    everyone_talking_body: isHome
-                      ? `${neutralResult}. ${wcCtx ? "Full-time in their World Championship group." : "Full-time at the World Championship."}`
-                      : null,
-                    status: "published",
-                    published_at: new Date().toISOString(),
-                  })
-                  .select("id")
-                  .maybeSingle();
-                if (!itemErr && inserted?.id) {
-                  wcResultItemIds[p.slug] = inserted.id as string;
-                } else if (itemErr && itemErr.code !== "23505") {
-                  // 23505 = already written this match (idempotent no-op).
-                  console.error(`wc result item insert failed for ${p.slug}/${fixtureId} (non-fatal):`, itemErr.message);
-                }
-              }
-
-              // Tournament-feed neutral result (076): same neutral copy +
-              // photo-bearing scorers, one row on the shared feed. Inserted
-              // post-upsert like the alert pushes (at-most-once).
-              pendingTournamentItems.push({
-                team_id: "world_championship",
-                type: "matchday",
-                match_id: String(fixtureId),
-                match_result: neutralResult,
-                headline: neutralResult,
-                body: `${neutralResult}. Full-time at the World Championship.`,
-                goal_events: ftScorers.length > 0 ? ftScorers : null,
-                affected_team_ids: [homeTeamId, awayTeamId],
-                push_eligible: false,
-                everyone_talking: false,
-                status: "published",
-                published_at: new Date().toISOString(),
-              });
-            }
-          }
-        } catch (e) {
-          // Detector itself threw — never block the rest of the tick.
-          // Phase J observability captures this as a system-level error.
-          console.error(`consequence detection threw for fixture ${fixtureId}:`, e);
           await logFire(supabase, {
-            stage: "consequence_fire",
-            teamId: homeTeamId, // best-effort tag
+            stage: "live_brief_fire",
+            teamId,
             fixtureId,
-            httpStatus: 500,
-            success: false,
-            threw: true,
-            bodyExcerpt: e instanceof Error ? e.message.slice(0, 200) : String(e).slice(0, 200),
+            trigger,
+            httpStatus: liveHttpStatus,
+            success: liveSuccess,
+            threw: liveThrew,
+            bodyExcerpt: liveBodyExcerpt,
           });
         }
       }
-    }
 
-    // V1.1 C5: fire gd-live-brief for any new in-match trigger windows.
-    // One fire per (team, trigger) pair — both home and away teams get
-    // briefs, each tailored to their own perspective. Only HT today
-    // (75' was dropped 2026-05-17, see briefsFired comment above).
-    for (const trigger of newTriggers) {
-      if (!liveBriefUrl || !liveBriefToken) continue;
-      for (const [teamId, _opponentTeamId, _isHome] of [
-        [homeTeamId, awayTeamId, true],
-        [awayTeamId, homeTeamId, false],
-      ] as const) {
-        const homeName = fx.teams.home.name;
-        const awayName = fx.teams.away.name;
-        const briefMinute = elapsed ?? (trigger === "HT" ? 46 : 75);
-        // Compose the payload the routine expects. Semicolon-separated
-        // key=value pairs match the existing gd-matchday convention.
-        // home_goals and away_goals always refer to the literal home/away
-        // teams (NOT user/opponent). The routine derives user-vs-opponent
-        // by matching `user_team_id` against `home_team_id`/`away_team_id`.
-        const text = [
-          `home_team_id=${homeTeamId}`,
-          `away_team_id=${awayTeamId}`,
-          `home_team_name=${homeName}`,
-          `away_team_name=${awayName}`,
-          `user_team_id=${teamId}`,
-          `home_goals=${homeGoals ?? 0}`,
-          `away_goals=${awayGoals ?? 0}`,
-          `minute=${briefMinute}`,
-          `trigger=${trigger}`,
-          `fixture_id=${fixtureId}`,
-        ].join("; ");
+      // ─── Live Activity (Lock Screen / Dynamic Island) drive ──────────────
+      // Every polled league (WC countries + PL clubs since Sept 2026; clubs show
+      // short_name with no flag). Start once at kickoff (push-to-start), update
+      // on score/period change, end at FT. Idempotency via la_started / la_sig /
+      // la_ended on the row. Pushes carry the full attributes + content-state,
+      // so the widget needs no network.
+      let laStarted = (prior?.la_started as boolean | undefined) ?? false;
+      let laSig = (prior?.la_sig as string | null | undefined) ?? null;
+      let laEnded = (prior?.la_ended as boolean | undefined) ?? false;
 
-        let liveHttpStatus: number | null = null;
-        let liveBodyExcerpt: string | null = null;
-        let liveSuccess = false;
-        let liveThrew = false;
-        try {
-          const fireResp = await fetch(liveBriefUrl, {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${liveBriefToken}`,
-              "anthropic-beta": "experimental-cc-routine-2026-04-01",
-              "anthropic-version": "2023-06-01",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ text }),
-          });
-          liveHttpStatus = fireResp.status;
-          if (fireResp.ok) {
-            liveBriefFires++;
-            liveSuccess = true;
-            console.log(`live-brief fired for ${teamId}/${fixtureId} [${trigger}]`);
-          } else {
-            const body = await fireResp.text().catch(() => "");
-            liveBodyExcerpt = body.slice(0, 200);
-            console.error(
-              `live-brief fire failed for ${teamId}/${fixtureId} [${trigger}]: ${fireResp.status} ${liveBodyExcerpt}`,
-            );
-          }
-        } catch (e) {
-          liveThrew = true;
-          liveBodyExcerpt = e instanceof Error ? e.message.slice(0, 200) : null;
-          console.error(`live-brief fire threw for ${teamId}/${fixtureId} [${trigger}]:`, e);
-        }
-        await logFire(supabase, {
-          stage: "live_brief_fire",
-          teamId,
-          fixtureId,
-          trigger,
-          httpStatus: liveHttpStatus,
-          success: liveSuccess,
-          threw: liveThrew,
-          bodyExcerpt: liveBodyExcerpt,
-        });
-      }
-    }
-
-    // ─── Live Activity (Lock Screen / Dynamic Island) drive ──────────────
-    // Every polled league (WC countries + PL clubs since Sept 2026; clubs show
-    // short_name with no flag). Start once at kickoff (push-to-start), update
-    // on score/period change, end at FT. Idempotency via la_started / la_sig /
-    // la_ended on the row. Pushes carry the full attributes + content-state,
-    // so the widget needs no network.
-    let laStarted = (prior?.la_started as boolean | undefined) ?? false;
-    let laSig = (prior?.la_sig as string | null | undefined) ?? null;
-    let laEnded = (prior?.la_ended as boolean | undefined) ?? false;
-
-    if (!laEnded) {
-      const homeMeta = liveMeta(homeTeamId);
-      const awayMeta = liveMeta(awayTeamId);
-      if (homeMeta && awayMeta) {
-        // Live minute drives the "63' / 90" badge. Only meaningful during an
-        // active half (1H/2H/ET) — null at HT/BT/penalties/FT so the badge
-        // shows the period label there and the per-minute updates stop. Folded
-        // into `sig` so each new minute pushes one silent LA update.
-        const liveMinute = isLive && status !== "HT" && status !== "BT"
-          ? (elapsed ?? null)
-          : null;
-        const contentState = {
-          homeScore: homeGoals ?? 0,
-          awayScore: awayGoals ?? 0,
-          statusLabel: wcStatusLabel(status),
-          elapsed: liveMinute,
-        };
-        const sig = `${contentState.homeScore}-${contentState.awayScore}-${contentState.statusLabel}-${liveMinute ?? ""}`;
-        const matchFinished = FINISHED_STATUSES.has(status);
-
-        const sendAll = async (
-          rows: Array<{ token: string; apns_environment: string }> | null,
-          opts: Parameters<typeof sendLiveActivityPush>[1],
-        ) => {
-          const list = rows ?? [];
-          if (list.length === 0) return;
-          // Bounded-concurrency fan-out: a big live match can have thousands of
-          // active Live Activities, and this fires every tick — it must stay
-          // sub-minute (SCALING_50K.md §1).
-          const sent = await mapWithConcurrency(list, PUSH_CONCURRENCY, (r) =>
-            sendLiveActivityPush(r.token, {
-              ...opts,
-              environment: r.apns_environment === "production" ? "production" : "development",
-            }).then((res) => ({ token: r.token, res })),
-          );
-          // Clean up tokens APNs reported dead (410/400) in one UPDATE so a
-          // stale Live Activity token stops being pushed on every tick.
-          await deactivateTokens(
-            supabase,
-            "live_activity_tokens",
-            sent.filter((s) => isTokenDead(s.res)).map((s) => s.token),
-          );
-        };
-
-        if (matchFinished && laStarted) {
-          // END — final score + auto-dismiss after 2h.
-          const { data: updTokens } = await supabase
-            .from("live_activity_tokens")
-            .select("token, apns_environment")
-            .eq("kind", "update").eq("fixture_id", fixtureId).eq("is_active", true);
-          await sendAll(updTokens, { event: "end", contentState, dismissalSeconds: 7200 });
-          laEnded = true;
-          laSig = sig;
-        } else if (isLive && !laStarted && prior !== null) {
-          // START — push-to-start the followers' activities (first observed
-          // live tick; prior!==null mirrors the matchday first-observation guard).
-          // WC knockout matches start EVERY device's activity, not just the two
-          // countries' followers — from the round of 32 on, every game matters
-          // to everyone. Round convention mirrors detect-consequences: an
-          // empty/missing round stays follower-scoped (safe default). League
-          // matches ("Regular Season - 3") are always follower-scoped.
-          const round = (fx.league?.round ?? "").toLowerCase();
-          const isKnockout = fixtureLeagueId === WC_LEAGUE_ID && round.length > 0 && !round.includes("group");
-          let ptsQuery = supabase
-            .from("live_activity_tokens")
-            .select("token, apns_environment")
-            .eq("kind", "push_to_start").eq("is_active", true);
-          if (!isKnockout) {
-            const playing = `${homeTeamId},${awayTeamId}`;
-            ptsQuery = ptsQuery
-              .or(`country_id.in.(${playing}),country_ids.ov.{${playing}},team_ids.ov.{${playing}}`);
-          }
-          const { data: ptsTokens } = await ptsQuery;
-          await sendAll(ptsTokens, {
-            event: "start",
-            attributes: {
-              fixtureId,
-              homeName: homeMeta.name,
-              awayName: awayMeta.name,
-              homeFlag: homeMeta.flag,
-              awayFlag: awayMeta.flag,
-              // The widget renders this above the score. A Lock Screen saying
-              // "LEAGUE CUP" answers the question a live score alone raises.
-              groupLabel: competitionLabelForActivity(fixtureLeagueId),
-            },
-            contentState,
-            alert: { title: `${homeMeta.name} v ${awayMeta.name}`, body: "It's kicked off." },
-            staleSeconds: 5400,
-          });
-          laStarted = true;
-          laSig = sig;
-        } else if (isLive && laStarted && sig !== laSig) {
-          // UPDATE — goal or period change since the last push.
-          const { data: updTokens } = await supabase
-            .from("live_activity_tokens")
-            .select("token, apns_environment")
-            .eq("kind", "update").eq("fixture_id", fixtureId).eq("is_active", true);
-          await sendAll(updTokens, { event: "update", contentState, staleSeconds: 5400 });
-          laSig = sig;
-        }
-      }
-    }
-
-    // ─── Kickoff / goal / half-time / full-time pushes (playing teams) ────
-    // The alert banners the user asked for: followers of BOTH playing teams
-    // (WC countries and, since Sept 2026, PL clubs) get a lock-screen push 30
-    // min before kickoff, at every goal, at the break, and at full-time.
-    // Distinct from the Live Activity above (that's the persistent lock-screen
-    // score; these are the one-shot alerts) and from WC_RIVAL_RESULT (which
-    // stays after-the-game-only for the OTHER teams in the group).
-    // Deterministic, zero Claude. Keys off the live score, not group math.
-    // For PL the FT push is the result alert; gd-matchday's article lands in
-    // the feed a few minutes later as feed-only (post_news.sh), so nobody gets
-    // two FT pushes ten minutes apart.
-    {
-      const homeMeta = liveMeta(homeTeamId);
-      const awayMeta = liveMeta(awayTeamId);
-      if (homeMeta && awayMeta) {
-        const homeTeam = { id: homeTeamId, name: homeMeta.name, flag: homeMeta.flag };
-        const awayTeam = { id: awayTeamId, name: awayMeta.name, flag: awayMeta.flag };
-        // "League Cup, last 32." — empty for the league and the World
-        // Championship, whose pushes already read unambiguously. A cup
-        // scoreline in September does not: she has not been told which
-        // competition this is, and neither had the push until now.
-        const fixtureRound = fx.league?.round;
-        const competitionClause = competitionSuffix(fixtureLeagueId, fixtureRound);
-
-        // 30-MINUTES-TO-KICKOFF — the "it's about to start" nudge. Fire once
-        // when the fixture is still NS and kickoff is within the next 30 min.
-        // Future-only (minsToKickoff > 0) so a delayed game already past its
-        // listed time can't fire it; marker-gated so a deploy inside the window
-        // fires at most once. The fixture is in match_status_state ~2h before
-        // kickoff (date roll), so the 30-min mark is always observed.
-        const minsToKickoff = (new Date(kickoffTime).getTime() - Date.now()) / 60000;
-        if (
-          status === "NS" && minsToKickoff > 0 && minsToKickoff <= 30 &&
-          !briefsFired.includes("PREKICK_PUSH")
-        ) {
-          const copy = renderKickoffSoonPush({
-            home: homeTeam,
-            away: awayTeam,
-            competition: competitionClause,
-            rng: seededRng(fixtureId * 7 + 1),
-          });
-          pendingAlertPushes.push({
-            args: {
-              homeTeamId,
-              awayTeamId,
-              copy,
-              category: "WC_KICKOFF_SOON",
-              fixtureId,
-              label: "kickoff",
-              minTier: minTierForLiveEvent("kickoff", fixtureLeagueId, fixtureRound),
-              marker: "PREKICK_PUSH",
-            },
-            isGoal: false,
-          });
-        }
-
-        // GOAL — the score rose since the last observed tick. `prior !== null`
-        // avoids a phantom goal when we first observe an in-progress game
-        // (mirrors the matchday / Live Activity first-observation guard).
-        // Idempotency needs no marker: the end-of-tick upsert advances
-        // home_goals/away_goals, so next tick detectGoal sees no change.
-        if (isLive && prior !== null) {
-          const side = detectGoal(prior.home_goals, prior.away_goals, homeGoals, awayGoals);
-          const score = `${homeGoals ?? 0}-${awayGoals ?? 0}`;
-          const goalMarker = `GOAL_PUSH:${score}`;
-          // A goal detected LAST tick whose scorer the events feed had not
-          // published yet (GOAL_WAIT:<score>:<side>, written below).
-          const waiting = briefsFired.find((m) => m.startsWith(`GOAL_WAIT:${score}:`));
-          const waitingSide = waiting?.split(":")[2] as "home" | "away" | undefined;
-
-          const eventFor = (events: GoalEvent[], goalSide: "home" | "away") =>
-            pickLatestGoalForTeam(events, goalSide === "home" ? homeApiId : awayApiId);
-          const scorerFor = (events: GoalEvent[], goalSide: "home" | "away" | "both") =>
-            goalSide === "both" ? null : formatScorerLine(eventFor(events, goalSide));
-          /// "Called it" outcome per playing side for the goal that just
-          /// landed. "us" is the side the DEVICE follows, so the scoring side
-          /// reads `us` under its own slug and `them` under the other's.
-          ///
-          /// An own goal stays credited to the BENEFITING side, because
-          /// parseGoalEvents already credits it there and call_vectors.json's
-          /// own-goal-credited-to-beneficiary says so; it carries no scorer
-          /// role, because the player the feed names plays for the other team.
-          ///
-          /// No event (the feed has the score but not the goal yet) is the
-          /// honest minimum: we know a goal happened and to which side, so a
-          /// bare side trigger still lands and a penalty, own-goal or minute
-          /// trigger does not.
-          const goalOutcomes = (
-            goalSide: "home" | "away",
-            ev: GoalEvent | null,
-            roles: Map<number, ScorerRole | null>,
-          ): Record<string, Outcome> => {
-            const shared = {
-              kind: "goal" as const,
-              scorerRole: ev && !ev.isOwnGoal && ev.playerApiId != null
-                ? roles.get(ev.playerApiId) ?? null
-                : null,
-              penalty: ev?.isPenalty ?? false,
-              ownGoal: ev?.isOwnGoal ?? false,
-              minute: ev?.minute ?? null,
-            };
-            return {
-              [homeTeamId]: { ...shared, side: goalSide === "home" ? "us" : "them" },
-              [awayTeamId]: { ...shared, side: goalSide === "away" ? "us" : "them" },
-            };
+      if (!laEnded) {
+        const homeMeta = liveMeta(homeTeamId);
+        const awayMeta = liveMeta(awayTeamId);
+        if (homeMeta && awayMeta) {
+          // Live minute drives the "63' / 90" badge. Only meaningful during an
+          // active half (1H/2H/ET) — null at HT/BT/penalties/FT so the badge
+          // shows the period label there and the per-minute updates stop. Folded
+          // into `sig` so each new minute pushes one silent LA update.
+          const liveMinute = isLive && status !== "HT" && status !== "BT"
+            ? (elapsed ?? null)
+            : null;
+          const contentState = {
+            homeScore: homeGoals ?? 0,
+            awayScore: awayGoals ?? 0,
+            statusLabel: wcStatusLabel(status),
+            elapsed: liveMinute,
           };
-          const queueGoalPush = (
-            goalSide: "home" | "away" | "both",
-            scorerLine: string | null,
-            outcomeByTeam?: Record<string, Outcome>,
+          const sig = `${contentState.homeScore}-${contentState.awayScore}-${contentState.statusLabel}-${liveMinute ?? ""}`;
+          const matchFinished = FINISHED_STATUSES.has(status);
+
+          // Active Live Activity tokens matching `filter`, every page (QA-04).
+          // A read error degrades to "nobody" as the unpaged read did, but now
+          // says so in the log instead of returning null silently.
+          const laTokens = async (
+            // deno-lint-ignore no-explicit-any
+            filter: (q: any) => any,
+          ): Promise<Array<{ token: string; apns_environment: string }>> => {
+            try {
+              return await fetchAllRows((from, to) =>
+                filter(
+                  supabase.from("live_activity_tokens").select("token, apns_environment").eq("is_active", true),
+                ).order("token").range(from, to)
+              );
+            } catch (e) {
+              console.error(`live_activity_tokens read failed for fixture ${fixtureId}:`, e);
+              return [];
+            }
+          };
+
+          const sendAll = async (
+            rows: Array<{ token: string; apns_environment: string }> | null,
+            opts: Parameters<typeof sendLiveActivityPush>[1],
           ) => {
-            const copy = renderGoalPush({
+            const list = rows ?? [];
+            if (list.length === 0) return;
+            // Bounded-concurrency fan-out: a big live match can have thousands of
+            // active Live Activities, and this fires every tick — it must stay
+            // sub-minute (SCALING_50K.md §1).
+            const sent = await mapWithConcurrency(list, PUSH_CONCURRENCY, (r) =>
+              sendLiveActivityPush(r.token, {
+                ...opts,
+                environment: r.apns_environment === "production" ? "production" : "development",
+              }).then((res) => ({ token: r.token, res })),
+            );
+            // Clean up tokens APNs reported dead (410/400) in one UPDATE so a
+            // stale Live Activity token stops being pushed on every tick.
+            await deactivateTokens(
+              supabase,
+              "live_activity_tokens",
+              sent.filter((s) => isTokenDead(s.res)).map((s) => s.token),
+            );
+          };
+
+          if (matchFinished && laStarted) {
+            // END — final score + auto-dismiss after 2h.
+            const updTokens = await laTokens((q) => q.eq("kind", "update").eq("fixture_id", fixtureId));
+            await sendAll(updTokens, { event: "end", contentState, dismissalSeconds: 7200 });
+            laEnded = true;
+            laSig = sig;
+          } else if (isLive && !laStarted && prior !== null) {
+            // START — push-to-start the followers' activities (first observed
+            // live tick; prior!==null mirrors the matchday first-observation guard).
+            // WC knockout matches start EVERY device's activity, not just the two
+            // countries' followers — from the round of 32 on, every game matters
+            // to everyone. Round convention mirrors detect-consequences: an
+            // empty/missing round stays follower-scoped (safe default). League
+            // matches ("Regular Season - 3") are always follower-scoped.
+            const round = (fx.league?.round ?? "").toLowerCase();
+            const isKnockout = fixtureLeagueId === WC_LEAGUE_ID && round.length > 0 && !round.includes("group");
+            const playing = `${homeTeamId},${awayTeamId}`;
+            const ptsTokens = await laTokens((q) => {
+              const pts = q.eq("kind", "push_to_start");
+              return isKnockout
+                ? pts
+                : pts.or(`country_id.in.(${playing}),country_ids.ov.{${playing}},team_ids.ov.{${playing}}`);
+            });
+            await sendAll(ptsTokens, {
+              event: "start",
+              attributes: {
+                fixtureId,
+                homeName: homeMeta.name,
+                awayName: awayMeta.name,
+                homeFlag: homeMeta.flag,
+                awayFlag: awayMeta.flag,
+                // The widget renders this above the score. A Lock Screen saying
+                // "LEAGUE CUP" answers the question a live score alone raises.
+                groupLabel: competitionLabelForActivity(fixtureLeagueId),
+              },
+              contentState,
+              alert: { title: `${homeMeta.name} v ${awayMeta.name}`, body: "It's kicked off." },
+              staleSeconds: 5400,
+            });
+            laStarted = true;
+            laSig = sig;
+          } else if (isLive && laStarted && sig !== laSig) {
+            // UPDATE — goal or period change since the last push.
+            const updTokens = await laTokens((q) => q.eq("kind", "update").eq("fixture_id", fixtureId));
+            await sendAll(updTokens, { event: "update", contentState, staleSeconds: 5400 });
+            laSig = sig;
+          }
+        }
+      }
+
+      // ─── Kickoff / goal / half-time / full-time pushes (playing teams) ────
+      // The alert banners the user asked for: followers of BOTH playing teams
+      // (WC countries and, since Sept 2026, PL clubs) get a lock-screen push 30
+      // min before kickoff, at every goal, at the break, and at full-time.
+      // Distinct from the Live Activity above (that's the persistent lock-screen
+      // score; these are the one-shot alerts) and from WC_RIVAL_RESULT (which
+      // stays after-the-game-only for the OTHER teams in the group).
+      // Deterministic, zero Claude. Keys off the live score, not group math.
+      // For PL the FT push is the result alert; gd-matchday's article lands in
+      // the feed a few minutes later as feed-only (post_news.sh), so nobody gets
+      // two FT pushes ten minutes apart.
+      {
+        const homeMeta = liveMeta(homeTeamId);
+        const awayMeta = liveMeta(awayTeamId);
+        if (homeMeta && awayMeta) {
+          const homeTeam = { id: homeTeamId, name: homeMeta.name, flag: homeMeta.flag };
+          const awayTeam = { id: awayTeamId, name: awayMeta.name, flag: awayMeta.flag };
+          // "League Cup, last 32." — empty for the league and the World
+          // Championship, whose pushes already read unambiguously. A cup
+          // scoreline in September does not: she has not been told which
+          // competition this is, and neither had the push until now.
+          const fixtureRound = fx.league?.round;
+          const competitionClause = competitionSuffix(fixtureLeagueId, fixtureRound);
+
+          // 30-MINUTES-TO-KICKOFF — the "it's about to start" nudge. Fire once
+          // when the fixture is still NS and kickoff is within the next 30 min.
+          // Future-only (minsToKickoff > 0) so a delayed game already past its
+          // listed time can't fire it; marker-gated so a deploy inside the window
+          // fires at most once. The fixture is in match_status_state ~2h before
+          // kickoff (date roll), so the 30-min mark is always observed.
+          const minsToKickoff = (new Date(kickoffTime).getTime() - Date.now()) / 60000;
+          if (
+            status === "NS" && minsToKickoff > 0 && minsToKickoff <= 30 &&
+            !briefsFired.includes("PREKICK_PUSH")
+          ) {
+            const copy = renderKickoffSoonPush({
               home: homeTeam,
               away: awayTeam,
-              homeGoals: homeGoals ?? 0,
-              awayGoals: awayGoals ?? 0,
-              side: goalSide,
-              scorerLine,
-              // Seeded on fixture and score: the second goal of the night draws
-              // a different line from the first, and a replayed tick draws the same.
-              rng: seededRng(fixtureId * 100 + (homeGoals ?? 0) * 10 + (awayGoals ?? 0)),
+              competition: competitionClause,
+              rng: seededRng(fixtureId * 7 + 1),
             });
             pendingAlertPushes.push({
               args: {
                 homeTeamId,
                 awayTeamId,
                 copy,
-                category: "WC_GOAL",
+                category: "WC_KICKOFF_SOON",
                 fixtureId,
-                label: "goal",
-                minTier: minTierForLiveEvent("goal", fixtureLeagueId, fixtureRound),
-                marker: goalMarker,
-                outcomeByTeam,
-                scorerLead: scorerLine,
+                label: "kickoff",
+                minTier: minTierForLiveEvent("kickoff", fixtureLeagueId, fixtureRound),
+                marker: "PREKICK_PUSH",
               },
-              isGoal: true,
+              isGoal: false,
             });
-          };
-
-          if (side) {
-            // Scorer + minute enrichment (A2). Fetch the fixture's events ONLY
-            // now, on a real goal — never every poll (quota). The full parsed
-            // list is also stored on the row (068) so the in-app live box can
-            // show who scored and when without re-hitting the API on its 60s
-            // read poll. When BOTH sides scored in one tick (side === "both")
-            // we can't honestly name a single scorer for the PUSH.
-            //
-            // The events feed lags the score by seconds to a couple of minutes,
-            // and a goal push without the scorer is the one Anton screenshotted
-            // ("Arsenal find a goal, 0-1!"). So: one retry after four seconds,
-            // and if the name is still missing the push waits ONE tick
-            // (GOAL_WAIT marker) and goes out next minute with the name if the
-            // feed has it by then, without it if not. Never later than that.
-            let events = await fetchGoalEvents(fixtureId, apiFootballKey);
-            let scorerLine = scorerFor(events, side);
-            if (side !== "both" && scorerLine === null) {
-              await new Promise((r) => setTimeout(r, 4000));
-              events = await fetchGoalEvents(fixtureId, apiFootballKey);
-              scorerLine = scorerFor(events, side);
-            }
-            // Scorer photos (077): stamped by enrichPhotos (one players lookup
-            // by provider id, CDN-URL fallback) so the live box and the FT
-            // articles that copy this list render faces with no join.
-            const enriched = await enrichPhotos(
-              supabase,
-              toStoredGoalEvents(events, homeApiId, awayApiId),
-            );
-            goalEventsStored = enriched.events;
-            if (side !== "both" && scorerLine === null && !waiting) {
-              stateMarkers.push(`GOAL_WAIT:${score}:${side}`);
-              console.log(`goal ${score} fixture=${fixtureId}: scorer not in events yet, push waits one tick`);
-            } else {
-              // Both sides scoring inside one tick has no single side, scorer
-              // or minute, so no pick can honestly resolve against it.
-              queueGoalPush(
-                side,
-                scorerLine,
-                side === "both" ? undefined : goalOutcomes(side, eventFor(events, side), enriched.roleByApiId),
-              );
-            }
-
-            // NOTE: goals deliberately do NOT create per-goal tournament feed
-            // rows. The in-feed LiveMatchCard (live-brief-current, 60s poll)
-            // already shows the running score + every scorer with their photo,
-            // updating in place — one live item, not one row per goal. Separate
-            // "GOAL! x-y" rows just duplicated it and cluttered the feed. The
-            // goal PUSH above still fires; the FT result row (below) carries the
-            // final scorers for the post-match feed.
-          } else if (waiting && waitingSide && !briefsFired.includes(goalMarker)) {
-            // The score has not moved since the goal was detected: send now,
-            // with the scorer if the feed has caught up, without if not.
-            const events = await fetchGoalEvents(fixtureId, apiFootballKey);
-            let roles = new Map<number, ScorerRole | null>();
-            if (events.length > 0) {
-              const enriched = await enrichPhotos(supabase, toStoredGoalEvents(events, homeApiId, awayApiId));
-              goalEventsStored = enriched.events;
-              roles = enriched.roleByApiId;
-            }
-            queueGoalPush(
-              waitingSide,
-              scorerFor(events, waitingSide),
-              goalOutcomes(waitingSide, eventFor(events, waitingSide), roles),
-            );
-          } else if (hasUnresolvedScorer(prior.goal_events, (homeGoals ?? 0) + (awayGoals ?? 0))) {
-            // No new goal this tick, but the stored list is short or anonymous
-            // (API-Football hadn't published the scorer when it was detected, or
-            // the list was empty). Re-fetch to back-fill so the live box resolves
-            // "Goal" → the name within a minute, and the persisted list is
-            // correct before FT.
-            goalEventsStored = await resolveScorers(
-              supabase,
-              fixtureId,
-              apiFootballKey,
-              prior.goal_events as StoredGoalEvent[] | null | undefined,
-              homeApiId,
-              awayApiId,
-            );
-          }
-        }
-
-        // HALF-TIME — fire once on the literal break. Gated on status === "HT"
-        // only (NOT "2H"): a "half-time" alert delivered mid-second-half reads
-        // wrong, and 1-min polling always catches the ~15-min break. Decoupled
-        // from liveBriefConfigured (the feed brief is a separate surface).
-        // `prior.status !== "HT"` requires we OBSERVE the transition into the
-        // break, so a deploy mid-break can't fire a late HT push.
-        if (
-          status === "HT" && prior !== null && prior.status !== "HT" &&
-          !briefsFired.includes("HT_PUSH")
-        ) {
-          const copy = renderHalfTimePush({
-            home: homeTeam,
-            away: awayTeam,
-            homeGoals: homeGoals ?? 0,
-            awayGoals: awayGoals ?? 0,
-            competition: competitionClause,
-            rng: seededRng(fixtureId * 7 + 2),
-          });
-          pendingAlertPushes.push({
-            args: {
-              homeTeamId,
-              awayTeamId,
-              copy,
-              category: "WC_HALFTIME",
-              fixtureId,
-              label: "ht",
-              minTier: minTierForLiveEvent("ht", fixtureLeagueId, fixtureRound),
-              marker: "HT_PUSH",
-              // "Called it" at the break, per side. `conceded` is the OTHER
-              // side's goals, which is why this cannot be one shared Outcome
-              // flipped: ahead/behind mirrors, conceded does not.
-              outcomeByTeam: {
-                [homeTeamId]: {
-                  kind: "halftime",
-                  state: sideState(homeGoals ?? 0, awayGoals ?? 0, "ahead", "level", "behind"),
-                  conceded: awayGoals ?? 0,
-                },
-                [awayTeamId]: {
-                  kind: "halftime",
-                  state: sideState(awayGoals ?? 0, homeGoals ?? 0, "ahead", "level", "behind"),
-                  conceded: homeGoals ?? 0,
-                },
-              },
-            },
-            isGoal: false,
-          });
-        }
-
-        // FULL-TIME own-result — the gap that left tonight silent. Fire once
-        // when we OBSERVE the live→finished transition. `!FINISHED_STATUSES
-        // .has(prior.status)` is the first-observation guard (mirrors
-        // `justFinished`): a deploy or re-observation of an already-finished
-        // game can't fire a late FT push. Independent of the gd-matchday cap /
-        // fired_finished_at logic (that routine path no-ops for WC).
-        if (
-          FINISHED_STATUSES.has(status) && prior !== null &&
-          !FINISHED_STATUSES.has(prior.status as string) &&
-          !briefsFired.includes("FT_PUSH")
-        ) {
-          // Shootout awareness: after PEN the goals are level but the match
-          // has a winner — pass the shootout score so the winner's followers
-          // never get "drew 1-1" copy.
-          const ftPen = fx.score?.penalty;
-          // Who goes through. Only stated when THIS match settles the tie: a
-          // single-leg cup game with a winner (including after extra time or
-          // penalties). A first leg, or a league-phase night, says nothing —
-          // "Out of the League Cup" would be a lie in both cases.
-          const penWinnerHome = typeof ftPen?.home === "number" && typeof ftPen?.away === "number" &&
-            ftPen.home !== ftPen.away
-            ? ftPen.home > ftPen.away
-            : null;
-          // Positive evidence only: API-Football's round strings never say
-          // "leg" ("Play-offs", "Semi-finals"), so the absence of the word
-          // proved nothing and a first-leg defeat read "Out of the Champions
-          // League".
-          const settles = isSingleLegTie(fixtureLeagueId, fixtureRound) &&
-            (penWinnerHome !== null || (homeGoals ?? 0) !== (awayGoals ?? 0));
-          const homeThrough = !settles
-            ? null
-            : penWinnerHome !== null
-            ? penWinnerHome
-            : (homeGoals ?? 0) > (awayGoals ?? 0);
-          const competitionBySide = {
-            [homeTeamId]: knockoutOutcome(fixtureLeagueId, fixtureRound, homeThrough),
-            [awayTeamId]: knockoutOutcome(fixtureLeagueId, fixtureRound, homeThrough === null ? null : !homeThrough),
-          };
-          // The club post_match card. Deliberately here and not in the
-          // WC_LEAGUE_ID block above, for two reasons:
-          //
-          //   1. Everything it needs is already computed for the push —
-          //      settles, homeThrough, competitionBySide — so it costs no new
-          //      API call and no Claude.
-          //   2. The WC block sits inside `if (homeFireOk && awayFireOk)`. A
-          //      free deterministic card has no business disappearing because
-          //      a PAID routine returned a 500.
-          //
-          // At-most-once comes from the enclosing guard: this branch only runs
-          // on the OBSERVED live→finished transition, and once the row's status
-          // is FT the next tick's prior.status is FT too.
-          if (fixtureLeagueId !== WC_LEAGUE_ID) {
-            // A league game has no round worth naming ("Regular Season - 6"
-            // parses to an empty label anyway); a cup tie does.
-            const isCupTie = COVERED_CUP_LEAGUES.includes(fixtureLeagueId);
-            const sides = [
-              { slug: homeTeamId, name: homeTeam.name, oppName: awayTeam.name,
-                venue: "home" as const, gf: homeGoals ?? 0, ga: awayGoals ?? 0,
-                pen: ftPen?.home, oppPen: ftPen?.away, through: homeThrough },
-              { slug: awayTeamId, name: awayTeam.name, oppName: homeTeam.name,
-                venue: "away" as const, gf: awayGoals ?? 0, ga: homeGoals ?? 0,
-                pen: ftPen?.away, oppPen: ftPen?.home,
-                through: homeThrough === null ? null : !homeThrough },
-            ];
-            for (const side of sides) {
-              // A shootout leaves the goals level and the tie decided, so the
-              // winner is `through`, not the scoreline.
-              const shootout = status === "PEN" &&
-                  typeof side.pen === "number" && typeof side.oppPen === "number" &&
-                  side.pen !== side.oppPen
-                ? { mine: side.pen, theirs: side.oppPen }
-                : null;
-              const pmState: PostMatchState = shootout
-                ? (shootout.mine > shootout.theirs ? "win" : "loss")
-                : side.gf > side.ga
-                ? "win"
-                : side.gf < side.ga
-                ? "loss"
-                : "draw";
-              const card = renderClubPostMatch({
-                teamName: side.name,
-                opponentName: side.oppName,
-                venue: side.venue,
-                teamScore: side.gf,
-                oppScore: side.ga,
-                state: pmState,
-                competition: competitionProse(fixtureLeagueId),
-                round: isCupTie ? roundLabel(fixtureRound, fixtureLeagueId) : undefined,
-                afterExtraTime: status === "AET",
-                shootout,
-                // competitionBySide already holds knockoutOutcome for this
-                // side, but it falls back to naming the competition when the
-                // tie is unsettled ("League Cup, the fourth round.") and the
-                // card must claim nothing in that case. Only a real verdict.
-                knockoutLine: side.through === null
-                  ? null
-                  : knockoutOutcome(fixtureLeagueId, fixtureRound, side.through),
-              });
-              await writeTeamPostMatch(
-                supabase, side.slug, card, CLUB_POST_MATCH_TTL_HOURS, fixtureId,
-              );
-            }
           }
 
-          // "Called it" at the whistle, per side. A shootout decides the
-          // result, so win/loss follows the pens exactly as the copy pool does;
-          // a clean sheet is still about GOALS, and a shootout is not a save
-          // the defence made.
-          //
-          // `comeback` is the one fact the fixture payload does not carry: we
-          // never fetch the half-time score. It is counted off the goal_events
-          // list we already hold (minute <= 45), which fails to 0-0 when that
-          // list is missing, so the worst case is that her longshot quietly
-          // does not land rather than landing when it should not.
-          const ftOutcomes: Record<string, Outcome> = (() => {
-            const [h, a] = ftPen && typeof ftPen.home === "number" && typeof ftPen.away === "number" &&
-                ftPen.home !== ftPen.away && status === "PEN"
-              ? [ftPen.home, ftPen.away]
-              : [homeGoals ?? 0, awayGoals ?? 0];
-            // Three sources, best first. This tick's payload is authoritative
-            // and still carries score.halftime at full-time; the stored column
-            // covers a payload that has dropped it; counting goal_events by
-            // minute covers a row written before migration 118, and fails to
-            // 0-0, so the worst case is her longshot quietly not landing.
-            const feedHt = fx.score?.halftime;
-            const ht = typeof feedHt?.home === "number" && typeof feedHt?.away === "number"
-              ? { home: feedHt.home, away: feedHt.away }
-              : typeof prior?.ht_home === "number" && typeof prior?.ht_away === "number"
-              ? { home: prior.ht_home as number, away: prior.ht_away as number }
-              : halfTimeGoals(goalEventsStored ?? prior?.goal_events);
-            const side = (mine: number, theirs: number, conceded: number, htMine: number, htTheirs: number): Outcome => ({
-              kind: "fulltime",
-              state: sideState(mine, theirs, "win" as const, "draw" as const, "loss" as const),
-              cleanSheet: conceded === 0,
-              comeback: htMine < htTheirs && mine > theirs,
-            });
-            return {
-              [homeTeamId]: side(h, a, awayGoals ?? 0, ht.home, ht.away),
-              [awayTeamId]: side(a, h, homeGoals ?? 0, ht.away, ht.home),
+          // GOAL — the score rose since the last observed tick. `prior !== null`
+          // avoids a phantom goal when we first observe an in-progress game
+          // (mirrors the matchday / Live Activity first-observation guard).
+          // Idempotency needs no marker: the end-of-tick upsert advances
+          // home_goals/away_goals, so next tick detectGoal sees no change.
+          if (isLive && prior !== null) {
+            const side = detectGoal(prior.home_goals, prior.away_goals, homeGoals, awayGoals);
+            const score = `${homeGoals ?? 0}-${awayGoals ?? 0}`;
+            const goalMarker = `GOAL_PUSH:${score}`;
+            // A goal detected LAST tick whose scorer the events feed had not
+            // published yet (GOAL_WAIT:<score>:<side>, written below).
+            const waiting = briefsFired.find((m) => m.startsWith(`GOAL_WAIT:${score}:`));
+            const waitingSide = waiting?.split(":")[2] as "home" | "away" | undefined;
+
+            const eventFor = (events: GoalEvent[], goalSide: "home" | "away") =>
+              pickLatestGoalForTeam(events, goalSide === "home" ? homeApiId : awayApiId);
+            const scorerFor = (events: GoalEvent[], goalSide: "home" | "away" | "both") =>
+              goalSide === "both" ? null : formatScorerLine(eventFor(events, goalSide));
+            /// "Called it" outcome per playing side for the goal that just
+            /// landed. "us" is the side the DEVICE follows, so the scoring side
+            /// reads `us` under its own slug and `them` under the other's.
+            ///
+            /// An own goal stays credited to the BENEFITING side, because
+            /// parseGoalEvents already credits it there and call_vectors.json's
+            /// own-goal-credited-to-beneficiary says so; it carries no scorer
+            /// role, because the player the feed names plays for the other team.
+            ///
+            /// No event (the feed has the score but not the goal yet) is the
+            /// honest minimum: we know a goal happened and to which side, so a
+            /// bare side trigger still lands and a penalty, own-goal or minute
+            /// trigger does not.
+            const goalOutcomes = (
+              goalSide: "home" | "away",
+              ev: GoalEvent | null,
+              roles: Map<number, ScorerRole | null>,
+            ): Record<string, Outcome> => {
+              const shared = {
+                kind: "goal" as const,
+                scorerRole: ev && !ev.isOwnGoal && ev.playerApiId != null
+                  ? roles.get(ev.playerApiId) ?? null
+                  : null,
+                penalty: ev?.isPenalty ?? false,
+                ownGoal: ev?.isOwnGoal ?? false,
+                minute: ev?.minute ?? null,
+              };
+              return {
+                [homeTeamId]: { ...shared, side: goalSide === "home" ? "us" : "them" },
+                [awayTeamId]: { ...shared, side: goalSide === "away" ? "us" : "them" },
+              };
             };
-          })();
+            const queueGoalPush = (
+              goalSide: "home" | "away" | "both",
+              scorerLine: string | null,
+              outcomeByTeam?: Record<string, Outcome>,
+            ) => {
+              const copy = renderGoalPush({
+                home: homeTeam,
+                away: awayTeam,
+                homeGoals: homeGoals ?? 0,
+                awayGoals: awayGoals ?? 0,
+                side: goalSide,
+                scorerLine,
+                // Seeded on fixture and score: the second goal of the night draws
+                // a different line from the first, and a replayed tick draws the same.
+                rng: seededRng(fixtureId * 100 + (homeGoals ?? 0) * 10 + (awayGoals ?? 0)),
+              });
+              pendingAlertPushes.push({
+                args: {
+                  homeTeamId,
+                  awayTeamId,
+                  copy,
+                  category: "WC_GOAL",
+                  fixtureId,
+                  label: "goal",
+                  minTier: minTierForLiveEvent("goal", fixtureLeagueId, fixtureRound),
+                  marker: goalMarker,
+                  outcomeByTeam,
+                  scorerLead: scorerLine,
+                },
+                isGoal: true,
+              });
+            };
 
-          const copy = renderFullTimePush({
-            home: homeTeam,
-            away: awayTeam,
-            homeGoals: homeGoals ?? 0,
-            awayGoals: awayGoals ?? 0,
-            competitionBySide,
-            rng: seededRng(fixtureId * 7 + 3),
-            pens: status === "PEN" &&
-                typeof ftPen?.home === "number" && typeof ftPen?.away === "number" &&
-                ftPen.home !== ftPen.away
-              ? { home: ftPen.home, away: ftPen.away }
-              : null,
-          });
-          pendingAlertPushes.push({
-            args: {
-              homeTeamId,
-              awayTeamId,
-              copy,
-              category: "WC_RESULT",
-              fixtureId,
-              label: "ft",
-              minTier: minTierForLiveEvent("ft", fixtureLeagueId, fixtureRound),
-              // Deep-link each follower to their team's just-written result
-              // article (populated in the post_match block above, same tick).
-              contentIdByCountry: wcResultItemIds,
-              marker: "FT_PUSH",
-              outcomeByTeam: ftOutcomes,
-            },
-            isGoal: false,
-          });
+            if (side) {
+              // Scorer + minute enrichment (A2). Fetch the fixture's events ONLY
+              // now, on a real goal — never every poll (quota). The full parsed
+              // list is also stored on the row (068) so the in-app live box can
+              // show who scored and when without re-hitting the API on its 60s
+              // read poll. When BOTH sides scored in one tick (side === "both")
+              // we can't honestly name a single scorer for the PUSH.
+              //
+              // The events feed lags the score by seconds to a couple of minutes,
+              // and a goal push without the scorer is the one Anton screenshotted
+              // ("Arsenal find a goal, 0-1!"). So: one retry after four seconds,
+              // and if the name is still missing the push waits ONE tick
+              // (GOAL_WAIT marker) and goes out next minute with the name if the
+              // feed has it by then, without it if not. Never later than that.
+              let events = await fetchGoalEvents(fixtureId, apiFootballKey);
+              let scorerLine = scorerFor(events, side);
+              if (side !== "both" && scorerLine === null) {
+                await new Promise((r) => setTimeout(r, 4000));
+                events = await fetchGoalEvents(fixtureId, apiFootballKey);
+                scorerLine = scorerFor(events, side);
+              }
+              // Scorer photos (077): stamped by enrichPhotos (one players lookup
+              // by provider id, CDN-URL fallback) so the live box and the FT
+              // articles that copy this list render faces with no join.
+              const enriched = await enrichPhotos(
+                supabase,
+                toStoredGoalEvents(events, homeApiId, awayApiId),
+              );
+              goalEventsStored = enriched.events;
+              if (side !== "both" && scorerLine === null && !waiting) {
+                stateMarkers.push(`GOAL_WAIT:${score}:${side}`);
+                console.log(`goal ${score} fixture=${fixtureId}: scorer not in events yet, push waits one tick`);
+              } else {
+                // Both sides scoring inside one tick has no single side, scorer
+                // or minute, so no pick can honestly resolve against it.
+                queueGoalPush(
+                  side,
+                  scorerLine,
+                  side === "both" ? undefined : goalOutcomes(side, eventFor(events, side), enriched.roleByApiId),
+                );
+              }
+
+              // NOTE: goals deliberately do NOT create per-goal tournament feed
+              // rows. The in-feed LiveMatchCard (live-brief-current, 60s poll)
+              // already shows the running score + every scorer with their photo,
+              // updating in place — one live item, not one row per goal. Separate
+              // "GOAL! x-y" rows just duplicated it and cluttered the feed. The
+              // goal PUSH above still fires; the FT result row (below) carries the
+              // final scorers for the post-match feed.
+            } else if (waiting && waitingSide && !briefsFired.includes(goalMarker)) {
+              // The score has not moved since the goal was detected: send now,
+              // with the scorer if the feed has caught up, without if not.
+              const events = await fetchGoalEvents(fixtureId, apiFootballKey);
+              let roles = new Map<number, ScorerRole | null>();
+              if (events.length > 0) {
+                const enriched = await enrichPhotos(supabase, toStoredGoalEvents(events, homeApiId, awayApiId));
+                goalEventsStored = enriched.events;
+                roles = enriched.roleByApiId;
+              }
+              queueGoalPush(
+                waitingSide,
+                scorerFor(events, waitingSide),
+                goalOutcomes(waitingSide, eventFor(events, waitingSide), roles),
+              );
+            } else if (hasUnresolvedScorer(prior.goal_events, (homeGoals ?? 0) + (awayGoals ?? 0))) {
+              // No new goal this tick, but the stored list is short or anonymous
+              // (API-Football hadn't published the scorer when it was detected, or
+              // the list was empty). Re-fetch to back-fill so the live box resolves
+              // "Goal" → the name within a minute, and the persisted list is
+              // correct before FT.
+              goalEventsStored = await resolveScorers(
+                supabase,
+                fixtureId,
+                apiFootballKey,
+                prior.goal_events as StoredGoalEvent[] | null | undefined,
+                homeApiId,
+                awayApiId,
+              );
+            }
+          }
+
+          // HALF-TIME — fire once on the literal break. Gated on status === "HT"
+          // only (NOT "2H"): a "half-time" alert delivered mid-second-half reads
+          // wrong, and 1-min polling always catches the ~15-min break. Decoupled
+          // from liveBriefConfigured (the feed brief is a separate surface).
+          // `prior.status !== "HT"` requires we OBSERVE the transition into the
+          // break, so a deploy mid-break can't fire a late HT push.
+          if (
+            status === "HT" && prior !== null && prior.status !== "HT" &&
+            !briefsFired.includes("HT_PUSH")
+          ) {
+            const copy = renderHalfTimePush({
+              home: homeTeam,
+              away: awayTeam,
+              homeGoals: homeGoals ?? 0,
+              awayGoals: awayGoals ?? 0,
+              competition: competitionClause,
+              rng: seededRng(fixtureId * 7 + 2),
+            });
+            pendingAlertPushes.push({
+              args: {
+                homeTeamId,
+                awayTeamId,
+                copy,
+                category: "WC_HALFTIME",
+                fixtureId,
+                label: "ht",
+                minTier: minTierForLiveEvent("ht", fixtureLeagueId, fixtureRound),
+                marker: "HT_PUSH",
+                // "Called it" at the break, per side. `conceded` is the OTHER
+                // side's goals, which is why this cannot be one shared Outcome
+                // flipped: ahead/behind mirrors, conceded does not.
+                outcomeByTeam: {
+                  [homeTeamId]: {
+                    kind: "halftime",
+                    state: sideState(homeGoals ?? 0, awayGoals ?? 0, "ahead", "level", "behind"),
+                    conceded: awayGoals ?? 0,
+                  },
+                  [awayTeamId]: {
+                    kind: "halftime",
+                    state: sideState(awayGoals ?? 0, homeGoals ?? 0, "ahead", "level", "behind"),
+                    conceded: homeGoals ?? 0,
+                  },
+                },
+              },
+              isGoal: false,
+            });
+          }
+
+          // FULL-TIME own-result — the gap that left tonight silent. Fire once
+          // when we OBSERVE the live→finished transition. `!FINISHED_STATUSES
+          // .has(prior.status)` is the first-observation guard (mirrors
+          // `justFinished`): a deploy or re-observation of an already-finished
+          // game can't fire a late FT push. Independent of the gd-matchday cap /
+          // fired_finished_at logic (that routine path no-ops for WC).
+          if (
+            FINISHED_STATUSES.has(status) && prior !== null &&
+            !FINISHED_STATUSES.has(prior.status as string) &&
+            !briefsFired.includes("FT_PUSH")
+          ) {
+            // Shootout awareness: after PEN the goals are level but the match
+            // has a winner — pass the shootout score so the winner's followers
+            // never get "drew 1-1" copy.
+            const ftPen = fx.score?.penalty;
+            // Who goes through. Only stated when THIS match settles the tie: a
+            // single-leg cup game with a winner (including after extra time or
+            // penalties). A first leg, or a league-phase night, says nothing —
+            // "Out of the League Cup" would be a lie in both cases.
+            const penWinnerHome = typeof ftPen?.home === "number" && typeof ftPen?.away === "number" &&
+              ftPen.home !== ftPen.away
+              ? ftPen.home > ftPen.away
+              : null;
+            // Positive evidence only: API-Football's round strings never say
+            // "leg" ("Play-offs", "Semi-finals"), so the absence of the word
+            // proved nothing and a first-leg defeat read "Out of the Champions
+            // League".
+            const settles = isSingleLegTie(fixtureLeagueId, fixtureRound) &&
+              (penWinnerHome !== null || (homeGoals ?? 0) !== (awayGoals ?? 0));
+            const homeThrough = !settles
+              ? null
+              : penWinnerHome !== null
+              ? penWinnerHome
+              : (homeGoals ?? 0) > (awayGoals ?? 0);
+            const competitionBySide = {
+              [homeTeamId]: knockoutOutcome(fixtureLeagueId, fixtureRound, homeThrough),
+              [awayTeamId]: knockoutOutcome(fixtureLeagueId, fixtureRound, homeThrough === null ? null : !homeThrough),
+            };
+            // The club post_match card. Deliberately here and not in the
+            // WC_LEAGUE_ID block above, for two reasons:
+            //
+            //   1. Everything it needs is already computed for the push —
+            //      settles, homeThrough, competitionBySide — so it costs no new
+            //      API call and no Claude.
+            //   2. The WC block sits inside `if (homeFireOk && awayFireOk)`. A
+            //      free deterministic card has no business disappearing because
+            //      a PAID routine returned a 500.
+            //
+            // At-most-once comes from the enclosing guard: this branch only runs
+            // on the OBSERVED live→finished transition, and once the row's status
+            // is FT the next tick's prior.status is FT too.
+            if (fixtureLeagueId !== WC_LEAGUE_ID) {
+              // A league game has no round worth naming ("Regular Season - 6"
+              // parses to an empty label anyway); a cup tie does.
+              const isCupTie = COVERED_CUP_LEAGUES.includes(fixtureLeagueId);
+              const sides = [
+                { slug: homeTeamId, name: homeTeam.name, oppName: awayTeam.name,
+                  venue: "home" as const, gf: homeGoals ?? 0, ga: awayGoals ?? 0,
+                  pen: ftPen?.home, oppPen: ftPen?.away, through: homeThrough },
+                { slug: awayTeamId, name: awayTeam.name, oppName: homeTeam.name,
+                  venue: "away" as const, gf: awayGoals ?? 0, ga: homeGoals ?? 0,
+                  pen: ftPen?.away, oppPen: ftPen?.home,
+                  through: homeThrough === null ? null : !homeThrough },
+              ];
+              for (const side of sides) {
+                // A shootout leaves the goals level and the tie decided, so the
+                // winner is `through`, not the scoreline.
+                const shootout = status === "PEN" &&
+                    typeof side.pen === "number" && typeof side.oppPen === "number" &&
+                    side.pen !== side.oppPen
+                  ? { mine: side.pen, theirs: side.oppPen }
+                  : null;
+                const pmState: PostMatchState = shootout
+                  ? (shootout.mine > shootout.theirs ? "win" : "loss")
+                  : side.gf > side.ga
+                  ? "win"
+                  : side.gf < side.ga
+                  ? "loss"
+                  : "draw";
+                const card = renderClubPostMatch({
+                  teamName: side.name,
+                  opponentName: side.oppName,
+                  venue: side.venue,
+                  teamScore: side.gf,
+                  oppScore: side.ga,
+                  state: pmState,
+                  competition: competitionProse(fixtureLeagueId),
+                  round: isCupTie ? roundLabel(fixtureRound, fixtureLeagueId) : undefined,
+                  afterExtraTime: status === "AET",
+                  shootout,
+                  // competitionBySide already holds knockoutOutcome for this
+                  // side, but it falls back to naming the competition when the
+                  // tie is unsettled ("League Cup, the fourth round.") and the
+                  // card must claim nothing in that case. Only a real verdict.
+                  knockoutLine: side.through === null
+                    ? null
+                    : knockoutOutcome(fixtureLeagueId, fixtureRound, side.through),
+                });
+                await writeTeamPostMatch(
+                  supabase, side.slug, card, CLUB_POST_MATCH_TTL_HOURS, fixtureId,
+                );
+              }
+            }
+
+            // "Called it" at the whistle, per side. A shootout decides the
+            // result, so win/loss follows the pens exactly as the copy pool does;
+            // a clean sheet is still about GOALS, and a shootout is not a save
+            // the defence made.
+            //
+            // `comeback` is the one fact the fixture payload does not carry: we
+            // never fetch the half-time score. It is counted off the goal_events
+            // list we already hold (minute <= 45), which fails to 0-0 when that
+            // list is missing, so the worst case is that her longshot quietly
+            // does not land rather than landing when it should not.
+            const ftOutcomes: Record<string, Outcome> = (() => {
+              const [h, a] = ftPen && typeof ftPen.home === "number" && typeof ftPen.away === "number" &&
+                  ftPen.home !== ftPen.away && status === "PEN"
+                ? [ftPen.home, ftPen.away]
+                : [homeGoals ?? 0, awayGoals ?? 0];
+              // Three sources, best first. This tick's payload is authoritative
+              // and still carries score.halftime at full-time; the stored column
+              // covers a payload that has dropped it; counting goal_events by
+              // minute covers a row written before migration 118, and fails to
+              // 0-0, so the worst case is her longshot quietly not landing.
+              const feedHt = fx.score?.halftime;
+              const ht = typeof feedHt?.home === "number" && typeof feedHt?.away === "number"
+                ? { home: feedHt.home, away: feedHt.away }
+                : typeof prior?.ht_home === "number" && typeof prior?.ht_away === "number"
+                ? { home: prior.ht_home as number, away: prior.ht_away as number }
+                : halfTimeGoals(goalEventsStored ?? prior?.goal_events);
+              const side = (mine: number, theirs: number, conceded: number, htMine: number, htTheirs: number): Outcome => ({
+                kind: "fulltime",
+                state: sideState(mine, theirs, "win" as const, "draw" as const, "loss" as const),
+                cleanSheet: conceded === 0,
+                comeback: htMine < htTheirs && mine > theirs,
+              });
+              return {
+                [homeTeamId]: side(h, a, awayGoals ?? 0, ht.home, ht.away),
+                [awayTeamId]: side(a, h, homeGoals ?? 0, ht.away, ht.home),
+              };
+            })();
+
+            const copy = renderFullTimePush({
+              home: homeTeam,
+              away: awayTeam,
+              homeGoals: homeGoals ?? 0,
+              awayGoals: awayGoals ?? 0,
+              competitionBySide,
+              rng: seededRng(fixtureId * 7 + 3),
+              pens: status === "PEN" &&
+                  typeof ftPen?.home === "number" && typeof ftPen?.away === "number" &&
+                  ftPen.home !== ftPen.away
+                ? { home: ftPen.home, away: ftPen.away }
+                : null,
+            });
+            pendingAlertPushes.push({
+              args: {
+                homeTeamId,
+                awayTeamId,
+                copy,
+                category: "WC_RESULT",
+                fixtureId,
+                label: "ft",
+                minTier: minTierForLiveEvent("ft", fixtureLeagueId, fixtureRound),
+                // Deep-link each follower to their team's just-written result
+                // article (populated in the post_match block above, same tick).
+                contentIdByCountry: wcResultItemIds,
+                marker: "FT_PUSH",
+                outcomeByTeam: ftOutcomes,
+              },
+              isGoal: false,
+            });
+          }
         }
       }
-    }
 
-    // Compute the updated briefs_fired array (append newTriggers + push
-    // markers, dedupe). We write this into the upsert below so a second tick
-    // within the same trigger window won't re-fire — even if the prior row
-    // never existed (first-observation skip case is handled by the
-    // `prior !== null` guard on trigger detection above).
-    const updatedBriefsFired = [
-      ...new Set([...briefsFired, ...newTriggers, ...stateMarkers]),
-    ];
+      // Compute the updated briefs_fired array (append newTriggers + push
+      // markers, dedupe). We write this into the upsert below so a second tick
+      // within the same trigger window won't re-fire — even if the prior row
+      // never existed (first-observation skip case is handled by the
+      // `prior !== null` guard on trigger detection above).
+      const updatedBriefsFired = [
+        ...new Set([...briefsFired, ...newTriggers, ...stateMarkers]),
+      ];
 
-    // Upsert state. fired_finished_at is set ONLY when justFinished AND both
-    // home and away routine fires succeeded — if one failed, the next tick
-    // will retry both perspectives. The routine post-script must upsert
-    // content_items on (team_id, match_id) so the successful side's re-fire
-    // is a no-op rather than a duplicate.
-    const bothFiresOk = shouldFireMatchday && homeFireOk && awayFireOk;
-    const { error: upsertErr } = await supabase
-      .from("match_status_state")
-      .upsert(
-        {
-          fixture_id: fixtureId,
-          league_id: fixtureLeagueId,
-          home_team_id: homeTeamId,
-          away_team_id: awayTeamId,
-          status,
-          home_goals: homeGoals,
-          away_goals: awayGoals,
-          elapsed: elapsed ?? null,
-          kickoff_time: kickoffTime,
-          last_checked: new Date().toISOString(),
-          briefs_fired: updatedBriefsFired,
-          // Only write goal_events on a tick that fetched them (a detected
-          // goal). The conditional spread below leaves the column untouched on
-          // quiet ticks so a populated list is never clobbered with null.
-          ...(goalEventsStored ? { goal_events: goalEventsStored } : {}),
-          // The feed's own half-time score (118). Written only once both
-          // numbers are present, so a pre-kickoff row keeps NULL rather than
-          // being handed a 0-0 that reads like a real result at the break.
-          ...(typeof fx.score?.halftime?.home === "number" && typeof fx.score?.halftime?.away === "number"
-            ? { ht_home: fx.score.halftime.home, ht_away: fx.score.halftime.away }
-            : {}),
-          la_started: laStarted,
-          la_sig: laSig,
-          la_ended: laEnded,
-          ...(matchdayWentStale
-            ? { matchday_fire_capped: true }
-            : {}),
-          ...(bothFiresOk
-            ? { fired_finished_at: new Date().toISOString() }
-            : {}),
-        },
-        { onConflict: "fixture_id" },
-      );
-    if (upsertErr) {
-      // State did NOT advance. Skip every collected alert push — they will be
-      // re-decided identically next tick once the row is observed again. This is
-      // what makes the pushes at-most-once: we never send on a tick whose state
-      // we couldn't persist (which would re-fire next tick = duplicate alerts).
-      console.warn(
-        `state upsert failed for ${fixtureId}; skipping ${pendingAlertPushes.length} alert push(es):`,
-        upsertErr.message,
-      );
-      upsertErrors.push({ fixture_id: fixtureId, message: upsertErr.message });
-    } else {
-      stateUpdates++;
-      if (!prior) firstSeen++;
-      // State (markers + score) is durably persisted — now safe to fire.
-      for (const item of pendingTournamentItems) {
-        const { error: tErr } = await supabase.from("content_items").insert(item);
-        if (tErr && tErr.code !== "23505") {
-          // 23505 = already on the tournament feed (idempotent no-op).
-          console.error(`tournament item insert failed for ${fixtureId} (non-fatal):`, tErr.message);
+      // Upsert state. fired_finished_at is set ONLY when justFinished AND both
+      // home and away routine fires succeeded — if one failed, the next tick
+      // will retry both perspectives. The routine post-script must upsert
+      // content_items on (team_id, match_id) so the successful side's re-fire
+      // is a no-op rather than a duplicate.
+      const bothFiresOk = shouldFireMatchday && homeFireOk && awayFireOk;
+      const { error: upsertErr } = await supabase
+        .from("match_status_state")
+        .upsert(
+          {
+            fixture_id: fixtureId,
+            league_id: fixtureLeagueId,
+            home_team_id: homeTeamId,
+            away_team_id: awayTeamId,
+            status,
+            home_goals: homeGoals,
+            away_goals: awayGoals,
+            elapsed: elapsed ?? null,
+            kickoff_time: kickoffTime,
+            last_checked: new Date().toISOString(),
+            briefs_fired: updatedBriefsFired,
+            // Only write goal_events on a tick that fetched them (a detected
+            // goal). The conditional spread below leaves the column untouched on
+            // quiet ticks so a populated list is never clobbered with null.
+            ...(goalEventsStored ? { goal_events: goalEventsStored } : {}),
+            // The feed's own half-time score (118). Written only once both
+            // numbers are present, so a pre-kickoff row keeps NULL rather than
+            // being handed a 0-0 that reads like a real result at the break.
+            ...(typeof fx.score?.halftime?.home === "number" && typeof fx.score?.halftime?.away === "number"
+              ? { ht_home: fx.score.halftime.home, ht_away: fx.score.halftime.away }
+              : {}),
+            la_started: laStarted,
+            la_sig: laSig,
+            la_ended: laEnded,
+            ...(matchdayWentStale
+              ? { matchday_fire_capped: true }
+              : {}),
+            ...(bothFiresOk
+              ? { fired_finished_at: new Date().toISOString() }
+              : {}),
+          },
+          { onConflict: "fixture_id" },
+        );
+      if (upsertErr) {
+        // State did NOT advance. Skip every collected alert push — they will be
+        // re-decided identically next tick once the row is observed again. This is
+        // what makes the pushes at-most-once: we never send on a tick whose state
+        // we couldn't persist (which would re-fire next tick = duplicate alerts).
+        console.warn(
+          `state upsert failed for ${fixtureId}; skipping ${pendingAlertPushes.length} alert push(es):`,
+          upsertErr.message,
+        );
+        upsertErrors.push({ fixture_id: fixtureId, message: upsertErr.message });
+      } else {
+        stateUpdates++;
+        if (!prior) firstSeen++;
+        // State (markers + score) is durably persisted — now safe to fire.
+        for (const item of pendingTournamentItems) {
+          const { error: tErr } = await supabase.from("content_items").insert(item);
+          if (tErr && tErr.code !== "23505") {
+            // 23505 = already on the tournament feed (idempotent no-op).
+            console.error(`tournament item insert failed for ${fixtureId} (non-fatal):`, tErr.message);
+          }
+        }
+        if (pageRefreshTargets.length > 0) {
+          pageRefreshQueue.push({ fixtureId, teamIds: pageRefreshTargets });
+        }
+        for (const p of pendingAlertPushes) {
+          const n = await sendPlayingTeamPush(supabase, p.args);
+          if (p.isGoal) goalPushSends += n;
         }
       }
-      if (pageRefreshTargets.length > 0) {
-        pageRefreshQueue.push({ fixtureId, teamIds: pageRefreshTargets });
-      }
-      for (const p of pendingAlertPushes) {
-        const n = await sendPlayingTeamPush(supabase, p.args);
-        if (p.isGoal) goalPushSends += n;
-      }
+    } catch (e) {
+      const fixtureId = (fx as { fixture?: { id?: number } } | null)?.fixture?.id ?? null;
+      const message = e instanceof Error ? e.message : String(e);
+      console.error(`match-watcher: fixture ${fixtureId} threw, skipped this tick:`, e);
+      fixtureErrors.push({ fixture_id: fixtureId, message });
     }
   }
 
@@ -2363,6 +2403,7 @@ async function handleRequest(req: Request): Promise<Response> {
     goal_push_sends: goalPushSends,
     upsert_errors: upsertErrors,
     prior_errors: priorErrors,
+    fixture_errors: fixtureErrors,
     skipped_fixtures: skippedFixtures,
     date: today,
     active_leagues: activeLeagues,
@@ -2378,6 +2419,7 @@ async function handleRequest(req: Request): Promise<Response> {
   // pg_cron run log and CHECK 6 (mig 081) cover "is it running at all".
   const anomalous =
     leagueErrors.length > 0 || upsertErrors.length > 0 || priorErrors.length > 0 ||
+    fixtureErrors.length > 0 ||
     (fixtures.length > 0 && stateUpdates + skippedFixtures < fixtures.length);
   const hourlyBeat = fixtures.length > 0 && new Date().getUTCMinutes() === 0;
   if (anomalous || hourlyBeat) {

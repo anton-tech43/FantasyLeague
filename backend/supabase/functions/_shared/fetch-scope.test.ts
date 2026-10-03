@@ -35,7 +35,7 @@ Deno.test("the full-time body: two clubs, standings + fixtures only", () => {
   assertEquals(r.scope.teamIds, ["arsenal", "champions_league"]);
   assertEquals(wants(r.scope, "standings"), true);
   assertEquals(wants(r.scope, "fixtures"), true);
-  // The expensive ones stay unbought: twelve RSS feeds, squad, transfers.
+  // The expensive ones stay unbought: twelve RSS feeds, squad.
   assertEquals(wants(r.scope, "rss"), false);
   assertEquals(wants(r.scope, "squad"), false);
   assertEquals(wants(r.scope, "player_stats"), false);

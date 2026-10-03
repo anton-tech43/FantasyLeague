@@ -6,7 +6,7 @@
 //   1. API-Football reachable + season param accepted
 //   2. Today's PL fixtures + their team IDs
 //   3. Upcoming PL fixtures (next 7 days) + their team IDs
-//   4. Full 2025-26 PL team roster from API-Football
+//   4. Full current-season PL team roster from API-Football
 //   5. Our `teams` table contents
 //   6. Diff: teams in current PL that we DON'T have in our DB
 //   7. cron.job_run_details for match-watcher-1min (last 10 runs)
@@ -18,10 +18,13 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
+import { requireServiceAuth } from "../_shared/require-service-auth.ts";
+import { seasonForLeague } from "../_shared/league-helpers.ts";
 
 const API_FOOTBALL_BASE = "https://v3.football.api-sports.io";
 const PL_LEAGUE_ID = 39;
-const SEASON = 2025;
+// Computed, never pinned (QA-14): this said 2025 into the 2026-27 season.
+const SEASON = seasonForLeague(PL_LEAGUE_ID);
 
 serve(async (req) => {
   // Diagnostic endpoint — require service-role bearer. Deployed with
@@ -30,14 +33,10 @@ serve(async (req) => {
   // subscriber counts per team, 12-char APNs token prefixes, last 24h
   // of client_errors, net._http_response previews via the SECURITY
   // DEFINER get_pipeline_diagnostics RPC.
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const auth = req.headers.get("authorization") ?? "";
-  if (!serviceKey || auth !== `Bearer ${serviceKey}`) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+  // Shared gate (QA-14): constant-time compare, and the same three service
+  // credentials every other server-only function accepts.
+  const denied = requireServiceAuth(req);
+  if (denied) return denied;
 
   const supabase = getSupabaseClient();
   const out: Record<string, unknown> = {};
@@ -112,7 +111,7 @@ serve(async (req) => {
     })),
   };
 
-  // 3. Full 2025-26 PL team roster from API-Football
+  // 3. Full current-season PL team roster from API-Football
   const rosterResp = await fetch(
     `${API_FOOTBALL_BASE}/teams?league=${PL_LEAGUE_ID}&season=${SEASON}`,
     { headers: { "x-apisports-key": apiFootballKey } },
@@ -121,7 +120,8 @@ serve(async (req) => {
   const apiRoster: { id: number; name: string }[] = (rosterJson.response ?? []).map(
     (t: any) => ({ id: t.team?.id, name: t.team?.name }),
   );
-  out.pl_2025_26_roster = {
+  out.pl_roster = {
+    season: SEASON,
     http_status: rosterResp.status,
     api_errors: rosterJson.errors ?? null,
     count: apiRoster.length,

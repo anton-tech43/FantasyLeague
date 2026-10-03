@@ -11,6 +11,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
+import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 
 interface RegisterRequest {
   apns_token: string;
@@ -25,14 +26,10 @@ serve(async (req) => {
   // APNs token to dev_alert_devices and start receiving the internal
   // diagnostic pushes (which include team_id + app_version + OS info
   // + error messages — PII from real users).
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const auth = req.headers.get("authorization") ?? "";
-  if (!serviceKey || auth !== `Bearer ${serviceKey}`) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+  // Shared gate (QA-14): constant-time compare, and the same three service
+  // credentials every other server-only function accepts.
+  const denied = requireServiceAuth(req);
+  if (denied) return denied;
 
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });

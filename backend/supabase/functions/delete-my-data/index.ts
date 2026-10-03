@@ -69,15 +69,20 @@ serve(async (req) => {
 
     // Every deletion leaves a trace. This endpoint is unauthenticated by
     // necessity (a user deleting their data has no account to sign in to), so
-    // the only way a mass unsubscribe would ever be noticed is a row per call.
-    // The token is never logged, only whether something matched.
+    // the only way a mass unsubscribe would ever be noticed is a row per
+    // deletion. The token is never logged. A call that matched nothing writes
+    // nothing (F3): otherwise anyone could fill pipeline_health with junk
+    // tokens for free. The extra insert on a match is not an existence oracle
+    // worth closing: the probe that observes it has already deleted the row.
     const deleted = (data?.length ?? 0) + laDeleted;
-    await logPipelineEvent(supabase, {
-      stage: "token_register",
-      status: deleted > 0 ? "success" : "skipped",
-      target: "delete_my_data",
-      message: `deleted ${data?.length ?? 0} device_tokens + ${laDeleted} live_activity_tokens`,
-    });
+    if (deleted > 0) {
+      await logPipelineEvent(supabase, {
+        stage: "token_register",
+        status: "success",
+        target: "delete_my_data",
+        message: `deleted ${data?.length ?? 0} device_tokens + ${laDeleted} live_activity_tokens`,
+      });
+    }
 
     // Deliberately the same answer whether or not a row matched. The 404 that
     // used to live here was a token oracle: it let a caller ask "is this token

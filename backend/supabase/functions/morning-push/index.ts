@@ -12,7 +12,10 @@
 // timezone scheduling is V2.1.
 //
 // Pipeline:
-//   1. Query match_status_state for fixtures kicking off in next 18h.
+//   1. Read fixtures kicking off in the next 18h from data-fetcher's cache
+//      (raw_fetch_logs fixtures_next). It read match_status_state until
+//      2026-10-04, which since migration 094 is empty at 08:00 (match-watcher
+//      polls from 35 min before kickoff), so this push never fired (QA-06).
 //   2. For each fixture, find subscribed device_tokens for either team.
 //   3. Build a templated APNs payload — title "Game day at <Team>",
 //      body "<Home> vs <Away> at <HH:mm tz>. He'll be glued to it."
@@ -27,7 +30,8 @@
 import { competitionProse, COVERED_CUP_LEAGUES } from "../_shared/league-helpers.ts";
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
-import { deactivateTokens, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
+import { deactivateTokens, fetchAllRows, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
+import { cachedUpcomingFixtures } from "../_shared/cached-fixtures.ts";
 import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts";
 import { sendPushNotification, buildAPNsPayload } from "../_shared/apns-client.ts";
 import { hhmm, safeTz } from "../_shared/matchday-reminder-copy.ts";
@@ -46,6 +50,9 @@ interface Team {
   display_name: string;
   short_name: string | null;
   entity_type: string | null;
+  api_football_id?: number | null;
+  is_active?: boolean;
+  league_id?: number | null;
 }
 
 /// Format kickoff as "HH:MM" in the READER's zone (device_tokens.timezone,
@@ -71,55 +78,75 @@ serve(async (req) => {
     const now = new Date();
     const windowEnd = new Date(now.getTime() + 18 * 60 * 60 * 1000);
 
-    const { data: fixtures, error } = await supabase
-      .from("match_status_state")
-      .select("fixture_id, league_id, home_team_id, away_team_id, kickoff_time")
-      .gte("kickoff_time", now.toISOString())
-      .lte("kickoff_time", windowEnd.toISOString())
-      .order("kickoff_time", { ascending: true })
-      .returns<Fixture[]>();
-
-    if (error) {
-      console.error("morning-push: match_status_state query failed:", error);
-      return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    // Our entities by API id. Every known club, active or not: a cup opponent
+    // is in `teams` (inactive) so the tie resolves, exactly as match-watcher
+    // maps it. A fixture is ours when at least one side is ACTIVE.
+    const { data: teamRows, error: teamsErr } = await supabase
+      .from("teams")
+      .select("id, display_name, short_name, entity_type, api_football_id, is_active, league_id")
+      .not("api_football_id", "is", null)
+      .neq("entity_type", "tournament")
+      .returns<Team[]>();
+    if (teamsErr) {
+      console.error("morning-push: teams query failed:", teamsErr);
+      return new Response(JSON.stringify({ error: teamsErr.message }), { status: 500 });
     }
+    const teamByApiId = new Map<number, Team>((teamRows ?? []).map((t) => [t.api_football_id as number, t]));
+    // The competitions matchday-reminder covers (and match_status_state used to
+    // hold): home leagues of active entities plus the cups. A mid-season
+    // friendly in the cache is not "game day".
+    const leagues = new Set<number>([
+      ...(teamRows ?? []).filter((t) => t.is_active && t.league_id != null).map((t) => t.league_id as number),
+      ...COVERED_CUP_LEAGUES,
+    ]);
 
-    if (!fixtures || fixtures.length === 0) {
+    let cached;
+    try {
+      cached = await cachedUpcomingFixtures(supabase);
+    } catch (e) {
+      const message = (e as Error).message;
+      console.error("morning-push:", message);
+      return new Response(JSON.stringify({ error: message }), { status: 500 });
+    }
+    const fixtures: Array<Fixture & { home: Team; away: Team }> = [];
+    for (const f of cached) {
+      const kickoff = new Date(f.fixture.date);
+      if (isNaN(kickoff.getTime()) || kickoff < now || kickoff > windowEnd) continue;
+      if (!leagues.has(f.league?.id as number)) continue;
+      // An opponent never seen before (a first cup tie) has no row yet; name it
+      // from the feed. Its synthetic id matches no follower.
+      const side = (t: { id: number; name: string }): Team =>
+        teamByApiId.get(t.id) ??
+          { id: `api_${t.id}`, display_name: t.name, short_name: t.name, entity_type: "club", is_active: false };
+      const home = side(f.teams.home);
+      const away = side(f.teams.away);
+      if (!home.is_active && !away.is_active) continue;
+      fixtures.push({
+        fixture_id: f.fixture.id,
+        league_id: f.league?.id ?? null,
+        home_team_id: home.id,
+        away_team_id: away.id,
+        kickoff_time: kickoff.toISOString(),
+        home,
+        away,
+      });
+    }
+    fixtures.sort((a, b) => a.kickoff_time.localeCompare(b.kickoff_time));
+
+    if (fixtures.length === 0) {
       // Log so silence-on-a-match-day is distinguishable from
       // "genuinely no fixtures today" when reading the cron logs.
-      // Match-watcher polls every minute so any same-day fixture
-      // should be in match_status_state by 08:00 UTC; if this fires
-      // empty on a day we know matches exist, that's a separate bug.
       console.log("morning-push: no fixtures in next 18h, nothing to push");
       return new Response(JSON.stringify({ success: true, fixtures: 0, pushes: 0 }), {
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    // Collect every distinct team_id (home + away) so we can resolve
-    // display names + short names in a single query.
-    const teamIds = new Set<string>();
-    for (const f of fixtures) {
-      teamIds.add(f.home_team_id);
-      teamIds.add(f.away_team_id);
-    }
-    const { data: teamRows } = await supabase
-      .from("teams")
-      .select("id, display_name, short_name, entity_type")
-      .in("id", [...teamIds])
-      .returns<Team[]>();
-    const teamById = new Map<string, Team>((teamRows ?? []).map((t) => [t.id, t]));
-
     let totalPushes = 0;
     let totalFailures = 0;
 
     for (const fix of fixtures) {
-      const home = teamById.get(fix.home_team_id);
-      const away = teamById.get(fix.away_team_id);
-      if (!home || !away) {
-        console.warn(`morning-push: missing team row for fixture ${fix.fixture_id}`);
-        continue;
-      }
+      const { home, away } = fix;
 
       // PUSH-8: WC country fixtures are owned by matchday-reminder (07:00 UTC).
       // Skip them here so a followed country doesn't get that reminder AND this
@@ -145,18 +172,30 @@ serve(async (req) => {
       // Tokens subscribed to EITHER team (PL via team_id, WC via country_id).
       // Same .or() filter as notification-sender — legacy scalar OR the V2.2
       // multi-follow arrays. One row per device → one push.
+      // Paged (QA-04): one PostgREST response caps at 1000 rows.
       const teams = `${fix.home_team_id},${fix.away_team_id}`;
-      const { data: tokens } = await supabase
-        .from("device_tokens")
-        .select("apns_token, apns_environment, team_id, country_id, team_ids, country_ids, timezone")
-        .or(
-          `team_id.eq.${fix.home_team_id},country_id.eq.${fix.home_team_id},` +
-          `team_id.eq.${fix.away_team_id},country_id.eq.${fix.away_team_id},` +
-          `team_ids.ov.{${teams}},country_ids.ov.{${teams}}`,
-        )
-        .eq("is_active", true);
+      let tokens: Array<Record<string, unknown>>;
+      try {
+        tokens = await fetchAllRows((from, to) =>
+          supabase
+            .from("device_tokens")
+            .select("apns_token, apns_environment, team_id, country_id, team_ids, country_ids, timezone")
+            .or(
+              `team_id.eq.${fix.home_team_id},country_id.eq.${fix.home_team_id},` +
+              `team_id.eq.${fix.away_team_id},country_id.eq.${fix.away_team_id},` +
+              `team_ids.ov.{${teams}},country_ids.ov.{${teams}}`,
+            )
+            .eq("is_active", true)
+            .order("apns_token")
+            .range(from, to)
+        );
+      } catch (e) {
+        console.error(`morning-push: device_tokens read failed for fixture ${fix.fixture_id}:`, (e as Error).message);
+        totalFailures++;
+        continue;
+      }
 
-      if (!tokens || tokens.length === 0) continue;
+      if (tokens.length === 0) continue;
 
       // Body name-drops both teams + kickoff time, then teases the lineup as a
       // conversation starter — lineups drop ~60min before kickoff per
@@ -216,7 +255,7 @@ serve(async (req) => {
         );
         const env = (tk.apns_environment === "production" ? "production" : "development") as
           | "development" | "production";
-        recipients.push({ token: tk.apns_token, payload, env });
+        recipients.push({ token: tk.apns_token as string, payload, env });
       }
 
       const results = await mapWithConcurrency(recipients, PUSH_CONCURRENCY, async (r) => {
@@ -237,7 +276,7 @@ serve(async (req) => {
 
       // One aggregate morning_push row per fixture (was one row PER token).
       await logPipelineEvent(supabase, {
-        team_id: home.id,
+        team_id: home.is_active ? home.id : away.id, // FK: a synthetic opponent id is not in teams
         stage: "morning_push",
         status: fixtureFailed === 0 ? "success" : fixtureSent === 0 ? "failure" : "partial",
         duration_ms: Date.now() - startTime,

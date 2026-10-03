@@ -37,21 +37,22 @@ export function getSupabaseClient(): SupabaseClient {
   return _client;
 }
 
-/// PUSH-3: deactivate a token row when APNs reports it dead (410 Unregistered /
-/// 400 BadDeviceToken). Shared by ALL senders so a dead token stops being
-/// retried on every goal/match — previously only notification-sender did this,
-/// so WC-only followers' dead tokens were never cleaned. Best-effort; never
-/// throws. `table` picks the key column (device_tokens.apns_token vs
-/// live_activity_tokens.token).
-/// True when APNs reported this token permanently dead (410 Unregistered /
-/// 400 BadDeviceToken). Shared by the single-token and batched deactivation
-/// paths so the "what counts as dead" rule lives in exactly one place.
+/// PUSH-3: deactivate a token row when APNs reports it dead. Shared by ALL
+/// senders so a dead token stops being retried on every goal/match. `table`
+/// picks the key column (device_tokens.apns_token vs live_activity_tokens.token).
+///
+/// True when APNs reported THIS TOKEN permanently dead: 410 Unregistered, or a
+/// 400 whose reason names the token (BadDeviceToken / DeviceTokenNotForTopic).
+/// Any other 400 (BadTopic, TopicDisallowed, PayloadEmpty, BadPriority, ...) is
+/// a fault in OUR request — treating it as dead once deactivated every token
+/// that received a malformed push (QA-03). Rule lives here only.
+const DEAD_TOKEN_REASONS = new Set(["Unregistered", "BadDeviceToken", "DeviceTokenNotForTopic"]);
+
 export function isTokenDead(
   result: { success: boolean; status?: number; reason?: string },
 ): boolean {
   if (result.success) return false;
-  return result.status === 410 || result.status === 400 ||
-    result.reason === "Unregistered" || result.reason === "BadDeviceToken";
+  return result.status === 410 || DEAD_TOKEN_REASONS.has(result.reason ?? "");
 }
 
 export async function deactivateTokenIfDead(
@@ -75,14 +76,37 @@ export async function deactivateTokens(
   table: "device_tokens" | "live_activity_tokens",
   tokens: string[],
 ): Promise<void> {
-  if (tokens.length === 0) return;
-  try {
-    const col = table === "live_activity_tokens" ? "token" : "apns_token";
-    await supabase
-      .from(table)
-      .update({ is_active: false, updated_at: new Date().toISOString() })
-      .in(col, tokens);
-  } catch (_e) {
-    // best-effort; a logging/permission hiccup must not break the send loop
+  const col = table === "live_activity_tokens" ? "token" : "apns_token";
+  // Chunked: the `.in()` list rides in the URL, and the gateway caps a request
+  // line at about 8 KB. 25 Live Activity tokens (up to ~256 chars each) stay
+  // under it (QA-04). Best-effort; a failure is logged, never thrown, so the
+  // send loop is never broken by cleanup.
+  for (let i = 0; i < tokens.length; i += 25) {
+    const chunk = tokens.slice(i, i + 25);
+    try {
+      const { error } = await supabase
+        .from(table)
+        .update({ is_active: false, updated_at: new Date().toISOString() })
+        .in(col, chunk);
+      if (error) console.error(`deactivateTokens(${table}) failed for ${chunk.length} tokens: ${error.message}`);
+    } catch (e) {
+      console.error(`deactivateTokens(${table}) threw for ${chunk.length} tokens: ${e instanceof Error ? e.message : e}`);
+    }
+  }
+}
+
+/// Read every row of a query past PostgREST's 1000-row cap (QA-04). `page`
+/// builds the query for one [from, to] window; it must be stably ordered.
+/// Throws on a read error so a caller never fans out to a silently partial list.
+export async function fetchAllRows<T>(
+  page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
+  pageSize = 1000,
+): Promise<T[]> {
+  const rows: T[] = [];
+  for (let from = 0;; from += pageSize) {
+    const { data, error } = await page(from, from + pageSize - 1);
+    if (error) throw new Error(error.message);
+    rows.push(...(data ?? []));
+    if (!data || data.length < pageSize) return rows;
   }
 }

@@ -266,7 +266,7 @@ async function fetchAPIFootball(
   const season = seasonForLeague(leagueId);
 
   // Each endpoint carries the scope key that buys it, so a narrow full-time
-  // refresh (`only: ["standings","fixtures"]`) skips squad, transfers, injuries
+  // refresh (`only: ["standings","fixtures"]`) skips squad, injuries
   // and coachs without a second list to keep in step.
   const endpoints: Array<{ name: string; path: string; scope: FetchOnlyKey }> = [
     // next=20 (2026-09-09; was 10). Eight rows of calendar was about four weeks
@@ -276,7 +276,10 @@ async function fetchAPIFootball(
     { name: "fixtures_next", path: `/fixtures?team=${team.api_football_id}&next=20`, scope: "fixtures" },
     { name: "fixtures_last", path: `/fixtures?team=${team.api_football_id}&last=3`, scope: "fixtures" },
     { name: "injuries", path: `/injuries?team=${team.api_football_id}&season=${season}`, scope: "injuries" },
-    { name: "transfers", path: `/transfers?team=${team.api_football_id}`, scope: "transfers" },
+    // No /transfers (QA-15, 2026-10-04): it is the club's whole unordered
+    // history, 63 MB of raw_fetch_logs at nine calls a day per club, and no
+    // function, routine or database object read it. DATA_SOURCES.md says why
+    // it cannot answer "who signed this summer" anyway.
     { name: "squad", path: `/players/squads?team=${team.api_football_id}`, scope: "squad" },
     // Coaches: API-Football's authoritative manager source. Added 2026-05-11
     // after the team-page-generator was caught producing `<UNKNOWN>` for the

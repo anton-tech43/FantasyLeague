@@ -406,7 +406,6 @@ available", omit the next_fixture field entirely.`;
     team_id: team.id,
     stage: "generate",
     status: "success",
-    duration_ms: null,
     message: "team-season-state generated",
     content_item_id: null,
   });

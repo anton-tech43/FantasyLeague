@@ -13,8 +13,9 @@
 // column is written by a Claude routine; for WC countries it was written once
 // (24 Jun 2026) with group-stage fixtures only, so the whole knockout stage got
 // zero reminders; for PL clubs it carried 2025-26 data (A18). Fallback when the
-// API call fails: match_status_state rows already in the window (match-watcher
-// inserts today's fixtures from 00:00 UTC). Idempotent via
+// API call fails: data-fetcher's cached fixtures_next payloads in raw_fetch_logs
+// (QA-06; match_status_state, the old fallback, is empty at 07:00 since
+// match-watcher polls from 35 min before kickoff). Idempotent via
 // matchday_reminders_sent (PK team_id + kickoff_time). Deterministic copy, zero
 // Claude. morning-push checks matchday_reminders_sent and skips fixtures we
 // already covered, so a follower never gets both.
@@ -24,7 +25,8 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
-import { deactivateTokens, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
+import { deactivateTokens, fetchAllRows, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
+import { cachedUpcomingFixtures } from "../_shared/cached-fixtures.ts";
 import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts";
 import { buildAPNsPayload, sendPushNotification } from "../_shared/apns-client.ts";
 import {
@@ -49,7 +51,9 @@ interface Candidate {
   opponent: string;
   opponentId: string | null;
   kickoff: Date;
-  source: "api_football" | "match_status_state";
+  /// API-Football fixture id: the key for one push per device per match.
+  fixtureId: number;
+  source: "api_football" | "raw_fetch_logs";
   /// "League Cup (Carabao Cup), last 32". Empty for the Premier League, where
   /// naming the competition tells the reader nothing she does not assume.
   competition?: string;
@@ -118,7 +122,7 @@ serve(async (req) => {
 
   const dryRun = new URL(req.url).searchParams.get("dry_run") === "1";
   // ?mode=prep: the day-before push, "Leeds tomorrow", which opens Pre-game
-  // in My Turn (2026-10-02). Cron runs it at 07:00 and 08:00 UTC and it sends
+  // in My Turn (2026-10-02). Cron runs it at 08:00 and 09:00 UTC (migration 129) and it sends
   // only at 09:00 London, so it holds that hour across the clock change.
   const prep = new URL(req.url).searchParams.get("mode") === "prep";
   const supabase = getSupabaseClient();
@@ -158,10 +162,21 @@ serve(async (req) => {
   // claiming markers or rendering copy for teams nobody follows. Clubs are
   // followed via team_id/team_ids, countries via country_id/country_ids; union
   // all four (legacy scalars + V2.2 multi-follow arrays).
-  const { data: tokenRows } = await supabase
-    .from("device_tokens")
-    .select("team_id, team_ids, country_id, country_ids")
-    .eq("is_active", true);
+  // Paged (QA-04): unpaged, a 1001st follower's club silently got no reminder.
+  let tokenRows: Array<Record<string, unknown>>;
+  try {
+    tokenRows = await fetchAllRows((from, to) =>
+      supabase
+        .from("device_tokens")
+        .select("team_id, team_ids, country_id, country_ids")
+        .eq("is_active", true)
+        .order("apns_token")
+        .range(from, to)
+    );
+  } catch (e) {
+    // Nothing claimed yet, so a retry (or morning-push at 08:00) starts clean.
+    return json({ error: `device_tokens read: ${(e as Error).message}` }, 500);
+  }
   // Used only to decide who gets the reminder PUSH. The build-up FEED item is
   // written for ALL entities with a fixture in window (below), independent of
   // followers, so the feed is populated for whatever team the user views.
@@ -173,56 +188,54 @@ serve(async (req) => {
     for (const c of (r.country_ids as string[] | null) ?? []) followed.add(c);
   }
 
-  // ── Fixture source: API-Football per active league, match_status_state as
+  // ── Fixture source: API-Football per active league, data-fetcher's cache as
   //    fallback. One API call per league per day (Pro plan: 7 500/day).
   const apiKey = Deno.env.get("API_FOOTBALL_KEY") ?? "";
   const candidates: Candidate[] = [];
   const sourceByLeague: Record<string, string> = {};
+  let cached: Awaited<ReturnType<typeof cachedUpcomingFixtures>> | null = null;
   for (const leagueId of leagueIds) {
-    const apiFixtures = apiKey ? await fetchLeagueFixtures(leagueId, now, windowEnd, apiKey) : null;
-    if (apiFixtures) {
-      sourceByLeague[String(leagueId)] = "api_football";
-      for (const fx of apiFixtures) {
-        const kickoff = new Date(fx.fixture.date);
-        if (isNaN(kickoff.getTime()) || kickoff <= now || kickoff >= windowEnd) continue;
-        if (prep ? !isLondonTomorrow(kickoff, now) : false) continue;
-        const homeId = idByApiId.get(fx.teams.home.id) ?? null;
-        const awayId = idByApiId.get(fx.teams.away.id) ?? null;
-        // One candidate per OUR team in the fixture (a PL derby yields two —
-        // each side's followers get their own reminder).
-        const competition = fixtureCompetition(leagueId, fx.league?.round);
-        if (homeId) {
-          candidates.push({ teamId: homeId, opponent: awayId ? (nameById.get(awayId) ?? fx.teams.away.name) : fx.teams.away.name, opponentId: awayId, kickoff, source: "api_football", competition });
-        }
-        if (awayId) {
-          candidates.push({ teamId: awayId, opponent: homeId ? (nameById.get(homeId) ?? fx.teams.home.name) : fx.teams.home.name, opponentId: homeId, kickoff, source: "api_football", competition });
-        }
+    let leagueFixtures = apiKey ? await fetchLeagueFixtures(leagueId, now, windowEnd, apiKey) : null;
+    let source: Candidate["source"] = "api_football";
+    if (!leagueFixtures) {
+      // Read once, filter per league. A failed cache read leaves this league
+      // without candidates, which the response reports by source.
+      try {
+        cached ??= await cachedUpcomingFixtures(supabase);
+      } catch (e) {
+        console.error("matchday-reminder: cache fallback failed:", (e as Error).message);
+        cached = [];
       }
-      continue;
+      leagueFixtures = cached.filter((f) => f.league?.id === leagueId);
+      source = "raw_fetch_logs";
     }
-    // Fallback: whatever match-watcher already wrote for the window. Covers
-    // same-day fixtures (inserted from 00:00 UTC) but not tomorrow's early ones.
-    sourceByLeague[String(leagueId)] = "match_status_state";
-    const { data: stateRows } = await supabase
-      .from("match_status_state")
-      .select("home_team_id, away_team_id, kickoff_time")
-      .eq("league_id", leagueId)
-      .gt("kickoff_time", now.toISOString())
-      .lt("kickoff_time", windowEnd.toISOString());
-    for (const r of stateRows ?? []) {
-      const kickoff = new Date(r.kickoff_time as string);
-      if (prep && !isLondonTomorrow(kickoff, now)) continue;
-      const homeId = r.home_team_id as string;
-      const awayId = r.away_team_id as string;
-      // match_status_state carries no round, so the competition is named alone.
-      const competition = fixtureCompetition(leagueId, undefined);
-      if (nameById.has(homeId)) candidates.push({ teamId: homeId, opponent: nameById.get(awayId) ?? awayId, opponentId: awayId, kickoff, source: "match_status_state", competition });
-      if (nameById.has(awayId)) candidates.push({ teamId: awayId, opponent: nameById.get(homeId) ?? homeId, opponentId: homeId, kickoff, source: "match_status_state", competition });
+    sourceByLeague[String(leagueId)] = source;
+    for (const fx of leagueFixtures) {
+      const kickoff = new Date(fx.fixture.date);
+      if (isNaN(kickoff.getTime()) || kickoff <= now || kickoff >= windowEnd) continue;
+      if (prep ? !isLondonTomorrow(kickoff, now) : false) continue;
+      const homeId = idByApiId.get(fx.teams.home.id) ?? null;
+      const awayId = idByApiId.get(fx.teams.away.id) ?? null;
+      // One candidate per OUR team in the fixture (a PL derby yields two —
+      // each side's followers get their own reminder).
+      const competition = fixtureCompetition(leagueId, fx.league?.round);
+      const fixtureId = fx.fixture.id;
+      if (homeId) {
+        candidates.push({ teamId: homeId, opponent: awayId ? (nameById.get(awayId) ?? fx.teams.away.name) : fx.teams.away.name, opponentId: awayId, kickoff, fixtureId, source, competition });
+      }
+      if (awayId) {
+        candidates.push({ teamId: awayId, opponent: homeId ? (nameById.get(homeId) ?? fx.teams.home.name) : fx.teams.home.name, opponentId: homeId, kickoff, fixtureId, source, competition });
+      }
     }
   }
 
   let remindersSent = 0;
   const results: Array<Record<string, unknown>> = [];
+  // QA-18: a derby yields one candidate per side, and a device following both
+  // clubs matched both. Tokens already reminded for a fixture in this run are
+  // skipped for its second side, so she gets one push (the home side's copy,
+  // as candidates go home first — morning-push picks home the same way).
+  const remindedByFixture = new Map<number, Set<string>>();
 
   for (const cand of candidates) {
     const teamId = cand.teamId;
@@ -337,13 +350,33 @@ serve(async (req) => {
       }
 
       // Send to this entity's followers: club via team_id/team_ids, country via
-      // country_id/country_ids (legacy scalars OR V2.2 arrays). One row per
-      // device (UNIQUE apns_token) → one push even if it follows both sides.
-      const { data: tokens } = await supabase
-        .from("device_tokens")
-        .select("apns_token, apns_environment, timezone")
-        .or(`team_id.eq.${teamId},team_ids.cs.{${teamId}},country_id.eq.${teamId},country_ids.cs.{${teamId}}`)
-        .eq("is_active", true);
+      // country_id/country_ids (legacy scalars OR V2.2 arrays). Paged (QA-04).
+      let tokenPage: Array<Record<string, unknown>>;
+      try {
+        tokenPage = await fetchAllRows((from, to) =>
+          supabase
+            .from("device_tokens")
+            .select("apns_token, apns_environment, timezone")
+            .or(`team_id.eq.${teamId},team_ids.cs.{${teamId}},country_id.eq.${teamId},country_ids.cs.{${teamId}}`)
+            .eq("is_active", true)
+            .order("apns_token")
+            .range(from, to)
+        );
+      } catch (e) {
+        // Release the claim: recipients unknown, nothing sent, so the next run
+        // (or morning-push's fallback) may still remind for this fixture.
+        await supabase
+          .from(prep ? "prep_reminders_sent" : "matchday_reminders_sent")
+          .delete()
+          .eq("team_id", teamId)
+          .eq("kickoff_time", kickoff.toISOString());
+        results.push({ team_id: teamId, kickoff: kickoff.toISOString(), error: `device_tokens read: ${(e as Error).message}` });
+        continue;
+      }
+      const reminded = remindedByFixture.get(cand.fixtureId) ?? new Set<string>();
+      remindedByFixture.set(cand.fixtureId, reminded);
+      const tokens = tokenPage.filter((t) => !reminded.has(t.apns_token as string));
+      for (const t of tokens) reminded.add(t.apns_token as string);
 
       // Mig 082: kickoff is rendered in each READER's zone. Followers cluster
       // into a handful of zones, so build one payload per zone (not per device)
@@ -373,7 +406,7 @@ serve(async (req) => {
         }
         return p;
       };
-      const sendResults = await mapWithConcurrency(tokens ?? [], PUSH_CONCURRENCY, async (t) => {
+      const sendResults = await mapWithConcurrency(tokens, PUSH_CONCURRENCY, async (t) => {
         const env = t.apns_environment === "production" ? "production" : "development";
         const res = await sendPushNotification(t.apns_token as string, payloadFor(t.timezone as string | null), env);
         return { token: t.apns_token as string, res };

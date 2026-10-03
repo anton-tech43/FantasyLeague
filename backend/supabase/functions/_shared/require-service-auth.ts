@@ -36,6 +36,18 @@
 // Returns a 401 Response when the caller is NOT authorised (the handler
 // should `return` it immediately). Returns null when authorised.
 
+/// Constant-time string equality (QA-14). `===` / Array.includes return at the
+/// first differing character, which leaks how much of a guess was right. The
+/// length check returns early, but the length of a key is not the secret.
+export function timingSafeEqual(a: string, b: string): boolean {
+  const x = new TextEncoder().encode(a);
+  const y = new TextEncoder().encode(b);
+  if (x.length !== y.length) return false;
+  let diff = 0;
+  for (let i = 0; i < x.length; i++) diff |= x[i] ^ y[i];
+  return diff === 0;
+}
+
 export function requireServiceAuth(req: Request): Response | null {
   const presented = (req.headers.get("Authorization") ?? "")
     .replace(/^Bearer\s+/i, "")
@@ -47,7 +59,11 @@ export function requireServiceAuth(req: Request): Response | null {
     Deno.env.get("CRON_AUTH_KEY"),
   ].filter((k): k is string => !!k && k.length > 0);
 
-  if (presented.length > 0 && accepted.includes(presented)) {
+  // Compare against every key without short-circuiting, so the time taken
+  // does not say which one matched.
+  let ok = false;
+  for (const k of accepted) ok = timingSafeEqual(presented, k) || ok;
+  if (presented.length > 0 && ok) {
     return null;
   }
 

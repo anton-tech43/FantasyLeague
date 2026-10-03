@@ -111,7 +111,10 @@ serve(async (req) => {
     )
     .in("team_id", plSlugs)
     .gte("created_at", sinceIso)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    // A concatenated select string defeats supabase-js's column-type parser
+    // (rows came out typed as GenericStringError); declare the row shape.
+    .returns<Array<Record<string, unknown>>>();
 
   // 3. Audit each item.
   const findings: Array<Record<string, unknown>> = [];
