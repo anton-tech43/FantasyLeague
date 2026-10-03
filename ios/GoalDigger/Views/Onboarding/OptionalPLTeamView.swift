@@ -48,6 +48,9 @@ struct OptionalPLTeamView: View {
                 .font(.onboardingTitle)
                 .foregroundColor(.textOnDark)
                 .multilineTextAlignment(.center)
+                // Keep the whole question when the second-club card appears;
+                // the club list below gives up the height instead.
+                .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, Layout.screenPadding)
 
             Text("Everything in the app is built around \(appState.pPossessive) club.")
@@ -89,6 +92,12 @@ struct OptionalPLTeamView: View {
             ScrollView {
                 if typeSize.isAccessibilitySize {
                     header.padding(.bottom, 16)
+                    // Pinned, this card took half the screen at these sizes.
+                    if !picks.isEmpty {
+                        addOwnToggle
+                            .padding(.horizontal, Layout.screenPadding)
+                            .padding(.bottom, 16)
+                    }
                 }
                 LazyVStack(spacing: Layout.cardSpacing) {
                     ForEach(filteredTeams) { team in
@@ -136,7 +145,7 @@ struct OptionalPLTeamView: View {
             }
 
             VStack(spacing: 12) {
-                if !picks.isEmpty {
+                if !picks.isEmpty && !typeSize.isAccessibilitySize {
                     addOwnToggle
                 }
 
