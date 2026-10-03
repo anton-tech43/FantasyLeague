@@ -2,7 +2,16 @@ import SwiftUI
 
 struct OnboardingFlow: View {
     @Environment(AppState.self) var appState
-    @State private var step: OnboardingStep = .welcome
+    @State private var step: OnboardingStep = {
+        #if DEBUG
+        // `-gdOnboardingStep 3` opens on that step (3 = his club), for the
+        // screenshot harness: simctl cannot type the names to get there.
+        let args = ProcessInfo.processInfo.arguments
+        if let i = args.firstIndex(of: "-gdOnboardingStep"), i + 1 < args.count,
+           let n = Int(args[i + 1]), let s = OnboardingStep(rawValue: n) { return s }
+        #endif
+        return .welcome
+    }()
 
     /// Onboarding step order (V2.1, post World Championship).
     ///
