@@ -51,6 +51,18 @@ psql "$SUPABASE_DB_URL" -c 'select 1'
 **If the DB is unreachable** (no secret, auth fail, timeout): that IS the finding.
 Report it and push — do not skip the pass silently.
 
+**Known failure mode (first seen 2026-10-06):** `gd-env`'s network egress is HTTPS-to-an-
+allowlist only. Raw Postgres on port 5432 (and 6543) to the pooler host times out even
+though `SUPABASE_DB_URL` and credentials are fine — this is the environment's network policy,
+not the database being down. If `psql` hangs/times out but you haven't confirmed the host
+itself is unreachable, check whether PostgREST (`./scripts/db-health.sh` section 1) and the
+Supabase Data API (`$SUPABASE_URL/rest/v1/<table>` over HTTPS with `$SUPABASE_SERVICE_KEY`,
+same host, not blocked) still work — they cover A1, most of A4, and part of A6/A7 without a
+raw SQL session. They do **not** cover anything in `cron.*`, `pg_stat_activity`, `pg_proc`, or
+`information_schema` (no `public`-schema REST equivalent) — A2, A3, and the rest of A8 have no
+fallback and stay blocked until a human adds the pooler host to this environment's allowed
+network egress (environment settings → Network access).
+
 JSONB null trap (from CLAUDE.md): `WHERE x IS NULL` does not match a JSONB literal
 `null`; use `WHERE x IS NULL OR jsonb_typeof(x) = 'null'`.
 

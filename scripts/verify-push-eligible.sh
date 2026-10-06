@@ -16,8 +16,12 @@ set -euo pipefail
 LOOKBACK="${1:-3 hours}"
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-set -a && source "$HERE/backend/.env" && set +a
+# In the cloud (routines) backend/.env is absent and SUPABASE_DB_URL is injected
+# as an env var; source the file only when it exists so the script also runs there.
+[ -f "$HERE/backend/.env" ] && { set -a && source "$HERE/backend/.env" && set +a; }
 PSQL="/opt/homebrew/opt/libpq/bin/psql"
+[ -x "$PSQL" ] || PSQL=psql
+export PGCONNECT_TIMEOUT=10
 
 echo "=== push-eligible contract check — last $LOOKBACK ==="
 
