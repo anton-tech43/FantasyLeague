@@ -1,3 +1,5 @@
+> Historical (2026-06). Current: ARCHITECTURE.md + STATUS.md.
+
 # WC Group-Stage Context + Stakes-Aware Pushes — Design
 
 **Status:** design (approved direction; not yet built)

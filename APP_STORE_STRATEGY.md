@@ -1,3 +1,5 @@
+> Historical (2026-02). Current: ARCHITECTURE.md + STATUS.md.
+
 # Goal Digger — App Store Listing & Marketing Strategy
 
 **Version:** 1.0

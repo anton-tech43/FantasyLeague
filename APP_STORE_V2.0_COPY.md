@@ -1,3 +1,5 @@
+> Historical (2026-05). Current: ARCHITECTURE.md + STATUS.md.
+
 # App Store V2.0 Submission Copy
 
 For the V2.0 update submission. The full strategy is in `APP_STORE_STRATEGY.md`; this file is what gets pasted into App Store Connect for the V2.0 version.

@@ -1,3 +1,5 @@
+> Historical (2026-06). Current: ARCHITECTURE.md + STATUS.md.
+
 # What's new — 2.0.3 + mid-WC backend (June 2026)
 
 A single session's worth of World Cup improvements and live-fix work. Two halves:

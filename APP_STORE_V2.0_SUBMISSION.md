@@ -1,3 +1,5 @@
+> Historical (2026-05). Current: ARCHITECTURE.md + STATUS.md. Its Vault key rule is reversed: IOS_GOTCHAS.md §14.
+
 # App Store V2.0 Submission Checklist
 
 Step-by-step for the manual submission of V2.0. Run this whole thing in one sitting on your Mac. Target: submit by **June 4** to leave a 7-day Apple review buffer before June 11 WC kickoff.

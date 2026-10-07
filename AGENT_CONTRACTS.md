@@ -1,3 +1,5 @@
+> Historical (2026-04). Current: ARCHITECTURE.md + STATUS.md.
+
 # Goal Digger — Agent Contracts & Ownership Map
 
 **Version:** 1.1

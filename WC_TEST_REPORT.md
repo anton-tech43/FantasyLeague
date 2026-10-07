@@ -1,3 +1,5 @@
+> Historical (2026-05). Current: ARCHITECTURE.md + STATUS.md.
+
 # V2.0 World Cup — Test Report for Anton
 
 **Built:** May 17, 2026 (autonomous push)

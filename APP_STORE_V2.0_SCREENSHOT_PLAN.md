@@ -1,3 +1,5 @@
+> Historical (2026-05). Current: ARCHITECTURE.md + STATUS.md.
+
 # App Store V2.0 Screenshot Plan
 
 For the V2.0 World Cup update submission. Capture 6 fresh screenshots — 5 reframed from V1 + 1 new (the WC country picker, which is the headline V2.0 feature).

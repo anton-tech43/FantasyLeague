@@ -1,3 +1,5 @@
+> Historical (2026-04). Current: ARCHITECTURE.md + STATUS.md.
+
 # Goal Digger — Product Requirements Document (PRD)
 
 **Version:** 2.0

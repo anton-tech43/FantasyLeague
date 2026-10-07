@@ -1,3 +1,5 @@
+> Historical (2026-02). Current: ARCHITECTURE.md + STATUS.md.
+
 # Goal Digger — Golden Content Examples
 
 **Version:** 1.0

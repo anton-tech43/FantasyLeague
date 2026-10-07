@@ -1,3 +1,5 @@
+> Historical (2026-04). Current: ARCHITECTURE.md + STATUS.md.
+
 # Goal Digger — Prompt Engineering Guide
 
 **Version:** 1.1

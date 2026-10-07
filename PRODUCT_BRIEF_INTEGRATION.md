@@ -1,3 +1,5 @@
+> Historical (2026-04). Current: ARCHITECTURE.md + STATUS.md.
+
 # Goal Digger — Product Brief Integration Plan
 
 **Date:** April 6, 2026
