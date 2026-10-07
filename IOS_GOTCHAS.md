@@ -164,7 +164,7 @@ UIScrollView.appearance().backgroundColor = UIColor(deepMauve)
 
 ## 14. Cron auth fails silently, and the cron key is a random secret, never a JWT
 
-**Rule reversed on 2026-10-04.** Until then this section said the Vault key had to be the legacy `service_role` JWT. That JWT sat in the public git history, so it was replaced with a random 80-character secret. Following the old advice would put a public credential back. `./scripts/verify-cron-auth.sh` now fails if Vault holds a JWT.
+**Rule reversed on 2026-10-05.** Until then this section said the Vault key had to be the legacy `service_role` JWT. It is now a random 80-character secret, and `./scripts/verify-cron-auth.sh` fails if Vault holds a JWT. Never put a JWT back.
 
 **Symptom:** Push pipeline silently dies. pg_cron reports `status=succeeded` for every tick. But `net._http_response` shows 401 on every cron call. Functions never run. Lasts for days because `cron.job_run_details` is the wrong place to watch.
 
@@ -187,7 +187,7 @@ If `cron.job_run_details.status='succeeded'` but `net._http_response.status_code
 
 **Fix:** `./scripts/rotate-cron-key.sh`. It generates a new key, sets `CRON_AUTH_KEY` and Vault back to back, updates `backend/.env`, and compares the digests of all three. Never write a key into one store by hand.
 
-**Sources:** Phase 27.3 (push pipeline dead May 11 → May 17) and Lessons 56/57 in IMPLEMENTATION_PROGRESS.md for the original silent failure; the 2026-10-04 QA pass for the rotation.
+**Sources:** Phase 27.3 (push pipeline dead May 11 → May 17) and Lessons 56/57 in IMPLEMENTATION_PROGRESS.md for the original silent failure; the 2026-10-04 QA pass for the rotation (applied 2026-10-05).
 
 ---
 
@@ -242,7 +242,7 @@ Never trust "ORDER BY ts DESC LIMIT 1" to find anything other than the row you j
 
 - **Live pushes (kickoff, goal, half-time, full time):** sent directly by `match-watcher` (`sendPlayingTeamPush`). Nothing is written to `content_items`. Who gets which is decided by `_shared/push-tiers.ts`: a goal reaches every tier, kickoff and half-time need tier 2, early domestic cup rounds get no kickoff or half-time push, and semi-finals and finals go to everyone. Half-time and full-time pushes end with a line to say.
 - **Live briefs:** `gd-live-brief` → `live_match_briefs` → iOS polls `live-brief-current` every 60 s → the live box at the top of the club feed (tier 2+). **No push by design.**
-- **Matchday and post-match articles:** `gd-matchday` → `content_items` → `notification-sender` → push.
+- **Matchday and post-match articles:** `gd-matchday` → `content_items`, **feed-only**. `post_news.sh` (routines repo) sets `push_eligible=false` on every Premier League matchday article because match-watcher already sent the full-time push; the article is what she opens from it. `notification-sender` only selects `push_eligible=true`.
 
 The Live Activity on the lock screen is a fourth surface, updated by `match-watcher` through the Live Activity tokens.
 

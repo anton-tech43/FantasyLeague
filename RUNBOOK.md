@@ -526,7 +526,7 @@ ORDER BY last_checked DESC LIMIT 5;
 ### Step 3 — Did a content_item land? (news, matchday and post-match items)
 
 ```sql
-SELECT id, team_id, type, LEFT(headline, 60) AS headline, status, pushed_at
+SELECT id, team_id, type, LEFT(headline, 60) AS headline, status, push_eligible, pushed_at
 FROM content_items
 WHERE team_id IN ('<user team>', '<opponent>')
   AND created_at > NOW() - INTERVAL '48 hours'
@@ -534,7 +534,8 @@ ORDER BY created_at DESC LIMIT 10;
 ```
 
 **No rows:** routine never produced content. Either the routine (in `goaldigger-routines` repo) didn't fire, or its post-script validator rejected.
-**Rows exist but all `pushed_at IS NULL`:** notification-sender hasn't picked them up. Go to Step 4.
+**Rows with `push_eligible = false`:** feed-only by design (matchday articles, rumours, teasers). `pushed_at` stays NULL; for a match, the full-time push came from match-watcher (Step 5).
+**Rows exist, `push_eligible = true`, but `pushed_at IS NULL`:** notification-sender hasn't picked them up. Go to Step 4.
 **Rows exist, `pushed_at` set:** APNs was attempted. Go to Step 5.
 
 ### Step 4 — Why hasn't notification-sender swept?
@@ -560,7 +561,7 @@ ORDER BY created_at DESC LIMIT 20;
 ```
 
 - `success`, "N sent, 0 failed" → APNs accepted. iOS side issue (see Step 6).
-- Failures with 410, `Unregistered`, `BadDeviceToken` or `DeviceTokenNotForTopic` → the token is dead and notification-sender deactivates it (`device_tokens.is_active = false`). The user re-registers on the next app launch, which requests a token every time.
+- Failures with 410, `Unregistered`, `BadDeviceToken` or `DeviceTokenNotForTopic` → the token is dead and notification-sender deactivates it (`device_tokens.is_active = false`). From 2.3 the app requests a token on every launch, so the user re-registers on the next open; on 2.2 the device only comes back after a follow change.
 - Other 400s → a payload or topic problem, not a dead token. Tokens are kept.
 - 403 → APNs key rotated or expired. Check the `APNS_KEY_ID`/`APNS_TEAM_ID`/`APNS_KEY_P8` secrets.
 
