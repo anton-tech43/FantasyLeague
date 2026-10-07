@@ -23,7 +23,7 @@ python3 tools/audit/check.py $D now                     # -> $D/check-now.json
 
   Anything it can't decide goes under `manual`.
 - `REVIEW_BRIEF.md` is the "does this make sense to her" rubric for reviewer agents, five clubs each. Verify every finding before acting on it.
-- **Simulator trap**: install the newest build: `ls -td ~/Library/Developer/Xcode/DerivedData/GoalDigger-*/...` (`-t`). An unsorted `ls` installs a stale build, and every preset is then ignored.
+- **Simulator trap**: install the build you just made, not one a DerivedData glob finds: get `TARGET_BUILD_DIR` from `xcodebuild -showBuildSettings` with the same flags as the build (`IOS_GOTCHAS.md` §19). A glob can install a stale build, and every preset is then ignored.
 
 ## Portraits (`tools/portraits/import_sheet.py`)
 
