@@ -125,6 +125,10 @@ Original design: `V2.2_DESIGN_MULTI_TEAM.md` (historical).
 
 ## 5. Push & live-match pipeline (deterministic Edge + pg_cron)
 
+> **What may buzz her phone, who gets it and why: `PUSH_RULES.md`.** That page is
+> the contract and is checked against the code by `scripts/verify-push-rules.sh`.
+> This section is the mechanism; that page is the reasoning.
+
 There is **no** content → review → send chain in production for pushes. The live paths:
 
 - **`match-watcher`** (`match-watcher-1min`, every minute). A tick lease (migration 103)

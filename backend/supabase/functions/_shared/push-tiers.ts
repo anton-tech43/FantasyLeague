@@ -1,6 +1,11 @@
 // _shared/push-tiers.ts
 // Which tiers receive a live match push (kickoff / goal / half-time / result).
 //
+// The reasoning behind each number below — and every other path that can reach a
+// lock screen — is in /PUSH_RULES.md §1. Change a floor in BASE and
+// scripts/verify-push-rules.sh will fail until that page agrees. Keep them in
+// the same commit.
+//
 // Until now every follower of a playing team got all four, which was tolerable
 // while the only competitions were the Premier League and a World Championship
 // he had chosen to follow. It is not tolerable for a League Cup second-round

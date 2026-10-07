@@ -25,6 +25,29 @@ If you're the AI assistant reading this: when a user asks for a "backfill" or "r
 
 ---
 
+## ⛔ Hard rule: a push has to earn its place — read `/PUSH_RULES.md`
+
+**Before adding, widening or un-pausing any notification, read `/PUSH_RULES.md`.**
+It is the only page that holds the whole picture: every path that can reach a lock
+screen, who gets it and why; the six things we publish and deliberately never
+announce; and the seven reasons a finished card is downgraded to feed-only.
+
+The default is silence. A push is the only thing in this product that takes her
+attention without being asked, so it has to earn its place against a specific
+moment in her evening — "it is interesting" is not that moment. Every entry in
+that page's §3 is a push that shipped first and was walked back after a real
+complaint.
+
+Decide tiers in code, never in a prompt: on 2026-05-22 a prompt-level rule was
+read and ignored on its first live fire and two celebrity-reaction items pushed
+to subscribers.
+
+`./scripts/verify-push-rules.sh` fails if the code and that page disagree, so
+update both in the same change. `./scripts/verify-push-eligible.sh` is the
+after-the-fact check that nothing marked feed-only nonetheless buzzed.
+
+---
+
 ## ⛔ Hard rule: never trust one feed for a fact a customer would notice
 
 **Read `/DATA_SOURCES.md` before writing code that reads an upstream feed, and before believing a number the app is showing.** It records field by field what API-Football gets right and what it gets wrong, with evidence and dates.
