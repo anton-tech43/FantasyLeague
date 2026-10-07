@@ -38,9 +38,9 @@ You need to update / fill / fix a field across N team_pages rows (or any cross-r
 │   │
 │   └── For a recurring need (daily / weekly)
 │       → Build a permanent routine, not a manual fire of the Edge Function.
-│         See the routines already in production: gd-news, gd-news-wc,
-│         gd-insider, gd-season-state, gd-quiz, gd-player-dossier, gd-matchday,
-│         gd-live-brief. Same pattern: PROMPT.md in
+│         The routines in production and their schedules: the routines
+│         README, section "Schedules, in one place" (gd-matchday and
+│         gd-live-brief are fired by match-watcher). Same pattern: PROMPT.md in
 │         `anton-tech43/goaldigger-routines`, scheduled cron, post_*.sh
 │         writes to Supabase.
 ```
@@ -53,10 +53,9 @@ These functions call `_shared/claude-client.ts` → `https://api.anthropic.com/v
 
 | Function | Status | Burn rate when fired |
 |---|---|---|
-| `team-page-generator` | **ACTIVE — only steady-state burner** | ~5K in + ~2K out / call ≈ $0.045 / team page (Sonnet 4.5). Triggered on-demand + via data-fetcher. |
+| `team-page-generator` | **On demand only.** `full` mode requires a `team_id`; no cron fires it. | `full`: ~5K in + ~2K out / call ≈ $0.045 / team page (Sonnet 4.5). data-fetcher triggers only `dynamic_only`, which makes no Claude call. The weekly prose comes from the `gd-team-page` routine. |
 | `content-generator` | Gated off via `CONTENT_GENERATOR_ENABLED` env var (Lesson 17 — routines took over). Don't re-enable without a routine migration plan. | n/a — dormant |
 | `content-reviewer` | Gated off (routines publish direct). Used only by manual smoke tests. | n/a — dormant |
-| `backfill-analogies` | One-off manual backfill. Verify before running. | varies |
 | `team-season-state-generator` | Migrated to `gd-season-state` routine; the function should not be re-fired. | n/a — dormant |
 
 If you're about to fire ANY of these in a loop across teams, **stop**. Re-check the decision tree above.
@@ -69,14 +68,7 @@ The routines pipeline. These run inside a claude.ai cloud session — Claude ins
 
 Lives in: `anton-tech43/goaldigger-routines` repo. Scheduled via claude.ai/code/routines.
 
-| Routine | Cadence | Surface |
-|---|---|---|
-| gd-news / gd-news-wc | Twice daily (`30 6,18 * * *` UTC) | News feed items |
-| gd-insider | Weekdays 02:00 UTC | Insider headlines |
-| gd-season-state | Daily 06:30 UTC | Season-state primer + welcome lines |
-| gd-quiz | Weekly Saturdays | Saturday quiz |
-| gd-player-dossier | On-demand | Player detail card |
-| gd-matchday / gd-live-brief | Triggered by match-watcher | Match-day pushes |
+The list of routines and their schedules is kept in one place, the routines README: [Schedules, in one place](https://github.com/anton-tech43/goaldigger-routines#schedules-in-one-place). Do not copy it here. gd-matchday and gd-live-brief have no schedule; match-watcher fires them.
 
 Routines pay zero API credits per invocation. The right home for any cross-team backfill that needs LLM judgement is a **one-off** routine: write `BACKFILL_PROMPT.md`, schedule it once via `RemoteTrigger` with `run_once_at`, let it run.
 
@@ -90,7 +82,7 @@ Before firing anything cross-team, run this in psql to confirm whether the data 
 SELECT source, count(*) AS rows,
        sum(octet_length(data::text))/1024 AS total_kb
 FROM raw_fetch_logs
-WHERE team_id = 'sweden'  -- pick any representative team
+WHERE team_id = 'arsenal'  -- pick any representative team
   AND fetched_at > now() - interval '7 days'
 GROUP BY source
 ORDER BY source;
@@ -141,9 +133,9 @@ curl -sS --max-time 10 -X POST https://api.anthropic.com/v1/messages \
 
 ---
 
-## V2.1 ticket — migrate `team-page-generator` to a routine
+## V2.1 ticket: migrate `team-page-generator` to a routine (partly done)
 
-The end state: `team-page-generator` becomes `gd-team-pages` (a daily cloud routine that loops teams needing regen + an in-session Claude call) + `accept-team-page-payload` (a thin Edge Function that does only the JSONB stitch). Once that ships, the last steady-state API-credit burner is gone and this whole document becomes redundant.
+Done: the weekly prose moved to the `gd-team-page` routine, and the 2-hourly refresh is `dynamic_only`, which makes no Claude call. Remaining: retire `full` mode, the one path left in this function that calls Claude.
 
 Until that lands, the rules above stand.
 
