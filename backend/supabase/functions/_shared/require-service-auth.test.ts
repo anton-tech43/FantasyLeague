@@ -9,15 +9,17 @@ Deno.test("timingSafeEqual", () => {
   assertEquals(timingSafeEqual("", ""), true);
 });
 
-Deno.test("requireServiceAuth accepts any configured service key, nothing else (QA-14)", () => {
+Deno.test("requireServiceAuth accepts the service key and the cron key, nothing else (QA-14)", () => {
   Deno.env.set("SERVICE_KEY", "svc-key");
   Deno.env.set("CRON_AUTH_KEY", "cron-key");
-  Deno.env.delete("SUPABASE_SERVICE_ROLE_KEY");
+  // The auto-injected legacy key is not a credential for these functions.
+  Deno.env.set("SUPABASE_SERVICE_ROLE_KEY", "legacy-key");
   const req = (auth?: string) =>
     new Request("http://x", auth === undefined ? {} : { headers: { Authorization: auth } });
   assertEquals(requireServiceAuth(req("Bearer svc-key")), null);
   assertEquals(requireServiceAuth(req("Bearer cron-key")), null);
   assertEquals(requireServiceAuth(req("Bearer anon-key"))?.status, 401);
+  assertEquals(requireServiceAuth(req("Bearer legacy-key"))?.status, 401);
   assertEquals(requireServiceAuth(req("Bearer "))?.status, 401);
   assertEquals(requireServiceAuth(req())?.status, 401);
 });

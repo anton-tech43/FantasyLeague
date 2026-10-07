@@ -14,20 +14,17 @@
 // header at all → an attacker could loop POSTs and drain the Anthropic
 // balance. This gate closes that for every server-only function.
 //
-// WHAT IT ACCEPTS — three distinct credentials, because the key model
-// fragmented after the May-11 rotation. Verified each against its real
-// caller:
+// WHAT IT ACCEPTS — two credentials, each checked against its real caller:
 //   - SERVICE_KEY (sb_secret_* custom secret) — what triggerFunction
-//     (_shared/trigger.ts) and the function's own DB client use. Covers
-//     all inter-function trigger calls.
-//   - SUPABASE_SERVICE_ROLE_KEY (auto-injected legacy JWT) — transition
-//     fallback; included for completeness.
+//     (_shared/trigger.ts), page-refresh and notification-sender's alert
+//     call send, and the routines' post scripts. Covers all inter-function
+//     calls.
 //   - CRON_AUTH_KEY (custom secret = the Vault `cron_service_key` value)
 //     — what pg_cron jobs send via `get_cron_service_key()` AND what
-//     manual ops curl sends from backend/.env. This value diverged from
-//     the auto-injected SUPABASE_SERVICE_ROLE_KEY in the rotation, so it
-//     must be accepted explicitly or every cron 401s. Set via
-//     `supabase secrets set CRON_AUTH_KEY=<cron_service_key value>`.
+//     manual ops curl sends from backend/.env. A random secret, changed
+//     with scripts/rotate-cron-key.sh.
+// The auto-injected SUPABASE_SERVICE_ROLE_KEY is deliberately NOT accepted
+// (2026-10-07): no caller sends it, and a legacy key has no place here.
 //
 // DO NOT add this gate to functions the iOS app calls with the anon key
 // (delete-my-data, live-brief-current, quiz-current) — it would break
@@ -55,7 +52,6 @@ export function requireServiceAuth(req: Request): Response | null {
 
   const accepted = [
     Deno.env.get("SERVICE_KEY"),
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
     Deno.env.get("CRON_AUTH_KEY"),
   ].filter((k): k is string => !!k && k.length > 0);
 
