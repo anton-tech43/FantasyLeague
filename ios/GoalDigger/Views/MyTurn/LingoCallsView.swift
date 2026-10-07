@@ -276,19 +276,22 @@ struct LingoCallsView: View {
         if index >= offered.count { confirm(offered) }
     }
 
+    /// Smaller since the slip took the Matchday card type (2026-10-08): 14pt
+    /// in a 44pt button, the smallest tap target Apple allows, with the
+    /// cards' 10pt corner.
     private func answerLabel(_ text: String, filled: Bool) -> some View {
         Text(text)
-            .font(.jakarta(16, weight: .bold))
+            .font(.jakarta(14, weight: .semiBold))
             .foregroundColor(filled ? .warmWhite : .hotRose)
             .multilineTextAlignment(.center)
             .padding(.horizontal, 8)
             .frame(maxWidth: .infinity)
-            .frame(minHeight: 56)
-            .padding(.vertical, 4)
+            .frame(minHeight: 44)
+            .padding(.vertical, 2)
             .background(filled ? Color.hotRose : Color.clear)
-            .overlay(RoundedRectangle(cornerRadius: Layout.buttonCornerRadius)
+            .overlay(RoundedRectangle(cornerRadius: 10)
                 .stroke(filled ? Color.clear : Color.hotRose, lineWidth: 1.5))
-            .cornerRadius(Layout.buttonCornerRadius)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
             .contentShape(Rectangle())
     }
 
