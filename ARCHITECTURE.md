@@ -1,12 +1,14 @@
-# ARCHITECTURE — how GoalDigger actually works (2026-06-17)
+# ARCHITECTURE: how GoalDigger actually works
 
-**This is the authoritative "how it works today" doc.** If it disagrees with
-`PRD.md`, `AGENT_CONTRACTS.md`, `PROMPTS.md`, `PRODUCT_BRIEF_INTEGRATION.md`, or
-`RUNBOOK.md`, **this doc wins** — those are V1/historical (see the doc-status table
-at the end). Current line: **V2.2 (multi-team), mid-World-Championship 2026**.
+**This is the authoritative "how it works" doc** for the code on this branch. If it
+disagrees with `PRD.md`, `AGENT_CONTRACTS.md`, `PROMPTS.md`, `PRODUCT_BRIEF_INTEGRATION.md`
+or the V1 parts of `RUNBOOK.md`, **this doc wins**; those are historical. What is live on
+the App Store, what is only in TestFlight and what is paused: `STATUS.md`. Known bugs:
+`AUDIT_FINDINGS.md`.
 
-Facts below cite `file:line` so they stay falsifiable; if you change the code, update
-the citation. Findings/known-bugs live in `AUDIT_FINDINGS.md`.
+References name a file and a symbol rather than a line number, because line numbers drift.
+If you change the mechanism, change the sentence. Section numbers are referenced from code
+and other docs; do not renumber.
 
 ---
 
@@ -16,14 +18,14 @@ A relationship companion: someone follows the football their **partner / parent 
 sibling / friend** cares about so they can join the conversation. Football is the
 medium, not the point. The followed person is referred to by name; the relationship
 noun is a fallback. `AppState.relationshipType` = partner|parent|sibling|friend
-(default partner), captured in `HisNameView`. Names (`hisName`/`herName`) are stored
-**local-only, never sent to the server** (`Models/AppState.swift:10`). Display-time
-substitution + dash stripping happens in `AppState.personalise()`
-(`Models/AppState.swift:164`).
+(default partner), captured in `HisNameView` and not editable after onboarding. Names
+(`hisName`/`herName`) are stored **local-only, never sent to the server**
+(`Models/AppState.swift`). Display-time substitution and dash stripping happen in
+`AppState.personalise()`.
 
-Voice = warm, cheeky best-friend. The live voice spec is the routine prompts in the
+Voice = warm, cheeky best friend. The live voice spec is the routine prompts in the
 **separate `goaldigger-routines` repo** (`PROMPT.md`), NOT this repo's `PROMPTS.md`
-(which describes the dormant edge generator).
+(which describes the dormant Edge generator).
 
 > **⭐ Brand-voice rule (locked).** The app is for **a girl following her boyfriend/
 > partner** — that voice is primary and **goes first; we never dilute or "adapt" the
@@ -34,259 +36,273 @@ Voice = warm, cheeky best-friend. The live voice spec is the routine prompts in 
 > implemented via `AppState.usesHeVoice` + `pSubject/pPossessive/pObject/pIs/pWill`
 > (Models/AppState.swift). `[his name]` placeholders render the name for everyone.
 > Do NOT neutralize the brand framing/taglines — only the followed-person pronoun.
+> (Bundled My Turn content does not apply this yet; see AUDIT_FINDINGS NEW-9.)
 
 ## 2. Entities & scope
 
-- **20 Premier League clubs** (`Models/Team.swift`) + **48 World Cup 2026 countries**
-  (`Models/Country.swift`). Not "3 teams" (that's stale PRD).
+- **20 Premier League clubs** (`Models/Team.swift`). A device follows one or two.
 - One polymorphic `teams` table: `entity_type` ∈ {club, country, tournament},
-  `league_id` 39=PL / 1=WC (migrations 032, 076). `team_id` everywhere is a lowercase
-  slug (`^[a-z_]{2,32}$`) and is the FK to `teams(id)` — a club slug, a country slug,
-  or a competition slug.
-- ~71 `team_pages` rows (20 clubs + 48 countries + promoted carryover).
-- **Six competitions, not one** (2026-09-08, `CUP_COVERAGE_PLAN.md`): Premier League
-  (39), Champions League (2), Europa League (3), Conference League (848), League Cup
-  (48), FA Cup (45), plus the World Championship (1). Each non-league competition also
-  has a `tournament` row in `teams` holding its own table and fixture feed, and its own
-  slug as a `team_id` for shared-feed cards. **Which of our clubs is in which is never
-  stored** — it is derived from the fixture feed, because it changes every August and
-  again on any knockout night (migration 087, extended by 094's `poll_leagues()`).
-  Cup opponents outside the 20 live in `teams` as `is_active=false`, registered on
-  first sighting, so a tie resolves without them entering the follow list.
-- **House copy rule:** app-visible text says **"World Championship"**, never "World
-  Cup" (the App Store *listing* may say "World Cup"), and **"League Cup (Carabao Cup)"**
-  on first mention, "League Cup" after, never "Carabao Cup" alone. **No em/en dashes**
-  in generated or campaign copy. Cross-team LLM work must be a claude.ai routine, never
-  a paid API loop (see §10).
+  `league_id` (39 = Premier League). `team_id` everywhere is a lowercase slug
+  (`^[a-z_]{2,32}$`) and is the FK to `teams(id)`: a club, a country or a competition.
+- **Six competitions** (`CUP_COVERAGE_PLAN.md`): Premier League (39), Champions League
+  (2), Europa League (3), Conference League (848), League Cup (48), FA Cup (45). Each
+  non-league competition has a `tournament` row holding its own table and fixture feed,
+  and its slug is the `team_id` for shared-feed cards. **Which of our clubs is in which
+  competition is never stored**; it is derived from the fixture feed by `poll_leagues()`
+  (migrations 094, 098), because it changes every August and on every knockout night.
+  Cup opponents outside the 20 live in `teams` as `is_active=false`, registered on first
+  sighting.
+- **World Championship: retired.** The 48 country rows are inactive (migration 079), the
+  WC screens are deleted, and `CountryFollowing.isEnabled = false` (`Models/Country.swift`)
+  hides every country surface. The tournament maths in `_shared/` stays for the next one.
+- **House copy rule:** app-visible text says **"World Championship"**, never "World Cup"
+  (the App Store *listing* may say "World Cup"), and **"League Cup (Carabao Cup)"** on
+  first mention, "League Cup" after, never "Carabao Cup" alone. **No em/en dashes** in
+  generated or campaign copy. Cross-team LLM work must be a claude.ai routine, never a
+  paid API loop (see §10).
 
-## 3. Multi-team follow model (V2.2 — the newest subsystem)
+## 3. Follow model
 
-A device can follow **up to 2 WC countries + 2 PL clubs, all equal**. Design detail:
-`V2.2_DESIGN_MULTI_TEAM.md`.
+A device follows **up to 2 clubs** (and up to 2 countries while `CountryFollowing` is on).
+Original design: `V2.2_DESIGN_MULTI_TEAM.md` (historical).
 
-- **Data model = ARRAY columns on the existing one-row-per-device tables**, NOT a row
-  per entity. `device_tokens.country_ids TEXT[]` + `team_ids TEXT[]` (migration 069);
-  `live_activity_tokens.country_ids TEXT[]` (migration 070). `UNIQUE(apns_token)` and
-  `UNIQUE(token)` are **deliberately preserved** — one row per device.
-- **Why arrays, not row-per-entity:** iOS registers via a direct PostgREST
-  `merge-duplicates` upsert keyed on `UNIQUE(apns_token)` (`APIClient.registerToken`,
-  `Services/APIClient.swift:207`). Dropping that unique would break every shipped app.
-  One row per device also makes double-push structurally impossible (even when a device
-  follows both teams in one fixture), and keeps token-expiry/GDPR-delete (keyed on
-  `apns_token`) simple.
-- **Scalar back-compat:** the legacy scalar `country_id`/`team_id` are mirrored to
-  `array[0]` by the new app (NULLed when empty), and old apps write only scalars. Every
-  push read matches **scalar OR array** (`.or(country_id.in.(…),country_ids.ov.{…})`),
-  so old and new clients both resolve with no trigger and no divergence. GIN indexes
-  back the `&&`/`@>` filters (migrations 069/070).
-- **iOS source of truth:** `AppState.selectedCountries: [Country]` /
-  `selectedTeams: [Team]` (≤2). `selectedCountry`/`selectedTeam` are **`.first`
-  accessors** (`Models/AppState.swift:46-59`) so legacy single-entity call sites
-  compile unchanged; their setters REPLACE the whole array (lossy for multi-follow —
-  multi-select call sites assign the arrays directly). Legacy single UserDefaults keys
-  migrate into the arrays on first launch (`AppState.swift:138-149`).
-- **Onboarding:** an opt-in "I want to add my own country/club too" box on both the WC
-  and PL steps reveals a 2nd picker (`CountrySelectionView`, `OptionalPLTeamView`).
-  Settings pickers are multi-select.
+- **Data model = ARRAY columns on one row per device**, not a row per entity:
+  `device_tokens.team_ids` / `country_ids` (migration 069), `live_activity_tokens`
+  (070). `UNIQUE(apns_token)` and `UNIQUE(token)` are **deliberately preserved**.
+- **Registration** goes through SECURITY DEFINER RPCs keyed on the token:
+  `rpc/register_device_token` and `rpc/register_la_token` (migration 071; payload caps
+  and rate limits in 129), called from `Services/APIClient.swift`. One row per device
+  makes a double push structurally impossible, even when a device follows both sides of
+  a fixture, and keeps token expiry and Delete My Data simple.
+- **Scalar back-compat:** the legacy scalar `team_id`/`country_id` mirror `array[0]`.
+  Every push read matches **scalar OR array**, so old and new clients both resolve. GIN
+  indexes back the `&&`/`@>` filters.
+- **iOS source of truth:** `AppState.selectedTeams: [Team]` (≤2). `selectedTeam` is a
+  `.first` accessor whose setter REPLACES the array; multi-select call sites assign the
+  array. The Feed's club switcher (`ContextSwitcherView`) only switches between followed
+  clubs; adding or removing a club happens in onboarding or Settings.
 
-## 4. Content pipeline — THE big correction
+## 4. Content pipeline
 
 **Live content is produced by claude.ai ROUTINES (subscription-billed), not the Edge
 `content-generator`.**
 
-- The Edge `content-generator` + `content-reviewer` are **DORMANT**: `data-fetcher`
-  only triggers content-generator when `CONTENT_GENERATOR_ENABLED === "true"`, a secret
-  that is off by default (`data-fetcher/index.ts:~360`). They remain as a fallback.
-- Live content rows carry `pipeline_source='routine'`. The routines live in
-  `anton-tech43/goaldigger-routines` (locally `/Users/anton/goaldigger-routines`):
-  `gd-news` (PROMPT.md), `gd-news-wc` (PROMPT_WC.md), `gd-insider`, `gd-matchday`,
-  `gd-live-brief`, `gd-quiz`, `gd-player-dossier`, `gd-season-state`, `gd-sunday-brief`.
-  Each is `PROMPT*.md` + `fetch_*.sh` + `post_*.sh`, scheduled via RemoteTrigger. The
-  `post_*.sh` scripts do deterministic guards (em-dash strip, length caps, voice
-  rejects, and now the "World Cup"→"World Championship" substitution) then POST to
-  Supabase REST and ping `notification-sender`.
-- **`data-fetcher`** still runs (~every 2h waking hours, migration 050): pulls RSS +
-  API-Football per team into `raw_fetch_logs`, computes PL pressure flags into
+- The Edge `content-generator` + `content-reviewer` are **dormant**: `data-fetcher` only
+  triggers them when the `CONTENT_GENERATOR_ENABLED` secret is `"true"`, which it is not.
+- Routines live in `anton-tech43/goaldigger-routines` (locally
+  `/Users/anton/goaldigger-routines`); its README section "Schedules, in one place" is
+  the schedule. Each is `PROMPT*.md` + `fetch_*.sh` + `post_*.sh`. The `post_*.sh`
+  scripts apply deterministic guards (dash strip, length caps, voice rejects, house copy
+  substitutions, `push_eligible`) before posting to Supabase. Current routines:
+  `gd-news`, `gd-insider`, `gd-season-state`, `gd-content-review`, `gd-europe`,
+  `gd-domestic-cups`, `gd-team-page`, `gd-saturday-quiz`, `gd-sunday-brief`,
+  `gd-player-dossier`, `gd-heartbeat`. **`gd-matchday`** (full time) and
+  **`gd-live-brief`** (in play) are fired by `match-watcher`, not a schedule.
+  `gd-maintenance` runs from `MAINTENANCE.md`.
+- **`data-fetcher`** (`goaldigger-daily-pipeline`, every 2 h, 06:00 to 22:00 UTC) pulls
+  RSS + API-Football per active club into `raw_fetch_logs`, computes pressure flags into
   `team_context`, and triggers `team-page-generator` in **`dynamic_only`** mode (no
-  Claude) to refresh deterministic team-page cards.
-- **Live-game leading fixture (team-page-generator):** the "coming up / this week" cards
-  are built from API-Football's `fixtures_next`, which drops a match the instant it kicks
-  off — so a naive build rolls forward to the next not-started game and (with standings
-  `played` still 0) mislabels it the group opener. The generator therefore reads the
-  team's kicked-off-but-unrecorded WC game from `match_status_state` and leads with it
-  (`phase: "live" | "just_finished"` → `in_progress`/`just_finished` stakes copy) until
-  the result posts to `fixtures_last`. It also derives `openerPlayed` from
-  `match_status_state` (any FINISHED WC game) and passes it to `annotateFixtures` so the
-  group-opener label is suppressed once a game has been played — even while the standings
-  feed still lags at `played: 0` (otherwise "First game…" reappears in the FT-to-standings
-  gap). See `stakes-engine.ts::annotateFixtures` + `stakes-templates.ts`.
-- **Content type → origin → consumer:** see the table in the push-pipeline audit;
-  the key ones: news/sunday_brief → routine → feed+push; matchday reminder + build-up →
-  deterministic Edge → feed/push; insider → routine → `team_insider_items` (His Team
-  tab, T2+); quiz → routine → `saturday_quiz_items` (`quiz-current`, T3+); live brief →
-  routine body + deterministic live score → `live_match_briefs` (`live-brief-current`).
-- **Newsworthiness:** the routine editorial bar (PROMPT.md GOLDEN RULE) produces 0 items
-  on quiet days; the dormant edge gate is `is_newsworthy && score>=6`
-  (`content-generator/index.ts:~825`). To stop low-RSS WC countries having empty feeds,
-  `matchday-reminder` writes a deterministic **build-up** feed item for every country
-  with a fixture in the next 24h (`matchday-reminder/index.ts:113-148`), and `match-watcher`
-  writes a deterministic FT **result** article per playing country. (Gap: quiet days
-  >24h from a fixture still have no floor — `AUDIT_FINDINGS.md` F-FEEDFLOOR.)
+  Claude) to refresh the deterministic team-page cards. Friendlies are filtered out of
+  "next up" and form.
+- **Players:** `goaldigger-players-sync` and `goaldigger-player-stats-sync` (daily) fill
+  `players`; `official-squads` (daily, migration 127) overrides shirt numbers and squad
+  membership from the Premier League's own list.
+- **Content type → origin → consumer:**
+
+  | Type | Origin | Where she sees it | Push |
+  |---|---|---|---|
+  | news, sunday_brief | routine | Feed | yes when `push_eligible` (T2+ for Sunday Brief) |
+  | matchday (full-time article) | `gd-matchday`, fired by match-watcher | Feed | **no**: the FT push already went out |
+  | live brief | `gd-live-brief` + deterministic score | live box on the club feed (T2+) | no |
+  | insider | `gd-insider` → `team_insider_items` | His Team (T2+) | no |
+  | Saturday quiz | `gd-saturday-quiz` → `saturday_quiz_items` | Feed card (T3) | no |
+  | team page prose | `gd-team-page`, `gd-season-state` | His Team | no |
+
+- **Newsworthiness:** the routine editorial bar (PROMPT.md GOLDEN RULE) produces 0 items on
+  quiet days; the club feed then shows its empty state ("Quiet on his end", or an insider
+  card at T2+). `matchday-reminder`'s deterministic build-up feed item exists for
+  countries only, so it is dormant while countries are inactive.
 
 ## 5. Push & live-match pipeline (deterministic Edge + pg_cron)
 
-There is **no** content→review→send chain in production for pushes. The live paths:
+There is **no** content → review → send chain in production for pushes. The live paths:
 
-- **`match-watcher`** — pg_cron `* * * * *` (every minute, migration 017). Polls
-  API-Football `/fixtures` for today (UTC) + a yesterday "hangover" pass; upserts
-  `match_status_state` keyed on `fixture_id`. Drives, WC-only and deterministically:
-  goal/HT/FT/kickoff-soon alerts (`sendWcPlayingTeamPush`, `match-watcher/index.ts:232`),
-  goal-scorer enrichment from `/fixtures/events` stored in `match_status_state.goal_events`
-  (migration 068), and Live Activity START/UPDATE/END. For PL it fires the `gd-matchday`
-  routine on the live→FT transition (with a retry cap). Idempotency = `briefs_fired`
-  JSONB markers + score advancement in the end-of-tick upsert.
-- **`notification-sender`** — pg_cron hourly :15 sweep + an on-demand specific-item path
-  from `post_*.sh`. The single APNs gate for `content_items`. Requires
-  `push_eligible=true`; per-team 5-min throttle; tier filter (`minTierForType`);
-  matches tokens across `team_id`/`country_id`/`team_ids`/`country_ids`; handles
-  410/400 → `is_active=false`.
-- **`morning-push`** — pg_cron 08:00 UTC (migration 048): "Game day at <team>" for any
-  followed team/country with a fixture today.
-- **`matchday-reminder`** — pg_cron 07:00 UTC (migration 063): the build-up feed floor
-  (all countries) + a reminder push (followed countries only), idempotent via
-  `matchday_reminders_sent`.
-- **APNs**: environment is **per-token** (`apns_environment` dev/prod, set from the iOS
-  build's `#if DEBUG`). One ES256 provider JWT is cached ~50 min in `apns_jwt_cache` +
-  in-memory (migration 064, fixes a 429 burst). Alert vs Live Activity use different
-  `apns-push-type`/topics (`_shared/apns-client.ts`).
-- **Fan-out is bounded-concurrency, not sequential** (`_shared/concurrency.ts::mapWithConcurrency`,
-  `PUSH_CONCURRENCY=100`). All four senders + the LA `sendAll` send up to 100 pushes in
-  flight; per-recipient side effects are batched after the loop — dead tokens via one
-  `deactivateTokens` UPDATE (`_shared/supabase-client.ts`), and one aggregate `pipeline_health`
-  row per item/fixture (not per recipient). Sequential `for…await` blew the 400s Edge
-  wall-clock ceiling at ~2-4k recipients; see `SCALING_50K.md`.
-- **Deterministic WC math layer (pure, tested, $0):** `_shared/stakes-engine.ts`,
-  `group-scenarios.ts`, `best-third.ts`, `stakes-templates.ts`, `consequence-templates.ts`,
-  `matchup-verdict.ts`, `goal-push.ts`, `detect-consequences.ts`. These feed
-  qualification/stakes framing into existing cards + pushes.
-- **Live Activity (V2.1):** `ios/GoalDigger/LiveActivity/*` + a Widget Extension target.
-  One push-to-start token per device (carries `country_ids`), per-activity update
-  tokens by `fixture_id`. WC-only; shows score/period/minute. `live-match-current` /
-  `live-brief-current` serve the in-app live box (minute X/90 + group standings +
-  scorers). Headline/minute/scorers are ALWAYS deterministic from `match_status_state`
-  (never stale); the routine brief supplies the prose BODY, but `live-brief-current` drops
-  that body to a neutral period line once goals postdate the brief's minute (e.g. an HT
-  "level first half" brief while it's now 4-2 in the 2H) — score/scorers carry the truth,
-  no Claude re-fire.
-
-**Cron auth:** every cron `net.http_post` sends `Bearer get_cron_service_key()` (a
-SECURITY DEFINER accessor reading Postgres Vault; migrations 019/020). Functions
-re-check the caller with `_shared/require-service-auth.ts` and deploy `--no-verify-jwt`.
+- **`match-watcher`** (`match-watcher-1min`, every minute). A tick lease (migration 103)
+  stops overlapping ticks. It polls API-Football for the leagues `poll_leagues()` says are
+  playing today (plus a yesterday "hangover" pass), upserts `match_status_state` keyed on
+  `fixture_id`, and handles each fixture in isolation so one bad fixture cannot abort the
+  tick. It sends **kickoff, goal, half-time and full-time pushes** to the followers of
+  both clubs (`sendPlayingTeamPush`), each gated by `_shared/push-tiers.ts`: a goal
+  reaches every tier in every competition; kickoff and half-time need tier 2; early
+  League Cup and FA Cup rounds get no kickoff or half-time push; semi-finals and finals
+  go to everyone. Half-time and full-time pushes end with a line to say. It also fills
+  goal scorers (`goal_events`), drives Live Activity start/update/end, and fires
+  `gd-matchday` / `gd-live-brief`. Idempotency = `briefs_fired` markers, claimed before
+  sending, plus score advancement in the end-of-tick upsert. Every send writes an
+  `apns_send` row to `pipeline_health`.
+- **`notification-sender`** (`notification-sweep`, hourly at :15, plus an on-demand path
+  from `post_*.sh`): the single APNs gate for `content_items`. Requires
+  `push_eligible=true`; claims the item before sending; per-team 5-minute throttle; tier
+  filter; matches tokens across scalar and array follows; pages past 1,000 rows.
+- **`morning-push`** (`gd-morning-push`, 08:00 UTC): "game day" for followed clubs with a
+  fixture today.
+- **`matchday-reminder`** (`goaldigger-matchday-reminder`, 07:00 UTC): the pre-match
+  reminder for every active club, kickoff rendered in the device's timezone
+  (`device_tokens.timezone`, migration 082). Its `?mode=prep` path is the **day-before
+  push** that opens My Turn on Pre-game (`goaldigger-prep-reminder`, 08:00 and 09:00 UTC,
+  migration 125). That job is paused until the app version that opens Pre-game is live
+  (migration 126).
+- **Dead tokens:** every sender uses `isTokenDead` (`_shared/supabase-client.ts`): only
+  410, `Unregistered`, `BadDeviceToken` and `DeviceTokenNotForTopic` deactivate a token;
+  other 400s are payload problems and leave tokens alone. Deactivation is batched.
+- **APNs**: environment is **per token** (`apns_environment`, set from the build's
+  `#if DEBUG`). One ES256 provider JWT is cached in `apns_jwt_cache` (migration 064).
+  Alert and Live Activity pushes use different `apns-push-type`/topics
+  (`_shared/apns-client.ts`).
+- **Fan-out is bounded concurrency** (`_shared/concurrency.ts::mapWithConcurrency`,
+  `PUSH_CONCURRENCY=100`), with one aggregate `pipeline_health` row per item or fixture.
+  See `SCALING_50K.md`.
+- **Live Activities:** `ios/GoalDigger/LiveActivity/*` + a Widget Extension target, for
+  followed clubs' matches in all six competitions (migration 083). One push-to-start
+  token per device, per-activity update tokens by `fixture_id`. Registered only after
+  onboarding (`LiveActivityManager`), with a 150-minute stale date and a local end.
+  `live-match-current` / `live-brief-current` serve the in-app live box; score, minute and
+  scorers are always deterministic from `match_status_state`, and the routine only
+  supplies prose.
+- **Cron auth:** every cron `net.http_post` sends `Bearer get_cron_service_key()` (a
+  SECURITY DEFINER accessor reading Vault `cron_service_key`; migrations 019/020).
+  Functions deploy `--no-verify-jwt` and check the caller in code with
+  `_shared/require-service-auth.ts` (constant-time comparison against the Edge secret
+  `CRON_AUTH_KEY`). The key is a random secret, never a JWT: `IOS_GOTCHAS.md` §14,
+  `scripts/verify-cron-auth.sh`, `scripts/rotate-cron-key.sh`. Never add the `net` schema
+  to PostgREST's exposed schemas.
 
 ## 6. iOS app structure
 
-- **`AppState`** (`@Observable`, `Models/AppState.swift`): the central store
-  (follows, names, tier, flags, `activeContext`). `persistNow()` force-flushes
-  UserDefaults at load-bearing moments (async-write loss guard).
-- **Feed** (`Views/Feed/FeedView.swift`): keys ALL content off `appState.activeContext`
-  (a `FeedContext`: `.country` / `.team` / `.everyoneTalking`), resolved to
-  `activeEntityId`; `selectedCountry`/`selectedTeam` are only `.everyoneTalking`
-  fallbacks. Immersive (default) vs classic style. Prepends the live box →
-  "Coming up" card → quiz card. `ContextSwitcherView` lists every followed entity as a
-  tab.
-- **Team page** (`Views/Team/TeamPageView.swift`): cache-first from `team_pages.content`
-  JSONB; three tabs (Info cards, Calendar, Table). Cards = mood/thisWeek/basics/manager/
-  onesToKnow/rivalry/form/season/comingUp/postMatch/insider(T2+)/freshness.
-- **Caching:** `CacheService` (SwiftData, feed items, 30-day/50-row, schema-versioned) +
-  `TeamPageCache` (UserDefaults JSON, 24h) + shared `URLCache` for crests.
-- **My Turn** (`Views/MyTurn/`, tab 2): the toolbox. Three modules in one segmented
-  control: Quiz, Lingo, Say This. Content is three static, versioned JSON files bundled
-  under `Resources/MyTurn/` and refreshed from `my_turn_content` when a newer
-  `contentVersion` exists (`MyTurnContentService`, decode-then-swap, hourly). Every
-  scrap of her state (module, paused round, three-bucket word progress, starred lines)
-  is one tolerant-decoded JSON blob in `MyTurnStore`. Quiz's "His club" packs and
-  Lingo's "This weekend's words" deck are built on the phone from the cached team page
-  (`LiveClubPack.swift`, `LingoDeck.swift`): the app never ships a current name or a
-  context in static content. Lingo is played as **Overheard** (a line she hears, three
-  meanings, then the line she says back), dealt from the next fixture's context
-  (derby, cup, relegation, after a loss). Editorial rules and the validator gate:
-  `tools/myturn/CONTENT_PRINCIPLES.md`, `tools/myturn/validate_content.py`. No
-  streaks, no dailies, no reminders by design: she did not choose this hobby.
-- **Tiers** (`Models/TierGating.swift`): T2+ = Sunday Brief, Insider, MatchDayLive; T3+ =
-  Quiz, GroupChatPrep; Dossier ungated. Gated features are simply absent (no padlocks).
+- **Tabs** (`App/GoalDiggerApp.swift`): Feed · {active club's name, or "His Team"} ·
+  My Turn · Settings. The club tab is hidden when there is no entity to show. ATT is asked
+  once, 1.5 s after the tabs first appear. A push whose `content_id` starts `myturn-prep`
+  opens My Turn on Pre-game; article pushes open the detail view on the Feed tab.
+- **`AppState`** (`@Observable`, `Models/AppState.swift`): the central store (follows,
+  names, tier, flags, `activeContext`). `persistNow()` force-flushes UserDefaults at
+  load-bearing moments.
+- **Feed** (`Views/Feed/FeedView.swift`): immersive full-screen cards only (the classic
+  list was removed). Keys everything off `appState.activeContext` (`.team` or
+  `.everyoneTalking`, the cross-club "Football" feed); a first run lands on the first
+  followed club. Above the cards: the live box (T2+, club feed only, polled every 60 s)
+  and the Saturday Quiz card (T3, weekend window). Each card's rose half carries a line to
+  say; the detail view (`Views/Detail/ContentDetailView.swift`) has "Good to know", "Things
+  to say", the backstory and, for matchday articles, "After the match" and "Ones to watch".
+- **Team page** (`Views/Team/TeamPageView.swift`, keyed with `.id(teamId)`): cache-first
+  from `team_pages.content`; three tabs (Info, Calendar, Table with a League/Europe
+  switcher). Info cards: coming up or post-match (its "Pre game talk" footer expands the
+  card in place), mood, this week, the basics, the manager (portrait), ones to know,
+  rivalry, form, season so far, insider (T2+), freshness.
+- **Caching:** `CacheService` (SwiftData, feed items) + `TeamPageCache` (UserDefaults
+  JSON, 24 h) + a shared `URLCache` for crests.
+- **My Turn** (`Views/MyTurn/`): four segments (`MyTurnModule`): **prep**, Quiz, Lingo,
+  Say This. Bundled content is four versioned JSON files under `Resources/MyTurn/`
+  (quiz, lingo, saythis, hype), refreshed from `my_turn_content` when a newer
+  `contentVersion` exists (`MyTurnContentService`). All of her state is one
+  tolerant-decoded JSON blob in `MyTurnStore`.
+  - **Prep** needs a followed club and always uses the first one, whatever the Feed
+    switcher shows. It is labelled "Pre-game" before a fixture and "This week" otherwise,
+    and opens itself once per new fixture (`MyTurnStore.prepShownFor`). Before a game it
+    stacks three full-screen cards, each shrinking to a small row once done: **"Get to
+    know {opponent}"** (a two-option quiz built on the phone by `LiveClubPack`, only for
+    the 20 Premier League clubs), **"7 words for the game"** (an Overheard round dealt by
+    `LingoDeck` from the fixture's context) and **"Prepare some sayings for the game"**
+    (`LingoCalls.offer`: up to seven lines, saved with `rpc/save_match_calls` into
+    `device_tokens.match_calls`, never pushed, marked "came up" on the phone after full
+    time). After a game the segment shows "After {opponent}" and "What you called".
+  - **Quiz:** three options per question; bundled packs plus "His club, right now", "His
+    squad" and the opponent pack, built on the phone from the cached team page.
+  - **Lingo:** a 158-term dictionary in four groups plus a seven-word Overheard practice
+    round (two options).
+  - **Say This:** situations with Safe/Bold lines, starred lines and a practice mode.
+  - Rules and the validator: `tools/myturn/CONTENT_PRINCIPLES.md`,
+    `tools/myturn/validate_content.py`. No streaks and no dailies by design: she did not
+    choose this hobby. The one reminder is the day-before push (§5).
+- **Tiers** (`Models/TierGating.swift`), chosen by her in onboarding and Settings ("Your
+  Mode"): T2+ adds the live box, insider and Sunday Brief items; T3 adds only the
+  Saturday Quiz card. Gated features are simply absent (no padlocks). Push volume per
+  tier: §5.
+- **Attribution:** Meta `FacebookCore` (app events + SKAdNetwork, no Login) auto-logs app
+  activation from launch (`App/AppDelegate.swift`); `Services/AttributionService.swift`
+  asks ATT. `PrivacyInfo.xcprivacy` declares tracking. There are no in-app analytics
+  events of our own.
 
 ## 7. Onboarding flow (current order)
 
-`welcome → herName → hisName(+relationship) → country(allowsSecond) → optional PL
-team(allowsSecond) → footballKnowledge → tier → notifications → calendar → meetTeam →
-meetManager → howItWorks` (`Views/Onboarding/OnboardingFlow.swift`). `completeOnboarding()`
-sets `hasCompletedOnboarding=true` then calls `NotificationService.reregisterForFollowChange()`
-(the single canonical registration path). Existing V1 users without a country see
-`WCMigrationSheetView` once.
+`welcome → herName → hisName (+ relationship) → plTeamOptional (required club, up to 2)
+→ tierSelection → notificationPrompt → calendar → meetTeam → meetManager → howItWorks`
+(`OnboardingFlow.OnboardingStep`, ten steps, none skipped). `completeOnboarding()` sets
+`hasCompletedOnboarding=true`, points the feed at the first club, marks the season primer
+as seen and calls `NotificationService.reregisterForFollowChange()` (the single
+canonical registration path). `SeasonPrimerView` is therefore unreachable.
 
-- `footballKnowledgeLevel` is collected but **not yet wired to anything**
-  (`AUDIT_FINDINGS.md` F-KNOWLEDGE).
-- New users do **not** see `SeasonPrimerView` (completeOnboarding pre-sets its flag);
-  it's only reachable after a data wipe.
+## 8. Tiers & monetization
 
-## 8. Tiers & monetization (correct the record)
-
-App is **free** on the App Store with a StoreKit unlock IAP `com.goaldigger.unlock`
-(`Services/PurchaseManager.swift`) + `PaywallView` (currently parked). The PRD's "$10
-paid, no IAP" is **fiction** relative to the code. Tier gating is feature-visibility
-only.
+The app is **free**, with no StoreKit code: `PurchaseManager` and `PaywallView` were
+deleted. Tiers are self-chosen and control feature visibility (§6) and live-push volume
+(§5). Design and what is still unbuilt: `TIERS.md`.
 
 ## 9. Data layer
 
-Migrations 001–070 (027 skipped). Key tables: `content_items`, `device_tokens`,
-`live_activity_tokens`, `team_pages`, `team_season_state`, `team_insider_items`,
-`saturday_quiz_items`, `live_match_briefs`, `match_status_state`, `raw_fetch_logs`,
-`pipeline_health`, `matchday_reminders_sent`, `apns_jwt_cache`.
+Migrations 001 to 129, **applied by hand** with psql. `schema_migrations` records only
+001 to 017; numbers 027, 072, 089, 107 and 119 are unused and 112, 117 and 124 are each
+used twice, so `supabase db push` cannot be used.
 
-**RLS posture (verified):**
-- `device_tokens` + `live_activity_tokens`: anon can **SELECT all rows** (migrations
-  030/062) and INSERT/UPDATE (gated only by a trigger that protects `apns_token` +
-  `is_active` on device_tokens; LA tokens have no such trigger). This is a **PII +
-  cross-device-tamper exposure** (`AUDIT_FINDINGS.md` SEC-1/2/3) — the documented
-  "Wave-2" RPC migration is still open.
-- `content_items`: anon reads only `status='published'`. `teams`/`team_pages`/season/
-  insider/quiz/brief tables: public read. `match_status_state`, `raw_fetch_logs`,
-  `pipeline_health`, etc.: service-role only.
-- Secrets: Vault for the cron key; APNs `.p8` + API keys in the Edge runtime env. iOS
-  ships a publishable key (`sb_publishable_*`) — but the local `Configuration.xcconfig`
-  may still carry a legacy anon JWT (`AUDIT_FINDINGS.md` SEC-8). JSONB-null trap: `WHERE
-  x IS NULL` misses a JSONB literal `null` (use `jsonb_typeof(x)='null'`).
+Key tables: `teams`, `team_pages`, `team_season_state`, `team_context`,
+`team_insider_items`, `team_news_sources`, `team_page_prose_history`, `club_style`,
+`players`, `player_cards`, `content_items`, `content_reviews`, `saturday_quiz_items`,
+`live_match_briefs`, `my_turn_content`, `device_tokens`, `live_activity_tokens`,
+`match_status_state`, `match_watcher_ticks`, `matchday_reminders_sent`,
+`prep_reminders_sent`, `raw_fetch_logs`, `pipeline_health`, `client_errors`,
+`dev_alert_devices`, `apns_jwt_cache`. Human-verified facts live in our own columns
+(`teams.manager_name`, migration 085; `teams.fan_name`, 128), per `DATA_SOURCES.md`.
+
+**Access posture:**
+- The app's publishable key can call exactly three RPCs: `register_device_token`,
+  `register_la_token`, `save_match_calls`. It has no access to the token tables
+  (migrations 106, 120) and reads published content only. `./scripts/db-health.sh` §7
+  fails on any other anon-executable function.
+- Every new function needs its own `REVOKE ... FROM PUBLIC, anon, authenticated`
+  (CLAUDE.md). Retention sweeps run nightly (`*_retention_sweep` cron jobs; migration 129
+  adds inactive tokens and stale Live Activity rows after 90 days).
+- Secrets: Vault for the cron key; APNs `.p8` and API keys in the Edge runtime env.
+- JSONB-null trap: `WHERE x IS NULL` misses a JSONB literal `null` (use
+  `jsonb_typeof(x)='null'`).
 
 ## 10. Cost discipline
 
 Hard rule (CLAUDE.md / BACKFILL_RULES.md): never loop a paid Anthropic API call across
-teams. The only Edge function still billing the API balance is **`team-page-generator`**
-(it imports `_shared/claude-client.ts`'s `callClaude`). A weekly `team-page-refresh`
-cron runs it in `full` mode across ALL teams — a recurring spend and the institutionalized
-version of the exact anti-pattern (`AUDIT_FINDINGS.md` COST-1). Migrating it to a routine
-is filed but open.
+teams. No scheduled job spends the API balance. The only Edge function that can is
+**`team-page-generator`** in `full` mode, which requires a single `team_id`; the weekly
+prose comes from the `gd-team-page` routine instead.
 
 ## 11. Ops / deploy
 
+- When the app looks broken: `./scripts/db-health.sh` first (the `db-health-check` skill
+  explains the output), then `RUNBOOK.md`'s push SOP.
 - iOS: `xcodebuild -project ios/GoalDigger.xcodeproj -scheme GoalDigger -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build`
 - Edge deploy: `cd backend && supabase functions deploy <name> --project-ref cwgpsmbunrocrofziqad --no-verify-jwt`
 - DB: `set -a && source backend/.env && set +a && /opt/homebrew/opt/libpq/bin/psql "$SUPABASE_DB_URL"`
-- Routines: edit in `goaldigger-routines`, push to GitHub; they run on RemoteTrigger schedules (claude.ai subscription).
-- Recovery: `RUNBOOK.md` (note: partially routines-era, partially V1 — read with care).
+- Routines: edit in `goaldigger-routines`, push to GitHub; they run on RemoteTrigger
+  schedules (claude.ai subscription).
+- Cron key: `scripts/verify-cron-auth.sh`, `scripts/rotate-cron-key.sh` (§5).
 
-## 12. Doc status map (which docs to trust)
+## 12. Deeper references
 
-| Doc | Verdict | Trust for |
-|---|---|---|
-| `ARCHITECTURE.md` (this) | CURRENT | how it works today |
-| `tools/myturn/CONTENT_PRINCIPLES.md`, `tools/myturn/LINGO_OVERHEARD_BRIEF.md` | CURRENT | My Turn editorial rules, the Overheard content brief |
-| `AUDIT_FINDINGS.md` | CURRENT | known bugs/security/staleness |
-| `V2.2_DESIGN_MULTI_TEAM.md` | CURRENT | the arrays/follow model |
-| `WHATS_NEW_2.0.3.md` | CURRENT | recent shipped features |
-| `BACKFILL_RULES.md`, `CLAUDE.md`, `IOS_GOTCHAS.md` | ACCURATE | cost rule, ops, iOS traps |
-| `STATUS.md` | ACCURATE body, STALE TL;DR | history (ignore the top TL;DR) |
-| `IMPLEMENTATION_PROGRESS.md` | ACCURATE body, STALE header | phase history |
-| `WC_GROUP_STAGE_DESIGN.md` | content OK, STALE status (it shipped) | the stakes math design |
-| `README.md` | PARTIALLY STALE | repo map (lists 7 of 22 fns) |
-| `RUNBOOK.md` | HYBRID | recovery (mix of routine-era + V1) |
-| `PRD.md`, `AGENT_CONTRACTS.md`, `PROMPTS.md`, `PRODUCT_BRIEF_INTEGRATION.md`, `CONTENT_EXAMPLES.md`, `APP_STORE_STRATEGY.md` | STALE / V1 | voice/vision only; facts are wrong (3 teams, $10, content-generator-as-live, girlfriend-only framing) |
+| Doc | For |
+|---|---|
+| `STATUS.md` | what is live, in TestFlight, paused, open |
+| `DATA_SOURCES.md` | which feed fields we trust |
+| `TIERS.md` | tier and push-volume design |
+| `CUP_COVERAGE_PLAN.md` | how the five cups were added |
+| `tools/myturn/CONTENT_PRINCIPLES.md`, `LINGO_OVERHEARD_BRIEF.md` | My Turn editorial rules |
+| `IOS_GOTCHAS.md` | iOS and infrastructure traps |
+| `RUNBOOK.md`, `DB_BASICS.md`, `MAINTENANCE.md` | recovery, database basics, routine upkeep |
+| `AUDIT_FINDINGS.md`, `CHANGELOG_SECURITY.md` | known issues, security history |
+
+Full doc map: `README.md`.
