@@ -54,6 +54,9 @@
 		<string>PlusJakartaSans-MediumItalic.ttf</string>
 		<string>PlusJakartaSans-ExtraBold.ttf</string>
 		<string>LeagueSpartan-Black.ttf</string>
+		<string>LeagueSpartan-Bold.ttf</string>
+		<string>PlusJakartaSans-BoldItalic.ttf</string>
+		<string>CormorantGaramond-Medium.ttf</string>
 	</array>
 	<key>SUPABASE_HOST</key>
 	<string>$(SUPABASE_HOST)</string>

@@ -85,10 +85,20 @@ class AppState {
     /// (Feed). Consumed and cleared on `MainTabView.onAppear` so a later
     /// re-appear (e.g., scenePhase change) doesn't snap back.
     /// NOT persisted.
-    var pendingTabAfterPrimer: Int?
-    /// Set by a tap on the day-before push ("Leeds tomorrow"): open My Turn
-    /// on Pre-game. Consumed by the tab view.
+    var pendingTabAfterPrimer: AppTab?
+    /// Set by a tap on the day-before push ("Leeds tomorrow") and by
+    /// "Pre-game ›" on his team page: open Matchday on "Before". Consumed by
+    /// the tab view.
     var pendingOpenPrep = false
+    /// Set by a tap on the full-time push (`live-ft-<fixture>`): open Matchday
+    /// on "After". Consumed by the tab view.
+    var pendingOpenAfter = false
+    /// Which Matchday section to show next, set by the two flags above on
+    /// their way through the tab view. Consumed by MatchdayView.
+    var requestedMatchdaySection: MatchdaySection?
+    /// A view asking for another tab ("Carry on with your words" in Matchday
+    /// continues in My Turn › Lingo). Consumed by the tab view.
+    var requestedTab: AppTab?
     /// Set after Delete My Data has wiped this phone. Shown by RootView, since
     /// the wipe sends her back to onboarding and takes Settings (and any alert
     /// it was showing) off screen. Session-only.
@@ -334,4 +344,26 @@ private extension Int {
         if self == 0 { return defaultValue }
         return Swift.min(Swift.max(self, range.lowerBound), range.upperBound)
     }
+}
+
+/// The tab bar, in order (2026-10-07): Feed · Matchday · his club · My Turn.
+/// Settings is a button on Feed and the club page, not a tab.
+enum AppTab: Hashable {
+    case feed, matchday, club, myTurn
+
+    /// `-gdTab N` in the screenshot harness: the position in the bar.
+    init?(index: Int) {
+        switch index {
+        case 0: self = .feed
+        case 1: self = .matchday
+        case 2: self = .club
+        case 3: self = .myTurn
+        default: return nil
+        }
+    }
+}
+
+/// The two halves of the Matchday tab.
+enum MatchdaySection: Hashable {
+    case after, before
 }

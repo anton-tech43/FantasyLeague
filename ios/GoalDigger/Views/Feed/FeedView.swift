@@ -153,6 +153,7 @@ struct FeedView: View {
                 contextPill
             }
         }
+        .settingsButton()
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(Color.appBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
