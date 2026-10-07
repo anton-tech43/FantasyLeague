@@ -52,10 +52,11 @@ Twelve events. Each is logged at one point in the code; the hook is named so who
 | `onboarding_step_viewed` | `step` | `OnboardingFlow`, on `step` change |
 | `onboarding_completed` | `seconds`, `notifications` (granted, denied, later), `calendar` (on, off) | `OnboardingFlow.completeOnboarding()` |
 | `push_opened` | `kind` (kickoff, goal, ht, ft, news, prep, sunday_brief), `content_id` | `AppDelegate.userNotificationCenter(_:didReceive:)` |
-| `tab_viewed` | `tab` (feed, club, my_turn, settings) | `MainTabView` selection change |
+| `tab_viewed` | `tab` (feed, matchday, club, my_turn) | `MainTabView` selection change. Settings is a sheet from 2.4: `settings_opened` |
 | `feed_card_opened` | `position`, `content_type`, `zone` (story, things_to_say) | `ImmersiveCard` zone taps |
 | `line_shared` | `surface` (feed, article, say_this) | the `ShareLink`s and copy buttons |
-| `pregame_opened` | `entry` (tab, push, club_page), `phase` | `MyTurnView` when the prep segment appears |
+| `pregame_opened` | `entry` (tab, push, club_page), `phase` | `MatchdayView` when Before appears (My Turn's prep segment before 2.4) |
+| `matchday_after_opened` | `entry` (tab, ft_push), `hours_since_ft`, `fixture_id` | `MatchdayView` when After appears |
 | `pregame_card_completed` | `card` (opponent_quiz, seven_words, sayings), `score`, `of`, `phase`, `fixture_id` | the round-finished paths in `MyTurnStore` |
 | `line_saved` | `source` (slip, say_this) | slip "Save for the game", Say This save |
 | `practice_completed` | `module` (quiz, lingo, say_this), `pack`, `score`, `of` | the existing end-of-round screens |
@@ -67,7 +68,7 @@ Send in batches: queue on the phone, flush on background and every 30 events, dr
 
 - **A weekly SQL digest**, added to the `gd-maintenance` report: new installs, activated, ready-for-a-match by fixture, match retention by install week, push open rate by kind, onboarding funnel.
 - **A small private dashboard page** (an Artifact reading the same views) once there are more than a handful of users.
-- **The first decision it should inform:** whether Pre-game deserves its own tab, from `pregame_opened` by `entry` and the share of matches she was ready for.
+- **The first decision it should inform:** whether Matchday (2.4, Pre-game's own tab) earns its place, from `pregame_opened` by `entry` and the share of matches she was ready for.
 
 ## Build order
 
