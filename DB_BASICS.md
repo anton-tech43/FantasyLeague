@@ -133,11 +133,11 @@ Migration 104 lade in städningen som schemalagda jobb. Avsnitt 4 i skriptet
 
 ## 5. Schemalagda jobb bor inuti databasen
 
-**pg_cron** är ett schema som lever i Postgres själv. Vi har 17 jobb. Det
-viktigaste är `match-watcher-1min`, som går **varje minut** och letar efter
-mål, avspark och slutsignal.
+**pg_cron** är ett schema som lever i Postgres själv. Det viktigaste jobbet
+är `match-watcher-1min`, som går **varje minut** och letar efter mål, avspark
+och slutsignal.
 
-Du ser dem så här:
+Du ser alla jobb, och vilka som är aktiva, så här:
 
 ```sql
 SELECT jobname, schedule, active FROM cron.job ORDER BY jobname;
@@ -156,8 +156,10 @@ rapporterar det. Det är därför avsnitt 3 finns.
 ## 6. Migrationer
 
 Varje ändring av databasens struktur ligger som en numrerad fil i
-`backend/supabase/migrations/`. De körs i ordning, en gång var, och är hur
-databasen ser likadan ut överallt. Vi är uppe i 105.
+`backend/supabase/migrations/`. Den senaste är 129. Vi kör dem för hand, i
+ordning, en gång var. `schema_migrations` har bara 001-017 registrerade, och
+numren 112, 117 och 124 finns två gånger, så `supabase db push` går inte att
+använda.
 
 Man ändrar aldrig en migration som redan körts. Man skriver en ny.
 
