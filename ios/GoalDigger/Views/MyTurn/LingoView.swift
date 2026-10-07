@@ -24,9 +24,9 @@ struct LingoView: View {
     /// The cached team page, already refreshed by `MyTurnView`'s task. Nil is
     /// fine: the context falls back to "7 words you'll hear at any match."
     let page: TeamPageContent?
-    /// The same view in two places. `.prep` is "Get ready for Chelsea", the
-    /// first segment: the slip, this fixture's seven words and the opponent
-    /// quiz, each a full-screen card. `.dictionary` is the Lingo segment: the
+    /// The same view in two places. `.prep` is Pre-game, the first segment:
+    /// the opponent quiz, this fixture's seven words and the slip, each a
+    /// full-screen card. `.dictionary` is the Lingo segment: the
     /// search and the 158 words, for the four-second look-up mid-match. One
     /// view rather than two so the round, the slip and the deck keep one home.
     var mode: Mode = .prep
@@ -346,7 +346,7 @@ struct LingoView: View {
                             content: content, store: store, context: context,
                             named: weekend?.named ?? [:],
                             onDealAgain: dealAgain,
-                            backLabel: mode == .dictionary ? "Lingo" : "Get ready",
+                            backLabel: mode == .dictionary ? "Lingo" : "Pre-game",
                             onPause: { withAnimation(.easeInOut(duration: 0.2)) { showingLanding = true } })
                     } else if mode == .dictionary {
                         practiseButton

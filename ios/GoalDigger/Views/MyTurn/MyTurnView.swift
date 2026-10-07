@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// The toolbox tab. One segmented control, four modules, exactly one visible:
-/// the prep for the next game ("Chelsea"), then Quiz, Lingo and Say This.
+/// Pre-game (the next game, or the one just played), then Quiz, Lingo and
+/// Say This.
 ///
 /// All four module views stay mounted (opacity-switched) so scroll position,
 /// search text and an open situation survive a switch without any plumbing;
@@ -44,8 +45,8 @@ struct MyTurnView: View {
                         .allowsHitTesting(module == .quiz)
                         .accessibilityHidden(module != .quiz)
                     if prepAvailable {
-                        // "Get ready for Chelsea": the slip, this fixture's words
-                        // and the opponent quiz (LingoView's prep mode).
+                        // Pre-game: the opponent quiz, this fixture's words
+                        // and the slip (LingoView's prep mode).
                         LingoView(content: content.lingo, store: store,
                                   team: appState.selectedTeam, page: live.page, mode: .prep)
                             .opacity(module == .prep ? 1 : 0)
@@ -157,7 +158,7 @@ struct MyTurnView: View {
     }
     #endif
 
-    /// Three fixed segments, full width, no horizontal scroll. Same visual
+    /// Four fixed segments, full width, no horizontal scroll. Same visual
     /// language as the team page's Info / Calendar / Table control: the
     /// selected segment is a rose pill, the rest are recessed text.
     /// The prep needs a club: its words, slip and opponent all come from his
@@ -170,15 +171,6 @@ struct MyTurnView: View {
 
     private var prepContext: MatchContext {
         MatchContext.current(page: live.page, team: appState.selectedTeam)
-    }
-
-    /// "Chelsea" before and just after the game, "This week" with none coming.
-    /// "Pregame talk" before a game, not the opponent's name: she may not
-    /// know yet who they are playing, and the section is what tells her
-    /// (Anton, 2026-10-01). Otherwise "This week".
-    private var prepLabel: String {
-        if case .before = prepContext.phase { return "Pre-game" }
-        return MyTurnModule.prep.label
     }
 
     /// A new fixture opens My Turn on its prep, once.
@@ -201,15 +193,15 @@ struct MyTurnView: View {
                     withAnimation(.spring(duration: 0.25)) { store.lastModule = module }
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 } label: {
-                    // Three segments share the width, so every label needs a
+                    // Four segments share the width, so every label needs a
                     // way down at the largest accessibility sizes: "Say This"
-                    // becomes "Lines", and any of the three will shrink to 60%
+                    // becomes "Lines", and any of the four will shrink to 60%
                     // before it truncates. The pill is clipped so a label that
                     // still cannot fit does not run over its neighbour.
                     // ViewThatFits does not help here — inside an HStack of
-                    // three flexible children it is proposed the ideal width
+                    // four flexible children it is proposed the ideal width
                     // and always takes the first rung.
-                    Text(module == .prep ? prepLabel : typeSize.isAccessibilitySize ? module.shortLabel : module.label)
+                    Text(typeSize.isAccessibilitySize ? module.shortLabel : module.label)
                         .font(.jakarta(15, weight: .medium))
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
@@ -221,7 +213,7 @@ struct MyTurnView: View {
                         .clipped()
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(module == .prep ? prepLabel : module.label)
+                .accessibilityLabel(module.label)
                 .accessibilityAddTraits(self.module == module ? .isSelected : [])
             }
         }
@@ -466,8 +458,8 @@ extension Date {
 
 extension MatchContext {
     /// The context My Turn is about. The screenshot harness can pin it with
-    /// `-gdLingoContext <fixture>`, the same flag the prep reads, so the
-    /// segment's label and the cards under it agree.
+    /// `-gdLingoContext <fixture>`, the same flag the prep reads, so every
+    /// module agrees on which game it is.
     static func current(page: TeamPageContent?, team: Team?, now: Date = .gdNow) -> MatchContext {
         #if DEBUG
         let args = ProcessInfo.processInfo.arguments

@@ -28,8 +28,8 @@ struct LingoOverheardView: View {
     /// "The words" on an unfinished round: the round is kept exactly where it
     /// is and the landing screen comes back, the way Quiz's "Packs" works. The
     /// four-second look-up is the reason Lingo exists; it cannot cost a round.
-    /// Where back goes: the prep's cards, or Lingo's words.
-    var backLabel = "Get ready"
+    /// Where back goes, by name: "Pre-game" or "Lingo".
+    var backLabel = "Pre-game"
     let onPause: () -> Void
     @Environment(AppState.self) private var appState
     /// The named player's "defender, Arsenal", open over the bubble after a tap
@@ -84,7 +84,7 @@ struct LingoOverheardView: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Back to the words. This round is paused.")
+            .accessibilityLabel("Back to \(backLabel). This round is paused.")
 
             Spacer(minLength: 0)
 

@@ -239,14 +239,15 @@ struct QuizView: View {
             Button { if let onExit { onExit() } else { paused = true } } label: {
                 HStack(spacing: 5) {
                     Image(systemName: "chevron.left").font(.system(size: 13, weight: .semibold))
-                    Text(onExit == nil ? "Packs" : "Get ready").font(.jakarta(15, weight: .medium))
+                    Text(onExit == nil ? "Packs" : "Pre-game").font(.jakarta(15, weight: .medium))
                 }
                 .foregroundColor(.warmWhite.opacity(0.75))
                 .padding(.vertical, 4)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Back to the packs. Your round stays where it is.")
+            .accessibilityLabel(onExit == nil ? "Back to the packs. Your round stays where it is."
+                                : "Back to Pre-game. Your round stays where it is.")
 
             HStack {
                 Text("Question \(round.index + 1) of \(round.questionIds.count)")
