@@ -3,6 +3,8 @@ import SwiftUI
 struct TeamPageView: View {
     let teamId: String
     @Environment(AppState.self) var appState
+    /// My Turn's Pre-game is built for the first followed club.
+    private var opensPrep: Bool { appState.selectedTeam?.rawValue == teamId }
     @State private var content: TeamPageContent?
     @State private var playerCards: [PlayerCard] = []
     /// Up to 4 insider items: latest of each type (stat, history, oddity,
@@ -502,7 +504,11 @@ struct TeamPageView: View {
             isExpanded: expandedCard == .comingUp,
             onTap: { toggleCard(.comingUp) },
             leadingImageURL: crest,
-            footerLabel: "Pre game talk ›",
+            // Pre-game is built for the first followed club, so the footer
+            // only goes there from that club's page. On a second club's page
+            // it opens the preview in place, as the whole card did before.
+            footerLabel: opensPrep ? "Pre-game ›" : "The preview ›",
+            onFooterTap: opensPrep ? { appState.pendingOpenPrep = true } : nil,
             zone1Collapsed: {
                 // One line of date + chips; stacked and wrapping at the
                 // accessibility sizes, where the row cut the date to "Sat, 10…".

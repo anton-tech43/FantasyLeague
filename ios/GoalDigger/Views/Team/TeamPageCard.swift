@@ -20,9 +20,12 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
     var leadingImageURL: URL? = nil
     /// The collapsed footer. Nil, the default, teases the talking point and
     /// falls back to "Tap for more ›". A card that opens onto something
-    /// specific names it instead ("Pre game talk ›") and goes on naming it
+    /// specific names it instead ("Pre-game ›") and goes on naming it
     /// once it has a talking point to show inside.
     var footerLabel: String? = nil
+    /// When set, the collapsed footer goes somewhere instead of opening the
+    /// card ("Pre-game ›" opens My Turn on Pre-game). Zone 1 still opens it.
+    var onFooterTap: (() -> Void)? = nil
     @ViewBuilder let zone1Collapsed: () -> CollapsedContent
     @ViewBuilder let zone1Expanded: () -> ExpandedContent
     /// One line at the usual sizes; at the accessibility sizes the collapsed
@@ -43,8 +46,8 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
             // Zone 2 — hotRose talking point area
             zone2View
                 .contentShape(Rectangle())
-                .onTapGesture { onTap() }
-                .modifier(TapZoneAccessibility(isButton: true, isExpanded: isExpanded, action: onTap))
+                .onTapGesture { zone2Action() }
+                .modifier(TapZoneAccessibility(isButton: true, isExpanded: isExpanded, action: zone2Action))
         }
         .cornerRadius(16)
         .clipped()
@@ -53,6 +56,10 @@ struct TeamPageCard<CollapsedContent: View, ExpandedContent: View>: View {
                 .stroke(Color.hotRose.opacity(isStatic ? 0.5 : 1.0), lineWidth: 2)
                 .padding(1)
         )
+    }
+
+    private func zone2Action() {
+        if !isExpanded, let go = onFooterTap { go() } else { onTap() }
     }
 
     // MARK: - Zone 1
