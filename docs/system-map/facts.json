@@ -1,0 +1,511 @@
+{
+  "generatedAt": "2026-10-07T22:29:04Z",
+  "db": true,
+  "counts": {
+    "edgeFunctions": 20,
+    "cronJobs": 22,
+    "migrations": 127,
+    "swiftFiles": 91,
+    "sharedModules": 35,
+    "routinePrompts": 16,
+    "rootDocs": 47
+  },
+  "edge": [
+    {
+      "name": "client-error-alert",
+      "callers": [
+        "edge"
+      ],
+      "billsPaidApi": false,
+      "canPush": true,
+      "lines": 165
+    },
+    {
+      "name": "content-audit",
+      "callers": [
+        "cron"
+      ],
+      "billsPaidApi": false,
+      "canPush": false,
+      "lines": 184
+    },
+    {
+      "name": "content-generator",
+      "callers": [
+        "edge"
+      ],
+      "billsPaidApi": true,
+      "canPush": false,
+      "lines": 1021
+    },
+    {
+      "name": "content-reviewer",
+      "callers": [
+        "edge"
+      ],
+      "billsPaidApi": true,
+      "canPush": false,
+      "lines": 364
+    },
+    {
+      "name": "data-fetcher",
+      "callers": [
+        "cron"
+      ],
+      "billsPaidApi": false,
+      "canPush": false,
+      "lines": 721
+    },
+    {
+      "name": "delete-my-data",
+      "callers": [
+        "ios"
+      ],
+      "billsPaidApi": false,
+      "canPush": false,
+      "lines": 109
+    },
+    {
+      "name": "diagnose-matchday",
+      "callers": [],
+      "billsPaidApi": false,
+      "canPush": false,
+      "lines": 293
+    },
+    {
+      "name": "live-brief-current",
+      "callers": [
+        "ios"
+      ],
+      "billsPaidApi": false,
+      "canPush": false,
+      "lines": 417
+    },
+    {
+      "name": "live-match-current",
+      "callers": [
+        "ios"
+      ],
+      "billsPaidApi": false,
+      "canPush": false,
+      "lines": 116
+    },
+    {
+      "name": "match-watcher",
+      "callers": [
+        "cron"
+      ],
+      "billsPaidApi": false,
+      "canPush": true,
+      "lines": 2456
+    },
+    {
+      "name": "matchday-reminder",
+      "callers": [
+        "cron"
+      ],
+      "billsPaidApi": false,
+      "canPush": true,
+      "lines": 444
+    },
+    {
+      "name": "matchday-scheduler",
+      "callers": [],
+      "billsPaidApi": false,
+      "canPush": false,
+      "lines": 211
+    },
+    {
+      "name": "morning-push",
+      "callers": [
+        "cron"
+      ],
+      "billsPaidApi": false,
+      "canPush": true,
+      "lines": 307
+    },
+    {
+      "name": "notification-sender",
+      "callers": [
+        "cron",
+        "edge",
+        "routine"
+      ],
+      "billsPaidApi": false,
+      "canPush": true,
+      "lines": 524
+    },
+    {
+      "name": "official-squads",
+      "callers": [
+        "cron"
+      ],
+      "billsPaidApi": false,
+      "canPush": false,
+      "lines": 83
+    },
+    {
+      "name": "quiz-current",
+      "callers": [
+        "ios"
+      ],
+      "billsPaidApi": false,
+      "canPush": false,
+      "lines": 86
+    },
+    {
+      "name": "register-dev-device",
+      "callers": [],
+      "billsPaidApi": false,
+      "canPush": false,
+      "lines": 77
+    },
+    {
+      "name": "team-page-generator",
+      "callers": [
+        "edge"
+      ],
+      "billsPaidApi": true,
+      "canPush": false,
+      "lines": 2319
+    },
+    {
+      "name": "team-season-state-generator",
+      "callers": [],
+      "billsPaidApi": true,
+      "canPush": false,
+      "lines": 412
+    },
+    {
+      "name": "team-season-state",
+      "callers": [],
+      "billsPaidApi": false,
+      "canPush": false,
+      "lines": 92
+    }
+  ],
+  "cron": [
+    {
+      "job": "content-audit-nightly",
+      "schedule": "30 3 * * *",
+      "active": true,
+      "calls": "content-audit"
+    },
+    {
+      "job": "cron_job_run_details_retention_sweep",
+      "schedule": "20 3 * * *",
+      "active": true,
+      "calls": "(sql)"
+    },
+    {
+      "job": "cron_job_run_details_vacuum",
+      "schedule": "25 3 * * *",
+      "active": true,
+      "calls": "(sql)"
+    },
+    {
+      "job": "gd-morning-push",
+      "schedule": "0 8 * * *",
+      "active": true,
+      "calls": "morning-push"
+    },
+    {
+      "job": "goaldigger-archive-old-content",
+      "schedule": "0 6 * * *",
+      "active": true,
+      "calls": "(sql)"
+    },
+    {
+      "job": "goaldigger-cron-heartbeat-check",
+      "schedule": "*/30 * * * *",
+      "active": true,
+      "calls": "check_pipeline_heartbeat"
+    },
+    {
+      "job": "goaldigger-daily-pipeline",
+      "schedule": "0 6-22/2 * * *",
+      "active": true,
+      "calls": "data-fetcher"
+    },
+    {
+      "job": "goaldigger-matchday-reminder",
+      "schedule": "0 7 * * *",
+      "active": true,
+      "calls": "matchday-reminder"
+    },
+    {
+      "job": "goaldigger-official-squads",
+      "schedule": "50 5 * * *",
+      "active": true,
+      "calls": "official-squads"
+    },
+    {
+      "job": "goaldigger-player-stats-sync",
+      "schedule": "40 6 * * *",
+      "active": true,
+      "calls": "public.sync_player_stats_from_raw"
+    },
+    {
+      "job": "goaldigger-players-sync",
+      "schedule": "30 5 * * *",
+      "active": true,
+      "calls": "public.sync_players_from_squads"
+    },
+    {
+      "job": "goaldigger-prep-reminder",
+      "schedule": "0 8,9 * * *",
+      "active": false,
+      "calls": "matchday-reminder"
+    },
+    {
+      "job": "match-status-reaper",
+      "schedule": "0 5 * * *",
+      "active": true,
+      "calls": "(sql)"
+    },
+    {
+      "job": "match-watcher-1min",
+      "schedule": "* * * * *",
+      "active": true,
+      "calls": "match-watcher"
+    },
+    {
+      "job": "notification-sweep",
+      "schedule": "15 * * * *",
+      "active": true,
+      "calls": "notification-sender"
+    },
+    {
+      "job": "pgnet_response_vacuum",
+      "schedule": "40 */6 * * *",
+      "active": true,
+      "calls": "(sql)"
+    },
+    {
+      "job": "pgnet_response_vacuum_full",
+      "schedule": "10 4 * * 0",
+      "active": true,
+      "calls": "(sql)"
+    },
+    {
+      "job": "pipeline_health_retention_sweep",
+      "schedule": "0 3 * * *",
+      "active": true,
+      "calls": "(sql)"
+    },
+    {
+      "job": "raw_fetch_logs_retention_sweep",
+      "schedule": "15 3 * * *",
+      "active": true,
+      "calls": "(sql)"
+    },
+    {
+      "job": "stale_rows_retention_sweep",
+      "schedule": "55 3 * * *",
+      "active": true,
+      "calls": "public.purge_stale_rows"
+    },
+    {
+      "job": "team_page_prose_history_retention_sweep",
+      "schedule": "40 3 * * *",
+      "active": true,
+      "calls": "(sql)"
+    },
+    {
+      "job": "team_page_prose_history_vacuum",
+      "schedule": "45 3 * * *",
+      "active": true,
+      "calls": "(sql)"
+    }
+  ],
+  "routines": [
+    {
+      "routine": "post_insider",
+      "observedVia": "pipeline_health",
+      "hoursUtc": [
+        "02"
+      ],
+      "lastProduced": "2026-10-07"
+    },
+    {
+      "routine": "post_live_brief",
+      "observedVia": "pipeline_health",
+      "hoursUtc": [
+        "12",
+        "14",
+        "19"
+      ],
+      "lastProduced": "2026-09-19"
+    },
+    {
+      "routine": "post_news",
+      "observedVia": "pipeline_health",
+      "hoursUtc": [
+        "05",
+        "06",
+        "07",
+        "09",
+        "13",
+        "15",
+        "16",
+        "20",
+        "21",
+        "22",
+        "23"
+      ],
+      "lastProduced": "2026-10-07"
+    },
+    {
+      "routine": "post_player_dossier",
+      "observedVia": "pipeline_health",
+      "hoursUtc": [
+        "17"
+      ],
+      "lastProduced": "2026-10-07"
+    },
+    {
+      "routine": "post_quiz",
+      "observedVia": "pipeline_health",
+      "hoursUtc": [
+        "11",
+        "19"
+      ],
+      "lastProduced": "2026-10-03"
+    },
+    {
+      "routine": "post_season_state",
+      "observedVia": "pipeline_health",
+      "hoursUtc": [
+        "01"
+      ],
+      "lastProduced": "2026-10-07"
+    },
+    {
+      "routine": "content_items:matchday",
+      "observedVia": "content_items",
+      "hoursUtc": [
+        "13",
+        "16",
+        "20",
+        "21",
+        "22"
+      ],
+      "lastProduced": "2026-09-20"
+    },
+    {
+      "routine": "content_items:news",
+      "observedVia": "content_items",
+      "hoursUtc": [
+        "05",
+        "06",
+        "07",
+        "15",
+        "22",
+        "23"
+      ],
+      "lastProduced": "2026-10-07"
+    },
+    {
+      "routine": "content_items:sunday_brief",
+      "observedVia": "content_items",
+      "hoursUtc": [
+        "09"
+      ],
+      "lastProduced": "2026-10-04"
+    },
+    {
+      "routine": "gd-team-page",
+      "observedVia": "team_page_prose_history",
+      "hoursUtc": [
+        "02",
+        "07"
+      ],
+      "lastProduced": "2026-10-05"
+    },
+    {
+      "routine": "gd-content-review",
+      "observedVia": "content_reviews",
+      "hoursUtc": [
+        "03"
+      ],
+      "lastProduced": "2026-10-06"
+    }
+  ],
+  "tables": [
+    {
+      "table": "content_items",
+      "rows": 3743,
+      "newest": "2026-10-07"
+    },
+    {
+      "table": "content_reviews",
+      "rows": 6,
+      "newest": "2026-10-05"
+    },
+    {
+      "table": "device_tokens",
+      "rows": 40,
+      "newest": "2026-10-07"
+    },
+    {
+      "table": "live_match_briefs",
+      "rows": 313,
+      "newest": "2026-09-19"
+    },
+    {
+      "table": "match_status_state",
+      "rows": 166,
+      "newest": "2026-09-19"
+    },
+    {
+      "table": "my_turn_content",
+      "rows": 4,
+      "newest": "2026-10-06"
+    },
+    {
+      "table": "pipeline_health",
+      "rows": 9239,
+      "newest": "2026-10-07"
+    },
+    {
+      "table": "player_cards",
+      "rows": 359,
+      "newest": "2026-10-07"
+    },
+    {
+      "table": "players",
+      "rows": 1818,
+      "newest": "2026-10-07"
+    },
+    {
+      "table": "raw_fetch_logs",
+      "rows": 13679,
+      "newest": "2026-10-07"
+    },
+    {
+      "table": "saturday_quiz_items",
+      "rows": 384,
+      "newest": "2026-10-03"
+    },
+    {
+      "table": "team_insider_items",
+      "rows": 5927,
+      "newest": "2026-10-07"
+    },
+    {
+      "table": "team_pages",
+      "rows": 73,
+      "newest": "2026-10-07"
+    },
+    {
+      "table": "team_season_state",
+      "rows": 72,
+      "newest": "2026-09-07"
+    },
+    {
+      "table": "teams",
+      "rows": 20,
+      "newest": "n/a"
+    }
+  ]
+}

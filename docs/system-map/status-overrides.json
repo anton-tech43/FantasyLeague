@@ -1,0 +1,27 @@
+{
+  "_why": "A mechanical caller sweep answers 'is anything wired to this?' — not 'can it actually run?'. These four have a caller that cannot fire. Each override names the gate that makes it so, and verify-arch-map.sh fails if that gate disappears from the source, so an override cannot outlive its own reason.",
+  "content-generator": {
+    "status": "dormant",
+    "reason": "data-fetcher calls it only when the CONTENT_GENERATOR_ENABLED secret is the string \"true\", and it is not.",
+    "gateFile": "backend/supabase/functions/data-fetcher/index.ts",
+    "gateText": "CONTENT_GENERATOR_ENABLED"
+  },
+  "content-reviewer": {
+    "status": "dormant",
+    "reason": "Only content-generator calls it, and that is gated off.",
+    "gateFile": "backend/supabase/functions/data-fetcher/index.ts",
+    "gateText": "CONTENT_GENERATOR_ENABLED"
+  },
+  "client-error-alert": {
+    "status": "live-but-unheard",
+    "reason": "notification-sender does call it on an APNs auth failure, so it is NOT dormant — the map said so and was wrong. But dev_alert_devices is empty, so every alert it sends reaches nobody. It recorded a 93% cron HTTP failure on 2026-09-20 and told no one.",
+    "gateFile": "backend/supabase/functions/notification-sender/index.ts",
+    "gateText": "client-error-alert"
+  },
+  "team-page-generator": {
+    "status": "live",
+    "reason": "data-fetcher calls it through triggerFunction(), which a functions/v1 grep misses. Live in dynamic_only mode; full mode is manual and bills the paid API.",
+    "gateFile": "backend/supabase/functions/data-fetcher/index.ts",
+    "gateText": "triggerFunction(\"team-page-generator\""
+  }
+}

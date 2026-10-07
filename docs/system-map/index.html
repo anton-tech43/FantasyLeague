@@ -1,0 +1,523 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GoalDigger System Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --rose:#E8397D; --mauve:#2D1B2E; --gold:#E8C547;
+  --ink:#241720; --ink-soft:#6B5C66; --ground:#FBF7F9; --card:#FFFFFF;
+  --line:#EADFE5; --line-soft:#F2E9EE; --code-bg:#F6EFF3;
+  --live:#2E8B4E; --dormant:#9B8FA0; --warn:#C2410C;
+  --n-store:#FBEFC9; --n-store-b:#D9BE55; --n-surface:#2E8B4E;
+  --display:"Fraunces",Georgia,serif; --body:"Plus Jakarta Sans",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ink:#F5F0F0; --ink-soft:#B4A3AE; --ground:#1B1020; --card:#2D1B2E;
+  --line:#423044; --line-soft:#37263A; --code-bg:#241730;
+  --live:#6FD896; --dormant:#8A7D90; --warn:#F0A878; --rose:#FF5C96;
+  --n-store:#4A3A1C; --n-store-b:#8E7430; --n-surface:#2E8B4E;
+  color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --ink:#F5F0F0; --ink-soft:#B4A3AE; --ground:#1B1020; --card:#2D1B2E;
+  --line:#423044; --line-soft:#37263A; --code-bg:#241730;
+  --live:#6FD896; --dormant:#8A7D90; --warn:#F0A878; --rose:#FF5C96;
+  --n-store:#4A3A1C; --n-store-b:#8E7430; color-scheme:dark;}
+
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);line-height:1.6;margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:20px;padding-block:0 88px}
+.wide{max-width:1500px}
+
+.mast{padding-block:52px 32px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--rose);font-weight:700;margin:0 0 14px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(32px,6vw,56px);line-height:1.03;margin:0 0 18px;text-wrap:balance;letter-spacing:-.02em}
+.lede{font-size:clamp(16px,2.2vw,19px);color:var(--ink-soft);max-width:62ch;margin:0 0 26px}
+.lede strong{color:var(--ink);font-weight:600}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.fact{background:var(--card);padding:13px 15px;min-width:0}
+.fact b{display:block;font-family:var(--display);font-size:25px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.fact span{display:block;font-size:11.5px;color:var(--ink-soft);margin-top:6px;line-height:1.35}
+
+nav{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--ground) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);margin-bottom:36px}
+nav .wrap{padding-block:0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav a{flex:0 0 auto;padding:13px 12px;font-size:13.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:2px solid transparent}
+nav a:hover{color:var(--ink)} nav a.on{color:var(--rose);border-bottom-color:var(--rose)}
+
+section{padding-block:30px 10px;scroll-margin-top:56px}
+h2{font-family:var(--display);font-size:clamp(25px,3.4vw,34px);font-weight:700;margin:0 0 10px;letter-spacing:-.01em}
+h3{font-family:var(--display);font-size:21px;margin:26px 0 8px}
+.sub{color:var(--ink-soft);max-width:72ch;margin:0 0 22px}
+p{max-width:72ch}
+code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+.model-tag{display:inline-block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--rose);margin-bottom:8px}
+
+/* ---------- the models ---------- */
+figure{margin:0 0 30px}
+.figscroll{overflow-x:auto;overflow-y:hidden;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px 10px}
+svg.model{display:block}
+figcaption{font-size:13.5px;color:var(--ink-soft);margin-top:10px;max-width:78ch}
+.scrollhint{font-size:12px;color:var(--ink-soft);margin:0 0 8px}
+
+.band{fill:var(--line-soft);opacity:.55}
+.bandlabel{font:600 12px var(--body);fill:var(--ink-soft);letter-spacing:.06em;text-transform:uppercase}
+.edge{fill:none;stroke-width:1.4}
+.e-flow{stroke:var(--ink-soft);opacity:.55}
+.e-read{stroke:var(--ink-soft);opacity:.42;stroke-dasharray:3 4}
+.e-dead{stroke:var(--dormant);opacity:.5;stroke-dasharray:2 5}
+.e-tree{stroke:var(--ink-soft);opacity:.4}
+.a-flow,.a-tree{fill:var(--ink-soft);opacity:.6}
+.a-read{fill:var(--ink-soft);opacity:.45}
+.a-dead{fill:var(--dormant);opacity:.5}
+.edge.lit{stroke:var(--rose);opacity:1;stroke-width:2.2}
+.elabel{font:500 10.5px var(--body);fill:var(--ink-soft);text-anchor:middle;stroke:var(--ground);stroke-width:3.5px;paint-order:stroke fill}
+
+.node{cursor:pointer}
+.node .box{fill:var(--card);stroke:var(--line);stroke-width:1.2}
+.node .nl{font:700 12.5px var(--body);fill:var(--ink)}
+.node .ns{font:500 10.5px var(--body);fill:var(--ink-soft)}
+.node .badge{font:700 8.5px var(--body);fill:var(--dormant);letter-spacing:.09em}
+.node.k-code .box,.node.k-device .box{fill:var(--mauve);stroke:#1C0F1D}
+.node.k-code .nl,.node.k-device .nl{fill:#FFF}
+.node.k-code .ns,.node.k-device .ns{fill:#C9B4C2}
+.node.k-model .box{fill:var(--rose);stroke:#B32560}
+.node.k-model .nl{fill:#FFF} .node.k-model .ns{fill:#FFE0EC}
+.node.k-store .box{fill:var(--n-store);stroke:var(--n-store-b)}
+.node.k-surface .box{fill:var(--n-surface);stroke:#1F6638}
+.node.k-surface .nl{fill:#FFF} .node.k-surface .ns{fill:#CDEBD8}
+.node.k-guard .box{fill:var(--card);stroke:var(--rose);stroke-width:1.8;stroke-dasharray:none}
+.node.k-fetch .box{fill:var(--card);stroke:var(--ink);stroke-width:1.6}
+.node.k-src .box{fill:none;stroke:var(--ink-soft);stroke-dasharray:4 4}
+.node.s-unheard .box{fill:var(--card);stroke:var(--warn);stroke-width:2.4;stroke-dasharray:6 3}
+.node.s-unheard .nl{fill:var(--warn)}
+.node.s-unheard .ns{fill:var(--ink-soft)}
+.node.s-unheard .badge{fill:var(--warn)}
+.tag.st-unheard{background:var(--warn);color:#fff}
+.node.s-dormant .box,.node.s-paused .box,.node.s-stale .box{fill:var(--line-soft);stroke:var(--dormant);stroke-dasharray:5 4;stroke-width:1.2}
+.node.s-dormant .nl,.node.s-paused .nl,.node.s-stale .nl{fill:var(--ink-soft)}
+.node.s-dormant .ns,.node.s-paused .ns,.node.s-stale .ns{fill:var(--dormant)}
+.node:hover .box{stroke:var(--rose);stroke-width:2.4}
+.node.sel .box{stroke:var(--rose);stroke-width:3}
+.node:focus{outline:none} .node:focus-visible .box{stroke:var(--rose);stroke-width:3}
+
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin:0 0 16px;font-size:12.5px;color:var(--ink-soft)}
+.legend b{display:inline-flex;align-items:center;gap:7px;font-weight:500}
+.sw{width:15px;height:13px;border-radius:3px;display:inline-block;border:1.2px solid var(--line)}
+.sw.code{background:var(--mauve);border-color:#1C0F1D} .sw.model{background:var(--rose);border-color:#B32560}
+.sw.store{background:var(--n-store);border-color:var(--n-store-b)} .sw.surface{background:var(--n-surface);border-color:#1F6638}
+.sw.guard{background:var(--card);border:1.8px solid var(--rose)} .sw.fetch{background:var(--card);border:1.6px solid var(--ink)}
+.sw.dead{background:var(--line-soft);border:1.2px dashed var(--dormant)}
+
+/* ---------- the panel ---------- */
+#panel{position:fixed;z-index:60;right:0;top:0;bottom:0;visibility:hidden;width:min(420px,92vw);background:var(--card);
+  border-left:1px solid var(--line);box-shadow:-18px 0 46px rgba(0,0,0,.14);transform:translateX(102%);
+  transition:transform .22s ease;overflow-y:auto;padding:22px 24px 60px}
+#panel.on{transform:none;visibility:visible}
+#pclose{position:sticky;top:0;float:right;margin:-6px 0 0 8px;border:0;background:var(--card);color:var(--ink-soft);
+  font-size:22px;line-height:1;cursor:pointer;padding:4px 8px;border-radius:8px}
+#pclose:hover{background:var(--code-bg);color:var(--ink)}
+#panel h3{font-family:var(--display);font-size:24px;margin:4px 0 2px;line-height:1.15}
+.psub{color:var(--ink-soft);font-size:13px;margin:0 0 14px;font-family:var(--mono)}
+.pwhat{font-size:14.5px;margin:0 0 18px;color:var(--ink-soft)}
+.plain{background:var(--code-bg);border-radius:11px;padding:13px 15px;margin:0 0 16px}
+.plain b{display:block;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--rose);margin-bottom:6px}
+.plain p{margin:0;font-size:15px;line-height:1.55}
+.ptags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tag{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--code-bg);color:var(--ink-soft)}
+.tag.k-model{background:var(--rose);color:#fff} .tag.k-guard{background:transparent;border:1.4px solid var(--rose);color:var(--rose)}
+.tag.st-dormant,.tag.st-paused,.tag.st-stale{background:var(--warn);color:#fff}
+.prow{display:grid;grid-template-columns:78px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--line-soft);font-size:13.5px}
+.pk{color:var(--ink-soft);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding-top:3px}
+.pv{min-width:0;overflow-wrap:anywhere}
+.pv code{font-size:11.5px;line-height:1.9}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:600 12px var(--body);border:1px solid var(--line);background:var(--ground);color:var(--ink);
+  padding:4px 10px;border-radius:999px;cursor:pointer}
+.chip:hover{border-color:var(--rose);color:var(--rose)}
+.more{font-size:12px;color:var(--ink-soft)}
+.blast{margin-top:14px;border-top:1px solid var(--line-soft);padding-top:12px}
+.blast summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--warn);letter-spacing:.02em;list-style:none}
+.blast summary::-webkit-details-marker{display:none}
+.blast summary::before{content:"▸ ";display:inline-block;transition:transform .15s}
+.blast[open] summary::before{content:"▾ "}
+.blast .prow{grid-template-columns:62px 1fr}
+
+/* ---------- prose + index ---------- */
+.fig{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;overflow-x:auto}
+.fig pre.mermaid{background:none;margin:0;display:flex;justify-content:center}
+.fig pre.mermaid svg text,.fig pre.mermaid svg .nodeLabel,.fig pre.mermaid svg .edgeLabel{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.fig pre.mermaid svg .edgeLabel,.fig pre.mermaid svg .edgeLabel *{fill:var(--ink-soft);color:var(--ink-soft);background:transparent;font-size:11.5px}
+.fig pre.mermaid svg .flowchart-link{stroke:var(--line)}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:16px 0}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)}
+.loose{border-left:3px solid var(--warn);padding:2px 0 2px 16px;margin:18px 0}
+.loose h4{margin:0 0 4px;font-size:15px}
+.loose p{margin:0;color:var(--ink-soft);font-size:14px}
+.search{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.search input{flex:1;padding:11px 14px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);font:inherit;font-size:14px}
+.count{font-size:12.5px;color:var(--ink-soft);white-space:nowrap}
+.idx-group h4{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--rose);margin:22px 0 8px}
+.idx-row{display:grid;grid-template-columns:270px 1fr;gap:16px;padding:8px 0;border-top:1px solid var(--line-soft);font-size:13.5px}
+.idx-row .f{font-family:var(--mono);font-size:12.5px;overflow-wrap:anywhere}
+.idx-row .w{color:var(--ink-soft)}
+.hide{display:none}
+@media(max-width:880px){
+  .idx-row{grid-template-columns:1fr;gap:3px}
+  .prow{grid-template-columns:1fr;gap:3px}
+  #panel{top:auto;left:0;right:0;width:auto;height:76vh;border-left:0;border-top:1px solid var(--line);
+    border-radius:16px 16px 0 0;transform:translateY(102%);box-shadow:0 -18px 46px rgba(0,0,0,.18)}
+  #panel.on{transform:none;visibility:visible}
+}
+</style>
+
+<nav><div class="wrap">
+  <a href="#start">Start</a>
+  <a href="#m1">1 · What runs when</a>
+  <a href="#m2">2 · Where the code lives</a>
+  <a href="#m3">3 · The timetable</a>
+  <a href="#m4">4 · What pushes</a>
+  <a href="#m5">5 · Not built</a>
+  <a href="#m6">6 · What broke</a>
+  <a href="#long">The long version</a>
+  <a href="#loose">Still loose</a>
+  <a href="#index">File index</a>
+</div></nav>
+
+<div class="wrap">
+<header class="mast" id="start">
+  <p class="eyebrow">GoalDigger · handover map · verified 7–8 October 2026</p>
+  <p class="scrollhint" id="factstamp" style="margin:-8px 0 16px"></p>
+  <h1>Six models of a system that mostly isn't code</h1>
+  <p class="lede">Everything GoalDigger shows a person is produced by something on a clock. There are <strong>three kinds of clock</strong> — pg_cron inside Postgres, the claude.ai routine scheduler, and one event path from the live-match engine — and they bill two different wallets. <strong>Click any box</strong>, in any of the six models, for a plain-English explanation first and the technical detail underneath: when it runs, what it reads and writes, which files implement it, and the thing that bites you.</p>
+  <div class="facts">
+    <div class="fact"><b data-fact="cronJobs">22</b><span>live pg_cron jobs, one of them in no migration</span></div>
+    <div class="fact"><b data-fact="routinePrompts">16</b><span>routine prompt files in the second repo</span></div>
+    <div class="fact"><b data-fact="edgeFunctions">20</b><span>Edge functions — 12 live, 8 dormant</span></div>
+    <div class="fact"><b>4</b><span>of those 20 can bill the paid API</span></div>
+    <div class="fact"><b>0</b><span>model calls in any live push</span></div>
+    <div class="fact"><b id="boxcount">390</b><span>boxes, every one of them clickable</span></div>
+  </div>
+</header>
+
+<section id="m1">
+  <span class="model-tag">Model 1 · for everyone</span>
+  <h2>What runs when</h2>
+  <p class="sub">Read left to right: something fires, data is gathered, a worker runs, a guard can say no, it lands in a table, and she sees it. Seven bands, newest clock first. The arrows show <strong>what writes what</strong> — what each thing <em>reads</em> is in its panel, because drawing every read would bury the flow.</p>
+  <div class="legend">
+    <b><i class="sw code"></i>deterministic code</b>
+    <b><i class="sw model"></i>a Claude call</b>
+    <b><i class="sw fetch"></i>grounding, no model</b>
+    <b><i class="sw guard"></i>a gate that can reject</b>
+    <b><i class="sw store"></i>a table</b>
+    <b><i class="sw surface"></i>reaches the user</b>
+    <b><i class="sw dead"></i>dormant, paused or stale</b>
+  </div>
+  <p class="scrollhint">Wide picture — scroll it sideways. Tap a box for the explanation.</p>
+  <figure><div class="figscroll" id="fig-m1"></div>
+    <figcaption>Every scheduled and event-driven path in the product, with the dormant ones drawn rather than omitted. Two things worth seeing at a glance: band 1 reaches a lock screen without ever touching the model, and band 7 is a complete second content pipeline that is switched off.</figcaption>
+  </figure>
+</section>
+
+<section id="m2">
+  <span class="model-tag">Model 2 · for whoever opens the repositories</span>
+  <h2>Where the code lives</h2>
+  <p class="sub">Two repositories, and they do not work the same way. One builds and deploys; the other ships by being committed, because a claude.ai routine pulls it at run time. Every file box links back to the part of Model 1 it implements — follow <em>See also</em> in the panel.</p>
+  <p class="scrollhint">Tap a box for what the file is for and what it will do to you.</p>
+  <figure><div class="figscroll" id="fig-m2"></div>
+    <figcaption>Grouped by area, not alphabetically. The boxes named “the other N” are real counts, so nothing is hidden by rounding.</figcaption>
+  </figure>
+</section>
+
+<section id="m3">
+  <span class="model-tag">Model 3 · for anyone asking “why then?”</span>
+  <h2>The timetable, and the reason for every hour</h2>
+  <p class="sub">The same information as Model 1, turned on its side. Here the question is not what connects to what, but <strong>what happens at 06:40 and why it is at 06:40 and not at 09:00</strong>. Several of these times are load-bearing: run two of them in the wrong order and the product is quietly wrong rather than visibly broken.</p>
+  <p class="scrollhint">All times UTC. Stockholm is two hours ahead in summer, one in winter. Tap any row for the whole reason.</p>
+  <figure><div class="figscroll" id="fig-m3"></div>
+    <figcaption>Read down. The night is for writing and cleaning, the early morning for collecting data before anything is written from it, and 07:00 to 09:00 is the only stretch aimed at a person being awake.</figcaption>
+  </figure>
+</section>
+
+<section id="m4">
+  <span class="model-tag">Model 4 · the one that costs you a user</span>
+  <h2>What is allowed to buzz her phone, and why</h2>
+  <p class="sub">A push is the only thing here that takes her attention without being asked. So the interesting half of this diagram is the band near the bottom: everything the product writes and then deliberately says nothing about. <strong>The default is silence.</strong></p>
+  <p class="scrollhint">Three columns: what happened, what decides, and the reason it is or is not worth interrupting her.</p>
+  <p class="sub"><strong>This model now lives in the repositories too.</strong> The same table, with the evidence behind every line, is <code>PUSH_RULES.md</code> in the app repo — pointed at from <code>CLAUDE.md</code>, <code>ARCHITECTURE.md</code> §5, <code>TIERS.md</code>, the routines README, <code>push-tiers.ts</code> and the downgrade block in <code>post_news.sh</code>. It is a contract rather than a description: <code>scripts/verify-push-rules.sh</code> reads the rules back out of the code — every function that imports the APNs client, every tier floor, every <code>force_reason</code> string — and fails if the page has not kept up. Eighteen documents in that repo already carry a “historical” banner for drifting quietly; this one cannot.</p>
+  <figure><div class="figscroll" id="fig-m4"></div>
+    <figcaption>Four pushes come from a match and none of them touches the model. One narrow path leads from the writing to a lock screen, and it is guarded twice. Everything else is published quietly on purpose.</figcaption>
+  </figure>
+</section>
+
+<section id="m5">
+  <span class="model-tag">Model 5 · read this before you build something</span>
+  <h2>What was deliberately not built</h2>
+  <p class="sub">The most expensive mistake a new engineer makes is not misreading the code — it is rebuilding something that was already considered, costed and put down, or re-opening a call that has an answer with a date on it. Every row is a decision taken by <em>not</em> doing the obvious thing. Where a condition would reverse it, that condition is in the third column.</p>
+  <p class="scrollhint">Left is what you would reach for. Right is why you should not, yet.</p>
+  <figure><div class="figscroll" id="fig-m5"></div>
+    <figcaption>Three bands: designs that were costed and shelved with a numeric trigger, code that was built and switched off, and places where the smaller design won on purpose. The dashed first arrow means “this is the thing we did not do”.</figcaption>
+  </figure>
+</section>
+
+<section id="m6">
+  <span class="model-tag">Model 6 · where the danger actually is</span>
+  <h2>What has gone wrong, in order</h2>
+  <p class="sub">Faster than any architecture diagram for working out where to be careful. Twenty-six dated incidents, each with what a user would have felt, how long it ran, and the rule it produced. <strong>Orange means nothing caught it</strong> — it ran wrong until a person happened to look.</p>
+  <p class="scrollhint">Two patterns repeat and are worth reading for: a job that reports success while doing nothing, and a rule that lives only in a prompt.</p>
+  <figure><div class="figscroll" id="fig-m6"></div>
+    <figcaption>Count the orange. Of the twenty-six, more than half were found by a person reading a screen rather than by a check — and in two cases the alarm that should have fired was itself the thing that was broken.</figcaption>
+  </figure>
+</section>
+
+<section id="long">
+  <span class="model-tag">The long version</span>
+  <h2>Three things the models can only hint at</h2>
+  <p class="sub">The diagrams show structure. These three need sentences.</p>
+</section>
+<section id="inference">
+  <span class="model-tag">For the AI engineer</span>
+  <h2>Where the model is called, and what each call costs</h2>
+  <p class="sub">There are exactly two billing worlds in this system, and confusing them once cost real money. Both are worth knowing before you run anything across all twenty clubs.</p>
+
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Where</th><th>What it writes</th><th>Billing</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>16 claude.ai routines</b><br><span class="pill p-code">goaldigger-routines</span></td>
+        <td>Every sentence a user reads: feed, insider, team-page prose, quiz, Sunday brief, dossiers, live briefs, full-time articles</td>
+        <td><span class="pill p-cost">subscription</span><br>Flat monthly fee, zero API credits</td>
+        <td><span class="pill p-live">live</span></td>
+      </tr>
+      <tr>
+        <td><b>team-page-generator</b> <code>mode: full</code></td>
+        <td>A complete team page rebuild for one club</td>
+        <td><span class="pill p-cost">API credits</span><br>~$0.045 per team page</td>
+        <td><span class="pill p-live">live</span>, single-team only</td>
+      </tr>
+      <tr>
+        <td><b>content-generator</b><br><b>content-reviewer</b><br><b>team-season-state-generator</b></td>
+        <td>Nothing — the original Edge-function content pipeline</td>
+        <td><span class="pill p-cost">API credits</span> if invoked</td>
+        <td><span class="pill p-dormant">dormant</span></td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <div class="note warn">
+    <b>The rule, and the day it was written</b>
+    <p>On 20 May 2026 a 50-team backfill through <code>team-page-generator</code> burned $4–5 of API credits in a few minutes and bottomed the account. The same work was available for nothing, because the data was already in <code>raw_fetch_logs</code>.</p>
+    <p>The standing rule: <strong>never loop a paid API call across teams.</strong> For any cross-team change, the order is SQL first, then a one-off routine, and only then an Edge function. <code>team-season-state-generator</code> still carries a warning in its header that a call with no <code>team_id</code> loops inference over every team.</p>
+  </div>
+
+  <h4>Two quota ceilings on the routine side</h4>
+  <p><strong>25 remote runs per day.</strong> A four-match Saturday already budgets about 19 of them. <strong>And roughly 30 fires per rolling hour, per routine</strong> — undocumented anywhere, discovered as HTTP 429s in the production log on 12 September. Any design that fires once per club breaks the first ceiling before it reaches the second.</p>
+
+  <h4>What the model is given, and what it is told to ignore</h4>
+  <p>Every payload from an external source is wrapped in an <code>&lt;external_data trust_level="untrusted"&gt;</code> fence, and the system prompt says embedded instructions inside that fence must be ignored. Our own data — the squad's season, the league table — is handed over <em>outside</em> the fence, because it is the record rather than someone's narrative.</p>
+  <p>Two grounding rules override the RSS entirely. A scoreline comes from <code>fixtures_last.score.fulltime</code>, never from match-report prose. A player's standing comes from the <code>players</code> table, never from how a transfer story framed him.</p>
+</section>
+<section id="guards">
+  <span class="model-tag">For the AI engineer</span>
+  <h2>The guard ladder</h2>
+  <p class="sub">The validator's design principle is counter-intuitive and was learned expensively: a card that never publishes is usually the worst outcome. Replaying 1,019 cards through reject-only guards published 99 of them. Through the repair-first ladder, 1,012.</p>
+
+<figure>
+<div class="fig"><pre class="mermaid">%%{init: {'theme':'base','themeVariables':{'primaryColor':'#E8397D','primaryTextColor':'#FFFFFF','primaryBorderColor':'#C42A66','lineColor':'#9B8FA0','secondaryColor':'#2D1B2E','tertiaryColor':'#E8C547','fontFamily':'ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif','fontSize':'13px','edgeLabelBackground':'transparent'},'flowchart':{'htmlLabels':false,'padding':14,'nodeSpacing':55,'rankSpacing':60}}}%%
+flowchart TB
+  IN["JSON from the model"] --> FIX["AUTO-FIX<br/>lengths, case, punctuation,<br/>house copy, card shape"]
+  FIX --> Q1{"prompt injection<br/>or PII?"}
+  Q1 -->|"yes"| NEVER["REJECTED<br/>any attempt"]
+  Q1 -->|"no"| Q2{"names a club<br/>outside the league?"}
+  Q2 -->|"yes, and no<br/>confirmed cup tie"| NEVER
+  Q2 -->|"no"| Q3{"calls a player important<br/>with no basis?"}
+  Q3 -->|"yes"| NEVER
+  Q3 -->|"no"| Q4{"voice or craft<br/>problem?"}
+  Q4 -->|"yes, attempt 1"| RETRY["rejected with a<br/>rewrite instruction"]
+  RETRY --> IN
+  Q4 -->|"yes, attempt 2"| SHIP["publishes anyway<br/>violation recorded"]
+  Q4 -->|"no"| Q5{"push-worthy?"}
+  Q5 -->|"no"| FEEDONLY["feed only<br/>never pushes"]
+  Q5 -->|"yes"| PUSH["feed and push"]
+  SHIP --> Q5
+
+  classDef code fill:#2D1B2E,stroke:#4A3450,color:#F5F0F0;
+  classDef model fill:#E8397D,stroke:#C42A66,color:#FFFFFF;
+  classDef store fill:#E8C547,stroke:#C9A830,color:#3A2D00;
+  classDef gate fill:#FAF0F4,stroke:#E8397D,color:#241720;
+  classDef dead fill:none,stroke:#9B8FA0,color:#9B8FA0,stroke-dasharray:6;
+  classDef out fill:#2E8B4E,stroke:#1F6B39,color:#FFFFFF;
+
+  class IN,FIX code;
+  class Q1,Q2,Q3,Q4,Q5 gate;
+  class NEVER dead;
+  class RETRY,SHIP store;
+  class FEEDONLY,PUSH out;
+</pre></div>
+<figcaption><b>Repair before you judge, and reserve rejection for content that would be worse than silence.</b> Replaying 1,019 cards through reject-only guards published 99 of them; through this ladder, 1,012. Only four things never publish — the three on the left, plus a news card written with the app's voice missing.</figcaption>
+</figure>
+
+  <div class="tbl-wrap"><table>
+    <thead><tr><th style="width:150px">Tier</th><th>What belongs here</th><th>Behaviour</th></tr></thead>
+    <tbody>
+      <tr><td><b>1 · AUTO-FIX</b></td><td>Anything mechanically repairable: length caps, lowercasing, terminal punctuation, dash glyphs, house copy substitutions, card shape</td><td>Applied silently and logged. <b>Never blocks.</b></td></tr>
+      <tr><td><b>2 · quality_fail</b></td><td>Voice and craft. Burned phrases, a talking point that interrogates her, two points saying the same thing, a missing analogy</td><td>Rejects on attempt 1 with a rewrite instruction. <b>Publishes anyway on attempt 2</b>, violation recorded.</td></tr>
+      <tr><td><b>3 · hard_fail</b></td><td>Unsafe or untrue</td><td><b>Never publishes. Any attempt.</b></td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>The complete list of things that never publish</h4>
+  <p class="sub">Short on purpose. Adding to it requires an argument for why shipping the imperfect version is worse than the customer getting nothing.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Guard</th><th>Why it exists</th></tr></thead>
+    <tbody>
+      <tr><td><b>Prompt injection</b></td><td>Routines ingest RSS, which an attacker can influence. A planted feed item could otherwise push to every subscriber of a club.</td></tr>
+      <tr><td><b>PII</b></td><td>Email, phone and card-shaped runs. Football content never legitimately needs them.</td></tr>
+      <tr><td><b>A result naming a club outside the league</b></td><td>A Chelsea article claimed wins over "Brighton, Luton, and Fulham". Luton are not in the division — the model reached for last season's memory. The cup exemption only lifts when the fixture's league is confirmed <em>in the database</em>, because a hallucinated league id would otherwise switch the guard off for exactly the card it exists for.</td></tr>
+      <tr><td><b>A standing claim with no basis</b><br><span class="pill p-code">added 7 Oct 2026</span></td><td>Calling a named player important, key or best — or asking a question that assumes it — requires declaring his minutes, league starts and squad rank, copied from the payload. The validator reads them back against the database and rejects the card if the player sits outside his club's ten most-used.</td></tr>
+      <tr><td><b>A news card with no written voice</b></td><td>Eight of 24 cards in the first weekly review shipped with the app's whole voice missing, reading as plain match reports. Serious subjects are exempt by design.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Push-eligibility downgrades</h4>
+  <p>A separate mechanism from rejection: the item publishes to the feed and simply never pushes. Seven of them, and they encode product judgement rather than correctness — a non-football celebrity reaction, a player's international duty written for his club feed, quiet hours between 21:00 and 06:00 UTC, an unconfirmed transfer rumour, an opaque teaser headline, and a full-time article whose push already went out.</p>
+
+  <div class="note gold">
+    <b>The two failure classes no guard catches</b>
+    <p><strong>A true sentence about the wrong person.</strong> On 30 September the "ones to know" card was naming players who were not playing — 20 of 60 picks outside their own squad's top fifteen by minutes, one of them a goalkeeper with no minutes at all. Every guard passed, because nothing on the card was false. A source can be accurate, current and complete and still produce something useless if it does not carry the dimension the surface is actually about.</p>
+    <p><strong>Cards that never existed.</strong> Every audit measures what shipped; none can see what did not. A 38-character title against a 35-character database constraint silently killed every Champions League qualification card, and nobody noticed, because the thing to notice was an absence.</p>
+  </div>
+
+  <h4>Testing them</h4>
+  <p>Every guard is tested <em>both ways</em> — one payload that must be rejected, and the legitimate payload it must not catch. The convention exists because the failure actually hit was a rule so strict it rejected correct house style. <code>bash test_guards.sh</code> runs 111 assertions offline in about a minute, with no network and no writes.</p>
+</section>
+<section id="data">
+  <span class="model-tag">Model 2 — where it lives</span>
+  <h2>The database</h2>
+  <p class="sub">27 tables, every one with row-level security enabled. The access posture is worth understanding before touching anything, because it was wrong for a year without being exploitable, and the reason is subtle.</p>
+
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Table</th><th class="num">Rows</th><th>What it is</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">raw_fetch_logs</td><td class="num">13,074</td><td>Every upstream payload, verbatim. 120 MB — the biggest table by far</td></tr>
+      <tr><td class="mono">team_insider_items</td><td class="num">5,927</td><td>The "things he doesn't know" cards</td></tr>
+      <tr><td class="mono">content_items</td><td class="num">3,743</td><td>The feed</td></tr>
+      <tr><td class="mono">players</td><td class="num">1,818</td><td>Squads and season stats, synced nightly</td></tr>
+      <tr><td class="mono">pipeline_health</td><td class="num">9,104</td><td>The observability log that everything writes to</td></tr>
+      <tr><td class="mono">team_pages</td><td class="num">73</td><td>One JSONB blob per entity — the whole His Team tab</td></tr>
+      <tr><td class="mono">device_tokens</td><td class="num">39</td><td>One row per device. Arrays of followed clubs and countries</td></tr>
+      <tr><td class="mono">match_status_state</td><td class="num">166</td><td>One row per watched fixture; the push idempotency markers live here</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>What the shipped key can do</h4>
+  <p>The app authenticates with a publishable key compiled into the binary. It can <code>SELECT</code> from 13 content tables and call exactly three functions — registering a device token, registering a Live Activity token, and saving a user's match predictions. It cannot insert, update or delete anything, anywhere.</p>
+
+  <div class="note warn">
+    <b>The thing to know before you write a new database function</b>
+    <p>Supabase's default privileges grant <code>anon</code> an <em>explicit</em> permission on every new table and function in <code>public</code>. A <code>REVOKE ... FROM PUBLIC</code> does not touch an explicit grant, so four separate migrations wrote a revoke, read as though they had closed a function, and left it callable with the key that ships in the App Store binary.</p>
+    <p>Worse: for functions this cannot be fixed by changing the default at all. Both documented forms were tested against this database and a freshly created function still came out callable. <strong>Every <code>CREATE FUNCTION</code> needs its own explicit revoke</strong>, and the only defence is noticing — which is what section 7 of <code>db-health.sh</code> does.</p>
+  </div>
+
+  <h4>The one script to run when something looks wrong</h4>
+  <p><code>./scripts/db-health.sh</code> runs from outside, over the same public internet the app uses, with the app's own key. Eight sections, and the first two exist to answer a question nothing else could: on 21 September the Supabase dashboard reported the database unhealthy for an hour while Postgres answered every query — PostgREST had fallen over, and the two look identical from the app. Section 8 asks whether the content is <em>true</em>, which is a different question from whether the jobs ran, and was added after a wrong card survived a month with every job reporting green.</p>
+</section>
+
+<section id="loose">
+  <span class="model-tag">Honest list</span>
+  <h2>Still loose</h2>
+  <p class="sub">Found while drawing this and deliberately not fixed, because changing the territory while mapping it is how a map ends up describing neither. In rough order of how much they would cost someone who did not know.</p>
+
+  <div class="loose"><h4>The smoke alarm has no one to call</h4>
+  <p><code>dev_alert_devices</code> has <strong>zero rows</strong>. <code>client-error-alert</code> works — it is called by <code>notification-sender</code> on every APNs auth failure — but every alert it has ever raised went nowhere. On 2026-09-19 and 2026-09-20 it recorded <code>pg_cron HTTP health degraded: 185 / 200 calls in last hour returned non-200 (93% failure)</code> and told nobody. The cause is one level down: <code>register-dev-device</code>, the function that would put a phone on that list, has no call site in the current app. <strong>This is the most actionable thing on this page</strong> — one row in one table turns the alarm back on.</p></div>
+
+  <div class="loose"><h4>Why nobody was pushed for a whole Premier League matchday — now known</h4>
+  <p>Four fixtures kicked off on Sunday 20 September and <code>match_status_state</code> recorded none of them. The cause was in <code>client_errors</code> the whole time: 57% of scheduled HTTP calls failed on the 19th, 93% on the 20th. The system detected its own outage, wrote it down, and had no recipient — see above. It is not reproducing: the scheduler answers every minute today and the league-picker correctly returns the Premier League for 10 and 11 October. <strong>Watch the first fixtures after this</strong>, and keep <code>db-health.sh</code> §8i in the loop.</p></div>
+
+  <div class="loose"><h4>A database password may still need rotating</h4>
+  <p>The 2026-10-04 QA report records that a failed <code>psql</code> attempt echoed <code>SUPABASE_DB_URL</code>, password included, into a session transcript, and asks for it to be rotated. I found no later record that it was. <strong>Unverified</strong> — worth two minutes to confirm either way.</p></div>
+
+  <div class="loose"><h4><code>schema.json</code> declares <code>additionalProperties:false</code> and omits <code>source_urls</code></h4>
+  <p>Which <code>PROMPT.md</code> requires and <code>post_news.sh</code> reads. The contract is a field behind reality. Fix it before adding anything to it.</p></div>
+
+  <div class="loose"><h4><code>goaldigger-prep-reminder</code> is paused, and the migration that unpauses it is not a <code>.sql</code> file</h4>
+  <p>Migration 126 set <code>active = false</code>; 129 changed the schedule without touching it; 130 is still named <code>.sql.PENDING_APP_RELEASE</code>. Unpause it when 2.3 ships.</p></div>
+
+  <div class="loose"><h4><code>client-error-alert</code> has no call site in the current app</h4>
+  <p>Its header says the app calls it. A full read of the Swift source found only a comment. So either client errors are not being reported, or the call is built from a non-literal URL. Worth settling before trusting it.</p></div>
+
+  <div class="loose"><h4><code>gd-season-state</code>'s own prompt still says the Edge path runs in production</h4>
+  <p>It does not — that generator was unscheduled in migration 022. The routine is the only writer. Separately, almost nothing reads what it writes: the onboarding primer is unreachable for new users (ONB-8), so the table is close to write-only.</p></div>
+
+  <div class="loose"><h4><code>add_facebook_sdk.rb</code> hardcodes version 2.2 / build 11</h4>
+  <p>The current build is 2.3 / 16. Harmless until someone re-runs it.</p></div>
+
+  <h3>Fixed on 7 October 2026, while drawing this</h3>
+  <div class="loose" style="border-left-color:var(--live)"><h4>A freshness guard that inverted into the bug it was written to prevent</h4>
+  <p><code>team_season_state</code> looked a month dead. It was not: the writing underneath was nightly and correct. <code>post_season_state.sh</code> only stamps the freshness column when the payload carries prose, and that test named <code>summary</code> — a field the prompt had been redesigned to stop producing in the same week. So from the day the guard was added, every write took the other branch and the timestamp froze. Fixed to name the fields the prompt actually emits, with <code>test_season_state_stamp.sh</code> behind it so it cannot drift silently again.</p></div>
+
+  <div class="loose" style="border-left-color:var(--live)"><h4>“Is the live pipeline broken, or is nobody playing?”</h4>
+  <p>Those look identical and the difference cost an hour here and an inconclusive paragraph in the 5 October content review. <code>db-health.sh</code> section 8i now answers it from the fixture cache. Its first draft cried wolf on a Crystal Palace friendly, which is the third time a check in that section has been broader than the rule it was auditing — it now uses the same covered-competition set the watcher itself polls.</p></div>
+
+  <div class="loose" style="border-left-color:var(--live)"><h4>The routines README contradicted itself twice</h4>
+  <p>It said “6 Premier League teams” (there are 20) and gave <code>gd-news</code> two different schedules in two sections. Settled against production — the log shows two runs a day, at 06:xx and 22:xx UTC and no other hour — and both corrected.</p></div>
+
+</section>
+
+<section id="index">
+  <span class="model-tag">Reference</span>
+  <h2>File index</h2>
+  <p class="sub">Everything Model 2 groups, listed flat and filterable. Try <code>push</code>, <code>guard</code>, <code>dormant</code> or <code>.sh</code>.</p>
+  <div class="search">
+    <input type="search" id="q" placeholder="Filter the index" autocomplete="off" aria-label="Filter the file index">
+    <div class="count" id="count"></div>
+  </div>
+  <div id="idx"></div>
+</section>
+</div>
+
+<aside id="panel" aria-live="polite"><button id="pclose" aria-label="Close">&times;</button><div id="pbody"></div></aside>
+
+<script src="data.js"></script>
+<script src="model3.js"></script>
+<script src="model5.js"></script>
+<script src="model6.js"></script>
+<script src="plain.js"></script>
+<script src="app.js"></script>
+<script src="files.js"></script>
+<script>
+const idx=document.getElementById('idx'),q=document.getElementById('q'),count=document.getElementById('count');
+let total=0;
+for(const [group,rows] of INDEX){
+  const g=document.createElement('div');g.className='idx-group';
+  const h=document.createElement('h4');h.textContent=group;g.appendChild(h);
+  for(const [file,what] of rows){
+    total++;const r=document.createElement('div');r.className='idx-row';
+    r.dataset.k=(file+' '+what).toLowerCase();
+    const a=document.createElement('div');a.className='f';a.textContent=file;
+    const b=document.createElement('div');b.className='w';b.textContent=what;
+    r.append(a,b);g.appendChild(r);
+  }
+  idx.appendChild(g);
+}
+function filter(){
+  const t=q.value.trim().toLowerCase();let shown=0;
+  for(const g of idx.children){let any=false;
+    for(const r of g.querySelectorAll('.idx-row')){
+      const hit=!t||r.dataset.k.includes(t);r.classList.toggle('hide',!hit);
+      if(hit){any=true;shown++;}}
+    g.classList.toggle('hide',!any);}
+  count.textContent=t?shown+' of '+total:total+' entries';
+}
+q.addEventListener('input',filter);filter();
+const links=[...document.querySelectorAll('nav a')];
+const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+const obs=new IntersectionObserver(es=>{for(const e of es){if(e.isIntersecting){
+  const i=secs.indexOf(e.target);links.forEach((l,n)=>l.classList.toggle('on',n===i));}}},
+  {rootMargin:'-60px 0px -70% 0px'});
+secs.forEach(s=>s&&obs.observe(s));
+</script>
