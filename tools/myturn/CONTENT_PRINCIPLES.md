@@ -205,6 +205,32 @@ pass and 50.6% after. Run `python3 tools/myturn/validate_overheard.py` for its s
 What a script cannot see is whether the surviving decoy is *believed*, which is why §8b is a
 human gate like §8.
 
+## 9. Pre-game
+
+Before a game the first segment is "Pre-game" ("This week" with no game coming): it gets her
+ready for that match, not for football in general (Anton, 2026-09-27). Three full-screen cards,
+in this order since 2026-10-01, because she cannot pick lines for a game against a side she has
+never heard of. Each goes small once it is done for this fixture.
+
+**"Get to know" the opponent** (`LiveClubPack.buildOpponent`), only when they are one of our 20
+clubs. Facts from their cached page and the league-wide sources (the last meeting off his own
+page), never their page's prose, which is written for someone who follows them. Two options per
+question, and his club's manager and fans' name are never offered as theirs. The kinds: manager
+(over his photo), table place, form (their last three games by name, when there are three), top
+scorer (over his photo, shirt number in the answer, skipped on a tie), the last meeting or else
+last season's place, nickname, fans' name where they have one, ground. Under four questions, no
+card.
+
+**7 words for the game** is the Overheard round (§7) at two options, dealt for this fixture: no
+word that is there only for the time of year, up to three that name one of their men and only
+when the word fits this game or any game, at most four named men and at most one of them ours.
+
+**Prepare some sayings for the game** is the slip (`LingoCalls.offer`): up to seven lines
+(migration 124), one of each band first, then two more likelies, a banker and a long shot. Never
+two lines on the same moment, never one the app cannot resolve, no slip without a banker. Saved
+lines are never pushed (3a57d21); afterwards the app marks the ones that came up, from the
+full-time result alone, and never claims one did not.
+
 ## Validation summary
 
 - quiz: `why`, `use`, `useType` required; caps above; superlative ban; every
