@@ -793,11 +793,11 @@ struct LingoView: View {
     @ViewBuilder
     private var wordList: some View {
         let knownIds = known
-        // No "23 of 158" under the label. It read as a completion meter on a
-        // syllabus she never signed up for, and it moves by at most seven a
-        // week, so it was imperceptible as well as wrong. The per-category
-        // counts stay: "12 of 46 got" is useful while she is in that fold.
-        MyTurnSectionLabel(text: "Words you've got")
+        // No "23 of 158" under the label, and no "12 of 46 got" on a fold
+        // (Anton, 2026-10-07): both read as a course she never signed up for.
+        // The buckets are still kept, because they decide which words come
+        // round again; they are just not shown as a score.
+        MyTurnSectionLabel(text: "All the words")
             .padding(.top, 8)
             .padding(.bottom, 2)
 
@@ -813,8 +813,7 @@ struct LingoView: View {
 
     @ViewBuilder
     private func categoryFold(_ category: LingoCategory, known: Set<String>) -> some View {
-        let all = content.terms.filter { $0.category == category }
-        let got = all.filter { known.contains($0.id) }.count
+        let count = content.terms.filter { $0.category == category }.count
         let open = isOpen(category)
 
         Button {
@@ -827,7 +826,7 @@ struct LingoView: View {
             }
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
         } label: {
-            MyTurnRow(title: category.tag, subtitle: "\(got) of \(all.count) got") {
+            MyTurnRow(title: category.tag, subtitle: "\(count) words") {
                 Image(systemName: "chevron.down")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.hotRose)
@@ -837,7 +836,7 @@ struct LingoView: View {
         .buttonStyle(.plain)
         // The tag, not the title: it is what the row says on screen, and a
         // VoiceOver label that names something else is a second control.
-        .accessibilityLabel("\(category.tag). \(got) of \(all.count) got.")
+        .accessibilityLabel("\(category.tag). \(count) words.")
         .accessibilityHint(open ? "Hides the words" : "Shows the words")
 
         if open {
