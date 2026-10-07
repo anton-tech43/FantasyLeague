@@ -51,6 +51,18 @@ psql "$SUPABASE_DB_URL" -c 'select 1'
 **If the DB is unreachable** (no secret, auth fail, timeout): that IS the finding.
 Report it and push — do not skip the pass silently.
 
+**Known failure mode (first seen 2026-10-06):** `gd-env`'s network egress is HTTPS-to-an-
+allowlist only. Raw Postgres on port 5432 (and 6543) to the pooler host times out even
+though `SUPABASE_DB_URL` and credentials are fine: this is the environment's network policy,
+not the database being down. If `psql` hangs/times out but you haven't confirmed the host
+itself is unreachable, check whether PostgREST (`./scripts/db-health.sh` section 1) and the
+Supabase Data API (`$SUPABASE_URL/rest/v1/<table>` over HTTPS with `$SUPABASE_SERVICE_KEY`,
+same host, not blocked) still work. They cover A1, most of A4, and part of A6/A7 without a
+raw SQL session. They do **not** cover anything in `cron.*`, `pg_stat_activity`, `pg_proc`, or
+`information_schema` (no `public`-schema REST equivalent): A2, A3, and the rest of A8 have no
+fallback and stay blocked until a human adds the pooler host to this environment's allowed
+network egress (environment settings → Network access).
+
 JSONB null trap (from CLAUDE.md): `WHERE x IS NULL` does not match a JSONB literal
 `null`; use `WHERE x IS NULL OR jsonb_typeof(x) = 'null'`.
 
@@ -65,7 +77,7 @@ Goal: is the backend actually serving the app, and will it keep serving until Fr
 | A1 | Backend serving | `./scripts/db-health.sh` (or the `db-health-check` skill) | all layers OK | `RUNBOOK.md`, `DB_BASICS.md`; **push** |
 | A2 | pg_cron healthy | `cron.job_run_details` failures last 72h; no "job startup timeout" | no failed/looping jobs | see `project_db_maintenance` note; **auto-fix A3 first** |
 | A3 | pg_net bloat | row count of `net._http_response` | not growing unbounded | **AUTO-FIX**: truncate it (unlogged log table; this is the known cause of "job startup timeout" that starves pg_cron). Log rows removed. |
-| A4 | Routines producing | latest `content_items` per source (gd-news, gd-insider, gd-season-state, gd-quiz, gd-matchday) | each within its cadence window | a stale routine → **push** (its own repo is `anton-tech43/goaldigger-routines`; do not fix here) |
+| A4 | Routines producing | latest `content_items` per source (gd-news, gd-insider, gd-season-state, gd-saturday-quiz, gd-matchday) | each within its cadence window | a stale routine → **push** (its own repo is `anton-tech43/goaldigger-routines`; do not fix here) |
 | A5 | Push contract | `./scripts/verify-push-eligible.sh` | exit 0, no violations | **push** with the violations |
 | A6 | API balance sanity | is `team-page-generator` failing with IDLE_TIMEOUT? | function healthy or idle | IDLE_TIMEOUT pattern = **balance depleted, not broken** (`BACKFILL_RULES.md`). Do NOT refire. **Push.** |
 | A7 | Secret hygiene | `./scripts/pre-commit-secret-scan.sh`; `ls .claude/worktrees/` | clean; no stray worktrees holding `.env` | remove abandoned worktrees; **push** if a secret leaked |
@@ -111,9 +123,9 @@ Goal: nothing user-visible states something out of date going into the weekend.
 4. **Store / hardcoded copy**: price is **free** (never £4.99 — it was never restored
    after the World Cup); season strings current. Fix copy that has a known-correct
    value; push anything ambiguous.
-5. **World Cup surfaces are being retired** (branch `claude/retire-world-championship`).
-   Do not treat WC freshness as a permanent item; if a WC surface still exists and is
-   stale, prefer removal per the retirement work over refreshing it.
+5. **The World Championship is retired** (merged in d1e43e9; the countries have been
+   inactive since migration 079). A World Championship surface that still shows is a
+   bug to report, not data to refresh.
 
 ---
 
