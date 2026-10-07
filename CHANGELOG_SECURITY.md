@@ -283,4 +283,41 @@ than adding a third collision.
 
 ---
 
+## 2026-10-05: QA hardening, one shared gate, the cron key
+
+From the 2026-10-04 QA review (`QA_FIX_PLAN_2026-10-04.md`).
+
+**Applied (migration 129, verified live 2026-10-07):**
+- The three app RPCs validate their input: at most two club ids and two country ids,
+  each a slug we hold in `teams`; token length bounds; the sayings slip capped at seven
+  picks, 4 KB, 120 characters a line.
+- Registration rate limits: 1,000 new device tokens and 2,000 new Live Activity tokens an
+  hour (warnings into `pipeline_health` from 25 and 50). A token that is already
+  registered re-registers freely.
+- A nightly retention sweep: inactive device tokens and untouched push-to-start rows
+  after 90 days, `client_errors` after 90 days.
+- `REVOKE ALL ... FROM PUBLIC, anon, authenticated` on nine service-only tables
+  (`apns_jwt_cache`, `pipeline_health`, `client_errors`, `raw_fetch_logs`,
+  `dev_alert_devices`, `matchday_reminders_sent`, `match_watcher_ticks`,
+  `content_reviews`, `team_news_sources`), so they no longer depend on RLS alone.
+
+**Edge functions (6300299):** one shared, constant-time caller check
+(`_shared/require-service-auth.ts`), now also used by the two diagnostic functions; a
+token is deactivated only when APNs reports it dead; items are claimed before they are
+sent.
+
+**Rotated:** the cron credential is a random 80-character value since 2026-10-05, set in
+Vault and the matching Edge secret together by `scripts/rotate-cron-key.sh`; every cron
+call since has returned 200. `scripts/verify-cron-auth.sh` fails if a JWT ever comes back.
+
+**Corrections to earlier entries in this file:**
+- There have been three anon RPCs since migration 117 (`save_match_calls`), not two.
+- `107_drop_anon_token_write` was never applied; migration 120 did its job and it is
+  retired.
+- Duplicate migration numbers are 112, 117 and 124.
+
+**Checked 2026-10-07:** what the shipped key can reach, read-only: `SECURITY_PROBE_2026-10-07.md`.
+
+---
+
 *This changelog is authoritative. If you see a conflict between this document and older content in BUILD_PLAN.md or AGENT_CONTRACTS.md, this document reflects the latest decisions.*
