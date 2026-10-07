@@ -1,0 +1,102 @@
+[
+  {
+    "number": 1,
+    "name": "Citatet i centrum",
+    "description": "Ett stort citat och luftiga svarsrader. Uttrycket står i fokus."
+  },
+  {
+    "number": 2,
+    "name": "Kortleken",
+    "description": "Frågan ligger på ett fysiskt kort, med nästa kort aningen synligt bakom."
+  },
+  {
+    "number": 3,
+    "name": "Ordbrickan",
+    "description": "Ett av sju uttryck lyfts fram. Brickorna visar bara den pågående rundan."
+  },
+  {
+    "number": 4,
+    "name": "Gruppchatten",
+    "description": "Frågan känns som ett meddelande. Svaren är två tydliga repliker att välja mellan."
+  },
+  {
+    "number": 5,
+    "name": "Matchhäftet",
+    "description": "Fråga och svar samlas på en enda ljus sida med tydlig numrering."
+  },
+  {
+    "number": 6,
+    "name": "Stora ord",
+    "description": "Appens displaytypsnitt lyfter uttrycket; citatet ger sammanhang under."
+  },
+  {
+    "number": 7,
+    "name": "Två stora val",
+    "description": "Citat överst, två stora svarsfält under. Snabbt att läsa och trycka."
+  },
+  {
+    "number": 8,
+    "name": "Spelkorten",
+    "description": "Två stående svarskort med gott om yta för text, utan svepkrav."
+  },
+  {
+    "number": 9,
+    "name": "Fråga och val",
+    "description": "Mörkt frågefält möter en ljus svarsyta. Tydlig visuell uppdelning."
+  },
+  {
+    "number": 10,
+    "name": "Den vikta lappen",
+    "description": "Citatet får en liten pappersyta; svaren ligger som två separata remsor."
+  },
+  {
+    "number": 11,
+    "name": "Citatremsan",
+    "description": "En grafisk citatremsa och raka svarsrader. Mer attityd, samma tydlighet."
+  },
+  {
+    "number": 12,
+    "name": "En fråga i taget",
+    "description": "En cirkulär indikator visar positionen i rundan. Resten får vara lugnt."
+  },
+  {
+    "number": 13,
+    "name": "Sju synliga steg",
+    "description": "Hela rundan syns överst. Aktuell fråga skiljs från besvarade utan poängjakt."
+  },
+  {
+    "number": 14,
+    "name": "Redaktionellt",
+    "description": "Typografi, tunna linjer och numrerade val. Minimalt med kort och ramar."
+  },
+  {
+    "number": 15,
+    "name": "Hör och förstå",
+    "description": "En sammanhängande yta binder ihop det du hör och det du väljer."
+  },
+  {
+    "number": 16,
+    "name": "Kategorikortet",
+    "description": "Kategori och uttryck får tydlig plats. Bra orientering mellan olika sorters ord."
+  },
+  {
+    "number": 17,
+    "name": "Ordet på hyllan",
+    "description": "Uttrycket sitter som en liten etikett på ett stort citatkort."
+  },
+  {
+    "number": 18,
+    "name": "Fokuserat läsläge",
+    "description": "Renare spelyta, mindre navigationsbrus och stora läsbara svar."
+  },
+  {
+    "number": 19,
+    "name": "Rundans spår",
+    "description": "En smal vertikal indikator bredvid frågan visar var i rundan du är."
+  },
+  {
+    "number": 20,
+    "name": "GoalDigger, förfinad",
+    "description": "Närmast appen: bättre proportioner, tydligare citat, mer genomarbetade svar."
+  }
+]

@@ -1,0 +1,12 @@
+FIXTURE DATA for the linter test. Copied from team_pages.content.cards (leeds), read 2026-10-02. Illustrative: a real post must be given a fresh block.
+Leeds, 5th in the Premier League, 9 points from 5 games (2 wins, 3 draws, 0 losses).
+Next fixture: Arsenal.
+Head to head, the five most recent meetings, all won by Arsenal:
+Leeds 0-4 Arsenal (31 Jan 2026)
+Arsenal 5-0 Leeds (23 Aug 2025)
+Arsenal 4-1 Leeds (1 Apr 2023)
+Leeds 0-1 Arsenal (16 Oct 2022)
+Arsenal 2-1 Leeds (8 May 2022)
+Goals across the five: Arsenal 16, Leeds 2.
+Manager: Daniel Farke, German, at Leeds since July 2023, got them promoted. (team_pages summary; the human-verified value lives in teams.manager_name, check it before publishing.)
+Ground: Elland Road, Leeds.

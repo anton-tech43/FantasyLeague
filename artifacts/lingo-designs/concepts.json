@@ -1,0 +1,122 @@
+[
+  {
+    "number": 1,
+    "name": "The Edit",
+    "direction": "Modemagasin",
+    "description": "Kräm, vinrött och stora serifrubriker. Spelet blir veckans omslag."
+  },
+  {
+    "number": 2,
+    "name": "Wild Cards",
+    "direction": "Fysiskt kortspel",
+    "description": "Sneda kort, tydliga symboler och en rejäl spelknapp."
+  },
+  {
+    "number": 3,
+    "name": "On Air",
+    "direction": "Sport-tv",
+    "description": "Elektriskt blått, stora sändningsrubriker och en grafisk ljudvåg."
+  },
+  {
+    "number": 4,
+    "name": "The Group Chat",
+    "direction": "Meddelandeapp",
+    "description": "Dialogen tar över startsidan. Rundor känns som att kliva in i en konversation."
+  },
+  {
+    "number": 5,
+    "name": "Centre Circle",
+    "direction": "Fotbollstaktik",
+    "description": "Planlinjer och en central cirkel ersätter listan av kort."
+  },
+  {
+    "number": 6,
+    "name": "Pocket Arcade",
+    "direction": "Handhållen spelkonsol",
+    "description": "Pixelrutnät och en liten skärm ger omedelbar spelkänsla."
+  },
+  {
+    "number": 7,
+    "name": "Sunday Papers",
+    "direction": "Tidningsbilaga",
+    "description": "Tätare typografi, spalter och röd tryckfärg."
+  },
+  {
+    "number": 8,
+    "name": "Sticker Club",
+    "direction": "Samlaralbum",
+    "description": "Klistermärken, stämplar och lekfulla ytor som känns taktila."
+  },
+  {
+    "number": 9,
+    "name": "After Dark",
+    "direction": "Nattklubb",
+    "description": "Svart, syrligt lime och massiv typografi. En helt annan energi."
+  },
+  {
+    "number": 10,
+    "name": "Soft Play",
+    "direction": "Skandinavisk lekfullhet",
+    "description": "Mjuk aprikos, blå former och mycket luft."
+  },
+  {
+    "number": 11,
+    "name": "The Ticket",
+    "direction": "Matchbiljett",
+    "description": "En enda perforerad biljett organiserar hela upplevelsen."
+  },
+  {
+    "number": 12,
+    "name": "Soundcheck",
+    "direction": "Musikspelare",
+    "description": "En skiva, spårlista och uppspelning av en runda som ett mixtape."
+  },
+  {
+    "number": 13,
+    "name": "Word Atelier",
+    "direction": "Elegant typografistudio",
+    "description": "Nästan inget krom. Ett stort ord fungerar som grafiskt motiv."
+  },
+  {
+    "number": 14,
+    "name": "Colour Blocks",
+    "direction": "Bauhaus",
+    "description": "Primärfärger och stram geometri med olika stora spelblock."
+  },
+  {
+    "number": 15,
+    "name": "The Scrapbook",
+    "direction": "Personlig anteckningsbok",
+    "description": "Rutpapper, tejp och handskrivna marginaler."
+  },
+  {
+    "number": 16,
+    "name": "Electric Ribbon",
+    "direction": "Rörelse och sportmode",
+    "description": "Diagonala band ger tempo utan att fylla skärmen med kort."
+  },
+  {
+    "number": 17,
+    "name": "The Cabinet",
+    "direction": "Ordkollektion",
+    "description": "Färgade bokryggar och ett läshörn för spel och snabb uppslagning."
+  },
+  {
+    "number": 18,
+    "name": "Signal",
+    "direction": "Futuristisk instrumentpanel",
+    "description": "Monokromt blått med radar och tydlig rundindikering."
+  },
+  {
+    "number": 19,
+    "name": "The Punchline",
+    "direction": "Lekfull affisch",
+    "description": "Korall och stora citattecken. Humor får mest utrymme."
+  },
+  {
+    "number": 20,
+    "name": "Rose Club",
+    "direction": "GoalDigger vidareutvecklad",
+    "description": "Behåller plommon och rosa men bygger en egen stark spelidentitet."
+  }
+]

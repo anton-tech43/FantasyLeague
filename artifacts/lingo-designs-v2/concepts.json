@@ -1,0 +1,102 @@
+[
+  {
+    "name": "Frågan först",
+    "description": "Visar själva spelet innan du börjar. Ett citat är huvudmotivet.",
+    "cls": "quote-first"
+  },
+  {
+    "name": "En riktig kortlek",
+    "description": "Tre överlappande kort gör rundan till ett konkret objekt.",
+    "cls": "card-deck"
+  },
+  {
+    "name": "Sju uttryck",
+    "description": "Rundans innehåll syns som sju ordbrickor. Inga låsta nivåer.",
+    "cls": "seven"
+  },
+  {
+    "name": "Konversationen",
+    "description": "Bubblor visar både uttrycket och vad du får tillbaka.",
+    "cls": "conversation"
+  },
+  {
+    "name": "Matchhäftet",
+    "description": "En sammanhållen ljus yta på mörk bakgrund ger en tydlig start.",
+    "cls": "booklet"
+  },
+  {
+    "name": "Typografi med tryck",
+    "description": "Appens League Spartan används till ett konkret budskap.",
+    "cls": "display"
+  },
+  {
+    "name": "Den öppna frågan",
+    "description": "En fråga och två förhandsvisade val gör funktionen omedelbar.",
+    "cls": "teaser"
+  },
+  {
+    "name": "Spelbordet",
+    "description": "Små ordkort omger rundan. Lekfullt utan nya färger eller poängsystem.",
+    "cls": "tabletop"
+  },
+  {
+    "name": "Spela eller slå upp",
+    "description": "Två tydligt skilda behov får varsin yta.",
+    "cls": "two-paths"
+  },
+  {
+    "name": "Den vikta lappen",
+    "description": "Ett vikt hörn och en kort ordlista ger känslan av en liten fusklapp.",
+    "cls": "folded"
+  },
+  {
+    "name": "Citatväggen",
+    "description": "Olika stora citat skapar liv, med en stadig och tydlig spelstart.",
+    "cls": "quotes"
+  },
+  {
+    "name": "Rundan i centrum",
+    "description": "En cirkulär rundindikator blir fokus utan nivåer eller dagliga mål.",
+    "cls": "round"
+  },
+  {
+    "name": "Nästa kort",
+    "description": "En tydlig fortsättningsvy för en pausad runda, med nästa uttryck synligt.",
+    "cls": "resume"
+  },
+  {
+    "name": "Den redaktionella listan",
+    "description": "Tydlig hierarki och fina avdelare i stället för stora standardkort.",
+    "cls": "editorial"
+  },
+  {
+    "name": "Uttrycket och repliken",
+    "description": "Två visuella halvor visar hela nyttan med spelet redan från start.",
+    "cls": "two-halves"
+  },
+  {
+    "name": "Kategorier med innehåll",
+    "description": "Kategorierna visar exempelord i stället för tomma framstegsräknare.",
+    "cls": "category-led"
+  },
+  {
+    "name": "Den kompakta spelhyllan",
+    "description": "En tydlig runda i fokus, med snabb åtkomst till ord under.",
+    "cls": "shelf"
+  },
+  {
+    "name": "Sök först",
+    "description": "Snabb uppslagning får huvudplats, medan spelet är en egen tydlig inbjudan.",
+    "cls": "search-first"
+  },
+  {
+    "name": "Sju steg utan nivåstege",
+    "description": "Rundans sju frågor får en grafisk rytm, utan lås eller långsiktiga krav.",
+    "cls": "sequence"
+  },
+  {
+    "name": "GoalDigger, förfinad",
+    "description": "Närmast nuvarande app, men med starkare hierarki och ett verkligt frågeexempel.",
+    "cls": "refined"
+  }
+]
