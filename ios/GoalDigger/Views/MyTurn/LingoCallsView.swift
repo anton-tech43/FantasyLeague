@@ -1,11 +1,11 @@
 import SwiftUI
 
-/// Called it: the slip, on the Lingo weekend screen.
+/// Called it: the slip, in Pre-game.
 ///
-/// Before kick-off it offers her three lines she might get to say during the
-/// match, one near-certain, one likely, one long shot. She picks the ones she
-/// fancies and goes and watches the game. During it, the goal push that was
-/// going out anyway tells her when one of them landed.
+/// Before kick-off it offers her up to seven lines she might get to say during
+/// the match, from near-certain to long shot, one at a time: "Save for the
+/// game" or "Ignore for now". She goes and watches the game with the ones she
+/// saved, and they are also the first of "Your lines" in Say This.
 ///
 /// **It never asks whether she said it**, here or anywhere else. The app knows
 /// what happened on the pitch and that is the whole of it: no score, no streak,
@@ -27,15 +27,16 @@ struct LingoCallsView: View {
     /// This weekend. Before kick-off it deals the offer; after the match it is
     /// what ties the stored slip to the game that has just been played.
     let context: MatchContext
-    /// The offer filling the Lingo content, or the compact filled card on the
-    /// landing. `LingoView` decides which; this only draws it.
+    /// The offer filling the Lingo content, the compact filled card on the
+    /// landing, or (`.list`) the saved lines alone at the top of Say This's
+    /// "Your lines". The caller decides which; this only draws it.
     var presentation: Presentation = .inline
     /// She confirmed. The caller sends it to the device row; the pick is
     /// already saved locally by then, so a failed upload costs her nothing.
     let onConfirm: ([LingoCall]) -> Void
     @Environment(AppState.self) private var appState
 
-    enum Presentation { case takeover, inline }
+    enum Presentation { case takeover, inline, list }
 
     /// The cover comes first — "Prepare some sayings for the game" and its
     /// arrow — then the lines. Reset when the fixture changes.
@@ -59,7 +60,9 @@ struct LingoCallsView: View {
     }
 
     var body: some View {
-        if let slip {
+        if presentation == .list {
+            savedLines
+        } else if let slip {
             // She has acted — the compact "watching for these" card.
             filled(slip)
         } else if !played, presentation == .takeover {
@@ -258,7 +261,7 @@ struct LingoCallsView: View {
     /// Yes puts it on the slip, no does not, and both move her on. Past the
     /// last one the slip commits itself — including the empty one, because a
     /// slip she walked and fancied none of has to be remembered as walked or
-    /// the same three come back on every open, which is nagging.
+    /// the same lines come back on every open, which is nagging.
     private func answer(_ call: LingoCall, yes: Bool, of offered: [LingoCall]) {
         withAnimation(.easeInOut(duration: 0.2)) {
             if yes { picked.insert(call.id) }
@@ -317,7 +320,7 @@ struct LingoCallsView: View {
                 : played ? "\(landed) of \(mine.count) came up."
                 : "\(when)\(mine.count == 1 ? "1 line" : "\(mine.count) lines") on your slip."
             VStack(spacing: 8) {
-                MyTurnPractiseButton(title: played ? "What you called" : "Your sayings are ready",
+                MyTurnPractiseButton(title: played ? "What you called" : "Your lines are ready",
                                      subtitle: summary,
                                      systemImage: played ? "flag.checkered" : "checkmark",
                                      fill: .gold, ink: .charcoal, badge: .deepMauve, badgeInk: .gold,
@@ -335,7 +338,7 @@ struct LingoCallsView: View {
         let mine = picks(slip)
         if mine.isEmpty {
             // She walked the slip and fancied none of it. Stored, so the same
-            // three do not come back on every open, and said out loud, so the
+            // lines do not come back on every open, and said out loud, so the
             // card going quiet does not read as one that broke. No second ask
             // and nothing to undo: not picking costs nothing.
             if !played {
@@ -360,6 +363,35 @@ struct LingoCallsView: View {
                 }
             }
         }
+    }
+
+    /// Say This's "Your lines" leads with these: the lines saved on the slip,
+    /// under the game they are for, with nothing to change there (the slip is
+    /// filled in on Pre-game, and the server already has its copy). Only while
+    /// the game is ahead or on: afterwards they are "What you called" in
+    /// Pre-game, with the ones that came up marked.
+    @ViewBuilder
+    private var savedLines: some View {
+        if let slip, let game = gameLabel {
+            let mine = picks(slip)
+            if !mine.isEmpty {
+                VStack(alignment: .leading, spacing: Layout.cardSpacing) {
+                    Text(game)
+                        .font(.jakarta(14, weight: .semiBold))
+                        .foregroundColor(.warmWhite.opacity(0.7))
+                        .padding(.horizontal, 4)
+                        .accessibilityAddTraits(.isHeader)
+                    ForEach(mine) { row($0, landed: false) }
+                }
+            }
+        }
+    }
+
+    /// "For Leeds, Saturday", or "For Leeds, 18 October" further out. Nil once
+    /// the game has been played.
+    private var gameLabel: String? {
+        guard case .before(let opponent, let kickoff) = context.phase else { return nil }
+        return "For \(MatchContext.shortName(opponent)), \(MatchContext.dayLabel(kickoff, now: .gdNow))"
     }
 
     /// The calls she picked, in band order so the card reads the same way it

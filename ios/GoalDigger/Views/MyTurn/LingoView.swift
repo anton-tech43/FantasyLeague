@@ -500,19 +500,11 @@ struct LingoView: View {
         callsCard
     }
 
-    /// The published slip lines, or the harness's three while `lingo.json` has
-    /// no `calls` key to publish.
-    private var calls: [LingoCall] {
-        #if DEBUG
-        if LingoCalls.debugRequested { return LingoCalls.debugCalls }
-        #endif
-        return content.calls ?? []
-    }
+    private var calls: [LingoCall] { LingoCalls.published(content) }
 
-    /// Called it: three lines she might get to say, under the one thing to
-    /// press. Draws nothing at all when this fixture has no slip to offer and
-    /// she has none saved, which is every fixture until `lingo.json` carries
-    /// `calls`.
+    /// Called it: up to seven lines she might get to say, under the one thing
+    /// to press. Draws nothing at all when this fixture has no slip to offer
+    /// and she has none saved.
     private var callsCard: some View {
         // On the landing, once she has acted: the compact "watching for these"
         // card. Draws nothing while an offer is un-acted, because that is the
@@ -521,6 +513,8 @@ struct LingoView: View {
                        presentation: .inline) { _ in
             Task { await uploadSlip() }
         }
+        // `-gdPrepFocus calls` scrolls here, as it does to the offer.
+        .id("prep-calls")
         #if DEBUG
         .lingoFrame("calls")
         #endif

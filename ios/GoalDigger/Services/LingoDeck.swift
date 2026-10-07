@@ -737,7 +737,7 @@ struct MatchContext: Equatable {
     private static let dayMonthFormatter = labelFormatter("d MMMM")
 
     /// "Saturday" inside the week, "14 October" beyond it.
-    private static func dayLabel(_ date: Date, now: Date) -> String {
+    static func dayLabel(_ date: Date, now: Date) -> String {
         let cal = Calendar.current
         let days = cal.dateComponents([.day], from: cal.startOfDay(for: now),
                                       to: cal.startOfDay(for: date)).day ?? 0

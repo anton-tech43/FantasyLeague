@@ -392,6 +392,16 @@ enum LingoCalls {
     /// (migration 124).
     static let slipSize = 7
 
+    /// The lines the content publishes, or the harness's three under
+    /// `-gdLingoCalls`. Pre-game and Say This's "Your lines" read the same
+    /// list, so a slip planted for a screenshot shows in both.
+    static func published(_ content: LingoContent) -> [LingoCall] {
+        #if DEBUG
+        if debugRequested { return debugCalls }
+        #endif
+        return content.calls ?? []
+    }
+
     /// One seeded draw per call, so the offer does not move under her.
     private static func draw(_ fixtureKey: String, _ call: LingoCall) -> (UInt64, String) {
         var rng = LiveClubPack.SeededGenerator(seed: fixtureKey + "|" + call.id)

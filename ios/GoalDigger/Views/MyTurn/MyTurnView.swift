@@ -29,7 +29,7 @@ struct MyTurnView: View {
                 // survives a switch); accessibilityHidden keeps VoiceOver
                 // from reading the three you cannot see.
                 ZStack {
-                    SayThisView(content: content.sayThis, lingo: content.lingo, store: store)
+                    SayThisView(content: content.sayThis, lingo: content.lingo, store: store, context: prepContext)
                         .opacity(module == .sayThis ? 1 : 0)
                         .allowsHitTesting(module == .sayThis)
                         .accessibilityHidden(module != .sayThis)

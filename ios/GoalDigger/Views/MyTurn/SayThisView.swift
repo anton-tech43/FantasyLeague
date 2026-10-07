@@ -6,14 +6,17 @@ import SwiftUI
 /// Reveal shows the lines, so the words are not brand new when the match is on.
 /// Under it the bank stays, switched in place (no push, no back button in the
 /// nav bar): level 1 lists situations in three groups with "Your lines" pinned
-/// on top; level 2 shows the lines for one situation. Built for the
-/// four-second, one-hand look during a match, so the line is the biggest thing
-/// in the row.
+/// on top (the game's slip first, then what she saved here: one list, wherever
+/// she saved them from); level 2 shows the lines for one situation. Built for
+/// the four-second, one-hand look during a match, so the line is the biggest
+/// thing in the row.
 struct SayThisView: View {
     let content: SayThisContent
     /// For the "Lingo" chip on a line that leans on a real saying.
     let lingo: LingoContent
     @Bindable var store: MyTurnStore
+    /// The game Pre-game is about, so "Your lines" can lead with its slip.
+    let context: MatchContext
 
     /// The practise session. `@State`, not `MyTurnStore`: the module views stay
     /// mounted while the app runs, so it survives a segment switch, and a
@@ -36,7 +39,7 @@ struct SayThisView: View {
         return content.situations.first { $0.id == id }
     }
 
-    /// Starred lines with their situation, for the "Your lines" section.
+    /// Lines she saved here, with their situation, for "Your lines".
     private var starred: [(Situation, SayLine)] {
         let ids = store.starredLineIds
         var out: [(Situation, SayLine)] = []
@@ -88,8 +91,12 @@ struct SayThisView: View {
     /// fix the draw), `-gdSayReveal` reveals the first situation's lines,
     /// `-gdSayDone` jumps to the end of the ten, `-gdSayPaused` leaves the
     /// session open but drops back to the bank ("Continue · N of 10").
+    /// `-gdSaySave <line id>` saves one line, for a shot of "Your lines".
     private func applyPractiseArguments() {
         let args = ProcessInfo.processInfo.arguments
+        if let i = args.firstIndex(of: "-gdSaySave"), i + 1 < args.count, !store.isStarred(args[i + 1]) {
+            store.toggleStar(args[i + 1])
+        }
         guard args.contains("-gdSayPractise") else { return }
         let seed = args.firstIndex(of: "-gdSaySeed").flatMap { $0 + 1 < args.count ? UInt64(args[$0 + 1]) : nil } ?? 7
         var session = SayThisPractiseSession(situations: content.situations, seed: seed)
@@ -120,10 +127,14 @@ struct SayThisView: View {
         .padding(.top, 8)
         .padding(.bottom, 20)
 
-        // Your lines — the starred ones, one tap from the top of the tab.
+        // Your lines, one tap from the top of the tab: one list, whichever
+        // screen she saved them from (Anton, 2026-10-07). The game's slip
+        // first, under the game's name, then the ones saved here.
         MyTurnSectionLabel(text: "Your lines")
+        LingoCallsView(calls: LingoCalls.published(lingo), store: store, context: context,
+                       presentation: .list) { _ in }
         if starred.isEmpty {
-            Text("Star a line and it'll wait for you here.")
+            Text("Save a line with its star and it'll wait for you here.")
                 .font(.jakarta(14, weight: .regular))
                 .foregroundColor(.warmWhite.opacity(0.6))
                 .padding(.horizontal, 4)
