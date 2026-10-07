@@ -3,8 +3,8 @@
 Lingo used to test whether she could recall a definition. She never needs that. What she
 needs is the reverse: he, the telly, the group chat or a pundit says something, and she has to
 know what it meant, then have a line back. **Overheard** is that moment as a game: a chat
-bubble with the line she hears, three options for what it means, then the friend's
-explanation and the line she can say.
+bubble with the line she hears, two options for what it means (the gist and one decoy), then
+the friend's explanation and the line she can say.
 
 She is not a fan. She is being **briefed by a friend, not taught by a tutor**. If a line could
 sit in a textbook, rewrite it.
