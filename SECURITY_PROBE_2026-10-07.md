@@ -22,8 +22,8 @@ SELECT has_function_privilege('anon','net.http_post(text,jsonb,jsonb,jsonb,integ
 ```
 **Fix: not possible from our side.** Every grant here was made by `supabase_admin` (`nspacl`: `anon=U/supabase_admin`; `http_post` has `=X/supabase_admin`). A REVOKE run as `postgres` only warns "no privileges could be revoked" and leaves them in place, as tried and verified on 2026-10-07. Accepted risk: the guard is that `net` must never be added to the API's exposed schemas, and no SECURITY INVOKER function may pass user input to `net.*`. Only Supabase support could change the grants.
 
-### L2: unlimited fake device registrations
-`register_device_token` accepts any 64-hex string, so a script can fill `device_tokens` with junk. That bloats the table and means `notification-sender` attempts pushes to dead tokens. There is no data exposure. **Status: suspected.** Confirming it needs a write, so it wasn't tested. **Fix if it ever shows up:** monitor the row count in `db-health.sh` rather than rate-limiting now.
+### L2: fake device registrations (bounded)
+`register_device_token` accepts any well-formed token, so a script could add junk rows to `device_tokens`; `notification-sender` would then attempt pushes to dead tokens. There is no data exposure. **Bounded since migration 129:** new registrations are capped at 1,000 an hour for device tokens and 2,000 for Live Activity tokens, with a `pipeline_health` warning from 25 and 50 (triggers `enforce_token_rate_limit` and `enforce_la_token_rate_limit`, checked live 2026-10-07). Tokens already registered are not limited.
 
 ### ~~L3~~: withdrawn
 The four `*_write` policies are `TO service_role`. The audit query printed `USING (true)` but not the policy roles, so this was a false positive.
