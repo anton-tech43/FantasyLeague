@@ -7,6 +7,7 @@ What is true on **2026-10-07**. How it works: [ARCHITECTURE.md](./ARCHITECTURE.m
 - Released 2026-09-19 (Apple's lookup feed). Free, no in-app purchase. iPhone, iOS 17+.
 - Scope: the 20 Premier League clubs, up to two followed per device. Matches covered in the Premier League, Champions League, Europa League, Conference League, League Cup and FA Cup. The World Championship is retired (countries inactive, `CountryFollowing.isEnabled = false`).
 - Content comes from claude.ai routines (schedule: the goaldigger-routines README, "Schedules, in one place"). The `gd-maintenance` routine checks the system on Tuesdays and Fridays ([MAINTENANCE.md](./MAINTENANCE.md)).
+- **The claude.ai account that runs every routine is closing (noted 2026-10-07).** When it goes, all content and gd-maintenance stop and `match-watcher`'s routine URLs go dead. Every routine's config and the rebuild steps are in goaldigger-routines `REBUILD.md` + `triggers/`.
 - Server-side, so 2.2 users already have it:
   - live kickoff, goal, half-time and full-time pushes for followed clubs in all six competitions, gated per tier (`_shared/push-tiers.ts`); half-time and full-time end with a line to say;
   - Live Activities for club matches and cup ties;
