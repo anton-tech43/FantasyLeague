@@ -73,6 +73,16 @@ import {
   type Outcome,
   type ScorerRole,
 } from "../_shared/match-calls.ts";
+import {
+  type LastMatchState,
+  parseFixtureStats,
+  pickThreeNumbers,
+  renderGoals,
+  renderVerdict,
+  type ScorerInfo,
+  type SideStats,
+  sideGoals,
+} from "../_shared/last-match.ts";
 
 const FINISHED_STATUSES = new Set(["FT", "AET", "PEN"]);
 // Live = match is in play (or in HT pause). Both halves + extra time
@@ -615,6 +625,116 @@ async function writeTeamPostMatch(
     });
   } catch (e) {
     console.error(`writeTeamPostMatch failed for ${teamSlug} (non-fatal):`, e);
+  }
+}
+
+/// One /fixtures/statistics call at full time, for the Matchday tab's three
+/// numbers. Empty map on any failure: the card is still written, with the
+/// numbers the score and the goal minutes can give.
+async function fetchFixtureStats(fixtureId: number, apiKey: string): Promise<Map<number, SideStats>> {
+  try {
+    const resp = await fetch(
+      `${API_FOOTBALL_BASE}/fixtures/statistics?fixture=${fixtureId}`,
+      { headers: { "x-apisports-key": apiKey } },
+    );
+    const json = await resp.json().catch(() => null);
+    if (!json || (json.errors && Object.keys(json.errors).length > 0)) {
+      console.warn(`match-watcher: /fixtures/statistics fixture=${fixtureId} unusable (status=${resp.status})`);
+      return new Map();
+    }
+    return parseFixtureStats(json.response);
+  } catch (e) {
+    console.warn(`match-watcher: /fixtures/statistics fixture=${fixtureId} failed:`, e instanceof Error ? e.message : String(e));
+    return new Map();
+  }
+}
+
+const LAST_MATCH_TTL_DAYS = 7;
+
+interface LastMatchSide {
+  slug: string;
+  mySide: "home" | "away";
+  apiId: number;
+  oppApiId: number;
+  name: string;
+  oppName: string;
+  venue: "home" | "away";
+  gf: number;
+  ga: number;
+  state: LastMatchState;
+  fallback: string;
+  talkingPoint: string;
+}
+
+/// The Matchday tab's "After" card, merged into team_pages.content.cards like
+/// post_match. Non-fatal throughout: a failure here costs the card, never the
+/// pushes around it. A team with no team_pages row is a silent no-op.
+async function writeLastMatch(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  sides: LastMatchSide[],
+  fx: { fixtureId: number; kickoff: string; competition: string | null; unusualFinish: boolean },
+  ht: { home: number; away: number },
+  events: StoredGoalEvent[] | null | undefined,
+  apiKey: string,
+): Promise<void> {
+  try {
+    const { data: pages } = await supabase
+      .from("team_pages").select("team_id, content").in("team_id", sides.map((s) => s.slug));
+    if (!pages || pages.length === 0) return;
+    const stats = await fetchFixtureStats(fx.fixtureId, apiKey);
+    const ids = [...new Set((events ?? []).map((e) => e.playerApiId).filter((id): id is number => typeof id === "number"))];
+    const info = new Map<number, ScorerInfo>();
+    if (ids.length > 0) {
+      const { data } = await supabase
+        .from("players").select("api_player_id, name, number, goals, stats_updated_at").in("api_player_id", ids);
+      for (const r of data ?? []) {
+        info.set(r.api_player_id as number, {
+          name: r.name as string | null, number: r.number as number | null,
+          goals: r.goals as number | null, statsUpdatedAt: r.stats_updated_at as string | null,
+        });
+      }
+    }
+    for (const side of sides) {
+      const page = pages.find((p) => p.team_id === side.slug);
+      if (!page?.content) continue;
+      const goals = sideGoals(events, side.mySide);
+      const v = {
+        teamName: side.name, opponentName: side.oppName, state: side.state,
+        teamScore: side.gf, oppScore: side.ga,
+        ht: side.mySide === "home" ? { mine: ht.home, theirs: ht.away } : { mine: ht.away, theirs: ht.home },
+        goals, mine: stats.get(side.apiId) ?? {}, theirs: stats.get(side.oppApiId) ?? {},
+        unusualFinish: fx.unusualFinish, fallback: side.fallback,
+      };
+      const content = page.content as Record<string, unknown>;
+      const cards = (content.cards ?? {}) as Record<string, unknown>;
+      cards.last_match = {
+        fixture_id: fx.fixtureId,
+        kickoff: fx.kickoff,
+        finished_at: new Date().toISOString(),
+        competition: fx.competition,
+        opponent: side.oppName,
+        venue: side.venue,
+        team_score: side.gf,
+        opp_score: side.ga,
+        state: side.state,
+        verdict: renderVerdict(v),
+        talking_point: side.talkingPoint,
+        goals: renderGoals(goals, side.name, fx.kickoff, info),
+        numbers: pickThreeNumbers(v),
+        expires_at: new Date(Date.now() + LAST_MATCH_TTL_DAYS * 86_400_000).toISOString(),
+      };
+      content.cards = cards;
+      const { error } = await supabase.from("team_pages").update({ content }).eq("team_id", side.slug);
+      await logPipelineEvent(supabase, {
+        team_id: side.slug,
+        stage: "page_refresh",
+        status: error ? "failure" : "success",
+        target: `last_match:${side.slug}:${fx.fixtureId}`,
+        message: error ? error.message : (cards.last_match as { verdict: string }).verdict.slice(0, 160),
+      });
+    }
+  } catch (e) {
+    console.error(`writeLastMatch failed for fixture ${fx.fixtureId} (non-fatal):`, e);
   }
 }
 
@@ -2105,6 +2225,7 @@ async function handleRequest(req: Request): Promise<Response> {
               // A league game has no round worth naming ("Regular Season - 6"
               // parses to an empty label anyway); a cup tie does.
               const isCupTie = COVERED_CUP_LEAGUES.includes(fixtureLeagueId);
+              const lastMatchSides: LastMatchSide[] = [];
               const sides = [
                 { slug: homeTeamId, name: homeTeam.name, oppName: awayTeam.name,
                   venue: "home" as const, gf: homeGoals ?? 0, ga: awayGoals ?? 0,
@@ -2151,7 +2272,43 @@ async function handleRequest(req: Request): Promise<Response> {
                 await writeTeamPostMatch(
                   supabase, side.slug, card, CLUB_POST_MATCH_TTL_HOURS, fixtureId,
                 );
+                lastMatchSides.push({
+                  slug: side.slug,
+                  mySide: side.venue,
+                  apiId: side.venue === "home" ? homeApiId : awayApiId,
+                  oppApiId: side.venue === "home" ? awayApiId : homeApiId,
+                  name: side.name,
+                  oppName: side.oppName,
+                  venue: side.venue,
+                  gf: side.gf,
+                  ga: side.ga,
+                  state: pmState,
+                  fallback: card.text,
+                  talkingPoint: card.talking_point,
+                });
               }
+              // The Matchday tab's "After" card, after post_match so it reads
+              // the page that write left behind. Half-time from the same three
+              // sources, best first, as the "Called it" outcome below.
+              const feedHtLm = fx.score?.halftime;
+              const htLm = typeof feedHtLm?.home === "number" && typeof feedHtLm?.away === "number"
+                ? { home: feedHtLm.home, away: feedHtLm.away }
+                : typeof prior?.ht_home === "number" && typeof prior?.ht_away === "number"
+                ? { home: prior.ht_home as number, away: prior.ht_away as number }
+                : halfTimeGoals(goalEventsStored ?? prior?.goal_events);
+              await writeLastMatch(
+                supabase,
+                lastMatchSides,
+                {
+                  fixtureId,
+                  kickoff: kickoffTime,
+                  competition: isCupTie ? competitionProse(fixtureLeagueId) : null,
+                  unusualFinish: status === "AET" || status === "PEN",
+                },
+                htLm,
+                (goalEventsStored ?? prior?.goal_events) as StoredGoalEvent[] | null | undefined,
+                apiFootballKey,
+              );
             }
 
             // "Called it" at the whistle, per side. A shootout decides the
