@@ -1,5 +1,8 @@
 # Called it — the build contract
 
+> **Changed 2026-10-02:** the slip offers up to seven lines (migration 124, 7674a7f) and saved lines are not pushed (3a57d21), so Contract 3's push line is retired; the app marks the lines that came up from the full-time result alone.
+> The rest of this contract stands, with up to seven lines wherever it says three (the bands stay three).
+
 Anton, 2026-09-23: she picks two or three lines before kick-off, and the app tells her when the
 moment came. **The app never asks whether she said it.** It knows what happened; that is enough.
 Delivery rides the goal push that already goes out — no new notification.
