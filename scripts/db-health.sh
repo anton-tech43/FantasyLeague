@@ -537,6 +537,73 @@ else
   note "OK" "prose history is $((HIST / 1024)) kB"
 fi
 
+# 8i. Is the live pipeline quiet because it is broken, or because nobody is
+# playing? These look identical and the difference costs an hour every time.
+#
+# On 2026-10-07 `match_status_state` had nothing newer than a 2026-09-19
+# kickoff — eighteen days — which reads exactly like match-watcher having died.
+# It had not: there was genuinely nothing covered to watch. The 2026-10-05
+# content review hit the same wall from the other side, flagging a 17-day gap in
+# `live_match_briefs` and writing "may be the international break but nobody has
+# confirmed it". The calendar is sitting in the cache, so confirm it here rather
+# than guess twice.
+#
+# A real gap looks different, and this is what separates them: a club finished a
+# COVERED fixture newer than anything the watcher ever recorded.
+#
+# "Covered" is not a list invented here — it is the same set `poll_leagues()`
+# builds, which is what match-watcher actually polls. The first draft of this
+# check skipped that and read `response[0]` straight off the fixture cache, so
+# it failed on Crystal Palace v Bristol City (league 667, Club Friendlies,
+# 2026-10-03) — a match the watcher is supposed to ignore. That is the third
+# time a check in this section has cried wolf by being broader than the rule it
+# was auditing, so: scan the whole response, keep only covered competitions.
+LIVEGAP=$(qx "WITH covered AS (
+                SELECT DISTINCT t.league_id AS id FROM teams t
+                 WHERE t.is_active AND t.league_id IS NOT NULL AND t.entity_type <> 'tournament'
+                UNION SELECT unnest(ARRAY[2, 3, 848, 48, 45])),
+              fx AS (
+                SELECT DISTINCT ON (r.team_id, r.source) r.team_id, r.source, r.data
+                  FROM raw_fetch_logs r JOIN teams t ON t.id = r.team_id
+                 WHERE t.entity_type = 'club' AND t.is_active
+                   AND r.source IN ('api_football_fixtures_last','api_football_fixtures_next')
+                 ORDER BY r.team_id, r.source, r.fetched_at DESC),
+              f AS (
+                SELECT fx.source,
+                       (e->'league'->>'id')::int AS league_id,
+                       (e->'fixture'->>'date')::timestamptz AS kickoff
+                  FROM fx, LATERAL jsonb_array_elements(fx.data->'response') e
+                 WHERE e->'league'->>'id' ~ '^[0-9]+\$'
+                   AND e->'fixture'->>'date' IS NOT NULL),
+              watched AS (SELECT max(kickoff_time) AS k FROM match_status_state),
+              played  AS (SELECT max(kickoff) AS k FROM f
+                           WHERE source = 'api_football_fixtures_last'
+                             AND league_id IN (SELECT id FROM covered)
+                             AND kickoff < now() - interval '3 hours'),
+              nxt     AS (SELECT min(kickoff) AS k FROM f
+                           WHERE source = 'api_football_fixtures_next'
+                             AND league_id IN (SELECT id FROM covered)
+                             AND kickoff > now())
+              SELECT CASE
+                WHEN w.k IS NULL THEN 'GAP!no fixture has ever been watched'
+                WHEN p.k IS NULL THEN 'UNKNOWN!no covered fixture in the cache to compare against'
+                WHEN p.k > w.k + interval '6 hours'
+                  THEN 'GAP!a covered fixture kicked off at ' || to_char(p.k,'YYYY-MM-DD HH24:MI') ||
+                       ' UTC and the watcher never recorded it (newest watched: ' ||
+                       to_char(w.k,'YYYY-MM-DD HH24:MI') || ')'
+                ELSE 'OK!newest watched kickoff ' || to_char(w.k,'YYYY-MM-DD') ||
+                     ', next covered one ' || coalesce(to_char(n.k,'YYYY-MM-DD HH24:MI') || ' UTC','not scheduled yet')
+              END FROM watched w, played p, nxt n;")
+if [ "${LIVEGAP}" = "$QERR" ]; then
+  warn "could not read — this check did not run"
+else
+  case "${LIVEGAP%%!*}" in
+    OK)      note "OK" "a quiet live pipeline is explained by the calendar — ${LIVEGAP#*!}" ;;
+    UNKNOWN) warn "${LIVEGAP#*!}" ;;
+    *)       fail "match-watcher missed a covered fixture: ${LIVEGAP#*!}" ;;
+  esac
+fi
+
 echo
 echo "=========================================================="
 if [ "$FAILED" -eq 0 ]; then
