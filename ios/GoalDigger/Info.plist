@@ -66,7 +66,7 @@
 	<key>NSSupportsLiveActivitiesFrequentUpdates</key>
 	<true/>
 	<key>NSUserTrackingUsageDescription</key>
-	<string>This lets us see which ads brought you here, so we can keep the app free to try. Nothing else changes.</string>
+	<string>This lets us see which ads brought you here, so we can keep GoalDigger free. Nothing else changes.</string>
 	<key>FacebookAppID</key>
 	<string>920070997769781</string>
 	<key>FacebookClientToken</key>

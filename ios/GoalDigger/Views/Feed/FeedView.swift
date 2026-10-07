@@ -462,10 +462,14 @@ struct FeedView: View {
                             item: item,
                             feedContext: appState.activeContext,
                             appState: appState,
-                            // Use full screen height (not geo height) so each card
-                            // extends behind the tab bar — keeps the next card
-                            // fully off-screen instead of letting a slice peek.
-                            cardHeight: screenHeight,
+                            // The visible feed plus the strip behind the tab bar:
+                            // the card ends at the bottom of the screen, so the
+                            // next card stays fully off-screen. It used to be the
+                            // whole screen's height, which pushed the talking
+                            // point under the tab bar by the height of the club
+                            // pill above the feed.
+                            cardHeight: geo.size.height + geo.safeAreaInsets.bottom,
+                            bottomInset: geo.safeAreaInsets.bottom,
                             feedPosition: index,
                             isYourMove: isYourMove,
                             onZone1Tap: {

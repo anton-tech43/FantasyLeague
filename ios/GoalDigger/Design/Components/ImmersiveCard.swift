@@ -1,13 +1,18 @@
 import SwiftUI
 
 /// Full-screen two-zone immersive card for the feed.
-/// Zone 1 (65%): dark content area with headline + analogy/context + "press for more" hint
-/// Zone 2 (35%): rose (or gold) talking point area with scroll indicator
+/// Zone 1 (65% of what she sees): dark content area with headline + analogy/context + "press for more" hint
+/// Zone 2 (35% of what she sees): rose (or gold) talking point area, plus the strip behind the tab bar
 struct ImmersiveCard: View {
     let item: ContentItem
     let feedContext: FeedContext
     let appState: AppState
     let cardHeight: CGFloat
+    /// How much of the card's bottom sits behind the tab bar and the home
+    /// indicator. The talking point stays above it; only the scroll hint sits
+    /// in it. The iOS 26 floating tab bar covered the end of "Your move" on
+    /// every card when the card was sized to the whole screen (2026-10-07).
+    let bottomInset: CGFloat
     let feedPosition: Int
     let isYourMove: Bool
     let onZone1Tap: () -> Void
@@ -18,6 +23,7 @@ struct ImmersiveCard: View {
         feedContext: FeedContext,
         appState: AppState,
         cardHeight: CGFloat,
+        bottomInset: CGFloat = 0,
         feedPosition: Int = 0,
         isYourMove: Bool = false,
         onZone1Tap: @escaping () -> Void = {},
@@ -27,11 +33,17 @@ struct ImmersiveCard: View {
         self.feedContext = feedContext
         self.appState = appState
         self.cardHeight = cardHeight
+        self.bottomInset = bottomInset
         self.feedPosition = feedPosition
         self.isYourMove = isYourMove
         self.onZone1Tap = onZone1Tap
         self.onZone2Tap = onZone2Tap
     }
+
+    /// The zones split the part of the card she can see, not the part behind
+    /// the tab bar, so the 65/35 balance holds on every device.
+    private var zone1Height: CGFloat { (cardHeight - bottomInset) * Layout.immersiveZone1Ratio }
+    private var zone2Height: CGFloat { cardHeight - zone1Height }
 
     // MARK: - Card variant
 
@@ -162,7 +174,7 @@ struct ImmersiveCard: View {
             // keeps its share button separate, so only its talking point
             // carries the button trait (see zone2).
             zone1
-                .frame(height: cardHeight * Layout.immersiveZone1Ratio)
+                .frame(height: zone1Height)
                 .clipped()
                 .contentShape(Rectangle())
                 .onTapGesture { onZone1Tap() }
@@ -175,7 +187,7 @@ struct ImmersiveCard: View {
                 .accessibilityAddTraits([.isButton, .isHeader])
                 .accessibilityAction { onZone1Tap() }
             zone2
-                .frame(height: cardHeight * Layout.immersiveZone2Ratio)
+                .frame(height: zone2Height)
                 .contentShape(Rectangle())
                 .onTapGesture { onZone2Tap() }
         }
@@ -291,17 +303,22 @@ struct ImmersiveCard: View {
                         }
                         .accessibilityLabel("Share this card")
                     }
+                    // Shrinks rather than running under the tab bar when the
+                    // line is long or the text size is large.
+                    // ponytail: at accessibility sizes a long line still ends
+                    // in "…" below 60%; upgrade by letting zone 2 take more
+                    // of the card when the talking point needs it.
                     Text(talkingPoint)
                         .font(.jakarta(20, weight: .mediumItalic))
-                        .fixedSize(horizontal: false, vertical: true)
+                        .minimumScaleFactor(0.6)
                         .accessibilityAddTraits(.isButton)
                         .accessibilityAction { onZone2Tap() }
                 }
+                .padding(.top, 16)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
-                Spacer()
-
-                // Scroll indicator stays glued to the bottom (lives behind
-                // the tab bar where its translucency lets it hint through).
+                // Scroll indicator stays glued to the bottom, in the strip
+                // behind the translucent tab bar, where it hints through.
                 HStack {
                     Spacer()
                     VStack(spacing: 2) {
@@ -316,10 +333,10 @@ struct ImmersiveCard: View {
                     Spacer()
                 }
                 .padding(.bottom, 16)
+                .frame(height: bottomInset > 0 ? bottomInset : nil, alignment: .bottom)
                 .accessibilityHidden(true) // a swipe cue; VoiceOver scrolls on its own
             }
             .padding(.horizontal, 24)
-            .padding(.top, 16)
         }
         .foregroundColor(zone2TextColor)
     }
