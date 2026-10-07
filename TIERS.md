@@ -2,7 +2,9 @@
 
 **Status:** design, 2026-09-06. Supersedes the tier tables in `PRD.md` §3.2/§4 (which
 describe a volume model that was never built) and the one-line description in
-`ARCHITECTURE.md` §8. Nothing here is shipped yet — §6 is the build list.
+`ARCHITECTURE.md` §8. §6 is the build list: §6.3 shipped 2026-09-08
+(`_shared/push-tiers.ts`); §6.1 is half built (the `significance` column, migration
+086, is written, but nothing reads it for push yet); §6.2 is not built.
 
 ---
 
@@ -46,7 +48,7 @@ The rule this doc introduces:
 > everything we have for her club. What the tier decides is how much of it comes to her
 > lock screen without being asked.
 
-Gating in-app content is a punishment for someone who already paid and told us she wants
+Gating in-app content is a punishment for someone who already chose us and told us she wants
 less noise. Gating pushes is a service. The one exception is *actions* (quiz, group-chat
 prep) which are surfaced by default at Deep and available on demand for everyone else.
 
@@ -241,7 +243,7 @@ Also: delete or restore the dead `.startingXi` branch in `FeedView.applyTierFilt
 
 4 508 insider items exist and the only way to see one is to open the team page and scroll.
 Pick the freshest unseen one per followed club, push at 08:00 to tier 3. No generation
-cost — the rows are already paid for.
+cost: the rows already exist.
 
 ### 6.6 Group chat prep (M)
 
@@ -312,6 +314,6 @@ That is what §6.6 group-chat prep should be built around: not more facts, bette
    someone who picked "the one he brags about", and wrong for anyone else — which is
    exactly why the tier exists. Say if you want a ceiling.
 2. **Light and news.** I've drawn "big news only" as roughly 1–2 a week. If that reads as
-   too quiet to justify the price, the alternative is a weekly digest instead of nothing.
+   too quiet for her to keep the app, the alternative is a weekly digest instead of nothing.
 3. **Group chat prep tone.** Three lines she can send is the feature. Whether they are
    funny, informed, or both is a voice decision I'd rather you made than I did.
