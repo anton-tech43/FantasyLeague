@@ -21,16 +21,22 @@ struct OnboardingFlow: View {
     /// again and is mandatory. The country picker survives only in Settings,
     /// behind CountryFollowing.isEnabled, which is off.
     ///
+    /// What she gets comes before what we ask for (2026-10-07). The club's
+    /// facts and the manager follow the club pick straight away, "How it
+    /// works" explains the pushes, and only then come the mode and the two
+    /// permission asks, so she has seen something before she is asked
+    /// anything. The calendar ask stays in onboarding (Anton).
+    ///
     /// 0.  Welcome
     /// 1.  Her name
     /// 2.  His name
     /// 3.  PL club             — primary entity, mandatory (up to 2)
-    /// 4.  Tier selection      — dedication level
-    /// 5.  Notification ask    — system permission #1
-    /// 6.  Calendar opt-in     — system permission #2
-    /// 7.  Meet team           — entityId from the club
-    /// 8.  Meet the boss       — manager card
-    /// 9.  How it works        — closing pitch (scenarios)
+    /// 4.  Meet team           — entityId from the club
+    /// 5.  Meet the boss       — manager card
+    /// 6.  How it works        — what the app does, including the pushes
+    /// 7.  Tier selection      — how far she wants to take it
+    /// 8.  Notification ask    — system permission #1
+    /// 9.  Calendar opt-in     — system permission #2
     /// 10. (completion)        — MainTabView
     enum OnboardingStep: Int, CaseIterable {
         case welcome = 0
@@ -41,12 +47,12 @@ struct OnboardingFlow: View {
         // self-rate before she had seen anything. It was pulled from the flow
         // because nothing read the answer, and the view was kept "parked" for
         // a reintroduction that never came. Deleted 2026-09-23; git has it.
-        case tierSelection
-        case notificationPrompt
-        case calendar
         case meetTeam
         case meetManager
         case howItWorks
+        case tierSelection
+        case notificationPrompt
+        case calendar
     }
 
     /// The entity MeetTeamView + MeetManagerView load: the club picked at
@@ -114,19 +120,19 @@ struct OnboardingFlow: View {
                 case .hisName:
                     HisNameView { step = .plTeamOptional }
                 case .plTeamOptional:
-                    OptionalPLTeamView { step = .tierSelection }
-                case .tierSelection:
-                    TierSelectionView { step = .notificationPrompt }
-                case .notificationPrompt:
-                    NotificationPromptView { step = .calendar }
-                case .calendar:
-                    CalendarOptInView { step = .meetTeam }
+                    OptionalPLTeamView { step = .meetTeam }
                 case .meetTeam:
                     MeetTeamView(entityId: meetEntityId) { step = .meetManager }
                 case .meetManager:
                     MeetManagerView(entityId: meetEntityId) { step = .howItWorks }
                 case .howItWorks:
-                    HowItWorksView { completeOnboarding() }
+                    HowItWorksView { step = .tierSelection }
+                case .tierSelection:
+                    TierSelectionView { step = .notificationPrompt }
+                case .notificationPrompt:
+                    NotificationPromptView { step = .calendar }
+                case .calendar:
+                    CalendarOptInView { completeOnboarding() }
                 }
             }
         }

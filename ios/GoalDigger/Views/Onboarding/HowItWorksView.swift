@@ -39,7 +39,7 @@ struct HowItWorksView: View {
             .init(
                 icon: "hand.tap.fill",
                 title: "Tap anything you don't get",
-                body: "See a word underlined, like clean sheet or World Championship? Tap it for a quick, human explanation."
+                body: "See a word underlined, like Premier League or clean sheet? Tap it for a quick, human explanation."
             )
         ]
     }
