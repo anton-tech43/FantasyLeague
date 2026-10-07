@@ -318,6 +318,12 @@ call since has returned 200. `scripts/verify-cron-auth.sh` fails if a JWT ever c
 
 **Checked 2026-10-07:** what the shipped key can reach, read-only: `SECURITY_PROBE_2026-10-07.md`.
 
+**Narrowed 2026-10-07:** the shared caller check accepts two credentials, the cron key and
+`SERVICE_KEY`, which between them cover every caller (pg_cron and manual ops; inter-function
+calls and the routines). The auto-injected legacy service-role key is no longer accepted. All
+fifteen gated functions redeployed; cron calls verified 200 afterwards. The three functions
+retired in fc27c85 are confirmed absent from the deployed project.
+
 ---
 
 *This changelog is authoritative. If you see a conflict between this document and older content in BUILD_PLAN.md or AGENT_CONTRACTS.md, this document reflects the latest decisions.*

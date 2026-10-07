@@ -69,6 +69,7 @@ The claude.ai routines that write the content live in a **separate repo**, [`ant
 | **CHANGELOG_SECURITY.md** | Security changes, newest at the bottom. |
 | **tools/myturn/*.md**, **tools/audit/README.md** | My Turn editorial rules and the content audit. |
 | **docs/PRIVACY_POLICY_DRAFT.md** | The privacy policy text waiting to be published. |
+| **docs/TRACKING_PLAN.md** | Activation and behaviour tracking: definitions, events, build order (plan). |
 
 ### Shipped designs (still accurate as design records)
 CUP_COVERAGE_PLAN.md, HIS_TEAM_PREMATCH_PLAN.md, SCALING_50K.md. EVENT_DRIVEN_TEAM_PAGE.md is designed but deliberately not built.

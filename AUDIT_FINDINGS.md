@@ -14,7 +14,7 @@ is live: `STATUS.md`.
 | NEW-9 | My Turn | Bundled quiz, Say This and Lingo copy says he/him for every relationship type; the pronoun rule (ARCHITECTURE §1) is not applied there. | deferred: a content rewrite, not a swap |
 | ONB-4 | onboarding | No in-app nudge for someone who declined notifications; Settings shows the state and a way back. | product decision |
 | TIERS-6.1/6.2 | push | `content_items.significance` is written by the routines but nothing reads it for push volume (`TIERS.md`). | design, unbuilt |
-| OPS-1 | routines | `team_season_state` last written 2026-09-07; last matchday article 2026-09-20; the `gd-maintenance` cloud run cannot reach the database directly. | open |
+| OPS-1 | routines | `gd-season-state` last wrote `team_season_state` on 2026-09-07, still with last season's fixtures; only dormant country code and the unreachable primer read it. The `gd-maintenance` cloud run cannot reach the database directly. (The matchday-article gap since 2026-09-20 is the international window, not a fault.) | open, low |
 | OPS-2 | alerting | `dev_alert_devices` is empty, so `client-error-alert` reaches nobody. | open |
 | PRIV-1 | privacy | The new privacy policy (`docs/PRIVACY_POLICY_DRAFT.md`) is not published; Settings opens the site's home page. | open |
 | LOW | various | CONTENT-4/8/9/10, PUSH-9, country dossiers (dormant), NEW-20 (daily players download size), NEW-21 (debug fixtures in the release bundle). | accepted for now |

@@ -172,8 +172,9 @@ There is **no** content → review → send chain in production for pushes. The 
 - **Cron auth:** every cron `net.http_post` sends `Bearer get_cron_service_key()` (a
   SECURITY DEFINER accessor reading Vault `cron_service_key`; migrations 019/020).
   Functions deploy `--no-verify-jwt` and check the caller in code with
-  `_shared/require-service-auth.ts` (constant-time comparison against the Edge secret
-  `CRON_AUTH_KEY`). The key is a random secret, never a JWT: `IOS_GOTCHAS.md` §14,
+  `_shared/require-service-auth.ts` (constant-time comparison against the Edge secrets
+  `CRON_AUTH_KEY`, sent by pg_cron and manual ops, and `SERVICE_KEY`, sent by
+  inter-function calls and the routines). The cron key is a random secret, never a JWT: `IOS_GOTCHAS.md` §14,
   `scripts/verify-cron-auth.sh`, `scripts/rotate-cron-key.sh`. Never add the `net` schema
   to PostgREST's exposed schemas.
 
@@ -189,13 +190,16 @@ There is **no** content → review → send chain in production for pushes. The 
 - **Feed** (`Views/Feed/FeedView.swift`): immersive full-screen cards only (the classic
   list was removed). Keys everything off `appState.activeContext` (`.team` or
   `.everyoneTalking`, the cross-club "Football" feed); a first run lands on the first
-  followed club. Above the cards: the live box (T2+, club feed only, polled every 60 s)
-  and the Saturday Quiz card (T3, weekend window). Each card's rose half carries a line to
-  say; the detail view (`Views/Detail/ContentDetailView.swift`) has "Good to know", "Things
+  followed club. Pinned above the feed when notifications are off (denied, or never asked
+  after onboarding): a banner with "Turn them on" and "Not now" (hides it for 14 days).
+  Above the cards: the live box (T2+, club feed only, polled every 60 s) and the Saturday
+  Quiz card (T3, weekend window). Each card is the visible feed's height plus the strip
+  behind the tab bar, and its rose half carries a line to say above that strip; the detail view (`Views/Detail/ContentDetailView.swift`) has "Good to know", "Things
   to say", the backstory and, for matchday articles, "After the match" and "Ones to watch".
 - **Team page** (`Views/Team/TeamPageView.swift`, keyed with `.id(teamId)`): cache-first
   from `team_pages.content`; three tabs (Info, Calendar, Table with a League/Europe
-  switcher). Info cards: coming up or post-match (its "Pre game talk" footer expands the
+  switcher). Info cards: coming up or post-match (on the first followed club's page its
+  "Pre-game ›" footer opens My Turn on Pre-game; elsewhere "The preview ›" expands the
   card in place), mood, this week, the basics, the manager (portrait), ones to know,
   rivalry, form, season so far, insider (T2+), freshness.
 - **Caching:** `CacheService` (SwiftData, feed items) + `TeamPageCache` (UserDefaults
@@ -206,8 +210,8 @@ There is **no** content → review → send chain in production for pushes. The 
   `contentVersion` exists (`MyTurnContentService`). All of her state is one
   tolerant-decoded JSON blob in `MyTurnStore`.
   - **Prep** needs a followed club and always uses the first one, whatever the Feed
-    switcher shows. It is labelled "Pre-game" before a fixture and "This week" otherwise,
-    and opens itself once per new fixture (`MyTurnStore.prepShownFor`). Before a game it
+    switcher shows. It is always called "Pre-game" (segment and back buttons), and opens
+    itself once per new fixture (`MyTurnStore.prepShownFor`). Before a game it
     stacks three full-screen cards, each shrinking to a small row once done: **"Get to
     know {opponent}"** (a two-option quiz built on the phone by `LiveClubPack`, only for
     the 20 Premier League clubs), **"7 words for the game"** (an Overheard round dealt by
@@ -215,11 +219,14 @@ There is **no** content → review → send chain in production for pushes. The 
     (`LingoCalls.offer`: up to seven lines, saved with `rpc/save_match_calls` into
     `device_tokens.match_calls`, never pushed, marked "came up" on the phone after full
     time). After a game the segment shows "After {opponent}" and "What you called".
-  - **Quiz:** three options per question; bundled packs plus "His club, right now", "His
-    squad" and the opponent pack, built on the phone from the cached team page.
-  - **Lingo:** a 158-term dictionary in four groups plus a seven-word Overheard practice
-    round (two options).
-  - **Say This:** situations with Safe/Bold lines, starred lines and a practice mode.
+  - **Quiz:** three options per question; bundled packs plus "His club, right now" and "His
+    squad", built on the phone from the cached team page. The opponent quiz lives only in
+    Pre-game.
+  - **Lingo:** a 158-term dictionary in four groups (word counts, no progress counters)
+    plus a seven-word Overheard practice round (two options).
+  - **Say This:** situations with Safe/Bold lines and a practice mode. Its "Your lines" is
+    the one list of kept lines: the slip's lines for the game ahead first, then lines she
+    saved in Say This. One verb everywhere: "Save".
   - Rules and the validator: `tools/myturn/CONTENT_PRINCIPLES.md`,
     `tools/myturn/validate_content.py`. No streaks and no dailies by design: she did not
     choose this hobby. The one reminder is the day-before push (§5).
@@ -230,13 +237,14 @@ There is **no** content → review → send chain in production for pushes. The 
 - **Attribution:** Meta `FacebookCore` (app events + SKAdNetwork, no Login) auto-logs app
   activation from launch (`App/AppDelegate.swift`); `Services/AttributionService.swift`
   asks ATT. `PrivacyInfo.xcprivacy` declares tracking. There are no in-app analytics
-  events of our own.
+  events of our own yet; the plan is `docs/TRACKING_PLAN.md`.
 
 ## 7. Onboarding flow (current order)
 
 `welcome → herName → hisName (+ relationship) → plTeamOptional (required club, up to 2)
-→ tierSelection → notificationPrompt → calendar → meetTeam → meetManager → howItWorks`
-(`OnboardingFlow.OnboardingStep`, ten steps, none skipped). `completeOnboarding()` sets
+→ meetTeam → meetManager → howItWorks → tierSelection → notificationPrompt → calendar`
+(`OnboardingFlow.OnboardingStep`, ten steps, none skipped): what she gets comes before
+what we ask for. `completeOnboarding()` sets
 `hasCompletedOnboarding=true`, points the feed at the first club, marks the season primer
 as seen and calls `NotificationService.reregisterForFollowChange()` (the single
 canonical registration path). `SeasonPrimerView` is therefore unreachable.
