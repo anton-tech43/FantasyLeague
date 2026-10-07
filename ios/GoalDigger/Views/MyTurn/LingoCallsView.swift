@@ -101,11 +101,12 @@ struct LingoCallsView: View {
         Group {
             if !showedCover {
                 coverCard
+                    .containerRelativeFrame(.vertical) { h, _ in h * 0.82 }
             } else if let call = offered[safe: index] {
                 offerScreen(call, of: offered)
+                    .containerRelativeFrame(.vertical, alignment: .top)
             }
         }
-        .containerRelativeFrame(.vertical, alignment: .top)
         // A different fixture is a different slip, and this view stays mounted
         // across one arriving.
         .onChange(of: context.fixtureKey) { _, _ in
@@ -126,8 +127,9 @@ struct LingoCallsView: View {
             // to say during the match. The breaks are set by hand. Gold and
             // last in the prep since 2026-10-01: getting to know the other
             // side comes first, in the blush.
-            SketchCard(title: "Prepare some\nsayings for\nthe game", ink: .charcoal,
-                       arrow: .deepMauve, fill: .gold)
+            MatchdayCard(title: "Prepare some sayings for the game",
+                         text: "Pick up to seven lines to say while it's on. After full time, see which ones came up.",
+                         fill: .gold, ink: .charcoal, arrow: true)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -522,87 +524,5 @@ struct LingoCallsView: View {
         .background(Color.cardBackground)
         .cornerRadius(Layout.cardCornerRadius)
         .transition(.opacity)
-    }
-}
-
-/// The block arrow on the Called it cover: a rectangle tail into a triangle
-/// head, sharp-edged, the way Anton's sketch draws it rather than the tapered,
-/// rounded system `arrowshape.right.fill`.
-struct BlockArrow: Shape {
-    func path(in rect: CGRect) -> Path {
-        // Measured off Anton's sketch: a near-square block arrow (1:1), a shaft
-        // that is half the arrow's height, and a head that starts just past the
-        // midline — a chunky triangle, not a wide flat one.
-        let w = rect.width, h = rect.height
-        let shaftTop = h * 0.25
-        let shaftBottom = h * 0.75    // shaft is the middle 50% of the height
-        let headStart = w * 0.52      // head takes the right ~48%
-        var p = Path()
-        p.move(to: CGPoint(x: rect.minX, y: shaftTop))
-        p.addLine(to: CGPoint(x: rect.minX + headStart, y: shaftTop))
-        p.addLine(to: CGPoint(x: rect.minX + headStart, y: rect.minY))       // head top
-        p.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))                    // point
-        p.addLine(to: CGPoint(x: rect.minX + headStart, y: rect.maxY))       // head bottom
-        p.addLine(to: CGPoint(x: rect.minX + headStart, y: shaftBottom))
-        p.addLine(to: CGPoint(x: rect.minX, y: shaftBottom))
-        p.closeSubpath()
-        return p
-    }
-}
-
-/// The two full-screen cards — the blush Called it cover and the pink round
-/// hero — laid out the way Anton's two sketches place them. Every measure is a
-/// fraction of the card, taken off the sketches, so both cards land the same on
-/// every phone and differ only in colour:
-/// - the line: League Spartan Black at 14.5% of the card's width (the sketches'
-///   ~52pt on a 362pt card), inset 16pt, its letters starting at 42% of the
-///   card's height;
-/// - the arrow: square, 39% of the card's width, tip flush with the card's
-///   right edge, and its top three quarters of the way down the two rows of
-///   letters. Anchored to the line, not the card, so the two keep the sketch's
-///   ratio whatever the card's height: the shaft runs under the last row and
-///   the head rises beside it.
-/// The font is sized off the card rather than a token so "Get ready for" fits
-/// its row on every width and minimumScaleFactor never has to fire — the
-/// auto-shrink is what once drew the two cards at different sizes.
-struct SketchCard: View {
-    let title: String
-    let ink: Color
-    let arrow: Color
-    let fill: Color
-
-    var body: some View {
-        GeometryReader { geo in
-            let w = geo.size.width, h = geo.size.height
-            let size = w * 0.145
-            let side = w * 0.39
-            let top = h * 0.42          // where the letters start
-            // League Spartan Black: 0.72x the size for the first row of letters
-            // and 0.9x for each row after, top of the letters to the last
-            // baseline (two rows measure 1.62x). The sketch starts the arrow
-            // three quarters of the way down that block, however many rows.
-            let rows = CGFloat(max(1, title.split(separator: "\n").count))
-            let arrowTop = top + size * (0.72 + 0.9 * (rows - 1)) * 0.75
-            ZStack(alignment: .topLeading) {
-                Text(title)
-                    .font(.custom("LeagueSpartan-Black", size: size))
-                    .lineLimit(3)
-                    .minimumScaleFactor(0.5)
-                    .multilineTextAlignment(.leading)
-                    .foregroundColor(ink)
-                    .frame(width: w - 32, alignment: .leading)
-                    // The frame's top sits above the letters by the font's
-                    // ascent over its cap height; pull it up by that so the
-                    // letters, not the box, start at 42%.
-                    .offset(x: 16, y: top - size * 0.2)
-                BlockArrow()
-                    .fill(arrow)
-                    .frame(width: side, height: side)
-                    .offset(x: w - side, y: arrowTop)
-                    .accessibilityHidden(true)
-            }
-        }
-        .background(fill)
-        .cornerRadius(Layout.cardCornerRadius)
     }
 }

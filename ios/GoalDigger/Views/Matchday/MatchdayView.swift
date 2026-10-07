@@ -272,21 +272,50 @@ private struct ResultCard: View {
     }
 
     var body: some View {
+        MatchdayCard(title: scoreLine, text: card.verdict, fill: fill, ink: ink)
+    }
+}
+
+/// Matchday's one card shape (Anton's design, 2026-10-07): rounded, 82% of the
+/// screen so the next card shows below it, a title in League Spartan Bold and
+/// one or two serif lines under it. The result card on After, and each of the
+/// three Pre-game cards on Before, with a thin arrow when it is something to
+/// press.
+struct MatchdayCard: View {
+    let title: String
+    let text: String
+    let fill: Color
+    let ink: Color
+    var arrow = false
+
+    var body: some View {
         GeometryReader { geo in
             let width = geo.size.width - 36
             VStack(alignment: .leading, spacing: 10) {
-                Text(scoreLine)
+                Text(title)
                     .font(.spartanBold(30))
                     .tracking(-0.045 * 30)
-                    .lineLimit(1)
+                    .lineLimit(arrow ? 2 : 1)
                     .minimumScaleFactor(0.7)
-                Text(Self.verdict(card.verdict, size: Self.verdictSize(card.verdict, width: width)))
-                    .lineSpacing(2)
                     .fixedSize(horizontal: false, vertical: true)
+                if !text.isEmpty {
+                    Text(Self.verdict(text, size: Self.verdictSize(text, width: width)))
+                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
             .foregroundColor(ink)
             .padding(.horizontal, 18)
             .frame(width: geo.size.width, height: geo.size.height, alignment: .leading)
+            .overlay(alignment: .bottomTrailing) {
+                if arrow {
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 28, weight: .light))
+                        .foregroundColor(ink)
+                        .padding(22)
+                        .accessibilityHidden(true)
+                }
+            }
         }
         .background(fill)
         .clipShape(RoundedRectangle(cornerRadius: 10))

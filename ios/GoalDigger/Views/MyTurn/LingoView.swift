@@ -593,11 +593,12 @@ struct LingoView: View {
         Button {
             pressHero(weekend)
         } label: {
-            SketchCard(title: heroTitle(weekend), ink: .warmWhite, arrow: .deepMauve, fill: .hotRose)
+            MatchdayCard(title: heroTitle(weekend).replacingOccurrences(of: "\n", with: " "),
+                         text: heroLine, fill: .hotRose, ink: .white, arrow: true)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .containerRelativeFrame(.vertical)
+        .containerRelativeFrame(.vertical) { h, _ in h * 0.82 }
         .id("prep-hero")
         .accessibilityLabel("\(heroTitle(weekend).replacingOccurrences(of: "\n", with: " ")). Start.")
         #if DEBUG
@@ -697,11 +698,13 @@ struct LingoView: View {
                 }
                 withAnimation(.easeInOut(duration: 0.2)) { showingOpponentQuiz = true }
             } label: {
-                SketchCard(title: "Get to know\n\(club)", ink: .textPrimaryOnCard, arrow: .hotRose, fill: .cardBackground)
+                MatchdayCard(title: "Get to know \(club)",
+                             text: "A quick quiz on the side \(team?.shortName ?? "his team") play next, so their names mean something on the day.",
+                             fill: .cardBackground, ink: .textPrimaryOnCard, arrow: true)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .containerRelativeFrame(.vertical)
+            .containerRelativeFrame(.vertical) { h, _ in h * 0.82 }
             .id("prep-opponent")
             .accessibilityLabel("Get to know \(club). A quiz about the side you're playing.")
         }
@@ -714,6 +717,12 @@ struct LingoView: View {
         if case .before = weekend.context.phase { return "\(LingoWeekendDeck.roundLength) words for\nthe game" }
         let title = weekend.context.title
         return title.replacingOccurrences(of: " ", with: "\n", options: [], range: title.range(of: " "))
+    }
+
+    /// The serif line under "7 words for the game" (Matchday card, 2026-10-07).
+    private var heroLine: String {
+        if let continueLabel { return "\(continueLabel). Pick up where you left off." }
+        return "Seven words you'll hear during the game, and what each one means."
     }
 
     /// What the hero does when she presses it.
