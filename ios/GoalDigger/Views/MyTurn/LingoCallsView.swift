@@ -101,10 +101,10 @@ struct LingoCallsView: View {
         Group {
             if !showedCover {
                 coverCard
-                    .containerRelativeFrame(.vertical) { h, _ in h * 0.82 }
+                    .containerRelativeFrame(.vertical) { h, _ in h * MatchdayCard.beforeHeight }
             } else if let call = offered[safe: index] {
                 offerScreen(call, of: offered)
-                    .containerRelativeFrame(.vertical, alignment: .top)
+                    .containerRelativeFrame(.vertical, alignment: .top) { h, _ in h * MatchdayCard.beforeHeight }
             }
         }
         // A different fixture is a different slip, and this view stays mounted
@@ -152,20 +152,23 @@ struct LingoCallsView: View {
 
             Spacer(minLength: 28).frame(maxHeight: 88)
 
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 10) {
                 // The moment, in the same League Spartan the cover leads with,
                 // so answering reads as the next beat of one screen and not a
                 // new one.
+                // Matchday card type (2026-10-08): the title at 30pt Bold and
+                // the line in the serif, like the three cards before it.
                 Text(moment(call))
-                    .font(.calledItHeadline)
+                    .font(.spartanBold(30))
+                    .tracking(-0.045 * 30)
                     .foregroundColor(.textPrimaryOnCard)
-                    .minimumScaleFactor(0.55)
+                    .minimumScaleFactor(0.7)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
                 Text("\u{201C}\(appState.personalise(call.line))\u{201D}")
-                    .font(.jakarta(22, weight: .semiBold))
+                    .font(.garamond(20))
                     .foregroundColor(.hotRose)
-                    .lineSpacing(3)
+                    .lineSpacing(2)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
                 if let cue = call.cue {
@@ -185,13 +188,13 @@ struct LingoCallsView: View {
 
             answerButtons(call, of: offered)
         }
-        .padding(.horizontal, 22)
+        .padding(.horizontal, 18)
         .padding(.top, 20)
         .padding(.bottom, 24)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        // The same rounded blush card as the cover, so the flow is one surface.
+        // A Matchday card: the same corner as the three before it.
         .background(Color.cardBackground)
-        .cornerRadius(Layout.cardCornerRadius)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
         // Each line arrives from the right, the way the cover's arrow points.
         .id(call.id)
         .transition(.asymmetric(

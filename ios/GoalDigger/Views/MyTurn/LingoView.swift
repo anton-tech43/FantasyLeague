@@ -369,7 +369,9 @@ struct LingoView: View {
                         landing
                     }
                 }
-                .padding(.horizontal, Layout.screenPadding)
+                // Pre-game is Matchday › Before: the same edge as After, so
+                // the cards on both halves are one width.
+                .padding(.horizontal, mode == .prep ? MatchdayCard.edge : Layout.screenPadding)
                 .padding(.top, 12)
                 .padding(.bottom, 40)
             }
@@ -598,7 +600,7 @@ struct LingoView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .containerRelativeFrame(.vertical) { h, _ in h * 0.82 }
+        .containerRelativeFrame(.vertical) { h, _ in h * MatchdayCard.beforeHeight }
         .id("prep-hero")
         .accessibilityLabel("\(heroTitle(weekend).replacingOccurrences(of: "\n", with: " ")). Start.")
         #if DEBUG
@@ -704,7 +706,7 @@ struct LingoView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .containerRelativeFrame(.vertical) { h, _ in h * 0.82 }
+            .containerRelativeFrame(.vertical) { h, _ in h * MatchdayCard.beforeHeight }
             .id("prep-opponent")
             .accessibilityLabel("Get to know \(club). A quiz about the side you're playing.")
         }

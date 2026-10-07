@@ -218,7 +218,7 @@ private struct AfterView: View {
                     }
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, MatchdayCard.edge)
             .padding(.top, 2)
             .padding(.bottom, 24)
         }
@@ -282,6 +282,12 @@ private struct ResultCard: View {
 /// three Pre-game cards on Before, with a thin arrow when it is something to
 /// press.
 struct MatchdayCard: View {
+    /// Before's cards: 90% of the screen, more room around the words than the
+    /// result card's 82% (Anton, 2026-10-08).
+    static let beforeHeight: CGFloat = 0.9
+    /// Matchday's edge: the cards on both halves are the same width.
+    static let edge: CGFloat = 16
+
     let title: String
     let text: String
     let fill: Color
