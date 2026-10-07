@@ -82,15 +82,17 @@ Deno.test("extra time falls back to the plain sentence", () => {
 Deno.test("goal lines: season count only from a sync before kickoff", () => {
   const goals = sideGoals([ev("home", 23, null, { playerApiId: 7 }), ev("home", 88, null, { playerApiId: 7, isPenalty: true }), ev("away", 50)], "home");
   const kickoff = "2026-10-10T14:00:00Z";
-  const fresh = renderGoals(goals, "Arsenal", kickoff,
+  const fresh = renderGoals(goals, "Arsenal", "Leeds", kickoff,
     new Map([[7, { name: "Kai Havertz", number: 29, goals: 2, statsUpdatedAt: "2026-10-10T05:30:00Z" }]]));
-  eq(fresh.length, 2, "only his side's goals");
-  eq(fresh[0], { player: "Kai Havertz", api_player_id: 7, number: 29, minute: "23'", score: "1–0 Arsenal", line: "His 3rd goal of the season." }, "first goal");
-  eq(fresh[1].line, "His 4th goal of the season, from the penalty spot.", "second goal counts on");
-  const stale = renderGoals(goals, "Arsenal", kickoff,
+  eq(fresh.length, 3, "both sides' goals");
+  eq(fresh[0], { ours: true, team: "Arsenal", player: "Kai Havertz", api_player_id: 7, number: 29, minute: "23'", score: "1–0 Arsenal", line: "His 3rd goal of the season." }, "first goal");
+  eq(fresh[1].line, "The equaliser.", "their goal, from their side");
+  eq([fresh[1].ours, fresh[1].team, fresh[1].score], [false, "Leeds", "1–1 Leeds"], "their goal is named for them");
+  eq(fresh[2].line, "His 4th goal of the season, from the penalty spot.", "second goal counts on");
+  const stale = renderGoals(goals, "Arsenal", "Leeds", kickoff,
     new Map([[7, { name: "Kai Havertz", number: 29, goals: 3, statsUpdatedAt: "2026-10-10T15:00:00Z" }]]));
   eq(stale[0].line, "The opener.", "no count from a mid-game sync");
-  eq(stale[1].line, "Scored from the penalty spot.", "penalty still said");
+  eq(stale[2].line, "Scored from the penalty spot.", "penalty still said");
 });
 
 Deno.test("parseFixtureStats", () => {

@@ -216,10 +216,11 @@ There is **no** content → review → send chain in production for pushes. The 
   - **After {opponent}** lays out `team_pages.content.cards.last_match`, written once per
     side at full time by match-watcher (`_shared/last-match.ts`: deterministic, no model,
     one `/fixtures/statistics` call per game, kept seven days). A rounded result card (rose
-    for a win, red for a loss, blush for a draw; the score in League Spartan Bold, a
+    for a win or a loss, blush for a draw; the score in League Spartan Bold, a
     one-sentence verdict in Cormorant Garamond on two rows), then square rose-outlined
-    boxes: "Say this now", "Goal scorers" (his side's goals one at a time: the bundled
-    sticker, the official shirt number, the running score, one line) and "Three numbers
+    boxes: "Say this now", "Goal scorers" (every goal of the game, both sides, one at a
+    time: the bundled sticker when there is one, the official shirt number, the score it
+    made, one line) and "Three numbers
     that matter". Then "The full story" (the matchday article by `match_id`, hidden when
     there is none) and the next game.
   - **Before {next}** is Pre-game (below), always about the next game

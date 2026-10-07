@@ -719,7 +719,7 @@ async function writeLastMatch(
         state: side.state,
         verdict: renderVerdict(v),
         talking_point: side.talkingPoint,
-        goals: renderGoals(goals, side.name, fx.kickoff, info),
+        goals: renderGoals(goals, side.name, side.oppName, fx.kickoff, info),
         numbers: pickThreeNumbers(v),
         expires_at: new Date(Date.now() + LAST_MATCH_TTL_DAYS * 86_400_000).toISOString(),
       };

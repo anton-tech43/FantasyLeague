@@ -258,24 +258,30 @@ export interface ScorerInfo {
 }
 
 export interface LastMatchGoal {
+  /// His side's goal, or theirs. Every goal of the game is on the card, in
+  /// the order they went in (Anton, 2026-10-07): "Only Leeds scored" told her
+  /// nothing she could repeat.
+  ours: boolean;
+  team: string;
   player: string;
   api_player_id: number | null;
   number: number | null;
   minute: string;
-  score: string; // "2–1 Arsenal"
+  score: string; // "2–1 Arsenal": the scoring side's score first, then its name
   line: string;
 }
 
-/// His side's goals, for the carousel: who, which number, the score it made,
-/// and one line about it.
+/// Every goal, for the carousel: who, which number, the score it made, and
+/// one line about it. Both sides, in time order.
 export function renderGoals(
   goals: SideGoal[],
   teamName: string,
+  opponentName: string,
   kickoff: string,
   info: Map<number, ScorerInfo>,
 ): LastMatchGoal[] {
   const seen = new Map<number, number>();
-  return goals.filter((g) => g.ours).map((g) => {
+  return goals.map((g) => {
     const i = g.playerApiId !== null ? info.get(g.playerApiId) : undefined;
     const name = g.isOwnGoal ? "Own goal" : (i?.name ?? g.player ?? "Goal");
     let line: string;
@@ -294,22 +300,27 @@ export function renderGoals(
       const how = g.isPenalty ? `from the penalty spot` : null;
       line = first ? `${first}${how ? `, ${how}` : ""}.` : how ? `Scored ${how}.` : `${scoreMeaning(g)}`;
     }
+    const [forS, againstS] = g.ours ? [g.mine, g.theirs] : [g.theirs, g.mine];
     return {
+      ours: g.ours,
+      team: g.ours ? teamName : opponentName,
       player: name,
       api_player_id: g.playerApiId,
       number: g.isOwnGoal ? null : (i?.number ?? null),
       minute: g.shownMinute,
-      score: `${g.mine}–${g.theirs} ${teamName}`,
+      score: `${forS}–${againstS} ${g.ours ? teamName : opponentName}`,
       line,
     };
   });
 }
 
-/// What a goal did to the score, for a scorer with no season count to quote.
+/// What a goal did to the score, from the scoring side, for a scorer with no
+/// season count to quote.
 function scoreMeaning(g: SideGoal): string {
-  if (g.mine === g.theirs) return `The equaliser.`;
-  if (g.mine === g.theirs + 1 && g.mine === 1) return `The opener.`;
-  if (g.mine === g.theirs + 1) return `Put them back in front.`;
-  if (g.mine < g.theirs) return `A goal back.`;
-  return `Made it ${g.mine}–${g.theirs}.`;
+  const [f, a] = g.ours ? [g.mine, g.theirs] : [g.theirs, g.mine];
+  if (f === a) return `The equaliser.`;
+  if (f === a + 1 && f === 1) return `The opener.`;
+  if (f === a + 1) return `Put them back in front.`;
+  if (f < a) return `A goal back.`;
+  return `Made it ${f}–${a}.`;
 }

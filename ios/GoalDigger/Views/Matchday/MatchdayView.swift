@@ -189,12 +189,12 @@ private struct AfterView: View {
 
                 OutlinedBox(label: "Goal scorers:") {
                     if card.goals.isEmpty {
-                        Text(noGoalsLine)
+                        Text("No goals. Nothing for either side to celebrate.")
                             .font(.jakarta(13.5, weight: .italic))
                             .foregroundColor(.softBlush)
                             .fixedSize(horizontal: false, vertical: true)
                     } else {
-                        ScorerPager(goals: card.goals, team: team)
+                        ScorerPager(goals: card.goals, team: team, opponent: card.opponent)
                     }
                 }
 
@@ -237,12 +237,6 @@ private struct AfterView: View {
             .contentShape(Rectangle())
     }
 
-    private var noGoalsLine: String {
-        card.oppScore == 0
-            ? "No goals. Nothing for either side to celebrate."
-            : "Only \(MatchdayView.short(card.opponent)) scored."
-    }
-
     /// "Next: Lille (home), Tuesday", or the date when it is more than a week off.
     private var nextLine: String? {
         guard let next, let date = ISO8601DateFormatter.lenient(next.date), date > .gdNow else { return nil }
@@ -253,7 +247,8 @@ private struct AfterView: View {
 }
 
 /// The rounded pink card: the score in League Spartan Bold, the verdict in a
-/// serif on two rows. Red after a loss, blush (with mauve type) after a draw.
+/// serif on two rows. Pink for a win or a loss, blush (with mauve type) after
+/// a draw.
 private struct ResultCard: View {
     let card: LastMatchCard
     let team: Team
@@ -261,7 +256,9 @@ private struct ResultCard: View {
     private var fill: Color {
         switch card.state {
         case .win: return .hotRose
-        case .loss: return Color(hex: "#D23A4A")
+        // Pink for a loss too (Anton, 2026-10-07): the brand has no red, and
+        // the score and the verdict already say they lost.
+        case .loss: return .hotRose
         case .draw: return .softBlush
         }
     }
@@ -359,33 +356,48 @@ private struct Quote: View {
     }
 }
 
-/// His side's goals, one at a time: the sticker, "7. Bukayo Saka", the score
-/// it made and one line. The rose chevron (or a swipe) goes to the next.
+/// Every goal, both sides, one at a time: the sticker when we have one, "7.
+/// Bukayo Saka", the score it made and one line. A goal with no sticker (the
+/// other side's, or anyone not yet imported) keeps the name and the line.
+/// The rose chevron (or a swipe) goes to the next.
 private struct ScorerPager: View {
     let goals: [LastMatchCard.Goal]
     let team: Team
+    let opponent: String
     @State private var index = 0
+
+    /// The club whose portraits to look in: his, or the opponent's when it is
+    /// one of the twenty. Nil for anyone else, and the name stands alone.
+    private func club(_ g: LastMatchCard.Goal) -> String? {
+        g.ours ? team.rawValue : Team.allCases.first { MatchContext.sameClub($0.displayName, opponent) }?.rawValue
+    }
 
     var body: some View {
         let i = min(index, goals.count - 1)
         let goal = goals[i]
+        let asset = goal.player == "Own goal" ? nil : PlayerPortrait.asset(club: club(goal), name: goal.player)
         VStack(spacing: 2) {
-            GeometryReader { geo in
-                ZStack {
-                    if let asset = PlayerPortrait.asset(club: team.rawValue, name: goal.player) {
+            if let asset {
+                GeometryReader { geo in
+                    ZStack {
                         Image(asset)
                             .resizable()
                             .scaledToFit()
                             .frame(width: geo.size.width * 0.96)
                             .accessibilityHidden(true)
+                        chevrons(i)
                     }
-                    if i < goals.count - 1 { chevron(right: true) { index = i + 1 } }
-                    if i > 0 { chevron(right: false) { index = i - 1 } }
+                    .frame(width: geo.size.width, height: geo.size.height)
                 }
-                .frame(width: geo.size.width, height: geo.size.height)
+                .aspectRatio(1.05, contentMode: .fit)
+                .padding(.top, 8)
+            } else {
+                // No sticker: the name carries the slide, with the chevrons
+                // either side of it.
+                ZStack { chevrons(i) }
+                    .frame(height: 44)
+                    .padding(.top, 8)
             }
-            .aspectRatio(1.05, contentMode: .fit)
-            .padding(.top, 8)
 
             Text(nameLine(goal))
                 .font(.spartanBold(30))
@@ -429,6 +441,12 @@ private struct ScorerPager: View {
         .onChange(of: goals) { _, _ in index = 0 }
     }
 
+    @ViewBuilder
+    private func chevrons(_ i: Int) -> some View {
+        if i < goals.count - 1 { chevron(right: true) { index = i + 1 } }
+        if i > 0 { chevron(right: false) { index = i - 1 } }
+    }
+
     private func chevron(right: Bool, action: @escaping () -> Void) -> some View {
         Button(action: { withAnimation(.easeInOut(duration: 0.2)) { action() } }) {
             Image(systemName: right ? "chevron.right" : "chevron.left")
@@ -468,10 +486,17 @@ private struct NumbersGrid: View {
                         .foregroundColor(.softBlush)
                         .lineSpacing(4)
                         .fixedSize(horizontal: false, vertical: true)
+                        // Centre the first line on the number rather than
+                        // sitting it on the number's baseline, where a small
+                        // line beside a 24pt figure read as dropped (Anton,
+                        // 2026-10-07): the figure's cap height is ~17pt, the
+                        // caption's x-height ~7pt: their middles meet with the
+                        // caption's baseline 5pt above the figure's.
+                        .alignmentGuide(.firstTextBaseline) { d in d[.firstTextBaseline] + 5 }
                 }
             }
         }
-        .padding(.top, 2)
+        .padding(.top, 8)
     }
 }
 
@@ -510,11 +535,15 @@ extension LastMatchCard {
             return card(0, 0, .draw, "Ninety minutes, 2 shots on target between them.", "Not one for the highlights, was it?", [],
                         [("68%", "possession, and nothing to show for it."), ("8–5", "shots. Not much in it."), ("1–1", "shots on target.")])
         case "unlucky":
-            return card(0, 1, .loss, "Arsenal had the chances, Leeds had the goal.", "You can't fault the effort. It just wouldn't go in.", [],
+            return card(0, 1, .loss, "Arsenal had the chances, Leeds had the goal.", "You can't fault the effort. It just wouldn't go in.",
+                        [Goal(ours: false, team: "Leeds", player: "Dominic Calvert-Lewin", apiPlayerId: nil, number: 9,
+                              minute: "71'", score: "1–0 Leeds", line: "His 5th goal of the season.")],
                         [("21–5", "shots. One of those nights."), ("2.4", "expected goals for Arsenal. On a normal night, that's 2 goals."), ("71%", "possession, and nothing to show for it.")])
         default:
             return card(2, 1, .win, "Won it in the 88th minute after Leeds had more of the chances.", "That was closer than it should have been.",
                         [g("Kai Havertz", 29, "23'", "1–0 Arsenal", "His 3rd goal of the season."),
+                         Goal(ours: false, team: "Leeds", player: "Dominic Calvert-Lewin", apiPlayerId: nil, number: 9,
+                              minute: "61'", score: "1–1 Leeds", line: "The equaliser."),
                          g("Bukayo Saka", 7, "88'", "2–1 Arsenal", "Curled in from outside the box.")],
                         [("88'", "when the winner went in."), ("6–9", "shots. Leeds had more of it, Arsenal had the goals."), ("2–1", "shots on target.")])
         }

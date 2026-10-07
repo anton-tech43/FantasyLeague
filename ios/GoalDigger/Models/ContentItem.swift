@@ -510,7 +510,13 @@ struct LastMatchCard: Codable, Equatable {
     let numbers: [Number]
     let expiresAt: String
 
+    /// Every goal of the game, both sides, in the order they went in.
     struct Goal: Codable, Equatable, Hashable {
+        /// His side's goal. Absent on a card written before both sides were
+        /// listed, when every goal on it was his side's.
+        var ours: Bool = true
+        /// The scoring side's name, as the feed has it.
+        var team: String?
         let player: String
         let apiPlayerId: Int?
         let number: Int?
@@ -518,8 +524,26 @@ struct LastMatchCard: Codable, Equatable {
         let score: String
         let line: String
         enum CodingKeys: String, CodingKey {
-            case player, number, minute, score, line
+            case ours, team, player, number, minute, score, line
             case apiPlayerId = "api_player_id"
+        }
+
+        init(ours: Bool = true, team: String? = nil, player: String, apiPlayerId: Int?, number: Int?,
+             minute: String, score: String, line: String) {
+            self.ours = ours; self.team = team; self.player = player; self.apiPlayerId = apiPlayerId
+            self.number = number; self.minute = minute; self.score = score; self.line = line
+        }
+
+        init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            ours = (try? c.decodeIfPresent(Bool.self, forKey: .ours)) ?? true
+            team = try? c.decodeIfPresent(String.self, forKey: .team)
+            player = try c.decode(String.self, forKey: .player)
+            apiPlayerId = try? c.decodeIfPresent(Int.self, forKey: .apiPlayerId)
+            number = try? c.decodeIfPresent(Int.self, forKey: .number)
+            minute = try c.decode(String.self, forKey: .minute)
+            score = try c.decode(String.self, forKey: .score)
+            line = try c.decode(String.self, forKey: .line)
         }
     }
 
