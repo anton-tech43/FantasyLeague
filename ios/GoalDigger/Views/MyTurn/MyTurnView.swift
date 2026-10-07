@@ -37,9 +37,9 @@ struct MyTurnView: View {
                         .opacity(module == .lingo ? 1 : 0)
                         .allowsHitTesting(module == .lingo)
                         .accessibilityHidden(module != .lingo)
+                    // No opponent pack: "Get to know Leeds" lives in Pre-game only.
                     QuizView(content: content.quiz, store: store, clubId: appState.selectedTeam?.rawValue,
-                             livePack: live.pack, squadPack: squad.pack, leaguePack: live.leaguePack,
-                             opponentPack: live.opponentPack)
+                             livePack: live.pack, squadPack: squad.pack, leaguePack: live.leaguePack)
                         .opacity(module == .quiz ? 1 : 0)
                         .allowsHitTesting(module == .quiz)
                         .accessibilityHidden(module != .quiz)

@@ -16,8 +16,9 @@ struct QuizView: View {
     /// `players` table and the league-wide team-page slices. Either may be nil.
     let squadPack: QuizPack?
     let leaguePack: QuizPack?
-    /// "Get to know Chelsea", built for the fixture the prep is about. Listed
-    /// here as well, so a round started from the prep can be picked up here.
+    /// "Get to know Chelsea", built for the fixture the prep is about. Only
+    /// the prep passes it, when it hosts this view: Pre-game is the opponent
+    /// quiz's one home, and the Quiz tab never lists it (Anton, 2026-10-07).
     var opponentPack: QuizPack? = nil
     /// Set when the prep section hosts this view for its one pack: the back
     /// button says where it goes and returns there, and finishing the round
@@ -45,7 +46,7 @@ struct QuizView: View {
             content.packs.first { $0.id == "club-" + id.replacingOccurrences(of: "_", with: "-") }
         }
         guard clubId != nil else { return [basics, leaguePack].compactMap { $0 } + rest }
-        return [basics, squadPack, livePack, opponentPack, history, leaguePack].compactMap { $0 } + rest
+        return [basics, squadPack, livePack, history, leaguePack].compactMap { $0 } + rest
     }
 
     /// What the big button starts. The basics until she has a score on them,
@@ -56,7 +57,14 @@ struct QuizView: View {
         return squadPack ?? basics ?? visiblePacks.first
     }
 
-    private var round: MyTurnStore.QuizRound? { store.quizRound }
+    /// The round this view shows. The store has one round slot, shared with
+    /// the prep's opponent quiz: the Quiz tab treats an opponent round as no
+    /// round at all (no Continue, no "Loading" while it waits for a pack it
+    /// will never be given), and the prep's copy shows only that one.
+    private var round: MyTurnStore.QuizRound? {
+        guard let r = store.quizRound else { return nil }
+        return (r.packId == LiveClubPack.opponentPackId) == (opponentPack != nil) ? r : nil
+    }
     private var roundPack: QuizPack? { round.flatMap { r in allPacks.first { $0.id == r.packId } } }
     private var currentQuestion: MyTurnQuestion? {
         guard let round, !round.finished, let pack = roundPack, round.index < round.questionIds.count else { return nil }
