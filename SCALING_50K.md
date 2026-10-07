@@ -103,12 +103,11 @@ Items 1–3 are small, well-scoped diffs and are enough for 50k spread across ~2
 
 ## 3. Security item that gets more serious with scale
 
-`device_tokens` + `live_activity_tokens` still allow **anon SELECT of all rows**
-(`ARCHITECTURE.md` §9, `AUDIT_FINDINGS.md` SEC-1/2/3). That's a PII + cross-device-tamper
-exposure that's a nuisance at 500 users and a real liability at 50k. The fix is already
-built (SECURITY DEFINER RPCs, migration 071); the staged drop of anon access
-(`072_…PENDING_APP_RELEASE`) just needs the RPC-using build to ship. **Ship that build
-before mass adoption.**
+**Closed.** `device_tokens` + `live_activity_tokens` used to allow anon reads of every row
+(`AUDIT_FINDINGS.md` SEC-1/2/3), a nuisance at 500 users and a real liability at 50k.
+Migration 106 revoked anon reads on both tables and anon writes on `live_activity_tokens`;
+migration 120 revoked the remaining `device_tokens` writes. Anon now has no access to either
+table, and registration goes through the SECURITY DEFINER RPCs (migration 071).
 
 ---
 
@@ -118,8 +117,9 @@ before mass adoption.**
 - [x] Parallelize the push fan-out loops (bounded concurrency, `PUSH_CONCURRENCY=100`). *(§1.1)* — **shipped 2026-06-17**: `_shared/concurrency.ts::mapWithConcurrency` now backs all four senders (`notification-sender`, `match-watcher` WC push, `morning-push`, `matchday-reminder`) + the Live Activity `sendAll`.
 - [x] Drop/aggregate per-recipient `pipeline_health` insert. *(§1.2)* — **shipped**: `notification-sender` writes one aggregate `apns_send` row per item; `morning-push` one `morning_push` row per fixture.
 - [x] Batch dead-token deactivation. *(§1.3)* — **shipped**: `_shared/supabase-client.ts::deactivateTokens` (one `UPDATE … WHERE token = ANY`), called once per send.
+- [x] Token reads page past PostgREST's 1,000-row cap, and `deactivateTokens` chunks its updates. **Shipped** in 6300299: `_shared/supabase-client.ts::fetchAllRows` backs every sender's token read; `deactivateTokens` updates 25 tokens per request to stay under the gateway URL limit and logs failures.
 - [ ] Bump Supabase compute to Medium+ and confirm everything uses the pooler. *(§2)* — **dashboard action, still open.**
-- [ ] Ship the build that closes anon access on token tables (apply mig 072). *(§3)* — **App Store action, still open.**
+- [x] Close anon access on the token tables. *(§3)* **Closed** by migrations 106 and 120: anon has no access to `device_tokens` or `live_activity_tokens`.
 
 **Should-do as volume grows:**
 - [ ] Dispatcher/queue fan-out if any single team > ~10–20k followers. *(§1.4)*
