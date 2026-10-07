@@ -1,12 +1,37 @@
-# AUDIT FINDINGS — senior-dev skeptical review (2026-06-17)
+# Audit findings
 
-Whole-codebase review (6 parallel subsystem audits): push pipeline, iOS onboarding +
-registration, content pipeline + routines/prompts, iOS feed/team-page/services, DB/RLS/
-security, docs-vs-reality. Each finding: **severity · confidence · file:line · problem →
-fix**. How the app actually works is in `ARCHITECTURE.md`.
+Open items first, then the log. The log starts with the whole-codebase review of
+2026-06-17 and continues with dated passes. Later reviews also live in
+`QA_FIX_PLAN_2026-10-04.md` and `SECURITY_PROBE_2026-10-07.md`; security fixes and their
+verification are in `CHANGELOG_SECURITY.md`. How the app works: `ARCHITECTURE.md`. What
+is live: `STATUS.md`.
 
-Confidence is the auditor's; treat <0.7 as "verify before acting". Several findings were
-cross-checked and confirmed against the code during synthesis.
+## Open items (2026-10-07)
+
+| ID | Area | What | State |
+|---|---|---|---|
+| PUSH-4 | push | An APNs 400 from an environment mismatch is not retried against the other host. Since 2026-10-04 a 400 no longer deactivates the token. | open, low |
+| NEW-9 | My Turn | Bundled quiz, Say This and Lingo copy says he/him for every relationship type; the pronoun rule (ARCHITECTURE §1) is not applied there. | deferred: a content rewrite, not a swap |
+| ONB-4 | onboarding | No in-app nudge for someone who declined notifications; Settings shows the state and a way back. | product decision |
+| TIERS-6.1/6.2 | push | `content_items.significance` is written by the routines but nothing reads it for push volume (`TIERS.md`). | design, unbuilt |
+| OPS-1 | routines | `team_season_state` last written 2026-09-07; last matchday article 2026-09-20; the `gd-maintenance` cloud run cannot reach the database directly. | open |
+| OPS-2 | alerting | `dev_alert_devices` is empty, so `client-error-alert` reaches nobody. | open |
+| PRIV-1 | privacy | The new privacy policy (`docs/PRIVACY_POLICY_DRAFT.md`) is not published; Settings opens the site's home page. | open |
+| LOW | various | CONTENT-4/8/9/10, PUSH-9, country dossiers (dormant), NEW-20 (daily players download size), NEW-21 (debug fixtures in the release bundle). | accepted for now |
+
+Security items are tracked in `CHANGELOG_SECURITY.md`.
+
+## Status of earlier IDs
+
+- **Closed:** PUSH-1, PUSH-2, PUSH-3, PUSH-5 (constant-time shared gate, 6300299; the
+  probe function is deleted), PUSH-6, PUSH-8, SCHED-1, COST-1, SEC-1/2/3 (migrations 106
+  and 120), SEC-5, SEC-6, COPY-1 (functional copy; the brand taglines are locked on
+  purpose, ARCHITECTURE §1), ONB-3, ONB-5 (step and view deleted), ONB-6, ONB-8, ONB-9,
+  iOS-3 (51f2819), iOS-4, iOS-6, iOS-7, iOS-8, iOS-9, CONTENT-2, CONTENT-6, CONTENT-7,
+  BUILD-1 (6300299), and the 2026-09-24 "Open" list (4d2834d).
+- **Not applicable any more:** SEC-4, ONB-10 (the view was deleted with the World
+  Championship screens), CONTENT-5 (the feed floor was a country feature).
+- IDs not listed keep the status written where they appear below.
 
 ---
 
@@ -26,7 +51,7 @@ cross-checked and confirmed against the code during synthesis.
 
 | ID | Status | What was done |
 |---|---|---|
-| SEC-1/2/3 | **Fix built + staged** | `register_device_token`/`register_la_token` SECURITY DEFINER RPCs (mig 071, applied + rollback-tested); iOS migrated to call them; the anon-access **drop** is staged as `072_...PENDING_APP_RELEASE` (non-`.sql`, apply after the RPC build is live — dropping now would break the currently-live app's direct-upsert registration, mig 030). Closing the read also defangs the tamper. |
+| SEC-1/2/3 | **Fix built + staged** (closed later by migrations 106 and 120) | `register_device_token`/`register_la_token` SECURITY DEFINER RPCs (mig 071, applied + rollback-tested); iOS migrated to call them; the anon-access **drop** is staged as `072_...PENDING_APP_RELEASE` (non-`.sql`, apply after the RPC build is live — dropping now would break the currently-live app's direct-upsert registration, mig 030). Closing the read also defangs the tamper. |
 | PUSH-1 | **Done (deployed)** | Reaper cron `match-status-reaper` (mig 073, applied). Dry-run found exactly 1 stuck row (29-day-old); live match correctly untouched. |
 | PUSH-2 | **Done (deployed)** | match-watcher now persists state then fires alerts (collect-then-fire-after-upsert). At-most-once. |
 | COST-1 | **Done (deployed) — was a prod no-op** | The flagged weekly cron does NOT exist in `cron.job` (verified; `app.settings` unset) → live spend was $0. Added a code guard refusing `full` + no `team_id`, enforcing the rule permanently. |
@@ -46,8 +71,8 @@ iOS-9 (WC-only empty-state button). Plus the pre-existing `morning_push` stage-u
 type error.
 
 **Not needed:** SEC-4 — the orphaned `on_device_token_insert` trigger/function from
-mig 004 **don't exist** in the live DB (verified). SEC-7 — legacy JWTs already rotated/
-disabled; just confirm in the dashboard.
+mig 004 **don't exist** in the live DB (verified). SEC-7 — superseded by the 2026-10-04
+QA review; see `CHANGELOG_SECURITY.md`.
 
 **Also done since:** **CONTENT-6** (PL roster reconciled to the real 2026-27 season —
 mig 074 adds an `is_active` flag, deactivates West Ham/Burnley/Wolves + the 2 stale
@@ -69,7 +94,7 @@ wired-up reintroduction).
 
 Remaining detail of each finding below is preserved for reference.
 
-## 🔴 HIGH — open
+## 2026-06-17 findings, HIGH (status: see the top of this file)
 
 - **PUSH-1 · 0.8 · `match-watcher/index.ts:1249` (+ mig 007).** No reaper for
   `match_status_state`. A fixture that stops being returned by the API while still
@@ -116,7 +141,7 @@ Remaining detail of each finding below is preserved for reference.
   intended, remove the picker so you stop collecting an ignored choice). Mind the
   no-em-dash rule when rewording.
 
-## 🟠 MEDIUM — open
+## 2026-06-17 findings, MEDIUM (status: see the top of this file)
 
 - **SEC-3 · 0.85 · `mig 062:43-57`.** `live_activity_tokens` is anon SELECT/INSERT/UPDATE
   with **no** immutability trigger → an attacker who reads a victim's PTS token can flip
@@ -170,7 +195,7 @@ Remaining detail of each finding below is preserved for reference.
   has one) → schedules content-generator for WC fixtures. Low impact while content-gen is
   dormant, but a latent paid-loop trigger. → **Fix:** `continue` on country entities.
 
-## 🟡 LOW — open
+## 2026-06-17 findings, LOW (status: see the top of this file)
 
 - **iOS-4 · 0.85 · `FeedView.swift:40,176,198`.** `liveBriefPollTask` is declared/
   cancelled but **never assigned** — the scenePhase "explicit cancel" is a no-op; the 60s
@@ -226,20 +251,14 @@ Remaining detail of each finding below is preserved for reference.
   or scope the rule to generated copy.
 - **PUSH-9 · 0.5 · `match-watcher:1285`.** `firstSeen` metric can double-count under
   overlapping ticks (no push impact). → Advisory lock per fixture if tightened.
-- **SEC-7 · 0.9 (mitigated).** Legacy service_role/anon JWTs are in git history; already
-  rotated/disabled 2026-05-11 + pre-commit hook added. → Confirm both legacy keys disabled
-  in the dashboard; history rewrite only if policy demands.
+- **SEC-7 · 0.9.** Legacy service_role/anon JWTs are in git history. Superseded by the
+  2026-10-04 QA review; see `CHANGELOG_SECURITY.md`.
 
 ---
 
-## Suggested order of attack
-1. **SEC-1 + SEC-2 + SEC-3 together** (Wave-2 register RPC + drop anon SELECT/UPDATE) — one
-   migration closes the PII leak and the cross-device tamper. Highest real blast radius.
-2. **PUSH-1 + PUSH-2** — the two that produce user-visible wrong/duplicate/missing pushes.
-3. **COST-1** — stop the recurring weekly API spend.
-4. **COPY-1** — the product-correctness gap the relationship picker promises but doesn't deliver.
-5. **PUSH-3/PUSH-4** — deliverability decay over time.
-6. The MEDIUM/LOW cleanups as capacity allows.
+## Suggested order of attack (2026-06-17)
+
+Done, except PUSH-4 (see the open items at the top).
 
 ---
 
@@ -258,7 +277,8 @@ Remaining detail of each finding below is preserved for reference.
   `register_device_token(p_tier)`. Migration 072 is replaced by
   `107_drop_anon_token_write.sql.PENDING_APP_RELEASE`, which also fixes three
   `DROP POLICY` names 072 had wrong (`live_activity_tokens_anon_*` vs the real
-  `la_tokens_anon_*` — it would have silently dropped nothing).
+  `la_tokens_anon_*` — it would have silently dropped nothing). (107 was never
+  applied; migration 120 did its job and it is retired.)
 - **Token registration DoS.** `check_token_rate_limit` blocked every real new
   install for an hour after 500 junk registrations, silently. Migration 108
   warns into `pipeline_health` from 500 and rejects only at 20,000.
@@ -473,7 +493,7 @@ survived verification, and what was done.
   runs. Delete My Data could not have left her mid-round. `.id(resetTick)` is
   harmless but repairs something `RootView` already handled.
 
-### Open
+### Open at the time (the first two closed in 4d2834d)
 
 - **`PlayerCardsListView` has no entry point at all.** Nothing appends a
   `String` to `feedPath` and nothing uses `NavigationLink(value: "playerCards")`,
