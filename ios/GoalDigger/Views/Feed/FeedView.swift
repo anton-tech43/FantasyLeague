@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 struct FeedView: View {
     @Environment(AppState.self) var appState
@@ -42,6 +43,7 @@ struct FeedView: View {
     /// loads the live brief poll — no poll loop. The 36-hour freshness
     /// window lives server-side; iOS just renders whatever it gets back.
     @State private var currentQuiz: SaturdayQuiz?
+    @State private var notificationStatus: UNAuthorizationStatus = .authorized
 
     private let pageSize = 20
     private let screenHeight = UIScreen.main.bounds.height
@@ -156,6 +158,7 @@ struct FeedView: View {
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(.hidden, for: .tabBar)
         .task { await loadInitial() }
+        .task { await checkNotifications() }
         .task(id: livePollTaskID) {
             // Live brief poll lifecycle. Kicks off on first appear, on entity
             // change (team OR country context), and on a foreground return (via
@@ -202,7 +205,71 @@ struct FeedView: View {
                 livePollGeneration += 1
                 Task { await refresh() }
             }
+            // Back from iOS Settings: the banner goes the moment she turns
+            // notifications on.
+            if newPhase == .active { Task { await checkNotifications() } }
         }
+    }
+
+    // MARK: - Notifications-off banner
+
+    /// The push is the product ("It only works if we can reach you"), so the
+    /// feed says so when it cannot reach her, and says nothing otherwise.
+    /// Settings keeps the same control for when she goes looking.
+    private func checkNotifications() async {
+        notificationStatus = await NotificationService.shared.checkNotificationStatus()
+    }
+
+    private var pushesOff: Bool {
+        guard bannerSnoozedUntil < Date().timeIntervalSince1970 else { return false }
+        return notificationStatus == .denied || (notificationStatus == .notDetermined && appState.hasCompletedOnboarding)
+    }
+
+    /// "Not now" hides the banner for two weeks: she may have turned them off
+    /// on purpose, and a notice on every open would be nagging.
+    @AppStorage("notificationsBannerSnoozedUntil") private var bannerSnoozedUntil: Double = 0
+
+    private var notificationsOffBanner: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Notifications are off")
+                .font(.jakarta(15, weight: .bold))
+            Text("You'll miss the score as it happens and the heads-up before \(appState.pPossessive) next game.")
+                .font(.jakarta(13, weight: .regular))
+                .foregroundColor(.textPrimaryOnCard.opacity(0.75))
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: 16) {
+                Button {
+                    Task {
+                        if notificationStatus == .notDetermined {
+                            _ = await NotificationService.shared.requestPermission()
+                            appState.notificationPermissionRequested = true
+                            await checkNotifications()
+                        } else if let url = URL(string: UIApplication.openSettingsURLString) {
+                            await UIApplication.shared.open(url)
+                        }
+                    }
+                } label: {
+                    Text("Turn them on")
+                        .font(.jakarta(13, weight: .bold))
+                        .foregroundColor(.warmWhite)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(Capsule().fill(Color.hotRose))
+                }
+                Button("Not now") {
+                    bannerSnoozedUntil = Date().addingTimeInterval(14 * 24 * 3600).timeIntervalSince1970
+                }
+                .font(.jakarta(13, weight: .semiBold))
+                .foregroundColor(.textPrimaryOnCard.opacity(0.7))
+                .frame(minHeight: 44)
+            }
+            .padding(.top, 2)
+        }
+        .foregroundColor(.textPrimaryOnCard)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 16).fill(Color.cardBackground))
+        .accessibilityElement(children: .contain)
     }
 
     // MARK: - Live brief poll loop (V1.1 task C5)
@@ -423,6 +490,15 @@ struct FeedView: View {
     // MARK: - Immersive Feed
 
     private var immersiveFeed: some View {
+        // The banner sits above the feed, not inside it, so the cards below
+        // are sized to the space that is left and "Your move" still clears
+        // the tab bar on the first card.
+        VStack(spacing: 0) {
+        if pushesOff {
+            notificationsOffBanner
+                .padding(.horizontal, Layout.screenPadding)
+                .padding(.vertical, 8)
+        }
         GeometryReader { geo in
           ScrollViewReader { proxy in
             ScrollView(.vertical) {
@@ -507,6 +583,7 @@ struct FeedView: View {
             }
             #endif
           }
+        }
         }
     }
 
