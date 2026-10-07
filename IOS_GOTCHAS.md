@@ -162,22 +162,17 @@ UIScrollView.appearance().backgroundColor = UIColor(deepMauve)
 
 ---
 
-## 14. Supabase has TWO service-role key formats. Edge Function invocation needs JWT shape
+## 14. Cron auth fails silently, and the cron key is a random secret, never a JWT
 
-**Symptom:** Push pipeline silently dies. pg_cron reports `status=succeeded` for every tick. But `net._http_response` shows 401 "UNAUTHORIZED_INVALID_JWT_FORMAT" on every cron call. Functions never run. Lasts for days because `cron.job_run_details` is the wrong place to watch.
+**Rule reversed on 2026-10-04.** Until then this section said the Vault key had to be the legacy `service_role` JWT. That JWT sat in the public git history, so it was replaced with a random 80-character secret. Following the old advice would put a public credential back. `./scripts/verify-cron-auth.sh` now fails if Vault holds a JWT.
 
-**Cause:** Supabase issues two service-role tokens that both work for PostgREST data writes:
-- **Legacy `service_role` JWT** — `eyJhbGc...` 219 chars, three base64 segments separated by dots.
-- **New `sb_secret_*`** — `sb_secret_GXBb...` 41 chars, opaque prefix-based.
+**Symptom:** Push pipeline silently dies. pg_cron reports `status=succeeded` for every tick. But `net._http_response` shows 401 on every cron call. Functions never run. Lasts for days because `cron.job_run_details` is the wrong place to watch.
 
-The Supabase Edge Function **gateway** runs a `verify_jwt` check on the Authorization header BEFORE invoking the function code. It requires JWT shape — three-segments-with-dots. The new `sb_secret_*` format fails the gateway check and returns 401 before any function code runs.
+**How it works now:** pg_cron sends `get_cron_service_key()` (Vault `cron_service_key`) as the Bearer. Every cron target deploys `--no-verify-jwt`, so the gateway never parses the header; `_shared/require-service-auth.ts` compares it as a string, in constant time, against the Edge secret `CRON_AUTH_KEY`. The two stores must hold the same value, and `backend/.env`'s `SUPABASE_SERVICE_ROLE_KEY` holds it too for manual ops `curl`.
 
-Function-INTERNAL PostgREST calls (the function's `SUPABASE_SERVICE_ROLE_KEY` env reading the new format) work fine — PostgREST accepts both.
-
-This bites in three places:
-1. **Vault entries used by pg_cron** to build a `Bearer ...` header. MUST be JWT shape, or every cron tick 401s.
-2. **External `curl` scripts** invoking Edge Functions. Same constraint.
-3. **Anywhere a Bearer is sent to `/functions/v1/*`.**
+It goes wrong in two ways:
+1. **Vault and `CRON_AUTH_KEY` disagree** (one was updated without the other): every cron tick 401s.
+2. **A function deployed without `--no-verify-jwt`**: the gateway rejects a non-JWT Bearer before the function runs.
 
 **Diagnosis:** Always cross-check TWO tables, not just one:
 ```sql
@@ -188,24 +183,11 @@ SELECT id, status_code, LEFT(content::text, 100) FROM net._http_response ORDER B
 ```
 If `cron.job_run_details.status='succeeded'` but `net._http_response.status_code != 200`, the cron's auth header is broken.
 
-**Quick check on Vault key shape:**
-```sql
-SELECT LEFT(get_cron_service_key(), 3) AS prefix, LENGTH(get_cron_service_key()) AS len;
--- prefix=eyJ + len ~219 → JWT format ✓
--- prefix=sb_ + len ~41 → wrong format, will 401 ✗
-```
+**Check:** `./scripts/verify-cron-auth.sh` (Vault entry present, accessor present, key is a random secret of 80 characters and not `eyJ...`, last 15 minutes of HTTP responses all 200).
 
-**Fix:** put the legacy `service_role` JWT into the Vault entry that crons read. It's still valid for Edge Function invocation even after rotation (rotation only disables it for direct PostgREST writes).
-```sql
-SELECT vault.update_secret(
-  (SELECT id FROM vault.secrets WHERE name='cron_service_key'),
-  '<legacy JWT from backend/.env SUPABASE_SERVICE_ROLE_KEY>',
-  'cron_service_key',
-  'JWT-format bearer for Edge Function gateway. MUST start with eyJ.'
-);
-```
+**Fix:** `./scripts/rotate-cron-key.sh`. It generates a new key, sets `CRON_AUTH_KEY` and Vault back to back, updates `backend/.env`, and compares the digests of all three. Never write a key into one store by hand.
 
-**Sources:** Phase 27.3 (push pipeline dead May 11 → May 17), Lessons 56/57 in IMPLEMENTATION_PROGRESS.md.
+**Sources:** Phase 27.3 (push pipeline dead May 11 → May 17) and Lessons 56/57 in IMPLEMENTATION_PROGRESS.md for the original silent failure; the 2026-10-04 QA pass for the rotation.
 
 ---
 
@@ -252,26 +234,21 @@ Never trust "ORDER BY ts DESC LIMIT 1" to find anything other than the row you j
 
 ---
 
-## 16. `live_match_briefs` are browse-only — they DO NOT push
+## 16. Three live pipelines, and only one of them is the live brief
 
-**Symptom:** During a live match, user expects an HT or 75' push notification. Match-watcher fires gd-live-brief on the trigger. `content_items` has no new row for the user's team. Look in `client_errors` — nothing. Look in `pipeline_health` — nothing relevant. Conclude "silent failure." Then re-conclude "the routine session must have errored." Then waste 30 min diagnosing.
+**Symptom:** During a live match a push "goes missing" and you search `content_items` or `live_match_briefs` for it, find nothing, and conclude the routine failed.
 
-**Cause:** Live briefs and matchday briefs are **two separate pipelines with separate destination tables and separate UX surfaces**:
+**Cause:** Match-time output travels three separate routes:
 
-- `gd-matchday` routine → INSERT INTO `content_items` (type='matchday') → `notification-sender` reads → APNs push to user's device. **Pushes.**
-- `gd-live-brief` routine → INSERT INTO `live_match_briefs` (NOT content_items) → iOS `FeedView` polls `live-brief-current` Edge Function every 60s → renders as `LiveMatchCard` at the top of the feed. **No push by design.**
+- **Live pushes (kickoff, goal, half-time, full time):** sent directly by `match-watcher` (`sendPlayingTeamPush`). Nothing is written to `content_items`. Who gets which is decided by `_shared/push-tiers.ts`: a goal reaches every tier, kickoff and half-time need tier 2, early domestic cup rounds get no kickoff or half-time push, and semi-finals and finals go to everyone. Half-time and full-time pushes end with a line to say.
+- **Live briefs:** `gd-live-brief` → `live_match_briefs` → iOS polls `live-brief-current` every 60 s → the live box at the top of the club feed (tier 2+). **No push by design.**
+- **Matchday and post-match articles:** `gd-matchday` → `content_items` → `notification-sender` → push.
 
-The rationale: live HT/75' briefs are reactive content for users who are already watching the match (they opened the app). Pushing on top of that would over-notify users who don't need the prompt.
+The Live Activity on the lock screen is a fourth surface, updated by `match-watcher` through the Live Activity tokens.
 
-**Rule:** If you ever wonder "why didn't the HT push arrive?" the answer is: it wasn't supposed to. The only in-match push is at FT, via `gd-matchday` → `content_items` → notification-sender.
+**Diagnosis:** For a missing live push, read `pipeline_health` rows with `stage = 'apns_send'` around the minute it should have fired, and check the device's `tier` against `push-tiers.ts`. For a missing live brief, read `live_match_briefs` for the fixture. For a missing article, read `content_items`.
 
-**Diagnosis:** When investigating "missing push during a live match":
-1. First check `live_match_briefs` for the match — if a row exists with the right `trigger_label`, the live brief pipeline worked correctly. The user sees it as a LiveMatchCard.
-2. The only push to expect during a match is FT — and that's a SEPARATE pipeline (gd-matchday).
-
-**Future tickets:** If we want goal-time pushes (currently flagged as v1.1.1 in `LIVE_BRIEF_PROMPT.md`), they need a new pipeline: either a new content_item type or a separate goal-trigger Edge Function that writes to content_items. The `live_match_briefs` table won't reach the push path.
-
-**Sources:** May 17 confusion during Everton-Sunderland match, captured in real time.
+**Sources:** May 17 confusion during Everton-Sunderland (when the only in-match push was FT); live pushes for clubs since 2026-09-06 (migration 083); tier gating since 2026-09-08.
 
 ## 17. Testing Dynamic Type in the simulator can crash SpringBoard
 

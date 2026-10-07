@@ -1,14 +1,13 @@
 # Goal Digger — Pipeline Reliability & Error Recovery Runbook
 
-**Version:** 1.0
-**Date:** February 8, 2026
-**Companion documents:** [PRD.md](./PRD.md) | [BUILD_PLAN.md](./BUILD_PLAN.md)
+**Version:** 1.0 (February 8, 2026), partly updated 2026-10-07
+**Start here when something looks broken:** `./scripts/db-health.sh` and the `db-health-check` skill (which layer is down), then [DB_BASICS.md](./DB_BASICS.md) for how the pieces fit. The scenarios below up to "SOP: Push pipeline health check" describe the V1 pipeline of February 2026 (three teams, Edge-generated content) and are kept for their reasoning, not their commands. Current architecture: [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ---
 
 ## Why This Document Exists
 
-Users paid $10 for this app. If the pipeline breaks and no content is generated for 24 hours, that's a broken product. This runbook covers every failure scenario, how to detect it, and how to recover.
+The app is free, but she opens it before matchday expecting it to be right. If the pipeline breaks and no content is generated for 24 hours, that's a broken product. This runbook covers every failure scenario, how to detect it, and how to recover.
 
 **The goal:** No user should ever go more than 48 hours without content during an active Premier League matchweek — even if things break.
 
@@ -472,7 +471,7 @@ After any outage > 12 hours:
 
 | Task | Frequency | Time | Description |
 |------|-----------|------|-------------|
-| Check `/health` endpoint | Daily | 09:00 GMT | 5-second visual check — is everything green? |
+| Run `./scripts/db-health.sh` | Daily | 09:00 UK | The `/health` endpoint was deleted; this script and the `db-health-check` skill replace it |
 | Review 10 published items | Weekly | Monday morning | Compare against golden examples |
 | Check RSS feed URLs | Monthly | First of month | Verify all feeds return 200 with valid XML |
 | Update player name lists | Each transfer window | Jan, Jul-Aug | Add/remove players per team |
@@ -502,27 +501,29 @@ LIMIT 10;
 ```
 
 **Pass:** all `status_code = 200`.
-**Fail with `401 UNAUTHORIZED_INVALID_JWT_FORMAT`:** Vault has wrong-shape key. See IOS_GOTCHAS.md #14 for the fix (`vault.update_secret` to legacy JWT). Phase 27.3 of IMPLEMENTATION_PROGRESS.md has the full case study.
+**Fail with `401`:** the cron key in Vault and the Edge secret `CRON_AUTH_KEY` disagree. Run `./scripts/verify-cron-auth.sh`, then fix with `./scripts/rotate-cron-key.sh`, which sets both stores and checks them. Never put a JWT back into Vault (IOS_GOTCHAS.md §14).
 **Fail with `5xx`:** Function-side error. Check the Edge Function logs in the Supabase dashboard.
 
 ### Step 2 — Did the relevant fixture get observed?
 
-For the user's team (e.g., West Ham, API-Football id=48):
+For the user's team (e.g. Arsenal):
 ```sql
 SELECT fixture_id, home_team_id, away_team_id, status, fired_finished_at, last_checked, league_id
 FROM match_status_state
-WHERE (home_team_id = 'west_ham' OR away_team_id = 'west_ham')
+WHERE (home_team_id = 'arsenal' OR away_team_id = 'arsenal')
   AND last_checked > NOW() - INTERVAL '48 hours'
 ORDER BY last_checked DESC LIMIT 5;
 ```
 
 **No rows + a fixture happened:** match-watcher missed it. Two common causes:
-- Fixture is in a non-tracked league (e.g., FA Cup `league_id=45` isn't in `SELECT DISTINCT league_id FROM teams` since we only have PL=39 and WC=1). This is the V2.1 cup-coverage gap documented in Phase 27.4.
+- The competition was not polled that day. The Premier League and the five cups are covered; `SELECT * FROM poll_leagues(now())` lists what match-watcher polls today, derived from the fixture feed.
 - API-Football didn't return the fixture for the date filter (timezone drift, abandoned match, etc.).
 
 **Row present but `fired_finished_at IS NULL`:** match-watcher saw it but didn't catch the FT transition. Often the first-observation guard (deploy-during-live-match).
 
-### Step 3 — Did a content_item land?
+**Live pushes (kickoff, goal, half-time, full time) do not go through `content_items`.** match-watcher sends them directly (`sendPlayingTeamPush`), gated per tier by `_shared/push-tiers.ts`: a goal reaches every tier, kickoff and half-time need tier 2. Check them in Step 5, not Step 3.
+
+### Step 3 — Did a content_item land? (news, matchday and post-match items)
 
 ```sql
 SELECT id, team_id, type, LEFT(headline, 60) AS headline, status, pushed_at
@@ -540,7 +541,7 @@ ORDER BY created_at DESC LIMIT 10;
 
 Sweep cron is `notification-sweep` at minute 15 of each hour. Sweep query filters to items with `published_at > NOW() - INTERVAL '24h' AND published_at < NOW() - INTERVAL '5 min'`. Items older than 24h are NOT pushed (correct — no stale news).
 
-Manual sweep:
+Manual sweep (`SUPABASE_SERVICE_ROLE_KEY` in `backend/.env` holds the cron key, set by `rotate-cron-key.sh`):
 ```bash
 SERVICE_KEY=$(grep "^SUPABASE_SERVICE_ROLE_KEY=" backend/.env | cut -d= -f2)
 curl -s -X POST "https://cwgpsmbunrocrofziqad.supabase.co/functions/v1/notification-sender" \
@@ -550,18 +551,18 @@ Returns `{"success":true,"items_processed":N}`.
 
 ### Step 5 — Did APNs accept the push?
 
-Use the `push-probe` Edge Function (read-only diagnostic):
-```bash
-curl -s -X POST "https://cwgpsmbunrocrofziqad.supabase.co/functions/v1/push-probe" \
-  -H "Authorization: Bearer $SERVICE_KEY" -H "Content-Type: application/json" \
-  -d '{"team_id":"<user team>"}'
+The `push-probe` function was deleted. Every send writes an `apns_send` row:
+```sql
+SELECT created_at, team_id, status, message, http_status, error_class
+FROM pipeline_health
+WHERE stage = 'apns_send' AND created_at > NOW() - INTERVAL '48 hours'
+ORDER BY created_at DESC LIMIT 20;
 ```
 
-Response shape:
-- `push_result.status: 200` + `success: true` → APNs accepted. iOS side issue (see Step 6).
-- `push_result.status: 410` → token expired/dead. User needs to re-onboard.
-- `push_result.status: 400` + `reason: BadDeviceToken` → environment mismatch (production token sent to sandbox or vice versa).
-- `push_result.status: 403` → APNs key rotated or expired. Check `APNS_KEY_ID`/`APNS_TEAM_ID`/`APNS_KEY_P8` secrets.
+- `success`, "N sent, 0 failed" → APNs accepted. iOS side issue (see Step 6).
+- Failures with 410, `Unregistered`, `BadDeviceToken` or `DeviceTokenNotForTopic` → the token is dead and notification-sender deactivates it (`device_tokens.is_active = false`). The user re-registers on the next app launch, which requests a token every time.
+- Other 400s → a payload or topic problem, not a dead token. Tokens are kept.
+- 403 → APNs key rotated or expired. Check the `APNS_KEY_ID`/`APNS_TEAM_ID`/`APNS_KEY_P8` secrets.
 
 ### Step 6 — APNs accepted but iOS didn't display
 
@@ -577,4 +578,4 @@ If matchday content was missed entirely (Step 2 fail), manually invoke `gd-match
 
 If content_items exist but unpushed and are still <24h old, Step 4's manual sweep handles them.
 
-If push-probe fails at APNs, look at `dev_alert_devices` and `client_errors` for parallel 403/410 traces from other tokens — if it's only this token, the user has to re-onboard. If it's all tokens, the APNs key/secrets are the issue.
+If Step 5 shows APNs failures, look at `dev_alert_devices` and `client_errors` for parallel 403/410 traces from other tokens — if it's only this token, the user has to re-onboard. If it's all tokens, the APNs key/secrets are the issue.

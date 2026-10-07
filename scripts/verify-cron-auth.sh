@@ -14,8 +14,9 @@
 #   - psql installed (brew install libpq + add to PATH)
 #
 # See:
-#   - IOS_GOTCHAS.md #14 for the JWT-shape rule
-#   - IMPLEMENTATION_PROGRESS.md Phase 27.3 + Lesson 56-57 for context.
+#   - IOS_GOTCHAS.md #14: the key is a random secret since 2026-10-04, never a JWT
+#   - scripts/rotate-cron-key.sh to change it (sets Vault and CRON_AUTH_KEY together)
+#   - IMPLEMENTATION_PROGRESS.md Phase 27.3 + Lesson 56-57 for the original failure.
 
 set -euo pipefail
 
