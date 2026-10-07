@@ -29,9 +29,9 @@ If you're the AI assistant reading this: when a user asks for a "backfill" or "r
 
 **Read `/DATA_SOURCES.md` before writing code that reads an upstream feed, and before believing a number the app is showing.** It records field by field what API-Football gets right and what it gets wrong, with evidence and dates.
 
-The short version, as of 2026-09-06:
-- **Trusted**: fixtures, events/scorers, standings, squads (match players on SURNAME, names come abbreviated), injuries (but the payload is keyed by fixture, so filter to the latest one and dedupe).
-- **NOT trusted**: `/coachs` for who manages a club — it omits sitting managers entirely and lists assistants as open appointments. The manager lives in `teams.manager_name` (migration 085), human-verified. `/transfers` is a full unordered history, not this summer's signings.
+The short version, as of 2026-10-07:
+- **Trusted**: fixtures (friendlies are filtered out of "next up" and form), events/scorers, standings, squads (match players on SURNAME, names come abbreviated), injuries (but the payload is keyed by fixture, so filter to the latest one and dedupe).
+- **NOT trusted**: `/coachs` for who manages a club — it omits sitting managers entirely and lists assistants as open appointments. The manager lives in `teams.manager_name` (migration 085), human-verified. Shirt numbers and squad registration come from the Premier League's own list (`official-squads`, migration 127), not API-Football. `/transfers` is a full unordered history and is no longer fetched.
 - **Photos never 404** — both CDNs return a silhouette with HTTP 200. Compare checksums to detect placeholders.
 
 When a feed proves wrong about a field, that field moves into our own table with a `*_verified_at` column and every consumer reads ours. Do not improve the heuristic against a feed that does not have the answer.
@@ -61,18 +61,20 @@ Defaults: no unrequested abstractions, deletion over addition, boring over cleve
 
 ## Other operational notes
 
-- **⭐ How the app ACTUALLY works**: read `ARCHITECTURE.md` FIRST — it's the authoritative,
-  current (V2.2, mid-WC-2026) source of truth and supersedes `PRD.md` / `AGENT_CONTRACTS.md`
-  / `PROMPTS.md` (those are stale V1). Known bugs/security/staleness: `AUDIT_FINDINGS.md`.
-  Two things every doc except those gets wrong: (1) live content is produced by **claude.ai
-  routines**, not the dormant Edge `content-generator`; (2) the app is **20 PL clubs + 48 WC
-  countries** (not "3 teams") and users can now follow up to 2 of each (arrays model).
+- **⭐ How the app ACTUALLY works**: read `ARCHITECTURE.md` FIRST. It describes the code on
+  this branch and supersedes `PRD.md` / `AGENT_CONTRACTS.md` / `PROMPTS.md` (stale V1, marked
+  historical). What is live, in TestFlight or paused right now: `STATUS.md`. Known issues:
+  `AUDIT_FINDINGS.md`. Two things the V1 docs get wrong: (1) live content is produced by
+  **claude.ai routines**, not the dormant Edge `content-generator`; (2) the app follows the
+  **20 Premier League clubs** (up to 2 per device, arrays model) across the league and five
+  cups, not "3 teams". The World Championship is retired (countries inactive,
+  `CountryFollowing.isEnabled = false`).
 - **iOS sim**: `xcodebuild -project ios/GoalDigger.xcodeproj -scheme GoalDigger -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build`
-- **Edge Function deploy**: from `backend/` dir, `supabase functions deploy <name> --project-ref cwgpsmbunrocrofziqad --no-verify-jwt`
+- **Edge Function deploy**: from `backend/` dir, `supabase functions deploy <name> --project-ref cwgpsmbunrocrofziqad --no-verify-jwt`. The flag is load-bearing: the cron key is a random secret, not a JWT (IOS_GOTCHAS.md §14).
 - **DB access**: `set -a && source backend/.env && set +a && /opt/homebrew/opt/libpq/bin/psql "$SUPABASE_DB_URL"`
 - **JSONB null trap**: `WHERE x IS NULL` does NOT match a JSONB literal `null`. Use `WHERE x IS NULL OR jsonb_typeof(x) = 'null'`.
 - **Routines repo**: `anton-tech43/goaldigger-routines` — pattern is `PROMPT.md` + `post_*.sh` + cron schedule via `RemoteTrigger`. Copy this pattern for any new LLM-backed cross-team workflow.
-- **Status snapshot**: `STATUS.md` (one-pager). Phase log: `IMPLEMENTATION_PROGRESS.md`. iOS pitfalls: `IOS_GOTCHAS.md`. Recovery: `RUNBOOK.md`.
+- **Status snapshot**: `STATUS.md` (one page, keep it that way). Phase log: `IMPLEMENTATION_PROGRESS.md` (frozen 2026-06-12). iOS pitfalls: `IOS_GOTCHAS.md`. Recovery: `RUNBOOK.md` (run `./scripts/db-health.sh` first; the push SOP is at the end).
 - **Before deleting anything as "unused"**: a grep over the repo is not
   evidence. On 2026-09-23 seven views proposed for deletion turned out to be
   read by `get_insights()`, a function that lives in the database, and two
