@@ -1,0 +1,8 @@
+-- 130: turn the day-before push back on (paused by 126).
+-- Apply when 2.3 is live on the App Store, the first version that opens
+-- Pre-game from the push (submitted for review 2026-10-07). Check the live
+-- version first:
+--   curl -s 'https://itunes.apple.com/lookup?bundleId=com.goaldigger.app&country=gb' | grep -o '"version":"[^"]*"'
+-- Then rename this file to .sql and run it with psql.
+SELECT cron.alter_job((SELECT jobid FROM cron.job WHERE jobname = 'goaldigger-prep-reminder'), active := true);
+SELECT jobname, schedule, active FROM cron.job WHERE jobname = 'goaldigger-prep-reminder';
