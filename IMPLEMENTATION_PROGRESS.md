@@ -3,15 +3,9 @@
 Tracking implementation of the updated product brief (April 2026).
 Each phase is marked with its status and a summary of changes made.
 
-> 👋 **New here?** Start with **[STATUS.md](./STATUS.md)** for a one-page snapshot of where the project is right now. Then come back here for the deep history.
+> **Frozen at 2026-06-12 (Lesson 102).** Nothing later is logged here: later history lives in git, [AUDIT_FINDINGS.md](./AUDIT_FINDINGS.md) and [CHANGELOG_SECURITY.md](./CHANGELOG_SECURITY.md).
 >
-> **Quick phase navigation:**
-> - **Phase 1-15** — V1.0 build (Feb-April 2026): design system, models, content pipeline, PostgREST/RLS, push, paywall, App Store prep.
-> - **Phase 16-22** — Pre-launch hardening (April-May 2026): launch-prep, matchday auto-trigger, push voice, ultrareview, App Store submission.
-> - **Phase 23** — V1.1 content surfaces (May 12-13): Season Primer, Insider, Sunday Brief, Saturday Quiz, Player Dossier, Match-day Live.
-> - **Phase 24-25** — V1.2/V1.3 onboarding redesign (May 15-16): value-first restructure, team crests, MeetTeam + MeetManager, SeasonPrimer kill.
-> - **Phase 26 (current)** — V2.0 World Cup support (May 16+): polymorphic teams table, 48 countries, country-aware backend, iOS Country enum.
-> - **Lessons learned** — Numbered rules (#1-52) appended to phases as we hit gotchas. See bottom of doc.
+> Recovery steps in this log are historical. For the cron key, read [IOS_GOTCHAS.md](./IOS_GOTCHAS.md) §14.
 
 ---
 
