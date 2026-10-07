@@ -356,9 +356,12 @@ push bodies, the 07:00 reminder, the morning push, the Live Activity strap.
 fallback no longer abandons an activity for a club outside its compiled enums.
 That had silently killed the widget for every cup tie.
 
-**Tier floors** — TIERS.md §6.3, implemented: kickoff 2, goal 3, half-time 2,
-result 1, with early League Cup and FA Cup rounds cut to the result for every
-tier and semi-finals and finals open to all.
+**Tier floors**: TIERS.md §6.3, implemented in `_shared/push-tiers.ts`: kickoff
+2, goal 1 (every tier, every competition; it shipped at 3 and was opened the
+same evening, 1ef16f0), half-time 2, result 1. League Cup rounds before the
+quarter-finals and FA Cup rounds before the last 16 send no kickoff or
+half-time push to any tier; their goals and result still go. Semi-finals and
+finals go to everyone.
 
 **Surfaces** — calendar dots and labels by competition and round; the Table tab
 gained a Premier League / Europe switcher fed by `europe_standings` (nine clubs
