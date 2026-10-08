@@ -130,11 +130,11 @@ struct RootView: View {
                 // Delete My Data → re-onboard.
                 SeasonPrimerView(
                     onTeachMore: {
-                        appState.pendingTabAfterPrimer = 1   // His Team tab
+                        appState.pendingTabAfterPrimer = .club
                         appState.hasSeenSeasonPrimer = true
                     },
                     onSkipToFeed: {
-                        appState.pendingTabAfterPrimer = 0   // Feed tab (explicit)
+                        appState.pendingTabAfterPrimer = .feed
                         appState.hasSeenSeasonPrimer = true
                     }
                 )
@@ -186,10 +186,14 @@ struct RootView: View {
 struct MainTabView: View {
     /// DEBUG `-gdOpenItemTalk`: with `-gdOpenItem`, the item opens scrolled to
     /// "Things to say", so a screenshot can show the full talking points.
-    private func openPrep() {
+    /// The day-before push and "Pre-game ›" on his team page: Matchday, on
+    /// "Before". The full-time push: Matchday, on "After".
+    private func openMatchday(_ section: MatchdaySection) {
         appState.pendingOpenPrep = false
-        MyTurnStore.shared.lastModule = .prep
-        selectedTab = 2
+        appState.pendingOpenAfter = false
+        guard appState.selectedTeam != nil else { return }
+        appState.requestedMatchdaySection = section
+        selectedTab = .matchday
     }
 
     private var deepLinkScrollsToTalk: Bool {
@@ -201,7 +205,9 @@ struct MainTabView: View {
     }
 
     @Environment(AppState.self) var appState
-    @State private var selectedTab = 0
+    @State private var selectedTab: AppTab = .feed
+    @State private var live = LiveClubPackService.shared
+    @State private var squad = LiveSquadService.shared
     @State private var feedPath = NavigationPath()
 
     /// V2.0: The "His Team" tab follows the active feed context, so the team
@@ -300,7 +306,29 @@ struct MainTabView: View {
             .tabItem {
                 Label("Feed", systemImage: "house")
             }
-            .tag(0)
+            .tag(AppTab.feed)
+
+            // Tab 2: Matchday. "After" the game just played, "Before" the next
+            // one (today's Pre-game, moved here from My Turn 2026-10-07). Its
+            // words, slip and opponent all come from his club, so no club, no
+            // tab.
+            if appState.selectedTeam != nil {
+                NavigationStack {
+                    MatchdayView()
+                        .navigationDestination(for: ContentDetailDestination.self) { dest in
+                            ContentDetailView(
+                                contentId: dest.contentId,
+                                scrollToTalkingPoints: dest.scrollToTalkingPoints,
+                                isEveryoneContext: dest.isEveryoneContext,
+                                preloadedItem: dest.preloadedItem
+                            )
+                        }
+                }
+                .tabItem {
+                    Label("Matchday", systemImage: "soccerball")
+                }
+                .tag(AppTab.matchday)
+            }
 
             // Tab 2: His Team. Hidden entirely when there is no entity to
             // show — an empty stack under a "His Team" label reads as a
@@ -331,48 +359,58 @@ struct MainTabView: View {
                 .tabItem {
                     Label(teamTabLabel, systemImage: "shield")
                 }
-                .tag(1)
+                .tag(AppTab.club)
             }
 
-            // Tab 3: My Turn — the toolbox. Quiz / Lingo / Say This.
-            // Static, offline, no live data; everything here is always true,
-            // which is the rule that separates it from the Feed.
+            // Tab 4: My Turn — the toolbox. Quiz / Lingo / Say This.
             NavigationStack {
                 MyTurnView()
             }
             .tabItem {
                 Label("My Turn", systemImage: "text.book.closed")
             }
-            .tag(2)
+            .tag(AppTab.myTurn)
 
-            // Tab 4: Settings
-            NavigationStack {
-                SettingsView()
-            }
-            .tabItem {
-                Label("Settings", systemImage: "gearshape")
-            }
-            .tag(3)
+            // Settings is not a tab (2026-10-07): it did too little to hold a
+            // quarter of the bar. It is the gear on Feed and the club page.
         }
         .tint(.hotRose)
         // Tab 1 can disappear (see teamPageEntityId). A selection pointing at
         // a tag no tab carries leaves the TabView showing nothing at all, so
         // send her to the feed instead.
         .onChange(of: teamPageEntityId) { _, id in
-            if id == nil && selectedTab == 1 { selectedTab = 0 }
+            if id == nil && selectedTab == .club { selectedTab = .feed }
+        }
+        .onChange(of: appState.selectedTeam) { _, team in
+            if team == nil && selectedTab == .matchday { selectedTab = .feed }
+        }
+        // His club's page, squad and fixture context, refreshed once here for
+        // both Matchday and My Turn (they only read these caches).
+        .task(id: appState.selectedTeam?.rawValue) {
+            let personalise = appState.personalise
+            async let club: Void = live.refresh(team: appState.selectedTeam, personalise: personalise)
+            async let squadRefresh: Void = squad.refresh(team: appState.selectedTeam, personalise: personalise)
+            _ = await (club, squadRefresh)
+        }
+        .onChange(of: appState.requestedTab) { _, tab in
+            if let tab {
+                selectedTab = tab
+                appState.requestedTab = nil
+            }
         }
         .task {
             // ATT, 1.5 s after the tabs first appear — never in onboarding,
             // where the notification prompt already asks for something.
             await Attribution.requestTrackingIfNeeded()
         }
-        // The day-before push: My Turn, on Pre-game. Here and in onAppear, for
-        // the same reason the article deep link is: a cold launch sets it
-        // before this view mounts.
-        .onChange(of: appState.pendingOpenPrep) { _, open in if open { openPrep() } }
+        // The day-before and full-time pushes: Matchday. Here and in onAppear,
+        // for the same reason the article deep link is: a cold launch sets
+        // them before this view mounts.
+        .onChange(of: appState.pendingOpenPrep) { _, open in if open { openMatchday(.before) } }
+        .onChange(of: appState.pendingOpenAfter) { _, open in if open { openMatchday(.after) } }
         .onChange(of: appState.deepLinkContentId) { _, newId in
             if let id = newId {
-                selectedTab = 0
+                selectedTab = .feed
                 let isEveryone = appState.activeContext == .everyoneTalking
                 feedPath.append(ContentDetailDestination(
                     contentId: id,
@@ -384,7 +422,7 @@ struct MainTabView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .feedNavigateToDetail)) { notification in
             if let dest = notification.object as? ContentDetailDestination {
-                selectedTab = 0
+                selectedTab = .feed
                 feedPath.append(dest)
             }
         }
@@ -394,33 +432,38 @@ struct MainTabView: View {
             // primer dismissed. Clear immediately so subsequent re-appears
             // (e.g., scenePhase background→active) don't snap back to it.
             if let tab = appState.pendingTabAfterPrimer {
-                selectedTab = (tab == 1 && teamPageEntityId == nil) ? 0 : tab
+                selectedTab = (tab == .club && teamPageEntityId == nil) ? .feed : tab
                 appState.pendingTabAfterPrimer = nil
             }
             #if DEBUG
             // Screenshot harness. `xcrun simctl launch <udid> com.goaldigger.app
-            // -gdSkipATT -gdTab 2 -gdOpenItem <uuid>` lands on a tab or a
+            // -gdSkipATT -gdTab 3 -gdOpenItem <uuid>` lands on a tab or a
             // detail view without anyone tapping — simctl cannot tap, and a
             // deterministic starting point is what a visual check needs.
             // `-gdSkipATT` belongs on every harness launch: without it the ATT
             // sheet slides up 1.5 s after the tabs appear and covers whatever
             // was being photographed (IOS_GOTCHAS §19).
             let args = ProcessInfo.processInfo.arguments
-            if let i = args.firstIndex(of: "-gdTab"), i + 1 < args.count, let tab = Int(args[i + 1]) {
-                selectedTab = (tab == 1 && teamPageEntityId == nil) ? 0 : tab
+            // -gdTab is the position in the bar: 0 Feed, 1 Matchday, 2 club,
+            // 3 My Turn.
+            if let i = args.firstIndex(of: "-gdTab"), i + 1 < args.count,
+               let n = Int(args[i + 1]), let tab = AppTab(index: n) {
+                let hidden = (tab == .club && teamPageEntityId == nil) || (tab == .matchday && appState.selectedTeam == nil)
+                selectedTab = hidden ? .feed : tab
             }
             if let i = args.firstIndex(of: "-gdOpenItem"), i + 1 < args.count, let id = UUID(uuidString: args[i + 1]) {
                 appState.deepLinkContentId = id
             }
             #endif
-            if appState.pendingOpenPrep { openPrep() }
+            if appState.pendingOpenPrep { openMatchday(.before) }
+            if appState.pendingOpenAfter { openMatchday(.after) }
             // Cold-launch deep-link catch. If the user tapped a notification
             // while the app was killed, AppDelegate sets deepLinkContentId
             // during launch — which may run BEFORE this view first mounts.
             // The `.onChange` below only fires on subsequent transitions, so
             // an already-set value would otherwise be silently dropped.
             if let id = appState.deepLinkContentId {
-                selectedTab = 0
+                selectedTab = .feed
                 let isEveryone = appState.activeContext == .everyoneTalking
                 feedPath.append(ContentDetailDestination(
                     contentId: id,

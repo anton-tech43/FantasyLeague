@@ -204,6 +204,23 @@ class APIClient {
         return items.first
     }
 
+    /// The full-time article for one fixture and club, for "The full story" on
+    /// Matchday › After. Nil when the routine wrote none (or wrote it without
+    /// a fixture id), and the row hides.
+    func fetchMatchArticle(fixtureId: Int, teamId: String) async throws -> ContentItem? {
+        let url = try buildURL(path: "content_items", queryItems: [
+            URLQueryItem(name: "match_id", value: "eq.\(fixtureId)"),
+            URLQueryItem(name: "team_id", value: "eq.\(teamId)"),
+            URLQueryItem(name: "status", value: "eq.published"),
+            URLQueryItem(name: "order", value: "published_at.desc"),
+            URLQueryItem(name: "limit", value: "1"),
+            URLQueryItem(name: "select", value: Self.contentSelectColumns)
+        ])
+        let (data, response) = try await URLSession.shared.data(for: makeRequest(url: url))
+        try validateResponse(response)
+        return try decodeContentItems(from: data).first
+    }
+
     // MARK: - Device Token
 
     /// Register or update a device token. V2.2: a device may follow up to 2 PL

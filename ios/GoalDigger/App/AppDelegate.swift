@@ -17,6 +17,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         Settings.shared.isAdvertiserIDCollectionEnabled = true
         #if DEBUG
         Attribution.selfCheck()
+        assert(MatchdaySection.selfCheck(), "Matchday opens on the wrong section")
         #endif
 
         UNUserNotificationCenter.current().delegate = self
@@ -115,9 +116,13 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                                 didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
         let userInfo = response.notification.request.content.userInfo
-        // The day-before push opens Pre-game rather than an article.
+        // The day-before push opens Matchday › Before rather than an article,
+        // and the full-time push (`live-ft-<fixture>`, match-watcher) opens
+        // Matchday › After. Goal and half-time pushes still just open the app.
         if let contentId = userInfo["content_id"] as? String, contentId.hasPrefix("myturn-prep") {
             AppState.shared.pendingOpenPrep = true
+        } else if let contentId = userInfo["content_id"] as? String, contentId.hasPrefix("live-ft-") {
+            AppState.shared.pendingOpenAfter = true
         } else if let contentId = userInfo["content_id"] as? String,
            let uuid = UUID(uuidString: contentId) {
             // Route to correct feed context before navigation

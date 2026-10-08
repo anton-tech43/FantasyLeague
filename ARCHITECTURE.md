@@ -149,7 +149,7 @@ There is **no** content → review → send chain in production for pushes. The 
 - **`matchday-reminder`** (`goaldigger-matchday-reminder`, 07:00 UTC): the pre-match
   reminder for every active club, kickoff rendered in the device's timezone
   (`device_tokens.timezone`, migration 082). Its `?mode=prep` path is the **day-before
-  push** that opens My Turn on Pre-game (`goaldigger-prep-reminder`, 08:00 and 09:00 UTC,
+  push** that opens Pre-game, Matchday › Before since 2.4 (`goaldigger-prep-reminder`, 08:00 and 09:00 UTC,
   migration 125). That job is paused until the app version that opens Pre-game is live
   (migration 126).
 - **Dead tokens:** every sender uses `isTokenDead` (`_shared/supabase-client.ts`): only
@@ -180,10 +180,16 @@ There is **no** content → review → send chain in production for pushes. The 
 
 ## 6. iOS app structure
 
-- **Tabs** (`App/GoalDiggerApp.swift`): Feed · {active club's name, or "His Team"} ·
-  My Turn · Settings. The club tab is hidden when there is no entity to show. ATT is asked
-  once, 1.5 s after the tabs first appear. A push whose `content_id` starts `myturn-prep`
-  opens My Turn on Pre-game; article pushes open the detail view on the Feed tab.
+- **Tabs** (`App/GoalDiggerApp.swift`, `AppTab`): Feed · Matchday · {active club's name,
+  or "His Team"} · My Turn (2.4; until 2.3 the fourth tab was Settings and Pre-game lived
+  in My Turn). Matchday needs a followed club and the club tab an entity to show; each
+  hides otherwise. Settings is a sheet behind a gear in the navigation bar of Feed and the
+  club page (`SettingsButton` in `Views/Settings/SettingsView.swift`). ATT is asked once,
+  1.5 s after the tabs first appear. A push whose `content_id` starts `myturn-prep` opens
+  Matchday › Before, `live-ft-<fixture>` (match-watcher's full-time push) opens Matchday ›
+  After, and article pushes open the detail view on the Feed tab. The tab view also owns
+  the refresh of the club caches (`LiveClubPackService`, `LiveSquadService`) that Matchday
+  and My Turn read.
 - **`AppState`** (`@Observable`, `Models/AppState.swift`): the central store (follows,
   names, tier, flags, `activeContext`). `persistNow()` force-flushes UserDefaults at
   load-bearing moments.
@@ -199,26 +205,41 @@ There is **no** content → review → send chain in production for pushes. The 
 - **Team page** (`Views/Team/TeamPageView.swift`, keyed with `.id(teamId)`): cache-first
   from `team_pages.content`; three tabs (Info, Calendar, Table with a League/Europe
   switcher). Info cards: coming up or post-match (on the first followed club's page its
-  "Pre-game ›" footer opens My Turn on Pre-game; elsewhere "The preview ›" expands the
+  "Pre-game ›" footer opens Matchday › Before; elsewhere "The preview ›" expands the
   card in place), mood, this week, the basics, the manager (portrait), ones to know,
   rivalry, form, season so far, insider (T2+), freshness.
 - **Caching:** `CacheService` (SwiftData, feed items) + `TeamPageCache` (UserDefaults
   JSON, 24 h) + a shared `URLCache` for crests.
-- **My Turn** (`Views/MyTurn/`): four segments (`MyTurnModule`): **prep**, Quiz, Lingo,
-  Say This. Bundled content is four versioned JSON files under `Resources/MyTurn/`
+- **Matchday** (`Views/Matchday/MatchdayView.swift`, 2.4): two sections. It opens on
+  **After** for 24 hours after the whistle unless the next kickoff is inside that day,
+  otherwise on **Before** (`MatchdaySection.opening`, a gold dot marks an unseen After).
+  - **After {opponent}** lays out `team_pages.content.cards.last_match`, written once per
+    side at full time by match-watcher (`_shared/last-match.ts`: deterministic, no model,
+    one `/fixtures/statistics` call per game, kept seven days). A rounded result card (rose
+    for a win or a loss, blush for a draw; the score in League Spartan Bold, a
+    one-sentence verdict in Cormorant Garamond on two rows), then square rose-outlined
+    boxes: "Say this now", "Goal scorers" (every goal of the game, both sides, one at a
+    time: the bundled sticker when there is one, the official shirt number, the score it
+    made, one line) and "Three numbers
+    that matter". Then "The full story" (the matchday article by `match_id`, hidden when
+    there is none) and the next game.
+  - **Before {next}** is Pre-game (below), always about the next game
+    (`MatchContext(preferBefore:)`).
+- **My Turn** (`Views/MyTurn/`): three segments (`MyTurnModule`): Quiz, Lingo, Say This.
+  Pre-game is `LingoView` in `.prep` mode, shown in Matchday › Before. Bundled content is four versioned JSON files under `Resources/MyTurn/`
   (quiz, lingo, saythis, hype), refreshed from `my_turn_content` when a newer
   `contentVersion` exists (`MyTurnContentService`). All of her state is one
   tolerant-decoded JSON blob in `MyTurnStore`.
-  - **Prep** needs a followed club and always uses the first one, whatever the Feed
-    switcher shows. It is always called "Pre-game" (segment and back buttons), and opens
-    itself once per new fixture (`MyTurnStore.prepShownFor`). Before a game it
+  - **Pre-game** needs a followed club and always uses the first one, whatever the Feed
+    switcher shows. It is always called "Pre-game" (the club page footer and back
+    buttons). Before a game it
     stacks three full-screen cards, each shrinking to a small row once done: **"Get to
     know {opponent}"** (a two-option quiz built on the phone by `LiveClubPack`, only for
     the 20 Premier League clubs), **"7 words for the game"** (an Overheard round dealt by
     `LingoDeck` from the fixture's context) and **"Prepare some sayings for the game"**
     (`LingoCalls.offer`: up to seven lines, saved with `rpc/save_match_calls` into
     `device_tokens.match_calls`, never pushed, marked "came up" on the phone after full
-    time). After a game the segment shows "After {opponent}" and "What you called".
+    time). "Carry on with your words" continues in My Turn › Lingo.
   - **Quiz:** three options per question; bundled packs plus "His club, right now" and "His
     squad", built on the phone from the cached team page. The opponent quiz lives only in
     Pre-game.

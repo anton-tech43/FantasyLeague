@@ -80,7 +80,7 @@ extension Font {
     }
 
     enum JakartaWeight {
-        case regular, medium, semiBold, bold, extraBold, italic, mediumItalic
+        case regular, medium, semiBold, bold, extraBold, italic, mediumItalic, boldItalic
 
         var postScriptName: String {
             switch self {
@@ -91,6 +91,7 @@ extension Font {
             case .extraBold: return "PlusJakartaSans-ExtraBold"
             case .italic: return "PlusJakartaSans-Italic"
             case .mediumItalic: return "PlusJakartaSans-MediumItalic"
+            case .boldItalic: return "PlusJakartaSans-BoldItalic"
             }
         }
     }
@@ -127,6 +128,11 @@ extension Font {
     // full-screen cards render at different sizes.
     static let calledItHeadline = Font.custom("LeagueSpartan-Black", size: 40)
     static let immersiveContext = Font.jakarta(18, weight: .regular)
+
+    // Matchday › After (Anton's design, 2026-10-07): the score and the
+    // scorer's name in League Spartan Bold, the verdict in a serif.
+    static func spartanBold(_ size: CGFloat) -> Font { .custom("LeagueSpartan-Bold", size: size) }
+    static func garamond(_ size: CGFloat) -> Font { .custom("CormorantGaramond-Medium", size: size) }
     static let immersiveHint = Font.jakarta(13, weight: .regular)
 }
 

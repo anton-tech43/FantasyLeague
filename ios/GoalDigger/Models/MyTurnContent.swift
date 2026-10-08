@@ -10,12 +10,10 @@ import Foundation
 // not a content bug.
 
 enum MyTurnModule: String, CaseIterable, Identifiable, Codable {
-    // Order is the segment order. The prep first (2026-09-27): what she needs
-    // most is to be ready for the next game, not to learn football in general.
-    // It is "Pre-game" everywhere, before a game and after it (Anton,
-    // 2026-10-07). Then Quiz: the module a newcomer can use before she knows
-    // anything.
-    case prep
+    // Order is the segment order. Quiz first: the module a newcomer can use
+    // before she knows anything. Pre-game ("prep") was the first segment
+    // until 2026-10-07 and is the Matchday tab now; a stored "prep" decodes
+    // as Quiz (see init(from:)).
     case quiz
     case lingo
     case sayThis = "saythis"
@@ -26,7 +24,6 @@ enum MyTurnModule: String, CaseIterable, Identifiable, Codable {
     /// "Lines" at the largest accessibility sizes rather than truncating.
     var label: String {
         switch self {
-        case .prep:    return "Pre-game"
         case .quiz:    return "Quiz"
         case .lingo:   return "Lingo"
         case .sayThis: return "Say This"

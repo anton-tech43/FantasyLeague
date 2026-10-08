@@ -1,10 +1,10 @@
 import SwiftUI
 
-/// The toolbox tab. One segmented control, four modules, exactly one visible:
-/// Pre-game (the next game, or the one just played), then Quiz, Lingo and
-/// Say This.
+/// The toolbox tab. One segmented control, three modules, exactly one visible:
+/// Quiz, Lingo and Say This. Pre-game, the first segment until 2026-10-07, is
+/// the Matchday tab's "Before" now.
 ///
-/// All four module views stay mounted (opacity-switched) so scroll position,
+/// All three module views stay mounted (opacity-switched) so scroll position,
 /// search text and an open situation survive a switch without any plumbing;
 /// the durable state lives in `MyTurnStore` so it also survives a relaunch.
 struct MyTurnView: View {
@@ -44,15 +44,6 @@ struct MyTurnView: View {
                         .opacity(module == .quiz ? 1 : 0)
                         .allowsHitTesting(module == .quiz)
                         .accessibilityHidden(module != .quiz)
-                    if prepAvailable {
-                        // Pre-game: the opponent quiz, this fixture's words
-                        // and the slip (LingoView's prep mode).
-                        LingoView(content: content.lingo, store: store,
-                                  team: appState.selectedTeam, page: live.page, mode: .prep)
-                            .opacity(module == .prep ? 1 : 0)
-                            .allowsHitTesting(module == .prep)
-                            .accessibilityHidden(module != .prep)
-                    }
 
                     // Above the module content, so four in a row is seen
                     // wherever she is when it happens.
@@ -67,17 +58,10 @@ struct MyTurnView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(Color.appBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
-        .task(id: appState.selectedTeam?.rawValue) {
-            let personalise = appState.personalise
-            async let club: Void = live.refresh(team: appState.selectedTeam, personalise: personalise)
-            async let squadRefresh: Void = squad.refresh(team: appState.selectedTeam, personalise: personalise)
-            _ = await (club, squadRefresh)
-            openPrepForNewFixture()
-            #if DEBUG
-            applyLivePackArguments()
-            #endif
-        }
+        // The caches are refreshed by the tab view, for Matchday and My Turn
+        // both; this only waits for the packs the harness asked for.
         #if DEBUG
+        .task(id: [live.pack?.id, squad.pack?.id, live.leaguePack?.id]) { applyLivePackArguments() }
         .onAppear(perform: applyLaunchArguments)
         #endif
     }
@@ -158,32 +142,15 @@ struct MyTurnView: View {
     }
     #endif
 
-    /// Four fixed segments, full width, no horizontal scroll. Same visual
+    /// Three fixed segments, full width, no horizontal scroll. Same visual
     /// language as the team page's Info / Calendar / Table control: the
     /// selected segment is a rose pill, the rest are recessed text.
-    /// The prep needs a club: its words, slip and opponent all come from his
-    /// fixture list.
-    private var prepAvailable: Bool { appState.selectedTeam != nil }
-    private var segments: [MyTurnModule] { MyTurnModule.allCases.filter { $0 != .prep || prepAvailable } }
-    /// What is on screen. The stored module can be the prep with no club
-    /// followed (she unfollowed); Quiz stands in rather than a blank.
-    private var module: MyTurnModule { store.lastModule == .prep && !prepAvailable ? .quiz : store.lastModule }
+    private var segments: [MyTurnModule] { MyTurnModule.allCases }
+    private var module: MyTurnModule { store.lastModule }
 
+    /// Say This still reads the fixture context: its lines follow the game.
     private var prepContext: MatchContext {
         MatchContext.current(page: live.page, team: appState.selectedTeam)
-    }
-
-    /// A new fixture opens My Turn on its prep, once.
-    private func openPrepForNewFixture() {
-        guard prepAvailable, case .before = prepContext.phase else { return }
-        #if DEBUG
-        // A screenshot that asked for a module gets that module.
-        if ProcessInfo.processInfo.arguments.contains("-gdMyTurnModule") { return }
-        #endif
-        let key = prepContext.fixtureKey
-        guard store.prepShownFor != key else { return }
-        store.prepShownFor = key
-        store.lastModule = .prep
     }
 
     private var segmentedControl: some View {
