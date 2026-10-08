@@ -1,6 +1,6 @@
 const INDEX = [
  ["FantasyLeague · root docs", [
-  ["ARCHITECTURE.md","The authoritative how-it-works document. Supersedes PRD.md, AGENT_CONTRACTS.md and PROMPTS.md, which are stale V1."],
+  ["ARCHITECTURE.md","The authoritative how-it-works document. Supersedes docs/archive/PRD.md, docs/archive/AGENT_CONTRACTS.md and docs/archive/PROMPTS.md, which are stale V1."],
   ["CLAUDE.md","Loaded into every Claude session in the repo. The two hard rules: never loop a paid API call across teams, never trust one feed for a customer-visible fact."],
   ["BACKFILL_RULES.md","The cost decision tree. SQL first, then a routine, then an Edge function. Written after a $4–5 backfill bottomed the API balance."],
   ["DATA_SOURCES.md","Field by field, what API-Football gets right and wrong, with dates and evidence. The /coachs endpoint is not trusted; the manager lives in our own column."],

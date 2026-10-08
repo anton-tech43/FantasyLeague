@@ -1,5 +1,5 @@
 -- 021_team_season_state.sql
--- v1.1 Season Primer (V1.1_FEATURE_BUNDLE.md task A1)
+-- v1.1 Season Primer (docs/archive/V1.1_FEATURE_BUNDLE.md task A1)
 --
 -- Stores a daily-refreshed "where are they in the season" snapshot per team
 -- plus three ready-to-send one-liners (the "welcome drop" used by the

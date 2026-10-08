@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-07T22:29:04Z",
+  "generatedAt": "2026-10-08T07:28:25Z",
   "db": true,
   "counts": {
     "edgeFunctions": 20,
@@ -8,7 +8,7 @@
     "swiftFiles": 91,
     "sharedModules": 35,
     "routinePrompts": 16,
-    "rootDocs": 47
+    "rootDocs": 29
   },
   "edge": [
     {
@@ -325,7 +325,7 @@
       "hoursUtc": [
         "02"
       ],
-      "lastProduced": "2026-10-07"
+      "lastProduced": "2026-10-08"
     },
     {
       "routine": "post_live_brief",
@@ -353,7 +353,7 @@
         "22",
         "23"
       ],
-      "lastProduced": "2026-10-07"
+      "lastProduced": "2026-10-08"
     },
     {
       "routine": "post_player_dossier",
@@ -378,7 +378,7 @@
       "hoursUtc": [
         "01"
       ],
-      "lastProduced": "2026-10-07"
+      "lastProduced": "2026-10-08"
     },
     {
       "routine": "content_items:matchday",
@@ -403,7 +403,7 @@
         "22",
         "23"
       ],
-      "lastProduced": "2026-10-07"
+      "lastProduced": "2026-10-08"
     },
     {
       "routine": "content_items:sunday_brief",
@@ -434,8 +434,8 @@
   "tables": [
     {
       "table": "content_items",
-      "rows": 3743,
-      "newest": "2026-10-07"
+      "rows": 3755,
+      "newest": "2026-10-08"
     },
     {
       "table": "content_reviews",
@@ -464,8 +464,8 @@
     },
     {
       "table": "pipeline_health",
-      "rows": 9239,
-      "newest": "2026-10-07"
+      "rows": 9009,
+      "newest": "2026-10-08"
     },
     {
       "table": "player_cards",
@@ -474,13 +474,13 @@
     },
     {
       "table": "players",
-      "rows": 1818,
-      "newest": "2026-10-07"
+      "rows": 1822,
+      "newest": "2026-10-08"
     },
     {
       "table": "raw_fetch_logs",
-      "rows": 13679,
-      "newest": "2026-10-07"
+      "rows": 11887,
+      "newest": "2026-10-08"
     },
     {
       "table": "saturday_quiz_items",
@@ -489,13 +489,13 @@
     },
     {
       "table": "team_insider_items",
-      "rows": 5927,
-      "newest": "2026-10-07"
+      "rows": 5992,
+      "newest": "2026-10-08"
     },
     {
       "table": "team_pages",
       "rows": 73,
-      "newest": "2026-10-07"
+      "newest": "2026-10-08"
     },
     {
       "table": "team_season_state",

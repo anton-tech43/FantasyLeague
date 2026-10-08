@@ -350,7 +350,7 @@ A payload that clears every guard fails at the POST with `HTTP 401` on this mach
 The listing is the promise a paying customer measures the app against, and no cron touches it.
 
 ```bash
-grep -rn "Arsenal, Manchester United, or West Ham\|3am\|spam" APP_STORE_STRATEGY.md APP_STORE_V2.0_COPY.md 2>/dev/null
+grep -rn "Arsenal, Manchester United, or West Ham\|3am\|spam" docs/archive/APP_STORE_STRATEGY.md docs/archive/APP_STORE_V2.0_COPY.md 2>/dev/null
 ```
 
 Club names, club counts, feature claims and screenshots all go stale. Anything the app no longer does must come out of App Store Connect. This one needs Anton; list it, do not edit the listing yourself.

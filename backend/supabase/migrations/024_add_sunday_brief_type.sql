@@ -1,5 +1,5 @@
 -- 024_add_sunday_brief_type.sql
--- v1.1 Sunday Brief (V1.1_FEATURE_BUNDLE.md task C2)
+-- v1.1 Sunday Brief (docs/archive/V1.1_FEATURE_BUNDLE.md task C2)
 --
 -- Extends the content_items.type CHECK constraint to accept the new
 -- 'sunday_brief' value. Sunday Briefs are forward-looking weekly recap +

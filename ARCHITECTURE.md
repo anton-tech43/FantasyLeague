@@ -1,7 +1,7 @@
 # ARCHITECTURE: how GoalDigger actually works
 
 **This is the authoritative "how it works" doc** for the code on this branch. If it
-disagrees with `PRD.md`, `AGENT_CONTRACTS.md`, `PROMPTS.md`, `PRODUCT_BRIEF_INTEGRATION.md`
+disagrees with `docs/archive/PRD.md`, `docs/archive/AGENT_CONTRACTS.md`, `docs/archive/PROMPTS.md`, `docs/archive/PRODUCT_BRIEF_INTEGRATION.md`
 or the V1 parts of `RUNBOOK.md`, **this doc wins**; those are historical. What is live on
 the App Store, what is only in TestFlight and what is paused: `STATUS.md`. Known bugs:
 `AUDIT_FINDINGS.md`.
@@ -24,7 +24,7 @@ noun is a fallback. `AppState.relationshipType` = partner|parent|sibling|friend
 `AppState.personalise()`.
 
 Voice = warm, cheeky best friend. The live voice spec is the routine prompts in the
-**separate `goaldigger-routines` repo** (`PROMPT.md`), NOT this repo's `PROMPTS.md`
+**separate `goaldigger-routines` repo** (`PROMPT.md`), NOT this repo's `docs/archive/PROMPTS.md`
 (which describes the dormant Edge generator).
 
 > **⭐ Brand-voice rule (locked).** The app is for **a girl following her boyfriend/
@@ -64,7 +64,7 @@ Voice = warm, cheeky best friend. The live voice spec is the routine prompts in 
 ## 3. Follow model
 
 A device follows **up to 2 clubs** (and up to 2 countries while `CountryFollowing` is on).
-Original design: `V2.2_DESIGN_MULTI_TEAM.md` (historical).
+Original design: `docs/archive/V2.2_DESIGN_MULTI_TEAM.md` (historical).
 
 - **Data model = ARRAY columns on one row per device**, not a row per entity:
   `device_tokens.team_ids` / `country_ids` (migration 069), `live_activity_tokens`

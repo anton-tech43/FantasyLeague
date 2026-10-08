@@ -15,13 +15,13 @@
 2. `audit/2026-09/queries.sql` — ~40 read-only SQL-block, ett per CSV. Kommentarerna förklarar
    vad varje fil svarar på.
 3. `CLAUDE.md` (repo-roten) — särskilt **hårdregeln om betalda API-loopar** och DB-access-mönstret.
-4. `ARCHITECTURE.md` — hur appen faktiskt fungerar (auktoritativ; `PRD.md`/`PROMPTS.md` är stale).
+4. `ARCHITECTURE.md` — hur appen faktiskt fungerar (auktoritativ; `docs/archive/PRD.md`/`docs/archive/PROMPTS.md` är stale).
 5. `CONTENT_PUSH_AUDIT_2026-06.md` — föregående audit (5 juni). Kopiera metoden, upprepa inte
    misstagen (se §4 nedan).
 
 **Repon:** app-repot = det här (`anton-tech43/FantasyLeague`). Routines-repot =
 `anton-tech43/goaldigger-routines`, lokalt troligen `/Users/anton/goaldigger-routines`
-(verifiera). Den levande röst-specen är **routines `PROMPT.md`**, inte app-repots `PROMPTS.md`.
+(verifiera). Den levande röst-specen är **routines `PROMPT.md`**, inte app-repots `docs/archive/PROMPTS.md`.
 
 **Branch:** `claude/feature-planning-1q4m3p` — baserad på produktions-trunken
 `origin/claude/intelligent-thompson` (senaste commit 2026-07-10). `origin/main` är död sedan

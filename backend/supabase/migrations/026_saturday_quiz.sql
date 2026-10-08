@@ -1,5 +1,5 @@
 -- 026_saturday_quiz.sql
--- v1.1 Saturday Quiz Card (V1.1_FEATURE_BUNDLE.md task C3)
+-- v1.1 Saturday Quiz Card (docs/archive/V1.1_FEATURE_BUNDLE.md task C3)
 --
 -- A 3-question multiple-choice quiz generated weekly by the gd-saturday-quiz
 -- cloud routine (cron 0 7 * * 6 — Saturday 07:00 UTC). One row per team per

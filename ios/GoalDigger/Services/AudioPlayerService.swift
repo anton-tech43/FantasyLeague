@@ -2,7 +2,7 @@ import AVFoundation
 import SwiftUI
 
 /// Reads news copy aloud using the system speech synthesiser. Free, ships
-/// today. Upgrade path to ElevenLabs is documented in V1.1_FEATURE_BUNDLE.md
+/// today. Upgrade path to ElevenLabs is documented in docs/archive/V1.1_FEATURE_BUNDLE.md
 /// (deferred to v1.2 or v2).
 @Observable
 final class AudioPlayerService: NSObject {

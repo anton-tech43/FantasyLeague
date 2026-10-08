@@ -1,5 +1,5 @@
 -- 023_team_insider_items.sql
--- v1.1 Insider card (V1.1_FEATURE_BUNDLE.md task C1)
+-- v1.1 Insider card (docs/archive/V1.1_FEATURE_BUNDLE.md task C1)
 --
 -- Niche stats, history, anecdotes, and oddities about his team that she can
 -- use to outflank him in conversation. One new row per team per day,

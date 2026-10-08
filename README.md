@@ -78,7 +78,7 @@ CUP_COVERAGE_PLAN.md, HIS_TEAM_PREMATCH_PLAN.md, SCALING_50K.md. EVENT_DRIVEN_TE
 BUG_AUDIT_2026-09-23.md, QA_FIX_PLAN_2026-10-04.md, SECURITY_PROBE_2026-10-07.md, SJALVRANNSAKAN_2026-09.md, CONTENT_PUSH_AUDIT_2026-06.md, WC_DATA_AUDIT_2026-06-11.md, and IMPLEMENTATION_PROGRESS.md (the phase log, frozen 2026-06-12).
 
 ### Historical (marked at the top of each file)
-PRD.md, AGENT_CONTRACTS.md, PROMPTS.md, CONTENT_EXAMPLES.md, APP_STORE_STRATEGY.md, PRODUCT_BRIEF_INTEGRATION.md, BUILD_PLAN.md, V1.1_FEATURE_BUNDLE.md, APP_STORE_V2.0_*.md, V2.1_DESIGN_*.md, V2.2_DESIGN_MULTI_TEAM.md, WHATS_NEW_2.0.3.md, WC_*.md. Read them for intent, never for facts.
+docs/archive/PRD.md, docs/archive/AGENT_CONTRACTS.md, docs/archive/PROMPTS.md, docs/archive/CONTENT_EXAMPLES.md, docs/archive/APP_STORE_STRATEGY.md, docs/archive/PRODUCT_BRIEF_INTEGRATION.md, docs/archive/BUILD_PLAN.md, docs/archive/V1.1_FEATURE_BUNDLE.md, APP_STORE_V2.0_*.md, V2.1_DESIGN_*.md, docs/archive/V2.2_DESIGN_MULTI_TEAM.md, docs/archive/WHATS_NEW_2.0.3.md, WC_*.md. Read them for intent, never for facts.
 
 ---
 

@@ -8,7 +8,7 @@
 -- id, push_eligible = true). The push is informational only — it states
 -- what happened ("Senegal beat Croatia in your group") and never derives
 -- "what you need", which depends on a refreshed table + tiebreakers and
--- lives in-app. See match-watcher/index.ts + WC_GROUP_STAGE_DESIGN.md.
+-- lives in-app. See match-watcher/index.ts + docs/archive/WC_GROUP_STAGE_DESIGN.md.
 --
 -- Unlike the one-time season events (TITLE_WON, RELEGATED, UCL_CLINCHED,
 -- WC_KNOCKOUT_QUALIFIED, WC_GROUP_WON), a team receives a rival result

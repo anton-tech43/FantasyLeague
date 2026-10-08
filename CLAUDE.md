@@ -85,7 +85,7 @@ Defaults: no unrequested abstractions, deletion over addition, boring over cleve
 ## Other operational notes
 
 - **⭐ How the app ACTUALLY works**: read `ARCHITECTURE.md` FIRST. It describes the code on
-  this branch and supersedes `PRD.md` / `AGENT_CONTRACTS.md` / `PROMPTS.md` (stale V1, marked
+  this branch and supersedes `docs/archive/PRD.md` / `docs/archive/AGENT_CONTRACTS.md` / `docs/archive/PROMPTS.md` (stale V1, marked
   historical). What is live, in TestFlight or paused right now: `STATUS.md`. Known issues:
   `AUDIT_FINDINGS.md`. Two things the V1 docs get wrong: (1) live content is produced by
   **claude.ai routines**, not the dormant Edge `content-generator`; (2) the app follows the

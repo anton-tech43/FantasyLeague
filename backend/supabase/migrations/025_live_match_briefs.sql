@@ -1,5 +1,5 @@
 -- 025_live_match_briefs.sql
--- v1.1 Match-day Live Card (V1.1_FEATURE_BUNDLE.md task C5)
+-- v1.1 Match-day Live Card (docs/archive/V1.1_FEATURE_BUNDLE.md task C5)
 --
 -- Rolling in-match commentary card. The gd-live-brief cloud routine writes
 -- one row per trigger window during a live PL match (HT, 75' for v1; goal

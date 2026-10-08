@@ -5,7 +5,7 @@
 > — read `PUSH_RULES.md`, which covers every push path including the ones tiers do
 > not touch, and is checked against the code.
 
-**Status:** design, 2026-09-06. Supersedes the tier tables in `PRD.md` §3.2/§4 (which
+**Status:** design, 2026-09-06. Supersedes the tier tables in `docs/archive/PRD.md` §3.2/§4 (which
 describe a volume model that was never built) and the one-line description in
 `ARCHITECTURE.md` §8. §6 is the build list: §6.3 shipped 2026-09-08
 (`_shared/push-tiers.ts`); §6.1 is half built (the `significance` column, migration

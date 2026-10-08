@@ -1,7 +1,7 @@
 -- 069_device_tokens_multi_follow.sql
 -- Multi-team following (V2.2): a device can follow up to 2 WC countries + 2 PL
 -- clubs. Model = ARRAY columns on the existing one-row-per-device table, NOT a
--- row per entity. Rationale (see V2.2_DESIGN_MULTI_TEAM.md):
+-- row per entity. Rationale (see docs/archive/V2.2_DESIGN_MULTI_TEAM.md):
 --   * iOS registers via a direct PostgREST merge-duplicates upsert keyed on
 --     UNIQUE(apns_token) (APIClient.registerToken). Dropping that unique would
 --     break every already-installed app. So it STAYS — one row per device.

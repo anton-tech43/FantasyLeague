@@ -1864,7 +1864,7 @@ Debugging note: first deploy had `f.league?.id` referencing an undefined `f` (lo
 - Build green, V2.0 welcome screen visually verified
 
 **Handed off to Anton (separate concerns):**
-- Cloud Routine prompt updates (in `goaldigger-routines` repo) — spec'd in `WC_ROUTINES_HANDOFF.md`
+- Cloud Routine prompt updates (in `goaldigger-routines` repo) — spec'd in `docs/archive/WC_ROUTINES_HANDOFF.md`
 - App Store submission — manual Xcode flow, target June 4
 - Marketing assets / App Store screenshots
 - Final visual walkthrough verification on simulator (accessibility automation blocked from autonomous runs)

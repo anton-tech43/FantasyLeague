@@ -164,7 +164,7 @@ const M1_NODES = [
       rd:"teams (league 39, active), team_news_sources, players (name, position, number, minutes, appearances, starts, league_starts, goals, league_goals, assists, rating), API-Football fixtures next 3 and last 5 and standings, 7 national RSS feeds plus per-club feeds.",
       wr:"/tmp/fetch_<team_id>.json, and it upserts last_status and last_ok_at back onto team_news_sources.",
       f:["/Users/anton/goaldigger-routines/fetch_news.sh","/Users/anton/goaldigger-routines/parse_club_rss.py"],
-      g:"The players block was added on 2026-10-07 because without it the feed once asked whether Gyökeres was Arsenal's most important player while he had zero league starts. Three traps live in this file: curl must be -sSf or a PostgREST 401 body lands in the payload; the jq must be `if type == \"array\" then . else [] end`, because `// []` only fires on null or false and an error object is truthy; and the jq program is single-quoted, so an ASCII apostrophe in a comment silently truncates the file — use U+2019. Worst club is 9,788 bytes against the Linux 131,072-byte argv limit." } },
+      g:"On 2026-10-08 the league-table call was hoisted out of the per-club loop — identical for all 20 clubs, so it was 19 wasted API calls a run, in a file six routines share. The players block was added on 2026-10-07 because without it the feed once asked whether Gyökeres was Arsenal's most important player while he had zero league starts. Three traps live in this file: curl must be -sSf or a PostgREST 401 body lands in the payload; the jq must be `if type == \"array\" then . else [] end`, because `// []` only fires on null or false and an error object is truthy; and the jq program is single-quoted, so an ASCII apostrophe in a comment silently truncates the file — use U+2019. Worst club is 9,788 bytes against the Linux 131,072-byte argv limit." } },
 
 { id:"src.rss", c:1, r:9, k:"src", s:"external", l:"RSS feeds", sub:"7 national + per-club",
   p:{ w:"BBC Sport, Sky Sports, Guardian, Mirror, Daily Mail, Independent and ESPN FC, plus the club feeds in team_news_sources.",
@@ -343,7 +343,7 @@ const M1_NODES = [
       t:"Weekdays at 03:00 Stockholm, and it has been running. 440 successful posts are logged.",
       rd:"/tmp/fetch_<team_id>.json; raw_fetch_logs standings.", wr:"team_season_state, upsert on team_id.",
       f:["/Users/anton/goaldigger-routines/SEASON_STATE_PROMPT.md","/Users/anton/goaldigger-routines/post_season_state.sh"],
-      g:"Its own prompt still says it is maintained for parity because the Edge Function path is what runs in production. That is not true — the Edge generator was unscheduled in migration 022 — and the prompt should be corrected. Worth knowing before you act on a freshness alarm about this table: its timestamp was frozen between 2026-09-07 and 2026-10-07 while the writing was fine. Its only real reader, the onboarding primer, is itself unreachable for new users (ONB-8)." } },
+      g:"Its prompt used to claim it was maintained for parity because the Edge path runs in production. That was false — the generator was unscheduled in migration 022 — and it cost an investigation; the prompt was corrected on 2026-10-08. Worth knowing before you act on a freshness alarm about this table: its timestamp was frozen between 2026-09-07 and 2026-10-07 while the writing was fine. Its only real reader, the onboarding primer, is itself unreachable for new users (ONB-8)." } },
 
 { id:"g.postother", c:3, r:15, k:"guard", s:"live", l:"post_quiz · post_dossier · post_season", sub:"three guard scripts",
   p:{ w:"The remaining post scripts, one per routine, all built on the same shape: validate, project onto the table's columns, insert, log.",
@@ -637,7 +637,7 @@ const M1_NODES = [
       t:"Never. data-fetcher only triggers it when CONTENT_GENERATOR_ENABLED is the string \"true\".",
       rd:"raw_fetch_logs.", wr:"Would write content_items.",
       f:["backend/supabase/functions/content-generator/index.ts"],
-      g:"THE SINGLE MOST MISLEADING THING IN THE REPOSITORY. PRD.md, AGENT_CONTRACTS.md and PROMPTS.md all describe this as the content pipeline. It is not. Live content comes from claude.ai routines, billed to the subscription; this would bill the API credit balance." } },
+      g:"THE SINGLE MOST MISLEADING THING IN THE REPOSITORY. docs/archive/PRD.md, docs/archive/AGENT_CONTRACTS.md and docs/archive/PROMPTS.md all describe this as the content pipeline. It is not. Live content comes from claude.ai routines, billed to the subscription; this would bill the API credit balance." } },
 
 { id:"edge.contentrev", c:2, r:50, k:"model", s:"dormant", l:"content-reviewer", sub:"Edge · unreachable",
   p:{ w:"Four review bots — tone, accuracy, brevity, safety — all of which had to pass.",
@@ -857,13 +857,13 @@ const M2_NODES = [
       t:"—", rd:"—", wr:"—", f:["CLAUDE.md"],
       g:"Parallel Claude sessions edit this checkout directly, so never git stash and never git add -A here — name every path. Secrets live in exactly one backend/.env; the worktrees that held copies were deleted on 2026-09-23." , x:[] } },
 
-{ id:"d.area", c:1, r:1, h:3, k:"code", s:"live", l:"root *.md", sub:"46 documents",
-  p:{ w:"The documentation layer. Eighteen of these are explicitly marked historical and say so in their first line.",
+{ id:"d.area", c:1, r:1, h:3, k:"code", s:"live", l:"root *.md", sub:"29 current + 18 archived",
+  p:{ w:"The documentation layer. On 2026-10-08 the eighteen documents describing a version of the product that no longer exists moved into docs/archive/, leaving 29 current ones in the root.",
       t:"—", rd:"—", wr:"—", f:["README.md"],
-      g:"Read ARCHITECTURE.md first and treat PRD.md, AGENT_CONTRACTS.md and PROMPTS.md as archaeology — they describe a content pipeline that is switched off.", x:[] } },
+      g:"Read ARCHITECTURE.md first. The three that actively misled — docs/archive/PRD.md, docs/archive/AGENT_CONTRACTS.md and docs/archive/PROMPTS.md — now sit behind a README naming exactly what they get wrong. Nothing read them at runtime: 140 mentions across both repositories, every one prose or a comment, verified before the move.", x:[] } },
 
 { id:"d.arch", c:2, r:1, k:"code", s:"live", l:"ARCHITECTURE.md", sub:"the authoritative how-it-works",
-  p:{ w:"316 lines. Supersedes PRD.md, AGENT_CONTRACTS.md and PROMPTS.md.",
+  p:{ w:"316 lines. Supersedes docs/archive/PRD.md, docs/archive/AGENT_CONTRACTS.md and docs/archive/PROMPTS.md.",
       t:"—", rd:"—", wr:"—", f:["ARCHITECTURE.md"],
       g:"Two things the V1 docs get wrong and this one gets right: live content comes from claude.ai routines, not the Edge content-generator; and the app follows 20 Premier League clubs, not 3 teams.", x:["edge.contentgen"] } },
 
@@ -888,13 +888,13 @@ const M2_NODES = [
       g:"It has a meta-rule: any PR adding a rot-prone surface must update DATA_SOURCES.md and this file in the same change, and every run ends by revising the checklist itself.", x:["r.maint"] } },
 
 { id:"d.push", c:2, r:7, k:"guard", s:"live", l:"PUSH_RULES.md", sub:"what may buzz her phone, and why",
-  p:{ w:"The whole notification picture on one page: every path that can reach a lock screen with who gets it and why, the six things published and deliberately never announced, and the seven reasons a finished card is downgraded to feed-only.",
+  p:{ w:"The whole notification picture on one page: every path that can reach a lock screen with who gets it and why, the six things published and deliberately never announced, and the six reasons a finished card is downgraded to feed-only.",
       t:"Written 2026-10-08, in the shape of Model 4 on this page.", rd:"—", wr:"—",
       f:["PUSH_RULES.md","scripts/verify-push-rules.sh"],
       g:"It is a contract, not a description. scripts/verify-push-rules.sh reads the rules back out of push-tiers.ts, notification-sender, post_news.sh and every function importing apns-client, and fails if this page has not kept up — 18 checks. That exists because eighteen documents in this repo already carry a historical banner for drifting quietly.", x:["g.pushgate","edge.notifsender","sf.push"] } },
 
-{ id:"d.rest", c:2, r:6, k:"code", s:"live", l:"the other 41 documents", sub:"18 marked historical",
-  p:{ w:"STATUS.md for where things are, RUNBOOK.md for recovery, IOS_GOTCHAS.md for platform traps, DB_BASICS.md for the database in plain Swedish, TIERS.md, SCALING_50K.md, AUDIT_FINDINGS.md, six dated audits, and eighteen V1 documents that announce themselves as historical.",
+{ id:"d.rest", c:2, r:6, k:"code", s:"live", l:"the other 23 documents", sub:"+ docs/archive/, 18 of them",
+  p:{ w:"STATUS.md for where things are, RUNBOOK.md for recovery, IOS_GOTCHAS.md for platform traps, DB_BASICS.md for the database in plain Swedish, TIERS.md, SCALING_50K.md, AUDIT_FINDINGS.md, six dated audits, PUSH_RULES.md, and six dated audits. The eighteen V1 documents are now in docs/archive/.",
       t:"—", rd:"—", wr:"—", f:["STATUS.md","RUNBOOK.md","IOS_GOTCHAS.md"],
       g:"EVENT_DRIVEN_TEAM_PAGE.md is worth reading on purpose: it is a design deliberately not built, with the quota arithmetic that says why.", x:["cron.teampage"] } },
 
@@ -1191,11 +1191,11 @@ const M2_NODES = [
       f:["/Users/anton/goaldigger-routines/heartbeat_check.sh"],
       g:"verify_feeds.sh always exits 0 on purpose — a dead feed is a finding, not a failed run.", x:["r.heartbeat","src.rss"] } },
 
-{ id:"rt.dead", c:2, r:62, k:"code", s:"dormant", l:"8 one-shot scripts", sub:"backfills from May and June 2026",
-  p:{ w:"backfill_clubs.sh, backfill_clubs2.sh, four WC backfills, and two post_wc_briefs_2026_06_28 Python scripts.",
-      t:"Never since 2026-06-28.", rd:"—", wr:"—",
-      f:["/Users/anton/goaldigger-routines/backfill_clubs.sh"],
-      g:"All contain hardcoded payloads. Nothing references them. Safe to delete, and nobody has.", x:[] } }
+{ id:"rt.dead", c:2, r:62, k:"code", s:"dormant", l:"deleted 2026-10-08", sub:"9 one-shot scripts, and an alias",
+  p:{ w:"Six backfill_*.sh with hardcoded payloads, two post_wc_briefs Python one-shots, and fetch_champions_league.sh — a ten-line alias kept “for one release” on 2026-09-08.",
+      t:"Last run 2026-06-28. Deleted 2026-10-08.", rd:"—", wr:"—",
+      f:["/Users/anton/goaldigger-routines/README.md"],
+      g:"Checked before deleting: the only references were between the one-shots themselves, plus one line in the README and one in the retired Champions League prompt. Both updated. The routines repo went from 31 shell and Python files to 22.", x:[] } }
 ];
 
 const M2_EDGES = [

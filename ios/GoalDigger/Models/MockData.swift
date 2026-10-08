@@ -8,7 +8,7 @@ import Foundation
 // is fenced instead.
 #if DEBUG
 
-/// Mock data for development without backend. Based on the 5 golden examples from CONTENT_EXAMPLES.md.
+/// Mock data for development without backend. Based on the 5 golden examples from docs/archive/CONTENT_EXAMPLES.md.
 struct MockData {
 
     static let feed: [ContentItem] = [example1, example2, example3, example4, example5, example6Everyone]

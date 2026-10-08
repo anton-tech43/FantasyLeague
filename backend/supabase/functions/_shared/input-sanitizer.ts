@@ -1,5 +1,5 @@
 // _shared/input-sanitizer.ts
-// Goal Digger — Input sanitization for RSS/API content (PROMPTS.md 6 rules)
+// Goal Digger — Input sanitization for RSS/API content (docs/archive/PROMPTS.md 6 rules)
 // Defends against prompt injection from untrusted external data
 
 const MAX_ARTICLE_LENGTH = 2000;
@@ -53,7 +53,7 @@ export interface SanitizeResult {
 
 /**
  * Sanitize a single article/text from an external source.
- * Applies all 6 rules from PROMPTS.md input sanitization section.
+ * Applies all 6 rules from docs/archive/PROMPTS.md input sanitization section.
  */
 export function sanitizeText(raw: string): SanitizeResult {
   const flags: string[] = [];

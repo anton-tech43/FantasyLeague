@@ -19,7 +19,7 @@ The app is free, but she opens it before matchday expecting it to be right. If t
 
 Add this table to the database to track pipeline health:
 
-> **Note:** The `pipeline_health` table is defined in the initial schema migration (`001_initial_schema.sql`) in [BUILD_PLAN.md](./BUILD_PLAN.md#step-12-database-schema). The schema below must match that migration.
+> **Note:** The `pipeline_health` table is defined in the initial schema migration (`001_initial_schema.sql`) in [docs/archive/BUILD_PLAN.md](./BUILD_PLAN.md#step-12-database-schema). The schema below must match that migration.
 
 ```sql
 CREATE TABLE pipeline_health (
@@ -312,9 +312,9 @@ For each notification send attempt:
 
 **Recovery:**
 1. Pull the last 20 published content items
-2. Rate each one 1-5 against the golden examples in CONTENT_EXAMPLES.md
+2. Rate each one 1-5 against the golden examples in docs/archive/CONTENT_EXAMPLES.md
 3. Identify the pattern — what specifically is drifting?
-4. Adjust the relevant prompt (see PROMPTS.md Section 8 for iteration process)
+4. Adjust the relevant prompt (see docs/archive/PROMPTS.md Section 8 for iteration process)
 5. Test the updated prompt against the same raw data
 6. Deploy the fix
 7. Monitor the next 10 items to confirm improvement
@@ -446,7 +446,7 @@ If the entire pipeline has been down for 2+ days during an active matchweek:
 ### Step 3: Manual Content (30 minutes)
 If automated recovery isn't working, manually create content to keep users fed:
 1. Check BBC Sport for the latest news on each team
-2. Write 1 content item per team using the tone from CONTENT_EXAMPLES.md
+2. Write 1 content item per team using the tone from docs/archive/CONTENT_EXAMPLES.md
 3. Insert directly into the database with status `'published'`
 4. Manually trigger the notification sender (or skip pushes — the content is in the feed)
 

@@ -63,11 +63,11 @@ routines have **no push path at all**. That is the strongest available form of
 
 ---
 
-## 3. The seven downgrades
+## 3. The six downgrades
 
 A card passes every correctness guard, is published to the feed, and still does
 not push. These are product judgements, not correctness ones, and every one was
-added after a real complaint or a real audit. All seven live in `post_news.sh`
+added after a real complaint or a real audit. All six live in `post_news.sh`
 and set `push_eligible=false` before the insert.
 
 | Reason (the literal `force_reason`) | Added because |
@@ -78,7 +78,7 @@ and set `push_eligible=false` before the insert.
 | `opaque-teaser headline` | A push that conveys a reaction without the news — "it's already written" — is bait without the payload. |
 | `quiet hours (21:00–05:59 UTC, PL clubs)` | The 00:30 run produced 32% of August's PL pushes between 23:37 and 00:03 London, against a store listing that promises "we don't send at 3am". **A downgrade, not a queue:** a delayed push arrives detached from what caused it. |
 | `matchday article (FT push already sent by match-watcher)` | See §2. |
-| `PL pushes paused during the World Championship window` | **DEAD CODE.** Date-gated to 2026-06-09 → 2026-07-20, which is in the past, so it can never fire again. Left in place deliberately; delete the block when someone is next in that file. |
+
 
 ---
 
@@ -135,6 +135,6 @@ If you add a sender, widen a tier or invent a downgrade, the script fails and
 names the line. Update this page in the same change — same rule
 `MAINTENANCE.md` §5 already applies to `DATA_SOURCES.md`.
 
-_Written 2026-10-08, from `ARCHITECTURE.md` §5, `TIERS.md`, `push-tiers.ts`,
+_Written 2026-10-08, revised the same day when the dead World-Championship pause was deleted, from `ARCHITECTURE.md` §5, `TIERS.md`, `push-tiers.ts`,
 `notification-sender/index.ts` and `post_news.sh`. The shape is Model 4 of the
 system map._

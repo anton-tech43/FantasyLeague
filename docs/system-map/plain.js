@@ -123,14 +123,14 @@ const PLAIN = {
 
 /* ---- model 2 ---- */
 "repo.fl": "The main project folder: the iPhone app, the server programs, the database history, and the documents explaining all of it.",
-"d.area": "The written documentation. Almost half of it is openly marked as out of date, which is better than it quietly being out of date.",
+"d.area": "The written documentation. On 8 October the eighteen documents describing an older version of the product moved into an archive folder, so what is left in the main folder is current. They were checked first: nothing in the running system reads any of them.",
 "d.arch": "The one document to read first. It describes how the product actually works today, and says plainly which older documents to ignore.",
 "d.claude": "The house rules, loaded automatically whenever an AI assistant opens this project. Two of them exist because of expensive mistakes.",
 "d.sources": "A field-by-field record of what the football data company gets right and what it gets wrong, with dates and evidence. The habit it encodes: when a source proves wrong about something, stop asking it and keep that fact ourselves.",
 "d.backfill": "The money rules. Some ways of fixing data across all twenty clubs are free and some cost real money per club. This says which is which, and why.",
 "d.maint": "The checklist the twice-weekly automatic maintenance follows.",
 "d.push": "The one page that answers “what is allowed to interrupt her, and why”. It is the written version of the fourth model on this page — and unlike most documents, a script checks twice a week that it still matches the code.",
-"d.rest": "Everything else: how to recover when things break, the traps in iPhone development, the database explained without jargon, and a stack of older plans and audits.",
+"d.rest": "The rest of the current documents: how to recover when things break, the traps in iPhone development, the database explained without jargon, the notification rules, and six dated audits.",
 "ios.area": "The iPhone app itself.",
 "f.app": "The skeleton of the app: which tabs exist, what happens when it opens, and how alerts get it to the right screen.",
 "f.apiclient": "The only part of the app that talks to the internet.",
@@ -184,5 +184,5 @@ const PLAIN = {
 "rt.checks": "The tests and the health probes, plus a handful of scripts nobody has run since the spring.",
 "rt.tests": "A hundred and eleven tests that run in a minute with no internet and change nothing. Each check is tested twice: once that it catches the bad thing, and once that it lets the good thing through.",
 "rt.probes": "Three small programs that ask whether things are still alive: the product, the news sources, and the quality of last week's writing.",
-"rt.dead": "Eight one-off scripts from the spring with the content typed straight into them. Nothing refers to them."
+"rt.dead": "Nine leftovers from the spring — backfill scripts with the content typed straight into them, and an alias nobody needed. Checked for references, then deleted on 8 October."
 };

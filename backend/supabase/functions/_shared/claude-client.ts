@@ -16,7 +16,7 @@
 // drifted on tone — fan voice instead of the gf-to-bf older-sister voice the
 // product needs — and was caught hallucinating CL semis for Arsenal on the
 // first A1 generation when only PL data was in the prompt input. Sonnet 4.5
-// is the model BUILD_PLAN.md / PROMPTS.md originally specified.
+// is the model docs/archive/BUILD_PLAN.md / docs/archive/PROMPTS.md originally specified.
 const CLAUDE_MODEL = "claude-sonnet-4-5-20250929";
 const MAX_RETRIES = 3;
 const RETRY_DELAYS = [30_000, 120_000, 600_000]; // 30s, 2min, 10min

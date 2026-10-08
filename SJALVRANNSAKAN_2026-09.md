@@ -91,7 +91,7 @@ som "osant"** (juniauditens lärdom om stale spelartrupper). Allt är read-only 
 `origin/claude/intelligent-thompson` (ARCHITECTURE.md är auktoritativ) → routines-repot
 `anton-tech43/goaldigger-routines` `main` (den levande röst-specen `PROMPT.md`) →
 `CONTENT_PUSH_AUDIT_2026-06.md`, `AUDIT_FINDINGS.md`, `IMPLEMENTATION_PROGRESS.md`
-(lärdomar 63–102). **Inte** använt som måttstock: app-repots `PROMPTS.md` (stale V1).
+(lärdomar 63–102). **Inte** använt som måttstock: app-repots `docs/archive/PROMPTS.md` (stale V1).
 
 **Måttstock för innehåll:** routines `PROMPT.md` (GOLDEN RULE, GROUNDING, TEAM IMPACT-gate,
 TRANSFER-gate, HEADLINE CLARITY, SAGA/REPEAT, opener-rotation, bannad register, TP-regler,

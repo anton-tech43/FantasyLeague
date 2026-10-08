@@ -1008,7 +1008,7 @@ async function updateDynamicFields(
   // "full" path (manager/players/season summaries) stays on the weekly
   // team-page-refresh cron only. (Previously countries bailed out of this
   // path and rode the paid weekly regen, which left fixtures/standings up
-  // to ~8 days stale — see WC_GROUP_STAGE_DESIGN.md.)
+  // to ~8 days stale — see docs/archive/WC_GROUP_STAGE_DESIGN.md.)
   if (team.entity_type === "country") {
     await updateWcDynamicFields(supabase, team);
     return;

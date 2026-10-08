@@ -11,7 +11,7 @@ import { triggerFunction } from "../_shared/trigger.ts";
 import type { ReviewBotResult, ReviewNote } from "../_shared/types.ts";
 
 // ============================================================
-// REVIEW BOT SYSTEM PROMPTS (from PROMPTS.md Sections 3-6)
+// REVIEW BOT SYSTEM PROMPTS (from docs/archive/PROMPTS.md Sections 3-6)
 // ============================================================
 
 const TONE_SYSTEM_PROMPT = `You are a tone reviewer for Goal Digger, an app that explains Premier League football
