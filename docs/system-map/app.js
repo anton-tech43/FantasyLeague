@@ -94,7 +94,48 @@ function render(key, model, host) {
 
   /* edges */
   const ge = el("g", { class: "edges" });
-  const stack = new Map();                       // labels leaving one node stack upwards
+
+  /* Edge labels used to sit at the midpoint of the run leaving the source and
+     stack upwards per source. Both parts were wrong: a midpoint lands on top of
+     whatever box happens to be in the way ("7 national + per-club" printed
+     straight across the RSS feeds box), and stacking moved a label off its own
+     line and onto someone else's.
+     So: find a span on the edge that is genuinely clear of every box AND of
+     every label already placed, and put it there. If nothing fits, drop it —
+     the panel carries the same words, and an unreadable label is worse than
+     none. */
+  const boxes = [...G.values()].map(g => ({ x1: g.x, x2: g.x2, y1: g.y, y2: g.y2 }));
+  const placed = [];
+  const LH = 11;                                  // half the vertical room a label needs
+
+  /* A label is allowed to overhang its own run by up to OVER px, because the
+     common case is a 60px gutter carrying a 170px label — searching only
+     between the two boxes dropped a third of all labels. Among the spans that
+     fit, take the one centred nearest the run, so the label stays next to the
+     line it belongs to rather than wherever there happened to be room. */
+  const OVER = 150;
+  function freeSpan(y, from, to, needW) {
+    const mid = (from + to) / 2;
+    const lo = Math.max(0, Math.min(from, to) - OVER);
+    const hi = Math.min(W, Math.max(from, to) + OVER);
+    const blocked = [];
+    for (const r of boxes.concat(placed))
+      if (y + LH > r.y1 && y - LH < r.y2 && r.x2 > lo && r.x1 < hi)
+        blocked.push([Math.max(r.x1 - 4, lo), Math.min(r.x2 + 4, hi)]);
+    blocked.sort((p, q) => p[0] - q[0]);
+    let cursor = lo, best = null, bestD = Infinity;
+    for (const [bx1, bx2] of blocked.concat([[hi, hi]])) {
+      if (bx1 - cursor >= needW) {
+        // clamp the label's centre into this span, then score by distance to mid
+        const c = Math.max(cursor + needW / 2, Math.min(bx1 - needW / 2, mid));
+        const d = Math.abs(c - mid);
+        if (d < bestD) { bestD = d; best = [c - needW / 2, c + needW / 2]; }
+      }
+      cursor = Math.max(cursor, bx2);
+    }
+    return best;
+  }
+
   model.edges.forEach((e, i) => {
     const a = G.get(e.from), b = G.get(e.to);
     if (!a || !b) return;
@@ -105,13 +146,28 @@ function render(key, model, host) {
       "marker-end": `url(#${key}-${mk})` });
     pl.dataset.from = e.from; pl.dataset.to = e.to;
     ge.appendChild(pl);
-    if (e.label) {
-      const [p0, p1] = pts;                      // the run leaving the source
-      const k = stack.get(e.from) || 0; stack.set(e.from, k + 1);
-      const t = el("text", { x: (p0[0] + p1[0]) / 2, y: p0[1] - 9 - k * 13, class: "elabel " + cls });
-      t.textContent = e.label;
-      ge.appendChild(t);
+    if (!e.label) return;
+
+    const needW = e.label.length * 5.8 + 10;
+    let spot = null;
+    outer:
+    for (const [p0, p1] of pts.slice(0, -1).map((p, n) => [p, pts[n + 1]])) {
+      if (p0[1] !== p1[1]) continue;              // horizontal runs only
+      // Just above the line first, then the clear band between two rows —
+      // boxes are rowH-30 tall, so there is always a gap of 30 there and it is
+      // where a long label actually fits. Searching only near the line dropped
+      // 26 of 67 labels.
+      const gap = model.rowH / 2 + 2;
+      for (const dy of [-10, -22, 10, 22, -34, -gap, gap, -gap - 11, gap + 11]) {
+        const span = freeSpan(p0[1] + dy, p0[0], p1[0], needW);
+        if (span) { spot = { x: (span[0] + span[1]) / 2, y: p0[1] + dy, w: needW }; break outer; }
+      }
     }
+    if (!spot) return;
+    placed.push({ x1: spot.x - needW / 2, x2: spot.x + needW / 2, y1: spot.y - LH, y2: spot.y + LH });
+    const t = el("text", { x: spot.x, y: spot.y, class: "elabel " + cls });
+    t.textContent = e.label;
+    ge.appendChild(t);
   });
   svg.appendChild(ge);
 
@@ -365,6 +421,36 @@ if (new URLSearchParams(location.search).get("check")) {
     fail.push(`NOTE ${n.id}: no hand-written plain-English line`);
   for (const n of MODELS.m2.nodes) if (typeof PLAIN !== "undefined" && !PLAIN[n.id])
     fail.push(`NOTE ${n.id}: no hand-written plain-English line`);
+
+  /* Edge labels printed over boxes once, and the only way to see it was to look.
+     Measure it instead: every drawn label against every box, and against every
+     other label. Also count what was dropped — a placer that silently hides
+     half the labels passes an overlap test and fails the reader. */
+  let drawn = 0, wanted = 0, collide = 0;
+  for (const key of Object.keys(MODELS)) {
+    wanted += MODELS[key].edges.filter(e => e.label).length;
+    const svg = document.querySelector("#fig-" + key + " svg");
+    if (!svg) continue;
+    const rects = [...svg.querySelectorAll(".node .box")].map(r => ({
+      x1: +r.getAttribute("x"), y1: +r.getAttribute("y"),
+      x2: +r.getAttribute("x") + +r.getAttribute("width"),
+      y2: +r.getAttribute("y") + +r.getAttribute("height") }));
+    const labels = [...svg.querySelectorAll(".elabel")];
+    drawn += labels.length;
+    const hit = (a, b) => a.x + a.width > b.x1 + 2 && a.x < b.x2 - 2 && a.y + a.height > b.y1 + 2 && a.y < b.y2 - 2;
+    labels.forEach((t, i) => {
+      const b = t.getBBox();
+      if (rects.some(r => hit(b, r))) { fail.push(`label "${t.textContent}" sits on a box in ${key}`); collide++; }
+      for (let j = i + 1; j < labels.length; j++) {
+        const o = labels[j].getBBox();
+        if (b.x + b.width > o.x && b.x < o.x + o.width && b.y + b.height > o.y && b.y < o.y + o.height) {
+          fail.push(`labels overlap in ${key}: "${t.textContent}" and "${labels[j].textContent}"`); collide++;
+        }
+      }
+    });
+  }
+  if (!collide) fail.push(`NOTE all ${drawn} edge labels are clear of every box and of each other`);
+  if (drawn < wanted) fail.push(`NOTE ${wanted - drawn} edge label(s) had nowhere clear to go and were dropped`);
   const hard = fail.filter(f => !f.startsWith("NOTE"));
   console.log(hard.length ? "CHECK FAILED\n" + fail.join("\n") : "CHECK OK — " + ALL.size + " nodes, " +
     (MODELS.m1.edges.length + MODELS.m2.edges.length) + " edges, all resolve." +
