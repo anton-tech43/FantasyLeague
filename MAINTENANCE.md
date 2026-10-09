@@ -63,6 +63,20 @@ raw SQL session. They do **not** cover anything in `cron.*`, `pg_stat_activity`,
 fallback and stay blocked until a human adds the pooler host to this environment's allowed
 network egress (environment settings → Network access).
 
+**Same allowlist blocks `media.api-sports.io` (confirmed 2026-10-09).** The player/manager
+photo CDN used for the placeholder-checksum check (`DATA_SOURCES.md`'s hash table, skill
+§3/3a) gets `CONNECT tunnel failed, response 403` from the agent proxy — not a bad URL, the
+same network policy as the pooler block above. That check is currently un-runnable from
+`gd-env` until a human adds the host to the allowlist; Pass B should report it as skipped,
+not silently pass it.
+
+**PostgREST's 1000-row page cap can silently truncate a per-run pull (first seen
+2026-10-09).** A `select` with no per-team filter on a table with >1000 rows (e.g.
+`players`, 1822 rows across all entities) returns only the first page with no error —
+it just looks like several clubs' squads are short, which reads exactly like a real
+roster bug. Always filter by `team_id` (or page with `Range`/`offset`) before trusting a
+row count or a "missing player" finding pulled over REST.
+
 JSONB null trap (from CLAUDE.md): `WHERE x IS NULL` does not match a JSONB literal
 `null`; use `WHERE x IS NULL OR jsonb_typeof(x) = 'null'`.
 
