@@ -181,6 +181,15 @@ class AppState {
             // `-gdTier N`: a different dedication level (the Saturday quiz is T3+).
             if let j = args.firstIndex(of: "-gdTier"), j + 1 < args.count, let t = Int(args[j + 1]) { self.selectedTier = t }
         }
+
+        // `-gdSeasonPrimer`: the opposite of the line above — leave the primer
+        // UNSEEN. Since 2026-05-17 completeOnboarding() marks it seen, so the
+        // only way a human reaches that screen is Delete My Data, and the only
+        // way a screenshot run reaches it is this flag. A screen nothing can
+        // open is a screen nobody checks; that is how it came to be four days
+        // old and dark. Applied after the preset so it wins, and after the
+        // UserDefaults read so a stale simulator default cannot hide it.
+        if args.contains("-gdSeasonPrimer") { self.hasSeenSeasonPrimer = false }
         // `-gdPresetCountry netherlands` adds a country follow on top, which
         // is the only way to reproduce the ten club+country devices and the
         // one country-only device that exist in production — onboarding has
