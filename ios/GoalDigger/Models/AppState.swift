@@ -190,6 +190,14 @@ class AppState {
         // old and dark. Applied after the preset so it wins, and after the
         // UserDefaults read so a stale simulator default cannot hide it.
         if args.contains("-gdSeasonPrimer") { self.hasSeenSeasonPrimer = false }
+
+        // `-gdPresetTeam2 liverpool`: a SECOND club, which is the only shape in
+        // which the club switcher and the two-club follow arrays are exercised.
+        // A single-club preset cannot reproduce anything about switching.
+        if let i = args.firstIndex(of: "-gdPresetTeam2"), i + 1 < args.count,
+           let t2 = Team(rawValue: args[i + 1]), !self.selectedTeams.contains(t2) {
+            self.selectedTeams.append(t2)
+        }
         // `-gdPresetCountry netherlands` adds a country follow on top, which
         // is the only way to reproduce the ten club+country devices and the
         // one country-only device that exist in production — onboarding has
