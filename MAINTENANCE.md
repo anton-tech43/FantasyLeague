@@ -66,6 +66,14 @@ network egress (environment settings → Network access).
 JSONB null trap (from CLAUDE.md): `WHERE x IS NULL` does not match a JSONB literal
 `null`; use `WHERE x IS NULL OR jsonb_typeof(x) = 'null'`.
 
+**Proxy for A2 when blocked (added 2026-10-13):** `cron.job_run_details` has no
+PostgREST equivalent, but `pipeline_health` does: `GET .../rest/v1/pipeline_health
+?select=created_at&stage=eq.fetch&order=created_at.desc&limit=1` over HTTPS with
+the service key. A recent timestamp there means the `data-fetcher` cron tick is
+still firing — not proof pg_cron is fully healthy (no visibility into failures or
+"job startup timeout"), but enough to tell "cron is ticking" from "cron is
+starved," without a raw SQL session.
+
 ---
 
 ## 2. Pass A — Drift & health (Tuesday)
