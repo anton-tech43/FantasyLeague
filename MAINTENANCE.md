@@ -93,6 +93,15 @@ through A1 like everything else. The fourth check — the size of
 `team_page_prose_history` — already `fail`s, because that is a defect in our own
 machinery rather than a judgement about content.
 
+**Correction, found 2026-10-16:** the ~2026-10-14 target above assumed the cloud
+routine would actually be running section 8's queries during that fortnight. It
+never has — every run so far has hit the §1 network-policy block on raw `psql`
+before reaching section 3, let alone section 8, so **zero data points exist** and
+the "flip warn to fail" decision cannot be made from this environment's history.
+Either get the pooler host added to `gd-env`'s allowed egress (§1), or run
+`db-health.sh` section 8 from a machine with unrestricted Postgres access on some
+other cadence, before treating the fortnight as elapsed.
+
 Every other check on this page asks whether the machinery ran. A8 exists because
 on 2026-09-30 the "ones to know" card spent a month naming players who were not
 playing while every job on this page reported green throughout — each one had
@@ -111,6 +120,17 @@ Goal: nothing user-visible states something out of date going into the weekend.
 1. **Run the `stale-data-audit` skill** — this is its whole job (clubs, managers,
    squads, player cards, team-page prose, season labels, hardcoded lists, store
    copy). Apply Rule 1 to everything it flags.
+   - **Check `gd-team-page`'s last run DURATION, not just its status.** This
+     environment's trigger tools are `list_triggers`/`get_trigger`
+     (`trig_015wVs1ZDsEaMYd7c99Fcy34`), not the `RemoteTrigger` tool the skill's
+     own text names — same idea, different tool name here. A `SUCCEEDED` status
+     with `finished_at - fired_at` well under the skill's documented ~45-minute
+     real-run time means the routine's "already done today?" check false-
+     positived and wrote nothing, even though `team_pages.updated_at` still gets
+     touched every 2 hours by the unrelated `dynamic_only` Edge function. This
+     exact failure happened on 2026-09-23 and recurred on 2026-10-12 (a 4m22s
+     run reported success); check for it every Pass B rather than trusting the
+     status field alone.
 2. **Automatic-source fields** (trusted per `DATA_SOURCES.md`): fixtures,
    events/scorers, standings, squads (match on SURNAME), injuries (filter to latest
    fixture + dedupe). Fill nulls / refresh staleness via SQL from
