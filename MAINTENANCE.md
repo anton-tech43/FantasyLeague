@@ -93,6 +93,13 @@ through A1 like everything else. The fourth check — the size of
 `team_page_prose_history` — already `fail`s, because that is a defect in our own
 machinery rather than a judgement about content.
 
+**The clock on that fortnight hasn't actually started.** `gd-env`'s raw-Postgres
+block (§1) has kept A8 unreachable from this routine since 2026-10-06, and
+`reports/maintenance/` has no run older than 2026-10-20 to measure from. Don't
+flip `warn` to `fail` on the original ~2026-10-14 date — restart the fortnight
+once a human reopens network egress to the pooler and A8 runs clean a few times
+in a row.
+
 Every other check on this page asks whether the machinery ran. A8 exists because
 on 2026-09-30 the "ones to know" card spent a month naming players who were not
 playing while every job on this page reported green throughout — each one had
