@@ -54,6 +54,19 @@ q "SELECT c.oid::regclass AS tbl, pg_size_pretty(pg_total_relation_size(c.oid)) 
      ('net._http_response','cron.job_run_details','public.raw_fetch_logs',
       'public.pipeline_health','public.team_page_prose_history');"
 
+# The app has no Realtime code at all, yet Realtime was 215 of 295 requests on
+# 2026-10-25 with 102 errors. Realtime reads the WAL through a replication
+# slot: an inactive slot pins every WAL segment after it, so WAL grows without
+# bound and both disk and IO pay for it, invisibly, forever. September already
+# measured a 170 MB gap it could not explain (dashboard 478 MB vs
+# pg_database_size 308 MB, "antyder bloat/WAL") and nobody followed it up.
+echo "── REPLICATION SLOTS + WAL (the unexplained 170 MB) ──────"
+q "SELECT slot_name, plugin, slot_type, active,
+          pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(), restart_lsn)) AS wal_pinned
+   FROM pg_replication_slots ORDER BY 5 DESC;"
+q "SELECT pg_size_pretty(sum(size)) AS wal_total, count(*) AS segments FROM pg_ls_waldir();"
+q "SELECT pg_size_pretty(pg_database_size(current_database())) AS db_size;"
+
 echo "── DID THE CLEANUP JOBS ACTUALLY RUN? ────────────────────"
 q "SELECT j.jobname, max(r.start_time) AS last_run,
           max(r.start_time) FILTER (WHERE r.status='succeeded') AS last_success
