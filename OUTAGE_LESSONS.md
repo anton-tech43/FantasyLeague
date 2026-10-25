@@ -1,219 +1,232 @@
-# Vad databasen har lärt oss
+# Vad driftstoppen har lärt oss
 
-Fyra gånger har backenden tagit GoalDigger ner eller nära nog. Den här sidan
-är inte en logg över dem — den finns i `IMPLEMENTATION_PROGRESS.md` och
-`SJALVRANNSAKAN_2026-09.md`. Det här är vad som visade sig vara *samma sak*
-varje gång, skrivet för att gå att använda i nästa app.
+Fyra gånger på fem månader har databasen tagit appen ner eller nära nog. Det här
+är inte loggen över dem — den finns i `IMPLEMENTATION_PROGRESS.md` och
+`SJALVRANNSAKAN_2026-09.md`. Det här är det som visade sig vara **samma sak varje
+gång**, formulerat så att det går att ta med sig till nästa system.
+
+Exemplen är härifrån. Mönstren är det inte.
 
 | | Vad | Hur länge | Vad det visade sig vara |
 |---|---|---|---|
-| 1 jun 2026 | Disk IO-budget-varning | ingen nedtid | Ett index som inte täckte frågan |
-| 23 aug – 6 sep | Degradering → helt nere | **7 dygn** | Disk IO 100 %, ingen visste |
-| 20–21 sep | Hela instansen trög | 17 h | Återhämtade sig själv, aldrig förklarat |
-| 24 okt – | Helt nere | pågår | Omstart bet inte |
+| 1 jun 2026 | Varning om disk-IO | ingen nedtid | Ett index som inte täckte frågan |
+| 23 aug – 6 sep | Degradering → helt nere | **7 dygn** | Resurserna slut, ingen visste |
+| 20–21 sep | Hela instansen trög | 17 h | Reste sig själv, aldrig förklarat |
+| 21–25 okt | Degradering → helt nere | **4 dygn** | Schemaläggaren kunde inte starta jobb |
 
 ---
 
 ## 1. Larmet får inte bo i det som kan gå sönder
 
-I sju dygn låg produktionen nere och ingen visste om det. Inte för att vi
-saknade övervakning — vi hade `check_pipeline_heartbeat`, en cron var
-30:e minut som larmade när pipelinen tystnade.
+I sju dygn låg produktionen nere utan att någon visste. Inte för att övervakning
+saknades — det fanns en kontroll som gick var 30:e minut och larmade när
+pipelinen tystnade.
 
 Den var en rad i databasen. Som var nere.
 
-Varje larm vi hade — pg_cron:s egen heartbeat, `pipeline_health`,
-`client_errors` — bodde inuti exakt den sak de skulle vakta. När den dog,
-dog de med den, tyst.
+Varje larm — schemaläggarens egen heartbeat, hälsotabellen, felloggen — bodde
+inuti exakt den sak de skulle vakta. När den dog, dog de med den, tyst.
 
-Fixen blev `gd-heartbeat`: en check som kör på en **annan maskin på ett annat
-nät**, var tredje timme, och ställer den enda fråga som betyder något — *skulle
-en användare se något om hon öppnade appen nu?* Den skickar push direkt till
-en telefon och rör aldrig databasen för att göra det.
-
-Den 24 oktober larmade den inom tre timmar, och var tredje timme sedan dess.
-Den fungerade.
+Fixen blev en kontroll som kör **på en annan maskin på ett annat nät**, var
+tredje timme, och ställer den enda fråga som betyder något: *skulle en användare
+se något om hon öppnade appen nu?* Den skickar larmet via en väg som inte rör
+databasen alls.
 
 > **Regel:** din övervakning får inte dela felkälla med det den övervakar. Om
-> svaret på "hur vet jag att X lever?" går genom X har du ingen övervakning,
-> du har en förhoppning.
+> svaret på "hur vet jag att X lever?" går genom X har du ingen övervakning, du
+> har en förhoppning.
 
-Och undvik samma fälla i larmvägen: 17 maj-heartbeaten upptäckte problemet
-korrekt men skickade sitt larm via samma Vault-nyckel som var trasig. Den såg
-allt och kunde inte berätta det.
-
----
-
-## 2. "Succeeded" mäter nästan alltid fel lager
-
-pg_cron skriver `status='succeeded'` när SQL:en kördes utan fel. SQL:en är
-`SELECT net.http_post(...)` — alltså "anropet lades i kön". Den säger
-ingenting om att något svarade. I maj gick sex dygn med 401 på varje anrop
-och en helt grön cron-logg.
-
-Samma sak ett lager upp: claude.ai-routinerna stämplas `SUCCEEDED` när
-sandboxen avslutas snyggt. Den 24–25 oktober är sex routiner stämplade
-lyckade utan att ha skrivit en enda rad — de kunde inte nå databasen, de
-konstaterade det, och avslutade prydligt.
-
-Det är inte en bugg i pg_cron eller i routines. Båda rapporterar sanningsenligt
-om det lager de faktiskt kan se. Problemet är att vi läste deras svar som ett
-svar på vår fråga.
-
-> **Regel:** definiera "lyckades" vid det lager användaren känner av, inte vid
-> det som är lättast att mäta. För en cron som anropar en funktion är
-> kriteriet `status_code = 200` i `net._http_response` — inte att cron körde.
-> För en innehållsroutine är det en rad i `content_items` — inte att den
-> avslutade.
+Samma fälla finns i larm*vägen*. En av våra heartbeats upptäckte problemet helt
+korrekt — och skickade sitt larm via samma trasiga nyckel. Den såg allt och kunde
+inte berätta det. En annan hade en mottagarlista som var tom. Larmet gick. Det
+fanns ingen att gå till.
 
 ---
 
-## 3. Den uppenbara misstänkta är nästan alltid fel
+## 2. Ett larm som bara mäter symptom missar varje långsamt haveri
 
-Juni, Disk IO-budgeten höll på att ta slut. `raw_fetch_logs` hade 93 727 rader
-och 340 MB stor JSONB, aldrig gallrad. Uppenbart, eller hur? Tabellen är för
-stor, trimma den.
+Det här är den dyraste lärdomen, och den kom först i oktober.
 
-Fel. `pg_stat_user_tables` visade **32 seq scans mot 25 058 index scans** —
-den lästes inte sönder. Det riktiga spåret låg i `idx_tup_fetch`: 1,39
-miljoner, alltså ~55 heap-rader per indexsökning.
+Den externa kontrollen från lärdom 1 fungerade. Den ställde fyra frågor: svarar
+API:et, hur gammalt är innehållet, när hämtades data senast, avvisas något. Alla
+fyra är rimliga. Alla fyra är **symptom**.
 
-Frågan var `.eq(team_id).eq(source).order(fetched_at).limit(1)`. Indexet var
-`(team_id, fetched_at)`. Postgres hittade laget, och gick sedan igenom ~55
-rader och läste varje stor JSONB-rad från disk bara för att filtrera på
-`source`. Det var den heap-läsningen, inte radantalet, som åt budgeten.
+Och i tre dygn svarade alla fyra ja, medan systemet höll på att dö:
 
-Fixen var ett index: `(team_id, source, fetched_at DESC)`. Gratis. Trimningen
-gjordes också, men den var bisak.
+```
+20 okt   1326 jobb, 0 fel, 0,1 s snitt    ← helt rent
+21 okt   1453 jobb, 87 fel, 1,8 s         ← haveriet börjar 11:22
+22 okt   1332 jobb, 201 fel, 7,4 s
+23 okt   1029 jobb, 148 fel, 58 s
+24 okt    406 jobb, 300 fel, 129 s        ← först nu larmar kontrollen
+25 okt      4 jobb, 149 fel, 461 s        ← stillastående
+```
 
-Det här är svårt för att den felaktiga förklaringen är *tillfredsställande*.
-Stor tabell, mycket disk — det låter rätt, och man slutar leta.
+Varje tröskel var satt mot ett *stillastående* system: innehåll äldre än 30
+timmar, hämtning äldre än 10. Men systemet stannade inte. Det **läckte** — lite
+långsammare varje dygn, allt fortfarande inom tröskeln, ända tills det inte var
+det. Då var instansen inte längre räddningsbar utan att byta hårdvara.
 
-> **Regel:** "stor tabell" och "IO-problem" är två olika diagnoser. Läs
-> statistiken innan du skär. Ett index måste täcka **hela** predikatet i rätt
-> ordning — för `eq + eq + order by limit` ska sorteringskolumnen ligga sist.
+Det första symptomet fanns hela tiden, från 11:22 den 21:a: schemaläggaren
+kunde inte **starta** sina jobb. Inte "jobbet misslyckades" — jobbet kom aldrig
+igång. Den siffran är noll på en frisk dag och tvåsiffrig inom en timme när det
+börjar. Vi mätte den inte, för vi mätte vad användaren såg, och användaren såg
+ingenting förrän på dag fyra.
 
-**Fotnot, för ärlighetens skull:** den 25 oktober sa jag till Anton att
-match-watchers 1 440 anrop per dygn tömde budgeten. Septemberrapporten skriver
-själv "orsakshypotes, ej bevisad". Jag gjorde om precis det här misstaget,
-mitt i dokumentet som varnar för det. Siffran var mätt; slutsatsen var det
-inte. Det är lättare att se i efterhand än i stunden, vilket är hela poängen
-med att skriva ner det.
-
----
-
-## 4. Det som växer har ingen commit
-
-De flesta buggar kommer med en deploy. Du kan `git bisect`, du kan läsa
-diffen, du vet när det började.
-
-Den 24 oktober dog databasen utan att någonting hade ändrats. Senaste
-migrationen var tre veckor gammal. Inga commits på en vecka. Konfigurationen
-var orörd.
-
-Den klassen av fel kommer av sig själv: en tabell som växer lite varje dygn,
-en logg ingen gallrar, en WAL-fil som aldrig kastas. Den korsar en tröskel en
-natt klockan tre och då är den plötslig — men den har byggts upp i månader.
-
-Två konkreta i det här systemet:
-
-- `cron.job_run_details` växte till **177 070 rader och 88 MB**. pg_cron
-  gallrar inte sin egen logg. Ingen hade sagt åt den att göra det.
-- `net._http_response` är **UNLOGGED**, vilket betyder att den rapporterar
-  noll rader till statistiken. Autovacuum utlöses av statistiken. Alltså
-  besökte autovacuum den aldrig, och den växte till 17 MB med noll levande
-  rader. Varje utgående anrop fick skanna skräpet: 5,2 sekunder styck, 29 645
-  anrop, vilket åt upp den enda bakgrundsarbetare pg_net har — och därmed
-  blockerade schemaläggaren, så 18 % av minutjobben aldrig startade.
-
-> **Regel:** allt som växer behöver något som vaktar det, för `git blame`
-> hittar det aldrig. Och den farligaste varianten är den som är osynlig för
-> den automatik du litar på — en tabell som växer utan att radantalet växer är
-> ett varningstecken.
+> **Regel:** mät orsaken, inte bara symptomet. Varje symptomtröskel antar att
+> haveriet är plötsligt. De flesta är det inte — de är gradvisa, och en gradvis
+> kurva passerar aldrig en tröskel som är satt för ett stopp. Leta efter det
+> mått som är **noll** när allt är friskt. Det har ingen brusnivå att gömma sig i.
 
 ---
 
-## 5. Du betalar för det som är påslaget, inte för det du använder
+## 3. "Succeeded" mäter nästan alltid fel lager
 
-GoalDigger har **noll** rader Realtime-kod. Inte i iOS, inte i någon Edge
-Function. Appen pollar REST.
+Schemaläggaren skriver `status='succeeded'` när dess SQL kördes utan fel.
+SQL:en är "lägg anropet i kön". Den säger ingenting om att något svarade. Sex
+dygn gick med 401 på varje anrop och en helt grön logg.
 
-Den 25 oktober var Realtime **215 av 295 anrop** mot projektet, med 102 fel.
+Samma sak ett lager upp: våra innehållsjobb stämplas lyckade när processen
+avslutas snyggt. Under oktoberhaveriet är sex av dem stämplade lyckade utan att
+ha skrivit en enda rad — de kunde inte nå databasen, konstaterade det, och
+avslutade prydligt.
 
-Supabase Realtime läser WAL via en replikeringsslot. Tjänsten är påslagen på
-projektnivå, inte för att vår kod ber om den. Och en slot som ingen
-konsumerar låser fast varje WAL-segment efter sitt bokmärke — Postgres får
-aldrig återanvända dem, så WAL växer obegränsat.
+Ingen av dem ljuger. Båda rapporterar sanningsenligt om det lager de kan se.
+Problemet är att vi läste deras svar som ett svar på *vår* fråga.
 
-Det är fortfarande en hypotes i skrivande stund. Men september mätte ett
-glapp på 170 MB som den inte kunde förklara (dashboard 478 MB mot
-`pg_database_size` 308 MB, *"antyder bloat/WAL"*) och ingen följde upp det.
+> **Regel:** definiera "lyckades" vid det lager användaren känner av. För ett
+> jobb som anropar en tjänst är kriteriet svarskoden, inte att jobbet kördes.
+> För ett innehållsjobb är det en rad i databasen, inte att processen slutade.
 
-> **Regel:** inventera vad som är påslaget, inte vad du anropar. En funktion
-> du aldrig använder kan inte ha en bugg du märker — den kan bara ha en
-> kostnad du inte letar efter.
+---
+
+## 4. Den uppenbara misstänkta är nästan alltid fel
+
+I juni höll disk-IO:t på att ta slut. En tabell hade vuxit till 93 727 rader och
+340 MB, aldrig gallrad. Uppenbart: tabellen är för stor, trimma den.
+
+Fel. Statistiken visade **32 sekventiella scanningar mot 25 058 indexsökningar**
+— den lästes inte sönder. Det riktiga spåret var att varje indexsökning hämtade
+~55 rader från disk. Frågan filtrerade på tre kolumner; indexet täckte två. Så
+databasen slog upp den första, läste sedan 55 stora rader från disk för att
+filtrera på den tredje. Den läsningen, inte radantalet, åt budgeten.
+
+Fixen var ett index. Gratis. Trimningen gjordes också, men den var bisak.
+
+Det svåra är att den felaktiga förklaringen är *tillfredsställande*. Stor tabell,
+mycket disk — det låter rätt, och man slutar leta.
+
+**Och jag gjorde om det, två gånger, i oktober, i samma vecka som jag skrev den
+här sidan.**
+
+Först pekade jag ut vårt minutjobb som orsaken till att budgeten tömdes.
+Siffran — 1 440 anrop per dygn — var mätt. Slutsatsen var det inte;
+septemberrapporten på min egen skärm skrev "orsakshypotes, ej bevisad".
+
+Sedan byggde jag en teori om att en oanvänd replikeringsslot låste loggfiler.
+Den förklarade **allt**: att ingen kod ändrats, att det växte gradvis, ett
+oförklarat glapp på 170 MB som mätts en månad tidigare. Jag kallade den det enda
+som passade. När databasen svarade igen fanns det noll slots. Inte en liten.
+Inga.
+
+> **Regel:** "stor" och "orsak" är olika påståenden, och en hypotes som förklarar
+> allting är en varningssignal, inte en bekräftelse. Skriv ner skillnaden mellan
+> vad du har mätt och vad du har slutit dig till, varje gång. Det är den enda
+> vanan som skyddar mot den här, för känslan av att ha rätt är identisk i båda
+> fallen.
+
+---
+
+## 5. Det som växer har ingen commit
+
+De flesta buggar kommer med en deploy. Du kan `git bisect`, läsa diffen, se när
+det började.
+
+Oktoberhaveriet kom utan att något ändrats. Senaste ändringen i databasen var
+tre veckor gammal. Inga commits på en vecka. Konfigurationen orörd.
+
+Den klassen kommer av sig själv: en tabell som växer lite varje dygn, en logg
+ingen gallrar, en cache som aldrig töms. Den korsar en tröskel en natt klockan
+tre och är då *plötslig* — men den har byggts upp i månader.
+
+Två som bitit oss:
+
+- Schemaläggarens egen körlogg växte till 177 070 rader och 88 MB. Den gallrar
+  inte sig själv. Ingen hade sagt åt den att göra det.
+- En systemtabell var **UNLOGGED**, vilket betyder att den rapporterar noll
+  rader till statistiken. Den automatiska städningen utlöses av statistiken.
+  Alltså besöktes den aldrig, och växte till 17 MB med noll levande rader.
+  Varje utgående anrop fick skanna skräpet: 5,2 sekunder styck, 29 645 anrop.
+  Det åt upp den enda bakgrundsarbetare tjänsten hade, vilket blockerade
+  schemaläggaren, vilket gjorde att 18 % av minutjobben aldrig startade.
+
+> **Regel:** allt som växer behöver något som vaktar det, för `git blame` hittar
+> det aldrig. Och den farligaste varianten är osynlig för den automatik du litar
+> på — en tabell som växer utan att radantalet växer är ett varningstecken.
 
 ---
 
 ## 6. Fixen kan vara det som dödar dig
 
-Juni igen. Tabellen hade 340 MB att återvinna och `VACUUM FULL` hade gett
-tillbaka dem. Frestande.
+Juni igen. Tabellen hade 340 MB att återvinna, och den tunga städningen hade
+gett tillbaka dem. Frestande.
 
-`VACUUM FULL` skriver om hela tabellen. På en instans vars **IO-budget**
-redan höll på att ta slut hade den bränt precis den resurs vi försökte rädda —
-och tagit ett lås på tabellen under tiden.
+Den sortens städning skriver om hela tabellen. På en instans vars **IO-budget**
+redan höll på att ta slut hade den bränt precis den resurs vi försökte rädda, och
+låst tabellen under tiden. Larmet gällde IO, inte diskutrymme. Den lätta
+städningen märker utrymme som återanvändbart utan att skriva om något. Rätt
+verktyg.
 
-Larmet gällde IO, inte diskutrymme. Vanlig `VACUUM` markerar utrymme som
-återanvändbart utan att skriva om något och utan lås. Det var rätt verktyg.
+Vi lärde oss det och schemalade ändå den tunga varianten en gång i veckan. I
+oktober körde den i 32 minuter och misslyckades, mitt under haveriet.
 
-> **Regel:** matcha åtgärden mot larmet, inte mot symptomet den råkar dela
-> namn med. "Disken är full" och "disken hinner inte med" kräver motsatta
-> ingrepp.
+> **Regel:** matcha åtgärden mot larmet, inte mot symptomet den råkar dela namn
+> med. "Disken är full" och "disken hinner inte med" kräver motsatta ingrepp. Och
+> en lärdom som bara skrivits ner är inte implementerad — gå tillbaka och kolla
+> att den faktiskt gäller i systemet.
 
 ---
 
 ## 7. Prod driver ifrån repot, tyst
 
-`supabase_migrations.schema_migrations` innehåller bara 001–017. Allt därefter
-— ett sjuttiotal migrationer — är kört för hand. Numren 112, 117 och 124 finns
-två gånger. Fem cron-jobb som schemaläggs i migration 003 är borttagna utanför
-git, och en kommentar i `team-page-generator` är det enda stället det står.
+Vår migrationstabell innehåller bara de sjutton första. Resten — ett sjuttiotal —
+är körda för hand. Tre nummer finns två gånger. Fem schemalagda jobb är
+borttagna utanför versionshanteringen, och en kommentar i en källfil är enda
+stället det står.
 
-Följden är inte bara att `supabase db push` inte går att använda. Det är att
-**repot inte längre beskriver systemet**. När någon — en människa eller en
-agent — läser migrationerna för att förstå hur det hänger ihop, läser de en
-version av verkligheten som inte finns.
+Följden är inte bara att verktygen slutar fungera. Det är att **repot inte längre
+beskriver systemet**. Den som läser det för att förstå hur något hänger ihop
+läser en version av verkligheten som inte finns.
 
-Det är därför `facts.json` genereras från live `cron.job` i stället för att
-skrivas för hand, och varför `verify-arch-map.sh` finns. Första gången den
-kördes hittade den att kartan fortfarande hänvisade till ett skript som var
-raderat.
+Därför genereras vår systemkarta ur den levande databasen i stället för att
+skrivas för hand, och därför finns en kontroll som jämför dem. Första gången den
+kördes hittade den att kartan hänvisade till ett skript som var raderat.
 
 > **Regel:** om du inte kan återskapa produktionsmiljön ur repot har du inte
-> infrastructure-as-code, du har anteckningar. Och anteckningar ruttnar. Det
-> du inte kan generera ur sanningen måste ha en check som jämför med den.
+> infrastructure-as-code, du har anteckningar. Och anteckningar ruttnar. Det du
+> inte kan generera ur sanningen måste ha en kontroll som jämför med den.
 
 ---
 
 ## Det korta
 
 1. Larmet får inte bo i det som kan gå sönder.
-2. "Succeeded" mäter nästan alltid fel lager.
-3. Den uppenbara misstänkta är nästan alltid fel — mät först.
-4. Det som växer har ingen commit.
-5. Du betalar för det som är påslaget, inte för det du använder.
+2. Ett larm som bara mäter symptom missar varje långsamt haveri.
+3. "Succeeded" mäter nästan alltid fel lager.
+4. Den uppenbara misstänkta är nästan alltid fel — och en hypotes som förklarar allt är en varningssignal.
+5. Det som växer har ingen commit.
 6. Fixen kan vara det som dödar dig.
 7. Prod driver ifrån repot, tyst.
 
 Och den som binder ihop dem: **varje gång har det tagit längre tid att tro på
-mätningen än att göra den.** Juni hade svaret i `pg_stat_user_tables` hela
-tiden. September hade 401:orna i `net._http_response` i sex dygn. Oktober hade
-170 MB oförklarad WAL sedan september. Datan fanns. Någon hade bestämt sig
-först.
+mätningen än att göra den.** Juni hade svaret i statistiktabellen hela tiden.
+September hade felkoderna liggande i sex dygn. Oktober hade kurvan i
+körloggen från den 21:a, fyra dygn innan någon tittade. Datan fanns. Någon hade
+bestämt sig först.
 
 ---
 
 *Relaterat: `DB_BASICS.md` (hur delarna hänger ihop, för en icke-DBA) ·
 `RUNBOOK.md` (vad man gör när det brinner) · `scripts/db-health.sh` (kör den
-först) · `artifacts/supabase-ticket-2026-09-21.md` (mall för supportärende).*
+först) · `scripts/io-attribution.sh` (mät innan du skär) ·
+`scripts/post-restore.sh` (de första sextio sekunderna efteråt).*
