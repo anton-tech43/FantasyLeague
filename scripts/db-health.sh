@@ -84,13 +84,20 @@ echo "=========================================================="
 echo
 echo "── 1. CAN THE APP READ ITS DATA? (PostgREST) ─────────────"
 REST_OK=0; REST_N=0
+# curl leaves no body file when it never connects, and `wc -c < missing`
+# fails in the shell before wc can swallow it — four lines of
+# "No such file or directory" on top of the FAILs, in the one run that
+# matters. Own the file so it always exists.
+BODY=$(mktemp "${TMPDIR:-/tmp}/gd_health_body.XXXXXX")
+trap 'rm -f "$BODY"' EXIT
 probe_rest() {                       # $1 = path, $2 = human label
   REST_N=$((REST_N + 1))
   local out code secs bytes
-  out=$(curl -s -o /tmp/gd_health_body -w '%{http_code} %{time_total}' --max-time 12 \
+  : > "$BODY"
+  out=$(curl -s -o "$BODY" -w '%{http_code} %{time_total}' --max-time 12 \
         -H "apikey: $KEY" -H "Authorization: Bearer $KEY" "$REST/$1" 2>/dev/null) || out="000 timeout"
   code=${out%% *}; secs=${out##* }
-  bytes=$(wc -c < /tmp/gd_health_body 2>/dev/null | tr -d ' ')
+  bytes=$(wc -c < "$BODY" 2>/dev/null | tr -d ' ')
   if [ "$code" = "200" ] && [ "${bytes:-0}" -gt 2 ]; then
     REST_OK=$((REST_OK + 1)); note "OK" "$(printf '%-26s %ss, %s bytes' "$2" "$secs" "$bytes")"
   elif [ "$code" = "200" ]; then
