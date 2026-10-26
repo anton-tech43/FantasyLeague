@@ -1223,8 +1223,11 @@ struct TeamPageView: View {
                 Image(portrait)
                     .resizable()
                     .scaledToFit()
-                    .frame(maxWidth: 190, maxHeight: PlayerPortrait.height(portrait, wanted: 250),
+                    .frame(maxWidth: 190, maxHeight: PlayerPortrait.height(portrait, wanted: 218),
                            alignment: .bottomTrailing)
+                    // Same 16 pt inset as the name on the left, so he sits
+                    // inside the card rather than hanging off its edge.
+                    .padding([.trailing, .bottom], 16)
                     .frame(maxHeight: .infinity, alignment: .bottom)
                     .accessibilityHidden(true)
             }
