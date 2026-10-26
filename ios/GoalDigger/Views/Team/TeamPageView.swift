@@ -4,7 +4,6 @@ struct TeamPageView: View {
     let teamId: String
     @Environment(AppState.self) var appState
     /// My Turn's Pre-game is built for the first followed club.
-    private var opensPrep: Bool { appState.selectedTeam?.rawValue == teamId }
     @State private var content: TeamPageContent?
     @State private var playerCards: [PlayerCard] = []
     /// Up to 4 insider items: latest of each type (stat, history, oddity,
@@ -504,11 +503,13 @@ struct TeamPageView: View {
             isExpanded: expandedCard == .comingUp,
             onTap: { toggleCard(.comingUp) },
             leadingImageURL: crest,
-            // Pre-game is built for the first followed club, so the footer
-            // only goes there from that club's page. On a second club's page
-            // it opens the preview in place, as the whole card did before.
-            footerLabel: opensPrep ? "Pre-game ›" : "The preview ›",
-            onFooterTap: opensPrep ? { appState.pendingOpenPrep = true } : nil,
+            // The strip opens the preview in place — kickoff, the preview, his
+            // ones to watch, a line to say — on every club's page. From
+            // 2026-10-07 it left the page for My Turn on the first club's,
+            // and Anton wants it back: the useful part was not having to
+            // leave (2026-10-27).
+            footerLabel: "Pre game talk ›",
+            onFooterTap: nil,
             zone1Collapsed: {
                 // One line of date + chips; stacked and wrapping at the
                 // accessibility sizes, where the row cut the date to "Sat, 10…".
@@ -1536,6 +1537,9 @@ struct TeamPageView: View {
     // MARK: - Loading state
 
     private var teamPageLoadingView: some View {
+        // Top-aligned and allowed to run off the bottom. Centred, the stack was
+        // taller than the space between the bars and was clipped at both ends,
+        // which cut the crest circle in half (Anton, 2026-10-27).
         VStack(spacing: 12) {
             Circle()
                 .fill(Color.feedDivider)
@@ -1554,6 +1558,8 @@ struct TeamPageView: View {
             }
         }
         .padding(.horizontal, 16)
+        .frame(maxHeight: .infinity, alignment: .top)
+        .clipped()
     }
 
     // MARK: - Error state
@@ -1655,9 +1661,19 @@ struct TeamPageView: View {
             return
         }
 
-        // No cache — fetch from network
+        // No cache — fetch from network. A club followed for the first time
+        // (a second club) has no cache to fall back on, so it alone showed the
+        // error whenever the backend was slow, while the first club rendered
+        // from its cache. One quiet retry before giving up; a 19 kB row is not
+        // what fails, the connection is.
         do {
-            let fetched = try await APIClient.shared.fetchTeamPage(teamId: teamId)
+            let fetched: TeamPageContent?
+            do {
+                fetched = try await APIClient.shared.fetchTeamPage(teamId: teamId)
+            } catch {
+                try await Task.sleep(for: .seconds(1.5))
+                fetched = try await APIClient.shared.fetchTeamPage(teamId: teamId)
+            }
             if let fetched {
                 content = fetched
                 TeamPageCache.save(content: fetched, teamId: teamId)

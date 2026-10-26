@@ -25,6 +25,11 @@ final class LiveActivityManager {
     func start() {
         guard !started else { return }
         started = true
+        // activityUpdates reports activities created from now on. One that
+        // was already running at launch (started by push while the app was
+        // killed) never had its token registered, so the server could never
+        // update or end it. Walk the existing ones too.
+        for activity in Activity<MatchActivityAttributes>.activities { observeToken(of: activity) }
         observeUpdateTokens()
         if #available(iOS 17.2, *) { observePushToStartToken() }
     }
@@ -126,8 +131,11 @@ final class LiveActivityManager {
             liveFixtureIds.formUnion(Activity<MatchActivityAttributes>.activities
                 .map(\.attributes.fixtureId).filter { $0 >= 999_000 })
             #endif
+            // .stale too: an activity whose end push never arrived goes stale
+            // (no update for 90 min) and was skipped here — exactly the ones
+            // this cleanup exists for (Anton, 2026-10-27: they never go away).
             for activity in Activity<MatchActivityAttributes>.activities
-            where activity.activityState == .active
+            where (activity.activityState == .active || activity.activityState == .stale)
                 && !liveFixtureIds.contains(activity.attributes.fixtureId) {
                 await activity.end(nil, dismissalPolicy: .immediate)
             }
