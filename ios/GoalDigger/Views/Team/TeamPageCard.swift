@@ -251,6 +251,22 @@ enum PlayerPortrait {
     nonisolated(unsafe) private static var known: [String: Bool] = [:]
     private static let lock = NSLock()
 
+    /// The tallest a bundled portrait may be drawn without looking soft.
+    ///
+    /// The portraits are small (most are ~195 px tall) and are drawn at up to
+    /// 280 pt. Anton's read on 2026-10-26: most look fine, the worst do not.
+    /// So the bar is the typical portrait, not @3x: nothing is upscaled more
+    /// than the median one already is (195 px at 280 pt ≈ 1.45 pt per pixel).
+    /// A smaller file is drawn proportionally smaller instead of blurrier.
+    /// docs/IMAGE_REEXPORT.md lists the ones this shrinks, to re-export.
+    static let maxPointsPerPixel: CGFloat = 1.45
+
+    static func height(_ asset: String, wanted: CGFloat) -> CGFloat {
+        guard let img = UIImage(named: asset) else { return wanted }
+        let px = img.size.height * img.scale
+        return min(wanted, px * maxPointsPerPixel)
+    }
+
     private static func exists(_ asset: String) -> Bool {
         lock.lock(); defer { lock.unlock() }
         if let hit = known[asset] { return hit }

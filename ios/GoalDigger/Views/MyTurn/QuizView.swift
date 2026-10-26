@@ -282,7 +282,8 @@ struct QuizView: View {
                 Image(asset)
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 230)
+                    .frame(height: PlayerPortrait.height(asset, wanted: 230))
+                    .frame(height: 230, alignment: .bottom)
                     .frame(maxWidth: .infinity)
                     .padding(.bottom, 8)
                     .accessibilityLabel(q.question == "Who is this?" ? "Photo to identify" : "Photo of him")
@@ -346,7 +347,7 @@ struct QuizView: View {
                         Image(asset)
                             .resizable()
                             .scaledToFit()
-                            .frame(maxWidth: .infinity, maxHeight: 150)
+                            .frame(maxWidth: .infinity, maxHeight: PlayerPortrait.height(asset, wanted: 150))
                             .accessibilityHidden(true)
                     }
                     // Most explanations open by repeating the answer; the

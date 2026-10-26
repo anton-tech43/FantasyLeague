@@ -1203,14 +1203,10 @@ struct TeamPageView: View {
     /// the card was a name and a thumbnail (Anton, 2026-10-01).
     private func managerFeature(_ manager: ManagerCard, portrait: String) -> some View {
         VStack(spacing: 0) {
-            ZStack(alignment: .bottomTrailing) {
-                Color.deepMauve
-                Image(portrait)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 250)
-                    .offset(x: 18)
-                    .accessibilityHidden(true)
+            // Text and portrait in separate columns. They used to share a
+            // ZStack, so a square portrait (Arteta's is 800×800) or a name
+            // that wraps put the name across his face (Anton, 2026-10-26).
+            HStack(alignment: .bottom, spacing: 0) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("THE MANAGER")
                         .font(.jakarta(11, weight: .semiBold)).tracking(0.5)
@@ -1218,13 +1214,22 @@ struct TeamPageView: View {
                     Text(manager.name)
                         .font(.jakarta(26, weight: .bold))
                         .foregroundColor(.warmWhite)
+                        .minimumScaleFactor(0.8)
                         .fixedSize(horizontal: false, vertical: true)
                     Spacer(minLength: 0)
                 }
                 .padding(16)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                Image(portrait)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: 190, maxHeight: PlayerPortrait.height(portrait, wanted: 250),
+                           alignment: .bottomTrailing)
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+                    .accessibilityHidden(true)
             }
             .frame(height: 250)
+            .background(Color.deepMauve)
             .clipped()
 
             Text(appState.personalise(manager.summary))
@@ -1383,7 +1388,8 @@ struct TeamPageView: View {
             Image(asset)
                 .resizable()
                 .scaledToFit()
-                .frame(height: 280)
+                .frame(height: PlayerPortrait.height(asset, wanted: 280))
+                .frame(height: 280, alignment: .bottom)
                 .accessibilityHidden(true)
         } else {
             playerAvatar(player: player, size: 160)
