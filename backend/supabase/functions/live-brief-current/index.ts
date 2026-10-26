@@ -103,7 +103,7 @@ serve(async (req) => {
         headline: buildNeutralHeadline(state, nameOf),
         body: periodLine(state.status),
         minute: state.elapsed ?? null,
-        trigger_label: state.status === "HT" ? "HT" : null,
+        trigger_label: periodLabel(state.status),
         standings: null,
         scorers: buildScorersPassthrough(state, nameOf),
         generated_at: new Date(now).toISOString(),
@@ -172,46 +172,20 @@ serve(async (req) => {
   // so the feed mirrors the Live Activity and never shows a stale "0-0 at the
   // break" once the score moves in the second half.
   const liveHeadline = buildLiveHeadline(teamId, state, nameOf);
-  const liveLabel = state.status === "HT" ? "HT" : null; // null → "LIVE" badge
+  // The period, next to the card's own "LIVE". A null label used to come back
+  // as "LIVE" too, so the card read "LIVE · LIVE".
+  const liveLabel = periodLabel(state.status);
   // Live-box scorers: who scored and when, chronological. Best-effort off the
   // stored goal_events (068); empty/missing → null (card omits the section).
   const scorers = buildScorers(state, nameOf);
 
-  // Group standings for the live box: read the already-computed group table off
-  // the team page (no recompute), trimmed to what the card renders. Best-effort
-  // — a missing/unparseable card just omits standings, never fails the live card.
-  let standings:
-    | { competition_label: string; entries: Array<Record<string, unknown>> }
-    | null = null;
-  try {
-    const { data: page } = await supabase
-      .from("team_pages")
-      .select("content")
-      .eq("team_id", teamId)
-      .maybeSingle();
-    const card = ((page?.content as Record<string, unknown> | undefined)?.cards as
-      | Record<string, unknown>
-      | undefined)?.standings as
-        | { competition_label?: string; entries?: Array<Record<string, unknown>> }
-        | undefined;
-    if (Array.isArray(card?.entries) && card!.entries!.length > 0) {
-      standings = {
-        competition_label: (card!.competition_label as string) ?? "Group",
-        entries: card!.entries!.map((e) => ({
-          rank: e.rank,
-          team: e.team_name,
-          played: e.played,
-          won: e.won,
-          drawn: e.drawn,
-          lost: e.lost,
-          gd: e.gd,
-          points: e.points,
-        })),
-      };
-    }
-  } catch (_e) {
-    // standings best-effort; ignore.
-  }
+  // No standings in the live box. They were added 2026-06-16 for a four-row
+  // World Cup group (a591cb8), read off the team page's standings card — and
+  // for a Premier League club that card is the whole 20-row league table, so
+  // the live box showed the full table under a 0-0 at 1' (Anton, 2026-10-27).
+  // The scorers are what belongs under a live score; the card already hides
+  // the standings block when this is null.
+  const standings = null;
 
   // Routine brief present → keep its richer analysis as the body, but show the
   // live score in the headline (and a live label, no stale minute outside HT).
@@ -414,4 +388,18 @@ async function stableUuid(key: string): Promise<string> {
   );
   const h = [...digest.slice(0, 16)].map((b) => b.toString(16).padStart(2, "0")).join("");
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20, 32)}`;
+}
+
+/// The badge beside "LIVE". HT stays "HT" (the app turns it into "HALF TIME"
+/// and hides the minute); anything else is shown upper-cased as sent.
+function periodLabel(status: string): string | null {
+  switch (status) {
+    case "HT": return "HT";
+    case "1H": return "1ST HALF";
+    case "2H": return "2ND HALF";
+    case "ET": return "EXTRA TIME";
+    case "BT": return "BREAK";
+    case "P": return "PENALTIES";
+    default: return null;
+  }
 }
