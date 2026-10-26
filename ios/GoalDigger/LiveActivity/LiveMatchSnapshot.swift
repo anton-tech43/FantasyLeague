@@ -16,6 +16,8 @@ struct LiveMatchSnapshot: Codable {
     let awayGoals: Int
     let status: String       // API-Football short: "NS","1H","HT","2H","ET","FT",…
     let elapsed: Int?        // minute
+    /// Unix seconds when the clock read 0:00; nil outside a half / older backend.
+    let clockStart: Double?
     let groupLabel: String?
 
     enum CodingKeys: String, CodingKey {
@@ -28,6 +30,7 @@ struct LiveMatchSnapshot: Codable {
         case awayGoals = "away_goals"
         case status
         case elapsed
+        case clockStart = "clock_start"
         case groupLabel = "group_label"
     }
 
@@ -52,6 +55,7 @@ struct LiveMatchSnapshot: Codable {
     }
 
     var contentState: MatchActivityAttributes.ContentState {
-        .init(homeScore: homeGoals, awayScore: awayGoals, statusLabel: statusLabel, note: nil)
+        .init(homeScore: homeGoals, awayScore: awayGoals, statusLabel: statusLabel,
+              elapsed: elapsed, clockStart: clockStart, note: nil)
     }
 }

@@ -54,7 +54,7 @@ serve(async (req) => {
   const isWc = countryId === "world_championship";
   let stateQuery = supabase
     .from("match_status_state")
-    .select("fixture_id, league_id, home_team_id, away_team_id, home_goals, away_goals, status")
+    .select("fixture_id, league_id, home_team_id, away_team_id, home_goals, away_goals, status, elapsed, last_checked")
     .gte("kickoff_time", windowStartIso)
     .lte("kickoff_time", windowEndIso)
     .in("status", LIVE_STATUSES);
@@ -91,6 +91,8 @@ serve(async (req) => {
     (nameRows ?? []).map((t) => [t.id as string, (t.short_name as string) || (t.display_name as string)]),
   );
 
+  const inHalf = ["1H", "2H", "ET"].includes(r.status as string) &&
+    typeof r.elapsed === "number" && r.last_checked != null;
   const snapshot = {
     fixture_id: r.fixture_id,
     home_team_id: r.home_team_id,
@@ -106,8 +108,15 @@ serve(async (req) => {
     group_label: (r.league_id as number | null) === WC_LEAGUE_ID
       ? null
       : competitionName(r.league_id as number | undefined),
-    // elapsed is not tracked in match_status_state; the client decodes it as
-    // optional and the status label is period-based anyway.
+    // The minute (match-watcher writes elapsed, migration 066) and the moment
+    // the clock read 0:00, so an activity the app starts itself ticks from the
+    // first frame instead of showing a bare "1st half". elapsed was observed
+    // at last_checked, so the clock is anchored there, not at now. Null
+    // outside an active half.
+    elapsed: inHalf ? (r.elapsed as number) : null,
+    clock_start: inHalf
+      ? Math.round(new Date(r.last_checked as string).getTime() / 1000 - (r.elapsed as number) * 60)
+      : null,
   };
 
   return new Response(JSON.stringify(snapshot), {

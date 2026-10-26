@@ -121,6 +121,11 @@ final class LiveActivityManager {
             // the match ended, and ending a live activity is worse than
             // leaving one up.
             guard everyAnswerIn else { return }
+            #if DEBUG
+            // The -gdDemoLiveActivity fixture is never live on the server.
+            liveFixtureIds.formUnion(Activity<MatchActivityAttributes>.activities
+                .map(\.attributes.fixtureId).filter { $0 >= 999_000 })
+            #endif
             for activity in Activity<MatchActivityAttributes>.activities
             where activity.activityState == .active
                 && !liveFixtureIds.contains(activity.attributes.fixtureId) {
@@ -128,6 +133,31 @@ final class LiveActivityManager {
             }
         }
     }
+
+    #if DEBUG
+    /// Screenshot harness: `-gdDemoLiveActivity 63` starts an Arsenal v Leeds
+    /// activity whose clock reads 63 minutes and then runs on its own — the
+    /// only way to look at the minute without a live match and a push.
+    func startDemoIfRequested() {
+        let args = ProcessInfo.processInfo.arguments
+        guard let i = args.firstIndex(of: "-gdDemoLiveActivity"), i + 1 < args.count,
+              let minute = Int(args[i + 1]) else { return }
+        let snap = LiveMatchSnapshot(
+            fixtureId: 999_000 + minute, homeTeamId: "arsenal", awayTeamId: "leeds",
+            homeName: "Arsenal", awayName: "Leeds", homeGoals: 2, awayGoals: 1,
+            status: minute > 45 ? "2H" : "1H", elapsed: minute,
+            clockStart: Date().timeIntervalSince1970 - Double(minute * 60),
+            groupLabel: nil)
+        let attributes = MatchActivityAttributes(fixtureId: snap.fixtureId, homeName: "Arsenal",
+                                                 awayName: "Leeds", homeFlag: "", awayFlag: "", groupLabel: nil)
+        do {
+            _ = try Activity.request(attributes: attributes,
+                                     content: ActivityContent(state: snap.contentState, staleDate: nil))
+        } catch {
+            print("gdDemoLiveActivity: \(error)")
+        }
+    }
+    #endif
 
     /// End every running activity (Delete My Data).
     func endAll() async {

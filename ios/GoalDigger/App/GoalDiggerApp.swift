@@ -62,6 +62,9 @@ struct GoalDiggerApp: App {
                         // registration and, if the followed country has a live
                         // match with no running activity, start one locally.
                         LiveActivityManager.shared.syncForegroundActivity()
+                        #if DEBUG
+                        LiveActivityManager.shared.startDemoIfRequested()
+                        #endif
                         // Re-send the push registration if anything it carries
                         // changed while she was away (timezone after a trip, a
                         // POST that failed last time). No-op when unchanged:

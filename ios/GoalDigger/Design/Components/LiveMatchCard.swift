@@ -45,7 +45,7 @@ struct LiveMatchCard: View {
                     Text("·")
                         .font(.jakarta(11, weight: .bold))
                         .foregroundColor(.warmWhite.opacity(0.5))
-                    Text(minute <= 90 ? "\(minute)' / 90" : "\(minute)'")
+                    RunningMinute(minute: minute)
                         .font(.jakarta(11, weight: .semiBold))
                         .foregroundColor(.warmWhite.opacity(0.8))
                 }
@@ -158,5 +158,22 @@ struct LiveMatchCard: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Live match update for your team: \(brief.headline). \(brief.body)")
+    }
+}
+
+/// The live minute, moving on its own between the 60-second refreshes of the
+/// brief. Anchored to when this minute arrived; a fresh minute from the server
+/// re-anchors it, so drift never exceeds one refresh.
+private struct RunningMinute: View {
+    let minute: Int
+    @State private var anchor = Date()
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 10)) { context in
+            let m = minute + max(0, Int(context.date.timeIntervalSince(anchor) / 60))
+            Text(m <= 90 ? "\(m)' / 90" : "\(m)'")
+                .monospacedDigit()
+        }
+        .onChange(of: minute) { _, _ in anchor = Date() }
     }
 }

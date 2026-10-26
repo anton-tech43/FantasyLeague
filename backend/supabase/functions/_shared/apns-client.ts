@@ -226,6 +226,9 @@ interface LiveActivityContentState {
   // ContentState renders as "63' / 90"); the type was missing it and declared a
   // `note` nobody sends. Synced to the real wire shape.
   elapsed?: number | null;
+  /// Unix seconds at which the match clock read 0:00, so the widget can run
+  /// the minute itself (Text(timerInterval:)). Null outside an active half.
+  clockStart?: number | null;
   note?: string;
 }
 

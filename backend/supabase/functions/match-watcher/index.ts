@@ -1674,10 +1674,18 @@ async function handleRequest(req: Request): Promise<Response> {
         const homeMeta = liveMeta(homeTeamId);
         const awayMeta = liveMeta(awayTeamId);
         if (homeMeta && awayMeta) {
-          // Live minute drives the "63' / 90" badge. Only meaningful during an
-          // active half (1H/2H/ET) — null at HT/BT/penalties/FT so the badge
-          // shows the period label there and the per-minute updates stop. Folded
-          // into `sig` so each new minute pushes one silent LA update.
+          // Live minute, only during an active half (1H/2H/ET) — null at
+          // HT/BT/penalties/FT so the badge shows the period label instead.
+          //
+          // The widget runs the clock itself from clockStart (the moment the
+          // clock read 0:00). Until 2026-10-26 the minute was folded into
+          // `sig`, so every new minute sent one priority-10 Live Activity push
+          // — about 90 a match, which is what gets an app throttled by iOS,
+          // and a throttled activity freezes the minute AND delays the goal.
+          // The target is a quarter-hour bucket in `sig`: a push on every score
+          // or status change, plus one every 15 minutes to pull the clock back
+          // into line (stoppage time, API lag). See the ponytail note below for
+          // why it is still per-minute.
           const liveMinute = isLive && status !== "HT" && status !== "BT"
             ? (elapsed ?? null)
             : null;
@@ -1686,8 +1694,15 @@ async function handleRequest(req: Request): Promise<Response> {
             awayScore: awayGoals ?? 0,
             statusLabel: wcStatusLabel(status),
             elapsed: liveMinute,
+            clockStart: liveMinute != null ? Math.round(Date.now() / 1000 - liveMinute * 60) : null,
           };
-          const sig = `${contentState.homeScore}-${contentState.awayScore}-${contentState.statusLabel}-${liveMinute ?? ""}`;
+          // ponytail: still per-minute (minuteBucket = the minute) because the
+          // App Store build reads `elapsed` and has no running clock — a
+          // quarter-hour bucket would freeze its minute for up to 15. Switch to
+          // Math.floor(liveMinute / 15) once the build with MatchMinute has
+          // been out long enough that old builds no longer matter.
+          const minuteBucket = liveMinute ?? "";
+          const sig = `${contentState.homeScore}-${contentState.awayScore}-${contentState.statusLabel}-${minuteBucket}`;
           const matchFinished = FINISHED_STATUSES.has(status);
 
           // Active Live Activity tokens matching `filter`, every page (QA-04).

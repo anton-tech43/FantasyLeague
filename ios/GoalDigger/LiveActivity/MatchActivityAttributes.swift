@@ -19,6 +19,11 @@ struct MatchActivityAttributes: ActivityAttributes {
         /// Live match minute (API-Football elapsed). Sent only during an active
         /// half; nil at HT / break / full-time. Backed by match_status_state.
         var elapsed: Int?
+        /// Unix seconds at which the match clock read 0:00 (second half:
+        /// 45 minutes before the restart). The widget runs the minute itself
+        /// from this, so it moves every second without a push. Nil outside an
+        /// active half, and from a backend older than 2026-10-26.
+        var clockStart: Double?
         /// Optional one-liner (e.g. the live-brief headline at half-time).
         var note: String?
 
@@ -30,6 +35,12 @@ struct MatchActivityAttributes: ActivityAttributes {
                 return m <= 90 ? "\(m)' / 90" : "\(m)'"
             }
             return statusLabel
+        }
+
+        /// When the running clock should show; nil means show `badgeText`.
+        var clockStartDate: Date? {
+            guard let s = clockStart, elapsed != nil else { return nil }
+            return Date(timeIntervalSince1970: s)
         }
     }
 

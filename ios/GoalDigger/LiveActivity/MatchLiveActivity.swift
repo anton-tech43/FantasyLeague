@@ -35,7 +35,7 @@ struct MatchLiveActivity: Widget {
                         Text("\(context.state.homeScore) - \(context.state.awayScore)")
                             .font(.system(size: 26, weight: .bold, design: .rounded))
                             .foregroundStyle(LA.warmWhite)
-                        statusBadge(context.state.badgeText)
+                        MatchMinute(state: context.state, size: 11)
                     }
                 }
                 DynamicIslandExpandedRegion(.bottom) {
@@ -79,11 +79,6 @@ struct MatchLiveActivity: Widget {
         }
     }
 
-    private func statusBadge(_ label: String) -> some View {
-        Text(label)
-            .font(.system(size: 11, weight: .bold))
-            .foregroundStyle(LA.hotRose)
-    }
 }
 
 /// Lock Screen / banner presentation. Home — score — away on one row, status +
@@ -106,9 +101,7 @@ private struct LockScreenView: View {
                     Text("\(state.homeScore) - \(state.awayScore)")
                         .font(.system(size: 34, weight: .heavy, design: .rounded))
                         .foregroundStyle(LA.warmWhite)
-                    Text(state.badgeText)
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(LA.hotRose)
+                    MatchMinute(state: state, size: 12)
                 }
                 .frame(minWidth: 96)
                 teamColumn(flag: attributes.awayFlag, name: attributes.awayName)
@@ -134,5 +127,46 @@ private struct LockScreenView: View {
                 .minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity)
+    }
+}
+
+/// The match minute. During a half it runs on its own from `clockStart` — a
+/// Live Activity cannot be redrawn every minute by push without iOS throttling
+/// it, and a throttled activity freezes the minute and delays the goal too.
+/// Outside a half (HT, FT, penalties) it is the period label.
+private struct MatchMinute: View {
+    let state: MatchActivityAttributes.ContentState
+    let size: CGFloat
+
+    /// The minute at render time — only picks the width and the "/ 90"; the
+    /// digits themselves come from the running timer.
+    private var minutesNow: Int {
+        guard let start = state.clockStartDate else { return 0 }
+        return Int(Date().timeIntervalSince(start) / 60)
+    }
+
+    var body: some View {
+        Group {
+            if let start = state.clockStartDate {
+                HStack(spacing: 0) {
+                    // Renders "63:12". On a dimmed lock screen iOS shows
+                    // "63:--" — its own rule for every running timer. (A
+                    // minutes-only version by clipping the timer text was
+                    // tried 2026-10-27 and does not render reliably.)
+                    Text(timerInterval: start...start.addingTimeInterval(150 * 60),
+                         countsDown: false, showsHours: false)
+                        .monospacedDigit()
+                        .lineLimit(1)
+                        .multilineTextAlignment(.trailing)
+                        // Timer text claims the widest width it could need; pin it.
+                        .frame(width: size * (minutesNow >= 100 ? 4.4 : 3.7), alignment: .trailing)
+                    if minutesNow < 90 { Text(" / 90") }
+                }
+            } else {
+                Text(state.badgeText)
+            }
+        }
+        .font(.system(size: size, weight: .bold))
+        .foregroundStyle(LA.hotRose)
     }
 }
