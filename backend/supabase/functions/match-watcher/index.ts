@@ -619,8 +619,76 @@ async function writeTeamPostMatch(
   }
 }
 
+/// A match that will not be played on: its Live Activity must end too.
+const ENDED_STATUSES = new Set([...FINISHED_STATUSES, "ABD", "CANC", "PST", "AWD", "WO"]);
+
+/// End every Live Activity whose match is over and was not ended by the
+/// full-time tick.
+///
+/// The FT tick sends one end push to the update tokens it knows about, and then
+/// the fixture drops out of polling for good — so a token registered late, a
+/// failed send, a scheduler outage through full time (21–25 Oct), or a match
+/// that was abandoned instead of finished (only FT/AET/PEN counted) left the
+/// activity on her lock screen until iOS gave up hours later. On 2026-10-27
+/// there were 22 still active for one abandoned match. Runs every 10 minutes
+/// from pg_cron (`la-end-sweep`, migration 135), gated by la_sweep_due().
+async function sweepLiveActivities(
+  supabase: ReturnType<typeof getSupabaseClient>,
+): Promise<Response> {
+  const cutoff = new Date(Date.now() - 3 * 3600 * 1000).toISOString();
+  const rows = await fetchAllRows((from, to) =>
+    supabase.from("live_activity_tokens")
+      .select("token, apns_environment, fixture_id, created_at")
+      .eq("kind", "update").eq("is_active", true)
+      .order("token").range(from, to)
+  ) as Array<{ token: string; apns_environment: string; fixture_id: number | null; created_at: string }>;
+  const fixtureIds = [...new Set(rows.map((r) => r.fixture_id).filter((f): f is number => f != null))];
+  const { data: states } = fixtureIds.length
+    ? await supabase.from("match_status_state")
+      .select("fixture_id, status, kickoff_time, home_goals, away_goals")
+      .in("fixture_id", fixtureIds)
+    : { data: [] as Array<Record<string, unknown>> };
+  const byFixture = new Map((states ?? []).map((st) => [st.fixture_id as number, st]));
+
+  const due = rows.filter((r) => {
+    const st = r.fixture_id != null ? byFixture.get(r.fixture_id) : undefined;
+    if (!st) return r.created_at < cutoff;
+    return ENDED_STATUSES.has(st.status as string) || (st.kickoff_time as string) < cutoff;
+  });
+
+  const sent = await mapWithConcurrency(due, PUSH_CONCURRENCY, (r) => {
+    const st = r.fixture_id != null ? byFixture.get(r.fixture_id) : undefined;
+    return sendLiveActivityPush(r.token, {
+      event: "end",
+      contentState: {
+        homeScore: (st?.home_goals as number | null) ?? 0,
+        awayScore: (st?.away_goals as number | null) ?? 0,
+        statusLabel: st ? wcStatusLabel(st.status as string) : "FT",
+        elapsed: null,
+        clockStart: null,
+      },
+      // Over already: gone from the lock screen in a minute, not four hours.
+      dismissalSeconds: 60,
+      environment: r.apns_environment === "production" ? "production" : "development",
+    }).then((res) => ({ token: r.token, res }));
+  });
+  // Ended or dead, these tokens have nothing left to receive.
+  await deactivateTokens(supabase, "live_activity_tokens", due.map((r) => r.token));
+  const ok = sent.filter((s) => s.res.success).length;
+  console.log(`la-end-sweep: ${due.length} due, ${ok} ended, ${due.length - ok} failed (deactivated either way)`);
+  const reasons: Record<string, number> = {};
+  for (const x of sent) if (!x.res.success) {
+    const k = `${x.res.status ?? "?"} ${x.res.reason ?? ""}`.trim();
+    reasons[k] = (reasons[k] ?? 0) + 1;
+  }
+  return new Response(JSON.stringify({ swept: due.length, ended: ok, failures: reasons }), {
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 async function handleRequest(req: Request): Promise<Response> {
   const supabase = getSupabaseClient();
+  if (new URL(req.url).searchParams.get("sweep") === "la") return await sweepLiveActivities(supabase);
 
   // Optional ?date=YYYY-MM-DD override for replay diagnostics. When set,
   // the watcher queries the API for that specific date instead of "today
@@ -1749,9 +1817,14 @@ async function handleRequest(req: Request): Promise<Response> {
           };
 
           if (matchFinished && laStarted) {
-            // END — final score + auto-dismiss after 2h.
+            // END — the final score stays on the lock screen for 30 minutes,
+            // then goes. It was 2 hours, which from her side reads as an
+            // activity that never goes away (Anton, 2026-10-27).
             const updTokens = await laTokens((q) => q.eq("kind", "update").eq("fixture_id", fixtureId));
-            await sendAll(updTokens, { event: "end", contentState, dismissalSeconds: 7200 });
+            await sendAll(updTokens, { event: "end", contentState, dismissalSeconds: 1800 });
+            // Sent: these tokens are done. Anything that registers later, or
+            // failed here, is ended by the la-end-sweep.
+            await deactivateTokens(supabase, "live_activity_tokens", (updTokens ?? []).map((t) => t.token));
             laEnded = true;
             laSig = sig;
           } else if (isLive && !laStarted && prior !== null) {
