@@ -1,3 +1,7 @@
+-- DO NOT APPLY (2026-10-26). Anton: one pre-game push per match is enough,
+-- and the 07:00 matchday reminder now opens Pre-game. Un-pausing the
+-- day-before push would make it two. Kept only as a record. PUSH_RULES.md §1.
+
 -- 130: turn the day-before push back on (paused by 126).
 -- Apply when 2.3 is live on the App Store, the first version that opens
 -- Pre-game from the push (submitted for review 2026-10-07). Check the live

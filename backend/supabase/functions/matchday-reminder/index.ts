@@ -38,6 +38,7 @@ import {
   safeTz,
 } from "../_shared/matchday-reminder-copy.ts";
 import { seededRng } from "../_shared/goal-push.ts";
+import { minTierForLiveEvent, TIER_NOBODY } from "../_shared/push-tiers.ts";
 import { buildContentItem } from "../_shared/build-content-item.ts";
 import { preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
 import { competitionProse, COVERED_CUP_LEAGUES, roundLabel, seasonForLeague } from "../_shared/league-helpers.ts";
@@ -57,6 +58,9 @@ interface Candidate {
   /// "League Cup (Carabao Cup), last 32". Empty for the Premier League, where
   /// naming the competition tells the reader nothing she does not assume.
   competition?: string;
+  /// For the early-cup-round gate (push-tiers.ts).
+  leagueId?: number;
+  round?: string;
 }
 
 /// The competition in the words the push uses. Silent for a home league.
@@ -221,10 +225,10 @@ serve(async (req) => {
       const competition = fixtureCompetition(leagueId, fx.league?.round);
       const fixtureId = fx.fixture.id;
       if (homeId) {
-        candidates.push({ teamId: homeId, opponent: awayId ? (nameById.get(awayId) ?? fx.teams.away.name) : fx.teams.away.name, opponentId: awayId, kickoff, fixtureId, source, competition });
+        candidates.push({ teamId: homeId, opponent: awayId ? (nameById.get(awayId) ?? fx.teams.away.name) : fx.teams.away.name, opponentId: awayId, kickoff, fixtureId, source, competition, leagueId, round: fx.league?.round });
       }
       if (awayId) {
-        candidates.push({ teamId: awayId, opponent: homeId ? (nameById.get(homeId) ?? fx.teams.home.name) : fx.teams.home.name, opponentId: homeId, kickoff, fixtureId, source, competition });
+        candidates.push({ teamId: awayId, opponent: homeId ? (nameById.get(homeId) ?? fx.teams.home.name) : fx.teams.home.name, opponentId: homeId, kickoff, fixtureId, source, competition, leagueId, round: fx.league?.round });
       }
     }
   }
@@ -311,6 +315,12 @@ serve(async (req) => {
 
       // ── Reminder PUSH — followed entities only ───────────────────────────
       const isFollowed = followed.has(teamId);
+      // An early League Cup or FA Cup round gets no kickoff or half-time push
+      // (push-tiers.ts); its morning reminder was the one framing push still
+      // going to every tier. Same rule here: the goals and the result reach her,
+      // the build-up does not.
+      const earlyCupRound =
+        minTierForLiveEvent("kickoff", cand.leagueId, cand.round) === TIER_NOBODY;
       // Default-zone copy for the dry-run report; real sends render per zone below.
       const copy = prep
         ? renderPrepReminder({
@@ -327,13 +337,17 @@ serve(async (req) => {
           buildup_headline: buildup.headline,
           followed: isFollowed,
           reminder_title: isFollowed ? copy.title : null,
-          would_push: isFollowed,
+          would_push: isFollowed && !earlyCupRound,
+          early_cup_round: earlyCupRound || undefined,
         });
         continue;
       }
 
-      if (!isFollowed) {
-        results.push({ team_id: teamId, kickoff: kickoff.toISOString(), buildup: buildupWritten, followed: false });
+      if (!isFollowed || earlyCupRound) {
+        results.push({
+          team_id: teamId, kickoff: kickoff.toISOString(), buildup: buildupWritten,
+          followed: isFollowed, ...(earlyCupRound ? { skipped: "early cup round" } : {}),
+        });
         continue;
       }
 
@@ -394,9 +408,12 @@ serve(async (req) => {
           p = buildAPNsPayload(
             "", // teamShortName fallback unused — pushTitle is set below
             c.body, // headline fallback
-            // Non-UUID sentinels. "myturn-prep-…" opens My Turn on Pre-game
-            // (AppDelegate); "matchday-…" just opens the app.
-            prep ? `myturn-prep-${teamId}-${kickoff.getTime()}` : `matchday-${teamId}-${kickoff.getTime()}`,
+            // Non-UUID sentinel. "myturn-prep-…" opens My Turn on Pre-game
+            // (AppDelegate), for both the day-before and the matchday push:
+            // the morning reminder is the one pre-game push per match (Anton,
+            // 2026-10-26), and a tap should land where the getting-ready is,
+            // not on whatever feed was last open.
+            `myturn-prep-${teamId}-${kickoff.getTime()}`,
             "WC_MATCHDAY", // category string is not interpreted by iOS today; kept for log continuity
             false,
             c.body, // push_text
