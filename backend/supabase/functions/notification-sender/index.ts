@@ -325,19 +325,21 @@ serve(async (req) => {
       // pre-migration 011/012), buildAPNsPayload falls back to teamShortName
       // and headline respectively.
       //
-      // Tournament-broadcast items need everyone_talking=true in the payload
-      // so old apps deep-link into the Everyone context. That already works:
-      // the routine writes everyone_talking=true on the row and
-      // item.everyone_talking is passed straight through below into the
-      // payload's everyone_talking userInfo field. No hardcode needed.
+      // everyone_talking moves the app to the Football feed. It is set on the
+      // ROW for club stories other fans would care about too, and until
+      // 2026-10-26 it was passed straight through — so a club follower tapping
+      // her own club's story landed on Football, and stayed there. Only a
+      // tournament broadcast, which belongs to no club of hers, may send it.
+      // team_id tells the app which of her feeds to open.
       const payload = buildAPNsPayload(
         shortName,
         item.headline,
         item.id,
         category,
-        item.everyone_talking ?? false,
+        isTournament && (item.everyone_talking ?? false),
         item.push_text ?? null,
         item.push_title ?? null,
+        isTournament ? null : teamId,
       );
 
       // Send to all eligible tokens with bounded concurrency. The old

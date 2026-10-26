@@ -242,8 +242,9 @@ serve(async (req) => {
         const subject = followsHome ? home : (followsAway ? away : home);
         const title = `Game day at ${subject.short_name ?? subject.display_name}`;
         const body = bodyFor(tk.timezone as string | null);
-        // contentId here is the fixture_id (not a content_items UUID); iOS uses
-        // it as a deep-link key to the team page Calendar tab.
+        // contentId is the fixture, not an article: the app opens the Feed on
+        // the subject club (team_id). An earlier comment here promised a
+        // Calendar deep link that the app never implemented.
         const payload = buildAPNsPayload(
           subject.short_name ?? subject.display_name,
           body,
@@ -252,6 +253,7 @@ serve(async (req) => {
           false,
           body,
           title,
+          subject.id,
         );
         const env = (tk.apns_environment === "production" ? "production" : "development") as
           | "development" | "production";

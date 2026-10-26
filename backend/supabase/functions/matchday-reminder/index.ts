@@ -401,6 +401,7 @@ serve(async (req) => {
             false,
             c.body, // push_text
             c.title, // push_title
+            teamId, // the app opens on this club's feed
           );
           payloadByTz.set(tz, p);
         }

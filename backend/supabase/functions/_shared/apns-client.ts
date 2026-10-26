@@ -23,6 +23,11 @@ interface APNsPayload {
   };
   content_id: string;
   everyone_talking?: boolean;
+  /// The followed club or country this push is about. The app opens the feed
+  /// on it before anything else — without it a tap opened whatever feed was
+  /// last showing, and a club story flagged everyone_talking stranded her on
+  /// Football (2026-10-26).
+  team_id?: string;
 }
 
 interface APNsSendResult {
@@ -323,6 +328,7 @@ export function buildAPNsPayload(
   everyoneTalking = false,
   pushText?: string | null,
   pushTitle?: string | null,
+  teamId?: string | null,
 ): APNsPayload {
   // Lock-screen layout decisions:
   // - title = push_title when present (≤35 chars, sister-voice opener like
@@ -354,6 +360,7 @@ export function buildAPNsPayload(
     },
     content_id: contentId,
     everyone_talking: everyoneTalking || undefined,
+    team_id: teamId || undefined,
   };
 }
 

@@ -509,6 +509,7 @@ async function sendPlayingTeamPush(
         false,
         finalBody, // push_text (lock-screen body)
         args.copy.title, // push_title (lock-screen title)
+        country, // the followed side: the app opens on this club's feed
       );
       const env = t.apns_environment === "production" ? "production" : "development";
       recipients.push({ token: t.apns_token as string, country, payload, env });

@@ -192,6 +192,14 @@ struct MainTabView: View {
         selectedTab = 2
     }
 
+    private func openFeed() {
+        appState.pendingOpenFeed = false
+        selectedTab = 0
+        // Whatever she had open belongs to the feed she was on before; the
+        // push may have switched club under it.
+        feedPath = NavigationPath()
+    }
+
     private var deepLinkScrollsToTalk: Bool {
         #if DEBUG
         ProcessInfo.processInfo.arguments.contains("-gdOpenItemTalk")
@@ -370,9 +378,11 @@ struct MainTabView: View {
         // the same reason the article deep link is: a cold launch sets it
         // before this view mounts.
         .onChange(of: appState.pendingOpenPrep) { _, open in if open { openPrep() } }
+        .onChange(of: appState.pendingOpenFeed) { _, open in if open { openFeed() } }
         .onChange(of: appState.deepLinkContentId) { _, newId in
             if let id = newId {
                 selectedTab = 0
+                feedPath = NavigationPath()
                 let isEveryone = appState.activeContext == .everyoneTalking
                 feedPath.append(ContentDetailDestination(
                     contentId: id,
@@ -414,6 +424,7 @@ struct MainTabView: View {
             }
             #endif
             if appState.pendingOpenPrep { openPrep() }
+            if appState.pendingOpenFeed { openFeed() }
             // Cold-launch deep-link catch. If the user tapped a notification
             // while the app was killed, AppDelegate sets deepLinkContentId
             // during launch — which may run BEFORE this view first mounts.

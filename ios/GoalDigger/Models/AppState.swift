@@ -89,6 +89,10 @@ class AppState {
     /// Set by a tap on the day-before push ("Leeds tomorrow"): open My Turn
     /// on Pre-game. Consumed by the tab view.
     var pendingOpenPrep = false
+    /// Set by a tap on a push that has no article (live, matchday, fixture):
+    /// show the Feed tab, on the context the push routed to. Consumed by the
+    /// tab view.
+    var pendingOpenFeed = false
     /// Set after Delete My Data has wiped this phone. Shown by RootView, since
     /// the wipe sends her back to onboarding and takes Settings (and any alert
     /// it was showing) off screen. Session-only.

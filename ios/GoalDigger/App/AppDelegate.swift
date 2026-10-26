@@ -115,18 +115,42 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                                 didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
         let userInfo = response.notification.request.content.userInfo
-        // The day-before push opens Pre-game rather than an article.
-        if let contentId = userInfo["content_id"] as? String, contentId.hasPrefix("myturn-prep") {
+        let contentId = userInfo["content_id"] as? String
+        routeFeedContext(teamId: userInfo["team_id"] as? String,
+                         everyoneTalking: userInfo["everyone_talking"] as? Bool == true)
+        if let contentId, contentId.hasPrefix("myturn-prep") {
+            // The pre-game push opens Pre-game rather than an article.
             AppState.shared.pendingOpenPrep = true
-        } else if let contentId = userInfo["content_id"] as? String,
-           let uuid = UUID(uuidString: contentId) {
-            // Route to correct feed context before navigation
-            if userInfo["everyone_talking"] as? Bool == true {
-                AppState.shared.activeContext = .everyoneTalking
-            }
+        } else if let contentId, let uuid = UUID(uuidString: contentId) {
             AppState.shared.deepLinkContentId = uuid
+        } else {
+            // Live (kickoff, goal, HT, FT), matchday and fixture pushes carry
+            // no article. They used to do nothing, so the app opened on
+            // whatever feed was last showing — often Football.
+            AppState.shared.pendingOpenFeed = true
         }
         completionHandler()
+    }
+
+    /// Which feed a tapped push opens on. A push about one of her clubs
+    /// always lands on that club: until 2026-10-26 no push carried a team, a
+    /// club article flagged everyone_talking moved her to Football, and
+    /// Football then stuck — every later push opened there too. Only a push
+    /// with no club of hers behind it may open Football.
+    private func routeFeedContext(teamId: String?, everyoneTalking: Bool) {
+        let state = AppState.shared
+        if let teamId, let team = Team(rawValue: teamId), state.selectedTeams.contains(team) {
+            state.activeContext = .team(team)
+        } else if let teamId, let country = Country(rawValue: teamId),
+                  CountryFollowing.isEnabled, state.selectedCountries.contains(country) {
+            state.activeContext = .country(country)
+        } else if everyoneTalking {
+            state.activeContext = .everyoneTalking
+        } else if state.activeContext == .everyoneTalking, let team = state.selectedTeams.first {
+            // An older backend sends no team_id. A club push must still not
+            // leave her on Football.
+            state.activeContext = .team(team)
+        }
     }
 
     // Notification received while app is in foreground
