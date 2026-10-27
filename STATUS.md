@@ -25,6 +25,14 @@ Submitted 2026-10-07 (builds 13 to 16 went to TestFlight from 2026-09-30).
 - First run lands on the followed club's feed. The paywall and the football-knowledge step are gone from the code.
 - 2026-10-04 QA app fixes: privacy manifest (`PrivacyInfo.xcprivacy`), a push token request on every launch, Live Activities only after onboarding and with a stale date, a complete Delete My Data, Dynamic Type and VoiceOver fixes.
 
+## In a PR, not merged: 2.4 (17), Matchday tab
+
+Branch `claude/matchday-tab`. Nothing deployed until the PR is kept.
+
+- Tabs: Feed · Matchday · his club · My Turn. Settings is a gear on Feed and the club page.
+- Matchday › After: the game just played, from a `last_match` card match-watcher writes at full time (needs the match-watcher deploy). Matchday › Before: Pre-game, moved out of My Turn.
+- The full-time push opens After; the day-before push and "Pre-game ›" open Before.
+
 ## On the branch for the next build
 
 - Feed cards end at the bottom of the screen, so "Your move" no longer runs under the iOS 26 tab bar.

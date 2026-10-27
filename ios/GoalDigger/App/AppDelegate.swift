@@ -17,6 +17,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         Settings.shared.isAdvertiserIDCollectionEnabled = true
         #if DEBUG
         Attribution.selfCheck()
+        assert(MatchdaySection.selfCheck(), "Matchday opens on the wrong section")
         #endif
 
         UNUserNotificationCenter.current().delegate = self
@@ -118,9 +119,12 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         let contentId = userInfo["content_id"] as? String
         routeFeedContext(teamId: userInfo["team_id"] as? String,
                          everyoneTalking: userInfo["everyone_talking"] as? Bool == true)
+        // The pre-game push opens Matchday › Before, the full-time push
+        // (`live-ft-<fixture>`, match-watcher) opens Matchday › After.
         if let contentId, contentId.hasPrefix("myturn-prep") {
-            // The pre-game push opens Pre-game rather than an article.
             AppState.shared.pendingOpenPrep = true
+        } else if let contentId, contentId.hasPrefix("live-ft-") {
+            AppState.shared.pendingOpenAfter = true
         } else if let contentId, let uuid = UUID(uuidString: contentId) {
             AppState.shared.deepLinkContentId = uuid
         } else {

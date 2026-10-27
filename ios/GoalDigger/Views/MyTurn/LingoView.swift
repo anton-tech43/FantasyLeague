@@ -21,10 +21,10 @@ struct LingoView: View {
     @Bindable var store: MyTurnStore
     /// The club she follows, for the deal seed and her row in the table.
     let team: Team?
-    /// The cached team page, already refreshed by `MyTurnView`'s task. Nil is
+    /// The cached team page, already refreshed by the tab view's task. Nil is
     /// fine: the context falls back to "7 words you'll hear at any match."
     let page: TeamPageContent?
-    /// The same view in two places. `.prep` is Pre-game, the first segment:
+    /// The same view in two places. `.prep` is Pre-game, Matchday › Before:
     /// the opponent quiz, this fixture's seven words and the slip, each a
     /// full-screen card. `.dictionary` is the Lingo segment: the
     /// search and the 158 words, for the four-second look-up mid-match. One
@@ -33,7 +33,7 @@ struct LingoView: View {
     enum Mode { case prep, dictionary }
     @Environment(AppState.self) private var appState
     /// The two device-built caches, for the real players a card can name.
-    /// Read-only here: `MyTurnView`'s task owns refreshing them.
+    /// Read-only here: the tab view's task owns refreshing them.
     @State private var squad = LiveSquadService.shared
     @State private var live = LiveClubPackService.shared
 
@@ -91,7 +91,7 @@ struct LingoView: View {
         #if DEBUG
         if let debugContext { return debugContext }
         #endif
-        return MatchContext(page: page, team: team, now: .gdNow)
+        return MatchContext(page: page, team: team, now: .gdNow, preferBefore: mode == .prep)
     }
 
     private var known: Set<String> {
@@ -369,7 +369,9 @@ struct LingoView: View {
                         landing
                     }
                 }
-                .padding(.horizontal, Layout.screenPadding)
+                // Pre-game is Matchday › Before: the same edge as After, so
+                // the cards on both halves are one width.
+                .padding(.horizontal, mode == .prep ? MatchdayCard.edge : Layout.screenPadding)
                 .padding(.top, 12)
                 .padding(.bottom, 40)
             }
@@ -593,11 +595,12 @@ struct LingoView: View {
         Button {
             pressHero(weekend)
         } label: {
-            SketchCard(title: heroTitle(weekend), ink: .warmWhite, arrow: .deepMauve, fill: .hotRose)
+            MatchdayCard(title: heroTitle(weekend).replacingOccurrences(of: "\n", with: " "),
+                         text: heroLine, fill: .hotRose, ink: .white, arrow: true)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .containerRelativeFrame(.vertical)
+        .containerRelativeFrame(.vertical) { h, _ in h * MatchdayCard.beforeHeight }
         .id("prep-hero")
         .accessibilityLabel("\(heroTitle(weekend).replacingOccurrences(of: "\n", with: " ")). Start.")
         #if DEBUG
@@ -658,6 +661,8 @@ struct LingoView: View {
         store.startDrill(deckId: LingoWeekendDeck.deckId, queue: ids, origin: "practise")
         store.practiseHandoff = true
         withAnimation(.spring(duration: 0.25)) { store.lastModule = .lingo }
+        // Pre-game is in Matchday; the rest of the words are in My Turn.
+        if mode == .prep { appState.requestedTab = .myTurn }
     }
 
     /// The club this fixture is against, when it is one we have a page for.
@@ -695,11 +700,13 @@ struct LingoView: View {
                 }
                 withAnimation(.easeInOut(duration: 0.2)) { showingOpponentQuiz = true }
             } label: {
-                SketchCard(title: "Get to know\n\(club)", ink: .textPrimaryOnCard, arrow: .hotRose, fill: .cardBackground)
+                MatchdayCard(title: "Get to know \(club)",
+                             text: "A quick quiz on the side \(team?.shortName ?? "his team") play next, so their names mean something on the day.",
+                             fill: .cardBackground, ink: .textPrimaryOnCard, arrow: true)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .containerRelativeFrame(.vertical)
+            .containerRelativeFrame(.vertical) { h, _ in h * MatchdayCard.beforeHeight }
             .id("prep-opponent")
             .accessibilityLabel("Get to know \(club). A quiz about the side you're playing.")
         }
@@ -712,6 +719,12 @@ struct LingoView: View {
         if case .before = weekend.context.phase { return "\(LingoWeekendDeck.roundLength) words for\nthe game" }
         let title = weekend.context.title
         return title.replacingOccurrences(of: " ", with: "\n", options: [], range: title.range(of: " "))
+    }
+
+    /// The serif line under "7 words for the game" (Matchday card, 2026-10-07).
+    private var heroLine: String {
+        if let continueLabel { return "\(continueLabel). Pick up where you left off." }
+        return "Seven words you'll hear during the game, and what each one means."
     }
 
     /// What the hero does when she presses it.

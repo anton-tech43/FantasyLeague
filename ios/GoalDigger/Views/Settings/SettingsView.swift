@@ -5,6 +5,7 @@ import UserNotifications
 struct SettingsView: View {
     @Environment(AppState.self) var appState
     @Environment(\.modelContext) var modelContext
+    @Environment(\.dismiss) private var dismiss
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
     @State private var showTeamPicker = false
     @State private var showCountryPicker = false
@@ -88,6 +89,15 @@ struct SettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(Color.appBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
+        // A sheet since 2026-10-07 (the gear on Feed and the club page), so
+        // it needs its own way out.
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Done") { dismiss() }
+                    .font(.jakarta(16, weight: .semiBold))
+                    .foregroundColor(.hotRose)
+            }
+        }
         .task {
             notificationStatus = await NotificationService.shared.checkNotificationStatus()
         }
@@ -560,6 +570,10 @@ struct SettingsView: View {
     /// follow and token on the phone. The wipe returns her to onboarding,
     /// which removes this screen, so RootView shows the confirmation.
     private func wipeThisPhone() {
+        // Close the sheet before the wipe takes the tabs (and the sheet's
+        // presenter) away, so RootView's "Data Deleted" alert is not left
+        // waiting behind a sheet that is being torn down.
+        dismiss()
         appState.clearAllData()
         CacheService.shared.clearAll(in: modelContext)
         appState.showDataDeletedNotice = true
@@ -806,4 +820,34 @@ struct TierPickerSheet: View {
             .onAppear { selected = appState.selectedTier }
         }
     }
+}
+
+// MARK: - The gear
+
+/// Settings, as a gear in the navigation bar (2026-10-07). It was a tab, a
+/// quarter of the bar for a screen she opens a handful of times; Feed and the
+/// club page carry this instead.
+struct SettingsButton: ViewModifier {
+    @State private var showing = false
+
+    func body(content: Content) -> some View {
+        content
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { showing = true } label: {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.warmWhite.opacity(0.85))
+                    }
+                    .accessibilityLabel("Settings")
+                }
+            }
+            .sheet(isPresented: $showing) {
+                NavigationStack { SettingsView() }
+            }
+    }
+}
+
+extension View {
+    func settingsButton() -> some View { modifier(SettingsButton()) }
 }

@@ -433,6 +433,9 @@ struct TeamPageCards: Codable {
     /// What is true about this fixture's opponent (2026-09-23). Read only by
     /// `MatchContext`, and only after the fixture gate.
     let matchup: MatchupCard?
+    /// The game just played, for the Matchday tab's "After" section
+    /// (2026-10-07). Written by match-watcher at full time, kept a week.
+    let lastMatch: LastMatchCard?
 
     enum CodingKeys: String, CodingKey {
         case basics
@@ -452,6 +455,7 @@ struct TeamPageCards: Codable {
         case standings
         case europeStandings = "europe_standings"
         case matchup
+        case lastMatch = "last_match"
     }
 
     /// Decode every card on its own. The synthesised decoder threw the moment
@@ -481,7 +485,114 @@ struct TeamPageCards: Codable {
         standings = try? c.decodeIfPresent(StandingsCard.self, forKey: .standings)
         europeStandings = try? c.decodeIfPresent(StandingsCard.self, forKey: .europeStandings)
         matchup = try? c.decodeIfPresent(MatchupCard.self, forKey: .matchup)
+        lastMatch = try? c.decodeIfPresent(LastMatchCard.self, forKey: .lastMatch)
     }
+}
+
+// MARK: - Team page — the game just played
+
+/// The Matchday tab's "After {opponent}": written once per side at full time
+/// by match-watcher (`_shared/last-match.ts`), deterministic, no model. Every
+/// line in it is ready to show; the app only lays it out.
+struct LastMatchCard: Codable, Equatable {
+    let fixtureId: Int
+    let kickoff: String
+    let finishedAt: String
+    let competition: String?
+    let opponent: String
+    let venue: String
+    let teamScore: Int
+    let oppScore: Int
+    let state: TeamPostMatchCard.TeamPostMatchState
+    let verdict: String
+    let talkingPoint: String
+    let goals: [Goal]
+    let numbers: [Number]
+    let expiresAt: String
+
+    /// Every goal of the game, both sides, in the order they went in.
+    struct Goal: Codable, Equatable, Hashable {
+        /// His side's goal. Absent on a card written before both sides were
+        /// listed, when every goal on it was his side's.
+        var ours: Bool = true
+        /// The scoring side's name, as the feed has it.
+        var team: String?
+        let player: String
+        let apiPlayerId: Int?
+        let number: Int?
+        let minute: String
+        let score: String
+        let line: String
+        enum CodingKeys: String, CodingKey {
+            case ours, team, player, number, minute, score, line
+            case apiPlayerId = "api_player_id"
+        }
+
+        init(ours: Bool = true, team: String? = nil, player: String, apiPlayerId: Int?, number: Int?,
+             minute: String, score: String, line: String) {
+            self.ours = ours; self.team = team; self.player = player; self.apiPlayerId = apiPlayerId
+            self.number = number; self.minute = minute; self.score = score; self.line = line
+        }
+
+        init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            ours = (try? c.decodeIfPresent(Bool.self, forKey: .ours)) ?? true
+            team = try? c.decodeIfPresent(String.self, forKey: .team)
+            player = try c.decode(String.self, forKey: .player)
+            apiPlayerId = try? c.decodeIfPresent(Int.self, forKey: .apiPlayerId)
+            number = try? c.decodeIfPresent(Int.self, forKey: .number)
+            minute = try c.decode(String.self, forKey: .minute)
+            score = try c.decode(String.self, forKey: .score)
+            line = try c.decode(String.self, forKey: .line)
+        }
+    }
+
+    struct Number: Codable, Equatable, Hashable {
+        let value: String
+        let caption: String
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case kickoff, competition, opponent, venue, state, verdict, goals, numbers
+        case fixtureId = "fixture_id"
+        case finishedAt = "finished_at"
+        case teamScore = "team_score"
+        case oppScore = "opp_score"
+        case talkingPoint = "talking_point"
+        case expiresAt = "expires_at"
+    }
+
+    /// A bad goal or number row drops that row, not the card.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        fixtureId = try c.decode(Int.self, forKey: .fixtureId)
+        kickoff = try c.decode(String.self, forKey: .kickoff)
+        finishedAt = try c.decode(String.self, forKey: .finishedAt)
+        competition = try? c.decodeIfPresent(String.self, forKey: .competition)
+        opponent = try c.decode(String.self, forKey: .opponent)
+        venue = (try? c.decode(String.self, forKey: .venue)) ?? "home"
+        teamScore = try c.decode(Int.self, forKey: .teamScore)
+        oppScore = try c.decode(Int.self, forKey: .oppScore)
+        state = try c.decode(TeamPostMatchCard.TeamPostMatchState.self, forKey: .state)
+        verdict = try c.decode(String.self, forKey: .verdict)
+        talkingPoint = (try? c.decode(String.self, forKey: .talkingPoint)) ?? ""
+        goals = ((try? c.decodeIfPresent([Lossy<Goal>].self, forKey: .goals)) ?? nil)?.compactMap(\.value) ?? []
+        numbers = ((try? c.decodeIfPresent([Lossy<Number>].self, forKey: .numbers)) ?? nil)?.compactMap(\.value) ?? []
+        expiresAt = try c.decode(String.self, forKey: .expiresAt)
+    }
+
+    init(fixtureId: Int, kickoff: String, finishedAt: String, competition: String?, opponent: String,
+         venue: String, teamScore: Int, oppScore: Int, state: TeamPostMatchCard.TeamPostMatchState,
+         verdict: String, talkingPoint: String, goals: [Goal], numbers: [Number], expiresAt: String) {
+        self.fixtureId = fixtureId; self.kickoff = kickoff; self.finishedAt = finishedAt
+        self.competition = competition; self.opponent = opponent; self.venue = venue
+        self.teamScore = teamScore; self.oppScore = oppScore; self.state = state
+        self.verdict = verdict; self.talkingPoint = talkingPoint; self.goals = goals
+        self.numbers = numbers; self.expiresAt = expiresAt
+    }
+
+    var finishedDate: Date? { ISO8601DateFormatter.lenient(finishedAt) }
+    var isExpired: Bool { (ISO8601DateFormatter.lenient(expiresAt) ?? .distantFuture) < Date.gdNow }
 }
 
 struct BasicsCard: Codable {
@@ -1005,5 +1116,15 @@ enum TeamPageCache {
 
     static func clear(teamId: String) {
         UserDefaults.standard.removeObject(forKey: key(for: teamId))
+    }
+}
+
+extension ISO8601DateFormatter {
+    /// ISO 8601 with or without fractional seconds (Postgres and JS both write
+    /// the fractional form, API-Football does not). Nil for anything else.
+    static func lenient(_ raw: String) -> Date? {
+        let f1 = ISO8601DateFormatter(); f1.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let f2 = ISO8601DateFormatter(); f2.formatOptions = [.withInternetDateTime]
+        return f1.date(from: raw) ?? f2.date(from: raw)
     }
 }

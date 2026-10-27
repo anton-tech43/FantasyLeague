@@ -138,7 +138,10 @@ struct MatchContext: Equatable {
 
     // MARK: Derivation
 
-    init(page: TeamPageContent?, team: Team?, now: Date) {
+    /// `preferBefore`: Matchday › Before (Pre-game) is always about the next
+    /// game. The game just played has its own section, "After", since
+    /// 2026-10-07, so the prep no longer looks back when both are in range.
+    init(page: TeamPageContent?, team: Team?, now: Date, preferBefore: Bool = false) {
         let cards = page?.cards
 
         // --- The last result -------------------------------------------------
@@ -189,7 +192,7 @@ struct MatchContext: Equatable {
         var choice: Choice = .none
         if hasFixture, hasResult {
             // A game in progress stays Before; so does anything inside a day.
-            choice = (nextKickoff!.timeIntervalSince(now) < Self.beforeBeatsAfter) ? .before : .after
+            choice = preferBefore || nextKickoff!.timeIntervalSince(now) < Self.beforeBeatsAfter ? .before : .after
         } else if hasFixture {
             choice = .before
         } else if hasResult {

@@ -271,7 +271,7 @@ app's own rawValues wherever one exists.
 | `onboarding_step_viewed` | `step` | `OnboardingFlow`, on `step` change |
 | `onboarding_completed` | `seconds`, `notifications` (granted, denied, later), `calendar` (on, off) | `OnboardingFlow.completeOnboarding()` |
 | `push_opened` | `kind` (kickoff, goal, ht, ft, news, prep, sunday_brief), `content_id` | `AppDelegate.userNotificationCenter(_:didReceive:)` |
-| `tab_viewed` | `tab` (feed, club, my_turn, settings) | `MainTabView` selection change, tags 0–3 |
+| `tab_viewed` | `tab` (feed, matchday, club, my_turn) | `MainTabView` selection change (`AppTab`). Settings is a sheet from 2.4: log `settings_opened` instead |
 
 ### B. What she reads
 
@@ -286,7 +286,8 @@ app's own rawValues wherever one exists.
 | Event | Properties | Hook |
 |---|---|---|
 | `my_turn_module_switched` | `from`, `to` (prep, quiz, lingo, saythis), `prep_available` | `MyTurnView` segmented control |
-| `pregame_opened` | `entry` (tab, push, club_page), `phase` (before, after) | `MyTurnView` when the prep segment appears |
+| `pregame_opened` | `entry` (tab, push, club_page), `phase` (before, after) | `MatchdayView` when Before appears (My Turn's prep segment before 2.4) |
+| `matchday_after_opened` | `entry` (tab, ft_push), `hours_since_ft`, `fixture_id` | `MatchdayView` when After appears |
 | `pregame_card_completed` | `card` (opponent_quiz, seven_words, slip), `score`, `of`, `phase`, `fixture_id` | the round-finished paths in `MyTurnStore` |
 | `practice_completed` | `module` (prep, quiz, lingo, saythis), `pack`, `score`, `of` | the existing end-of-round screens |
 | `overheard_round_finished` | `score`, `of`, `terms` | `LingoOverheardView`, on `MyTurnStore.DrillSession` end |
