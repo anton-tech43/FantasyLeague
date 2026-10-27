@@ -212,6 +212,9 @@ class APIClient {
             URLQueryItem(name: "match_id", value: "eq.\(fixtureId)"),
             URLQueryItem(name: "team_id", value: "eq.\(teamId)"),
             URLQueryItem(name: "status", value: "eq.published"),
+            // NULLs sort first in DESC; such a row fails to decode and hid
+            // a real article behind it.
+            URLQueryItem(name: "published_at", value: "not.is.null"),
             URLQueryItem(name: "order", value: "published_at.desc"),
             URLQueryItem(name: "limit", value: "1"),
             URLQueryItem(name: "select", value: Self.contentSelectColumns)

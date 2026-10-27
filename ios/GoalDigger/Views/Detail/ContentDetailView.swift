@@ -688,14 +688,25 @@ struct NamedPlayer: Identifiable {
                 dossiers[id] = (try? await APIClient.shared.fetchPlayerCards(teamId: id)) ?? []
             }
             let cards = dossiers[id] ?? []
-            for p in match(text, squad: squads[id] ?? []) {
-                let key = PlayerPortrait.surname(p.name)
-                let card = cards.first { PlayerPortrait.surname($0.playerName) == key }
-                    ?? PlayerCard.stub(teamId: id, playerName: p.name, position: p.position ?? "")
-                found.append(NamedPlayer(player: p, card: card))
+            // Only the players named here get their photo checked: the CDN
+            // answers 200 with a silhouette for a man it has no photo of.
+            let named = await LiveSquadService.flagPlaceholders(match(text, squad: squads[id] ?? []))
+            for p in named {
+                found.append(NamedPlayer(player: p, card: dossier(for: p, in: cards, teamId: id)))
             }
         }
         return Array(found.prefix(4))
+    }
+
+    /// His dossier: the one with his surname, and when two share it (the
+    /// Christies at Bournemouth) the one with his full or known name. Never a
+    /// guess between two men.
+    private static func dossier(for p: LiveSquadPack.Player, in cards: [PlayerCard], teamId: String) -> PlayerCard {
+        let key = PlayerPortrait.surname(p.name)
+        let same = cards.filter { PlayerPortrait.surname($0.playerName) == key }
+        let names = Set([p.name, p.known_as].compactMap { $0 }.map(fold))
+        return (same.count == 1 ? same.first : same.first { names.contains(fold($0.playerName)) })
+            ?? PlayerCard.stub(teamId: teamId, playerName: p.known_as ?? p.name, position: p.position ?? "")
     }
 
     /// Pure matcher, in order of first mention. Case-sensitive on purpose:
@@ -704,21 +715,31 @@ struct NamedPlayer: Identifiable {
     static func match(_ text: String, squad: [LiveSquadPack.Player]) -> [LiveSquadPack.Player] {
         var hay = " " + fold(text) + " "
         let surnameCounts = Dictionary(grouping: squad.compactMap { lastWord($0.name) }, by: { $0 }).mapValues(\.count)
-        var keys: [(String, Int)] = []  // (folded key, index in squad)
+        var keys: [(String, Int, Bool)] = []  // (folded key, index in squad, surname only)
         for (i, p) in squad.enumerated() {
-            var candidates = [p.known_as, p.name].compactMap { $0 }.map(fold)
-            if let last = lastWord(p.name), last.count >= 4, surnameCounts[last] == 1 { candidates.append(last) }
-            for c in Set(candidates) where c.count >= 3 { keys.append((c, i)) }
+            let names = Set([p.known_as, p.name].compactMap { $0 }.map(fold))
+            for c in names where c.count >= 3 { keys.append((c, i, false)) }
+            if let last = lastWord(p.name), last.count >= 4, surnameCounts[last] == 1, !names.contains(last) {
+                keys.append((last, i, true))
+            }
         }
         keys.sort { $0.0.count > $1.0.count }
         var firstAt: [Int: Int] = [:]
-        for (key, i) in keys {
+        for (key, i, surnameOnly) in keys {
             let needle = " \(key) "
-            while let r = hay.range(of: needle) {
+            var from = hay.startIndex
+            while let r = hay.range(of: needle, range: from..<hay.endIndex) {
+                // A bare surname followed by another capitalised word is part
+                // of a name that is not his: "White Hart Lane", "Young Boys".
+                if surnameOnly, let next = hay[r.upperBound...].first, next.isUppercase {
+                    from = hay.index(before: r.upperBound)
+                    continue
+                }
                 let at = hay.distance(from: hay.startIndex, to: r.lowerBound)
                 firstAt[i] = min(firstAt[i] ?? at, at)
                 // Blank it so a shorter key cannot claim the same words.
                 hay.replaceSubrange(r, with: " " + String(repeating: "#", count: key.count) + " ")
+                from = hay.startIndex  // indices do not survive the mutation
             }
         }
         return firstAt.sorted { $0.value < $1.value }.map { squad[$0.key] }
@@ -748,6 +769,8 @@ struct NamedPlayer: Identifiable {
             && names("Saka's cross found Odegaard") == [4, 3]
             && names("Gabriel Martinelli again") == [2]
             && names("They wore white at home") == []
+            && names("Back at White Hart Lane") == []
+            && names("White was booked") == [5]
             && names("Nobody here") == []
     }
     #endif

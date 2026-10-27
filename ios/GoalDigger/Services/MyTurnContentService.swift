@@ -73,7 +73,7 @@ final class MyTurnContentService {
         var candidates: [(String, Data)] = []
         if let b = bundled, let v = version(of: b) { candidates.append((v, b)) }
         if let c = cached, let v = version(of: c) { candidates.append((v, c)) }
-        for (_, data) in candidates.sorted(by: { $0.0 > $1.0 }) {
+        for (_, data) in candidates.sorted(by: { Self.isNewer($0.0, than: $1.0) }) {
             if let decoded = try? decoder.decode(T.self, from: data), decoded.isUsable { return decoded }
             if data == cached { try? FileManager.default.removeItem(at: cachedURL(module)) }
         }
@@ -134,7 +134,7 @@ final class MyTurnContentService {
             let mine = currentVersions
             let newer = rows.filter { row in
                 guard let have = mine[row.module] else { return false }
-                return row.content_version > have
+                return Self.isNewer(row.content_version, than: have)
             }
             guard !newer.isEmpty else { return }
             let list = newer.map(\.module).joined(separator: ",")
@@ -244,5 +244,21 @@ func myTurnPayloadSelfCheck() {
     assert(!pack([q("a", [], 0)]).isUsable, "an empty option list was accepted")
     assert(!pack([q("a", ["x"], 0), q("a", ["y"], 0)]).isUsable, "a repeated question id was accepted")
     assert(!pack([]).isUsable, "an empty quiz was accepted")
+
+    assert(MyTurnContentService.isNewer("2026-10-27.10", than: "2026-10-27.9"), "the tenth publish of a day lost to the ninth")
 }
+
 #endif
+
+extension MyTurnContentService {
+    /// "2026-10-27.10" is newer than "2026-10-27.9": the date, then the
+    /// publish number as an integer. String order got the tenth publish of a
+    /// day wrong.
+    nonisolated static func isNewer(_ a: String, than b: String) -> Bool {
+        let pa = a.split(separator: "."), pb = b.split(separator: ".")
+        let da = pa.first.map(String.init) ?? "", db = pb.first.map(String.init) ?? ""
+        if da != db { return da > db }
+        let na = pa.count > 1 ? Int(pa[1]) ?? 0 : 0, nb = pb.count > 1 ? Int(pb[1]) ?? 0 : 0
+        return na > nb
+    }
+}
