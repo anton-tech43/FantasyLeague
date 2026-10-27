@@ -17,7 +17,7 @@ import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 import { wrapExternalData } from "../_shared/input-sanitizer.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import type { Team } from "../_shared/types.ts";
-import { competitionName, competitionProse, COVERED_CUP_LEAGUES, fixtureImportance, fixtureLabel, roundLabel } from "../_shared/league-helpers.ts";
+import { competitionName, competitionProse, COVERED_CUP_LEAGUES, fixtureImportance, fixtureLabel, NOT_HAPPENING, roundLabel } from "../_shared/league-helpers.ts";
 import { annotateFixtures, classifyExactPointsOnly, type ExactInfo, type GroupStanding } from "../_shared/stakes-engine.ts";
 import {
   type ClubPreMatchContext,
@@ -1233,7 +1233,10 @@ async function updateDynamicFields(
       const oppRow = rowFor(nextFixture.opponent_api_id);
       // Never compare a league position with a cup opponent's: the domestic
       // table only counts for a domestic fixture, the European one for Europe.
+      // And only once both have played in it: an opening-day table is clubs on
+      // zero points in alphabetical order (bug hunt 2026-10-27).
       const bothInTable = myRow !== undefined && oppRow !== undefined &&
+        ((myRow.played as number) ?? 0) > 0 && ((oppRow.played as number) ?? 0) > 0 &&
         (useEuro || !isEuropean);
 
       // Rank: the league position when BOTH clubs are in the same table, which
@@ -2251,6 +2254,8 @@ function extractNextFixture(
         const id = fi?.id as number | undefined;
         if (id != null && finishedIds.has(id)) return false;
         if (!isCoveredFixture(item)) return false;
+        // Postponed / called off: not "next up", whatever date it keeps.
+        if (NOT_HAPPENING.has(((fi?.status as Record<string, unknown> | undefined)?.short as string) ?? "")) return false;
         const t = Date.parse((fi?.date as string) ?? "");
         return Number.isNaN(t) || t >= floor;
       }) as Record<string, unknown> | undefined;

@@ -6,7 +6,9 @@
 // with tier segmentation and the gap check had a bug. See
 // _shared/anti-spam.ts header for the full rationale.
 //
-// Quiet hours are handled by iOS Do Not Disturb on the device, not server-side.
+// Quiet hours: a direct trigger relies on post_news.sh, which downgrades a
+// card written in 21:00–05:59 UTC to feed-only. The hourly sweep applies the
+// same rule itself, plus a 90-minute freshness floor (2026-10-27).
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { deactivateTokens, fetchAllRows, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
@@ -82,14 +84,22 @@ serve(async (req) => {
       // lower bound on published_at prevents a stuck row from pushing
       // days later — a "Spurs drew 1-1" push five days after the match
       // is creepier than no push at all.
+      //
+      // Bug hunt 2026-10-27: a late push is a downgrade, not a queue
+      // (PUSH_RULES §3). Match-watcher's consequence cards reach a lock screen
+      // only through this sweep, so it applies the same two rules as
+      // post_news.sh: nothing older than 90 minutes, and nothing pushed in
+      // quiet hours (21:00–05:59 UTC). Missed ones stay in the feed, unpushed.
       const now = Date.now();
       const fiveMinAgo = new Date(now - 5 * 60_000).toISOString();
-      const twentyFourHoursAgo = new Date(now - 24 * 60 * 60_000).toISOString();
+      const freshFloor = new Date(now - 90 * 60_000).toISOString();
+      const hourUtc = new Date(now).getUTCHours();
+      const quiet = hourUtc >= 21 || hourUtc < 6;
       query = query
         .or(
-          "and(status.eq.approved,published_at.is.null)," +
-          "and(status.eq.published,pushed_at.is.null,published_at.lt." +
-          fiveMinAgo + ",published_at.gt." + twentyFourHoursAgo + ")"
+          "and(status.eq.approved,published_at.is.null)" +
+          (quiet ? "" : ",and(status.eq.published,pushed_at.is.null,published_at.lt." +
+            fiveMinAgo + ",published_at.gt." + freshFloor + ")")
         )
         // Push-eligibility gate (Lesson 76). Routines tag fun-trivia
         // items (e.g. "Arsenal's Odegaard heading to the WC as Norway

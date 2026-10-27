@@ -240,7 +240,15 @@ Deno.test("buildMatchupCard: no named winner is even", () => {
 // ── Which fixture the predictions call is bought for ────────────────────────
 
 const fixtures = (...rows: Array<[number, string]>) => ({
-  response: rows.map(([id, date]) => ({ fixture: { id, date } })),
+  response: rows.map(([id, date]) => ({ fixture: { id, date }, league: { id: id === 99 ? 667 : 39 } })),
+});
+
+Deno.test("nextFixtureIdForPredictions: a friendly is skipped", () => {
+  const now = new Date("2026-09-23T10:00:00Z");
+  assertEquals(
+    nextFixtureIdForPredictions(fixtures([99, "2026-09-25T15:00:00+00:00"], [2, "2026-10-04T15:00:00+00:00"]), now),
+    2,
+  );
 });
 
 Deno.test("nextFixtureIdForPredictions: the first one that has not kicked off", () => {

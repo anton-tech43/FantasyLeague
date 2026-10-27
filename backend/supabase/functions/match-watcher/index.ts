@@ -632,6 +632,7 @@ async function writeTeamPostMatch(
 
 /// A match that will not be played on: its Live Activity must end too.
 const ENDED_STATUSES = new Set([...FINISHED_STATUSES, "ABD", "CANC", "PST", "AWD", "WO"]);
+const LIVE_STATUSES_LA = new Set(["1H", "HT", "2H", "ET", "BT", "P", "INT", "SUSP", "LIVE"]);
 
 /// End every Live Activity whose match is over and was not ended by the
 /// full-time tick.
@@ -647,6 +648,10 @@ async function sweepLiveActivities(
   supabase: ReturnType<typeof getSupabaseClient>,
 ): Promise<Response> {
   const cutoff = new Date(Date.now() - 3 * 3600 * 1000).toISOString();
+  // Past this, give up on a token whatever happened: iOS has ended the
+  // activity itself by then, and a token that keeps failing must not keep
+  // the 10-minute sweep firing.
+  const giveUp = new Date(Date.now() - 6 * 3600 * 1000).toISOString();
   const rows = await fetchAllRows((from, to) =>
     supabase.from("live_activity_tokens")
       .select("token, apns_environment, fixture_id, created_at")
@@ -664,7 +669,11 @@ async function sweepLiveActivities(
   const due = rows.filter((r) => {
     const st = r.fixture_id != null ? byFixture.get(r.fixture_id) : undefined;
     if (!st) return r.created_at < cutoff;
-    return ENDED_STATUSES.has(st.status as string) || (st.kickoff_time as string) < cutoff;
+    // Three hours past kickoff is over only if it is not still being played
+    // (a late kickoff, extra time, penalties). Same rule as la_sweep_due (138).
+    return ENDED_STATUSES.has(st.status as string) ||
+      ((st.kickoff_time as string) < cutoff && !LIVE_STATUSES_LA.has(st.status as string)) ||
+      (st.kickoff_time as string) < giveUp;
   });
 
   const sent = await mapWithConcurrency(due, PUSH_CONCURRENCY, (r) => {
@@ -683,10 +692,16 @@ async function sweepLiveActivities(
       environment: r.apns_environment === "production" ? "production" : "development",
     }).then((res) => ({ token: r.token, res }));
   });
-  // Ended or dead, these tokens have nothing left to receive.
-  await deactivateTokens(supabase, "live_activity_tokens", due.map((r) => r.token));
+  // Ended or dead, these tokens have nothing left to receive. A transient
+  // failure stays active for the next sweep, until the six-hour give-up.
+  const old = new Set(due.filter((r) => {
+    const st = r.fixture_id != null ? byFixture.get(r.fixture_id) : undefined;
+    return ((st?.kickoff_time as string | undefined) ?? r.created_at) < giveUp;
+  }).map((r) => r.token));
+  await deactivateTokens(supabase, "live_activity_tokens",
+    sent.filter((x) => x.res.success || isTokenDead(x.res) || old.has(x.token)).map((x) => x.token));
   const ok = sent.filter((s) => s.res.success).length;
-  console.log(`la-end-sweep: ${due.length} due, ${ok} ended, ${due.length - ok} failed (deactivated either way)`);
+  console.log(`la-end-sweep: ${due.length} due, ${ok} ended, ${due.length - ok} failed (kept for the next sweep unless dead or 6 h old)`);
   const reasons: Record<string, number> = {};
   for (const x of sent) if (!x.res.success) {
     const k = `${x.res.status ?? "?"} ${x.res.reason ?? ""}`.trim();
@@ -1279,9 +1294,20 @@ async function handleRequest(req: Request): Promise<Response> {
       // re-fire it. First observation also skips (we don't know how long
       // we've been past the trigger window).
       const elapsed = fx.fixture.status.elapsed;
-      const briefsFired: string[] = Array.isArray(prior?.briefs_fired)
+      let briefsFired: string[] = Array.isArray(prior?.briefs_fired)
         ? prior!.briefs_fired as string[]
         : [];
+      // A goal ruled out (VAR) takes the score back down. Its GOAL_PUSH marker
+      // would then block the push for the next real goal at the same score,
+      // so forget goal markers above the score as it now stands. The upsert
+      // below writes the trimmed list (bug hunt 2026-10-27).
+      if (prior !== null && homeGoals != null && awayGoals != null &&
+          (homeGoals < (prior.home_goals ?? 0) || awayGoals < (prior.away_goals ?? 0))) {
+        briefsFired = briefsFired.filter((m) => {
+          const g = /^GOAL_(?:PUSH|WAIT):(\d+)-(\d+)/.exec(m);
+          return !g || (Number(g[1]) <= homeGoals && Number(g[2]) <= awayGoals);
+        });
+      }
       const isLive = LIVE_STATUSES.has(status);
       const newTriggers: string[] = [];
       // Markers for direct-push idempotency (HT_PUSH / FT_PUSH). Kept SEPARATE
@@ -1999,7 +2025,7 @@ async function handleRequest(req: Request): Promise<Response> {
             opts: Parameters<typeof sendLiveActivityPush>[1],
           ) => {
             const list = rows ?? [];
-            if (list.length === 0) return;
+            if (list.length === 0) return [];
             // Bounded-concurrency fan-out: a big live match can have thousands of
             // active Live Activities, and this fires every tick — it must stay
             // sub-minute (SCALING_50K.md §1).
@@ -2016,6 +2042,7 @@ async function handleRequest(req: Request): Promise<Response> {
               "live_activity_tokens",
               sent.filter((s) => isTokenDead(s.res)).map((s) => s.token),
             );
+            return sent;
           };
 
           if (matchFinished && laStarted) {
@@ -2023,10 +2050,12 @@ async function handleRequest(req: Request): Promise<Response> {
             // then goes. It was 2 hours, which from her side reads as an
             // activity that never goes away (Anton, 2026-10-27).
             const updTokens = await laTokens((q) => q.eq("kind", "update").eq("fixture_id", fixtureId));
-            await sendAll(updTokens, { event: "end", contentState, dismissalSeconds: 1800 });
-            // Sent: these tokens are done. Anything that registers later, or
-            // failed here, is ended by the la-end-sweep.
-            await deactivateTokens(supabase, "live_activity_tokens", (updTokens ?? []).map((t) => t.token));
+            const ended = await sendAll(updTokens, { event: "end", contentState, dismissalSeconds: 1800 });
+            // Only the tokens the end reached are done (dead ones were already
+            // deactivated). A failed end stays active so the la-end-sweep,
+            // which reads is_active tokens, ends it later — deactivating it
+            // here left the score on her lock screen (bug hunt 2026-10-27).
+            await deactivateTokens(supabase, "live_activity_tokens", ended.filter((e) => e.res.success).map((e) => e.token));
             laEnded = true;
             laSig = sig;
           } else if (isLive && !laStarted && prior !== null) {
@@ -2107,7 +2136,9 @@ async function handleRequest(req: Request): Promise<Response> {
           if (
             apiFootballKey && status === "NS" &&
             minsToKickoff > LINEUP_WINDOW_MIN.from && minsToKickoff <= LINEUP_WINDOW_MIN.to &&
-            new Date().getUTCMinutes() % 5 === 0 &&
+            // Every fifth minute, and every minute from T−35: a lone fixture's
+            // league only wakes 35 minutes out (poll_leagues branch A).
+            (new Date().getUTCMinutes() % 5 === 0 || minsToKickoff <= 35) &&
             (ourClubApiIds.has(homeApiId) || ourClubApiIds.has(awayApiId))
           ) {
             try {
@@ -2303,6 +2334,25 @@ async function handleRequest(req: Request): Promise<Response> {
                 awayApiId,
               );
             }
+          }
+
+          // FULL TIME with goals the list does not have: a 90+4' winner and the
+          // whistle inside one poll. The goal block above only runs while live,
+          // and polling stops after this tick, so back-fill now or the After
+          // card and goal_events miss the winner for good (bug hunt 2026-10-27).
+          if (
+            FINISHED_STATUSES.has(status) && goalEventsStored === null && prior !== null &&
+            apiFootballKey &&
+            hasUnresolvedScorer(prior.goal_events, (homeGoals ?? 0) + (awayGoals ?? 0))
+          ) {
+            goalEventsStored = await resolveScorers(
+              supabase,
+              fixtureId,
+              apiFootballKey,
+              prior.goal_events as StoredGoalEvent[] | null | undefined,
+              homeApiId,
+              awayApiId,
+            );
           }
 
           // HALF-TIME — fire once on the literal break. Gated on status === "HT"

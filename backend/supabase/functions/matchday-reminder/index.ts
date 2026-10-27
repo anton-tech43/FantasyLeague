@@ -39,6 +39,7 @@ import {
 } from "../_shared/matchday-reminder-copy.ts";
 import { seededRng } from "../_shared/goal-push.ts";
 import { minTierForLiveEvent, TIER_NOBODY } from "../_shared/push-tiers.ts";
+import { NOT_HAPPENING } from "../_shared/league-helpers.ts";
 import { buildContentItem } from "../_shared/build-content-item.ts";
 import { preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
 import { competitionProse, COVERED_CUP_LEAGUES, roundLabel, seasonForLeague } from "../_shared/league-helpers.ts";
@@ -217,6 +218,9 @@ serve(async (req) => {
     for (const fx of leagueFixtures) {
       const kickoff = new Date(fx.fixture.date);
       if (isNaN(kickoff.getTime()) || kickoff <= now || kickoff >= windowEnd) continue;
+      // Postponed or called off keeps its date in the feed ("PST stays"):
+      // no "kicks off at 15:00" for a game that is not happening.
+      if (NOT_HAPPENING.has(fx.fixture.status?.short ?? "")) continue;
       if (prep ? !isLondonTomorrow(kickoff, now) : false) continue;
       const homeId = idByApiId.get(fx.teams.home.id) ?? null;
       const awayId = idByApiId.get(fx.teams.away.id) ?? null;

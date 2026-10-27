@@ -17,6 +17,7 @@
 // DATA_SOURCES.md says is reported as the feed's opinion and never as fact.
 // The app uses the verdict to pick a tone. It does not show a number.
 
+import { isCoveredFixture } from "./fixture-rollover.ts";
 export const PREDICTIONS_SOURCE = "api_football_predictions";
 
 /** How many previous meetings the card carries. Newest first. */
@@ -85,6 +86,9 @@ export function nextFixtureIdForPredictions(payload: unknown, now: Date): number
     const fixture = (item as Any)?.fixture;
     const id = fixture?.id;
     if (typeof id !== "number") continue;
+    // A friendly is not the game the page shows; buying its predictions left
+    // the real next game without a matchup card (bug hunt 2026-10-27).
+    if (!isCoveredFixture(item)) continue;
     const t = Date.parse(fixture?.date ?? "");
     if (Number.isNaN(t) || t >= now.getTime()) return id;
   }

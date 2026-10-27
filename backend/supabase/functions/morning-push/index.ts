@@ -27,6 +27,8 @@
 // No content_items row is created — this is push-only, the team page's
 // Calendar tab is where the user goes to see the fixture details.
 
+import { minTierForLiveEvent, TIER_NOBODY } from "../_shared/push-tiers.ts";
+import { NOT_HAPPENING } from "../_shared/league-helpers.ts";
 import { competitionProse, COVERED_CUP_LEAGUES } from "../_shared/league-helpers.ts";
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
@@ -113,6 +115,11 @@ serve(async (req) => {
       const kickoff = new Date(f.fixture.date);
       if (isNaN(kickoff.getTime()) || kickoff < now || kickoff > windowEnd) continue;
       if (!leagues.has(f.league?.id as number)) continue;
+      if (NOT_HAPPENING.has((f.fixture as { status?: { short?: string } }).status?.short ?? "")) continue;
+      // The early-cup-round rule matchday-reminder applies (PUSH_RULES §1).
+      // It skips those before claiming, so without this the 08:00 fallback
+      // found no claim and sent the push the rules forbid (bug hunt 2026-10-27).
+      if (minTierForLiveEvent("kickoff", f.league?.id, f.league?.round) === TIER_NOBODY) continue;
       // An opponent never seen before (a first cup tie) has no row yet; name it
       // from the feed. Its synthetic id matches no follower.
       const side = (t: { id: number; name: string }): Team =>

@@ -272,3 +272,8 @@ export function fixtureLabel(
   }
   return withRound;
 }
+
+/// Fixture statuses that mean the game is not being played when listed:
+/// postponed, cancelled, abandoned, awarded, walkover, time to be defined.
+/// API-Football keeps a postponed fixture on its original date.
+export const NOT_HAPPENING = new Set(["PST", "CANC", "ABD", "AWD", "WO", "TBD"]);
