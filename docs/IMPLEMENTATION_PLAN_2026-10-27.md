@@ -146,3 +146,56 @@ bug hunt need them, and memory says migrations are mine to run. To keep the
 run from stopping, add an allow rule in `.claude/settings.local.json`, e.g.
 `"Bash(/opt/homebrew/opt/libpq/bin/psql:*)"`. Otherwise I continue with
 everything else and save the SQL steps for the end.
+
+---
+
+## Where it stopped (2026-10-27, evening)
+
+**Done and committed:** B5, B7, B8 (deployed), B3 (app), D dry run
+(deployed), TRACKING_PLAN decision 1, bug hunt batches app 1, app 2 and
+backend (deployed: match-watcher, notification-sender, morning-push,
+matchday-reminder, team-page-generator, data-fetcher, live-match-current,
+live-brief-current). Simulator-verified: Matchday pushes, B7 glossary,
+Who's who.
+
+**Blocked on DB access (auto-mode stops psql, even reads). Run in order:**
+1. Apply `136_players_known_as.sql`, then deploy `official-squads` and run it
+   once (`?dry_run=1` first). Not before 136, or its updates fail.
+2. Apply `137_fixture_lineups.sql` (the lineup dry run warns until then).
+3. Apply `138_poll_and_sweep_fixes.sql`.
+4. Check `europe_standings` + European dates for Palace, Bournemouth,
+   Sunderland, Villa, Forest (B8).
+5. `./scripts/db-health.sh` and `get_io_attribution()` after 137.
+
+**Bug-hunt findings not yet fixed** (verified or plausible, by priority):
+- App: push-to-start token re-registers on every foreground (DB write each
+  time; skip when token + clubs unchanged, re-assert daily) and is lost after
+  Delete My Data until relaunch (call `registerPushToStartIfPossible()` from
+  `completeOnboarding`, keep the key).
+- App: feed paging stops when one row fails to decode (count raw rows).
+- App: `LiveClubPack.Slice` strict decode — one half-written team page kills
+  all three quiz packs (decode fields with `try?`).
+- App: club tab refetches 4 requests on every appearance; live-brief poll
+  runs every 60 s all week (poll only near a kickoff).
+- App: photo check cancelled → silhouettes cached 24 h as real.
+- App: "Data Deleted" alert may not show (present after dismissal); a push
+  tap while a sheet is open stays on the sheet; Settings closes when the
+  shown club is removed.
+- App: quiz "Best: 0 / 10" on short packs; card zone 1 clips at AX text sizes.
+- Backend: match-watcher's state upsert overwrites `briefs_fired` (overlapping
+  ticks can double-push) — append markers atomically instead.
+- Backend: Live Activity start/update are sent before the state upsert (a
+  failed save restarts the activity) — queue like `pendingAlertPushes`.
+- Backend: morning-push has no claim before send; notification-sender's
+  throttle uses `pushed_at` stamped before the check.
+- Backend: rate-limited `/predictions` rows block the matchup card; three
+  writers overwrite `team_pages.content` whole (use `jsonb_set`); data-fetcher
+  re-fetches RSS / `/coachs` / squads far more than read.
+- Routines repo: `fetch_team_page.sh` feeds friendlies as results.
+- Later: May's table drives the pre-match verdict in July/August (season check).
+
+**Then:** a new app build carries everything under "App" above plus B3/B5/B7
+and the Matchday merge; after it is out, switch the Live Activity sig to
+15-minute buckets (match-watcher ponytail note). Lineup dry-run lines to
+review after the first weekend: `pipeline_health` stage `starting_xi_fire`,
+target `lineup:%`.
