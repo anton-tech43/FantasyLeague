@@ -11,6 +11,25 @@ struct LiveMatchCard: View {
 
     @State private var pulseOn = false
 
+    private func scorerColumn(_ goals: [LiveMatchBrief.Scorer], alignment: HorizontalAlignment) -> some View {
+        VStack(alignment: alignment, spacing: 4) {
+            ForEach(goals) { scorer in
+                let name = Text(scorer.player + (scorer.penalty == true ? " (pen)" : ""))
+                    .font(.jakarta(13, weight: .regular))
+                    .foregroundColor(.warmWhite)
+                let minute = Text(scorer.minute)
+                    .font(.jakarta(12, weight: .bold))
+                    .foregroundColor(.hotRose)
+                HStack(spacing: 6) {
+                    if alignment == .leading { minute; name } else { name; minute }
+                }
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: alignment == .leading ? .leading : .trailing)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             // Top row: pulsing dot + LIVE + trigger label + minute
@@ -60,39 +79,13 @@ struct LiveMatchCard: View {
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
 
-            // Scorers — who scored and when, chronological. Sits right under the
-            // scoreline so the live box reads score → goals → context.
+            // Scorers — home goals on the left, away on the right, each in
+            // minute order, under the scoreline the headline carries (Anton
+            // 2026-10-27: "goalscorers per side", not one mixed list).
             if let scorers = brief.scorers, !scorers.isEmpty {
-                VStack(alignment: .leading, spacing: 4) {
-                    ForEach(scorers) { scorer in
-                        HStack(spacing: 8) {
-                            Text(scorer.minute.isEmpty ? "·" : scorer.minute)
-                                .font(.jakarta(12, weight: .bold))
-                                .foregroundColor(.hotRose)
-                                .frame(width: 40, alignment: .leading)
-                            if let photoURL = scorer.photoURL {
-                                AsyncImage(url: photoURL) { phase in
-                                    if case .success(let image) = phase {
-                                        image.resizable().scaledToFill()
-                                    } else {
-                                        Color.clear
-                                    }
-                                }
-                                .frame(width: 24, height: 24)
-                                .clipShape(Circle())
-                            }
-                            Text(scorer.player + (scorer.penalty == true ? " (pen)" : ""))
-                                .font(.jakarta(13, weight: .regular))
-                                .foregroundColor(.warmWhite)
-                                .lineLimit(1)
-                            Spacer(minLength: 8)
-                            Text(scorer.team.uppercased())
-                                .font(.jakarta(10, weight: .semiBold))
-                                .tracking(0.5)
-                                .foregroundColor(.warmWhite.opacity(0.5))
-                                .lineLimit(1)
-                        }
-                    }
+                HStack(alignment: .top, spacing: 12) {
+                    scorerColumn(scorers.filter { $0.side != "away" }, alignment: .leading)
+                    scorerColumn(scorers.filter { $0.side == "away" }, alignment: .trailing)
                 }
                 .padding(.top, 2)
             }

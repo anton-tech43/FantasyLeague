@@ -139,7 +139,18 @@ struct ContentDetailView: View {
     @ViewBuilder
     private func headerSection(_ item: ContentItem) -> some View {
         HStack {
-            BadgeView(type: item.type, customLabel: item.cupBadgeLabel)
+            if let competition = item.competition, competition.isCup {
+                GlossaryButton(term: competition.name) {
+                    HStack(spacing: 6) {
+                        BadgeView(type: item.type, customLabel: item.cupBadgeLabel)
+                        Image(systemName: "info.circle")
+                            .font(.feedBadge)
+                            .foregroundColor(.hotRose)
+                    }
+                }
+            } else {
+                BadgeView(type: item.type, customLabel: item.cupBadgeLabel)
+            }
             Spacer()
             Text(item.publishedAt.relativeTimestamp)
                 .font(.feedTimestamp)
@@ -201,7 +212,7 @@ struct ContentDetailView: View {
         // The headline carries inline name explanations now (handled in the
         // generator prompt), so we don't need a separate factual sub-headline
         // here. The user already saw the analogy on the immersive card.
-        Text(displayHeadline)
+        GlossaryText(raw: displayHeadline, only: Competition.glossaryTerms)
             .font(.jakarta(22, weight: .bold))
             .foregroundColor(.textOnDark)
             .padding(.top, 4)
@@ -531,7 +542,7 @@ struct InfoCardView: View {
                     fixtureStrip(fixture)
                 }
 
-                Text(card.text)
+                GlossaryText(raw: card.text)
                     .font(.jakarta(15, weight: .regular))
                     .foregroundColor(.textPrimaryOnCard)
                     .lineSpacing(3)

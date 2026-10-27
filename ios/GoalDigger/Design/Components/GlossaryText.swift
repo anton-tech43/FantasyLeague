@@ -15,6 +15,9 @@ import SwiftUI
 /// earliest match.
 struct GlossaryText: View {
     let raw: String
+    /// Limit matching to these terms (canonical names). Nil = the whole
+    /// glossary. A headline links only the competition, not every word.
+    var only: Set<String>? = nil
 
     @State private var activeTerm: GlossaryTerm?
 
@@ -38,19 +41,15 @@ struct GlossaryText: View {
             // background, vertical rose accent bar, warm-white text. Sized
             // tight to the content so it doesn't feel like a full-screen
             // modal; swipe-down dismisses.
-            .sheet(item: $activeTerm) { term in
-                GlossaryTermSheet(term: term)
-                    .presentationDetents([.height(220), .medium])
-                    .presentationDragIndicator(.visible)
-                    .presentationBackground(Color.deepMauve)
-            }
+            .glossarySheet($activeTerm)
     }
 
     /// Build an AttributedString with matched glossary ranges underlined and
     /// linked. The link URL encodes the term id so `openURL` can route back
     /// to the right popover.
     private var attributedBody: AttributedString {
-        let matches = findMatches(in: raw, against: GlossaryService.shared.terms)
+        let terms = GlossaryService.shared.terms.filter { only?.contains($0.term) ?? true }
+        let matches = findMatches(in: raw, against: terms)
         guard !matches.isEmpty else {
             return AttributedString(raw)
         }
@@ -166,5 +165,39 @@ private struct GlossaryTermSheet: View {
         .padding(.top, 24)
         .padding(.bottom, 28)
         .frame(maxWidth: .infinity, alignment: .topLeading)
+    }
+}
+
+extension View {
+    /// The glossary's own bottom sheet: deep mauve, rose accent, sized to
+    /// the explanation, swipe-down dismisses.
+    func glossarySheet(_ term: Binding<GlossaryTerm?>) -> some View {
+        sheet(item: term) { term in
+            GlossaryTermSheet(term: term)
+                .presentationDetents([.height(220), .medium])
+                .presentationDragIndicator(.visible)
+                .presentationBackground(Color.deepMauve)
+        }
+    }
+}
+
+/// Any label that opens a glossary term, e.g. the pink EUROPA LEAGUE strap on
+/// a feed card (Anton 2026-10-27: "being able to click the pink text").
+/// Renders the bare label when the term is missing from the glossary.
+struct GlossaryButton<Label: View>: View {
+    let term: String
+    @ViewBuilder let label: () -> Label
+
+    @State private var shown: GlossaryTerm?
+
+    var body: some View {
+        if let entry = GlossaryService.shared.lookup(term) {
+            Button { shown = entry } label: { label() }
+                .buttonStyle(.plain)
+                .accessibilityHint("Explains what the \(entry.term) is")
+                .glossarySheet($shown)
+        } else {
+            label()
+        }
     }
 }

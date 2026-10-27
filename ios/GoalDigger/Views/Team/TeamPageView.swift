@@ -963,6 +963,7 @@ struct TeamPageView: View {
                         .foregroundColor(.hotRose.opacity(0.7))
                         .padding(.leading, 14)
                     standingsTable(only.entries)
+                    competitionNote(only.competitionLabel)
                 }
             }
         } else {
@@ -1002,6 +1003,33 @@ struct TeamPageView: View {
 
         let shown = scope == europe.competitionLabel ? europe : league
         standingsTable(shown.entries)
+        competitionNote(shown.competitionLabel)
+    }
+
+    /// One line under the table saying what the competition is, tappable for
+    /// the full glossary entry (Anton 2026-10-27). The label can carry a
+    /// sponsor or season ("UEFA Europa League 2026/27"), so match the name in it.
+    @ViewBuilder
+    private func competitionNote(_ label: String) -> some View {
+        if let name = Competition.allCases.map(\.name).first(where: { label.localizedCaseInsensitiveContains($0) }),
+           let entry = GlossaryService.shared.lookup(name) {
+            GlossaryButton(term: name) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text(entry.explanation.prefix { $0 != "." } + ".")
+                        .font(.jakarta(13, weight: .regular))
+                        .foregroundColor(.warmWhite.opacity(0.65))
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Image(systemName: "info.circle")
+                        .font(.jakarta(12, weight: .regular))
+                        .foregroundColor(.hotRose)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .padding(.horizontal, 14)
+            .padding(.top, 4)
+        }
     }
 
     @ViewBuilder

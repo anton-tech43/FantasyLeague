@@ -208,13 +208,23 @@ struct ImmersiveCard: View {
                 // default feed, and without it "sunderland out. on penalties."
                 // gives no clue whether that was a cup, Europe or a Saturday —
                 // which is the one question cup coverage exists to answer.
+                // Tapping it explains the competition; the rest of zone 1
+                // still opens the story (the inner button takes the tap).
                 if let competition = competitionLabel {
-                    Text(competition)
+                    GlossaryButton(term: competition) {
+                        HStack(spacing: 5) {
+                            Text(competition)
+                                .textCase(.uppercase)
+                                .tracking(1)
+                            Image(systemName: "info.circle")
+                                .imageScale(.small)
+                        }
                         .font(.feedBadge)
-                        .textCase(.uppercase)
-                        .tracking(1)
                         .foregroundColor(.hotRose)
-                        .padding(.bottom, 10)
+                        .padding(.vertical, 6)
+                        .contentShape(Rectangle())
+                    }
+                    .padding(.bottom, 4)
                 }
 
                 // Headline

@@ -37,4 +37,7 @@ enum Competition: Int, CaseIterable, Codable {
     /// A knockout cup or a European competition — anything that is not the
     /// week-in, week-out league the feed already assumes.
     var isCup: Bool { self != .premierLeague && self != .worldChampionship }
+
+    /// Glossary entries for the competitions, linked in article headlines.
+    static let glossaryTerms: Set<String> = Set(allCases.map(\.name))
 }
