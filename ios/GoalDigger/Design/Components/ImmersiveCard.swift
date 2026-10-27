@@ -64,15 +64,18 @@ struct ImmersiveCard: View {
     private var headline: String {
         if case .everyoneTalking = feedContext {
             // Everyone context: use immersive headline falling back to neutral headline
-            return item.immersiveHeadline ?? item.everyoneTalkingHeadline ?? item.headline.lowercased()
+            return appState.personalise(item.immersiveHeadline ?? item.everyoneTalkingHeadline ?? item.headline.lowercased())
         }
-        return item.immersiveHeadline ?? item.headline.lowercased()
+        // Personalised like the article's headline, so "[his name]" never shows.
+        return appState.personalise(item.immersiveHeadline ?? item.headline.lowercased())
     }
 
     /// The competition, unless the headline already says it. A card reading
     /// "atletico tomorrow. champions league. 7pm kickoff." does not need a
     /// CHAMPIONS LEAGUE strap above it; a card reading "out. on penalties."
     /// does, and that is the one she cannot place.
+    @State private var glossaryTerm: GlossaryTerm?
+
     private var competitionLabel: String? {
         guard let label = item.cupBadgeLabel else { return nil }
         return headline.localizedCaseInsensitiveContains(label) ? nil : label
@@ -186,6 +189,14 @@ struct ImmersiveCard: View {
                 .accessibilityHint("Press for more info and things to say")
                 .accessibilityAddTraits([.isButton, .isHeader])
                 .accessibilityAction { onZone1Tap() }
+                // The pink competition strap is a button VoiceOver cannot
+                // reach inside an ignored element; offer it as an action.
+                .accessibilityActions {
+                    if let competition = competitionLabel {
+                        Button("What is the \(competition)?") { glossaryTerm = GlossaryService.shared.lookup(competition) }
+                    }
+                }
+                .glossarySheet($glossaryTerm)
             zone2
                 .frame(height: zone2Height)
                 .contentShape(Rectangle())

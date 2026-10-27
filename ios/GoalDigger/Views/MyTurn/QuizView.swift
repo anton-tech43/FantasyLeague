@@ -85,8 +85,11 @@ struct QuizView: View {
                         staleRound
                     }
                 } else if let round, roundPack == nil, Self.liveIds.contains(round.packId) {
-                    // The pack she is mid-round on is still building; keep it.
+                    // The pack she is mid-round on is still building; keep it,
+                    // with the way out under it: a pack that never builds
+                    // (offline, too few questions) must not trap her here.
                     MyTurnEmptyText(text: "Loading his club…")
+                    backToPacks
                 } else if round != nil, roundPack == nil {
                     staleRound
                 } else {
@@ -164,6 +167,10 @@ struct QuizView: View {
     @ViewBuilder
     private var staleRound: some View {
         MyTurnEmptyText(text: "That pack has been refreshed since you started. Pick it again.")
+        backToPacks
+    }
+
+    private var backToPacks: some View {
         Button { store.endRound() } label: {
             Text("Back to packs")
                 .font(.jakarta(16, weight: .semiBold))

@@ -118,13 +118,18 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
         let userInfo = response.notification.request.content.userInfo
         let contentId = userInfo["content_id"] as? String
-        routeFeedContext(teamId: userInfo["team_id"] as? String,
+        let teamId = userInfo["team_id"] as? String
+        routeFeedContext(teamId: teamId,
                          everyoneTalking: userInfo["everyone_talking"] as? Bool == true)
+        // Matchday is built on her first club. A pre-game or full-time push
+        // about her second club would open it on the wrong club, so those
+        // land on that club's feed instead (bug hunt 2026-10-27).
+        let forMatchdayClub = teamId == nil || teamId == AppState.shared.selectedTeam?.rawValue
         // The pre-game push opens Matchday › Before, the full-time push
         // (`live-ft-<fixture>`, match-watcher) opens Matchday › After.
-        if let contentId, contentId.hasPrefix("myturn-prep") {
+        if let contentId, contentId.hasPrefix("myturn-prep"), forMatchdayClub {
             AppState.shared.pendingOpenPrep = true
-        } else if let contentId, contentId.hasPrefix("live-ft-") {
+        } else if let contentId, contentId.hasPrefix("live-ft-"), forMatchdayClub {
             AppState.shared.pendingOpenAfter = true
         } else if let contentId, let uuid = UUID(uuidString: contentId) {
             AppState.shared.deepLinkContentId = uuid

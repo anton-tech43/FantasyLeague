@@ -37,6 +37,9 @@ struct PlayerCardModal: View {
         ZStack(alignment: .topTrailing) {
             Color.cardBackground.ignoresSafeArea()
 
+            // Scrolls: photo, facts, hook and a long summary outgrow a medium
+            // sheet on an SE or with larger text (bug hunt 2026-10-27).
+            ScrollView {
             VStack(alignment: .leading, spacing: 10) {
                 if let asset = PlayerPortrait.assetName(photoURL) {
                     Image(asset)
@@ -102,6 +105,8 @@ struct PlayerCardModal: View {
             }
             .padding(Layout.cardPadding)
             .padding(.top, 24) // space for close button
+            .frame(maxWidth: .infinity, alignment: .leading)
+            }
 
             // Close button
             Button { dismiss() } label: {
@@ -114,7 +119,7 @@ struct PlayerCardModal: View {
             }
             .padding(16)
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
     }
 

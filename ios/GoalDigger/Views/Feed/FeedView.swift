@@ -95,6 +95,15 @@ struct FeedView: View {
     /// 2026-09-23; the name stays as the one the feed reads from.
     private var bodyItems: [ContentItem] { displayItems }
 
+    private var activeTeam: Team? {
+        if case .team(let team) = appState.activeContext { return team }
+        return nil
+    }
+
+    private var hasTopCard: Bool {
+        (shouldShowLiveBrief && liveBrief != nil) || (shouldShowQuiz && currentQuiz != nil)
+    }
+
     var body: some View {
         ZStack {
             Color.appBackground.ignoresSafeArea()
@@ -120,9 +129,12 @@ struct FeedView: View {
                         }
                     }
                 )
-            } else if displayItems.isEmpty {
+            } else if displayItems.isEmpty && !hasTopCard {
                 emptyView
             } else {
+                // With no items but a live match or the quiz on, the feed
+                // still renders: the live score must not hide behind
+                // "Quiet on his end" (bug hunt 2026-10-27).
                 feedContent
             }
 
@@ -686,7 +698,8 @@ struct FeedView: View {
         } else {
             // T1 users and teams without an insider row fall back to the
             // original empty state.
-            EmptyStateView(teamName: appState.selectedTeam?.shortName ?? "your team")
+            // The club on screen, not her first one.
+            EmptyStateView(teamName: activeTeam?.shortName ?? appState.selectedTeam?.shortName ?? "your team")
         }
     }
 
@@ -875,6 +888,8 @@ struct FeedView: View {
             everyoneItems = Self.applyTierFilter(Self.uniqued(fetched), tier: appState.selectedTier)
             everyoneOffset = fetched.count
             everyoneCanLoadMore = fetched.count == pageSize
+            // A failed club feed must not keep Football on "didn't load".
+            if appState.activeContext == .everyoneTalking { hasError = false }
             // Cache everyone items alongside team items
             CacheService.shared.upsertItems(fetched, in: modelContext)
         } catch {

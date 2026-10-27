@@ -19,7 +19,7 @@ private enum LA {
 struct MatchLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: MatchActivityAttributes.self) { context in
-            LockScreenView(attributes: context.attributes, state: context.state)
+            LockScreenView(attributes: context.attributes, state: context.state, isStale: context.isStale)
                 .activityBackgroundTint(LA.deepMauve)
                 .activitySystemActionForegroundColor(LA.hotRose)
         } dynamicIsland: { context in
@@ -35,7 +35,7 @@ struct MatchLiveActivity: Widget {
                         Text("\(context.state.homeScore) - \(context.state.awayScore)")
                             .font(.system(size: 26, weight: .bold, design: .rounded))
                             .foregroundStyle(LA.warmWhite)
-                        MatchMinute(state: context.state, size: 11)
+                        MatchMinute(state: context.state, size: 11, isStale: context.isStale)
                     }
                 }
                 DynamicIslandExpandedRegion(.bottom) {
@@ -86,6 +86,7 @@ struct MatchLiveActivity: Widget {
 private struct LockScreenView: View {
     let attributes: MatchActivityAttributes
     let state: MatchActivityAttributes.ContentState
+    var isStale = false
 
     var body: some View {
         VStack(spacing: 8) {
@@ -101,7 +102,7 @@ private struct LockScreenView: View {
                     Text("\(state.homeScore) - \(state.awayScore)")
                         .font(.system(size: 34, weight: .heavy, design: .rounded))
                         .foregroundStyle(LA.warmWhite)
-                    MatchMinute(state: state, size: 12)
+                    MatchMinute(state: state, size: 12, isStale: isStale)
                 }
                 .frame(minWidth: 96)
                 teamColumn(flag: attributes.awayFlag, name: attributes.awayName)
@@ -137,6 +138,9 @@ private struct LockScreenView: View {
 private struct MatchMinute: View {
     let state: MatchActivityAttributes.ContentState
     let size: CGFloat
+    /// No update reached it for a while (a lost end push, no signal): the
+    /// score is the last one we know, so the clock must not look live.
+    var isStale = false
 
     /// The minute at render time — only picks the width and the "/ 90"; the
     /// digits themselves come from the running timer.
@@ -147,7 +151,9 @@ private struct MatchMinute: View {
 
     var body: some View {
         Group {
-            if let start = state.clockStartDate {
+            if isStale {
+                Text("LAST UPDATE")
+            } else if let start = state.clockStartDate {
                 HStack(spacing: 0) {
                     // Renders "63:12". On a dimmed lock screen iOS shows
                     // "63:--" — its own rule for every running timer. (A
@@ -159,7 +165,8 @@ private struct MatchMinute: View {
                         .lineLimit(1)
                         .multilineTextAlignment(.trailing)
                         // Timer text claims the widest width it could need; pin it.
-                        .frame(width: size * (minutesNow >= 100 ? 4.4 : 3.7), alignment: .trailing)
+                        // Sized for three digits from 85': no push may arrive before 100'.
+                        .frame(width: size * (minutesNow >= 85 ? 4.4 : 3.7), alignment: .trailing)
                     if minutesNow < 90 { Text(" / 90") }
                 }
             } else {

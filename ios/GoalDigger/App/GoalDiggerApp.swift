@@ -194,9 +194,18 @@ struct MainTabView: View {
     private func openMatchday(_ section: MatchdaySection) {
         appState.pendingOpenPrep = false
         appState.pendingOpenAfter = false
-        guard appState.selectedTeam != nil else { return }
+        guard let team = appState.selectedTeam else { return }
         appState.requestedMatchdaySection = section
         selectedTab = .matchday
+        // An article left open on Matchday would cover the section asked for.
+        matchdayPath = NavigationPath()
+        // The full-time push follows the new After card onto the server
+        // (match-watcher writes it first). The page cached this launch is the
+        // previous game's, so fetch past the cache.
+        if section == .after {
+            let personalise = appState.personalise
+            Task { await live.refresh(team: team, personalise: personalise, force: true) }
+        }
     }
 
     private func openFeed() {
@@ -220,6 +229,7 @@ struct MainTabView: View {
     @State private var live = LiveClubPackService.shared
     @State private var squad = LiveSquadService.shared
     @State private var feedPath = NavigationPath()
+    @State private var matchdayPath = NavigationPath()
 
     /// V2.0: The "His Team" tab follows the active feed context, so the team
     /// page shows whatever the user has currently selected in the switcher.
@@ -324,7 +334,7 @@ struct MainTabView: View {
             // words, slip and opponent all come from his club, so no club, no
             // tab.
             if appState.selectedTeam != nil {
-                NavigationStack {
+                NavigationStack(path: $matchdayPath) {
                     MatchdayView()
                         .navigationDestination(for: ContentDetailDestination.self) { dest in
                             ContentDetailView(

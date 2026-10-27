@@ -60,7 +60,10 @@ struct LiveMatchCard: View {
                     .tracking(1)
                     .foregroundColor(.warmWhite.opacity(0.8))
 
-                if let minute = brief.minute, brief.triggerLabel != "HT" {
+                // The clock only runs in play. At a break or in a shoot-out the
+                // server's minute stands still and RunningMinute would not.
+                if let minute = brief.minute,
+                   !["HT", "BREAK", "PENALTIES"].contains(brief.triggerLabel ?? "") {
                     Text("·")
                         .font(.jakarta(11, weight: .bold))
                         .foregroundColor(.warmWhite.opacity(0.5))

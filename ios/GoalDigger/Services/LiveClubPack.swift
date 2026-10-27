@@ -885,7 +885,9 @@ final class LiveClubPackService {
         UserDefaults.standard.removeObject(forKey: Self.sourcesKey)
     }
 
-    func refresh(team: Team?, personalise: @escaping (String) -> String) async {
+    /// `force` fetches the team page past a fresh cache: the full-time push
+    /// arrives right after the server wrote the new After card.
+    func refresh(team: Team?, personalise: @escaping (String) -> String, force: Bool = false) async {
         // Switching club starts a second refresh while this one is awaiting a
         // fetch. Whoever is no longer the selected club writes nothing: the
         // loser of the race would otherwise publish the old club's page and
@@ -917,7 +919,7 @@ final class LiveClubPackService {
 
         // Team page: the cache His Team already keeps, refreshed when stale.
         var cached = TeamPageCache.load(teamId: team.rawValue)
-        if cached == nil || cached!.isStale || !Self.fetchedThisLaunch.contains(team.rawValue) {
+        if force || cached == nil || cached!.isStale || !Self.fetchedThisLaunch.contains(team.rawValue) {
             if let fresh = try? await APIClient.shared.fetchTeamPage(teamId: team.rawValue) {
                 TeamPageCache.save(content: fresh, teamId: team.rawValue)
                 Self.fetchedThisLaunch.insert(team.rawValue)
