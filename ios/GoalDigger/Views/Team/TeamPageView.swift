@@ -668,7 +668,7 @@ struct TeamPageView: View {
         // 15 rows is roughly to the end of the next block of the season; the
         // server sends no more, the cap is here so a longer list can never
         // turn the tab into an endless scroll.
-        let fixtures = Array((cards.upcomingFixtures ?? []).prefix(15))
+        let fixtures = Array((cards.upcomingFixtures ?? []).prefix(25))
         let recent = cards.recentResults ?? []
         return VStack(spacing: Layout.cardSpacing) {
             if fixtures.isEmpty {

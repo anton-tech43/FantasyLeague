@@ -154,10 +154,10 @@ Deno.test("buildUpcomingFixtures: filters out friendlies and uncovered competiti
   eq(rows.some((r) => r.opponent === "Nobody"), false, "nothing uncovered");
 });
 
-Deno.test("buildUpcomingFixtures: caps at 15 rows", () => {
-  const rows = build(Array.from({ length: 20 }, (_, i) => fx(i + 1, i + 1, 39, `Team ${i}`)));
-  eq(rows.length, 15, "fifteen on the page from a next=20 payload");
-  eq(rows[14].opponent, "Team 14", "chronological, the first fifteen");
+Deno.test("buildUpcomingFixtures: caps at 25 rows", () => {
+  const rows = build(Array.from({ length: 30 }, (_, i) => fx(i + 1, i + 1, 39, `Team ${i}`)));
+  eq(rows.length, 25, "twenty-five on the page from a next=30 payload");
+  eq(rows[24].opponent, "Team 24", "chronological, the first twenty-five");
 });
 
 Deno.test("buildUpcomingFixtures: a next=10 payload still works", () => {

@@ -269,11 +269,11 @@ async function fetchAPIFootball(
   // refresh (`only: ["standings","fixtures"]`) skips squad, injuries
   // and coachs without a second list to keep in step.
   const endpoints: Array<{ name: string; path: string; scope: FetchOnlyKey }> = [
-    // next=20 (2026-09-09; was 10). Eight rows of calendar was about four weeks
-    // for a club in Europe, so a January cup tie or the Christmas programme was
-    // invisible until it entered the window. The page caps at 15; the extra
-    // rows are the horizon.
-    { name: "fixtures_next", path: `/fixtures?team=${team.api_football_id}&next=20`, scope: "fixtures" },
+    // next=30 (2026-10-27; was 20, before that 10). Fifteen rows was about
+    // seven weeks for a club in Europe, so the rest of the league phase was
+    // invisible. The page caps at 25; the extra rows are the horizon. Still
+    // one call per club.
+    { name: "fixtures_next", path: `/fixtures?team=${team.api_football_id}&next=30`, scope: "fixtures" },
     { name: "fixtures_last", path: `/fixtures?team=${team.api_football_id}&last=3`, scope: "fixtures" },
     { name: "injuries", path: `/injuries?team=${team.api_football_id}&season=${season}`, scope: "injuries" },
     // No /transfers (QA-15, 2026-10-04): it is the club's whole unordered

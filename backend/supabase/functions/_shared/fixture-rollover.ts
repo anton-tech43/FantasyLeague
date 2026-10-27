@@ -116,10 +116,11 @@ export function isCoveredFixture(item: unknown): boolean {
 }
 
 
-/// A season, not a month. `next=20` from the fetcher, 15 rows on the page:
-/// enough that a January FA Cup tie and the Christmas programme are visible in
-/// September, and short enough that the card stays a card.
-const CALENDAR_MAX_ROWS = 15;
+/// A season, not a month. `next=30` from the fetcher, 25 rows on the page:
+/// 15 was about seven weeks for a club in Europe, so the rest of the Europa
+/// League phase was missing (Anton, 2026-10-27). The extra five fetched rows
+/// are the horizon left after friendlies and uncovered competitions drop out.
+const CALENDAR_MAX_ROWS = 25;
 
 /// Every upcoming fixture for the iOS Calendar tab, built mechanically from
 /// api_football_fixtures_next. Until Sept 2026 this card was only ever written
