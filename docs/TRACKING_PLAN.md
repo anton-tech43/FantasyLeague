@@ -360,12 +360,14 @@ and building history, not for making cuts.
 
 ### Three decisions it is being built to inform
 
-1. **Is Pre-game findable?** *(Rewritten — the tab question was settled in the
-   app on 2026-09-27.)* Prep is the first segment but only when `prepAvailable`.
-   From `my_turn_module_switched.prep_available` and **prep reach**: of fixtures
-   where prep existed, how often did she open it? If reach is high when it is
-   there, the conditional hiding is the problem, not the module. If reach is low
-   even when present, the module is.
+1. **Is Pre-game findable?** *(Rewritten twice. On 2026-10-27 Pre-game moved
+   out of My Turn into its own Matchday tab (Before / After), merged from
+   `claude/matchday-tab`, so the "conditional first segment" question below is
+   history.)* The question now: does the tab earn its slot? From
+   `pregame_opened.entry` and **prep reach** — of fixtures with a Before, how
+   often was it opened, and from where (tab, push, club page)? If nearly all
+   opens come from the pre-game push, the tab is a landing page, not a
+   destination, and could fold back. If she opens the tab unprompted, it stays.
 2. **Is the push volume right?** From push open rate by kind, crossed with net
    `tier_changed` movement. A push kind with a low open rate **and** tier
    downgrades following it is the first candidate for `PUSH_RULES.md` §3 — and
