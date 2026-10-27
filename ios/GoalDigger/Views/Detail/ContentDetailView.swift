@@ -11,6 +11,9 @@ struct ContentDetailView: View {
     @State private var isBackstoryExpanded = false
     /// Level-3 info card ("To impress") is behind a + until she asks for it.
     @State private var showToImpress = false
+    /// Her clubs' players the article names (B3, 2026-10-27).
+    @State private var namedPlayers: [NamedPlayer] = []
+    @State private var presentedPlayer: NamedPlayer?
 
     /// Preloaded item lets the feed render the detail view instantly without re-fetching.
     /// When opened from a push deep link, `preloadedItem` is nil and `loadItem()` fetches by id.
@@ -32,6 +35,9 @@ struct ContentDetailView: View {
                         VStack(alignment: .leading, spacing: Layout.sectionSpacing) {
                             headerSection(item)
                             headlineSection(item)
+                            if !namedPlayers.isEmpty {
+                                whosWhoSection(namedPlayers)
+                            }
                             if let scorers = item.scorers, !scorers.isEmpty {
                                 scorersSection(scorers)
                             }
@@ -54,6 +60,15 @@ struct ContentDetailView: View {
                         .padding(.horizontal, Layout.screenPadding)
                         .padding(.top, 16)
                         .padding(.bottom, 40)
+                    }
+                    .task(id: item.id) {
+                        let text = ([displayHeadline] + (item.infoCards ?? []).map(\.text) + [displayBody])
+                            .joined(separator: "\n")
+                        namedPlayers = await NamedPlayer.find(in: text, teams: appState.selectedTeams)
+                    }
+                    .sheet(item: $presentedPlayer) { named in
+                        PlayerCardModal(player: named.card, number: named.player.number,
+                                        photoURL: named.player.photo)
                     }
                     .task {
                         if scrollToTalkingPoints {
@@ -197,6 +212,46 @@ struct ContentDetailView: View {
             return item.everyoneTalkingTalkingPoints ?? item.regularTalkingPoints
         }
         return item.regularTalkingPoints.map { appState.personalise($0) }
+    }
+
+    /// "Who's who": the players of her clubs this article names, each opening
+    /// the player card. Only her clubs' squads (Anton, 2026-10-27).
+    private func whosWhoSection(_ players: [NamedPlayer]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("WHO'S WHO")
+                .font(.feedBadge)
+                .tracking(1)
+                .foregroundColor(.textTertiary)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(players) { named in
+                        Button { presentedPlayer = named } label: {
+                            HStack(spacing: 8) {
+                                AsyncImage(url: named.player.photo.flatMap(URL.init(string:))) { phase in
+                                    if case .success(let image) = phase {
+                                        image.resizable().scaledToFill()
+                                    } else {
+                                        Color.warmWhite.opacity(0.1)
+                                    }
+                                }
+                                .frame(width: 28, height: 28)
+                                .clipShape(Circle())
+                                Text(named.shownName)
+                                    .font(.jakarta(14, weight: .semiBold))
+                                    .foregroundColor(.textOnDark)
+                            }
+                            .padding(.leading, 4)
+                            .padding(.trailing, 12)
+                            .padding(.vertical, 4)
+                            .background(Color.warmWhite.opacity(0.08))
+                            .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("\(named.shownName), player card")
+                    }
+                }
+            }
+        }
     }
 
     @ViewBuilder
@@ -601,4 +656,99 @@ struct InfoCardView: View {
         f.amSymbol = "am"; f.pmSymbol = "pm"
         return f
     }()
+}
+
+/// A player of one of her clubs that an article names, matched on the name the
+/// league prints (`known_as`, "Gabriel"), the full name, then the surname —
+/// longest first, so "Gabriel Martinelli" is not also "Gabriel".
+struct NamedPlayer: Identifiable {
+    let player: LiveSquadPack.Player
+    let card: PlayerCard
+    var id: Int { player.api_player_id }
+    var shownName: String { player.known_as ?? player.name }
+
+    /// Squads and dossiers per club, for the app's lifetime: an article is
+    /// opened many times and the squad does not change between them.
+    @MainActor private static var squads: [String: [LiveSquadPack.Player]] = [:]
+    @MainActor private static var dossiers: [String: [PlayerCard]] = [:]
+
+    @MainActor
+    static func find(in text: String, teams: [Team]) async -> [NamedPlayer] {
+        var found: [NamedPlayer] = []
+        for team in teams {
+            let id = team.rawValue
+            if squads[id] == nil {
+                let data = try? await APIClient.shared.rawGET(path: "players", queryItems: [
+                    URLQueryItem(name: "select", value: "*"),
+                    URLQueryItem(name: "team_id", value: "eq.\(id)"),
+                ])
+                let rows = data.flatMap { try? JSONDecoder().decode([LiveSquadPack.Player].self, from: $0) }
+                guard let rows, !rows.isEmpty else { continue }  // retry next open
+                squads[id] = rows.filter { $0.in_official_squad != false }
+                dossiers[id] = (try? await APIClient.shared.fetchPlayerCards(teamId: id)) ?? []
+            }
+            let cards = dossiers[id] ?? []
+            for p in match(text, squad: squads[id] ?? []) {
+                let key = PlayerPortrait.surname(p.name)
+                let card = cards.first { PlayerPortrait.surname($0.playerName) == key }
+                    ?? PlayerCard.stub(teamId: id, playerName: p.name, position: p.position ?? "")
+                found.append(NamedPlayer(player: p, card: card))
+            }
+        }
+        return Array(found.prefix(4))
+    }
+
+    /// Pure matcher, in order of first mention. Case-sensitive on purpose:
+    /// "White" the defender, not "wearing white". A surname two squad members
+    /// share is skipped rather than guessed.
+    static func match(_ text: String, squad: [LiveSquadPack.Player]) -> [LiveSquadPack.Player] {
+        var hay = " " + fold(text) + " "
+        let surnameCounts = Dictionary(grouping: squad.compactMap { lastWord($0.name) }, by: { $0 }).mapValues(\.count)
+        var keys: [(String, Int)] = []  // (folded key, index in squad)
+        for (i, p) in squad.enumerated() {
+            var candidates = [p.known_as, p.name].compactMap { $0 }.map(fold)
+            if let last = lastWord(p.name), last.count >= 4, surnameCounts[last] == 1 { candidates.append(last) }
+            for c in Set(candidates) where c.count >= 3 { keys.append((c, i)) }
+        }
+        keys.sort { $0.0.count > $1.0.count }
+        var firstAt: [Int: Int] = [:]
+        for (key, i) in keys {
+            let needle = " \(key) "
+            while let r = hay.range(of: needle) {
+                let at = hay.distance(from: hay.startIndex, to: r.lowerBound)
+                firstAt[i] = min(firstAt[i] ?? at, at)
+                // Blank it so a shorter key cannot claim the same words.
+                hay.replaceSubrange(r, with: " " + String(repeating: "#", count: key.count) + " ")
+            }
+        }
+        return firstAt.sorted { $0.value < $1.value }.map { squad[$0.key] }
+    }
+
+    private static func fold(_ s: String) -> String {
+        let f = s.folding(options: .diacriticInsensitive, locale: .init(identifier: "en"))
+            .replacingOccurrences(of: "ø", with: "o").replacingOccurrences(of: "Ø", with: "O")
+        return String(f.map { $0.isLetter || $0.isNumber || $0 == "-" ? $0 : " " })
+            .split(separator: " ").joined(separator: " ")
+    }
+
+    private static func lastWord(_ name: String) -> String? {
+        fold(name).split(separator: " ").last.map(String.init)
+    }
+
+    #if DEBUG
+    static func selfCheck() -> Bool {
+        func p(_ id: Int, _ name: String, _ known: String? = nil) -> LiveSquadPack.Player {
+            LiveSquadPack.Player(api_player_id: id, name: name, position: nil, photo_url: nil, number: nil,
+                                 appearances: nil, minutes: nil, known_as: known)
+        }
+        let squad = [p(1, "Gabriel Magalhães", "Gabriel"), p(2, "Gabriel Martinelli", "Gabriel Martinelli"),
+                     p(3, "M. Ødegaard", "Martin Ødegaard"), p(4, "B. Saka", "Bukayo Saka"), p(5, "B. White", "Ben White")]
+        let names = { (t: String) in match(t, squad: squad).map(\.api_player_id) }
+        return names("Gabriel Martinelli scored, Gabriel defended") == [2, 1]
+            && names("Saka's cross found Odegaard") == [4, 3]
+            && names("Gabriel Martinelli again") == [2]
+            && names("They wore white at home") == []
+            && names("Nobody here") == []
+    }
+    #endif
 }

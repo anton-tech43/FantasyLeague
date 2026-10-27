@@ -74,6 +74,10 @@ serve(async (req) => {
       if (!m.official && played(m)) continue;
       const patch = m.official
         ? { in_official_squad: true, official_number: m.official.number, official_checked_at: now.toISOString(),
+            // The name the league prints ("Gabriel", "Rodri"): API-Football's
+            // "Gabriel Magalhães" never matches a headline that says
+            // "Gabriel". Migration 136.
+            ...(m.official.display ? { known_as: m.official.display } : {}),
             ...(m.official.number != null ? { number: m.official.number } : {}) }
         : { in_official_squad: false, official_checked_at: now.toISOString() };
       await supabase.from("players").update(patch).eq("api_player_id", m.row.api_player_id);

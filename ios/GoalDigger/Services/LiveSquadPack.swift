@@ -53,6 +53,10 @@ enum LiveSquadPack {
         /// (migration 127, the official-squads function): a youth player the
         /// feed carries but the club has not registered. Nil is unchecked.
         var in_official_squad: Bool? = nil
+        /// The name the Premier League prints ("Gabriel" for Gabriel
+        /// Magalhães), written by official-squads (migration 136). Nil until
+        /// then and for unpaired players.
+        var known_as: String? = nil
 
         /// Where he stands in the squad. Nil appearances is *unknown*, not
         /// zero: Saliba's stats had not synced, and "Is Saliba going to get a

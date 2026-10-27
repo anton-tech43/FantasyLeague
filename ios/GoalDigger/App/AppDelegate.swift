@@ -18,6 +18,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         #if DEBUG
         Attribution.selfCheck()
         assert(MatchdaySection.selfCheck(), "Matchday opens on the wrong section")
+        assert(NamedPlayer.selfCheck(), "Who's who matches the wrong players")
         #endif
 
         UNUserNotificationCenter.current().delegate = self
