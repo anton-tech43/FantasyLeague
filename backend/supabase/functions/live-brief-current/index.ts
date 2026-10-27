@@ -19,7 +19,11 @@ import { formatMinute, type StoredGoalEvent } from "../_shared/goal-push.ts";
 import { WC_LEAGUE_ID } from "../_shared/detect-consequences.ts";
 
 const PRE_KICKOFF_BUFFER_MS = 10 * 60 * 1000;   // 10 min before kickoff
-const POST_KICKOFF_BUFFER_MS = 130 * 60 * 1000; // 130 min after kickoff
+// 200, not 130: extra time, penalties and a long stoppage run past 130, and
+// the app reads "nothing live" as "end the Live Activity now" (bug hunt
+// 2026-10-27). Only live statuses are returned, so a finished game still
+// drops out at its whistle.
+const POST_KICKOFF_BUFFER_MS = 200 * 60 * 1000;
 
 serve(async (req) => {
   if (req.method !== "GET") {
