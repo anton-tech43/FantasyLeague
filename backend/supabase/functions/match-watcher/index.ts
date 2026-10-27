@@ -14,6 +14,7 @@
 //
 // Schedule: every 1 min via pg_cron (see migration 017).
 
+import { type LineupPlayer, type Notable, notableLineup, type Role, rolesFromGrid, type SquadRow } from "../_shared/lineup-notable.ts";
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { deactivateTokens, fetchAllRows, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
@@ -717,6 +718,82 @@ async function fetchFixtureStats(fixtureId: number, apiKey: string): Promise<Map
   }
 }
 
+// ─── Lineups (dry run) ─────────────────────────────────────────────────────
+// Between T−75 and T−30 for a fixture one of our clubs plays, every fifth
+// minute until API-Football has the lineup: store both sides in
+// fixture_lineups (mig 137) and decide, in _shared/lineup-notable.ts, whether
+// our side's lineup is worth a line to her. DRY RUN: the line is only logged
+// to pipeline_health (stage starting_xi_fire, target lineup:<fixture>), and
+// no push or card is sent. Delivery (the T−30 push body plus a feed card) is
+// built after Anton has read a weekend of real cases (2026-10-27).
+const LINEUP_WINDOW_MIN = { from: 30, to: 75 };
+
+async function lineupDryRun(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  fx: { fixture: { id: number }; league?: { id?: number }; teams: { home: { id: number; name: string }; away: { id: number; name: string } } },
+  ourClubApiIds: Set<number>,
+  teamIdMap: Map<number, string>,
+  apiKey: string,
+): Promise<void> {
+  const fixtureId = fx.fixture.id;
+  const { data: have, error: haveErr } = await supabase.from("fixture_lineups")
+    .select("team_api_id").eq("fixture_id", fixtureId).limit(1);
+  if (haveErr) { console.warn("lineups: fixture_lineups unreadable:", haveErr.message); return; }
+  if ((have ?? []).length > 0) return;
+
+  const resp = await fetch(`${API_FOOTBALL_BASE}/fixtures/lineups?fixture=${fixtureId}`,
+    { headers: { "x-apisports-key": apiKey } });
+  const json = await resp.json().catch(() => null);
+  const sides = (json?.response ?? []) as Array<Record<string, any>>;
+  if (sides.length < 2 || sides.some((s) => (s.startXI ?? []).length !== 11)) return; // not out yet
+
+  const toPlayers = (arr: Array<Record<string, any>> | undefined): LineupPlayer[] =>
+    (arr ?? []).map((e) => ({ id: e.player?.id, name: e.player?.name, pos: e.player?.pos, grid: e.player?.grid }))
+      .filter((p) => typeof p.id === "number");
+
+  for (const side of sides) {
+    const teamApiId = side.team?.id as number;
+    const xi = toPlayers(side.startXI);
+    const opponent = sides.find((o) => o !== side)?.team?.name ?? "";
+    let note: Notable | null = null;
+    if (ourClubApiIds.has(teamApiId)) {
+      const teamId = teamIdMap.get(teamApiId);
+      const [{ data: squad }, { data: prev }] = await Promise.all([
+        supabase.from("players").select("api_player_id, name, known_as, league_starts, captain, position, in_official_squad")
+          .eq("team_id", teamId ?? ""),
+        supabase.from("fixture_lineups").select("xi, league_id").eq("team_api_id", teamApiId)
+          .order("fetched_at", { ascending: false }).limit(5),
+      ]);
+      const rows = ((squad ?? []) as Array<SquadRow & { in_official_squad?: boolean | null }>)
+        .filter((r) => r.in_official_squad !== false);
+      // ponytail: the squad's highest league_starts stands in for league games
+      // played (the goalkeeper starts them all). Read standings if a keeper
+      // rotation ever makes this undercount.
+      const leaguePlayed = Math.max(0, ...rows.map((r) => r.league_starts ?? 0));
+      const lastRole = new Map<number, Role>();
+      for (const p of [...(prev ?? [])].reverse()) {
+        for (const [id, role] of rolesFromGrid(p.xi as LineupPlayer[])) lastRole.set(id, role);
+      }
+      const prevLeague = (prev ?? []).find((p) => p.league_id === 39);
+      note = notableLineup({
+        xi, squad: rows, leaguePlayed, lastRole, opponent,
+        previousXI: prevLeague ? (prevLeague.xi as LineupPlayer[]).map((p) => p.id) : null,
+      });
+      await supabase.from("pipeline_health").insert({
+        team_id: teamId ?? null,
+        stage: "starting_xi_fire",
+        status: "success",
+        target: `lineup:${fixtureId}`,
+        message: (note ? `DRY RUN ${note.kind}: ${note.line}` : "DRY RUN silent").slice(0, 400),
+      }).then(({ error }) => error && console.warn("pipeline_health insert failed:", error.message));
+    }
+    await supabase.from("fixture_lineups").upsert({
+      fixture_id: fixtureId, team_api_id: teamApiId, league_id: fx.league?.id ?? null,
+      formation: side.formation ?? null, xi, bench: toPlayers(side.substitutes),
+    }, { onConflict: "fixture_id,team_api_id" });
+  }
+}
+
 const LAST_MATCH_TTL_DAYS = 7;
 
 interface LastMatchSide {
@@ -948,6 +1025,11 @@ async function handleRequest(req: Request): Promise<Response> {
   // flag (the widget can't load crests, and interpolate() drops an empty
   // {flag}). Until Sept 2026 these surfaces were WC-only — a PL follower got no
   // kickoff / goal / HT / FT push and no Live Activity (audit 2026-09, P0).
+  // Our clubs, for the lineup dry run: the ones someone can follow.
+  const ourClubApiIds = new Set<number>(
+    (teams ?? []).filter((t) => t.is_active && t.entity_type === "club")
+      .map((t) => t.api_football_id as number),
+  );
   const shortNameById = new Map<string, string>(
     (teams ?? []).map((t) => [t.id as string, (t.short_name as string | null) ?? (t.id as string)]),
   );
@@ -2022,6 +2104,18 @@ async function handleRequest(req: Request): Promise<Response> {
           // fires at most once. The fixture is in match_status_state ~2h before
           // kickoff (date roll), so the 30-min mark is always observed.
           const minsToKickoff = (new Date(kickoffTime).getTime() - Date.now()) / 60000;
+          if (
+            apiFootballKey && status === "NS" &&
+            minsToKickoff > LINEUP_WINDOW_MIN.from && minsToKickoff <= LINEUP_WINDOW_MIN.to &&
+            new Date().getUTCMinutes() % 5 === 0 &&
+            (ourClubApiIds.has(homeApiId) || ourClubApiIds.has(awayApiId))
+          ) {
+            try {
+              await lineupDryRun(supabase, fx, ourClubApiIds, teamIdMap, apiFootballKey);
+            } catch (e) {
+              console.warn(`lineups: fixture ${fixtureId} failed (non-fatal):`, e instanceof Error ? e.message : String(e));
+            }
+          }
           if (
             status === "NS" && minsToKickoff > 0 && minsToKickoff <= 30 &&
             !briefsFired.includes("PREKICK_PUSH")
