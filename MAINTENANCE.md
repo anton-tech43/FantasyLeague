@@ -78,6 +78,19 @@ Goal: is the backend actually serving the app, and will it keep serving until Fr
 | A2 | pg_cron healthy | `cron.job_run_details` failures last 72h; no "job startup timeout" | no failed/looping jobs | see `project_db_maintenance` note; **auto-fix A3 first** |
 | A3 | pg_net bloat | row count of `net._http_response` | not growing unbounded | **AUTO-FIX**: truncate it (unlogged log table; this is the known cause of "job startup timeout" that starves pg_cron). Log rows removed. |
 | A4 | Routines producing | latest `content_items` per source (gd-news, gd-insider, gd-season-state, gd-saturday-quiz, gd-matchday) | each within its cadence window | a stale routine → **push** (its own repo is `anton-tech43/goaldigger-routines`; do not fix here) |
+
+**A4, queried over PostgREST/Data API when Postgres is blocked (see §1) — no raw SQL needed:**
+
+| Source | Query | Cadence |
+|---|---|---|
+| gd-news | `content_items?type=eq.news&select=created_at&order=created_at.desc&limit=1` | several/day |
+| gd-insider | `content_items?type=eq.sunday_brief&select=created_at&order=created_at.desc&limit=1` | weekly (Sunday) |
+| gd-matchday | `content_items?type=eq.matchday&select=created_at&order=created_at.desc&limit=1` | event-driven (fired by match-watcher; compare to the most recent matchday, not a fixed window) |
+| gd-season-state | `team_season_state?team_id=eq.arsenal&select=generated_at` (spot-check a couple of clubs) | daily |
+| gd-saturday-quiz | `saturday_quiz_items?select=published_at&order=published_at.desc&limit=1` | weekly, Saturday 07:00 UTC (migration 026) |
+
+Found 2026-10-27: gd-saturday-quiz had gone 10 days with no new row (missed the 2026-10-24
+fire) while every other source above was within cadence — this table is what caught it.
 | A5 | Push contract | `./scripts/verify-push-eligible.sh` | exit 0, no violations | **push** with the violations |
 | A6 | API balance sanity | is `team-page-generator` failing with IDLE_TIMEOUT? | function healthy or idle | IDLE_TIMEOUT pattern = **balance depleted, not broken** (`BACKFILL_RULES.md`). Do NOT refire. **Push.** |
 | A7 | Secret hygiene | `./scripts/pre-commit-secret-scan.sh`; `ls .claude/worktrees/` | clean; no stray worktrees holding `.env` | remove abandoned worktrees; **push** if a secret leaked |
