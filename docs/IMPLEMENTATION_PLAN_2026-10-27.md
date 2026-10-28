@@ -158,14 +158,15 @@ matchday-reminder, team-page-generator, data-fetcher, live-match-current,
 live-brief-current). Simulator-verified: Matchday pushes, B7 glossary,
 Who's who.
 
-**Blocked on DB access (auto-mode stops psql, even reads). Run in order:**
-1. Apply `136_players_known_as.sql`, then deploy `official-squads` and run it
-   once (`?dry_run=1` first). Not before 136, or its updates fail.
-2. Apply `137_fixture_lineups.sql` (the lineup dry run warns until then).
-3. Apply `138_poll_and_sweep_fixes.sql`.
-4. Check `europe_standings` + European dates for Palace, Bournemouth,
-   Sunderland, Villa, Forest (B8).
-5. `./scripts/db-health.sh` and `get_io_attribution()` after 137.
+**DB steps, done 2026-10-28** (via `./scripts/sql.sh`, allowed in
+settings.local.json): migrations 136–139 applied and checked (anon has no
+access); official-squads deployed and run, `known_as` filled for 574 players.
+The Premier League list has no mononyms ("Gabriel Magalhães"), so 139 adds
+`known_as_verified_at`: "Gabriel" is set by hand and official-squads never
+overwrites a verified name. Other mononyms (Casemiro, Rodri, João Pedro …)
+need the same hand-set row once someone checks the current squads. B8
+verified: every club in Europe has its table, and Bournemouth's calendar runs
+to the end of the league phase. db-health all clear.
 
 **Bug-hunt findings not yet fixed** (verified or plausible, by priority):
 - App: push-to-start token re-registers on every foreground (DB write each

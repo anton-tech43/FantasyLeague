@@ -55,7 +55,7 @@ serve(async (req) => {
     // An empty or failed list must never mark a whole squad as not registered.
     if (official.length < 15) { report.push({ team: t.id, skipped: `only ${official.length} official players` }); continue; }
 
-    const { data: rows } = await supabase.from("players").select("api_player_id, name, number, minutes").eq("team_id", t.id);
+    const { data: rows } = await supabase.from("players").select("api_player_id, name, number, minutes, known_as_verified_at").eq("team_id", t.id);
     const matches = matchOfficial((rows ?? []) as { api_player_id: number; name: string; number: number | null }[], official);
     const changed = matches.filter((m) => m.official && m.official.number != null && m.official.number !== m.row.number);
     // Unmatched with minutes on the pitch is a spelling we cannot pair
@@ -77,7 +77,9 @@ serve(async (req) => {
             // The name the league prints ("Gabriel", "Rodri"): API-Football's
             // "Gabriel Magalhães" never matches a headline that says
             // "Gabriel". Migration 136.
-            ...(m.official.display ? { known_as: m.official.display } : {}),
+            // A hand-verified name (mig 139, "Gabriel") is never overwritten.
+            ...(m.official.display && !(m.row as { known_as_verified_at?: string | null }).known_as_verified_at
+              ? { known_as: m.official.display } : {}),
             ...(m.official.number != null ? { number: m.official.number } : {}) }
         : { in_official_squad: false, official_checked_at: now.toISOString() };
       await supabase.from("players").update(patch).eq("api_player_id", m.row.api_player_id);
