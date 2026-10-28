@@ -153,7 +153,12 @@ class APIClient {
         return decoded
     }
 
-    func fetchFeed(teamId: String, limit: Int = 20, offset: Int = 0) async throws -> [ContentItem] {
+    /// One page of a feed: the items that decoded, and how many rows the
+    /// server sent. Paging must count rows: a row that fails to decode used
+    /// to end infinite scroll at 19 (bug hunt 2026-10-27).
+    struct FeedPage { let items: [ContentItem]; let rows: Int }
+
+    func fetchFeed(teamId: String, limit: Int = 20, offset: Int = 0) async throws -> FeedPage {
         // `published_at=not.is.null` filter is critical: some legacy rows have
         // status='published' but published_at=NULL. Postgres sorts NULLs first
         // in DESC ordering, which would push genuinely fresh items below stale
@@ -172,10 +177,11 @@ class APIClient {
         let request = makeRequest(url: url)
         let (data, response) = try await URLSession.shared.data(for: request)
         try validateResponse(response)
-        return try decodeContentItems(from: data)
+        return FeedPage(items: try decodeContentItems(from: data),
+                        rows: (try? JSONSerialization.jsonObject(with: data) as? [Any])?.count ?? 0)
     }
 
-    func fetchEveryoneFeed(limit: Int = 20, offset: Int = 0) async throws -> [ContentItem] {
+    func fetchEveryoneFeed(limit: Int = 20, offset: Int = 0) async throws -> FeedPage {
         let url = try buildURL(path: "content_items", queryItems: [
             URLQueryItem(name: "everyone_talking", value: "eq.true"),
             URLQueryItem(name: "status", value: "eq.published"),
@@ -188,7 +194,8 @@ class APIClient {
         let request = makeRequest(url: url)
         let (data, response) = try await URLSession.shared.data(for: request)
         try validateResponse(response)
-        return try decodeContentItems(from: data)
+        return FeedPage(items: try decodeContentItems(from: data),
+                        rows: (try? JSONSerialization.jsonObject(with: data) as? [Any])?.count ?? 0)
     }
 
     func fetchItem(id: UUID) async throws -> ContentItem? {
@@ -476,6 +483,7 @@ class APIClient {
             URLQueryItem(name: "status", value: "eq.published"),
             URLQueryItem(name: "order", value: "published_at.desc"),
             URLQueryItem(name: "limit", value: "20"),
+            URLQueryItem(name: "select", value: Self.contentSelectColumns),
         ])
         var request = makeRequest(url: url)
         request.timeoutInterval = 10

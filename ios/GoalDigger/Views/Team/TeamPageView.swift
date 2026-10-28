@@ -1649,6 +1649,8 @@ struct TeamPageView: View {
 
     // MARK: - Data loading with cache
 
+    @MainActor private static var loadedAt: [String: Date] = [:]
+
     private func loadTeamPage() async {
         isLoading = true
         hasError = false
@@ -1672,6 +1674,16 @@ struct TeamPageView: View {
         if let cached = TeamPageCache.load(teamId: teamId) {
             content = cached.content
             isLoading = false
+
+            // Every tab switch re-runs this .task. Within five minutes of the
+            // last full load the cache is what the network would say, and four
+            // requests per tap was the club tab's whole cost (bug hunt
+            // 2026-10-27). Try again (hasError) always fetches.
+            if !cached.isStale, let last = Self.loadedAt[teamId], Date().timeIntervalSince(last) < 300,
+               !playerCards.isEmpty || !insiderSet.isEmpty {
+                return
+            }
+            Self.loadedAt[teamId] = Date()
 
             // Fetch player cards + insider set + previews in parallel with fresh data
             async let freshContent = fetchFromNetwork()

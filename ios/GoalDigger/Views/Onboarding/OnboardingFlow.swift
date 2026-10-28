@@ -187,6 +187,9 @@ struct OnboardingFlow: View {
         // Live Activity tokens wait for this moment (AppDelegate skips them
         // before onboarding), so a new install registers this session.
         LiveActivityManager.shared.start()
+        // start() is a no-op after Delete My Data in the same session, and the
+        // token stream will not re-emit: register the token already on disk.
+        Task { await LiveActivityManager.shared.registerPushToStartIfPossible() }
         // Force-flush the whole onboarding set (names + team + country + tier
         // + flag) to disk NOW. UserDefaults writes are async; without this, a
         // user who finishes onboarding and immediately force-quits before

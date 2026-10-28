@@ -582,8 +582,12 @@ final class LiveSquadService {
             let names = (try? await managers).flatMap {
                 try? JSONDecoder().decode([[String: String?]].self, from: $0)
             }?.compactMap { $0["manager_name"] ?? nil } ?? []
+            // A cancelled refresh (she left the tab) stops the photo checks
+            // half way and would mark the rest "real" for a day: keep nothing.
+            let flagged = await Self.flagPlaceholders(players)
+            if Task.isCancelled { return }
             if !players.isEmpty {
-                cache = Cache(teamId: team.rawValue, players: await Self.flagPlaceholders(players),
+                cache = Cache(teamId: team.rawValue, players: flagged,
                               cards: (try? await dossiers) ?? [], managerNames: names, fetchedAt: Date())
             }
         }

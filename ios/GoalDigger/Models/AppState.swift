@@ -335,7 +335,8 @@ class AppState {
                      // still has the value on disk, so a reset still clears it.
                      "footballKnowledgeLevel",
                      "hasCompletedOnboarding", "notificationPermissionRequested", "apnsToken",
-                     "apnsTokenRegistered", "lastRegisteredScope", "liveActivityPushToStartToken",
+                     "apnsTokenRegistered", "lastRegisteredScope",
+                     LiveActivityManager.ptsSigKey, LiveActivityManager.ptsAtKey,
                      // Written by the Immersive/Classic switch, which left
                      // Settings in May 2026 and the codebase in September.
                      // A device that chose "classic" still has it on disk.

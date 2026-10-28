@@ -19,7 +19,13 @@ final class LiveActivityManager {
     static let shared = LiveActivityManager()
 
     private var started = false
+    @MainActor private var lastSync: Date?
     private static let ptsTokenKey = "liveActivityPushToStartToken"
+    /// What was last registered and when. Delete My Data clears these (not
+    /// the token: iOS does not re-emit an unchanged one, so clearing it left
+    /// no Live Activities until the next cold launch).
+    static let ptsSigKey = "liveActivityPTSRegisteredSig"
+    static let ptsAtKey = "liveActivityPTSRegisteredAt"
 
     /// Begin observing tokens. Idempotent; call once at launch.
     func start() {
@@ -53,12 +59,27 @@ final class LiveActivityManager {
     /// Never before onboarding has finished: the token stream keeps running
     /// after Delete My Data, and a registration then would recreate the
     /// server row she just deleted.
+    ///
+    /// Skipped when the token and the clubs are what was last registered, less
+    /// than a day ago: this runs on every return to the app, and each call is
+    /// an upsert on live_activity_tokens (bug hunt 2026-10-27). Re-asserted
+    /// daily so the server's 90-day prune never catches a live phone.
     func registerPushToStartIfPossible() async {
         guard await Self.onboarded,
               let token = UserDefaults.standard.string(forKey: Self.ptsTokenKey) else { return }
-        try? await APIClient.shared.registerLiveActivityToken(
-            token, kind: "push_to_start", fixtureId: nil,
-            countryIds: Self.followedCountryIds, teamIds: Self.followedTeamIds)
+        let countries = await Self.followedCountryIds, teams = await Self.followedTeamIds
+        let sig = ([token] + countries + ["|"] + teams).joined(separator: ",")
+        let defaults = UserDefaults.standard
+        if defaults.string(forKey: Self.ptsSigKey) == sig,
+           let at = defaults.object(forKey: Self.ptsAtKey) as? Date, Date().timeIntervalSince(at) < 86_400 {
+            return
+        }
+        do {
+            try await APIClient.shared.registerLiveActivityToken(
+                token, kind: "push_to_start", fixtureId: nil, countryIds: countries, teamIds: teams)
+            defaults.set(sig, forKey: Self.ptsSigKey)
+            defaults.set(Date(), forKey: Self.ptsAtKey)
+        } catch {}
     }
 
     // AppState is main-thread state; these used to be read from whatever
@@ -99,6 +120,11 @@ final class LiveActivityManager {
     @MainActor
     func syncForegroundActivity() {
         guard Self.onboarded, ActivityAuthorizationInfo().areActivitiesEnabled else { return }
+        // Every inactive→active fires this (Notification Centre, Face ID,
+        // a sheet), and each run is two or three Edge calls. Once a minute
+        // is plenty to notice a match start or end.
+        if let last = lastSync, Date().timeIntervalSince(last) < 60 { return }
+        lastSync = Date()
         Task { await registerPushToStartIfPossible() }
         // Each followed team — any could be live (e.g. his Arsenal and her
         // Sweden) — then, tournament-wide, whichever World Championship match

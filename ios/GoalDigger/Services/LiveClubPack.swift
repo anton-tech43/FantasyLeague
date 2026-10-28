@@ -1043,3 +1043,19 @@ final class LiveClubPackService {
         )
     }
 }
+
+
+extension LiveClubPack.Slice {
+    /// Each card on its own, the way TeamPageCards decodes them: one club's
+    /// half-written manager or basics card used to fail the whole list, and
+    /// with it the club, league and opponent quiz packs (bug hunt 2026-10-27).
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        team_id = try c.decode(String.self, forKey: .team_id)
+        manager = try? c.decodeIfPresent(ManagerCard.self, forKey: .manager)
+        players = try? c.decodeIfPresent([TopPlayer].self, forKey: .players)
+        basics = try? c.decodeIfPresent(BasicsCard.self, forKey: .basics)
+        rival = try? c.decodeIfPresent(String.self, forKey: .rival)
+        next = try? c.decodeIfPresent(String.self, forKey: .next)
+    }
+}

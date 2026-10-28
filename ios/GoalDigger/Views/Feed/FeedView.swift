@@ -311,11 +311,20 @@ struct FeedView: View {
                 print("⚠️ live brief poll error: \(error)")
                 #endif
             }
-            // 60s between polls. Task.sleep is cancellation-aware; if the
-            // view disappears mid-sleep, this throws CancellationError and
-            // we exit the loop.
+            // 60s between polls near a match, ten minutes otherwise: a T2+
+            // feed on screen polled once a minute all week for a 204 (bug
+            // hunt 2026-10-27). Near = from 15 min before the next kickoff on
+            // the cached club page to four hours after; no page or no
+            // fixture means near, so a match is never missed. Task.sleep is
+            // cancellation-aware: a view that disappears exits the loop.
+            let kickoff = TeamPageCache.load(teamId: teamId)?.content.cards.nextFixture
+                .flatMap { MatchContext.parseISO($0.date) }
+            let near = liveBrief != nil || kickoff.map {
+                let mins = $0.timeIntervalSinceNow / 60
+                return mins < 15 && mins > -240
+            } ?? true
             do {
-                try await Task.sleep(for: .seconds(60))
+                try await Task.sleep(for: .seconds(near ? 60 : 600))
             } catch {
                 return
             }
@@ -805,15 +814,16 @@ struct FeedView: View {
         guard let teamId = activeEntityId else { return }
         var isStale: Bool { activeEntityId != teamId }
         do {
-            let fetched = try await APIClient.shared.fetchFeed(teamId: teamId, limit: pageSize, offset: 0)
+            let page = try await APIClient.shared.fetchFeed(teamId: teamId, limit: pageSize, offset: 0)
+            let fetched = page.items
             if isStale { return }
             // Sunday Brief (V1.1 C2) is T2+. Filter client-side so a T1
             // user never sees the card even if it slipped into the response.
             // Server-side push gating in notification-sender stops the
             // notification; this guard handles the feed render.
             teamItems = Self.applyTierFilter(Self.uniqued(fetched), tier: appState.selectedTier)
-            teamOffset = fetched.count
-            teamCanLoadMore = fetched.count == pageSize
+            teamOffset = page.rows
+            teamCanLoadMore = page.rows == pageSize
             hasError = false
             CacheService.shared.upsertItems(fetched, in: modelContext)
             // Next WC fixture for the country, powering the persistent "Coming
@@ -884,10 +894,11 @@ struct FeedView: View {
         }
 
         do {
-            let fetched = try await APIClient.shared.fetchEveryoneFeed(limit: pageSize, offset: 0)
+            let page = try await APIClient.shared.fetchEveryoneFeed(limit: pageSize, offset: 0)
+            let fetched = page.items
             everyoneItems = Self.applyTierFilter(Self.uniqued(fetched), tier: appState.selectedTier)
-            everyoneOffset = fetched.count
-            everyoneCanLoadMore = fetched.count == pageSize
+            everyoneOffset = page.rows
+            everyoneCanLoadMore = page.rows == pageSize
             // A failed club feed must not keep Football on "didn't load".
             if appState.activeContext == .everyoneTalking { hasError = false }
             // Cache everyone items alongside team items
@@ -922,13 +933,14 @@ struct FeedView: View {
         case .everyoneTalking:
             guard everyoneCanLoadMore else { return }
             do {
-                let fetched = try await APIClient.shared.fetchEveryoneFeed(limit: pageSize, offset: everyoneOffset)
+                let page = try await APIClient.shared.fetchEveryoneFeed(limit: pageSize, offset: everyoneOffset)
+                let fetched = page.items
                 // Offset paging shifts when a story is published between
                 // pages, so page N+1 can repeat the tail of page N. A repeated
                 // id breaks ForEach(id:), so drop what is already shown.
                 everyoneItems = Self.uniqued(everyoneItems + Self.applyTierFilter(fetched, tier: appState.selectedTier))
-                everyoneOffset += fetched.count
-                everyoneCanLoadMore = fetched.count == pageSize
+                everyoneOffset += page.rows
+                everyoneCanLoadMore = page.rows == pageSize
                 CacheService.shared.upsertItems(fetched, in: modelContext)
             } catch {
                 #if DEBUG
@@ -941,14 +953,15 @@ struct FeedView: View {
     /// Shared paginated fetch for either a PL team or a WC country.
     private func loadMoreEntity(teamId: String) async {
         do {
-            let fetched = try await APIClient.shared.fetchFeed(teamId: teamId, limit: pageSize, offset: teamOffset)
+            let page = try await APIClient.shared.fetchFeed(teamId: teamId, limit: pageSize, offset: teamOffset)
+            let fetched = page.items
             // The context changed while this page was in flight: it belongs
             // to the previous entity, whose list has already been replaced.
             guard activeEntityId == teamId else { return }
             // Same de-dup as the Everyone feed above: offset paging can repeat ids.
             teamItems = Self.uniqued(teamItems + Self.applyTierFilter(fetched, tier: appState.selectedTier))
-            teamOffset += fetched.count
-            teamCanLoadMore = fetched.count == pageSize
+            teamOffset += page.rows
+            teamCanLoadMore = page.rows == pageSize
             CacheService.shared.upsertItems(fetched, in: modelContext)
         } catch {
             #if DEBUG
