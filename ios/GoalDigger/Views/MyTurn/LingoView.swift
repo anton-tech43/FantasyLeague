@@ -55,6 +55,7 @@ struct LingoView: View {
     /// The opponent quiz, hosted in the prep over its cards while a round of
     /// it is going and she has not stepped back to them.
     @State private var showingOpponentQuiz = false
+    @State private var showingOpponentLesson = false
     /// She pressed the words card this visit. A round already going waits
     /// behind an unfilled slip, but the one she just asked for opens over it.
     @State private var pressedRound = false
@@ -321,7 +322,25 @@ struct LingoView: View {
 
     var body: some View {
         ZStack {
-            if mode == .prep, showingOpponentQuiz, let pack = live.opponentPack,
+            if mode == .prep, showingOpponentLesson, let pack = live.opponentPack,
+               let club = opponentTeam?.shortName {
+                OpponentLessonView(
+                    cards: OpponentLessonView.cards(pack: pack, fixture: opponentFixture, club: club),
+                    club: club,
+                    onStart: {
+                        // Dealt fresh unless she is part-way through one: an
+                        // untouched round from before may predate the lesson.
+                        let r = store.quizRound
+                        if r?.packId != pack.id || r?.finished == true || (r?.index == 0 && r?.selected == nil) {
+                            store.startRound(pack: pack, fixtureKey: context.fixtureKey)
+                        }
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            showingOpponentLesson = false
+                            showingOpponentQuiz = true
+                        }
+                    },
+                    onExit: { withAnimation(.easeInOut(duration: 0.2)) { showingOpponentLesson = false } })
+            } else if mode == .prep, showingOpponentQuiz, let pack = live.opponentPack,
                store.quizRound?.packId == pack.id {
                 QuizView(content: QuizContent(contentVersion: "", packs: []), store: store, clubId: nil,
                          livePack: nil, squadPack: nil, leaguePack: nil, opponentPack: pack,
@@ -388,8 +407,11 @@ struct LingoView: View {
             // tell her about, so every open of the app has another go.
             .task { if mode == .prep { await uploadSlip() } }
             // The opponent quiz, for whoever this fixture is against.
-            .task(id: OpponentKey(team: opponentTeam, meeting: lastMeeting, ready: live.hasSources)) {
-                if mode == .prep { await live.refreshOpponent(opponentTeam, mine: team, lastMeeting: lastMeeting) }
+            .task(id: OpponentKey(team: opponentTeam, meeting: lastMeeting, ready: live.hasSources,
+                                  watch: opponentWatch.map(\.name))) {
+                if mode == .prep {
+                    await live.refreshOpponent(opponentTeam, mine: team, lastMeeting: lastMeeting, watch: opponentWatch)
+                }
             }
             // "Carry on with your words" dealt a practise round and sent her
             // here: put it on screen.
@@ -628,7 +650,24 @@ struct LingoView: View {
         .padding(.bottom, 20)
     }
 
-    private struct OpponentKey: Hashable { let team: Team?; let meeting: MatchContext.LastMeeting?; let ready: Bool }
+    private struct OpponentKey: Hashable {
+        let team: Team?; let meeting: MatchContext.LastMeeting?; let ready: Bool; let watch: [String]
+    }
+
+    /// "Their ones to watch" off his page's Coming-up card, when it is about
+    /// this opponent.
+    private var opponentWatch: [TopPlayer] {
+        guard let side = page?.cards.onesToKnow?.opponent, let opp = PlayerSlots.opponent(of: context),
+              MatchContext.sameClub(side.teamName, opp) else { return [] }
+        return side.players
+    }
+
+    /// His page's Coming-up card, when it is this fixture.
+    private var opponentFixture: NextFixtureCard? {
+        guard let f = page?.cards.nextFixture, let opp = PlayerSlots.opponent(of: context),
+              MatchContext.sameClub(f.opponent, opp) else { return nil }
+        return f
+    }
 
     /// The last time the two met, off his page's matchup card for this fixture.
     private var lastMeeting: MatchContext.LastMeeting? {
@@ -695,20 +734,26 @@ struct LingoView: View {
             .id("prep-opponent")
         } else if let pack = live.opponentPack, let club = opponentTeam?.shortName {
             Button {
-                if store.quizRound?.packId != pack.id || store.quizRound?.finished == true {
-                    store.startRound(pack: pack, fixtureKey: context.fixtureKey)
+                // Teach, then test: the lesson first, its last card starts the
+                // quiz (Anton, 2026-10-28). A round already going skips ahead.
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    if let r = store.quizRound, r.packId == pack.id, !r.finished,
+                       r.index > 0 || r.selected != nil {
+                        showingOpponentQuiz = true
+                    } else {
+                        showingOpponentLesson = true
+                    }
                 }
-                withAnimation(.easeInOut(duration: 0.2)) { showingOpponentQuiz = true }
             } label: {
                 MatchdayCard(title: "Get to know \(club)",
-                             text: "A quick quiz on the side \(team?.shortName ?? "his team") play next, so their names mean something on the day.",
+                             text: "Who they are and who to watch, then a quick quiz on it, so their names mean something on the day.",
                              fill: .cardBackground, ink: .textPrimaryOnCard, arrow: true)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .containerRelativeFrame(.vertical) { h, _ in h * MatchdayCard.beforeHeight }
             .id("prep-opponent")
-            .accessibilityLabel("Get to know \(club). A quiz about the side you're playing.")
+            .accessibilityLabel("Get to know \(club). Who they are, then a quiz on it.")
         }
     }
 
@@ -1297,3 +1342,143 @@ extension View {
     }
 }
 #endif
+
+
+// MARK: - Get to know them: the lesson before the quiz
+
+/// "Get to know Liverpool" used to open straight onto a quiz about a side she
+/// knew nothing about. Now a friend tells her first (Anton, 2026-10-28): the
+/// game itself off his page's Coming-up card, then one card per thing the quiz
+/// will ask, built from the very questions, so nothing is tested that was not
+/// shown. The last card starts the quiz.
+struct OpponentLessonView: View {
+    struct Card: Identifiable {
+        let id: String
+        let label: String
+        let title: String
+        let body: String
+        var image: String? = nil
+    }
+
+    let cards: [Card]
+    let club: String
+    let onStart: () -> Void
+    let onExit: () -> Void
+
+    @State private var index = 0
+
+    /// What each question teaches, in the order a friend would tell it.
+    private static let topics: [(prefix: String, label: String)] = [
+        ("opp-table-position", "Where they are"), ("opp-form", "How they've been"),
+        ("opp-manager", "The manager"), ("opp-top-scorer", "Their scorer"),
+        ("opp-watch", "One to watch"), ("opp-last-meeting", "Last time"),
+        ("opp-last-season", "Last season"), ("opp-nickname", "What they're called"),
+        ("opp-fans", "Their fans"), ("opp-stadium", "Their ground"),
+    ]
+
+    static func cards(pack: QuizPack, fixture: NextFixtureCard?, club: String) -> [Card] {
+        var out: [Card] = []
+        if let f = fixture, let preview = f.preview, !preview.isEmpty {
+            let place = f.venue.lowercased() == "home" ? "At home to \(club)" : "Away at \(club)"
+            out.append(Card(id: "game", label: "The game", title: place, body: preview))
+        }
+        for topic in topics {
+            for q in pack.questions where q.id.hasPrefix(topic.prefix) && q.options.indices.contains(q.answer) {
+                let title = q.options[q.answer]
+                out.append(Card(id: q.id, label: topic.label, title: title,
+                                body: QuizView.droppingEcho(of: title, from: q.explanation),
+                                image: q.image ?? q.answerImage))
+            }
+        }
+        return out
+    }
+
+    var body: some View {
+        VStack(spacing: 14) {
+            HStack {
+                Text("Get to know \(club)")
+                    .font(.jakarta(17, weight: .bold))
+                    .foregroundColor(.warmWhite)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer()
+                Button(action: onExit) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.warmWhite.opacity(0.8))
+                        .frame(width: 36, height: 36)
+                }
+                .accessibilityLabel("Close")
+            }
+
+            TabView(selection: $index) {
+                ForEach(Array(cards.enumerated()), id: \.element.id) { i, card in
+                    cardView(card).tag(i)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .always))
+
+            Button {
+                if index + 1 < cards.count { withAnimation { index += 1 } } else { onStart() }
+            } label: {
+                Text(index + 1 < cards.count ? "Next" : "Now test yourself")
+                    .font(.jakarta(16, weight: .semiBold))
+                    .foregroundColor(.warmWhite)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .background(Color.hotRose)
+                    .cornerRadius(Layout.buttonCornerRadius)
+            }
+            .buttonStyle(.plain)
+            if index + 1 < cards.count {
+                Button("Skip to the quiz", action: onStart)
+                    .font(.jakarta(14, weight: .medium))
+                    .foregroundColor(.warmWhite.opacity(0.6))
+            }
+        }
+        .padding(.horizontal, MatchdayCard.edge)
+        .padding(.top, 12)
+        .padding(.bottom, 24)
+    }
+
+    private func cardView(_ card: Card) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(card.label.uppercased())
+                    .font(.jakarta(12, weight: .semiBold))
+                    .tracking(1)
+                    .foregroundColor(.hotRose)
+                if let asset = PlayerPortrait.assetName(card.image) {
+                    Image(asset)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: PlayerPortrait.height(asset, wanted: 200))
+                        .frame(maxWidth: .infinity)
+                        .accessibilityHidden(true)
+                } else if let url = card.image.flatMap(URL.init(string:)) {
+                    AsyncImage(url: url) { phase in
+                        if let img = phase.image { img.resizable().scaledToFill() } else { Color.softBlush }
+                    }
+                    .frame(width: 120, height: 120)
+                    .clipShape(Circle())
+                    .frame(maxWidth: .infinity)
+                    .accessibilityHidden(true)
+                }
+                Text(card.title)
+                    .font(.jakarta(26, weight: .bold))
+                    .foregroundColor(.textPrimaryOnCard)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(card.body)
+                    .font(.jakarta(16, weight: .regular))
+                    .foregroundColor(.textPrimaryOnCard.opacity(0.85))
+                    .lineSpacing(3)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(22)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .background(Color.cardBackground)
+        .cornerRadius(20)
+        .padding(.bottom, 36) // room for the page dots
+        .accessibilityElement(children: .combine)
+    }
+}

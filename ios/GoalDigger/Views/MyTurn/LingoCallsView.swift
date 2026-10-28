@@ -327,7 +327,10 @@ struct LingoCallsView: View {
             let summary = mine.isEmpty ? "None of those took your fancy. More next game."
                 : played ? "\(landed) of \(mine.count) came up."
                 : "\(when)\(mine.count == 1 ? "1 line" : "\(mine.count) lines") on your slip."
-            VStack(spacing: 8) {
+            // Open, the lines sit inside the same gold card as the button —
+            // a slip unfolding, not a second card underneath (Anton,
+            // 2026-10-28: "it should show they belong to the yellow box").
+            VStack(spacing: 0) {
                 MyTurnPractiseButton(title: played ? "What you called" : "Your lines are ready",
                                      subtitle: summary,
                                      systemImage: played ? "flag.checkered" : "checkmark",
@@ -335,8 +338,14 @@ struct LingoCallsView: View {
                                      trailingSymbol: slipOpen ? "chevron.up" : "chevron.down") {
                     withAnimation(.spring(duration: 0.3)) { slipOpen.toggle() }
                 }
-                if slipOpen && !mine.isEmpty { slipCard(slip) }
+                if slipOpen && !mine.isEmpty {
+                    slipCard(slip)
+                        .padding(.horizontal, 14)
+                        .padding(.bottom, 16)
+                }
             }
+            .background(Color.gold)
+            .cornerRadius(20)
             .padding(.vertical, 8)
         }
     }
@@ -350,7 +359,7 @@ struct LingoCallsView: View {
             // card going quiet does not read as one that broke. No second ask
             // and nothing to undo: not picking costs nothing.
             if !played {
-                card {
+                onGold {
                     heading("Get in the game", subtitle: "\(when)None of those took your fancy. There'll be more for the next one.")
                 }
             }
@@ -358,7 +367,7 @@ struct LingoCallsView: View {
             let landed = Set(LingoCalls.matched(stored: slip, fixtureId: slip.fixtureId,
                                                 calls: mine,
                                                 outcomes: LingoCalls.outcomes(after: context)).map(\.id))
-            card {
+            onGold {
                 // The one place the promise is made, and afterwards the one
                 // place it is answered. Both read back what she picked; neither
                 // asks her whether she said it.
@@ -367,7 +376,7 @@ struct LingoCallsView: View {
                         : "\(when)\(Self.promise)")
 
                 ForEach(mine) { call in
-                    row(call, landed: landed.contains(call.id))
+                    row(call, landed: landed.contains(call.id), onGold: true)
                 }
             }
         }
@@ -429,7 +438,9 @@ struct LingoCallsView: View {
     /// No band label. "NEAR CERTAIN" over a line she has already chosen is a
     /// word about how the offer was built, not about her afternoon, and it was
     /// the loudest thing on the row.
-    private func row(_ call: LingoCall, landed: Bool) -> some View {
+    /// `onGold`: inside the open slip, where rose rows on gold fought the
+    /// card they sit in. There they are paper on the slip: light, ink-edged.
+    private func row(_ call: LingoCall, landed: Bool, onGold: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .top, spacing: 8) {
                 // When she gets to say it, above the line rather than under it:
@@ -454,7 +465,7 @@ struct LingoCallsView: View {
                     // card is one she picked, so a tick there reads as "this
                     // one happened" next to the badge that actually means it.
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.hotRose)
+                        .foregroundColor(onGold ? .deepMauve : .hotRose)
                         .accessibilityHidden(true)
                 }
             }
@@ -475,10 +486,10 @@ struct LingoCallsView: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.hotRose.opacity(0.18))
-        .background(Color.cardBackground)
+        .background(onGold ? Color.warmWhite.opacity(0.6) : Color.hotRose.opacity(0.18))
+        .background(onGold ? Color.clear : Color.cardBackground)
         .overlay(RoundedRectangle(cornerRadius: 12)
-            .stroke(Color.hotRose, lineWidth: 1.5))
+            .stroke(onGold ? Color.charcoal.opacity(0.15) : Color.hotRose, lineWidth: onGold ? 1 : 1.5))
         .cornerRadius(12)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(moment(call)). \(appState.personalise(call.line))")
@@ -521,6 +532,15 @@ struct LingoCallsView: View {
     /// The compact card she comes back to — the same blush surface as the cover
     /// and the yes/no cards, so the whole flow is one family rather than a dark
     /// box tacked under the landing.
+    /// The open slip's contents, on the gold card itself: no card of its own.
+    private func onGold<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            content()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .transition(.opacity)
+    }
+
     private func card<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             content()

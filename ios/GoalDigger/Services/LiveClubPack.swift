@@ -378,8 +378,12 @@ enum LiveClubPack {
     /// never offered as the other side's.
     /// `lastMeeting` comes off his own page's matchup card, not theirs: only
     /// his is written for this fixture.
+    /// `watch` is "Their ones to watch" off his own page's Coming-up card: the
+    /// lesson shows them first, so the quiz asks her to put a name to a face
+    /// she has just seen (Anton, 2026-10-28: teach, then test).
     static func buildOpponent(team: Team, page: TeamPageContent, sources: Sources, mine: Team?,
-                              lastMeeting: MatchContext.LastMeeting? = nil) -> QuizPack? {
+                              lastMeeting: MatchContext.LastMeeting? = nil,
+                              watch: [TopPlayer] = []) -> QuizPack? {
         let cards = page.cards
         let club = team.shortName
         let others = sources.slices.filter { $0.team_id != team.rawValue }
@@ -507,6 +511,26 @@ enum LiveClubPack {
                     why: "Whether the game is at theirs or ours changes how he feels about it.",
                     useType: .ask, use: quote("Have you ever been to \(withArticle(short))?"),
                     answerImage: groundImage(team))
+            }
+        }
+
+        // Their ones to watch, face first: "Who is this?" over the photo.
+        let faces = watch.prefix(3).filter { p in
+            guard let url = p.photoURL, !url.isEmpty else { return false }
+            return !sources.silhouettes.contains(url)
+        }
+        if faces.count >= 2 {
+            for (i, p) in faces.enumerated() {
+                let name = shortName(p.name)
+                let others = faces.filter { $0.name != p.name }.map { shortName($0.name) }
+                qs += two(
+                    id: "opp-watch-\(i)", difficulty: 1,
+                    question: "Who is this?",
+                    answer: name, distractors: others,
+                    explanation: p.oneLiner ?? "\(name), their \(p.position.lowercased()).",
+                    why: "One of the three to watch. If \(club) score, it's likely him.",
+                    useType: .say, use: "When he has the ball: " + quote("That's \(name). Watch him."),
+                    image: p.photoURL)
             }
         }
 
@@ -948,7 +972,8 @@ final class LiveClubPackService {
     /// to a day, since only His Team refreshed sooner. Offline, the cache.
     private static var fetchedThisLaunch: Set<String> = []
 
-    func refreshOpponent(_ opponent: Team?, mine: Team?, lastMeeting: MatchContext.LastMeeting? = nil) async {
+    func refreshOpponent(_ opponent: Team?, mine: Team?, lastMeeting: MatchContext.LastMeeting? = nil,
+                         watch: [TopPlayer] = []) async {
         opponentId = opponent?.rawValue
         guard let opponent else { opponentPack = nil; return }
         var cached = TeamPageCache.load(teamId: opponent.rawValue)
@@ -973,7 +998,7 @@ final class LiveClubPackService {
         guard opponentId == opponent.rawValue else { return }
         guard let content = cached?.content, let src = sources else { opponentPack = nil; return }
         opponentPack = LiveClubPack.buildOpponent(team: opponent, page: content, sources: src, mine: mine,
-                                                  lastMeeting: lastMeeting)
+                                                  lastMeeting: lastMeeting, watch: watch)
     }
 
     /// One club's players out of the cached league-wide sources: the two men
