@@ -1236,9 +1236,15 @@ async function updateDynamicFields(
       // table only counts for a domestic fixture, the European one for Europe.
       // And only once both have played in it: an opening-day table is clubs on
       // zero points in alphabetical order (bug hunt 2026-10-27).
+      // Nor a finished season's: from June until the new table exists,
+      // cards.standings is still May's, and "1st against 3rd" would be about
+      // last season. A league table is complete when everyone has played
+      // everyone twice.
+      const seasonOver = !useEuro && leagueTable.length > 1 &&
+        leagueTable.every((e) => ((e.played as number) ?? 0) >= (leagueTable.length - 1) * 2);
       const bothInTable = myRow !== undefined && oppRow !== undefined &&
         ((myRow.played as number) ?? 0) > 0 && ((oppRow.played as number) ?? 0) > 0 &&
-        (useEuro || !isEuropean);
+        !seasonOver && (useEuro || !isEuropean);
 
       // Rank: the league position when BOTH clubs are in the same table, which
       // is a number she can go and check on the Table tab. A cup opponent from

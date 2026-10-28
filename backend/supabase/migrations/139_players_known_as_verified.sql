@@ -9,3 +9,11 @@ ALTER TABLE public.players ADD COLUMN IF NOT EXISTS known_as_verified_at timesta
 UPDATE public.players
    SET known_as = 'Gabriel', known_as_verified_at = now()
  WHERE team_id = 'arsenal' AND name = 'Gabriel Magalhães';
+
+-- 2026-10-28: the one other mononym the official list spells out in full,
+-- checked against every Brazilian, Spanish and Portuguese player in the
+-- official squads. The rest ("Joelinton", "Murillo", "Richarlison") are
+-- already printed as one name, and API-Football's "Kepa" matches by name.
+UPDATE public.players
+   SET known_as = 'Alisson', known_as_verified_at = now()
+ WHERE team_id = 'liverpool' AND name = 'Alisson Becker';

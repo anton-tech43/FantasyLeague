@@ -204,6 +204,11 @@ struct ImmersiveCard: View {
         }
         .frame(height: cardHeight)
         .clipped()
+        // The card has a fixed height and the headline is fitted to it, so
+        // accessibility sizes pushed the headline out of the top of the card
+        // (seen at AX5, 2026-10-28). Capped at the largest standard size;
+        // the article itself still follows every size.
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
     }
 
     // MARK: - Zone 1 (65%)

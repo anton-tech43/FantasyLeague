@@ -142,8 +142,8 @@ private struct MatchMinute: View {
     /// score is the last one we know, so the clock must not look live.
     var isStale = false
 
-    /// The minute at render time — only picks the width and the "/ 90"; the
-    /// digits themselves come from the running timer.
+    /// The minute at render time — only decides the "/ 90"; the digits
+    /// themselves come from the running timer.
     private var minutesNow: Int {
         guard let start = state.clockStartDate else { return 0 }
         return Int(Date().timeIntervalSince(start) / 60)
@@ -165,9 +165,14 @@ private struct MatchMinute: View {
                         .lineLimit(1)
                         .multilineTextAlignment(.trailing)
                         // Timer text claims the widest width it could need; pin it.
-                        // Sized for three digits from 85': no push may arrive before 100'.
-                        .frame(width: size * (minutesNow >= 85 ? 4.4 : 3.7), alignment: .trailing)
-                    if minutesNow < 90 { Text(" / 90") }
+                        // Always room for three digits: the view is only redrawn
+                        // by a push, and the timer keeps running past 100'
+                        // whether one arrives or not.
+                        .frame(width: size * 4.4, alignment: .trailing)
+                    // Decided at the last push, so it must stay true for a
+                    // while without one: from 80' a quiet spell would read
+                    // "93:10 / 90".
+                    if minutesNow < 80 { Text(" / 90") }
                 }
             } else {
                 Text(state.badgeText)
