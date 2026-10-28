@@ -168,32 +168,29 @@ need the same hand-set row once someone checks the current squads. B8
 verified: every club in Europe has its table, and Bournemouth's calendar runs
 to the end of the league phase. db-health all clear.
 
-**Bug-hunt findings not yet fixed** (verified or plausible, by priority):
-- App: push-to-start token re-registers on every foreground (DB write each
-  time; skip when token + clubs unchanged, re-assert daily) and is lost after
-  Delete My Data until relaunch (call `registerPushToStartIfPossible()` from
-  `completeOnboarding`, keep the key).
-- App: feed paging stops when one row fails to decode (count raw rows).
-- App: `LiveClubPack.Slice` strict decode — one half-written team page kills
-  all three quiz packs (decode fields with `try?`).
-- App: club tab refetches 4 requests on every appearance; live-brief poll
-  runs every 60 s all week (poll only near a kickoff).
-- App: photo check cancelled → silhouettes cached 24 h as real.
-- App: "Data Deleted" alert may not show (present after dismissal); a push
-  tap while a sheet is open stays on the sheet; Settings closes when the
-  shown club is removed.
-- App: quiz "Best: 0 / 10" on short packs; card zone 1 clips at AX text sizes.
-- Backend: match-watcher's state upsert overwrites `briefs_fired` (overlapping
-  ticks can double-push) — append markers atomically instead.
-- Backend: Live Activity start/update are sent before the state upsert (a
-  failed save restarts the activity) — queue like `pendingAlertPushes`.
-- Backend: morning-push has no claim before send; notification-sender's
-  throttle uses `pushed_at` stamped before the check.
-- Backend: rate-limited `/predictions` rows block the matchup card; three
-  writers overwrite `team_pages.content` whole (use `jsonb_set`); data-fetcher
-  re-fetches RSS / `/coachs` / squads far more than read.
-- Routines repo: `fetch_team_page.sh` feeds friendlies as results.
-- Later: May's table drives the pre-match verdict in July/August (season check).
+**Bug hunt, 2026-10-28: the rest fixed** (commits adabe37…9706813): push-to-
+start registration only on change, foreground sync once a minute, paging by
+rows, sturdy Slice decode, no cache from a cancelled photo check, club tab
+not refetched within 5 min, live poll every 10 min away from a match;
+briefs_fired merged not overwritten (mig 140), LA start after the save,
+morning-push claims first, throttle tie-break; API errors not stored (one
+West Ham predictions row deleted), RSS on request, squad/coachs daily;
+team pages written card by card (mig 141); routines: no friendlies; Data
+Deleted alert, Settings gear outside `.id`, quiz "Played N", push tap closes
+Settings.
+
+**Found on the way, fixed:** API-Football called Fleetwood v Arsenal (League
+Cup) "Match Finished" 1-1 with no shootout; the FT push and both cards said
+"drew". match-watcher now holds a level FT in a single-leg tie; Arsenal's
+cards corrected by hand; DATA_SOURCES.md has the case.
+
+**Left (low, or not until next season):**
+- Feed card zone 1 may clip at accessibility text sizes on an SE (plausible).
+- Widget "/ 90" and timer width are fixed at the last push (plausible).
+- Pre-match verdict uses May's table in July/August — needs a season check
+  before August 2027.
+- Other mononyms (Rodri, Casemiro, João Pedro …) need a hand-verified
+  `known_as` like Gabriel's.
 
 **Then:** a new app build carries everything under "App" above plus B3/B5/B7
 and the Matchday merge; after it is out, switch the Live Activity sig to
