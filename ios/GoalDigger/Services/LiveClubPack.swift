@@ -464,7 +464,8 @@ enum LiveClubPack {
                 explanation: "\(name)\(shirt) with \(scorer.goals) \(scorer.goals == 1 ? "goal" : "goals") for \(club) this season, more than anyone else in their squad.",
                 why: "He's the one to worry about when they come forward.",
                 useType: .say, use: "When they attack: " + quote("Watch \(name). He's their scorer."),
-                image: PlayerPortrait.source(club: team.rawValue, name: scorer.name) ?? scorer.photo)
+                // His sticker or nothing: no round photo next to the others.
+                image: PlayerPortrait.source(club: team.rawValue, name: scorer.name))
         }
 
         // How it went last time they met, which is what he'll bring up. Only
@@ -514,28 +515,50 @@ enum LiveClubPack {
             }
         }
 
-        // Their ones to watch, face first: "Who is this?" over the photo.
-        let faces = watch.prefix(3).filter { p in
-            guard let url = p.photoURL, !url.isEmpty else { return false }
-            return !sources.silhouettes.contains(url)
+        // Their ones to watch, face first: "Who is this?" over his sticker.
+        // The same three the lesson shows (`lessonPlayers`): the scorer has his
+        // own question above, so he is not asked twice, and a man with no
+        // black-and-white sticker is not asked by face at all — one photo
+        // style only (Anton, 2026-10-28).
+        let scorerName = sources.topScorers[team.rawValue].flatMap { !$0.tied && $0.goals > 0 ? $0.name : nil }
+        let shown = lessonPlayers(watch: watch, scorer: scorerName, club: team.rawValue)
+        let faces = shown.filter { !$0.isScorer }.compactMap { p in
+            PlayerPortrait.source(club: team.rawValue, name: p.name).map { (p, $0) }
         }
-        if faces.count >= 2 {
-            for (i, p) in faces.enumerated() {
-                let name = shortName(p.name)
-                let others = faces.filter { $0.name != p.name }.map { shortName($0.name) }
-                qs += two(
-                    id: "opp-watch-\(i)", difficulty: 1,
-                    question: "Who is this?",
-                    answer: name, distractors: others,
-                    explanation: p.oneLiner ?? "\(name), their \(p.position.lowercased()).",
-                    why: "One of the three to watch. If \(club) score, it's likely him.",
-                    useType: .say, use: "When he has the ball: " + quote("That's \(name). Watch him."),
-                    image: p.photoURL)
-            }
+        let names = shown.map { shortName($0.name) }
+        for (i, (p, sticker)) in faces.enumerated() where names.count >= 2 {
+            let name = shortName(p.name)
+            qs += two(
+                id: "opp-watch-\(i)", difficulty: 1,
+                question: "Who is this?",
+                answer: name, distractors: names.filter { $0 != name },
+                explanation: p.line ?? "\(name), one of their three to watch.",
+                why: "One of the three to watch. If \(club) score, it's likely him.",
+                useType: .say, use: "When he has the ball: " + quote("That's \(name). Watch him."),
+                image: sticker)
         }
 
         guard qs.count >= 4 else { return nil }
         return QuizPack(id: opponentPackId, label: "Get to know \(club)", questions: qs)
+    }
+
+    /// The players the lesson shows and the quiz asks about, at most three:
+    /// their top scorer first, then "Their ones to watch" from his page, with
+    /// the scorer never twice (Anton, 2026-10-28).
+    struct LessonPlayer: Equatable {
+        let name: String
+        let line: String?
+        let isScorer: Bool
+    }
+
+    static func lessonPlayers(watch: [TopPlayer], scorer: String?, club: String) -> [LessonPlayer] {
+        var out: [LessonPlayer] = []
+        if let scorer { out.append(LessonPlayer(name: scorer, line: nil, isScorer: true)) }
+        let taken = Set(out.map { PlayerPortrait.surname($0.name) })
+        for p in watch where !taken.contains(PlayerPortrait.surname(p.name)) && out.count < 3 {
+            out.append(LessonPlayer(name: p.name, line: p.oneLiner, isScorer: false))
+        }
+        return out
     }
 
     /// "We won 4-0", with the flipped result and a draw as the other two, so

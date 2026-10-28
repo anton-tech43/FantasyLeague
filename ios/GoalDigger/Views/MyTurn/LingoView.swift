@@ -323,16 +323,22 @@ struct LingoView: View {
     var body: some View {
         ZStack {
             if mode == .prep, showingOpponentLesson, let pack = live.opponentPack,
-               let club = opponentTeam?.shortName {
+               let opp = opponentTeam {
+                let lesson = OpponentLesson.build(
+                    pack: pack, ours: team, opponent: opp, fixture: opponentFixture, meeting: lastMeeting,
+                    hisPage: page, theirPage: TeamPageCache.load(teamId: opp.rawValue)?.content, watch: opponentWatch)
                 OpponentLessonView(
-                    cards: OpponentLessonView.cards(pack: pack, fixture: opponentFixture, club: club),
-                    club: club,
+                    lesson: lesson,
                     onStart: {
-                        // Dealt fresh unless she is part-way through one: an
-                        // untouched round from before may predate the lesson.
+                        // Dealt fresh unless she is part-way through one, and
+                        // only from what the lesson showed (a pack too thin for
+                        // that falls back to all of it).
                         let r = store.quizRound
                         if r?.packId != pack.id || r?.finished == true || (r?.index == 0 && r?.selected == nil) {
-                            store.startRound(pack: pack, fixtureKey: context.fixtureKey)
+                            let shown = pack.questions.filter { lesson.taught.contains($0.id) }
+                            let dealt = shown.count >= 3
+                                ? QuizPack(id: pack.id, label: pack.label, questions: shown) : pack
+                            store.startRound(pack: dealt, fixtureKey: context.fixtureKey)
                         }
                         withAnimation(.easeInOut(duration: 0.2)) {
                             showingOpponentLesson = false
@@ -1347,51 +1353,111 @@ extension View {
 // MARK: - Get to know them: the lesson before the quiz
 
 /// "Get to know Liverpool" used to open straight onto a quiz about a side she
-/// knew nothing about. Now a friend tells her first (Anton, 2026-10-28): the
-/// game itself off his page's Coming-up card, then one card per thing the quiz
-/// will ask, built from the very questions, so nothing is tested that was not
-/// shown. The last card starts the quiz.
-struct OpponentLessonView: View {
-    struct Card: Identifiable {
-        let id: String
-        let label: String
-        let title: String
-        let body: String
-        var image: String? = nil
+/// knew nothing about. Now a friend shows her first (Anton, 2026-10-28), in
+/// the After card's language — deep mauve, a rose frame, black-and-white
+/// stickers, big type — and shows rather than tells: two crests and two
+/// places, three scorelines, three faces. Then the quiz, on only what she saw.
+struct OpponentLesson {
+    enum Page {
+        case game(title: String, ours: Team?, opp: Team, ourRank: Int?, oppRank: Int?, meeting: String?)
+        case player(name: String, label: String, line: String?)
+        case form(opp: Team, results: [RecentResult])
+        case names(nickname: String?, fans: String?)
+        case ground(name: String, image: String?, caption: String)
+        case manager(name: String, image: String?, line: String)
     }
 
-    let cards: [Card]
-    let club: String
+    let opponent: Team
+    let pages: [Page]
+    /// The quiz questions these pages answer. The round is dealt from these.
+    let taught: Set<String>
+
+    static func build(pack: QuizPack, ours: Team?, opponent: Team, fixture: NextFixtureCard?,
+                      meeting: MatchContext.LastMeeting?, hisPage: TeamPageContent?,
+                      theirPage: TeamPageContent?, watch: [TopPlayer]) -> OpponentLesson {
+        let club = opponent.shortName
+        func q(_ id: String) -> MyTurnQuestion? { pack.questions.first { $0.id == id } }
+        func answer(_ q: MyTurnQuestion) -> String { q.options.indices.contains(q.answer) ? q.options[q.answer] : "" }
+        var pages: [Page] = []
+        var taught: Set<String> = []
+
+        // The game: where, the two places, last time.
+        let away = fixture?.venue.lowercased() != "home"
+        let rows = hisPage?.cards.standings?.entries ?? []
+        func rank(_ t: Team?) -> Int? {
+            guard let t else { return nil }
+            return rows.first { $0.teamIdApiFootball == t.apiFootballId || MatchContext.sameClub($0.teamName, t.displayName) }
+                .flatMap { $0.played > 0 ? $0.rank : nil }
+        }
+        let ourRank = rank(ours), oppRank = rank(opponent)
+        let met = meeting.map { "\($0.ours) - \($0.theirs) last time" }
+        pages.append(.game(title: away ? "Away at \(club)" : "\(club) at home", ours: ours, opp: opponent,
+                           ourRank: ourRank, oppRank: oppRank, meeting: met))
+        if ourRank != nil && oppRank != nil { taught.insert("opp-table-position") }
+        if met != nil { taught.insert("opp-last-meeting") }
+
+        // Their three: the scorer first, then the ones to watch.
+        let scorerQ = q("opp-top-scorer")
+        let shown = LiveClubPack.lessonPlayers(watch: watch, scorer: scorerQ.map(answer), club: opponent.rawValue)
+        for p in shown {
+            let line = p.isScorer ? scorerQ.map { scorerLine($0.explanation, name: p.name) } : p.line
+            pages.append(.player(name: p.name, label: p.isScorer ? "Their scorer:" : "One to watch:", line: line))
+        }
+        if scorerQ != nil { taught.insert("opp-top-scorer") }
+        pack.questions.filter { $0.id.hasPrefix("opp-watch") }.forEach { taught.insert($0.id) }
+
+        // How they've been: three scorelines.
+        if let results = theirPage?.cards.recentResults, results.count >= 3 {
+            pages.append(.form(opp: opponent, results: Array(results.prefix(3))))
+            taught.insert("opp-form")
+        }
+
+        // What they're called.
+        let nick = q("opp-nickname"), fans = q("opp-fans")
+        if nick != nil || fans != nil {
+            pages.append(.names(nickname: nick.map(answer), fans: fans.map(answer)))
+            [nick, fans].compactMap { $0?.id }.forEach { taught.insert($0) }
+        }
+
+        // Their ground, only when the game is there.
+        if away, let g = q("opp-stadium") {
+            let day = fixture.flatMap { ISO8601DateFormatter.lenient($0.date) }.map {
+                let f = DateFormatter(); f.dateFormat = "EEEE"; return " on \(f.string(from: $0))"
+            } ?? ""
+            pages.append(.ground(name: answer(g), image: g.answerImage,
+                                 caption: "Where \(ours?.shortName ?? "we") play\(day)"))
+            taught.insert(g.id)
+        }
+
+        // The manager, last.
+        if let m = q("opp-manager") {
+            pages.append(.manager(name: answer(m), image: m.image,
+                                  line: QuizView.droppingEcho(of: answer(m), from: m.explanation)))
+            taught.insert(m.id)
+        }
+        return OpponentLesson(opponent: opponent, pages: pages, taught: taught)
+    }
+
+    /// "Isak, number 9, with 5 goals for Liverpool…" → "5 goals for Liverpool…":
+    /// the card already shows his name and number.
+    static func scorerLine(_ explanation: String, name: String) -> String {
+        var line = explanation
+        if line.hasPrefix(name) { line = String(line.dropFirst(name.count)) }
+        line = line.replacingOccurrences(of: #"^,?\s*number \d+,?\s*"#, with: "", options: .regularExpression)
+        line = line.replacingOccurrences(of: #"^with\s+"#, with: "", options: .regularExpression)
+        return line.prefix(1).uppercased() + line.dropFirst()
+    }
+}
+
+struct OpponentLessonView: View {
+    let lesson: OpponentLesson
     let onStart: () -> Void
     let onExit: () -> Void
 
     @State private var index = 0
+    @State private var numbers: [String: Int] = [:]
 
-    /// What each question teaches, in the order a friend would tell it.
-    private static let topics: [(prefix: String, label: String)] = [
-        ("opp-table-position", "Where they are"), ("opp-form", "How they've been"),
-        ("opp-manager", "The manager"), ("opp-top-scorer", "Their scorer"),
-        ("opp-watch", "One to watch"), ("opp-last-meeting", "Last time"),
-        ("opp-last-season", "Last season"), ("opp-nickname", "What they're called"),
-        ("opp-fans", "Their fans"), ("opp-stadium", "Their ground"),
-    ]
-
-    static func cards(pack: QuizPack, fixture: NextFixtureCard?, club: String) -> [Card] {
-        var out: [Card] = []
-        if let f = fixture, let preview = f.preview, !preview.isEmpty {
-            let place = f.venue.lowercased() == "home" ? "At home to \(club)" : "Away at \(club)"
-            out.append(Card(id: "game", label: "The game", title: place, body: preview))
-        }
-        for topic in topics {
-            for q in pack.questions where q.id.hasPrefix(topic.prefix) && q.options.indices.contains(q.answer) {
-                let title = q.options[q.answer]
-                out.append(Card(id: q.id, label: topic.label, title: title,
-                                body: QuizView.droppingEcho(of: title, from: q.explanation),
-                                image: q.image ?? q.answerImage))
-            }
-        }
-        return out
-    }
+    private var club: String { lesson.opponent.shortName }
 
     var body: some View {
         VStack(spacing: 14) {
@@ -1411,16 +1477,23 @@ struct OpponentLessonView: View {
             }
 
             TabView(selection: $index) {
-                ForEach(Array(cards.enumerated()), id: \.element.id) { i, card in
-                    cardView(card).tag(i)
+                ForEach(Array(lesson.pages.enumerated()), id: \.offset) { i, page in
+                    frame { pageView(page) }.tag(i)
                 }
             }
-            .tabViewStyle(.page(indexDisplayMode: .always))
+            .tabViewStyle(.page(indexDisplayMode: .never))
+
+            HStack(spacing: 6) {
+                ForEach(lesson.pages.indices, id: \.self) { k in
+                    Circle().fill(k == index ? Color.hotRose : Color.softBlush.opacity(0.3)).frame(width: 7, height: 7)
+                }
+            }
+            .accessibilityHidden(true)
 
             Button {
-                if index + 1 < cards.count { withAnimation { index += 1 } } else { onStart() }
+                if index + 1 < lesson.pages.count { withAnimation { index += 1 } } else { onStart() }
             } label: {
-                Text(index + 1 < cards.count ? "Next" : "Now test yourself")
+                Text(index + 1 < lesson.pages.count ? "Next" : "Now test yourself")
                     .font(.jakarta(16, weight: .semiBold))
                     .foregroundColor(.warmWhite)
                     .frame(maxWidth: .infinity)
@@ -1429,56 +1502,157 @@ struct OpponentLessonView: View {
                     .cornerRadius(Layout.buttonCornerRadius)
             }
             .buttonStyle(.plain)
-            if index + 1 < cards.count {
-                Button("Skip to the quiz", action: onStart)
-                    .font(.jakarta(14, weight: .medium))
-                    .foregroundColor(.warmWhite.opacity(0.6))
-            }
+            Button("Skip to the quiz", action: onStart)
+                .font(.jakarta(14, weight: .medium))
+                .foregroundColor(.warmWhite.opacity(index + 1 < lesson.pages.count ? 0.6 : 0))
+                .disabled(index + 1 >= lesson.pages.count)
         }
         .padding(.horizontal, MatchdayCard.edge)
         .padding(.top, 12)
         .padding(.bottom, 24)
+        .task(id: lesson.opponent) {
+            // Shirt numbers off their squad: "9. Isak", as on After.
+            let squad = await NamedPlayer.squad(teamId: lesson.opponent.rawValue)
+            var map: [String: Int] = [:]
+            for p in squad { if let n = p.number, let k = PlayerPortrait.surname(p.name) { map[k] = map[k] ?? n } }
+            numbers = map
+        }
     }
 
-    private func cardView(_ card: Card) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                Text(card.label.uppercased())
-                    .font(.jakarta(12, weight: .semiBold))
-                    .tracking(1)
-                    .foregroundColor(.hotRose)
-                if let asset = PlayerPortrait.assetName(card.image) {
-                    Image(asset)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: PlayerPortrait.height(asset, wanted: 200))
-                        .frame(maxWidth: .infinity)
-                        .accessibilityHidden(true)
-                } else if let url = card.image.flatMap(URL.init(string:)) {
-                    AsyncImage(url: url) { phase in
-                        if let img = phase.image { img.resizable().scaledToFill() } else { Color.softBlush }
-                    }
-                    .frame(width: 120, height: 120)
-                    .clipShape(Circle())
-                    .frame(maxWidth: .infinity)
-                    .accessibilityHidden(true)
-                }
-                Text(card.title)
-                    .font(.jakarta(26, weight: .bold))
-                    .foregroundColor(.textPrimaryOnCard)
-                    .fixedSize(horizontal: false, vertical: true)
-                Text(card.body)
-                    .font(.jakarta(16, weight: .regular))
-                    .foregroundColor(.textPrimaryOnCard.opacity(0.85))
-                    .lineSpacing(3)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(22)
-            .frame(maxWidth: .infinity, alignment: .leading)
+    /// The After card's box: deep mauve, a rose frame, the label in blush.
+    private func frame<C: View>(@ViewBuilder _ content: () -> C) -> some View {
+        VStack(alignment: .leading, spacing: 10) { content() }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.vertical, 26)
+            .padding(.horizontal, 20)
+            .background(Color.deepMauve)
+            .overlay(Rectangle().strokeBorder(Color.hotRose, lineWidth: 4))
+            .padding(.horizontal, 2)
+    }
+
+    private func label(_ text: String) -> some View {
+        Text(text)
+            .font(.jakarta(15, weight: .boldItalic))
+            .foregroundColor(.softBlush)
+            .accessibilityAddTraits(.isHeader)
+    }
+
+    private func big(_ text: String, _ size: CGFloat = 32) -> some View {
+        Text(text)
+            .font(.spartanBold(size))
+            .tracking(-0.045 * size)
+            .foregroundColor(.white)
+            .lineLimit(2)
+            .minimumScaleFactor(0.6)
+    }
+
+    private func quote(_ text: String) -> some View {
+        Text("\u{201C}\(text.hasSuffix(".") ? String(text.dropLast()) : text)\u{201D}")
+            .font(.jakarta(14, weight: .italic))
+            .foregroundColor(.softBlush)
+            .lineSpacing(4)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    @ViewBuilder
+    private func sticker(_ source: String?) -> some View {
+        if let asset = PlayerPortrait.assetName(source) {
+            Image(asset)
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: .infinity, maxHeight: 280)
+                .accessibilityHidden(true)
         }
-        .background(Color.cardBackground)
-        .cornerRadius(20)
-        .padding(.bottom, 36) // room for the page dots
-        .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder
+    private func crest(_ name: String, size: CGFloat) -> some View {
+        if let t = Team.allCases.first(where: { MatchContext.sameClub($0.displayName, name) || $0.shortName == name }) {
+            TeamCrestView(team: t, size: size)
+        } else {
+            // Not one of the twenty (a European side): the name, on one line.
+            Text(name)
+                .font(.jakarta(15, weight: .bold))
+                .foregroundColor(.softBlush)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+                .frame(width: size + 30)
+        }
+    }
+
+    @ViewBuilder
+    private func pageView(_ page: OpponentLesson.Page) -> some View {
+        switch page {
+        case let .game(title, ours, opp, ourRank, oppRank, meeting):
+            label("The game:")
+            big(title)
+            Spacer(minLength: 8)
+            HStack(alignment: .top) {
+                ForEach([(ours, ourRank), (Optional(opp), oppRank)].indices, id: \.self) { k in
+                    let (t, r) = [(ours, ourRank), (Optional(opp), oppRank)][k]
+                    VStack(spacing: 12) {
+                        if let t { TeamCrestView(team: t, size: 96) }
+                        if let r { big(LiveClubPack.ordinal(r), 40) }
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            }
+            Spacer(minLength: 8)
+            if let meeting {
+                big(meeting, 30).frame(maxWidth: .infinity)
+            }
+            Spacer(minLength: 0)
+        case let .player(name, lbl, line):
+            label(lbl)
+            sticker(PlayerPortrait.source(club: lesson.opponent.rawValue, name: name))
+            Spacer(minLength: 0)
+            let short = LiveClubPack.shortName(name)
+            big(PlayerPortrait.surname(name).flatMap { numbers[$0] }.map { "\($0). \(short)" } ?? short, 30)
+                .frame(maxWidth: .infinity)
+            if let line { quote(line) }
+        case let .form(opp, results):
+            label("How they've been:")
+            Spacer(minLength: 0)
+            VStack(spacing: 22) {
+                ForEach(results) { r in
+                    HStack(spacing: 18) {
+                        TeamCrestView(team: opp, size: 58)
+                        big("\(r.teamScore) - \(r.oppScore)", 36).frame(minWidth: 96)
+                        crest(r.opponent, size: 58)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(club) \(r.teamScore), \(r.opponent) \(r.oppScore)")
+                }
+            }
+            Spacer(minLength: 0)
+        case let .names(nickname, fans):
+            label("What they're called:")
+            Spacer(minLength: 0)
+            if let nickname { big(nickname, 40).frame(maxWidth: .infinity) }
+            if let fans {
+                Text("Their fans: \(fans)")
+                    .font(.jakarta(16, weight: .semiBold))
+                    .foregroundColor(.softBlush)
+                    .frame(maxWidth: .infinity)
+            }
+            Spacer(minLength: 0)
+        case let .ground(name, image, caption):
+            label("Their ground:")
+            Spacer(minLength: 0)
+            sticker(image)
+            big(name, 32).frame(maxWidth: .infinity)
+            Text(caption)
+                .font(.jakarta(15, weight: .semiBold))
+                .foregroundColor(.softBlush)
+                .frame(maxWidth: .infinity)
+            Spacer(minLength: 0)
+        case let .manager(name, image, line):
+            label("The manager:")
+            sticker(image)
+            Spacer(minLength: 0)
+            big(name, 30).frame(maxWidth: .infinity)
+            quote(line)
+        }
     }
 }

@@ -672,6 +672,21 @@ struct NamedPlayer: Identifiable {
     @MainActor private static var squads: [String: [LiveSquadPack.Player]] = [:]
     @MainActor private static var dossiers: [String: [PlayerCard]] = [:]
 
+    /// A club's registered squad, cached for the app's lifetime. Also gives the
+    /// Get-to-know lesson its shirt numbers.
+    @MainActor
+    static func squad(teamId id: String) async -> [LiveSquadPack.Player] {
+        if let cached = squads[id] { return cached }
+        let data = try? await APIClient.shared.rawGET(path: "players", queryItems: [
+            URLQueryItem(name: "select", value: "*"),
+            URLQueryItem(name: "team_id", value: "eq.\(id)"),
+        ])
+        guard let rows = data.flatMap({ try? JSONDecoder().decode([LiveSquadPack.Player].self, from: $0) }),
+              !rows.isEmpty else { return [] }
+        squads[id] = rows.filter { $0.in_official_squad != false }
+        return squads[id] ?? []
+    }
+
     @MainActor
     static func find(in text: String, teams: [Team]) async -> [NamedPlayer] {
         var found: [NamedPlayer] = []
