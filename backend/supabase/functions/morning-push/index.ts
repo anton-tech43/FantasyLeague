@@ -165,6 +165,11 @@ serve(async (req) => {
       // side (matchday_reminders_sent, 07:00 UTC run), skip here so nobody gets
       // two "game day" pushes an hour apart. morning-push stays as the fallback
       // for the morning the reminder run failed.
+      // Claimed, not just checked (bug hunt 2026-10-27): a second run (a
+      // cron backlog burst, a manual re-run) used to send "Game day" again.
+      // Inserting our clubs' rows is the claim; a row already there — the
+      // reminder's or an earlier run's — means someone sent it.
+      const ours = [fix.home, fix.away].filter((t) => t.is_active).map((t) => t.id);
       const { data: claimed } = await supabase
         .from("matchday_reminders_sent")
         .select("team_id")
@@ -172,7 +177,16 @@ serve(async (req) => {
         .in("team_id", [fix.home_team_id, fix.away_team_id])
         .limit(1);
       if (claimed && claimed.length > 0) {
-        console.log(`morning-push: ${fix.home_team_id} v ${fix.away_team_id} already reminded by matchday-reminder, skipping`);
+        console.log(`morning-push: ${fix.home_team_id} v ${fix.away_team_id} already reminded, skipping`);
+        continue;
+      }
+      const { data: won, error: claimErr } = await supabase
+        .from("matchday_reminders_sent")
+        .upsert(ours.map((team_id) => ({ team_id, kickoff_time: fix.kickoff_time })),
+          { onConflict: "team_id,kickoff_time", ignoreDuplicates: true })
+        .select("team_id");
+      if (claimErr || !won || won.length === 0) {
+        console.log(`morning-push: ${fix.home_team_id} v ${fix.away_team_id} claimed elsewhere or claim failed, skipping`);
         continue;
       }
 

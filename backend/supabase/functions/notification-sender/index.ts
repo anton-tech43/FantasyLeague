@@ -147,10 +147,11 @@ serve(async (req) => {
       // invocation own the push. force_push skips the claim on purpose: it is a
       // deliberate replay of an item that was already pushed.
       let claimed = false;
+      const claimedAt = new Date().toISOString();
       if (!forcePush) {
         const { data: claim, error: claimErr } = await supabase
           .from("content_items")
-          .update({ pushed_at: new Date().toISOString() })
+          .update({ pushed_at: claimedAt })
           .eq("id", item.id)
           .is("pushed_at", null)
           .select("id");
@@ -192,6 +193,10 @@ serve(async (req) => {
           .eq("team_id", teamId)
           .not("pushed_at", "is", null)
           .gte("pushed_at", throttleSince)
+          // Only claims made BEFORE this one: two items claimed together
+          // each saw the other and both went unsent (bug hunt 2026-10-27).
+          // The earlier claim pushes, the later one is throttled.
+          .lt("pushed_at", claimedAt)
           .neq("id", item.id);
         if ((recentCount ?? 0) > 0) {
           const update: Record<string, string> = { pushed_at: new Date().toISOString() };

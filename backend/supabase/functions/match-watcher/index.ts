@@ -1309,6 +1309,7 @@ async function handleRequest(req: Request): Promise<Response> {
       let briefsFired: string[] = Array.isArray(prior?.briefs_fired)
         ? prior!.briefs_fired as string[]
         : [];
+      const priorMarkers = briefsFired;
       // A goal ruled out (VAR) takes the score back down. Its GOAL_PUSH marker
       // would then block the push for the next real goal at the same score,
       // so forget goal markers above the score as it now stands. The upsert
@@ -1322,6 +1323,7 @@ async function handleRequest(req: Request): Promise<Response> {
       }
       const isLive = LIVE_STATUSES.has(status);
       const newTriggers: string[] = [];
+      const pendingLaStarts: Array<() => Promise<unknown>> = [];
       // Markers for direct-push idempotency (HT_PUSH / FT_PUSH). Kept SEPARATE
       // from newTriggers: newTriggers drives the paid gd-live-brief routine fire
       // loop below, so polluting it would fire a spurious (billed) routine. These
@@ -2087,7 +2089,10 @@ async function handleRequest(req: Request): Promise<Response> {
                 ? pts
                 : pts.or(`country_id.in.(${playing}),country_ids.ov.{${playing}},team_ids.ov.{${playing}}`);
             });
-            await sendAll(ptsTokens, {
+            // Sent after the state upsert (pendingLaStarts), like the alert
+            // pushes: a failed save would otherwise start a second activity
+            // on every phone next tick (bug hunt 2026-10-27).
+            pendingLaStarts.push(() => sendAll(ptsTokens, {
               event: "start",
               attributes: {
                 fixtureId,
@@ -2102,7 +2107,7 @@ async function handleRequest(req: Request): Promise<Response> {
               contentState,
               alert: { title: `${homeMeta.name} v ${awayMeta.name}`, body: "It's kicked off." },
               staleSeconds: 5400,
-            });
+            }));
             laStarted = true;
             laSig = sig;
           } else if (isLive && laStarted && sig !== laSig) {
@@ -2657,7 +2662,10 @@ async function handleRequest(req: Request): Promise<Response> {
             elapsed: elapsed ?? null,
             kickoff_time: kickoffTime,
             last_checked: new Date().toISOString(),
-            briefs_fired: updatedBriefsFired,
+            // A new row starts with its markers. An existing row's are merged
+            // after the upsert (merge_fixture_markers, mig 140), never
+            // overwritten: an overlapping tick's claim would be wiped.
+            ...(prior ? {} : { briefs_fired: updatedBriefsFired }),
             // Only write goal_events on a tick that fetched them (a detected
             // goal). The conditional spread below leaves the column untouched on
             // quiet ticks so a populated list is never clobbered with null.
@@ -2680,20 +2688,29 @@ async function handleRequest(req: Request): Promise<Response> {
           },
           { onConflict: "fixture_id" },
         );
-      if (upsertErr) {
+      let stateErr = upsertErr;
+      if (!upsertErr && prior) {
+        const retired = priorMarkers.filter((m) => !briefsFired.includes(m));
+        const { error: mergeErr } = await supabase.rpc("merge_fixture_markers", {
+          p_fixture_id: fixtureId, p_add: updatedBriefsFired, p_remove: retired,
+        });
+        stateErr = mergeErr;
+      }
+      if (stateErr) {
         // State did NOT advance. Skip every collected alert push — they will be
         // re-decided identically next tick once the row is observed again. This is
         // what makes the pushes at-most-once: we never send on a tick whose state
         // we couldn't persist (which would re-fire next tick = duplicate alerts).
         console.warn(
           `state upsert failed for ${fixtureId}; skipping ${pendingAlertPushes.length} alert push(es):`,
-          upsertErr.message,
+          stateErr.message,
         );
-        upsertErrors.push({ fixture_id: fixtureId, message: upsertErr.message });
+        upsertErrors.push({ fixture_id: fixtureId, message: stateErr.message });
       } else {
         stateUpdates++;
         if (!prior) firstSeen++;
         // State (markers + score) is durably persisted — now safe to fire.
+        for (const start of pendingLaStarts) await start();
         for (const item of pendingTournamentItems) {
           const { error: tErr } = await supabase.from("content_items").insert(item);
           if (tErr && tErr.code !== "23505") {
@@ -2768,10 +2785,11 @@ async function handleRequest(req: Request): Promise<Response> {
           .eq("fixture_id", entry.fixtureId)
           .maybeSingle();
         const fired = ((row?.briefs_fired as string[] | null) ?? []);
-        await supabase
-          .from("match_status_state")
-          .update({ briefs_fired: [...new Set([...fired, pageRefreshMarker(fired, result.ok)])] })
-          .eq("fixture_id", entry.fixtureId);
+        // Merged, not overwritten (mig 140): this runs after the fixture
+        // loop, and a whole-array write could drop a marker claimed since.
+        await supabase.rpc("merge_fixture_markers", {
+          p_fixture_id: entry.fixtureId, p_add: [pageRefreshMarker(fired, result.ok)], p_remove: [],
+        });
       } catch (e) {
         console.warn("page_refresh marker write failed (non-fatal):", e instanceof Error ? e.message : String(e));
       }
