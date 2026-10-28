@@ -166,7 +166,9 @@ struct TeamPageView: View {
                 warmPlaceholderView
             }
         }
-        .settingsButton()
+        // The gear is attached in MainTabView, outside `.id(teamId)`: here its
+        // sheet state died with the page whenever the shown club changed, and
+        // removing that club in Settings closed Settings with it.
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(Color.appBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)

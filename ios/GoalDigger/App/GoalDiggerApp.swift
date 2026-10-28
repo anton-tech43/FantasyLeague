@@ -362,6 +362,7 @@ struct MainTabView: View {
                     // under the new name until relaunch.
                     TeamPageView(teamId: teamId)
                         .id(teamId)
+                        .settingsButton()
                         // V2.0 WC preview surface: TeamPageView's Calendar
                         // tab can navigate to a preview content_item's
                         // detail view via NavigationLink(value:

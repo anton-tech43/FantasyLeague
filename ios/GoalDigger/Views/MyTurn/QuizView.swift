@@ -198,7 +198,11 @@ struct QuizView: View {
             return "Continue · question \(round.index + 1) of \(round.questionIds.count)"
         }
         let progress = store.progress(for: pack.id)
-        if progress.played > 0 { return "Best: \(progress.best) / 10" }
+        // Best is only kept for full ten-question rounds; a squad pack can be
+        // shorter, and "Best: 0 / 10" after a perfect six was a lie.
+        if progress.played > 0 {
+            return progress.best > 0 ? "Best: \(progress.best) / 10" : "Played \(progress.played)"
+        }
         switch pack.id {
         case LiveSquadPack.packId:      return "Faces, numbers, and what each one is for."
         case LiveClubPack.packId:       return "The table, the last result, the next one."

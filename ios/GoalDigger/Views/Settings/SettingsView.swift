@@ -576,7 +576,14 @@ struct SettingsView: View {
         dismiss()
         appState.clearAllData()
         CacheService.shared.clearAll(in: modelContext)
-        appState.showDataDeletedNotice = true
+        // After the sheet has finished closing: UIKit refuses to present an
+        // alert while a dismissal is in flight, and the confirmation was
+        // lost, so the reset read as unexplained (bug hunt 2026-10-27).
+        let state = appState
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(700))
+            state.showDataDeletedNotice = true
+        }
     }
 }
 
