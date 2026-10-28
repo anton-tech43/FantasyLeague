@@ -191,7 +191,18 @@ async function fetchAPIFootball(
         console.warn(`API-Football ${label} returned ${response.status}`);
         return null;
       }
-      return await response.json();
+      const json = await response.json();
+      // A rate limit or a bad parameter is still HTTP 200, with `errors`
+      // filled and `response: []`. Stored, it read as "no fixtures" (and
+      // closed the match-watcher gate, mig 138) or as "predictions bought"
+      // (and the matchup card never came). It is a failure (bug hunt
+      // 2026-10-27).
+      const errs = (json as { errors?: unknown })?.errors;
+      if (errs && (Array.isArray(errs) ? errs.length > 0 : Object.keys(errs as object).length > 0)) {
+        console.warn(`API-Football ${label} answered with errors:`, JSON.stringify(errs).slice(0, 200));
+        return null;
+      }
+      return json;
     } catch (e) {
       console.warn(`API-Football ${label} failed:`, e instanceof Error ? e.message : e);
       return null;
@@ -295,8 +306,14 @@ async function fetchAPIFootball(
     if (table !== null) results.push({ source: "api_football_standings", data: table });
   }
 
+  // Squad and coach change on a transfer deadline, not every two hours: the
+  // cron's default run buys them once, at its last run (22:00 UTC), unless a
+  // caller names them in `only`. sync_players_from_squads (05:30) reads the
+  // newest row, so it sees data as fresh as before.
+  const dailyOnly = scope.only === null && new Date().getUTCHours() !== 22;
   for (const endpoint of endpoints) {
     if (!wants(scope, endpoint.scope)) continue;
+    if (dailyOnly && (endpoint.scope === "squad" || endpoint.scope === "coachs")) continue;
     const data = await get(endpoint.path, endpoint.name);
     if (data !== null) results.push({ source: `api_football_${endpoint.name}`, data });
   }
@@ -593,7 +610,10 @@ serve(async (req) => {
 
       // Fetch RSS and API-Football in parallel
       const [rssResults, apiResults, statsResults] = await Promise.all([
-        wants(scope, "rss") ? fetchRSSFeeds(team) : Promise.resolve([]),
+        // Only on request. The cron's default run wrote ~300 RSS rows nine
+        // times a day that nothing live reads (the routines fetch their own
+        // feeds; content-generator, the reader, is off). Bug hunt 2026-10-27.
+        scope.only?.includes("rss") ? fetchRSSFeeds(team) : Promise.resolve([]),
         fetchAPIFootball(team, apiFootballKey, scope, standingsCache, counters, supabase),
         wantsPlayerStats
           ? fetchPlayerStats(team, apiFootballKey, seasonForLeague(team.league_id!), counters)
