@@ -1092,6 +1092,7 @@ async function updateDynamicFields(
 
   const content = existing.content as Record<string, unknown>;
   const cards = (content.cards ?? {}) as Record<string, unknown>;
+  const originalCardKeys = Object.keys(cards);
 
   // Parse standings data
   if (standingsLog?.data) {
@@ -1405,12 +1406,16 @@ async function updateDynamicFields(
     }
   }
 
-  content.cards = cards;
-
-  const { error } = await supabase
-    .from("team_pages")
-    .update({ content, updated_at: now })
-    .eq("team_id", team.id);
+  // Cards, not the document (mig 141). match-watcher writes post_match and
+  // last_match at full time; this refresh read the row before that and
+  // would have saved its stale copy over them. So those two are never
+  // written here, and a card this run removed is dropped explicitly.
+  const MATCH_OWNED = ["post_match", "last_match"];
+  const mine = Object.fromEntries(Object.entries(cards).filter(([k]) => !MATCH_OWNED.includes(k)));
+  const dropped = originalCardKeys.filter((k) => !(k in cards) && !MATCH_OWNED.includes(k));
+  const { error } = await supabase.rpc("set_team_page_cards", {
+    p_team_id: team.id, p_cards: mine, p_drop: dropped, p_touch: true,
+  });
 
   if (error) throw new Error(`Dynamic update failed for ${team.id}: ${error.message}`);
 }

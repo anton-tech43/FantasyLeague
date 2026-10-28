@@ -614,8 +614,11 @@ async function writeTeamPostMatch(
       talking_point: pm.talking_point,
       expires_at: new Date(Date.now() + ttlHours * 60 * 60_000).toISOString(),
     };
-    content.cards = cards;
-    const { error } = await supabase.from("team_pages").update({ content }).eq("team_id", teamSlug);
+    // One card, merged into the row as it is now (mig 141): a whole-document
+    // write raced the two-hourly refresh.
+    const { error } = await supabase.rpc("set_team_page_cards", {
+      p_team_id: teamSlug, p_cards: { post_match: cards.post_match }, p_drop: [], p_touch: false,
+    });
     // This used to log nothing at all, which is why there was no way to tell a
     // card that never wrote from a card that wrote and was later overwritten.
     await logPipelineEvent(supabase, {
@@ -883,8 +886,11 @@ async function writeLastMatch(
         numbers: pickThreeNumbers(v),
         expires_at: new Date(Date.now() + LAST_MATCH_TTL_DAYS * 86_400_000).toISOString(),
       };
-      content.cards = cards;
-      const { error } = await supabase.from("team_pages").update({ content }).eq("team_id", side.slug);
+      // Written once, at full time: merged so a concurrent refresh cannot
+      // erase it (mig 141).
+      const { error } = await supabase.rpc("set_team_page_cards", {
+        p_team_id: side.slug, p_cards: { last_match: cards.last_match }, p_drop: [], p_touch: false,
+      });
       await logPipelineEvent(supabase, {
         team_id: side.slug,
         stage: "page_refresh",
