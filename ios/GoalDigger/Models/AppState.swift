@@ -94,6 +94,9 @@ class AppState {
     /// show the Feed tab, on the context the push routed to. Consumed by the
     /// tab view.
     var pendingOpenFeed = false
+    /// Bumped on every push tap. The Settings sheet closes on it, or the
+    /// screen the push opened sat behind it (bug hunt 2026-10-27).
+    var pushTapTick = 0
     /// Set by a tap on the full-time push (`live-ft-<fixture>`): open Matchday
     /// on "After". Consumed by the tab view.
     var pendingOpenAfter = false

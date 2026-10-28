@@ -119,6 +119,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         let userInfo = response.notification.request.content.userInfo
         let contentId = userInfo["content_id"] as? String
         let teamId = userInfo["team_id"] as? String
+        AppState.shared.pushTapTick += 1
         routeFeedContext(teamId: teamId,
                          everyoneTalking: userInfo["everyone_talking"] as? Bool == true)
         // Matchday is built on her first club. A pre-game or full-time push

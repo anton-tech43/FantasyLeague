@@ -835,6 +835,7 @@ struct TierPickerSheet: View {
 /// quarter of the bar for a screen she opens a handful of times; Feed and the
 /// club page carry this instead.
 struct SettingsButton: ViewModifier {
+    @Environment(AppState.self) private var appState
     @State private var showing = false
 
     func body(content: Content) -> some View {
@@ -852,6 +853,7 @@ struct SettingsButton: ViewModifier {
             .sheet(isPresented: $showing) {
                 NavigationStack { SettingsView() }
             }
+            .onChange(of: appState.pushTapTick) { showing = false }
     }
 }
 
