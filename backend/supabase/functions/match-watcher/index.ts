@@ -1136,7 +1136,19 @@ async function handleRequest(req: Request): Promise<Response> {
     // live pushes included (QA-11). Isolate it, record it, carry on.
     try {
       const fixtureId = fx.fixture.id;
-      const status = fx.fixture.status.short;
+      // A single-leg cup tie cannot end level. API-Football has reported
+      // "Match Finished" at 1-1 after 90 minutes with the shootout missing
+      // (Fleetwood v Arsenal, League Cup, 2026-10-27): the FT push, the club
+      // card and the After card all said "drew 1-1" for a tie Arsenal lost
+      // on penalties, and polling stopped at that FT. So a level FT in a
+      // single-leg tie is held as a break: no full-time push or card, and the
+      // fixture keeps being polled until the feed says PEN or AET. If it never
+      // does, the poll window closes and nothing claims a result — silence
+      // over a wrong one (DATA_SOURCES.md).
+      const rawStatus = fx.fixture.status.short;
+      const levelSingleLegFt = rawStatus === "FT" && fx.goals.home != null &&
+        fx.goals.home === fx.goals.away && isSingleLegTie(fx.league?.id, fx.league?.round);
+      const status = levelSingleLegFt ? "BT" : rawStatus;
       const homeApiId = fx.teams.home.id;
       const awayApiId = fx.teams.away.id;
       const homeTeamId = teamIdMap.get(homeApiId);
