@@ -285,7 +285,10 @@ async function fetchAPIFootball(
     // invisible. The page caps at 25; the extra rows are the horizon. Still
     // one call per club.
     { name: "fixtures_next", path: `/fixtures?team=${team.api_football_id}&next=30`, scope: "fixtures" },
-    { name: "fixtures_last", path: `/fixtures?team=${team.api_football_id}&last=3`, scope: "fixtures" },
+    // last=10 (2026-10-28; was 3): "How they've been" shows the last three in
+    // the competition of the next game, and three overall can hold none of
+    // them. Still one call.
+    { name: "fixtures_last", path: `/fixtures?team=${team.api_football_id}&last=10`, scope: "fixtures" },
     { name: "injuries", path: `/injuries?team=${team.api_football_id}&season=${season}`, scope: "injuries" },
     // No /transfers (QA-15, 2026-10-04): it is the club's whole unordered
     // history, 63 MB of raw_fetch_logs at nine calls a day per club, and no

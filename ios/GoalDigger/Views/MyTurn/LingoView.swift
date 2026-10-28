@@ -414,9 +414,10 @@ struct LingoView: View {
             .task { if mode == .prep { await uploadSlip() } }
             // The opponent quiz, for whoever this fixture is against.
             .task(id: OpponentKey(team: opponentTeam, meeting: lastMeeting, ready: live.hasSources,
-                                  watch: opponentWatch.map(\.name))) {
+                                  watch: opponentWatch.map(\.name), competition: opponentFixture?.leagueId ?? 39)) {
                 if mode == .prep {
-                    await live.refreshOpponent(opponentTeam, mine: team, lastMeeting: lastMeeting, watch: opponentWatch)
+                    await live.refreshOpponent(opponentTeam, mine: team, lastMeeting: lastMeeting, watch: opponentWatch,
+                                               competition: opponentFixture?.leagueId ?? 39)
                 }
             }
             // "Carry on with your words" dealt a practise round and sent her
@@ -658,6 +659,7 @@ struct LingoView: View {
 
     private struct OpponentKey: Hashable {
         let team: Team?; let meeting: MatchContext.LastMeeting?; let ready: Bool; let watch: [String]
+        let competition: Int
     }
 
     /// "Their ones to watch" off his page's Coming-up card, when it is about
@@ -1361,7 +1363,7 @@ struct OpponentLesson {
     enum Page {
         case game(title: String, ours: Team?, opp: Team, ourRank: Int?, oppRank: Int?, meeting: String?)
         case player(name: String, label: String, line: String?)
-        case form(opp: Team, results: [RecentResult])
+        case form(opp: Team, results: [RecentResult], competition: String?)
         case names(nickname: String?, fans: String?)
         case ground(name: String, image: String?, caption: String)
         case manager(name: String, image: String?, line: String)
@@ -1407,9 +1409,15 @@ struct OpponentLesson {
         pack.questions.filter { $0.id.hasPrefix("opp-watch") }.forEach { taught.insert($0.id) }
 
         // How they've been: three scorelines.
-        if let results = theirPage?.cards.recentResults, results.count >= 3 {
-            pages.append(.form(opp: opponent, results: Array(results.prefix(3))))
-            taught.insert("opp-form")
+        // How they've been in THIS competition (Anton, 2026-10-28).
+        let comp = fixture?.leagueId ?? 39
+        if let cards = theirPage?.cards {
+            let results = LiveClubPack.form(cards, competition: comp)
+            if results.count >= 2 {
+                pages.append(.form(opp: opponent, results: results,
+                                   competition: Competition(rawValue: comp)?.name))
+                taught.insert("opp-form")
+            }
         }
 
         // What they're called.
@@ -1557,10 +1565,13 @@ struct OpponentLessonView: View {
     @ViewBuilder
     private func sticker(_ source: String?) -> some View {
         if let asset = PlayerPortrait.assetName(source) {
+            // Room above the head: a sticker scaled to the box's width touched
+            // the label and read as cut off (Anton, 2026-10-28).
             Image(asset)
                 .resizable()
                 .scaledToFit()
-                .frame(maxWidth: .infinity, maxHeight: 280)
+                .frame(maxWidth: .infinity, maxHeight: 240)
+                .padding(.top, 14)
                 .accessibilityHidden(true)
         }
     }
@@ -1610,8 +1621,13 @@ struct OpponentLessonView: View {
             big(PlayerPortrait.surname(name).flatMap { numbers[$0] }.map { "\($0). \(short)" } ?? short, 30)
                 .frame(maxWidth: .infinity)
             if let line { quote(line) }
-        case let .form(opp, results):
+        case let .form(opp, results, competition):
             label("How they've been:")
+            if let competition {
+                Text("In the \(competition)")
+                    .font(.jakarta(13, weight: .semiBold))
+                    .foregroundColor(.softBlush.opacity(0.7))
+            }
             Spacer(minLength: 0)
             VStack(spacing: 22) {
                 ForEach(results) { r in

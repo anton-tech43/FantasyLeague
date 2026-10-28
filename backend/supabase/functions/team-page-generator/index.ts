@@ -1408,6 +1408,20 @@ async function updateDynamicFields(
         team_score: r.teamScore,
         opp_score: r.oppScore,
       }));
+      // The last three per competition, for "How they've been" before a
+      // game in that competition: Premier League form before a league game,
+      // Champions League results before a Champions League night (Anton,
+      // 2026-10-28). Keyed by league id; fixtures_last is last=10 for this.
+      const byComp: Record<string, unknown[]> = {};
+      for (const r of results) {
+        if (r.leagueId == null) continue;
+        const k = String(r.leagueId);
+        if ((byComp[k] ??= []).length < 3) {
+          byComp[k].push({ date: r.date, opponent: r.opponentName, venue: r.venue,
+                           team_score: r.teamScore, opp_score: r.oppScore });
+        }
+      }
+      cards.recent_by_competition = byComp;
       break;
     }
   }
@@ -2107,6 +2121,7 @@ function parseUpcomingFixtures(
 }
 
 interface ParsedResult {
+  leagueId?: number;
   date: string;
   opponentName: string;
   venue: "home" | "away";
@@ -2146,6 +2161,7 @@ function parseRecentResults(
       if (hg == null || ag == null) continue;
       const isHome = (home.id as number | undefined) === teamApiFootballId;
       out.push({
+        leagueId: (rec.league as Record<string, unknown> | undefined)?.id as number | undefined,
         date: fixtureInfo.date as string,
         opponentName: (isHome ? away.name : home.name) as string,
         venue: isHome ? "home" : "away",

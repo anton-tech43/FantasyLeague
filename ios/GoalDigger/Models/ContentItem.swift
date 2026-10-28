@@ -424,6 +424,10 @@ struct TeamPageCards: Codable {
     /// Recent FINISHED fixtures with scores (E1) — powers the collapsible
     /// "last games" section in the Calendar tab. Newest first.
     let recentResults: [RecentResult]?
+    /// The last three per competition, keyed by league id ("39", "2"), for
+    /// "How they've been" before a game in that competition (2026-10-28).
+    /// Nil on a page written before then: use `recentResults`.
+    let recentByCompetition: [String: [RecentResult]]?
     let standings: StandingsCard?
     /// The European league-phase table, for a club in the Champions, Europa or
     /// Conference League (2026-09-08). Derived from the club's own fixture
@@ -452,6 +456,7 @@ struct TeamPageCards: Codable {
         case freshnessText = "freshness_text"
         case upcomingFixtures = "upcoming_fixtures"
         case recentResults = "recent_results"
+        case recentByCompetition = "recent_by_competition"
         case standings
         case europeStandings = "europe_standings"
         case matchup
@@ -482,6 +487,9 @@ struct TeamPageCards: Codable {
             .compactMap(\.value)
         recentResults = (try? c.decodeIfPresent([Lossy<RecentResult>].self, forKey: .recentResults))?
             .compactMap(\.value)
+        recentByCompetition = (try? c.decodeIfPresent([String: [Lossy<RecentResult>]].self,
+                                                       forKey: .recentByCompetition))?
+            .mapValues { $0.compactMap(\.value) }
         standings = try? c.decodeIfPresent(StandingsCard.self, forKey: .standings)
         europeStandings = try? c.decodeIfPresent(StandingsCard.self, forKey: .europeStandings)
         matchup = try? c.decodeIfPresent(MatchupCard.self, forKey: .matchup)

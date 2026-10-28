@@ -368,12 +368,9 @@ struct QuizView: View {
                         .foregroundColor(.warmWhite.opacity(0.9))
                         .lineSpacing(3)
                         .fixedSize(horizontal: false, vertical: true)
-                    if let why = q.why {
-                        Text(why)
-                            .font(.jakarta(13, weight: .italic))
-                            .foregroundColor(.warmWhite.opacity(0.65))
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+                    // No "why" line under the answer (Anton, 2026-10-28): it told
+                    // her what the fact was for in words that added nothing.
+                    // The data still carries it; the screen does not show it.
                     if let use = q.use {
                         useLine(use, type: q.useType)
                     }

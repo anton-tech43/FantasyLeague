@@ -383,7 +383,7 @@ enum LiveClubPack {
     /// she has just seen (Anton, 2026-10-28: teach, then test).
     static func buildOpponent(team: Team, page: TeamPageContent, sources: Sources, mine: Team?,
                               lastMeeting: MatchContext.LastMeeting? = nil,
-                              watch: [TopPlayer] = []) -> QuizPack? {
+                              watch: [TopPlayer] = [], competition: Int = 39) -> QuizPack? {
         let cards = page.cards
         let club = team.shortName
         let others = sources.slices.filter { $0.team_id != team.rawValue }
@@ -431,9 +431,13 @@ enum LiveClubPack {
         // The form, told through the games themselves: "Leeds have played
         // Wolves, Fulham and Burnley" with how it went, rather than a W/D/L
         // count she could only guess at (Anton, 2026-10-02).
-        if let results = cards.recentResults, results.count >= 3 {
-            qs += formFromResults(Array(results.prefix(3)), club: club)
-        } else if let f = cards.form {
+        // In the competition of the game (2026-10-28): the league form before
+        // a league game, their Champions League results before a Champions
+        // League night. The same three the lesson shows.
+        let results = form(cards, competition: competition)
+        if results.count >= 3 {
+            qs += formFromResults(results, club: club)
+        } else if competition == 39, let f = cards.form {
             let letters = f.recentForm.uppercased().filter { "WDL".contains($0) }
             let w = letters.filter { $0 == "W" }.count, d = letters.filter { $0 == "D" }.count
             let l = letters.filter { $0 == "L" }.count
@@ -463,7 +467,9 @@ enum LiveClubPack {
                 answer: name, distractors: scorer.rivals.map(shortName),
                 explanation: "\(name)\(shirt) with \(scorer.goals) \(scorer.goals == 1 ? "goal" : "goals") for \(club) this season, more than anyone else in their squad.",
                 why: "He's the one to worry about when they come forward.",
-                useType: .say, use: "When they attack: " + quote("Watch \(name). He's their scorer."),
+                // Something he can answer, not just the name back at him
+                // (Anton, 2026-10-28: "yeah, uh, duh?").
+                useType: .ask, use: quote("\(name)'s got \(scorer.goals) already this season. Is he the one to worry about?"),
                 // His sticker or nothing: no round photo next to the others.
                 image: PlayerPortrait.source(club: team.rawValue, name: scorer.name))
         }
@@ -534,12 +540,35 @@ enum LiveClubPack {
                 answer: name, distractors: names.filter { $0 != name },
                 explanation: p.line ?? "\(name), one of their three to watch.",
                 why: "One of the three to watch. If \(club) score, it's likely him.",
-                useType: .say, use: "When he has the ball: " + quote("That's \(name). Watch him."),
+                useType: .ask, use: quote(watchLine(name: name, fact: p.line)),
                 image: sticker)
         }
 
         guard qs.count >= 4 else { return nil }
         return QuizPack(id: opponentPackId, label: "Get to know \(club)", questions: qs)
+    }
+
+    /// "Mac Allister's got four goals and an assist this season. Is he the one
+    /// to worry about?" — the fact the card showed, as something to ask him.
+    /// The fact is the line's first clause; without one, just the question.
+    static func watchLine(name: String, fact: String?) -> String {
+        let clause = fact?.split(separator: ",").first.map { $0.trimmingCharacters(in: .whitespaces) } ?? ""
+        let words = clause.split(separator: " ")
+        // Only a clause that reads as a tally ("Four goals and an assist this
+        // season"): a description ("The most creative player…") does not fit
+        // after "he's got".
+        guard words.count >= 3, words.count <= 10,
+              clause.range(of: #"\b(goals?|assists?|clean sheets?|saves?)\b"#, options: [.regularExpression, .caseInsensitive]) != nil
+        else { return "What's \(name) like? Is he the one to worry about?" }
+        let lowered = clause.prefix(1).lowercased() + clause.dropFirst()
+        return "\(name)'s got \(lowered). Is he the one to worry about?"
+    }
+
+    /// Their results in one competition, newest first, at most three. A page
+    /// written before `recent_by_competition` falls back to the overall three.
+    static func form(_ cards: TeamPageCards, competition: Int) -> [RecentResult] {
+        if let map = cards.recentByCompetition { return Array((map[String(competition)] ?? []).prefix(3)) }
+        return Array((cards.recentResults ?? []).prefix(3))
     }
 
     /// The players the lesson shows and the quiz asks about, at most three:
@@ -996,7 +1025,7 @@ final class LiveClubPackService {
     private static var fetchedThisLaunch: Set<String> = []
 
     func refreshOpponent(_ opponent: Team?, mine: Team?, lastMeeting: MatchContext.LastMeeting? = nil,
-                         watch: [TopPlayer] = []) async {
+                         watch: [TopPlayer] = [], competition: Int = 39) async {
         opponentId = opponent?.rawValue
         guard let opponent else { opponentPack = nil; return }
         var cached = TeamPageCache.load(teamId: opponent.rawValue)
@@ -1021,7 +1050,8 @@ final class LiveClubPackService {
         guard opponentId == opponent.rawValue else { return }
         guard let content = cached?.content, let src = sources else { opponentPack = nil; return }
         opponentPack = LiveClubPack.buildOpponent(team: opponent, page: content, sources: src, mine: mine,
-                                                  lastMeeting: lastMeeting, watch: watch)
+                                                  lastMeeting: lastMeeting, watch: watch,
+                                                  competition: competition)
     }
 
     /// One club's players out of the cached league-wide sources: the two men
