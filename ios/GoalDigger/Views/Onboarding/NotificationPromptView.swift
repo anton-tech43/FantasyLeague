@@ -16,25 +16,8 @@ struct NotificationPromptView: View {
                 VStack(spacing: 24) {
                     Spacer()
 
-                    ZStack {
-                        // Subtle rose glow behind bell
-                        Circle()
-                            .fill(
-                                RadialGradient(
-                                    colors: [Color.hotRose.opacity(0.15), Color.clear],
-                                    center: .center,
-                                    startRadius: 10,
-                                    endRadius: 80
-                                )
-                            )
-                            .frame(width: 160, height: 160)
-
-                        Image(systemName: "bell.badge")
-                            .font(.system(size: 60))
-                            .foregroundStyle(Color.hotRose)
-                    }
-                    .padding(.bottom, 8)
-                    .accessibilityHidden(true)
+                    LockScreenPreview(team: appState.selectedTeam ?? .arsenal)
+                        .padding(.horizontal, Layout.screenPadding)
 
                     Text("It only works if\nwe can reach you.")
                         .font(.onboardingTitle)
@@ -42,7 +25,7 @@ struct NotificationPromptView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, Layout.screenPadding)
 
-                    Text("GoalDigger lives in your notifications: the heads-up before kickoff, the score as it happens, the one line that starts the conversation. Turn them off and you'll miss the moments that matter.")
+                    Text("A heads-up on match day, then the score on your lock screen while it's on. If your iPhone asks about Live Activities, say yes: that's the score.")
                         .font(.onboardingBody)
                         .foregroundColor(.textOnDark.opacity(0.8))
                         .multilineTextAlignment(.center)
@@ -131,5 +114,65 @@ struct NotificationPromptView: View {
         // Token registration happens at the END of onboarding (in OnboardingFlow's
         // completion handler) so we register with the actual tier the user picks.
         onComplete()
+    }
+}
+
+/// What she is saying yes to, drawn as it will look: the real match-day
+/// push copy (matchday-reminder-copy.ts) above the Live Activity with its
+/// running minute. Her club, a made-up opponent and score.
+private struct LockScreenPreview: View {
+    let team: Team
+
+    private var opponent: String { (team == .chelsea ? Team.arsenal : Team.chelsea).shortName }
+
+    var body: some View {
+        VStack(spacing: 10) {
+            card {
+                HStack(alignment: .top, spacing: 10) {
+                    Image("LaunchLogo")
+                        .resizable()
+                        .scaledToFit()
+                        .padding(4)
+                        .frame(width: 34, height: 34)
+                        .background(Color.deepMauve)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack {
+                            Text("\(team.shortName) play today").font(.jakarta(14, weight: .bold))
+                            Spacer()
+                            Text("now").font(.jakarta(12, weight: .regular)).opacity(0.6)
+                        }
+                        Text("\(team.shortName) face \(opponent) today at 15:00. Ask for a score prediction before kickoff.")
+                            .font(.jakarta(13, weight: .regular))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+            card {
+                HStack {
+                    Text(team.shortName).font(.jakarta(15, weight: .bold))
+                    Spacer()
+                    Text("1 – 0").font(.jakarta(22, weight: .extraBold)).monospacedDigit()
+                    Spacer()
+                    Text(opponent).font(.jakarta(15, weight: .bold))
+                }
+                .overlay(alignment: .bottom) {
+                    Text("63'").font(.jakarta(12, weight: .bold)).foregroundStyle(Color.hotRose)
+                        .offset(y: 16)
+                }
+                .padding(.bottom, 10)
+            }
+        }
+        .foregroundStyle(Color.white)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Example: a match-day notification, then the live score on your lock screen.")
+    }
+
+    private func card<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        content()
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
+            .environment(\.colorScheme, .dark)
     }
 }
