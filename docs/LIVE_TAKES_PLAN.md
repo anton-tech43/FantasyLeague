@@ -135,8 +135,19 @@ HT saying and today's verdict.
   `live-brief-current` returns `take` and `take_backup` (old apps ignore
   unknown keys). `LiveMatchCard` shows the take and, under it, "If someone
   pushes back: …".
-- After: `renderVerdict` returns `{line, backup}`. The card stores
-  `verdict_backup`; the app shows it under the verdict when present.
+- After (Anton, 2026-10-29: "when you open post game you can read how the
+  match played out, so you have a good take"). The After card becomes the
+  story of the game, and it must agree with what was pushed:
+  - The verdict starts from `ftSituation` (`goal-push.ts`), the same
+    function that picks the full-time push. Today `renderVerdict` has its own
+    rules, so the push can say "comeback" while After says something else.
+  - Under it, how the game went by phase. These are the takes we decided at
+    30', HT and 70' (stored per side), and the ones that were silent are left
+    out. Example: "Had all the ball first half and nothing to show for it.
+    Brighton didn't have a shot after the break. Won it in the 88th minute."
+  - Then the line to say plus "If someone pushes back: …".
+  - `renderVerdict` returns `{line, backup}` and the card stores `story[]`
+    and `verdict_backup`. The app shows them when present.
 - PUSH_RULES.md: one paragraph saying that the HT line can now come from
   stats and that the Live Activity note is silent. Run
   `verify-push-rules.sh`.
