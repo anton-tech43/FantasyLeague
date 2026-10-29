@@ -95,6 +95,12 @@ export function nextFixtureIdForPredictions(payload: unknown, now: Date): number
   return null;
 }
 
+/** Club Friendlies (667) and international Friendlies (10), by id or name. */
+function isFriendly(m: Any): boolean {
+  const id = m?.league?.id;
+  return id === 667 || id === 10 || /friendl/i.test(String(m?.league?.name ?? ""));
+}
+
 /** The last five results of a season-long form string ("LLDWWDLW" → "DLW..."). */
 function last5(form: unknown): string | null {
   return typeof form === "string" && form.length > 0 ? form.slice(-5) : null;
@@ -155,8 +161,11 @@ export function buildMatchupCard(args: {
 
   // The feed's h2h is the whole history and is NOT in date order (a 2025 tie
   // came back ahead of a 2018 one). Sort it ourselves, and keep only meetings
-  // that actually have a score.
+  // that actually have a score. Friendlies are not meetings: an August
+  // pre-season game became Newcastle v Everton's "last time" and its
+  // "revenge game" line (app council, 2026-10-29).
   const h2h: MatchupH2H[] = (Array.isArray(resp.h2h) ? resp.h2h : [])
+    .filter((m: Any) => !isFriendly(m))
     .filter((m: Any) =>
       typeof m?.goals?.home === "number" && typeof m?.goals?.away === "number" &&
       typeof m?.fixture?.date === "string" && !Number.isNaN(Date.parse(m.fixture.date))

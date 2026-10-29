@@ -280,3 +280,20 @@ Deno.test("nextFixtureIdForPredictions: nothing to buy", () => {
     null,
   );
 });
+
+Deno.test("buildMatchupCard: a friendly is never a meeting", () => {
+  const withFriendly = structuredClone(payload);
+  withFriendly.response[0].h2h.push({
+    ...meeting(8, "2026-08-12T18:00:00+00:00", "Tottenham", "Arsenal", 3, 1),
+    league: { id: 667, name: "Friendlies Clubs" },
+  } as never);
+  const card = buildMatchupCard({
+    payload: withFriendly,
+    fixtureId: 1,
+    ourApiId: ARSENAL,
+    opponentName: "Tottenham",
+    style: null,
+    updatedAt: "2026-09-23T10:00:00Z",
+  })!;
+  assertEquals(card.h2h[0].date, "2026-03-01");
+});
