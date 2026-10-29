@@ -1,0 +1,24 @@
+Answer IN THIS ORDER, as yourself, honestly, in plain words. Never go back and change an earlier answer.
+
+1. FIRST LOOK. Read only 1-store-page.txt, then look only at the first image in 2-first-session/. In one sentence: what is this app? Would you download it from that store page: yes / maybe / no, and why?
+
+2. THE FIRST SESSION. Go through 2-first-session/ in file order (00 onwards). These were captured on a phone that followed a particular club; imagine it is his club. After EVERY screen write one line: "carry on" or "this is where I'd close the app", and why. When you reach 12-first-screen-feed.png, STOP before looking further and answer:
+   - Was that worth it? yes / not yet / no.
+   - What did you actually get?
+   - Which setup step did you not understand the point of?
+   - The moment you first thought "oh, that's useful" (screen name), or "it never came".
+   Then look at 13-17 and say what you would tap first and whether it delivered. (17 is a system prompt that appears over the first screen.)
+
+3. SCREEN BY SCREEN. Now 3-app-screens/ (this is how the app looks for his club), using 4-screen-text/ to read what is below the visible part of each screen (those text versions use one example club's content). For every distinct element you notice (a heading, a card, a line, a button, a section), one line:
+   screen | element (quote its words) | understood? y/n | would I miss it if it were gone? y/n | felt smart / neutral / dumb | note
+   At the end of each screen: too much / about right / too little, and the ONE thing you would remove first.
+
+4. WORDS I DIDN'T KNOW. Every football word or phrase you met that you couldn't explain to a friend in one sentence, where you met it, and whether the app explained it right there.
+
+5. MY WEEK. Read 5-lock-screen-week.txt (what buzzed on your phone this week). For each line: worth the buzz / annoying / would make me turn notifications off, and why. Anything confusing or wrong-feeling?
+
+6. THE TEST. It's Saturday, you're at the pub with him and his mates (or texting him during his match). Quote the ONE thing from the app you would actually say. Would you feel smart or exposed saying it? Then: would you keep the app? yes / maybe / no, and why.
+
+7. Your single best moment and single worst moment in the app (one element each, quote it).
+
+Write it all to the output file you were given. Be specific and quote the app's words. Don't be polite on our behalf: if something is boring, confusing, patronising or pointless, say so.

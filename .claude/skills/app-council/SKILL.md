@@ -150,6 +150,12 @@ List any row without one in the report as a failure of the run.
    is empty (0 rows on 2026-10-29). Say so, and treat every verdict as
    provisional until a later run confirms it against usage.
 6. Record the commit and build number in `$S/README.txt`.
+
+   Traps found on 2026-10-29:
+   - **Tracking prompt.** One launch without a preset raises it, and it then survives relaunch, reboot and reinstall. Only `simctl erase` clears it. OCR each shot and retry; the scripts are in `docs/council/2026-10-29/staging-notes.md`.
+   - **Preset values persist in stored settings.** A country-only run needs an erased simulator.
+   - **`-gdMatchdaySection` does nothing,** because `MatchdayView.swift:61` resets it. Use `-gdNow` instead. `-gdNow` moves only Matchday and My Turn, never the feed or the club page, so it cannot stage the worst week.
+   - **The onboarding preset sets Sophie, Tom and tier 2.** Do not judge "pre-selected" from those captures.
 7. **The first session, end to end.** On a fresh simulator, uninstalled and
    with defaults empty, capture every step from launch to the first screen
    after onboarding, then the first three screens she is most likely to tap.
@@ -179,6 +185,8 @@ or what we think is good. She has never seen the app before.
 | D1 | Deep | a lot | Arsenal | 33. Grew up with a football dad. She catches every wrong fact and every line that talks down to her. |
 | D2 | Deep | a lot | Chelsea | 28. Competitive. Wants the score before he looks up, and a line that wins the argument. |
 | H | (him) | everything | Arsenal | 32, season ticket. Sees only what she would say to him: `Say:` lines, sayings, verdicts, quiz answers, Lingo. Would it land, or would he wince? Is any fact wrong? |
+
+Give each persona a folder of COPIES (store text, first-session shots, her club's screens, the screen text, her push week) and forbid every other path. Paths into the shared workspace let her read the seats' intent.
 
 Keep the club and tier spread close to production (`device_tokens` grouped
 by `team_id`, `tier`). Most of it is Arsenal.
@@ -265,7 +273,7 @@ days, and `match_status_state`. Finds:
 
 **Security.** Runs `db-health.sh` section 7 plus `has_function_privilege` and
 `has_table_privilege` for anon on every public function and table outside the
-app's three RPCs. Checks:
+app's four RPCs (`register_device_token`, `register_la_token`, `save_match_calls`, `log_events`). Checks:
 - RLS on every table the anon key can reach;
 - Edge Functions deployed `--no-verify-jwt` that do not check the cron key;
 - secrets in the bundle or in git history (`scripts/pre-commit-secret-scan.sh`);
@@ -347,7 +355,7 @@ A row that fails this check becomes Iterate or Move, with the reason.
    - **Findings** from the experts, ranked HIGH to LOW.
    - **What holds up.**
    - **Decisions for Anton**: taste, trade-offs and cost.
-4. Publish a **decision board** as an Artifact with a database (load
+4. Publish a **decision board** (the 2026-10-29 build script and template are in that run's scratchpad `board/`; the board itself is at https://claude.ai/artifact/Mz1QxUvht2wDBkQUiK2KQi) as an Artifact with a database (load
    `artifact-capabilities`): one row per verdict, where Anton marks accept,
    reject or change, with a comment. The carousel feedback board is the
    precedent. Send him the link and a summary of a few sentences, in his

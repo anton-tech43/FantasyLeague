@@ -1,0 +1,79 @@
+# Seat: Tracking — council 2026-10-29
+
+Commit 376d3f2, app 2.4 (18), not on TestFlight. `analytics_events`: **0 rows** (and `app_events` 0 rows in any env, checked by SQL). Every finding below comes from reading the code, so each one is SUSPECTED unless it says otherwise. CONFIRMED here means a live SQL row or a script run backs it.
+Ran: `verify-tracking-plan.sh` → all agree (names: app = RPC = plan; every case has a call site). `tracking-digest.sh 28` → every section is empty apart from sends (article 1404, goal 949, ft 310, kickoff 276, ht 226).
+Deployed state (SQL): `log_events` holds `push_delivered`. anon can EXECUTE `log_events` only. anon cannot run `roll_up_app_events` and cannot read `app_events` or `analytics_events`. There are 3 blackout rows, and cron `app_events_rollup 40 3 * * *` is present.
+Census ids are provisional (no census file existed when I wrote this): `<CH>-<NN>` in the order she meets each screen. ONB-01 welcome … ONB-04 club … ONB-09 notificationPrompt, ONB-10 calendar.
+
+## The answer first: what usage can never settle
+
+Green means the 2.4 events let usage give a verdict. Red means no event can, so the verdict will rest on the panel alone forever unless we add the event in the last column.
+
+| Census area | Covered by 2.4? | Minimal addition |
+|---|---|---|
+| ONB-01…10, drop-off per step | Partly. Each step has `onboarding_step_viewed`, and the timestamp gaps give time per step. But "quit" and "went back" look the same, and see F4 on delivery | none (F4 fixes delivery) |
+| ONB-09 the iOS notification prompt and the "One more thing" re-ask | Red. The answer only arrives with `onboarding_completed`. If she quits at ONB-10, we never learn what she said. We cannot tell whether the re-ask converts anyone | `permission_answered {prompt: notifications\|calendar\|att, ask: first\|second, result}` |
+| ONB-04 club pick, one club or two | Red. The common `club` prop holds the first club only, and `follow_changed` fires only in Settings. So plan decision 3 ("did all five choose two in onboarding?") cannot be answered | `clubs` (a count) on `onboarding_completed` |
+| ATT prompt (system, 1.5 s after the tabs first appear) | Red. Nothing records whether it was shown or what she answered | the same `permission_answered` (prompt: att) |
+| **First screen after onboarding: Feed cards (FEED-01…)** | **Red.** `feed_card_opened` fires only on a tap. The card's rose half shows a line to say without any tap, which is the worth-it moment in the worst week, and it leaves no trace. Feed is also the first tab on launch, so it never gets a `tab_viewed` (F2) | `feed_card_viewed {position, content_type, context}`, once per item per session when it becomes the visible page |
+| Where she leaves, how long a session lasts, did she close the app right after onboarding? | Red. No end-of-session event. Plan question 5 ("where she leaves") has no instrument | `app_backgrounded {seconds, tab}`, logged just before the flush that already runs at `.background` |
+| Feed: club switcher, Everyone's talking / Football, live box (T2+), Saturday Quiz card (T3) | Red. `feed_card_opened` has no `context` prop. The live box and the quiz card fire nothing apart from the quiz share | the `context` prop. Count the live box and the quiz card as `feed_card_viewed` with their own `content_type` |
+| Article (Views/Detail): "Good to know", "Things to say", backstory, "After the match", "Ones to watch" | Red below the open. An open is only logged from the Feed. An article opened from a push, from After's "The full story" or from the club page's preview link leaves nothing | `article_opened {source: feed\|push\|after\|club, content_type}` in `ContentDetailView`. Keep the sections out of it: the plan rules out scroll depth |
+| **Club page (TEAM-*): Info / Calendar / Table, every Info card, player cards, the manager, ones to know, the "The preview ›" expand** | **Red. Nothing at all**, only `tab_viewed club` | `club_section_viewed {tab}` and `club_card_tapped {card}`, with card = the `team_pages.content.cards` key or `player` |
+| Matchday Before (Pre-game cards) | Green: `pregame_opened`, plus `pregame_card_completed` per card | starting a card without finishing it is invisible. Add `pregame_card_started {card}` only if a verdict needs abandonment |
+| Matchday After: "Say this now", goal scorers, "Three numbers that matter", "The full story" | Red inside the screen. There is only `matchday_after_opened`. A copy from "Say this now" logs as `line_shared surface=copy` with no idea where it came from | `article_opened source=after`, and give `CopyButton` a real `surface` (`after`) |
+| My Turn: the module she lands on | Partly. `my_turn_module_switched` fires only on a switch, so if she always lands on Quiz, Quiz is never counted | `module` on `tab_viewed` when tab = my_turn |
+| Lingo dictionary (158 terms), Say This situations, Safe/Bold, practice mode, "Your lines", "Carry on with your words" | Red. Only Overheard rounds, quiz completions and saves are logged | one event, `my_turn_opened {module, what: term\|situation\|practice\|your_lines\|carry_on}` |
+| Settings (SET-*): calendar toggle, edits to her name and his name, the "Change your setup" and "About" expanders, contact, privacy link, version | Red. Only clubs, countries, tier, opening the sheet, and delete | widen `settings_row_opened.row` to `calendar, her_name, his_name, setup, about, contact, privacy`. That adds zero new events |
+| Push kinds (LOCK-*) | Partly. kickoff/goal/ht/et/ft/prep/fixture split correctly. **`article` merges news (1197 sent / 28 d) with sunday_brief (207)**, CONFIRMED by SQL on `pipeline_health` joined to `content_items` | add `content_id` (a UUID or sentinel, not personal) to `push_opened` and `push_delivered`. SQL then joins `content_items.type` |
+| Live Activity (every state) | Red. The app never learns whether Live Activities are allowed. The widget has no `widgetURL`, so a tap on it looks like any other open | a `live_activities` on/off common prop (`ActivityAuthorizationInfo().areActivitiesEnabled`). The tap needs a `widgetURL` plus a URL handler. Optional |
+| Store page (STO-*) | Out of reach for in-app events by design. Use App Store Connect's product page views and conversion | none |
+
+**The first session, today:** usage can count drop-off per onboarding step and time per step (with F4 fixed), the total `seconds`, the notification and calendar answers *if she finishes*, and the first tap afterwards. It **cannot** measure time to the first useful thing in the worst week, because there the first useful thing is reading a feed card, which is untracked. Nor can it tell whether the ATT sheet at second 1.5 cost us the session. With `feed_card_viewed`, `app_backgrounded` and `permission_answered` added, "worth it" in the first session becomes: `onboarding_completed` → first `feed_card_viewed` / `pregame_opened` → `seconds` until `app_backgrounded`, and whether she returns before his next kickoff.
+
+## Findings
+
+**F1 MEDIUM: TestFlight traffic is "production", and testers send `activated` to Meta.** Census ids: all. `APIClient.swift:20-26`: `env` is `#if DEBUG` only, so a TestFlight (Release) build logs `env=production`. `AttributionService.swift:28` is `#if !DEBUG`, so a tester's first pre-game card goes to the Meta ad set. 2.4 (18) goes to TestFlight first, so the first weeks of "usage" the next council reads may be Anton and his testers. Checked: code. Fix: one common prop, `channel: testflight|appstore` (`Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"`). Filter it in the 143 view, and skip `logActivatedOnce` when the channel is testflight. SUSPECTED.
+
+**F2 MEDIUM: `tab_viewed` misses the tab the app opens on and counts programmatic switches.** `GoalDiggerApp.swift:413` uses `onChange(of: selectedTab)`, which has no initial value. `selectedTab` starts on `.feed` (line 232). A woman who only ever reads the Feed logs no `tab_viewed`, so the digest's "WHERE SHE GOES" under-counts the most-used tab. Push routing (lines 203, 217, 426, 443, 456) also logs as if she had chosen the tab. Fix: put `tab` on `app_opened` (move that hook into `MainTabView`), and `source: tap|link` on `tab_viewed`. SUSPECTED.
+
+**F3 MEDIUM: Delete My Data can leave every analytics row behind.** `Analytics.swift:129-141`: when the send fails (offline, an outage like the one on 2026-10-21, the silent rate-limit `RETURN` in 142/144), `forgetInstall` still empties the queue and **rotates the install id**. `SettingsView.swift:549-572` then fails `deleteMyData` and shows an error. The retry sends `data_deleted` for the *new* id, and the old events stay for 13 months. The Step 3 policy paragraph says these records are deleted. Second point: the "anonymous" exit row carries `club, tier, relationship, app_version, build, clubs` and a timestamp. The paragraph promises only "how many days after install", and with 72 users that combination narrows quickly. Fix: rotate the id only after a 2xx, and throw otherwise (the existing error alert covers it). Strip `data_deleted` down to `days_since_install`, or reword the paragraph. SUSPECTED (deterministic in code).
+
+**F4 MEDIUM: onboarding drop-offs are the events most likely never to arrive.** Onboarding events sit in the queue until the 30-event mark or until the app backgrounds. `flush()` (`Analytics.swift:104`) starts a `Task` with no `beginBackgroundTask`, so iOS can suspend the app mid-request. Someone who quits at ONB-09 and deletes the app takes the queue with her, and she is exactly the person the funnel exists to see. Fix: wrap `flush` in `UIApplication.shared.beginBackgroundTask` (about 5 lines). SUSPECTED.
+
+**F5 LOW: `app_opened` counts system sheets.** `GoalDiggerApp.swift:61-64` logs on every move to `.active`, including the return from `.inactive` after the ATT sheet, Notification Centre or Control Centre. In the first session the ATT sheet alone logs a second `app_opened` within seconds. The weekly active flag survives this, but session counts do not. Fix: log only when the old phase was `.background`. SUSPECTED.
+
+**F6 LOW: senders without a send count.** `matchday-reminder` (the `prep` push, cron active at 07:00) writes no `apns_send` row. `morning-push` writes `stage='morning_push'`, and there are 0 rows of it anywhere. So the digest's opens-vs-sends has no denominator for `prep` and `fixture`, and those are the kinds plan decision 1 depends on. `push_delivered` will cover delivered counts once 2.4 is out. CONFIRMED (SQL plus code).
+
+**F7 LOW: repeat logging.** `pregame_opened` and `matchday_after_opened` fire on every `onAppear` of the Matchday tab, with only a 2-second dedupe (`MatchdayView.swift:84`), so they count visits. `notifications_banner shown` fires on every Feed appearance (`FeedView.swift:288`). `HypeStreakOverlay` lives in both `MatchdayView:51` and `MyTurnView:50` on the same store, so switching tabs within 2.2 s replays the card and logs it twice. Read these as distinct installs, never as raw counts. SUSPECTED.
+
+**F8 LOW: drift in the docs and checks.** The plan lists push kind `matchday`, which no sender produces. The real kinds are kickoff, goal, ht, et, ft, prep, fixture, article, dev, none. Migration 142's comment points to `AnalyticsTests`, which does not exist. The plan's promised check on enum property values (step names, modules) is not in `verify-tracking-plan.sh`, and `pushKind` has no test. Fix: a 6-line assert-based test of `pushKind` over the five real `content_id` shapes. `docs/PRIVACY_POLICY_DRAFT.md` also still lacks the Step 3 usage paragraph and says nothing about `app_events`, so the draft and the plan disagree.
+
+**F9 LOW: the ATT string undersells.** The `Info.plist` string "see which ads brought you here" omits that `activated` also optimises the ads. The `activated` event is sent whatever she answers on ATT (as is the SDK's own app-open), while `PrivacyInfo.xcprivacy` declares product interaction as tracking. Either is defensible, but the policy and the label should say the same thing. SUSPECTED.
+
+## Verdict proposals (tracking-related rows)
+
+- **ATT prompt, 1.5 s after the first tabs: Move.** Ask it at her second `app_opened` (or after her first `pregame_card_completed`), not at the worth-it moment. It is her third system sheet in about two minutes (notifications, calendar, ATT). `activated` and SKAN reach Meta whatever she answers on ATT, so the delay costs only the IDFA. That is a trade-off for Anton, so it is a decision, not a fact. Add `permission_answered` first, so the next council can measure it.
+- **ONB-09 "One more thing" re-ask: Keep, provisionally.** Make it Iterate→Delete if `permission_answered ask=second` shows it converts under ~10% of the people who see it.
+- **ONB-10 calendar step: Keep, provisionally.** `onboarding_completed.calendar` will settle it: if almost nobody turns it on, Move it to Settings.
+- **Feed notifications-off banner: Keep.** It is the recovery path, and `turn_on` against `shown` (distinct installs) will judge it.
+- **Settings › Delete My Data: Iterate** (F3). It is on the can't-delete list.
+- **`hype_shown`: Keep the event.** Fix the double host (F7).
+
+## What holds up
+
+- Event names agree across the app, the deployed RPC and the plan. The script confirms it, and SQL shows `push_delivered` in the live function.
+- The RPC is sound: SECURITY DEFINER with `search_path=''`; at most 50 events, 8 KB and 16 props; props must be scalars and strings at most 64 characters; the phone's timestamp is clamped; floods are dropped rather than refused; the revoke covers `PUBLIC, anon, authenticated`, and SQL confirms it worked.
+- Retention ships in the same migration (13-month roll-up via cron), with both indexes and a BRIN. Blackouts are a table that the single view joins.
+- Prod and debug are separated for Xcode builds. Every digest query reads the `analytics_events` view (production only, blackouts out, Arsenal vs other).
+- `push_opened.kind` matches what the senders send. `live-<label>-<fixture>` gives kickoff/goal/ht/et/ft, `myturn-prep-…` gives prep, `fixture:<id>` gives fixture, and a UUID gives article. `mutable-content: 1` is set in `buildAPNsPayload`, so the extension will run. The extension's Info.plist gets the host and key from the build settings, and the App Group entitlement is on the app and the extension.
+- No PII travels in an event. Names stay out (`log` never reads them), and the RPC refuses free text.
+- `metaActivatedSent` survives Delete My Data, so Meta never gets a second `activated`. `activated` never fires from Xcode builds.
+- The first-party approach (no SDK, one RPC, batched writes) is the right size for 72 devices.
+
+### Summary
+1. Usage data will be able to judge the onboarding funnel step by step, Matchday Before, pushes by live kind, My Turn completions, and tier and follow changes.
+2. It **cannot** judge Feed cards (no impression event, and Feed is never logged as a tab), the whole club page, the inside of After and the articles, Settings rows beyond clubs and tier, Live Activity, or news vs Sunday Brief pushes.
+3. The minimal fix: 7 new events (`feed_card_viewed`, `app_backgrounded`, `permission_answered`, `club_section_viewed`/`club_card_tapped`, `article_opened`, `my_turn_opened`) plus props (`channel`, `clubs`, `context`, `content_id`, `tab` on app_opened, widened `settings_row_opened`).
+4. Ship F1 (TestFlight traffic counted as production, testers sending `activated` to Meta), F3 (Delete My Data can orphan events, and the exit row carries more than the policy says) and F4 (onboarding drop-offs may never flush) before 2.4 goes out. All three are a few lines each.
+5. ATT: Move it off the first post-onboarding screen, but measure first with `permission_answered`. Every verdict stays provisional until about 3 weeks of App Store (not TestFlight) data exist.

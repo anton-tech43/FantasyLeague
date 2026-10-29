@@ -1,0 +1,105 @@
+FIRST SESSION, END TO END (app council 2026-10-29, build 2.4 (18), commit 376d3f2)
+Staged on a council-owned simulator (iPhone 17 Pro, iOS 26.4), erased before each run, defaults empty
+("Domain com.goaldigger.app does not exist"), app launched with TZ=Europe/London, status bar 9:41.
+Screens: screens/first-matchweek/  and  screens/first-worstweek/   OCR text of every screen: ocr/<same path>.txt
+Word counts were made with a script over the OCR of each screen, not from the code. They exclude the status bar,
+keyboard keys and the iOS keyboard tip. They are approximate (+/- 5 per screen).
+
+WHICH WEEKS
+(a) first-matchweek = NEWCASTLE. Plays TODAY (Thu 29 Oct, 19:45 London, away at Everton, League Cup last 16),
+    then Everton again on Mon 2 Nov (Premier League). Match day before kickoff, and a cup tie.
+(b) first-worstweek = LIVERPOOL. The furthest next match of the 20 clubs: Sun 1 Nov 16:30 v Arsenal
+    (Arsenal is tied, same fixture). That is about 3 days away. NO PL CLUB IS 10+ DAYS FROM ITS NEXT MATCH
+    THIS WEEK, and this is not an international break. Every club plays between 29 Oct and 1 Nov. The real worst week
+    was NOT reachable. It is the international break after 7-8 Nov. Arsenal's gap, for example, runs from Hull on 7 Nov to Newcastle on 21 Nov.
+    Liverpool also played last night: League Cup v Chelsea, 1-1, won 6-5 on penalties. So (b) is "the morning after
+    a win", not "nothing happening". `-gdNow` cannot fake the worst week: it moves only Matchday and My Turn,
+    while the feed and the club page come from live server rows.
+
+HOW THE STEPS WERE REACHED (simctl cannot tap)
+Steps 0-3 come from a truly fresh install (`-gdOnboardingStep N`, no preset).
+Steps 4-9 need a club, so they use `-gdPresetTeam <club> -gdOnboardingStep N`. That preset also sets her name to Sophie,
+his name to Tom and the tier to 2 ("Came to impress"). So the tier screen shows tier 2 preselected, and every "Tom"
+on screen comes from the preset, not from typing.
+The season primer is `-gdSeasonPrimer`. A real new user never sees it: completeOnboarding() marks it seen.
+After onboarding: `-gdPresetTeam <club>`, then -gdOpenItem / -gdTab N for the first taps. The ATT sheet comes from `-gdForceATT`.
+NOT CAPTURED (they need a tap): the three iOS system permission dialogs (notifications, calendar,
+Live Activities), and the "One more thing." second-chance sheet that appears if she taps "I'll do this later"
+on step 8 (text from NotificationPromptView.swift:73-78, about 40 words, with buttons "Allow notifications" /
+"I'll risk missing it"). The ATT dialog IS captured (17-*).
+
+THE STEPS (10 onboarding screens; the progress dots show 10)
+ #  screen                         words(a)  words(b)  taps to leave it (minimum)
+ 0  Welcome "You're here. He has no idea."   13   13   1  "Let's go"
+ 1  Her name "First things first..."          8    8   type her name + 1 "Continue"
+                                                         (the button sits under the keyboard; on a fresh device the iOS
+                                                          swipe-typing tip also covers the screen; that tip is the simulator, not the app)
+ 2  His name + "They're my... Partner/Parent/Sibling/Friend"   12   12   type + 1 "Continue" (+1 if not Partner)
+ 3  Club picker "Which Premier League team does he follow?"   33   33   1 pick + 1 continue (button reads "Pick a team"
+                                                         until she picks; "I want to add my own club too" is below the fold)
+ 4  Meet his lot (player + 2 facts)    84   63   1  "Meet the boss"
+ 5  Meet the boss (manager)             61   61   1  "Got it"
+ 6  Here's how it works (3 rows)        94   94   1  "Sounds useful"
+ 7  How far do you want to take this? (3 tiers)  46   46   0-1 pick + 1 "Let's do this"
+ 8  It only works if we can reach you (fake push + Live Activity)  47   47   1 "Yes, keep me posted" -> iOS dialog (+1)
+                                                         or "I'll do this later" -> second-chance sheet (+1)
+ 9  Want his matches in your calendar?  27   27   1 "Yes, add them" -> iOS calendar dialog (+1), or "Not now"
+    ---------------------------------------------------------------
+    onboarding total                   425  404
+
+ then the first app screen:
+ 12 Feed, top card  (a) "cup game tomorrow / league on monday" + "Your move:" line       79
+                    (b) "liverpool. bournemouth in the quarters." + "Your move:" line   84
+    1.5 s after the tabs appear, the iOS ATT sheet covers it (17-*): about 35 words, 1 tap.
+
+COUNTS BEFORE THE FIRST THING SHE CAN USE
+- First piece of content: step 4 "Meet his lot". She gets there after 4 screens, 5 taps and two typed names,
+  having read about 66 words (13+8+12+33). Everything before it is a question.
+- First usable app screen (the feed): 10 onboarding screens, about 425 words (a) / 404 (b) of app copy, and
+  11 taps if she says "later" / "not now" to both asks, or 13 if she says yes to both (each yes adds a system dialog).
+  Add two typed names and, if she follows a parent, sibling or friend, one more tap. Then 1 more tap for the ATT sheet,
+  which lands on top of the feed before she can touch it.
+- Permission prompts before the first usable thing: 2 in onboarding (notifications at step 8, calendar at step 9, both
+  only if she taps yes), plus ATT over the first feed screen = 3 system dialogs if she says yes to both. ATT is
+  always asked, once, whatever she answered before. The Live Activities ask comes later, at the first live match
+  (step 8 pre-warns: "If your iPhone asks about Live Activities, say yes.").
+- If she declined notifications, the first feed screen opens with a "Notifications are off / Turn them on / Not now"
+  banner. It takes about a quarter of the screen, above the first card (every feed screenshot in this run, because
+  the simulator never granted notifications).
+
+WHAT THE FIRST THING IS
+The immersive feed, card 1. It shows a lowercase three-beat headline, a one-line dating analogy, "Press for more info and
+things to say", and a pink "Your move:" or "Say this:" box with one line to say to him. Card 1 is the newest club news
+item. It is not about today's match:
+ (a) Newcastle, on match day: "cup game tomorrow / league on monday". It was written yesterday, so on the day of
+     the game it still says "tomorrow". Its article (13-*) says "tomorrow night" too. Nothing on the first screen
+     says the match is TONIGHT at 19:45. That shows on the club tab's Coming up card, where the time is
+     truncated "Thu 29 Oct at 1..." (15-*).
+ (b) Liverpool: the League Cup draw (Bournemouth in the quarters), the morning after the shootout win.
+The most likely first three taps, captured:
+ 13 tap the top card -> article (Good to know + Things to say)   (a) 104 words above the fold, (b) 81
+ 14 Matchday tab -> (a) "Get to know Everton" (Before; no After, no live) ; (b) "After Chelsea": "Liverpool 1-1 Chelsea" + "Say this now"
+ 15 Club tab (named after the club, e.g. "Newcastle United") -> Coming up / The basics / The manager
+ 16 (alt) My Turn -> Quiz landing, "Start a round", the same packs for every club (only "His club, the history" is per club)
+
+WHICH ONBOARDING ANSWERS VISIBLY CHANGE WHAT SHE SEES STRAIGHT AFTER
+- Club: everything. Feed, club tab name and crest, Matchday opponent, My Turn "His club, the history" pack.
+  The only answer that matters on every screen.
+- His name (Tom): visible in onboarding steps 4-6 ("next time Tom starts talking", "The person Tom either loves or
+  wants fired", "Tom's team"). After onboarding it shows as "Tom's team" under the crest on the club tab, and in club
+  page prose through [his name] placeholders (73 placeholders in team_pages, 6 in content_items over 14 days, e.g. the
+  rivalry card "If Tom supports Arsenal..."). It does NOT show on the feed's first screen or on Matchday. The season
+  primer says "your boyfriend" even though the name is known. Visible, but only on the club tab.
+- Relationship (Partner/Parent/Sibling/Friend): switches he/they pronouns in app copy (AppState.usesHeVoice).
+  Not staged here (the preset is Partner).
+- Her name (Sophie): CHANGES NOTHING SHE CAN SEE OUTSIDE SETTINGS. Only SettingsView reads herName. There are 0 [her name]
+  placeholders in team_pages and 0 in content_items over the last 14 days, and no backend function reads it.
+  This is a question we did not need to ask.
+- Tier: NOTHING VISIBLE ABOVE THE FOLD ON DAY 1. Pixel diff of Arsenal at tier 1 (screens/L2) against tier 3
+  (screens/D1): 18 of the 21 same-name screens are identical. The 3 that differ are two article screens (different
+  article ids were used) and the rivalry expand, where tier 3 shows the "Things he doesn't know" insider card below
+  the rivalry card. That is a T2+ card, below the fold. The tier also gates sunday_brief items (T2+), the live match
+  card (T2+), the Saturday quiz (T3, weekend window only, so not on a Thursday), player dossiers, and which pushes
+  she gets. None of that is visible on the first screens on a Thursday.
+- Notifications answer: decline -> the "Notifications are off" banner on top of the feed. Accept -> no banner.
+- Calendar answer: no visible change in the app (it writes events to her calendar).
