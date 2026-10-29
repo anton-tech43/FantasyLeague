@@ -1,0 +1,1379 @@
+{
+ "screens": {
+  "STO-01": {
+   "title": "App Store-sidans topp (namn, ikon, pris, betyg, bannrar)",
+   "summary": "Det första hon ser i App Store, innan hon laddat ner något. Nästan allt behålls; den tomma kampanjtexten ska fyllas och appen ska börja be om betyg, eftersom 0 betyg fick 5 av 6 personas att tveka.",
+   "shot": null
+  },
+  "STO-02": {
+   "title": "App Store-sidans skärmbilder",
+   "summary": "Sex skärmbilder utan bildtexter; två visar inställningssteg och en en funktion bara högsta nivån får. Förslaget: tre bilder med bildtext i ny ordning, klubbsidan först, sedan ett kort med en replik, sedan låsskärmen.",
+   "shot": null
+  },
+  "STO-03": {
+   "title": "App Store-sidans beskrivning",
+   "summary": "Texten har inte ändrats sedan VM-sommaren: den säljer 48 landslag, ett datum i juni och \"no tracking\", som säger emot integritetsetiketten. Alla 6 personas såg det. Tonen och öppningen behålls, innehållet skrivs om till det som är sant nu, och den döda policylänken byts.",
+   "shot": null
+  },
+  "STO-04": {
+   "title": "Versionsnyheter (What's New)",
+   "summary": "Texten befintliga användare ser vid uppdatering. Den lyfter i dag en funktion som bara högsta nivån får; för 2.4 ska den säga vad som ändras i hennes vecka.",
+   "shot": null
+  },
+  "STO-05": {
+   "title": "Sökord (syns inte publikt)",
+   "summary": "Orden appen hittas på i App Store-sökningen. Senast kända lista är VM-listan; den ska bytas mot ord hon själv skulle söka på.",
+   "shot": null
+  },
+  "STO-06": {
+   "title": "Integritetsetiketten i App Store",
+   "summary": "Apples ruta om vilken data appen samlar. Panelen litade mer på den än på beskrivningen. Den ska stämmas av mot version 2.4 före inlämning, och länken till integritetspolicyn svarar inte och måste bytas.",
+   "shot": null
+  },
+  "STO-07": {
+   "title": "Informationsrutan i App Store",
+   "summary": "Faktarutan längst ner (utvecklare, storlek, kompatibilitet, språk, copyright). Allt behålls utom att språket, som i dag är tomt, ska anges.",
+   "shot": null
+  },
+  "ONB-01": {
+   "title": "Välkomstskärmen (onboarding steg 1)",
+   "summary": "Första skärmen efter installation: logga, raden \"You're here. He has no idea.\" och en knapp. 5 av 6 log. Den behålls, men prickraden och pratbubblan tas bort.",
+   "shot": "screens/first-matchweek/00-onboarding-welcome.png"
+  },
+  "ONB-02": {
+   "title": "Hennes namn (onboarding steg 2)",
+   "summary": "Hon skriver sitt eget namn. Namnet syns ingenstans utom i Inställningar, så hela steget tas bort.",
+   "shot": "screens/first-matchweek/01-onboarding-her-name.png"
+  },
+  "ONB-03": {
+   "title": "Hans namn och relation (onboarding steg 3)",
+   "summary": "Hon skriver hans namn och väljer Partner/Parent/Sibling/Friend. Steget flyttas ut ur första körningen: namnet blir en valfri fråga på klubbsidan, relationen en ny väljare i Inställningar. Smaksak för Anton.",
+   "shot": "screens/first-matchweek/02-onboarding-his-name.png"
+  },
+  "ONB-04": {
+   "title": "Välj hans klubb (onboarding steg 4)",
+   "summary": "Hon väljer hans Premier League-klubb ur 20. Det blir sista frågan i setup; understrykningen av \"Premier League\" och kortet för en andra klubb tas bort, och knappen leder till klubbsidan.",
+   "shot": "screens/first-matchweek/03-onboarding-club-picker.png"
+  },
+  "ONB-05": {
+   "title": "Ordlistan för \"Premier League\" (från klubbfrågan)",
+   "summary": "Ett ark som öppnas om hon trycker på understrukna \"Premier League\". Ingen tryckte, och 4 av 6 tyckte understrykningen var nedlåtande. Vägen in tas bort; ordlistan finns kvar i appen.",
+   "shot": null
+  },
+  "ONB-06": {
+   "title": "Meet his lot (onboarding steg 5)",
+   "summary": "Tre fakta om klubben: en stjärnspelare, en humörrad och tabelläget. Allt finns redan på klubbsidan, så skärmen flyttar dit; humörraderna och tabellomdömena (t.ex. \"Top of the league chase\" för ett lag på fjärde plats) tas bort.",
+   "shot": "screens/first-worstweek/04-onboarding-meet-team.png"
+  },
+  "ONB-07": {
+   "title": "Meet the boss (onboarding steg 6)",
+   "summary": "Kort om klubbens manager, första \"åh, användbart\" för 4 av 6. Det är en dubblett av klubbsidans managerkort och flyttar dit; den roliga underrubriken följer med. Bilden visar Liverpool, där fotot saknas.",
+   "shot": "screens/first-worstweek/05-onboarding-meet-manager.png"
+  },
+  "ONB-08": {
+   "title": "How it works (onboarding steg 7)",
+   "summary": "Tre kort som beskriver appen, 94 ord, det ordrikaste steget. 5 av 6 skummade eller invände. Steget tas bort; en mening flyttar in i den nya notisfrågan.",
+   "shot": "screens/first-matchweek/06-onboarding-how-it-works.png"
+  },
+  "ONB-09": {
+   "title": "Välj nivå (onboarding steg 8)",
+   "summary": "Hon väljer hur mycket hon vill ha (nivå 1–3, nivå 2 förvald). Det ändrar inget hon ser dag 1, så valet flyttar till Inställningar med nivå 2 som förval och en kontrollfråga efter första matchhelgen.",
+   "shot": "screens/first-matchweek/07-onboarding-tier-selection.png"
+  },
+  "ONB-10": {
+   "title": "Notisfrågan (onboarding steg 9)",
+   "summary": "En ritad låsskärm med en påhittad match mot Chelsea och rubriken \"It only works if we can reach you.\" Frågan flyttar till klubbsidan vid hans match, med riktig motståndare och tid, utan skuldrubrik.",
+   "shot": "screens/first-matchweek/08-onboarding-notification-ask.png"
+  },
+  "ONB-11": {
+   "title": "\"One more thing\"-arket (andra notisfrågan)",
+   "summary": "Ett ark som frågar igen om hon tryckt \"I'll do this later\". Tillsammans med bannern i flödet blir det tre frågor innan hon läst något. Arket tas bort helt.",
+   "shot": null
+  },
+  "ONB-12": {
+   "title": "iPhones notisdialog",
+   "summary": "Apples egen dialog. Texten kan inte ändras; bara tidpunkten flyttas, till den nya frågan vid matchen.",
+   "shot": null
+  },
+  "ONB-13": {
+   "title": "Kalenderfrågan (onboarding steg 10) och slutet av setup",
+   "summary": "Sista steget erbjuder att lägga in hans matcher i kalendern; alla 6 sa nej. Erbjudandet flyttar till klubbsidans Kalender-flik, och setup slutar på klubbsidan i stället för i flödet.",
+   "shot": "screens/first-matchweek/09-onboarding-calendar-ask.png"
+  },
+  "ONB-14": {
+   "title": "iPhones kalenderdialog",
+   "summary": "Apples dialog om kalenderåtkomst. Texten behålls; den visas först när hon själv väljer att lägga till matcherna i Kalender-fliken.",
+   "shot": null
+  },
+  "ONB-15": {
+   "title": "Hans matcher i hennes Kalender-app",
+   "summary": "Det som skrivs in i iPhones Kalender om hon slagit på det. Allt behålls utom att titeln ska ha hemmalaget först.",
+   "shot": null
+  },
+  "ONB-16": {
+   "title": "Säsongsintron (nås aldrig)",
+   "summary": "En skärm som skulle visas mellan setup och appen men som ingen användare kan nå. Den tas bort tillsammans med rutinen som skriver dess data varje vardag.",
+   "shot": "screens/first-matchweek/10-season-primer.png"
+  },
+  "ONB-17": {
+   "title": "iPhones spårningsfråga (ATT)",
+   "summary": "Apples fråga om spårning, som i dag landar 1,5 sekunder in på första flödesskärmen. Alla 6 sa nej och kopplade den till butikens \"no tracking\". Den flyttar till hennes andra besök.",
+   "shot": "screens/first-matchweek/17-first-screen-with-att-prompt.png"
+  },
+  "ONB-18": {
+   "title": "iPhones Live Activities-fråga",
+   "summary": "Apple frågar på låsskärmen när första matchen startar. Det är redan rätt stund, så inget ändras.",
+   "shot": null
+  }
+ },
+ "rows": {
+  "STO-01-01": {
+   "what": "Appens namn \"GoalDigger\" högst upp på App Store-sidan.",
+   "proposal": "Behåll som det är.",
+   "why": "Ingen av de sex personorna stannade upp vid namnet, och alla sex beskrev rätt vad appen gör efter första blicken.",
+   "if_accept": "Inget ändras."
+  },
+  "STO-01-02": {
+   "what": "Underrubriken \"Football for partners\" under namnet i App Store.",
+   "proposal": "Behåll som det är.",
+   "why": "Säger på tre ord vem appen är för och räknas i sökningen. 3 av 6 personas gillade den, ingen var emot.",
+   "if_accept": "Inget ändras."
+  },
+  "STO-01-03": {
+   "what": "Kampanjtexten överst i beskrivningen (\"promotional text\"), som i dag är tom.",
+   "proposal": "Ändra så att den tomma rutan fylls med en tidlös rad om stunden hon är i (hans nästa match, sagt enkelt), utan datum, turneringar eller klubbnamn.",
+   "why": "Det är den enda butikstexten som kan bytas utan Apples granskning, och den står tom. Det var den daterade beskrivningen som blev inaktuell, så färskheten ska bo här.",
+   "if_accept": "En ny rad syns överst på butikssidan. Anton ändrar det själv i App Store Connect; ingen appversion behövs. Byt raden vid varje säsongsskifte."
+  },
+  "STO-01-04": {
+   "what": "Appikonen på butikssidan.",
+   "proposal": "Behåll som det är.",
+   "why": "Inget tyder på att den är ett problem; ingen persona nämnde den.",
+   "if_accept": "Inget ändras."
+  },
+  "STO-01-05": {
+   "what": "Priset \"Free\", inga köp i appen.",
+   "proposal": "Behåll som det är.",
+   "why": "Det stämmer, och \"gratis\" var skälet tre personas gav för att ladda ner trots tvekan.",
+   "if_accept": "Inget ändras."
+  },
+  "STO-01-06": {
+   "what": "Kategorin Sports (med News som andra kategori).",
+   "proposal": "Behåll som det är.",
+   "why": "Där hon skulle bläddra; inget talar emot.",
+   "if_accept": "Inget ändras."
+  },
+  "STO-01-07": {
+   "what": "Åldersgränsen 4+.",
+   "proposal": "Behåll som det är.",
+   "why": "Apple kräver den och den stämmer.",
+   "if_accept": "Inget ändras."
+  },
+  "STO-01-08": {
+   "what": "Betygsrutan, som säger att appen har för få betyg för att visa något (0 betyg).",
+   "proposal": "Ändra så att appen en gång ber om betyg med Apples egen ruta, efter hennes första riktigt bra stund (t.ex. morgonen efter första slutresultatet), aldrig i onboarding.",
+   "why": "5 av 6 personas nämnde 0 betyg. På en sida som redan ser övergiven ut gör det ett \"kanske\" till ett \"nej\".",
+   "if_accept": "Betyg börjar samlas och rutan fylls med tiden. Kräver en ny appversion med betygsfrågan inbyggd."
+  },
+  "STO-01-09": {
+   "what": "Bannerbilden med texten \"Football, finally in plain English.\" (om den är uppladdad; det är inte bekräftat).",
+   "proposal": "Behåll som den är, men kontrollera i App Store Connect att den faktiskt är uppladdad.",
+   "why": "\"Plain English\" är löftet som Light-personorna (som kan minst om fotboll) laddar ner för; båda citerade den.",
+   "if_accept": "Inget ändras i texten. Anton kollar i App Store Connect att bilden ligger uppe."
+  },
+  "STO-01-10": {
+   "what": "Den breda bannerbilden med texten \"Keep up. Or wind him up.\" (uppladdning inte bekräftad).",
+   "proposal": "Behåll den, kontrollera att den är uppladdad, och överväg att låta den vara första raden hon ser.",
+   "why": "Det var den enda raden som personorna som kan mer om fotboll sa var skriven för dem (3 av 6, t.ex. \"the banner sold it\").",
+   "if_accept": "Inget ändras i texten. Anton kollar uppladdningen och kan lyfta den först i butiksmaterialet."
+  },
+  "STO-02-01": {
+   "what": "Skärmbild 1 i App Store: klubbväljaren från onboarding (\"Which Premier League team does Tom follow?\").",
+   "proposal": "Ta bort bilden; plats 1 går till klubbsidan (se STO-02-03).",
+   "why": "Den säljer ett inställningssteg, inte det hon får efteråt. Ingen persona nämnde bilden; alla beskrev appens värde som \"vad jag ska säga\".",
+   "if_accept": "Bilden försvinner ur butiken. Anton ändrar det i App Store Connect, och det går ut med nästa versionsinlämning till Apple. Kan gå med valfri inlämning."
+  },
+  "STO-02-02": {
+   "what": "Skärmbild 2: ett Arsenal-kort i flödet med en replik hon kan säga.",
+   "proposal": "Ändra bilden: ta en ny av ett kort vars replik får henne att låta smart, utan datum eller nästa motståndare, och lägg till en kort bildtext om vad hon får.",
+   "why": "Det var bilden som sålde appen (Light-personan L2 laddade ner för den), men den nämner Leeds som nästa motståndare och en etikett som appen inte längre använder.",
+   "if_accept": "En ny, tidlös skärmbild med bildtext ersätter den gamla. Anton ändrar det i App Store Connect, och det går ut med nästa versionsinlämning till Apple."
+  },
+  "STO-02-03": {
+   "what": "Skärmbild 3: klubbsidans \"Ones to know\" (Ødegaard) och rivalen Tottenham, utan bildtext.",
+   "proposal": "Ändra bilden till klubbsidans första skärm (Coming up med datum och tid, The basics, The manager), flytta den till plats 1 och ge den en bildtext.",
+   "why": "Klubbsidan är sidan hon ska landa på efter onboarding, och 4 av 6 personas sa att det var den mest användbara skärmen.",
+   "if_accept": "Första skärmbilden i butiken blir klubbsidan. Anton ändrar det i App Store Connect, och det går ut med nästa versionsinlämning till Apple. Bör tas efter att klubbsidans Coming up-kort är fixat (tiden klipps av i dag)."
+  },
+  "STO-02-04": {
+   "what": "Skärmbild 4: lördagsquizet (\"How did Arsenal and Leeds last meet?\") ovanpå ett flödeskort.",
+   "proposal": "Ta bort bilden.",
+   "why": "Den säljer en funktion som bara finns i högsta nivån och bara på helger: 59 av 92 enheter får den aldrig, och ingen ser den första dagen.",
+   "if_accept": "Bilden försvinner ur butiken. Anton ändrar det i App Store Connect, och det går ut med nästa versionsinlämning till Apple. Kan gå med valfri inlämning."
+  },
+  "STO-02-05": {
+   "what": "Skärmbild 5: My Turn-quizet \"Who manages Leeds?\" (fråga 1 av 7), utan bildtext.",
+   "proposal": "Ändra bilden till låsskärmen: livescoren (eller en straffläggning) plus en slutsignalsnotis med sin \"Say:\"-rad, med bildtext.",
+   "why": "5 av 6 personas tyckte att quizen kändes som läxa; låsskärmen var panelens bästa stund.",
+   "if_accept": "En låsskärmsbild ersätter quizbilden. Anton ändrar det i App Store Connect, och det går ut med nästa versionsinlämning till Apple."
+  },
+  "STO-02-06": {
+   "what": "Skärmbild 6: kalenderfrågan från onboarding (\"We'll add his next 15 matches…\").",
+   "proposal": "Ta bort bilden.",
+   "why": "Alla 6 personas tackade nej till kalendern första dagen, och alla 6 såg att bilden säger 15 matcher medan appen säger 25.",
+   "if_accept": "Bilden försvinner. Anton ändrar det i App Store Connect, och det går ut med nästa versionsinlämning till Apple. Villkor: ska tas bort i samma inlämning som kalenderfrågan flyttas ur onboarding (ONB-13); fram till dess är bilden sann."
+  },
+  "STO-03-01": {
+   "what": "Beskrivningens första stycke (\"Your boyfriend's team is basically a third person in your relationship…\").",
+   "proposal": "Ändra stycket: behåll öppningen om \"tredje personen i förhållandet\", men stryk meningen om att sommarens turnering ska göra en hel månad av det.",
+   "why": "Öppningen sätter tonen. Turneringsmeningen är fyra månader gammal, och alla 6 personas tyckte att VM-texten fick appen att se övergiven ut.",
+   "if_accept": "Turneringsmeningen försvinner, resten står kvar. Anton ändrar det i App Store Connect, och det går ut med nästa versionsinlämning till Apple."
+  },
+  "STO-03-02": {
+   "what": "Andra stycket: \"GoalDigger fixes that…\", om uppdateringar om hans landslag (och klubb).",
+   "proposal": "Ändra så att det handlar om hans klubb i stället för hans land; behåll \"No men explaining offside to you\" och \"something natural to say back\".",
+   "why": "Landslagen är pensionerade i appen. Resten är själva löftet, och 3 av 6 citerade offside-raden med värme.",
+   "if_accept": "Stycket beskriver klubbappen som den är i dag. Anton ändrar det i App Store Connect, och det går ut med nästa versionsinlämning till Apple."
+  },
+  "STO-03-03": {
+   "what": "Tredje stycket: före/efter-exemplet med England mot Kroatien som slutar med \"order pizza\".",
+   "proposal": "Ändra så att före/efter-greppet behålls men utan riktig klubb eller nation, och så att \"efter\" är en vass replik hon kan säga, inte en gissning om hans humör.",
+   "why": "England–Kroatien är VM-material, och poängen handlar om att hantera hans humör. Produktregeln är att hon vill låta smart, inte läsa av honom.",
+   "if_accept": "Ett nytt exempel ersätter det gamla. Anton ändrar det i App Store Connect, och det går ut med nästa versionsinlämning till Apple."
+  },
+  "STO-03-04": {
+   "what": "Fjärde stycket: \"You'll know when he's about to be insufferable… You'll have things to say…\".",
+   "proposal": "Ändra stycket: stryk första meningen (om när han är odräglig eller ska lämnas ifred); behåll \"You'll have things to say in football conversations without having to study\".",
+   "why": "Hon vill låta smart, inte läsa av hans humör. Deep-personan D2: \"I don't need to be told how he feels\"; han själv ryckte till åt humörraderna.",
+   "if_accept": "Humörmeningen försvinner. Anton ändrar det i App Store Connect, och det går ut med nästa versionsinlämning till Apple."
+  },
+  "STO-03-05": {
+   "what": "Femte stycket: \"Covers all 48 nations… Pick his country…\" och löftet \"no tracking\".",
+   "proposal": "Ändra till det som är sant: alla 20 Premier League-klubbar plus cuperna, följ upp till två, gratis. Stryk \"48 nations\", \"pick his country\" och \"no tracking\".",
+   "why": "\"No tracking\" är falskt (appen har Metas SDK). Alla 6 personas såg att det säger emot integritetsetiketten, och alla 6 kopplade det till sitt misstroende när spårningsfrågan dök upp i appen.",
+   "if_accept": "Det falska löftet försvinner ur butiken. Anton ändrar det i App Store Connect, och det går ut med nästa versionsinlämning till Apple. Hänger ihop med att spårningsfrågan flyttas (ONB-17)."
+  },
+  "STO-03-06": {
+   "what": "Sjätte stycket: \"The big summer of international football kicks off June 11… England…\".",
+   "proposal": "Ta bort stycket helt.",
+   "why": "Daterat och handlar om en funktion som är pensionerad; alla 6 personas tyckte att det fick appen att se övergiven ut.",
+   "if_accept": "Stycket försvinner, inget ersätter det. Anton ändrar det i App Store Connect, och det går ut med nästa versionsinlämning till Apple. Kan gå med valfri inlämning."
+  },
+  "STO-03-07": {
+   "what": "Sjunde stycket: \"Privacy policy: getgoaldigger.com/privacy\".",
+   "proposal": "Ändra till den adress som fungerar (getgoaldigger.carrd.co, som appen själv länkar till), eller få getgoaldigger.com att svara.",
+   "why": "Länken är död: adressen svarade inte vid test 29 oktober, medan carrd-sidan svarar.",
+   "if_accept": "Länken i beskrivningen fungerar. Anton ändrar det i App Store Connect, och det går ut med nästa versionsinlämning till Apple."
+  },
+  "STO-03-08": {
+   "what": "Åttonde stycket: \"Support: getgoaldigger@gmail.com\".",
+   "proposal": "Ändra så att samma supportadress används överallt (appens hello@goaldigger.app eller gmail-adressen, inte båda).",
+   "why": "Appen och butiken visar i dag två olika adresser.",
+   "if_accept": "En adress överallt. Butiken ändras av Anton i App Store Connect; om appens adress ska bytas krävs en ny appversion."
+  },
+  "STO-04-01": {
+   "what": "Versionsnyheterna för 2.3 (\"Pre-game: get to know his opponent… Saturday quiz…\").",
+   "proposal": "Ändra så att 2.4:s text säger vad som ändras i hennes vecka (score och straffar på låsskärmen, klubbsidan först) utan att lyfta funktioner bara högsta nivån får.",
+   "why": "Det är befintliga användare som läser versionsnyheter, och lördagsquizet når bara 33 av 92 enheter, och bara på helger.",
+   "if_accept": "Ny text skrivs när 2.4 skickas in. Inget annat ändras."
+  },
+  "STO-05-01": {
+   "what": "Sökorden i App Store Connect (syns inte publikt); senast kända lista är VM-listan (world cup, fifa, national team).",
+   "proposal": "Ändra sökorden: ta bort world cup, fifa och national team; lägg till orden hon söker på (t.ex. football explained, offside, premier league basics, boyfriend football). Kontrollera dagens värde först.",
+   "why": "Den senast kända listan är VM-listan, och landslagen är pensionerade.",
+   "if_accept": "Appen hittas på hennes sökord i stället för VM-ord. Anton ändrar det i App Store Connect, och det går ut med nästa versionsinlämning till Apple."
+  },
+  "STO-06-01": {
+   "what": "Integritetsetiketten, raden \"Data Used to Track You\": Identifiers och Usage Data.",
+   "proposal": "Ändra (stäm av) etiketten mot version 2.4:s integritetsmanifest innan 2.4 skickas in; behåll den lika enkel.",
+   "why": "Alla 6 personas litade på etiketten mer än på beskrivningen, så den måste fortsätta vara sann när 2.4 lägger till egen statistik.",
+   "if_accept": "Etiketten matchar det appen faktiskt gör. Anton gör det i App Store Connect, och det måste vara klart före inlämningen av 2.4."
+  },
+  "STO-06-02": {
+   "what": "Integritetsetiketten, raden \"Data Linked to You\": användningsdata för annonsering och statistik.",
+   "proposal": "Ändra (stäm av) mot 2.4:s integritetsmanifest, samma arbete som raden ovan.",
+   "why": "Säkerhetsgranskningen: etiketten måste spegla den nya statistiken i 2.4.",
+   "if_accept": "Som STO-06-01: klart i App Store Connect före inlämningen av 2.4."
+  },
+  "STO-06-03": {
+   "what": "Integritetsetiketten, raden \"Data Not Linked to You\" (enhets-id, kraschdata m.m.).",
+   "proposal": "Ändra (stäm av) mot 2.4:s integritetsmanifest, samma arbete som STO-06-01.",
+   "why": "Säkerhetsgranskningen: allt på etiketten måste matcha 2.4.",
+   "if_accept": "Som STO-06-01: klart i App Store Connect före inlämningen av 2.4."
+  },
+  "STO-06-04": {
+   "what": "Länken till integritetspolicyn i etikettrutan: getgoaldigger.com/privacy.",
+   "proposal": "Ändra länken i App Store Connect till carrd-sidan som fungerar, eller laga domänen. Länken kan inte tas bort.",
+   "why": "Apple kräver en fungerande integritetspolicy, och den här adressen svarar inte.",
+   "if_accept": "Länken fungerar, och appen riskerar inte att fastna i Apples granskning. Anton ändrar det själv i App Store Connect; ingen appversion behövs."
+  },
+  "STO-07-01": {
+   "what": "Utvecklarnamnet \"ANTON KJELL GUSTAFSSON\" i informationsrutan.",
+   "proposal": "Behåll som det är.",
+   "why": "Apple visar kontoinnehavaren; att ändra det kräver ett företagskonto.",
+   "if_accept": "Inget ändras."
+  },
+  "STO-07-02": {
+   "what": "Storleken 33,7 MB.",
+   "proposal": "Behåll som det är.",
+   "why": "Apple räknar fram den.",
+   "if_accept": "Inget ändras."
+  },
+  "STO-07-03": {
+   "what": "Kompatibilitet: kräver iOS 17 eller senare, bara iPhone.",
+   "proposal": "Behåll som det är.",
+   "why": "Apple räknar fram den, och den stämmer.",
+   "if_accept": "Inget ändras."
+  },
+  "STO-07-04": {
+   "what": "Raden Languages, som i dag är tom.",
+   "proposal": "Ändra så att engelska (UK) anges som språk i App Store Connect.",
+   "why": "Ett tomt fält bidrar till att sidan ser oskött ut.",
+   "if_accept": "Raden visar engelska. Anton ändrar det i App Store Connect, och det går ut med nästa versionsinlämning till Apple."
+  },
+  "STO-07-05": {
+   "what": "Copyright-raden \"© 2026 Anton Gustafsson\".",
+   "proposal": "Behåll som det är.",
+   "why": "Krävs och stämmer.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-01-00": {
+   "what": "Välkomstskärmen, det första hon ser efter installationen (steg 1 av 10).",
+   "proposal": "Behåll skärmen, utan prickraden och pratbubblan (se raderna nedan).",
+   "why": "En rad och en knapp som säger löftet. 5 av 6 personas log åt den.",
+   "if_accept": "Inget ändras på själva skärmen."
+  },
+  "ONB-01-01": {
+   "what": "Raden med tio prickar överst, som visar vilket steg hon är på (finns på alla onboardingsteg).",
+   "proposal": "Ta bort prickraden.",
+   "why": "Tio prickar säger \"lång setup\" (Light-personan L2). Med bara två steg kvar finns inget att följa.",
+   "if_accept": "Prickarna försvinner från alla steg. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-01-02": {
+   "what": "Den rosa pratbubbleikonen ovanför loggan på välkomstskärmen.",
+   "proposal": "Ta bort ikonen.",
+   "why": "Ren dekoration på en skärm som bärs av orden; ingen persona nämnde den.",
+   "if_accept": "Ikonen försvinner, loggan flyttar upp. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-01-03": {
+   "what": "Loggan \"GoalDigger\" på välkomstskärmen.",
+   "proposal": "Behåll som det är.",
+   "why": "Varumärket på första skärmen, del av skärmen 5 av 6 gillade.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-01-04": {
+   "what": "Välkomstraden \"You're here. He has no idea. Let's get you ready.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Den mest omtyckta raden i hela onboarding (5 av 6 log), och varumärkesrösten säger att den ska vara partner-röst.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-01-05": {
+   "what": "Knappen \"Let's go\".",
+   "proposal": "Behåll som det är.",
+   "why": "Den enda knappen på skärmen.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-02-00": {
+   "what": "Steg 2: skärmen där hon skriver sitt eget namn (\"First things first, what's your name?\").",
+   "proposal": "Ta bort steget.",
+   "why": "Ett tangentbordssteg innan hon fått något, för ett svar som inte syns någonstans utom i Inställningar. L1: \"why does it need my name?\", D1: \"never saw it used\".",
+   "if_accept": "Ett steg och ett skrivfält mindre. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant. Villkor: i samma ändring ska texter med hennes namn skriva \"du\", och namnraden i Inställningar tas bort samtidigt."
+  },
+  "ONB-02-01": {
+   "what": "Tillbaka-pilen uppe till vänster (på alla steg efter välkomstskärmen).",
+   "proposal": "Behåll den; på klubbsteget leder den tillbaka till välkomstskärmen.",
+   "why": "Vanlig navigering, rätt storlek och läsbar för skärmläsare.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-02-02": {
+   "what": "Den lilla glitter-ikonen ovanför namnfrågan.",
+   "proposal": "Ta bort den, tillsammans med steget.",
+   "why": "Steget tas bort.",
+   "if_accept": "Försvinner med steget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-02-03": {
+   "what": "Frågan \"First things first, what's your name?\".",
+   "proposal": "Ta bort den, tillsammans med steget.",
+   "why": "Steget tas bort; namnet används ingenstans hon ser.",
+   "if_accept": "Försvinner med steget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-02-04": {
+   "what": "Fältet där hon skriver sitt namn (\"Your name\"), sparas bara i telefonen.",
+   "proposal": "Ta bort fältet, tillsammans med steget.",
+   "why": "Steget tas bort; inget i appen läser namnet utom Inställningar.",
+   "if_accept": "Försvinner med steget; namnraden i Inställningar tas bort i samma version. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-02-05": {
+   "what": "Knappen \"Continue\" som dyker upp när hon skrivit något.",
+   "proposal": "Ta bort den, tillsammans med steget.",
+   "why": "Steget tas bort.",
+   "if_accept": "Försvinner med steget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-03-00": {
+   "what": "Steg 3: hans namn och relationen (\"And what's their name?\" + Partner/Parent/Sibling/Friend).",
+   "proposal": "Flytta ut ur första körningen: namnet frågas valfritt i klubbsidans rubrik (\"What's his name?\") och ändras i Inställningar; relationen flyttas till Inställningar.",
+   "why": "Namnet syns bara på klubbsidan och i humörrader; \"he\" fungerar under tiden. 3 av 6 tyckte att \"their name\" lät kliniskt, ingen kallade steget användbart. Smaksak för Anton.",
+   "if_accept": "Ett steg och ett skrivfält mindre. Att bygga: namnfrågan i klubbsidans rubrik och en relationsväljare i Inställningar. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-03-01": {
+   "what": "Fotbollsikonen ovanför frågan om hans namn.",
+   "proposal": "Ta bort ikonen.",
+   "why": "Skärmen lämnar första körningen.",
+   "if_accept": "Försvinner med skärmen. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-03-02": {
+   "what": "Frågan \"And what's their name?\".",
+   "proposal": "Flytta till klubbsidans rubrik som \"What's his name?\" (partner-röst, inte \"their\").",
+   "why": "\"Their\" lät kliniskt för 3 av 6 personas, och namnet är valfritt.",
+   "if_accept": "Frågan dyker upp på klubbsidan i stället. Kräver att den nya rubrikfrågan byggs. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-03-03": {
+   "what": "Fältet där hon skriver hans namn (\"Their name\").",
+   "proposal": "Flytta till klubbsidans rubrikfråga och Inställningar > His Name (finns redan).",
+   "why": "Samma skäl som steget: namnet behövs inte innan hon fått något.",
+   "if_accept": "Fältet finns på klubbsidan och i Inställningar. Allt som läser namnet klarar sig redan utan det. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-03-04": {
+   "what": "Etiketten \"They're my…\" ovanför relationsvalen.",
+   "proposal": "Flytta till Inställningar under His Name som \"He's my… Partner / Parent / Sibling / Friend\", med Partner förvalt.",
+   "why": "Onboarding är i dag enda stället där relationen kan väljas, och bytet till they/them måste finnas kvar.",
+   "if_accept": "Ny rad i Inställningar. Villkor från beroendekontrollen: väljaren i Inställningar måste släppas i samma version som den tas bort ur onboarding, annars ska verdicten bli Behåll."
+  },
+  "ONB-03-05": {
+   "what": "Valet \"Partner\" (förvalt; appen säger he/his/him).",
+   "proposal": "Flytta till relationsväljaren i Inställningar som förval, med knappar i full tryckstorlek.",
+   "why": "Förvalet ska fortsatt vara Partner. Dagens knappar är för små att träffa (UI-granskningen).",
+   "if_accept": "Partner gäller automatiskt för nya användare (gör det redan om inget valts). Kräver väljaren i Inställningar, samma version."
+  },
+  "ONB-03-06": {
+   "what": "Valet \"Parent\" (appen byter till they/their/them).",
+   "proposal": "Flytta till relationsväljaren i Inställningar.",
+   "why": "Det är enda sättet att få appen att säga they/them om en förälder.",
+   "if_accept": "Valet finns i Inställningar. Kräver väljaren, samma version."
+  },
+  "ONB-03-07": {
+   "what": "Valet \"Sibling\" (they/their/them).",
+   "proposal": "Flytta till relationsväljaren i Inställningar.",
+   "why": "Samma som Parent.",
+   "if_accept": "Valet finns i Inställningar. Kräver väljaren, samma version."
+  },
+  "ONB-03-08": {
+   "what": "Valet \"Friend\" (they/their/them).",
+   "proposal": "Flytta till relationsväljaren i Inställningar.",
+   "why": "Samma som Parent.",
+   "if_accept": "Valet finns i Inställningar. Kräver väljaren, samma version."
+  },
+  "ONB-03-09": {
+   "what": "Hur relationsknapparna radbryts (2x2, sedan en kolumn) när hon har stor text påslagen.",
+   "proposal": "Flytta med knapparna till Inställningar och behåll radbrytningen.",
+   "why": "Tillgänglighetslayouten följer med elementet den hör till.",
+   "if_accept": "Samma beteende i Inställningar. Ingår i bygget av väljaren."
+  },
+  "ONB-03-10": {
+   "what": "Knappen \"Continue\" på steget om hans namn.",
+   "proposal": "Ta bort den.",
+   "why": "Skärmen lämnar första körningen.",
+   "if_accept": "Försvinner med skärmen. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-04-00": {
+   "what": "Steg 4: välj hans Premier League-klubb, obligatoriskt (upp till 2).",
+   "proposal": "Behåll steget; det blir sista steget, och när hon valt landar hon på klubbsidan.",
+   "why": "Det enda svaret som ändrar varje skärm efteråt.",
+   "if_accept": "Skärmen finns kvar men är nu sista frågan i setup. Landningen på klubbsidan byggs i ONB-13-13. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-04-01": {
+   "what": "Sköld-ikonen ovanför klubbfrågan.",
+   "proposal": "Ta bort ikonen.",
+   "why": "Ren dekoration på den mest fullsatta skärmen i setup (22 tryckbara saker).",
+   "if_accept": "Ikonen försvinner, listan flyttar upp. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-04-02": {
+   "what": "Frågan \"Which Premier League team does Tom follow?\" med \"Premier League\" understruket och tryckbart.",
+   "proposal": "Ändra till \"Which Premier League club does he support?\" i vanlig text: ingen understrykning, inget namn.",
+   "why": "4 av 6 personas läste understrykningen som att appen tror att de är dumma (M1: \"we think you're thick\"); ingen tryckte på den. Namnet är inte längre känt här.",
+   "if_accept": "Frågan blir kortare och slätare. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-04-03": {
+   "what": "Underrubriken \"Everything in the app is built around his club.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Den enda förklaringen till varför frågan ställs; två personas kallade den tydlig.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-04": {
+   "what": "Sökfältet \"Search his team…\", som också hittar smeknamn som \"Toon\" och \"Magpies\".",
+   "proposal": "Behåll som det är.",
+   "why": "Hittar klubbar längre ner i listan; Light-personan L1 kom in och kände bara till \"the Toon\".",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-05": {
+   "what": "Varje rad i klubblistan: klubbmärke, namn och rosa bock när den är vald.",
+   "proposal": "Behåll som det är.",
+   "why": "Själva väljaren.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-06": {
+   "what": "Raden \"AFC Bournemouth\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-07": {
+   "what": "Raden \"Arsenal\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-08": {
+   "what": "Raden \"Aston Villa\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-09": {
+   "what": "Raden \"Brentford\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-10": {
+   "what": "Raden \"Brighton & Hove Albion\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-11": {
+   "what": "Raden \"Chelsea\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-12": {
+   "what": "Raden \"Coventry City\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-13": {
+   "what": "Raden \"Crystal Palace\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-14": {
+   "what": "Raden \"Everton\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-15": {
+   "what": "Raden \"Fulham\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-16": {
+   "what": "Raden \"Hull City\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-17": {
+   "what": "Raden \"Ipswich Town\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-18": {
+   "what": "Raden \"Leeds United\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-19": {
+   "what": "Raden \"Liverpool\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-20": {
+   "what": "Raden \"Manchester City\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-21": {
+   "what": "Raden \"Manchester United\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-22": {
+   "what": "Raden \"Newcastle United\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-23": {
+   "what": "Raden \"Nottingham Forest\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-24": {
+   "what": "Raden \"Sunderland\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-25": {
+   "what": "Raden \"Tottenham Hotspur\" i klubblistan.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbar appen täcker; alla 20 är rätt för säsongen 2026–27 enligt granskningen av inaktuell data.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-26": {
+   "what": "Kortet \"I want to add my own club too\" som dyker upp under listan när hon valt en klubb.",
+   "proposal": "Flytta till Inställningar > Your clubs, där man redan kan lägga till en andra klubb.",
+   "why": "Hennes egen andraklubb är en funktion för senare, inte en setupfråga, och kortet hamnar ändå nedanför skärmkanten.",
+   "if_accept": "Kortet försvinner från klubbsteget; inget nytt behöver byggas eftersom Inställningar redan klarar två klubbar. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-04-27": {
+   "what": "Kortets undertext när det är avslaget: \"Follow two clubs, not just his.\"",
+   "proposal": "Flytta med kortet till Inställningar.",
+   "why": "Samma som kortet.",
+   "if_accept": "Försvinner från klubbsteget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-04-28": {
+   "what": "Kortets undertext när det är påslaget: \"Pick a second club (up to 2).\"",
+   "proposal": "Flytta med kortet till Inställningar.",
+   "why": "Samma som kortet.",
+   "if_accept": "Försvinner från klubbsteget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-04-29": {
+   "what": "Den gråa knappen \"Pick a team\" innan hon valt något.",
+   "proposal": "Behåll som det är.",
+   "why": "Säger vad som saknas.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-04-30": {
+   "what": "Knappen \"Add team\" när hon valt en klubb.",
+   "proposal": "Ändra texten till vad som händer härnäst, t.ex. \"Show me his club\", eftersom tryckningen nu avslutar setup.",
+   "why": "\"Add team\" undersäljer det som kommer direkt efter.",
+   "if_accept": "Ny knapptext. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-04-31": {
+   "what": "Knappen \"Add both teams\" när hon valt två klubbar.",
+   "proposal": "Flytta med andraklubben till Inställningar.",
+   "why": "Två klubbar läggs till i Inställningar.",
+   "if_accept": "Knappvarianten försvinner från setup. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-04-32": {
+   "what": "Hur klubbsteget ser ut med extra stor text (frågan och sökfältet scrollar med listan).",
+   "proposal": "Behåll som det är.",
+   "why": "Tillgänglighetslayouten för skärmen som blir kvar.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-05-00": {
+   "what": "Ordlistearket som öppnas om hon trycker på understrukna \"Premier League\" i klubbfrågan.",
+   "proposal": "Ta bort vägen in från onboarding; själva arket och ordlistan finns kvar i resten av appen.",
+   "why": "Ingen persona tryckte på det, och 4 av 6 läste understrykningen som nedlåtande.",
+   "if_accept": "Ingen understrykning i klubbfrågan. Ordlistan fungerar som vanligt på andra ställen. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-05-01": {
+   "what": "Etiketten \"GLOSSARY\" överst i arket.",
+   "proposal": "Ta bort den här i onboarding (arket finns kvar på andra ställen).",
+   "why": "Vägen in tas bort.",
+   "if_accept": "Syns inte längre i onboarding. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-05-02": {
+   "what": "Ordet \"Premier League\" som rubrik i arket.",
+   "proposal": "Ta bort det här i onboarding; ordet finns kvar i ordlistan.",
+   "why": "Vägen in tas bort.",
+   "if_accept": "Syns inte längre i onboarding. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-05-03": {
+   "what": "Förklaringen \"England's top league. The one he'll happily cancel brunch plans for…\".",
+   "proposal": "Ta bort den här i onboarding; raden finns kvar i ordlistan för andra skärmar.",
+   "why": "Vägen in tas bort. Obs: han (pojkvän-personan) kallade \"cancel brunch plans\" en sliten kliché, så raden bör ses över där den finns kvar.",
+   "if_accept": "Syns inte längre i onboarding. Klichén flaggas till gruppen som äger ordlistan. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-05-04": {
+   "what": "Draghandtaget för att svepa ner arket.",
+   "proposal": "Ta bort det här i onboarding.",
+   "why": "Vägen in tas bort.",
+   "if_accept": "Syns inte längre i onboarding. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-00": {
+   "what": "Steg 5 \"Meet his lot.\": tre fakta om klubben hon valt (en stjärnspelare, ett humör, tabelläget).",
+   "proposal": "Flytta ut ur setup: hon landar på klubbsidan, som redan har samma fakta (Coming up, The basics, The manager, Ones to know).",
+   "why": "Innehåll förklätt till setup (Deep-personan D2), och samma fakta står ord för ord på klubbsidan, som 4 av 6 kallade den mest användbara skärmen.",
+   "if_accept": "Ett steg mindre; hon får fakta direkt på klubbsidan. Klubbsidan hämtar redan samma data, så inget i backend ändras. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-01": {
+   "what": "Klubbmärket överst på \"Meet his lot\".",
+   "proposal": "Ta bort det.",
+   "why": "Dubblett; klubbsidan har sitt eget märke.",
+   "if_accept": "Försvinner med skärmen. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-02": {
+   "what": "Rubriken \"Meet his lot.\"",
+   "proposal": "Ta bort den.",
+   "why": "Skärmen flyttar till klubbsidan.",
+   "if_accept": "Försvinner med skärmen. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-03": {
+   "what": "Underrubriken \"Three things about {club}, so you've got something for the next time Tom starts talking about them.\"",
+   "proposal": "Ta bort den.",
+   "why": "Skärmen flyttar, och hans namn är inte längre frågat innan.",
+   "if_accept": "Försvinner med skärmen. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-04": {
+   "what": "Reservtext om klubben är okänd (\"A few quick things about his team…\"), som i praktiken aldrig visas.",
+   "proposal": "Ta bort den.",
+   "why": "Kan inte nås: klubbval är obligatoriskt.",
+   "if_accept": "Ingen synlig skillnad. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-05": {
+   "what": "Tre tomma platshållarkort medan klubbens data laddas.",
+   "proposal": "Ta bort dem.",
+   "why": "Skärmen flyttar; klubbsidan har sin egen laddningsvy.",
+   "if_accept": "Försvinner med skärmen. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-06": {
+   "what": "Stjärnspelarkortet: foto, tröjnummer, namn, position och en mening (t.ex. \"11 H. Barnes, Midfielder\").",
+   "proposal": "Flytta in i klubbsidans \"Ones to know\" (finns redan) och rätta datan: position från truppen, inga skadade spelare, aktuell målstatistik.",
+   "why": "Spelarkortet är användbart på klubbsidan, men samma fel följer med: Barnes och Gakpo kallas mittfältare (3 personas såg det), och datagranskningen hittade skadade Saka som stjärna.",
+   "if_accept": "Onboarding-varianten försvinner. Rättningen av positioner och skador görs i rutinen som skriver klubbsidan; ingen ny appversion behövs för den delen."
+  },
+  "ONB-06-07": {
+   "what": "Spelarens runda foto på kortet.",
+   "proposal": "Flytta med spelarkortet till klubbsidan (som använder egna inbyggda porträtt).",
+   "why": "Samma som spelarkortet.",
+   "if_accept": "Försvinner från setup, finns på klubbsidan. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-08": {
+   "what": "Tröjnumret i rosa före spelarens namn.",
+   "proposal": "Flytta med spelarkortet till klubbsidan.",
+   "why": "Samma som spelarkortet.",
+   "if_accept": "Försvinner från setup, finns på klubbsidan. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-09": {
+   "what": "Humörraden efter vinst: \"They won their last match. Tom was happy.\"",
+   "proposal": "Ta bort raden; själva resultatet står redan på klubbsidan och i Matchday.",
+   "why": "Den berättar hans humör, vilket är ett fel enligt produktregeln. 4 av 6 invände (M2: \"don't need an app to tell me his mood\"), och han själv ryckte till; bara de två Light-personorna gillade den.",
+   "if_accept": "Raden försvinner. Datan finns kvar för klubbsidan. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-10": {
+   "what": "Humörraden efter förlust: \"They lost. Don't bring it up tomorrow.\"",
+   "proposal": "Ta bort raden.",
+   "why": "Humörhantering; samma bevis som vinstraden (4 av 6 emot, han ryckte till).",
+   "if_accept": "Raden försvinner. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-11": {
+   "what": "Humörraden efter oavgjort: \"They drew. Tom's feelings are complicated.\"",
+   "proposal": "Ta bort raden.",
+   "why": "Humörhantering; han citerade just den här raden som att appen hanterar honom.",
+   "if_accept": "Raden försvinner. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-12": {
+   "what": "Formraden när ingen färsk match finns, t.ex. om att Tom går runt med \"slightly smug energy\".",
+   "proposal": "Ta bort den i onboarding.",
+   "why": "Ett humörstycke; han ryckte till (\"wrong the week we went out to Fleetwood\"), och 4 av 6 kvinnor ville inte bli tillsagda hur han mår.",
+   "if_accept": "Raden försvinner från setup. Datan skrivs fortfarande eftersom klubbsidan läser den. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-13": {
+   "what": "Fotbollsikonen bredvid humörraden.",
+   "proposal": "Ta bort den.",
+   "why": "Raden tas bort.",
+   "if_accept": "Försvinner med raden. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-14": {
+   "what": "Tabellraden för plats 1–4: \"Top of the league chase.\"",
+   "proposal": "Ta bort den; klubbsidan säger placeringen rakt ut (t.ex. \"2nd in the Premier League\").",
+   "why": "Ingen riktig mening (sa han), och den visades för Liverpool på fjärde plats sex poäng efter (3 personas såg felet).",
+   "if_accept": "Raden försvinner. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-15": {
+   "what": "Tabellraden för plats 5–8: \"Pushing for Europe.\"",
+   "proposal": "Ta bort den.",
+   "why": "Fackspråk: båda Light-personorna förstod den inte (L2: \"are they moving?\").",
+   "if_accept": "Raden försvinner. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-16": {
+   "what": "Tabellraden för plats 9–14: \"Mid-table, quietly fine.\"",
+   "proposal": "Ta bort den.",
+   "why": "Samma familj som de andra; den enkla placeringen står på klubbsidan.",
+   "if_accept": "Raden försvinner. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-17": {
+   "what": "Tabellraden för plats 15–20: \"In a relegation fight. Tom is stressed.\"",
+   "proposal": "Ta bort den.",
+   "why": "Humörhantering plus en vag bedömning.",
+   "if_accept": "Raden försvinner. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-18": {
+   "what": "Stapelikonen bredvid tabellraden.",
+   "proposal": "Ta bort den.",
+   "why": "Raden tas bort.",
+   "if_accept": "Försvinner med raden. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-06-19": {
+   "what": "Knappen \"Meet the boss\".",
+   "proposal": "Ta bort den.",
+   "why": "Skärmen flyttar.",
+   "if_accept": "Försvinner med skärmen. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-07-00": {
+   "what": "Steg 6 \"Meet the boss.\": ett kort om klubbens manager.",
+   "proposal": "Flytta ut ur setup: klubbsidans managerkort (\"The manager\") syns redan högt upp där hon landar.",
+   "why": "Det starkaste innehållet i setup, första \"åh, det var användbart\" för 4 av 6, men det är en dubblett av sidan hon ska landa på (L1: samma text ord för ord).",
+   "if_accept": "Ett steg mindre; samma kort möter henne direkt på klubbsidan. Ingen ändring i backend. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-07-01": {
+   "what": "Klubbmärket överst på \"Meet the boss\".",
+   "proposal": "Ta bort det.",
+   "why": "Dubblett.",
+   "if_accept": "Försvinner med skärmen. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-07-02": {
+   "what": "Rubriken \"Meet the boss.\"",
+   "proposal": "Ta bort den.",
+   "why": "Skärmen flyttar.",
+   "if_accept": "Försvinner med skärmen. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-07-03": {
+   "what": "Underrubriken \"The person Tom either loves or wants fired this week. Depends on the last result.\"",
+   "proposal": "Flytta till klubbsidans managerkort som första rad, utan namn: \"The person he either loves or wants fired this week. Depends on the last result.\"",
+   "why": "Raden som fick setup att kännas som en kompis som pratar; tre personas skrattade åt den (M1: \"the first line that sounded like a friend\").",
+   "if_accept": "Raden syns på klubbsidans managerkort. En rad behöver läggas till där. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-07-04": {
+   "what": "Tomt platshållarkort medan managern laddas.",
+   "proposal": "Ta bort det.",
+   "why": "Skärmen flyttar.",
+   "if_accept": "Försvinner med skärmen. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-07-05": {
+   "what": "Managerkortet: foto, namn och en sammanfattning (t.ex. \"Matthias Jaissle was only appointed in August 2026…\").",
+   "proposal": "Flytta (slå ihop) med klubbsidans managerkort, som redan visar samma text.",
+   "why": "Dubblett; datagranskningen bekräftade att managerna stämmer med den manuellt verifierade listan.",
+   "if_accept": "Kortet syns bara på klubbsidan. Datakällan är oförändrad. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-07-06": {
+   "what": "Managerns runda foto (med en grå figur om foto saknas).",
+   "proposal": "Flytta till klubbsidans porträttkälla, som har bilder.",
+   "why": "3 av 6 såg att Liverpools manager saknade foto här, medan klubbsidan hade ett.",
+   "if_accept": "Ingen grå figur i första mötet. Porträttkällan finns redan. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-07-07": {
+   "what": "Reservtexten \"No manager data yet. Check back later.\"",
+   "proposal": "Ta bort den.",
+   "why": "Skärmen flyttar; klubbsidan har sitt eget tomläge.",
+   "if_accept": "Försvinner med skärmen. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-07-08": {
+   "what": "Knappen \"Got it\".",
+   "proposal": "Ta bort den.",
+   "why": "Skärmen flyttar.",
+   "if_accept": "Försvinner med skärmen. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-08-00": {
+   "what": "Steg 7 \"Here's how it works.\": tre kort som beskriver vad appen gör.",
+   "proposal": "Ta bort steget; meningen från kort 2 flyttar in i notisfrågan.",
+   "why": "En sida om appen i stället för appen. 5 av 6 skummade eller invände (L1: \"sales pitch\", M1: \"a page about the app\"); med 94 ord är det det ordrikaste steget. Deep-personan D1: \"closest I came to closing it\".",
+   "if_accept": "Ett steg och 94 ord mindre. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-08-01": {
+   "what": "Rubriken \"Here's how it works.\"",
+   "proposal": "Ta bort den.",
+   "why": "Steget tas bort. 5 av 6 skummade eller invände (L1: \"sales pitch\", M1: \"a page about the app\"); med 94 ord är det det ordrikaste steget.",
+   "if_accept": "Försvinner med steget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-08-02": {
+   "what": "Underrubriken \"We keep you in the loop on his football, in plain English, so you can jump in whenever.\"",
+   "proposal": "Ta bort den.",
+   "why": "Steget tas bort. 5 av 6 skummade eller invände (L1: \"sales pitch\", M1: \"a page about the app\"); med 94 ord är det det ordrikaste steget.",
+   "if_accept": "Försvinner med steget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-08-03": {
+   "what": "Ikonen på kort 1 (radiovågor i rosa cirkel).",
+   "proposal": "Ta bort den.",
+   "why": "Steget tas bort.",
+   "if_accept": "Försvinner med steget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-08-04": {
+   "what": "Kort 1:s rubrik \"We watch his team for you\".",
+   "proposal": "Ta bort den.",
+   "why": "Steget tas bort. 5 av 6 skummade eller invände (L1: \"sales pitch\", M1: \"a page about the app\"); med 94 ord är det det ordrikaste steget.",
+   "if_accept": "Försvinner med steget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-08-05": {
+   "what": "Kort 1:s text \"Every match and every story… No jargon, no homework.\"",
+   "proposal": "Ta bort den.",
+   "why": "Steget tas bort, och löftet bröts redan på nästa skärmar (två personas påpekade det). 5 av 6 skummade eller invände (L1: \"sales pitch\", M1: \"a page about the app\"); med 94 ord är det det ordrikaste steget.",
+   "if_accept": "Försvinner med steget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-08-06": {
+   "what": "Ikonen på kort 2 (två pratbubblor).",
+   "proposal": "Ta bort den.",
+   "why": "Steget tas bort.",
+   "if_accept": "Försvinner med steget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-08-07": {
+   "what": "Kort 2:s rubrik \"You always have something to say\".",
+   "proposal": "Ta bort den.",
+   "why": "Steget tas bort. 5 av 6 skummade eller invände (L1: \"sales pitch\", M1: \"a page about the app\"); med 94 ord är det det ordrikaste steget.",
+   "if_accept": "Försvinner med steget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-08-08": {
+   "what": "Kort 2:s text \"A heads-up before kickoff, the score while it's live, and the line that starts the chat once it's done.\"",
+   "proposal": "Flytta meningen in i den nya notisfrågan på klubbsidan, som dess brödtext.",
+   "why": "Den enda meningen på skärmen som beskriver produkten hon vill ha; Deep-personan D2: \"exactly the product I want. Everything else on the screen is noise\".",
+   "if_accept": "Meningen syns i notisfrågan vid matchen. Byggs tillsammans med den nya notisfrågan (ONB-10). Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-08-09": {
+   "what": "Ikonen på kort 3 (hand som trycker).",
+   "proposal": "Ta bort den.",
+   "why": "Steget tas bort.",
+   "if_accept": "Försvinner med steget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-08-10": {
+   "what": "Kort 3:s rubrik \"Tap anything you don't get\".",
+   "proposal": "Ta bort den.",
+   "why": "Steget tas bort. 5 av 6 skummade eller invände (L1: \"sales pitch\", M1: \"a page about the app\"); med 94 ord är det det ordrikaste steget.",
+   "if_accept": "Försvinner med steget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-08-11": {
+   "what": "Kort 3:s text \"See a word underlined, like Premier League or clean sheet? Tap it…\" (inget ord är understruket där).",
+   "proposal": "Ta bort den.",
+   "why": "Funktionen förklarar sig själv där den finns (Light-personan L2 hittade ordlistan själv), och exemplet \"clean sheet\" fick Deep-personan D1 att känna att appen inte var för henne.",
+   "if_accept": "Försvinner med steget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-08-12": {
+   "what": "Knappen \"Sounds useful\".",
+   "proposal": "Ta bort den.",
+   "why": "Steget tas bort; M2: \"putting words in my mouth\".",
+   "if_accept": "Försvinner med steget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-09-00": {
+   "what": "Steg 8 \"How far do you want to take this?\": välj nivå 1, 2 eller 3 (nivå 2 förvald).",
+   "proposal": "Flytta till Inställningar > Your Mode (finns redan) med nivå 2 som förval; efter hennes första matchhelg frågar ett kort i appen \"More, less, or about right?\".",
+   "why": "Hon kan inte bedöma svaret dag 1, och det ändrar ingenting hon ser dag 1 (0 av 21 skärmar). 4 av 6 kunde inte säga vad nivån gör; 54 av 92 enheter står kvar på förvalet.",
+   "if_accept": "Ett steg mindre; alla nya börjar på nivå 2 (gör de redan om inget valts). Kontrollkortet efter första helgen är nytt att bygga. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-09-01": {
+   "what": "Rubriken \"How far do you want to take this?\"",
+   "proposal": "Ta bort den (inställningsarket heter \"Change Mode\").",
+   "why": "Skärmen flyttar.",
+   "if_accept": "Försvinner med steget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-09-02": {
+   "what": "Nivå 1-valet \"Just enough to get by — Just the essentials. No overload.\"",
+   "proposal": "Flytta till Inställningar, där samma val redan finns.",
+   "why": "Inställningar behåller valet.",
+   "if_accept": "Valet finns bara i Inställningar. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-09-03": {
+   "what": "Nivå 2-valet \"Came to impress — Enough to hold your own in any conversation.\" (förvalt).",
+   "proposal": "Flytta till Inställningar som förval.",
+   "why": "Samma som steget; det är redan det verkliga förvalet.",
+   "if_accept": "Nya användare får nivå 2 utan att välja. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-09-04": {
+   "what": "Nivå 3-valet \"The one he brags about — She knows things he hasn't even googled yet.\"",
+   "proposal": "Flytta till Inställningar och ändra till du-form: \"You know things he hasn't even googled yet\".",
+   "why": "Raden hoppar från \"du\" till \"hon\"; två personas märkte det. Samma fel finns i Inställningar.",
+   "if_accept": "Valet finns i Inställningar med rättad text. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-09-05": {
+   "what": "Den rosa (guld för nivå 3) bocken och ramen på det valda alternativet.",
+   "proposal": "Flytta; Inställningar visar redan en bock på valt alternativ.",
+   "why": "Samma som steget.",
+   "if_accept": "Försvinner från setup. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-09-06": {
+   "what": "Knappen \"Sounds good\" (när nivå 1 är vald).",
+   "proposal": "Ta bort den (Inställningar använder Save).",
+   "why": "Skärmen flyttar.",
+   "if_accept": "Försvinner med steget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-09-07": {
+   "what": "Knappen \"Let's do this\" (när nivå 2 är vald).",
+   "proposal": "Ta bort den.",
+   "why": "Skärmen flyttar.",
+   "if_accept": "Försvinner med steget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-09-08": {
+   "what": "Knappen \"Say less\" (när nivå 3 är vald).",
+   "proposal": "Ta bort den.",
+   "why": "Skärmen flyttar.",
+   "if_accept": "Försvinner med steget. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-10-00": {
+   "what": "Steg 9 \"It only works if we can reach you.\": förfrågan om notiser med en ritad låsskärm (\"Newcastle face Chelsea today at 15:00\").",
+   "proposal": "Flytta till stunden det lönar sig: på klubbsidan när hans lag spelar inom 48 timmar (matchveckan: direkt), annars på Coming up-kortet 48 timmar före avspark, byggt från den riktiga matchen.",
+   "why": "Frågan ställs i det abstrakta, efter nio skärmar, med en påhittad match. 5 av 6 tyckte rubriken var tjatig; han kallade den falska matchen \"a dead giveaway\", och den krockade med Newcastles riktiga match samma kväll.",
+   "if_accept": "Setup frågar inte om notiser; frågan kommer vid hans match med riktig motståndare och tid. Ny fråga på klubbsidan behöver byggas. Villkor: den nya frågan på klubbsidan måste släppas i samma version som frågan tas bort ur setup, annars blir nya användare aldrig tillfrågade."
+  },
+  "ONB-10-01": {
+   "what": "Rubriken \"It only works if we can reach you.\"",
+   "proposal": "Ta bort den; frågans rubrik blir själva matchen (\"Newcastle kick off at 19:45 tonight. Want the score on your lock screen?\").",
+   "why": "En skuldrad: 5 av 6 tyckte den var tjatig, och L1 sa att det var här hon nästan stängde appen.",
+   "if_accept": "Skuldraden försvinner. Byggs med den nya frågan. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-10-02": {
+   "what": "Appikonen på den ritade notisen.",
+   "proposal": "Flytta med förhandsvisningen till den nya notisfrågan.",
+   "why": "Förhandsvisningen är det som övertygar; Deep-personan D2 kallade den onboardingens bästa säljargument.",
+   "if_accept": "Följer med till den nya frågan. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-10-03": {
+   "what": "Notisrubriken \"{klubb} play today\" i förhandsvisningen.",
+   "proposal": "Flytta till den nya frågan, byggd från den riktiga matchen.",
+   "why": "Den fasta texten säger \"today\" oavsett när matchen är.",
+   "if_accept": "Rubriken stämmer med hans riktiga match. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-10-04": {
+   "what": "Tidsstämpeln \"now\" på den ritade notisen.",
+   "proposal": "Flytta med förhandsvisningen.",
+   "why": "Följer sitt element.",
+   "if_accept": "Följer med till den nya frågan. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-10-05": {
+   "what": "Notistexten \"{klubb} face Chelsea today at 15:00. Ask for a score prediction before kickoff.\"",
+   "proposal": "Flytta till den nya frågan med riktig motståndare och avsparkstid (i dag alltid Chelsea kl. 15:00).",
+   "why": "Den falska matchen säger emot den riktiga på matchdagen; han kallade den \"a dead giveaway\".",
+   "if_accept": "Texten visar hans faktiska nästa match. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-10-06": {
+   "what": "Det ritade livescorekortet \"{klubb} 1 – 0 {motståndare} 63'\".",
+   "proposal": "Flytta till den nya frågan med riktig motståndare; behåll matchminuten.",
+   "why": "Livescoren är det hon säger ja för; låsskärmen var bästa stunden för Deep-personan D2.",
+   "if_accept": "Kortet följer med, med rätt motståndare. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-10-07": {
+   "what": "Skärmläsarens beskrivning av förhandsvisningen (\"Example: a match-day notification, then the live score…\").",
+   "proposal": "Flytta med förhandsvisningen.",
+   "why": "Tillgänglighetstexten följer sitt element.",
+   "if_accept": "Följer med till den nya frågan. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-10-08": {
+   "what": "Raden \"If your iPhone asks about Live Activities, say yes.\"",
+   "proposal": "Flytta in i frågan utan fackordet: \"At kickoff your iPhone will ask to show the live score on your lock screen. Say yes.\"",
+   "why": "Det är enda sättet att få fler att säga ja till livescoren, men båda Light-personorna visste inte vad \"Live Activities\" betyder.",
+   "if_accept": "Raden står i den nya frågan på vanlig engelska. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-10-09": {
+   "what": "Knappen \"Yes, keep me posted\" som visar iPhones notisdialog.",
+   "proposal": "Flytta till den nya frågan.",
+   "why": "Följer frågan.",
+   "if_accept": "Knappen finns i den nya frågan. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-10-10": {
+   "what": "Länken \"I'll do this later\", som i dag öppnar en andra fråga i stället för att hoppa över.",
+   "proposal": "Flytta till den nya frågan som \"Not now\", utan andra-chansen-ark; frågan kommer tillbaka en gång, före nästa match.",
+   "why": "I dag frågas hon tre gånger (steget, arket, en banner i flödet) innan hon läst en enda nyhet.",
+   "if_accept": "\"Not now\" betyder faktiskt inte nu; en ny fråga före nästa match. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-11-00": {
+   "what": "Arket \"One more thing.\" som dyker upp när hon trycker \"I'll do this later\" på notisfrågan.",
+   "proposal": "Ta bort arket.",
+   "why": "En andra fråga direkt efter \"later\", följd av en banner i flödet: tre frågor innan hon läst något. Ingen mätning visar att arket övertygar någon.",
+   "if_accept": "Arket försvinner; den nya frågan kommer tillbaka en gång före nästa match i stället. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-11-01": {
+   "what": "Klock-ikonen överst i arket \"One more thing\".",
+   "proposal": "Ta bort den, med arket.",
+   "why": "En andra fråga direkt efter \"later\", följd av en banner i flödet: tre frågor innan hon läst något. Ingen mätning visar att arket övertygar någon.",
+   "if_accept": "Arket försvinner; den nya frågan kommer tillbaka en gång före nästa match i stället. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-11-02": {
+   "what": "Rubriken \"One more thing.\"",
+   "proposal": "Ta bort den, med arket.",
+   "why": "En andra fråga direkt efter \"later\", följd av en banner i flödet: tre frågor innan hon läst något. Ingen mätning visar att arket övertygar någon.",
+   "if_accept": "Arket försvinner; den nya frågan kommer tillbaka en gång före nästa match i stället. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-11-03": {
+   "what": "Texten \"Without notifications, you won't know he's playing… It's the whole point of the app…\"",
+   "proposal": "Ta bort den, med arket.",
+   "why": "En andra fråga direkt efter \"later\", följd av en banner i flödet: tre frågor innan hon läst något. Ingen mätning visar att arket övertygar någon. 5 av 6 tyckte notisfrågan var tjatig redan första gången.",
+   "if_accept": "Arket försvinner; den nya frågan kommer tillbaka en gång före nästa match i stället. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-11-04": {
+   "what": "Knappen \"Allow notifications\" i arket.",
+   "proposal": "Ta bort den, med arket.",
+   "why": "En andra fråga direkt efter \"later\", följd av en banner i flödet: tre frågor innan hon läst något. Ingen mätning visar att arket övertygar någon.",
+   "if_accept": "Arket försvinner; den nya frågan kommer tillbaka en gång före nästa match i stället. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-11-05": {
+   "what": "Länken \"I'll risk missing it\" i arket.",
+   "proposal": "Ta bort den, med arket.",
+   "why": "En andra fråga direkt efter \"later\", följd av en banner i flödet: tre frågor innan hon läst något. Ingen mätning visar att arket övertygar någon.",
+   "if_accept": "Arket försvinner; den nya frågan kommer tillbaka en gång före nästa match i stället. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-11-06": {
+   "what": "Draghandtaget på arket.",
+   "proposal": "Ta bort det, med arket.",
+   "why": "En andra fråga direkt efter \"later\", följd av en banner i flödet: tre frågor innan hon läst något. Ingen mätning visar att arket övertygar någon.",
+   "if_accept": "Arket försvinner; den nya frågan kommer tillbaka en gång före nästa match i stället. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-12-00": {
+   "what": "iPhones egen dialog \"GoalDigger Would Like to Send You Notifications\", som visas när hon trycker ja.",
+   "proposal": "Flytta så att dialogen visas från den nya notisfrågan vid matchen, inte från setup.",
+   "why": "Det är Apples dialog; bara tidpunkten är vår.",
+   "if_accept": "Dialogen kommer vid hans match i stället för under setup. Inget i backend påverkas: notiser registreras när hon än säger ja. Villkor: den nya frågan på klubbsidan måste släppas i samma version som frågan tas bort ur setup, annars blir nya användare aldrig tillfrågade."
+  },
+  "ONB-12-01": {
+   "what": "Dialogens rubrik (Apples text).",
+   "proposal": "Behåll som det är.",
+   "why": "Apples ordval; kan inte ändras eller tas bort.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-12-02": {
+   "what": "Dialogens brödtext (Apples text).",
+   "proposal": "Behåll som det är.",
+   "why": "Apples ordval; kan inte ändras eller tas bort.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-12-03": {
+   "what": "Dialogens knapp \"Don't Allow\".",
+   "proposal": "Behåll som det är.",
+   "why": "Apples knapp.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-12-04": {
+   "what": "Dialogens knapp \"Allow\".",
+   "proposal": "Behåll som det är.",
+   "why": "Apples knapp.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-13-00": {
+   "what": "Steg 10 \"Want his matches in your calendar?\", sista steget i setup.",
+   "proposal": "Flytta till toppen av klubbsidans Kalender-flik som \"Add these to my calendar\", där hon tittar på hans matcher; reglaget i Inställningar finns kvar.",
+   "why": "Alla 6 tackade nej första dagen. Light-personan L2 hade sagt ja om hon fått veta att de går att ta bort.",
+   "if_accept": "Setup frågar inte om kalendern; erbjudandet finns i Kalender-fliken. Kräver en ny rad överst i klubbens Kalender-flik. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant. Statistiken för kalenderval i onboarding visar sedan alltid \"av\" och måste läsas från den nya raden."
+  },
+  "ONB-13-01": {
+   "what": "Den stora kalenderikonen med rosa sken.",
+   "proposal": "Flytta till Kalender-fliken som en liten ikon på raden, eller ingen ikon alls.",
+   "why": "Följer erbjudandet.",
+   "if_accept": "Följer med till Kalender-fliken. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-13-02": {
+   "what": "Rubriken \"Want his matches in your calendar?\"",
+   "proposal": "Flytta med erbjudandet till Kalender-fliken.",
+   "why": "Följer erbjudandet.",
+   "if_accept": "Följer med till Kalender-fliken. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-13-03": {
+   "what": "Texten medan matcherna laddas: \"We'll add his upcoming matches so you know when he'll be glued to the TV.\"",
+   "proposal": "Flytta med erbjudandet.",
+   "why": "Följer erbjudandet.",
+   "if_accept": "Följer med till Kalender-fliken. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-13-04": {
+   "what": "Texten \"We'll add his next 25 matches so you know when he'll be glued to the TV.\"",
+   "proposal": "Flytta med erbjudandet och säg hur det ångras: \"His next 25 matches. One switch in Settings takes them out.\"",
+   "why": "Hon säger nej för att hon är rädd för 25 händelser hon inte kan bli av med.",
+   "if_accept": "Texten i Kalender-fliken säger att det går att ångra. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-13-05": {
+   "what": "Texten när bara en match finns: \"We'll add his next match…\".",
+   "proposal": "Flytta med erbjudandet.",
+   "why": "Följer erbjudandet.",
+   "if_accept": "Följer med till Kalender-fliken. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-13-06": {
+   "what": "Texten under lågsäsong: \"No matches scheduled yet. We'll add them automatically…\".",
+   "proposal": "Flytta med erbjudandet.",
+   "why": "Följer erbjudandet.",
+   "if_accept": "Följer med till Kalender-fliken. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-13-07": {
+   "what": "Felet om matcherna inte gick att hämta: \"Couldn't load his fixtures right now. Turn this on and we'll add them…\".",
+   "proposal": "Flytta med erbjudandet; texten blir ett löfte i stället för en återvändsgränd.",
+   "why": "Anslutningsgranskningen tyckte att texten ska behållas.",
+   "if_accept": "Följer med till Kalender-fliken. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-13-08": {
+   "what": "Felet \"Calendar access was denied. You can enable it later in Settings.\"",
+   "proposal": "Flytta med erbjudandet.",
+   "why": "Följer erbjudandet.",
+   "if_accept": "Följer med till Kalender-fliken. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-13-09": {
+   "what": "Felet \"Couldn't reach your calendar. You can turn this on from Settings later.\"",
+   "proposal": "Flytta med erbjudandet.",
+   "why": "Följer erbjudandet.",
+   "if_accept": "Följer med till Kalender-fliken. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-13-10": {
+   "what": "Knappen \"Yes, add them\", som visar iPhones kalenderdialog.",
+   "proposal": "Flytta med erbjudandet.",
+   "why": "Följer erbjudandet.",
+   "if_accept": "Följer med till Kalender-fliken. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-13-11": {
+   "what": "Knappen \"Not now\".",
+   "proposal": "Flytta med erbjudandet.",
+   "why": "Följer erbjudandet.",
+   "if_accept": "Följer med till Kalender-fliken. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-13-12": {
+   "what": "Knappen \"Got it\" som visas när inga matcher finns.",
+   "proposal": "Flytta med erbjudandet (läget utan matcher).",
+   "why": "Följer erbjudandet.",
+   "if_accept": "Följer med till Kalender-fliken. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-13-13": {
+   "what": "Vad som händer när setup är klar: hon landar i dag i flödet (Feed).",
+   "proposal": "Ändra så att setup slutar vid klubbvalet och hon en gång landar på klubbsidan, med Coming up-kortet överst; flödet är startfliken vid alla senare öppningar.",
+   "why": "Vid första flödesskärmen svarade alla 6 \"inte än\" på om det var värt det, och flödet sa \"tomorrow\" på matchdagen. 4 av 6 sa att klubbsidan levererade.",
+   "if_accept": "Första skärmen efter setup blir klubbsidan. Kräver att klubbsidans Coming up-kort visar hela tiden och har en replik ovanför vecket (andra gruppers rader). Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-14-00": {
+   "what": "iPhones egen dialog som ber om full åtkomst till kalendern, efter \"Yes, add them\".",
+   "proposal": "Flytta så att dialogen visas från erbjudandet i Kalender-fliken, inte från setup.",
+   "why": "Apples dialog; bara tidpunkten är vår. Alla 6 tackade nej i setup.",
+   "if_accept": "Dialogen visas först när hon själv väljer att lägga till matcherna. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-14-01": {
+   "what": "Dialogens rubrik \"GoalDigger Would Like Full Access to Your Calendar\" (Apples text).",
+   "proposal": "Behåll som det är.",
+   "why": "Apples ordval.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-14-02": {
+   "what": "Appens förklaring i dialogen: \"We add the fixtures you follow to your calendar so you're never blindsided…\".",
+   "proposal": "Behåll som det är.",
+   "why": "Apple kräver den, och säkerhetsgranskningen bedömde den som korrekt.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-14-03": {
+   "what": "Dialogens knapp \"Don't Allow\".",
+   "proposal": "Behåll som det är.",
+   "why": "Apples knapp.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-14-04": {
+   "what": "Dialogens knapp \"Allow Full Access\".",
+   "proposal": "Behåll som det är.",
+   "why": "Apples knapp.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-15-00": {
+   "what": "Hans matcher som händelser i hennes vanliga Kalender-app (utanför GoalDigger), om hon slagit på det.",
+   "proposal": "Behåll som det är.",
+   "why": "Hans matcher i hennes egen kalender var det Light-personan L2 kallade \"the real reason I'd use this\"; datumen stämmer enligt datagranskningen.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-15-01": {
+   "what": "Kalenderns namn, t.ex. \"GoalDigger - Arsenal\" (en kalender per klubb).",
+   "proposal": "Behåll som det är.",
+   "why": "Hon kan dölja eller ta bort hela kalendern på en gång.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-15-02": {
+   "what": "Händelsens titel, t.ex. \"Arsenal vs Liverpool (Away)\".",
+   "proposal": "Ändra så att hemmalaget står först (\"Liverpool v Arsenal\"), som i alla matchlistor; behåll turneringen sist.",
+   "why": "\"Arsenal vs Liverpool (Away)\" ser ut som fel match för alla som kan fotboll (Deep-personan D1).",
+   "if_accept": "Titlarna skrivs om vid nästa synk. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-15-03": {
+   "what": "Händelsens anteckning \"Match day. Open GoalDigger for prep.\"",
+   "proposal": "Behåll som det är.",
+   "why": "En gratis väg tillbaka in i appen från hennes egen kalender.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-15-04": {
+   "what": "Händelsens längd: två timmar från avspark.",
+   "proposal": "Behåll som det är.",
+   "why": "Två timmar är matchen.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-16-00": {
+   "what": "Säsongsintron (t.ex. \"Newcastle are in and out\") som skulle visas mellan setup och appen, men som ingen användare kan nå.",
+   "proposal": "Ta bort skärmen och rutinen som producerar dess data.",
+   "why": "Nås aldrig: appen markerar skärmen som sedd innan den kan visas. Ändå skriver en rutin dess data varje vardag.",
+   "if_accept": "Ingen användare märker något. Rutinen gd-season-state stängs av (cirka 260 körningar om året). Villkor: uppdatera underhållsrutinen, hälsokontrollen och granskningsskript samtidigt; tabellen ligger kvar tills 2.2/2.3 är borta."
+  },
+  "ONB-16-01": {
+   "what": "Den rosa laddsnurran på säsongsintron.",
+   "proposal": "Ta bort den, med skärmen.",
+   "why": "Nås aldrig: appen markerar skärmen som sedd innan den kan visas. Ändå skriver en rutin dess data varje vardag.",
+   "if_accept": "Ingen användare märker något. Följer med borttagningen av skärmen."
+  },
+  "ONB-16-02": {
+   "what": "Säsongsintrons rubrik om klubbens läge, t.ex. \"Arsenal are flying\".",
+   "proposal": "Ta bort den, med skärmen och dess rutin.",
+   "why": "Nås aldrig: appen markerar skärmen som sedd innan den kan visas. Ändå skriver en rutin dess data varje vardag.",
+   "if_accept": "Ingen användare märker något. Rutinen gd-season-state stängs av (cirka 260 körningar om året). Villkor: uppdatera underhållsrutinen, hälsokontrollen och granskningsskript samtidigt; tabellen ligger kvar tills 2.2/2.3 är borta."
+  },
+  "ONB-16-03": {
+   "what": "Säsongsintrons rad om hur han kommer att må, t.ex. \"Your boyfriend will be excited…\".",
+   "proposal": "Ta bort den, med skärmen och dess rutin.",
+   "why": "Nås aldrig: appen markerar skärmen som sedd innan den kan visas. Ändå skriver en rutin dess data varje vardag. Raden ignorerar dessutom hans namn och relationen.",
+   "if_accept": "Ingen användare märker något. Rutinen gd-season-state stängs av (cirka 260 körningar om året). Villkor: uppdatera underhållsrutinen, hälsokontrollen och granskningsskript samtidigt; tabellen ligger kvar tills 2.2/2.3 är borta."
+  },
+  "ONB-16-04": {
+   "what": "Knappen \"Teach me more about the team\" på säsongsintron.",
+   "proposal": "Ta bort den, med skärmen.",
+   "why": "Nås aldrig: appen markerar skärmen som sedd innan den kan visas. Ändå skriver en rutin dess data varje vardag.",
+   "if_accept": "Ingen användare märker något. Följer med borttagningen av skärmen."
+  },
+  "ONB-16-05": {
+   "what": "Länken \"Take me to the news\" på säsongsintron.",
+   "proposal": "Ta bort den, med skärmen.",
+   "why": "Nås aldrig: appen markerar skärmen som sedd innan den kan visas. Ändå skriver en rutin dess data varje vardag.",
+   "if_accept": "Ingen användare märker något. Följer med borttagningen av skärmen."
+  },
+  "ONB-16-06": {
+   "what": "Säsongsintrons tysta överhopp när data saknas.",
+   "proposal": "Ta bort det, med skärmen.",
+   "why": "Nås aldrig: appen markerar skärmen som sedd innan den kan visas. Ändå skriver en rutin dess data varje vardag.",
+   "if_accept": "Ingen användare märker något. Följer med borttagningen av skärmen."
+  },
+  "ONB-17-00": {
+   "what": "iPhones spårningsfråga (\"Allow GoalDigger to track your activity…\"), som i dag dyker upp 1,5 sekunder efter att flödet visats första gången.",
+   "proposal": "Flytta till starten av hennes andra besök i appen, aldrig över första skärmen; lägg först till en mätning av vad hon svarar.",
+   "why": "Den landar på stunden då appen ska bevisa sig, och alla 6 tryckte \"Ask App Not to Track\" och kopplade det till butikens löfte om \"no tracking\".",
+   "if_accept": "Första skärmen får vara ifred. Kostnad: Meta får sämre koppling mellan annons och installation för de som aldrig kommer tillbaka (Antons beslut). Ingen kod beror på svaret. Kräver en ny appversion (2.4 eller senare); 2.2/2.3 behåller sin gamla variant."
+  },
+  "ONB-17-01": {
+   "what": "Spårningsdialogens rubrik (Apples text).",
+   "proposal": "Behåll som det är.",
+   "why": "Apples ordval.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-17-02": {
+   "what": "Appens förklaring i spårningsdialogen: \"This lets us see which ads brought you here, so we can keep GoalDigger free. Nothing else changes.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Apple kräver den så länge Metas SDK finns, och säkerhetsgranskningen bedömde den som korrekt. Spårningsgranskningen noterade att den inte nämner att data också styr annonserna; formuleringen är Antons beslut.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-17-03": {
+   "what": "Dialogens knapp \"Ask App Not to Track\".",
+   "proposal": "Behåll som det är.",
+   "why": "Apples knapp.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-17-04": {
+   "what": "Dialogens knapp \"Allow\".",
+   "proposal": "Behåll som det är.",
+   "why": "Apples knapp.",
+   "if_accept": "Inget ändras."
+  },
+  "ONB-18-00": {
+   "what": "iPhones fråga på låsskärmen om Live Activities, första gången en match med hans lag startar.",
+   "proposal": "Behåll som det är.",
+   "why": "Den ställs redan i rätt stund, och den beror inte på notissvaret. Livescoren på låsskärmen var panelens bästa stund (bäst för D2, näst bäst för D1).",
+   "if_accept": "Inget ändras. (Raden som ber henne säga ja flyttas in i notisfrågan, se ONB-10-08.)"
+  },
+  "ONB-18-01": {
+   "what": "Själva frågan \"Allow Live Activities from GoalDigger?\" (Apples text, ungefärlig).",
+   "proposal": "Behåll som det är.",
+   "why": "Apples fråga.",
+   "if_accept": "Inget ändras."
+  }
+ }
+}

@@ -1,0 +1,2102 @@
+{
+ "screens": {
+  "MY-01": {
+   "title": "My Turn-fliken (Quiz, Lingo, Say This)",
+   "summary": "Fliken där hon övar: tre delar i ett reglage, och i dag öppnar den på Quiz. Editorn: skärmen håller, men ordningen är fel. Med förslaget börjar hon på Say This och Lingo, det hon faktiskt använder på puben.",
+   "shot": "seats/ui-shots/myturn.png"
+  },
+  "MY-02": {
+   "title": "Quiz: listan med paket",
+   "summary": "Quizens startsida med stor startknapp och åtta paket, lika för alla nivåer. Alla sex personas tyckte det var för mycket. Med förslagen följer listan nivån: Light ser tre paket, Deep börjar med klubbens historia, och resten ligger bakom 'More packs'.",
+   "shot": "seats/ui-shots/myturn-quiz.png"
+  },
+  "MY-03": {
+   "title": "Quiz: en fråga",
+   "summary": "En fråga i en runda om tio, följd av ett faktum och en replik. Formatet håller. Felen sitter i replikerna som byggs från aktuell data: en straffutslagning blir 'oavgjort', frågor om skadade spelare, och frågor till en säsongskortsinnehavare om han varit på arenan. Frågorna stannar, replikerna rättas.",
+   "shot": "seats/ui-shots/myturn-quiz-q.png"
+  },
+  "MY-04": {
+   "title": "Quiz: svarsrutan",
+   "summary": "Rutan efter att hon svarat: rätt eller fel, kort förklaring och en replik att säga. Fyra personas gillade den. Förslagen tar bort de dubbla 'Ask him:'-prefixen, regi-anvisningarna om honom och granskningsläget bakåt.",
+   "shot": "seats/ui-shots/myturn-quiz-ans.png"
+  },
+  "MY-05": {
+   "title": "Quiz: spelarkortet",
+   "summary": "Halvhögt kort om spelaren i frågan, samma som på klubbsidan. Här behålls bara ingången; innehållet bedöms under klubbsidan.",
+   "shot": null
+  },
+  "MY-06": {
+   "title": "Quiz: resultat efter rundan",
+   "summary": "Slutet av en runda: poäng, en kaxig rad, missade frågor med repliker. Fyra personas log åt det. Bara bästa-poängsregeln föreslås bort.",
+   "shot": null
+  },
+  "MY-07": {
+   "title": "Lingo: ordlistan",
+   "summary": "Ordlistan med 158 fotbollsord i fyra grupper, med övningsknapp överst. Sökningen är det värdefulla. Med förslagen kommer sökfältet först, räknarna försvinner och offside rättas (det är fel i dag).",
+   "shot": "seats/ui-shots/myturn-lingo.png"
+  },
+  "MY-08": {
+   "title": "Lingo: Overheard-rundan",
+   "summary": "Sju ord: en replik som någon säger, 'What does he mean?', två svar. Formatet kallades smart. Rättelser: offside-svaret, staplade svar vid stor text och inga transferfönster-ord i oktober.",
+   "shot": "seats/ui-shots/myturn-lingo-practise.png"
+  },
+  "MY-09": {
+   "title": "Lingo: rutan med rätt svar",
+   "summary": "Rutan när hon hittat rätt: ordet och 'NOW YOU SAY' med en replik. Behålls; bara replikerna med spelarnamn ska passa veckan bättre.",
+   "shot": null
+  },
+  "MY-10": {
+   "title": "Lingo: rundan klar",
+   "summary": "Kort slutskärm efter sju ord. Behålls; bara quiz-specifika kaxiga rader ska inte dyka upp här.",
+   "shot": null
+  },
+  "MY-11": {
+   "title": "Say This: listan med situationer",
+   "summary": "Färdiga repliker för 25 situationer i tre grupper, plus hennes sparade repliker. Appens starkaste del. Med förslagen ser Light bara ögonblicken först, övningsläget tas bort och tipsen som handlar om att hantera honom stryks.",
+   "shot": "seats/ui-shots/myturn-say.png"
+  },
+  "MY-12": {
+   "title": "Say This: en situation",
+   "summary": "En situations repliker märkta SAFE eller BOLD, med tips och stjärna. Safe/Bold gillades av alla sex personas. Förslagen: sortering efter nivå, och tipsen ska bara säga när en replik passar, inte hur han ska hanteras.",
+   "shot": null
+  },
+  "MY-13": {
+   "title": "Say This: övningsläget",
+   "summary": "Tio situationer en i taget: tänk ut en replik, tryck Reveal. Förslaget är att ta bort hela övningen eftersom listan redan visar allt. Bygger på åsikter, så du avgör.",
+   "shot": "seats/ui-shots/myturn-say-practise.png"
+  },
+  "MY-14": {
+   "title": "Say This: övningen klar",
+   "summary": "Slutskärmen efter övningen. Försvinner om övningsläget tas bort.",
+   "shot": null
+  },
+  "MY-15": {
+   "title": "Svit-kortet (4 eller 8 rätt i rad)",
+   "summary": "Rosa kort som glider in mitt i en runda. Föreslås bort: det strider mot 'inga streaks', och ingen persona såg det.",
+   "shot": null
+  },
+  "MY-16": {
+   "title": "Ordförklaringen för understrukna ord",
+   "summary": "Arket när hon trycker på ett understruket fotbollsord i en artikel eller på klubbsidan. Arket stannar, men förklaringarna flyttas in i Lingo så att det finns en ordlista i stället för två som säger emot varandra.",
+   "shot": null
+  },
+  "SET-01": {
+   "title": "Kugghjulet till Inställningar",
+   "summary": "Kugghjulet uppe till höger i Feed och på klubbfliken. Enda vägen in till namn, klubb, nivå och radering. Behålls.",
+   "shot": "seats/ui-shots/feed-pre-settings.png"
+  },
+  "SET-02": {
+   "title": "Inställningar",
+   "summary": "Inställningsarket: notiser, kalender, 'Change your setup' och About. Ingen skärmbild finns, eftersom testkörningen inte nådde Inställningar. Det mesta måste finnas kvar. Förslagen: visa 'Change your setup' utfällt, ge landsföljare en väg ut, länka till en riktig integritetspolicy och gör Delete My Data sann före 2.4.",
+   "shot": null
+  },
+  "SET-03": {
+   "title": "Rutan för att ändra hennes namn",
+   "summary": "Systemruta med textfält. Föreslås bort, men bara om introduktionen också slutar fråga om hennes namn, eftersom namnet inte används någonstans.",
+   "shot": null
+  },
+  "SET-04": {
+   "title": "Rutan för att ändra hans namn",
+   "summary": "Systemruta med textfält. Blir ett litet ark där hon också kan byta relation (Partner/Parent/Sibling/Friend), vilket i dag bara går genom att radera allt.",
+   "shot": null
+  },
+  "SET-05": {
+   "title": "Klubbväljaren i Inställningar",
+   "summary": "Välj en eller två av de 20 klubbarna. Behålls; raderna ska bara se ut som klubbkorten i introduktionen.",
+   "shot": null
+  },
+  "SET-06": {
+   "title": "Landsväljaren (dold)",
+   "summary": "Väljare med 48 länder från World Championship, som inte går att nå i dag. Den ersätts med en enkel 'Stop following {land}' så att de tio enheter som följer ett land kan ta bort det.",
+   "shot": null
+  },
+  "SET-07": {
+   "title": "Nivåväljaren",
+   "summary": "Byt nivå. Behålls, men varje nivå ska säga vad den faktiskt ändrar, och nivå 3 ska tilltala henne med 'You' i stället för 'She'.",
+   "shot": null
+  },
+  "SET-08": {
+   "title": "Bekräftelse: ta bort matcher ur kalendern",
+   "summary": "Frågan när hon slår av kalendersynken. Behålls som den är.",
+   "shot": null
+  },
+  "SET-09": {
+   "title": "Felruta: kalendersynk",
+   "summary": "Felrutan när kalendern inte går att slå på, plus iPhones frågor om åtkomst. Behålls.",
+   "shot": null
+  },
+  "SET-10": {
+   "title": "Bekräftelse: Delete My Data",
+   "summary": "Apple kräver bekräftelsen. Orden behålls, men de måste bli sanna genom att själva raderingen rättas före 2.4.",
+   "shot": null
+  },
+  "SET-11": {
+   "title": "Felruta: kunde inte radera",
+   "summary": "Visas när servern inte nås; inget raderas. Behålls.",
+   "shot": null
+  },
+  "SET-12": {
+   "title": "Ruta: data raderad",
+   "summary": "Bekräftelsen efter radering, ovanpå en omstartad introduktion. Behålls. Texten blir helt sann först när analysdatan också raderas på servern.",
+   "shot": null
+  }
+ },
+ "rows": {
+  "MY-01-00": {
+   "what": "My Turn-fliken: en reglage-rad med tre delar (Quiz, Lingo, Say This). Första gången öppnas Quiz.",
+   "proposal": "Ändra ordningen till Say This · Lingo · Quiz och öppna på Say This första gången; därefter öppnas den del hon senast använde.",
+   "why": "Say This och sökningen i Lingo är det hon skulle använda på puben. Quizen hon möter först kändes som läxor för alla sex personas ('school', 'homework').",
+   "if_accept": "Hon landar på färdiga repliker i stället för ett quiz. Liten ändring i appen. Kräver en ny appversion."
+  },
+  "MY-01-02": {
+   "what": "Rubriken \"My Turn\" överst på fliken.",
+   "proposal": "Behåll som det är.",
+   "why": "Vanlig flikrubrik. Själva fliknamnet avgörs i flikraden (en Match-fit-persona ville hellre ha 'Practice').",
+   "if_accept": "Inget ändras."
+  },
+  "MY-01-03": {
+   "what": "Första knappen i reglaget: \"Quiz\".",
+   "proposal": "Behåll som det är.",
+   "why": "De tre delarna är hur hon hittar varje verktyg; ordningen ändras i förslaget för skärmen.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-01-04": {
+   "what": "Andra knappen i reglaget: \"Lingo\" (ordlistan).",
+   "proposal": "Behåll som det är.",
+   "why": "De tre delarna är hur hon hittar varje verktyg; ordningen ändras i förslaget för skärmen.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-01-05": {
+   "what": "Tredje knappen i reglaget: \"Say This\" (färdiga repliker).",
+   "proposal": "Behåll som det är.",
+   "why": "De tre delarna är hur hon hittar varje verktyg; ordningen ändras i förslaget för skärmen.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-01-06": {
+   "what": "Vid den allra största textstorleken heter \"Say This\" i stället \"Lines\" så att det får plats.",
+   "proposal": "Behåll som det är.",
+   "why": "Håller reglaget läsbart för den som har förstorad text. UI-granskningen: 'fungerar fint'.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-01-07": {
+   "what": "Appen minns vilken del (Quiz, Lingo, Say This) hon senast använde och öppnar där nästa gång.",
+   "proposal": "Behåll som det är.",
+   "why": "Sparar ett tryck varje besök, och skyddar gamla installationer som har sparat ett gammalt delnamn.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-01-08": {
+   "what": "Allt innehåll i My Turn (quizfrågor, ord, repliker) ligger i appen men kan bytas ut från servern, som kollas högst en gång i timmen.",
+   "proposal": "Behåll som det är.",
+   "why": "Det är det enda sättet att rätta en felaktig rad (offside, Toffees, de dubbla 'Ask him:') utan att släppa en ny app.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-01-09": {
+   "what": "När hon trycker Delete My Data i Inställningar raderas också alla quizpoäng, sparade repliker och pausade rundor.",
+   "proposal": "Behåll som det är.",
+   "why": "Del av Apples krav på att radera data: hennes framsteg och sparade repliker ska försvinna också.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-02-00": {
+   "what": "Quizens startsida: en stor rosa knapp \"Start a round\", sedan \"Or pick a pack\" med åtta paket (ca 150 frågor). Samma för alla nivåer.",
+   "proposal": "Ändra så att listan följer hennes nivå: nivå 1 ser The Basics, His squad och His club right now plus en rad 'More packs'; nivå 2–3 börjar med truppen respektive klubbens historia.",
+   "why": "Alla sex personas tyckte det var för mycket ('This is a school', 'syllabus', 'homework'). Ingenting i My Turn läser hennes nivå i dag, så Deep-kvinnan får frågan 'how many points for a win?'.",
+   "if_accept": "Light ser tre paket i stället för åtta; övriga hamnar bakom 'More packs'. Nivån får för första gången synlig effekt i My Turn. Produktbeslut som editorn lämnar till dig. Kräver en ny appversion."
+  },
+  "MY-02-01": {
+   "what": "Stora knappen första gången: \"Start a round / Ten questions from The Basics\".",
+   "proposal": "Ändra så att knappens paket väljs efter nivå: nivå 1 The Basics, nivå 2 His squad, nivå 3 His club, the history.",
+   "why": "Grunderna passar Light (båda Light-personorna tyckte de var nyttiga) men fyra av sex (Match-fit och Deep) kallade dem skola eller förolämpande. Deep: 'mitt läge borde ändra det här'.",
+   "if_accept": "Match-fit och Deep börjar på något som känns värt deras tid. Kräver en ny appversion."
+  },
+  "MY-02-02": {
+   "what": "Stora knappen när hon klarat grunderna: \"Learn his squad / Ten questions on the men in his team\".",
+   "proposal": "Behåll som det är.",
+   "why": "Truppen (ansiktena) är det paket fyra av sex personas faktiskt ville spela härnäst.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-02-03": {
+   "what": "Reservtext på stora knappen när truppaketet inte går att bygga (ingen klubb, offline, för få spelare).",
+   "proposal": "Behåll som det är.",
+   "why": "Utan den blir knappen tom i de fallen.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-02-04": {
+   "what": "Stora knappen när en runda är pausad: \"Continue / {paket} · question 3 of 10\".",
+   "proposal": "Behåll som det är.",
+   "why": "Att fortsätta en pausad runda är den genväg som sparar hennes arbete.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-02-05": {
+   "what": "Rubriken \"OR PICK A PACK\" ovanför paketlistan.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs som rubrik även när listan blir kortare.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-02-06": {
+   "what": "Paketet \"The Basics\" (30 frågor om regler och grunder, t.ex. 'Hur många poäng för en vinst?').",
+   "proposal": "Flytta det: först på nivå 1, bakom 'More packs' på nivå 2–3. Skriv samtidigt om tre repliker som Han ryckte till av (t.ex. 'Ten men now. They'll sit back and defend.').",
+   "why": "Rätt innehåll för Light, fel första intryck för Match-fit och Deep (Deep: 'insulting', 'patronising'). Han: 40 % av raderna landar, 25 % får honom att rycka till.",
+   "if_accept": "Paketet finns kvar för alla, bara i annan ordning. Ordningen är en appändring (ny appversion); de omskrivna replikerna går ut som innehållsuppdatering och når även gamla versioner."
+  },
+  "MY-02-07": {
+   "what": "Paketet \"His squad / Faces, numbers, and what each one is for\": byggs i telefonen av hans klubbs spelare (foton, tröjnummer, positioner).",
+   "proposal": "Behåll ansikts- och nummerfrågorna men ta bort repliker som avslöjar henne: 'Point at the screen…', frågor om skadade spelare, och nationalitetsrepliken för ordinarie spelare. Ny underrubrik: 'Faces and shirt numbers.'",
+   "why": "Det är paketet hon vill ha men där replikerna landar sämst: Han ryckte till av 65 %, t.ex. 'Is he scoring today?' om en skadad Saka. Två personas hånade 'what each one is for'.",
+   "if_accept": "Hon får samma frågor men inga repliker som kan avslöja henne. Ändringen görs i appens kod som bygger paketet. Kräver en ny appversion."
+  },
+  "MY-02-08": {
+   "what": "Paketet \"His club, right now / The table, the last result, the next one\": byggs i telefonen från klubbsidans aktuella data.",
+   "proposal": "Ändra så att en straffläggning visas som just det ('Lost 5-3 on penalties to Fleetwood'), och byt ut frågor till honom som ignorerar vem han är (se arena- och fanfrågorna).",
+   "why": "I dag kallar paketet en cuputtåg på straffar för oavgjort och föreslår 'Was the draw with Fleetwood fair?'. Datagranskningen bekräftade felet (allvarligt). Han: 'här skulle hon bli avslöjad'.",
+   "if_accept": "Rättelse både på servern (klubbsidans resultatdata måste ta med straffar) och i appens paketbyggare. Kräver en ny appversion. Viktigaste rättelsen i hela gruppen."
+  },
+  "MY-02-09": {
+   "what": "Paketet \"His club, the history\": 20 statiska frågor om hans klubbs historia (t.ex. 'In which year was Arsenal founded?').",
+   "proposal": "Behåll paketet och visa det först på nivå 3; rätta Everton-repliken om 'the Toffees' och stryk regi-anvisningar efter citat ('If yes, sit back for ten minutes.').",
+   "why": "Bästa innehållet i appen enligt Han ('the best section in the app by a mile', ca 70 % landar). En replik har orsak och verkan baklänges.",
+   "if_accept": "Deep möter det bästa paketet först. Texträttelserna är en innehållsuppdatering utan ny app; ordningen kräver ny appversion."
+  },
+  "MY-02-10": {
+   "what": "Paketet \"The league's big names\": frågor om de största spelarna i andra klubbar (foto, vilken klubb).",
+   "proposal": "Flytta det bakom 'More packs' på alla nivåer och byt repliken 'That's {name}, isn't it?' mot ett faktum om spelaren.",
+   "why": "Ingens första behov: bara en av sex personas ville ha det, Deep: 'Haaland. Everyone knows that'. Att peka på tv:n får Han att rycka till.",
+   "if_accept": "Paketet ligger kvar men längre ner. Kräver en ny appversion. Beroendekontrollen: ingen risk för gamla versioner."
+  },
+  "MY-02-11": {
+   "what": "Paketet \"Legends\" (22 frågor om legendariska spelare, t.ex. Shearers 260 mål).",
+   "proposal": "Flytta det bakom 'More packs' på nivå 1, synligt på nivå 2–3; stryk repliken 'Agüerooo. That's why people put themselves through this.'",
+   "why": "Bra pubfakta för de djupare nivåerna (Han hade 'Shearer 260, Kane 213' på sin topp-10), men för mycket för Light.",
+   "if_accept": "Light ser det inte direkt. Ordningen kräver ny appversion; strykningen av repliken är en innehållsuppdatering."
+  },
+  "MY-02-12": {
+   "what": "Paketet \"Clubs & Rivalries\" (22 frågor om klubbar och derbyn).",
+   "proposal": "Rätta repliken om Evertons smeknamn (namnet kommer från en karamellbutik; 'Toffee Lady' kom ur den) och flytta paketet bakom 'More packs' på nivå 1.",
+   "why": "En replik som ska imponera har orsak och verkan baklänges, enligt Han. Annars landar paketet bra (55 %).",
+   "if_accept": "Rättelsen är en innehållsuppdatering utan ny app; ordningen per nivå kräver ny appversion."
+  },
+  "MY-02-13": {
+   "what": "Paketet \"Badges & Grounds\" (22 frågor om klubbmärken och arenor).",
+   "proposal": "Flytta det bakom 'More packs' på nivå 1, synligt på nivå 2–3.",
+   "why": "Landar bra hos honom (60 %, 'Highbury's flats now'), men gör listan längre för Light; båda Light-personorna ville dölja det.",
+   "if_accept": "Light ser det inte direkt. Kräver en ny appversion."
+  },
+  "MY-02-14": {
+   "what": "Under ett paket efter en full runda: \"Best: 7 / 10\".",
+   "proposal": "Ta bort bästa-poängen från paketraderna.",
+   "why": "En poäng på varje rad gör listan till ett prov; ingen bad om den. Arkitekturen säger redan 'inga framstegsräknare'. Låg säkerhet: ingen persona nämnde den alls.",
+   "if_accept": "Hon ser inte längre sin bästa poäng per paket; regeln för 'Best' försvinner också. Poängen loggas ändå i analysen. Kräver en ny appversion."
+  },
+  "MY-02-15": {
+   "what": "Under ett paket efter en kort runda: \"Played 3\".",
+   "proposal": "Ta bort 'Played n' från paketraderna.",
+   "why": "En siffra som inte betyder något för henne. Ingen persona nämnde den.",
+   "if_accept": "Raden visar bara paketets beskrivning. Kräver en ny appversion."
+  },
+  "MY-02-16": {
+   "what": "Under ett pausat paket: \"Continue · question 4 of 10\".",
+   "proposal": "Ta bort den här andra pekaren till den pausade rundan.",
+   "why": "Den stora knappen överst säger redan exakt samma sak.",
+   "if_accept": "Fortsätt-knappen överst finns kvar; bara dubbletten försvinner. Kräver en ny appversion."
+  },
+  "MY-02-17": {
+   "what": "Den rosa pilen till höger på varje paketrad.",
+   "proposal": "Behåll som det är.",
+   "why": "Visar att raden går att öppna.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-02-18": {
+   "what": "Paketordningen när ingen klubb följs (bara grunder, stora namn, legender, rivaliteter, märken).",
+   "proposal": "Behåll som det är.",
+   "why": "Den enda enheten som bara följer ett land behöver fortfarande en lista.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-02-19": {
+   "what": "Paketordningen när hon följer en klubb: alltid samma åtta paket i samma ordning, oavsett nivå.",
+   "proposal": "Ändra så att ordningen beror på nivå, enligt förslaget för hela quizsidan.",
+   "why": "Den fasta ordningen är själva överbelastningen som alla sex personas klagade på.",
+   "if_accept": "Se förslaget för quizsidan: tre paket synliga på nivå 1, resten bakom 'More packs'. Kräver en ny appversion."
+  },
+  "MY-02-20": {
+   "what": "Laddtext medan ett paket byggs: \"Loading his club…\".",
+   "proposal": "Behåll som det är.",
+   "why": "Ärlig laddtext.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-02-21": {
+   "what": "Knappen \"Back to packs\" om laddningen fastnar.",
+   "proposal": "Behåll som det är.",
+   "why": "Vägen ut om något hänger sig.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-02-22": {
+   "what": "Felmeddelande: \"That pack has been refreshed since you started. Pick it again.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Förklarar varför hennes runda försvann.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-02-23": {
+   "what": "Vad som händer när hon lämnar fliken mitt i en runda. Testversionen och den riktiga appen beter sig olika.",
+   "proposal": "Ändra så att testversionen beter sig som den riktiga: hon kommer tillbaka till frågan hon lämnade.",
+   "why": "Koden säger en sak men den riktiga appen gör en annan; det gör testerna missvisande. Hon märker ingen skillnad.",
+   "if_accept": "Ingen synlig ändring för henne; städning i koden som följer med nästa appversion."
+  },
+  "MY-03-00": {
+   "what": "En quizfråga i en runda om tio, från lätt till svår.",
+   "proposal": "Behåll som det är.",
+   "why": "Frågan följd av ett faktum och en replik att säga är formatet som fyra personas kallade smart.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-03-01": {
+   "what": "Länken \"‹ Packs\" överst i en runda.",
+   "proposal": "Behåll som det är.",
+   "why": "Navigering hon behöver; rundan sparas.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-03-02": {
+   "what": "Länken \"‹ Pre-game\" när quizen öppnats från Matchday-fliken.",
+   "proposal": "Behåll som det är.",
+   "why": "Navigering hon behöver; rundan sparas.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-03-03": {
+   "what": "Räknaren \"Question 3 of 10\".",
+   "proposal": "Behåll som det är.",
+   "why": "Visar hur långt hon kommit.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-03-04": {
+   "what": "Knappen \"‹ Previous\" i en runda, för att läsa ett tidigare svar igen.",
+   "proposal": "Ta bort bakåtknappen och hela läget för att granska tidigare svar.",
+   "why": "Ett granskningsläge som ingen bad om. Resultatsidan visar redan alla missade frågor med repliker. Låg säkerhet: ingen persona nämnde det.",
+   "if_accept": "Hon kan inte bläddra bakåt mitt i en runda; hör ihop med 'The one before' och 'Back to question n'. Kräver en ny appversion."
+  },
+  "MY-03-05": {
+   "what": "Själva frågetexten.",
+   "proposal": "Behåll som det är.",
+   "why": "Det är frågan.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-03-06": {
+   "what": "Svartvitt porträtt av spelaren eller managern i frågan.",
+   "proposal": "Behåll som det är.",
+   "why": "Ansikten är hennes uttalade lucka ('Faces are my actual gap').",
+   "if_accept": "Inget ändras."
+  },
+  "MY-03-07": {
+   "what": "Runt foto från fotbollsdatatjänsten, med grå figur om bilden saknas.",
+   "proposal": "Behåll som det är.",
+   "why": "Fotofrågor behöver en reservbild; tomma platshållarbilder filtreras redan bort.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-03-08": {
+   "what": "Svarsknapparna (tre, eller två): grönt och bock på rätt, rött och kryss på fel.",
+   "proposal": "Behåll som det är.",
+   "why": "Svarskontrollen fungerar och är läsbar för skärmläsare.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-03-09": {
+   "what": "Frågan \"Who manages {club}?\" med en fråga till honom beroende på tabellplats.",
+   "proposal": "Behåll som det är.",
+   "why": "Läser managern från vår egen, manuellt kontrollerade lista; alla 20 kontrollerades 29 oktober.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-03-10": {
+   "what": "Frågan \"Where are {club} in the table right now?\" med en fråga till honom.",
+   "proposal": "Behåll som det är.",
+   "why": "Tabelldata är pålitliga, och frågorna ger honom ordet.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-03-11": {
+   "what": "Frågan \"How many points do {club} have?\" med en kommentar om starten.",
+   "proposal": "Behåll som det är.",
+   "why": "Tabelldata är pålitliga.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-03-12": {
+   "what": "Frågan \"Who did {club} play last, and how did it go?\" med svaret 'Beat/Lost/Drew…' och en fråga till honom.",
+   "proposal": "Ändra så att straffar räknas ('Lost on penalties to Fleetwood'), stryk 'That is the game he is still talking about.' och byt frågan till t.ex. 'Who was your man of the match?' eller 'What went wrong?'.",
+   "why": "I dag kallar den en cuputtåg för oavgjort och frågar om 'the draw was fair'. Datagranskningen bekräftade felet; Han: 'It wasn't a draw. We went OUT.'",
+   "if_accept": "Rättelse på servern (klubbsidans resultat ska bära straffar) och i appens paketbyggare. Kräver en ny appversion. Högst prioriterade rättelsen i gruppen."
+  },
+  "MY-03-13": {
+   "what": "Frågan \"Who do {club} play next?\" med 'Is the {opp} game on the telly?'.",
+   "proposal": "Behåll som det är.",
+   "why": "Praktisk och sann; Han hade den på sin bästa-lista.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-03-14": {
+   "what": "Frågan \"How have {club} been playing?\" med svaret 'Won 4, drew 0, lost 1 of the last five' och en humörfråga till honom.",
+   "proposal": "Ändra så att formen räknas från samma matcher som senaste resultatet (alla turneringar, straffar inräknade) och att humörfrågan väljs efter senaste matchen, inte majoriteten.",
+   "why": "Två svar i samma paket motsäger varandra, och 'We've been flying lately' dyker upp två dagar efter en förlust. Både Han och en Deep-persona reagerade.",
+   "if_accept": "Hon får inte längre en replik som krockar med senaste resultatet. Kräver en ny appversion."
+  },
+  "MY-03-15": {
+   "what": "Frågan \"Who's scored most for {club} this season?\" med repliken 'Watch {name} here.'.",
+   "proposal": "Ändra så att en skadad skyttekung hoppas över när repliken 'Watch {name} here.' väljs.",
+   "why": "Att be henne titta efter en skadad spelare är Saka-misstaget igen (datagranskningen: Saka borta i ca två månader men fortfarande med).",
+   "if_accept": "Repliken pekar aldrig på någon som inte spelar. Kräver en ny appversion."
+  },
+  "MY-03-16": {
+   "what": "Frågan \"How did {club} do last season?\" med 'Better or worse than last season so far?'.",
+   "proposal": "Behåll som det är.",
+   "why": "En av Hans bästa repliker i paketet.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-03-17": {
+   "what": "Frågan \"When did {club} last win the league?\" med t.ex. 'Reigning champions. No pressure, then.'",
+   "proposal": "Behåll som det är.",
+   "why": "En av Hans bästa repliker i paketet.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-03-18": {
+   "what": "Frågan \"What are {club} known as?\" (smeknamnet) med 'Come on you Gunners!'.",
+   "proposal": "Behåll som det är.",
+   "why": "Ofarlig; Han tyckte bara att ropet var lite mycket sagt utan sammanhang.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-03-19": {
+   "what": "Frågan \"What do {club} fans call themselves?\" med repliken 'Does that make you one of the Gooners then?'.",
+   "proposal": "Byt repliken mot en som låter honom äga det: 'Am I allowed to call myself one of the Gooners yet?'",
+   "why": "Att fråga en livslång supporter om han är supporter ignorerar vem han är; Han hade den på sin sämsta-lista.",
+   "if_accept": "Bättre replik i samma fråga. Kräver en ny appversion."
+  },
+  "MY-03-20": {
+   "what": "Frågan \"Where do {club} play their home games?\" med repliken 'Have you ever been to the Emirates?'.",
+   "proposal": "Ändra så att hans egen arena får 'Best game you've seen at {arena}?'; 'Have you ever been to…' används bara om motståndarens arena.",
+   "why": "Han har säsongskort; frågan skulle 'end the app'. Samma fråga om motståndarens arena hamnade på hans bästa-lista.",
+   "if_accept": "Hon frågar aldrig en säsongskortsinnehavare om han varit på sin arena. Kräver en ny appversion."
+  },
+  "MY-03-21": {
+   "what": "Frågan \"Who are {club}'s big rivals?\" med 'Forget the table. Just beat Spurs.'",
+   "proposal": "Behåll som det är.",
+   "why": "Rivalitetsfakta stämmer, och repliken är något fans faktiskt säger.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-03-22": {
+   "what": "Fotofrågan \"Who is this?\" om managern, med repliken 'Point at the screen: That's Mikel Arteta, isn't it?'.",
+   "proposal": "Ta bort peka-på-skärmen-repliken och ge frågan ett faktum om managern (hur länge han varit där) eller ingen replik alls.",
+   "why": "Att peka ut mästarnas manager för honom som en okänd gäst är på Hans sämsta-lista.",
+   "if_accept": "Frågan finns kvar men utan den pinsamma repliken. Kräver en ny appversion."
+  },
+  "MY-03-23": {
+   "what": "Fotofrågan \"Who is this?\" om en spelare i hans lag, med en replik om spelaren.",
+   "proposal": "Ändra så att ingen 'spelar/gör han mål i dag'-replik visas om en spelare som står på senaste skadelistan; annars oförändrat.",
+   "why": "Ansiktsfrågan är det hon vill ha, men repliken kan avslöja henne: 'Is he scoring today, do you reckon?' om skadade Saka (Han och en Deep-persona).",
+   "if_accept": "Samma frågor, säkrare repliker. Kräver en ny appversion."
+  },
+  "MY-03-24": {
+   "what": "Frågan \"What number does {name} wear?\" med 'Is that Rice, number 41?'.",
+   "proposal": "Behåll som det är.",
+   "why": "Tröjnummer kommer från Premier Leagues egen lista och stämmer; en Deep-persona sa 'den gör jag'.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-03-25": {
+   "what": "Frågan \"What position does {name} play?\".",
+   "proposal": "Behåll som det är.",
+   "why": "Hoppas över när källorna är oense, så den blir inte fel.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-03-26": {
+   "what": "Faktan och replikerna inuti truppfrågorna (skyttekung, kapten, yngst, nationalitet osv.).",
+   "proposal": "Ta bort nationalitetsrepliken för spelare som har startat ligamatcher, och filtrera alla repliker mot skadelistan.",
+   "why": "Den gav 'Is White going to get a game soon?' om en spelare med sju starter, och repliker om skadade spelare.",
+   "if_accept": "Hon slipper repliker om spelare som redan spelar eller är skadade. Kräver en ny appversion."
+  },
+  "MY-03-27": {
+   "what": "Fotofrågan i \"The league's big names\" med repliken 'That's {name}, isn't it?'.",
+   "proposal": "Byt repliken mot faktumet om spelaren som något att imponera med ('Haaland's got 13 in 11 for City.').",
+   "why": "Att peka på tv:n får Han att rycka till, precis som managerfrågan; Deep: 'Everyone knows that'.",
+   "if_accept": "Hon får en replik med innehåll i stället för en pekning. Kräver en ny appversion."
+  },
+  "MY-03-28": {
+   "what": "Frågan \"Which club does {name} play for?\" med 'Are Liverpool any good this season?'.",
+   "proposal": "Behåll som det är.",
+   "why": "Enkel, sann och frågan till honom fungerar.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-04-00": {
+   "what": "Rutan som dyker upp efter att hon svarat: kort faktum, en replik att säga, en knapp vidare.",
+   "proposal": "Behåll som det är.",
+   "why": "Faktum plus en replik är formatet alla nivåer gillade (fyra personas kallade det smart).",
+   "if_accept": "Inget ändras."
+  },
+  "MY-04-01": {
+   "what": "Omdömet \"Right.\" när hon svarat rätt.",
+   "proposal": "Behåll som det är.",
+   "why": "Vänligt; Light: 'Fine, kind'.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-04-02": {
+   "what": "Omdömet \"Not that one. Gooners.\" när hon svarat fel.",
+   "proposal": "Behåll som det är.",
+   "why": "Vänligt; Light: 'Fine, kind'.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-04-03": {
+   "what": "Bild på arenan ovanför förklaringen vid arenafrågor.",
+   "proposal": "Behåll som det är.",
+   "why": "Visar arenan hon just nämnt utan att kosta läsning.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-04-04": {
+   "what": "Förklaringen, t.ex. \"Three for a win, one for a draw, nothing for a loss…\"",
+   "proposal": "Behåll som det är.",
+   "why": "Förklarar vänligt och ger sammanhang som en icke-fan saknar.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-04-05": {
+   "what": "Etiketten ovanför repliken: \"SAY IT\", \"ASK HIM\" eller \"TO IMPRESS\".",
+   "proposal": "Behåll som det är.",
+   "why": "Visar vilken sorts replik det är.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-04-06": {
+   "what": "Repliken hon tar med sig, t.ex. 'Ask him: \"Who do you think goes down this year?\" He has a list.'",
+   "proposal": "Ta bort 'Ask him:' i början av alla 128 frågerepliker (etiketten säger det redan) och stryk regi-anvisningar om honom efter citatet ('He has a list.').",
+   "why": "Dubbla etiketter och anvisningar om hur han reagerar är hur appen 'pratar om mig' (Han). När han sett en sådan känns varje fråga som en manöver.",
+   "if_accept": "Renare repliker. Mest en innehållsuppdatering utan ny app; repliker som byggs i telefonen kräver ny appversion. En automatisk kontroll läggs till så det inte kommer tillbaka."
+  },
+  "MY-04-07": {
+   "what": "Ett dolt 'varför'-fält som varje quizfråga har (t.ex. 'This is the currency.'). Det visas inte sedan 28 oktober i 2.4.",
+   "proposal": "Ta bort 'varför'-fältet ur frågepaketet, paketbyggarna och innehållskontrollen.",
+   "why": "Det skrivs för varje fråga men syns ingenstans i 2.4.",
+   "if_accept": "Obs från beroendekontrollen: 2.2 och 2.3 visar fortfarande raden under varje svar. Ta bort det i appen nu men behåll fältet i paketet på servern tills få kör 2.2/2.3. Du behöver också uttryckligen pensionera innehållsregeln 'quiz: why + use + useType'."
+  },
+  "MY-04-08": {
+   "what": "Knappen \"Who he is\" som öppnar spelarkortet om spelaren i frågan.",
+   "proposal": "Behåll som det är.",
+   "why": "Leder till vem han är från ett ansikte hon just lärt sig.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-04-09": {
+   "what": "Knappen \"‹ The one before\" i granskningsläget.",
+   "proposal": "Ta bort den, tillsammans med 'Previous' och 'Back to question n'.",
+   "why": "Ett granskningsläge som ingen bad om. Låg säkerhet: inget belägg åt något håll.",
+   "if_accept": "Granskningsläget försvinner helt. Kräver en ny appversion."
+  },
+  "MY-04-10": {
+   "what": "Knappen \"Next\" som stänger rutan.",
+   "proposal": "Behåll som det är.",
+   "why": "Vägen vidare.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-04-11": {
+   "what": "Knappen \"See the score\" på sista frågan.",
+   "proposal": "Behåll som det är.",
+   "why": "Vägen vidare till resultatet.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-04-12": {
+   "what": "Knappen \"Back to question 4\" i granskningsläget.",
+   "proposal": "Ta bort den, tillsammans med resten av granskningsläget.",
+   "why": "Finns bara för granskningsläget, som föreslås bort.",
+   "if_accept": "Försvinner med granskningsläget. Kräver en ny appversion."
+  },
+  "MY-05-00": {
+   "what": "Ett halvhögt kort om spelaren i frågan, öppnat från \"Who he is\". Samma kort som på klubbsidan.",
+   "proposal": "Behåll som det är.",
+   "why": "Ingång till vem han är; själva kortet bedöms under klubbsidan.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-06-00": {
+   "what": "Slutet av en quizrunda: rosa poängkort, missade frågor med repliker, försök igen, nästa paket.",
+   "proposal": "Behåll som det är.",
+   "why": "Fyra personas log åt resultatet.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-06-01": {
+   "what": "Poängraden \"7 out of 10.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Hennes resultat, utan krav.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-06-02": {
+   "what": "Den kaxiga raden under poängen vid alla rätt, t.ex. \"Not one wrong. Sit next to him tonight.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Raden under poängen är det fyra personas mindes ('That's more than his mates know').",
+   "if_accept": "Inget ändras."
+  },
+  "MY-06-03": {
+   "what": "Den kaxiga raden vid 7–9 rätt, t.ex. \"That's more than his mates know.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Fyra av sex kallade den smart; en Deep-persona tyckte den var lite baksidig.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-06-04": {
+   "what": "Raden vid 4–6 rätt, t.ex. \"Half a pub quiz team already.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Samma format som fyra personas gillade.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-06-05": {
+   "what": "Raden vid 0–3 rätt, t.ex. \"Rough one. The answers are right there, go again.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Samma format som fyra personas gillade.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-06-06": {
+   "what": "Rubriken \"THE ONES YOU MISSED\".",
+   "proposal": "Behåll som det är.",
+   "why": "Hennes missar med repliker är det hon lär sig av.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-06-07": {
+   "what": "Kort per missad fråga: frågan, rätt svar i rosa, repliken.",
+   "proposal": "Behåll som det är.",
+   "why": "Hennes missar med repliker är det hon lär sig av.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-06-08": {
+   "what": "Knappen \"Retry the three you missed\".",
+   "proposal": "Behåll som det är.",
+   "why": "Snabbaste sättet att få missarna att fastna.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-06-09": {
+   "what": "Knappen \"Next pack\".",
+   "proposal": "Behåll som det är.",
+   "why": "Vägen vidare.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-06-10": {
+   "what": "Knappen \"Done\" när quizen öppnats från Matchday; tar henne tillbaka dit.",
+   "proposal": "Behåll som det är.",
+   "why": "Vägen tillbaka till Matchday.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-06-11": {
+   "what": "Regeln bakom 'Best': bara en full runda om tio kan sätta bästa-poängen.",
+   "proposal": "Ta bort regeln tillsammans med bästa-poängen på paketraderna.",
+   "why": "Den matar bara poängen som föreslås bort.",
+   "if_accept": "Inget synligt utöver att 'Best' försvinner. Kräver en ny appversion."
+  },
+  "MY-07-00": {
+   "what": "Lingo-delen: först en Practise-knapp, sedan sökfält, sedan \"All the words\" i fyra hopfällda grupper (158 ord) med antal.",
+   "proposal": "Ändra ordningen: sökfältet först, de fyra grupperna under utan antal, och Practise-knappen längst ner.",
+   "why": "Sökningen är skälet att öppna Lingo (fyra av sex: 'look it up under the table'). 158 ord med räknare kändes som ett prov ('GCSE', 'feels like an exam').",
+   "if_accept": "Hon ser sökfältet direkt. Kräver en ny appversion."
+  },
+  "MY-07-01": {
+   "what": "Knappen \"Practise / 7 words, any game\" överst i Lingo.",
+   "proposal": "Flytta den längst ner på Lingo-sidan, under orden. Den är fortfarande målet för 'Carry on with your words' från Matchday.",
+   "why": "Fem av sex skulle inte sakna den här; rundan som spelar roll är den på Matchday.",
+   "if_accept": "Knappen finns kvar men tar inte första platsen. Kräver en ny appversion. Beroendekontrollen: ingen risk."
+  },
+  "MY-07-02": {
+   "what": "Practise-knappen när en runda är pausad: \"Continue · 3 of 7\".",
+   "proposal": "Behåll som det är.",
+   "why": "Fortsättningen från Matchday ('Carry on with your words') går hit.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-07-03": {
+   "what": "Sökfältet \"Search a word you heard\" (söker i ord, betydelse och exempelrepliker).",
+   "proposal": "Behåll som det är.",
+   "why": "Det mest användbara i My Turn för puben enligt fyra av sex personas.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-07-04": {
+   "what": "Krysset som tömmer sökfältet.",
+   "proposal": "Behåll som det är.",
+   "why": "Tydlig kontroll.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-07-05": {
+   "what": "Rubriken \"ALL THE WORDS\".",
+   "proposal": "Behåll som det är.",
+   "why": "Rubrik för grupperna.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-07-06": {
+   "what": "Gruppen \"Rules / 46 words\" i Lingo, hopfälld tills hon trycker.",
+   "proposal": "Ändra rubriken till bara \"Rules\", utan '46 words'.",
+   "why": "Räknarna gör att det känns som ett prov (fyra personas, t.ex. 'Scary numbers'). Obs: arkitekturen behöll räknarna med flit, så det här är ditt beslut.",
+   "if_accept": "Grupperna finns kvar, bara utan siffror. Kräver en ny appversion."
+  },
+  "MY-07-07": {
+   "what": "Gruppen \"Tactics / 33 words\" i Lingo, hopfälld tills hon trycker.",
+   "proposal": "Ändra rubriken till bara \"Tactics\", utan '33 words'.",
+   "why": "Räknarna gör att det känns som ett prov (fyra personas, t.ex. 'Scary numbers'). Obs: arkitekturen behöll räknarna med flit, så det här är ditt beslut.",
+   "if_accept": "Grupperna finns kvar, bara utan siffror. Kräver en ny appversion."
+  },
+  "MY-07-08": {
+   "what": "Gruppen \"Match / 42 words\" i Lingo, hopfälld tills hon trycker.",
+   "proposal": "Ändra rubriken till bara \"Match\", utan '42 words'.",
+   "why": "Räknarna gör att det känns som ett prov (fyra personas, t.ex. 'Scary numbers'). Obs: arkitekturen behöll räknarna med flit, så det här är ditt beslut.",
+   "if_accept": "Grupperna finns kvar, bara utan siffror. Kräver en ny appversion."
+  },
+  "MY-07-09": {
+   "what": "Gruppen \"Slang / 37 words\" i Lingo, hopfälld tills hon trycker.",
+   "proposal": "Ändra rubriken till bara \"Slang\", utan '37 words'.",
+   "why": "Räknarna gör att det känns som ett prov (fyra personas, t.ex. 'Scary numbers'). Obs: arkitekturen behöll räknarna med flit, så det här är ditt beslut.",
+   "if_accept": "Grupperna finns kvar, bara utan siffror. Kräver en ny appversion."
+  },
+  "MY-07-10": {
+   "what": "Text när sökningen inte hittar något: \"Nothing for that yet. Try a shorter word.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Ärlig tom sökning.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-07-11": {
+   "what": "En ordrad, med en rosa bock när hon fått ordet rätt två gånger.",
+   "proposal": "Behåll som det är.",
+   "why": "Ordet och hennes diskreta bock.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-07-12": {
+   "what": "Betydelsen när hon öppnar ett ord, t.ex. Offside: '…nearer the goal than the last defender.'",
+   "proposal": "Rätta offside till rätt regel (näst sista försvararen, jämsides är okej, aldrig offside på egen planhalva), och samma rättelse i Overheard-svaren och i ordlistan för understrukna ord.",
+   "why": "Ordlistan har fel på just den regel varje man kommer att rätta henne på. Båda Deep-personorna såg felet, och tre andra kallade det den tydligaste förklaringen de sett, så de skulle upprepa det.",
+   "if_accept": "Bara en innehållsuppdatering av My Turn-paketet på servern, ingen ny appversion; rättelsen når även dem som kör 2.2/2.3."
+  },
+  "MY-07-13": {
+   "what": "Exempelrepliken i kursiv under ordet, t.ex. \"That's never offside. I don't care what the replay says.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Delen som låter som han ('Ha, that's him exactly').",
+   "if_accept": "Inget ändras."
+  },
+  "MY-07-14": {
+   "what": "Repliken att säga under varje ord (alla 158 har en), t.ex. \"Was he offside? He looked level to me.\"",
+   "proposal": "Skriv om repliker som kräver ord hon inte skulle säga eller fel sammanhang: xG, 'the gaffer', 'boot room', 'top four is the aim' till mästarna, transferfönster i oktober; stryk 'Have you ever had a season ticket?'.",
+   "why": "En replik hon blir utskrattad för, eller som är fel den här veckan, kostar mer än ingen replik. Match-fit: 'I would never say xG out loud'; Han reagerade på top four och fönstret.",
+   "if_accept": "Bara en innehållsuppdatering av My Turn-paketet på servern, ingen ny appversion; rättelsen når även dem som kör 2.2/2.3."
+  },
+  "MY-07-15": {
+   "what": "Små knappar med relaterade ord (t.ex. Relegation → Promotion) som hoppar till det ordet.",
+   "proposal": "Behåll som det är.",
+   "why": "Relaterade ord ett tryck bort.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-07-16": {
+   "what": "Dolda fält i ordlistan ('heard', 'spare') som skrivs men aldrig visas.",
+   "proposal": "Gör 'heard' valfritt i appen nu, och ta bort 'heard' och 'spare' ur ordlistan först när 2.2/2.3 inte längre används.",
+   "why": "Döda fält, men att ta bort 'heard' i dag skulle få varje utgiven appversion att sluta läsa ordlistan.",
+   "if_accept": "Inget syns för henne. Första steget kräver ny appversion; själva borttagningen väntar tills gamla versioner försvunnit."
+  },
+  "MY-07-17": {
+   "what": "När hon trycker på en ordknapp i Say This hoppar appen till ordet i Lingo, uppfällt.",
+   "proposal": "Behåll som det är.",
+   "why": "Kopplar en replik till vad den betyder.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-08-00": {
+   "what": "Overheard-rundan: sju ord, en replik någon säger med ordet i fetstil, \"What does he mean?\", två svar bredvid varandra.",
+   "proposal": "Ändra så att de två svaren staplas på höjden vid de största textstorlekarna.",
+   "why": "Vid stor text bryts orden mitt i och det andra svaret hamnar under flikraden (UI-granskningen, bekräftat med skärmbild). Formatet i sig kallades smart.",
+   "if_accept": "Rundan blir läsbar för den som har förstorad text; inget ändras för andra. Kräver en ny appversion."
+  },
+  "MY-08-01": {
+   "what": "Länken \"‹ Lingo\" i en runda; rundan pausas.",
+   "proposal": "Behåll som det är.",
+   "why": "Navigering.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-08-02": {
+   "what": "Länken \"‹ Pre-game\" när rundan öppnats från Matchday.",
+   "proposal": "Behåll som det är.",
+   "why": "Navigering.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-08-03": {
+   "what": "Räknaren \"3 of 7\".",
+   "proposal": "Behåll som det är.",
+   "why": "Visar hur långt hon kommit.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-08-04": {
+   "what": "Etiketten för vem som säger repliken: hans namn, THE TELLY, GROUP CHAT eller THE PUNDIT.",
+   "proposal": "Behåll som det är.",
+   "why": "Vem som säger det är det som får formatet att fungera (Deep: 'clever').",
+   "if_accept": "Inget ändras."
+  },
+  "MY-08-05": {
+   "what": "Den hörda repliken med ordet i fetstil, t.ex. \"That's never offside. I don't care what the replay says.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Kärnan i rundan.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-08-06": {
+   "what": "Liten ruta när hon trycker på ett spelarnamn i repliken: \"Isak / Forward, Liverpool\".",
+   "proposal": "Behåll som det är.",
+   "why": "Talar om vem ett namn är.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-08-07": {
+   "what": "Frågan \"What does he mean?\" (eller 'they' / 'that' beroende på vem som talar).",
+   "proposal": "Behåll som det är.",
+   "why": "Pronomenet följer redan relationen.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-08-08": {
+   "what": "De två svarsalternativen: rätt betydelse och en lockbete. För offside är det rätta svaret 'He was beyond the final defender for the pass'.",
+   "proposal": "Rätta offside-svaret till 'He was ahead of the second-last defender when it was played' och stapla alternativen vid stor text.",
+   "why": "Det rätta svaret lär ut fel regel (en Deep-persona påpekade det).",
+   "if_accept": "Texträttelsen är en innehållsuppdatering som når alla versioner; staplingen kräver ny appversion."
+  },
+  "MY-08-09": {
+   "what": "Fel svar lyser ljusrött med kryss och väntar på rätt svar.",
+   "proposal": "Behåll som det är.",
+   "why": "Tydligt fel-läge.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-08-10": {
+   "what": "Felmeddelande: \"Those words have moved on. Search for the one you heard.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Ärligt när rundan blivit inaktuell.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-08-11": {
+   "what": "Hur de sju orden väljs: utifrån nästa match (derby, cup, transferfönster osv.) eller fritt i Practise.",
+   "proposal": "Rätta slutdatumet för januarifönstret (fel med en dag 2027) och visa fönster-ord och repliker bara när ett fönster faktiskt är öppet.",
+   "why": "Faktagranskningen bekräftade datumfelet, och Han: 'There's no window open in October'.",
+   "if_accept": "Inga transferprat-ord i oktober. Kräver en ny appversion."
+  },
+  "MY-09-00": {
+   "what": "Rutan när hon hittat rätt: omdöme, ordet, en replik att säga, betydelse vid behov, Next.",
+   "proposal": "Behåll som det är.",
+   "why": "Avslöjandet och 'NOW YOU SAY' är belöningen i rundan.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-09-01": {
+   "what": "Omdömet \"Right.\" på första försöket.",
+   "proposal": "Behåll som det är.",
+   "why": "Belöningen i rundan.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-09-02": {
+   "what": "Omdömet \"Got there.\" efter en miss.",
+   "proposal": "Behåll som det är.",
+   "why": "Vänligt efter en miss.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-09-03": {
+   "what": "Ordet, t.ex. \"Premier League\".",
+   "proposal": "Behåll som det är.",
+   "why": "Belöningen i rundan.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-09-04": {
+   "what": "Etiketten \"NOW YOU SAY\".",
+   "proposal": "Behåll som det är.",
+   "why": "En Match-fit-persona läste dessa repliker noggrant.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-09-05": {
+   "what": "Repliken under 'NOW YOU SAY', ibland med ett spelarnamn, t.ex. \"If they got relegated, would Isak (forward, Liverpool) stay or move on?\"",
+   "proposal": "Ändra så att namnrepliker bara visas när de passar veckan (nedflyttning bara för bottenlag, Champions League bara inför Europamatch), ta bort '(forward, Liverpool)' ur talade repliker och stryk positionsfrågor som är självklara.",
+   "why": "Ett namn får repliken att låta påläst, vilket gör en felaktig replik värre. Han: 30 % landar, 45 % får honom att rycka till.",
+   "if_accept": "Färre men träffsäkrare namnrepliker. Delvis innehållsuppdatering, delvis ny appversion."
+  },
+  "MY-09-06": {
+   "what": "Knappen \"+ What it means\" (hopfälld från början).",
+   "proposal": "Behåll som det är.",
+   "why": "Betydelsen när hon vill ha den.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-09-07": {
+   "what": "Betydelsen av ordet.",
+   "proposal": "Behåll som det är.",
+   "why": "Betydelsen när hon vill ha den.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-09-08": {
+   "what": "Knappen \"Next\".",
+   "proposal": "Behåll som det är.",
+   "why": "Vägen vidare.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-09-09": {
+   "what": "Knappen \"See how you did\" på sista ordet.",
+   "proposal": "Behåll som det är.",
+   "why": "Vägen till resultatet.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-10-00": {
+   "what": "Slutet av en Overheard-runda.",
+   "proposal": "Behåll som det är.",
+   "why": "Kort avslutning.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-10-01": {
+   "what": "Rubriken \"That's seven.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Kort avslutning.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-10-02": {
+   "what": "Rubriken \"That's the round.\" vid kortare runda.",
+   "proposal": "Behåll som det är.",
+   "why": "Kort avslutning.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-10-03": {
+   "what": "Raden \"You got 5 of 7.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Hennes resultat.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-10-04": {
+   "what": "Den kaxiga raden efter en ordrunda, från samma pool som quizen, t.ex. \"The ones you missed are the good gossip anyway.\"",
+   "proposal": "Ändra så att rader som bara passar quizen (om skvaller och namn) inte visas efter Lingo- och Say This-rundor.",
+   "why": "En rad om namn och skvaller efter en runda med regelord känns inklistrad ('rules aren't gossip', Deep).",
+   "if_accept": "Hon får bara rader som passar rundan. Kräver en ny appversion."
+  },
+  "MY-10-05": {
+   "what": "Raden \"The ones you missed come round again.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Missarna kommer tillbaka.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-10-06": {
+   "what": "Knappen \"Go again\".",
+   "proposal": "Behåll som det är.",
+   "why": "Vägen vidare.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-10-07": {
+   "what": "Knappen \"Back to the words\".",
+   "proposal": "Behåll som det är.",
+   "why": "Vägen tillbaka.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-10-08": {
+   "what": "Om det inte finns fler ord att dela ut slutar rundan och hon kommer tillbaka till ordlistan.",
+   "proposal": "Behåll som det är.",
+   "why": "Vettigt slutläge.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-00": {
+   "what": "Say This-delen: Practise-knapp, \"Your lines\" (sparade repliker), sedan 25 situationer i tre grupper (Moments, How it's going, When he asks you).",
+   "proposal": "Ändra så att nivå 1 öppnar med bara MOMENTS utfälld och de två andra grupperna hopfällda; övriga nivåer oförändrade.",
+   "why": "Bäst organiserade skärmen i appen enligt Match-fit ('exactly the moments I freeze in'), men 25 situationer och ca 100 repliker är för långt för Light.",
+   "if_accept": "Light ser ungefär tio ögonblick först. Kräver en ny appversion."
+  },
+  "MY-11-01": {
+   "what": "Knappen \"Practise / 10 situations, then the lines for each\" överst i Say This.",
+   "proposal": "Ta bort övningsläget helt (knappen, övningsskärmen och slutskärmen, 20 rader).",
+   "why": "Fyra av fem som kommenterade skulle inte sakna det, och listan visar redan alla repliker. Deep: 'rehearsing small talk'. Bygger på åsikter; användningen loggas inte.",
+   "if_accept": "Say This blir bara listan. Alternativ (ditt beslut): behåll och lägg till mätning så att användning kan avgöra. Kräver en ny appversion."
+  },
+  "MY-11-02": {
+   "what": "Practise-knappen när övningen är pausad: \"Continue · 4 of 10\".",
+   "proposal": "Ta bort den tillsammans med övningsläget.",
+   "why": "Följer beslutet om övningsläget.",
+   "if_accept": "Försvinner med övningsläget. Kräver en ny appversion."
+  },
+  "MY-11-03": {
+   "what": "Rubriken \"YOUR LINES\".",
+   "proposal": "Behåll som det är.",
+   "why": "Den enda listan över hennes sparade repliker, det hon tar med till matchen (Match-fit: 'Handy').",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-04": {
+   "what": "Rubrik för repliker sparade inför en match: \"For Liverpool, Saturday\".",
+   "proposal": "Behåll som det är.",
+   "why": "Del av hennes sparade repliker.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-05": {
+   "what": "Raderna med repliker hon sparat på Matchday inför matchen.",
+   "proposal": "Behåll som det är.",
+   "why": "Del av hennes sparade repliker.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-06": {
+   "what": "Tom text: \"Save a line with its star and it'll wait for you here.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Förklarar hur listan fylls.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-07": {
+   "what": "Raderna med repliker hon stjärnmärkt.",
+   "proposal": "Behåll som det är.",
+   "why": "Del av hennes sparade repliker.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-08": {
+   "what": "Grupprubriken \"MOMENTS\".",
+   "proposal": "Behåll som det är.",
+   "why": "Grupprubrik.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-09": {
+   "what": "Situationen \"His team just scored / 4 lines\" under MOMENTS.",
+   "proposal": "Behåll som det är.",
+   "why": "Rop under matchen är Hans näst bästa del (55 % landar) och ögonblicken hon fryser i; fyra personas kallade dem smarta.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-10": {
+   "what": "Situationen \"The other lot just scored / 4 lines\" under MOMENTS.",
+   "proposal": "Behåll som det är.",
+   "why": "Rop under matchen är Hans näst bästa del (55 % landar) och ögonblicken hon fryser i; fyra personas kallade dem smarta.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-11": {
+   "what": "Situationen \"VAR is checking something / 4 lines\" under MOMENTS.",
+   "proposal": "Ändra rubriken till \"VAR (the video referee) is checking something\".",
+   "why": "Båda Light-personorna visste inte vad VAR var där de mötte det.",
+   "if_accept": "Liten textändring. Beror på var rubriken ligger: innehållsuppdatering om den kommer från repliksamlingen, annars ny appversion."
+  },
+  "MY-11-12": {
+   "what": "Situationen \"Someone got sent off / 4 lines\" under MOMENTS.",
+   "proposal": "Behåll som det är.",
+   "why": "Rop under matchen är Hans näst bästa del (55 % landar) och ögonblicken hon fryser i; fyra personas kallade dem smarta.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-13": {
+   "what": "Situationen \"Penalty / 4 lines\" under MOMENTS.",
+   "proposal": "Behåll som det är.",
+   "why": "Rop under matchen är Hans näst bästa del (55 % landar) och ögonblicken hon fryser i; fyra personas kallade dem smarta.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-14": {
+   "what": "Situationen \"The keeper made a big save / 4 lines\" under MOMENTS.",
+   "proposal": "Behåll som det är.",
+   "why": "Rop under matchen är Hans näst bästa del (55 % landar) och ögonblicken hon fryser i; fyra personas kallade dem smarta.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-15": {
+   "what": "Situationen \"They're making a substitution / 4 lines\" under MOMENTS.",
+   "proposal": "Behåll som det är.",
+   "why": "Rop under matchen är Hans näst bästa del (55 % landar) och ögonblicken hon fryser i; fyra personas kallade dem smarta.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-16": {
+   "what": "Situationen \"A player is down injured / 4 lines\" under MOMENTS.",
+   "proposal": "Behåll som det är.",
+   "why": "Rop under matchen är Hans näst bästa del (55 % landar) och ögonblicken hon fryser i; fyra personas kallade dem smarta.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-17": {
+   "what": "Situationen \"So close / 4 lines\" under MOMENTS.",
+   "proposal": "Behåll som det är.",
+   "why": "Rop under matchen är Hans näst bästa del (55 % landar) och ögonblicken hon fryser i; fyra personas kallade dem smarta.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-18": {
+   "what": "Situationen \"A nasty tackle or a scuffle / 4 lines\" under MOMENTS.",
+   "proposal": "Behåll som det är.",
+   "why": "Rop under matchen är Hans näst bästa del (55 % landar) och ögonblicken hon fryser i; fyra personas kallade dem smarta.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-19": {
+   "what": "Situationen \"It's a cup night / 5 lines\" under MOMENTS.",
+   "proposal": "Behåll som det är.",
+   "why": "Rop under matchen är Hans näst bästa del (55 % landar) och ögonblicken hon fryser i; fyra personas kallade dem smarta.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-20": {
+   "what": "Grupprubriken \"HOW IT'S GOING\".",
+   "proposal": "Behåll som det är.",
+   "why": "Grupprubrik.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-21": {
+   "what": "Situationen \"They keep passing it sideways\", med repliken \"All possession, no penetration.\"",
+   "proposal": "Byt repliken till \"All possession, no end product.\"",
+   "why": "Samma åsikt utan ordet hon aldrig skulle säga på en pub (Light: 'I'm not saying penetration in a pub'). Deep gillade tanken.",
+   "if_accept": "Bara en innehållsuppdatering av My Turn-paketet på servern, ingen ny appversion; rättelsen når även dem som kör 2.2/2.3."
+  },
+  "MY-11-22": {
+   "what": "Situationen \"His team can't get out of their half / 4 lines\" under HOW IT'S GOING.",
+   "proposal": "Behåll som det är.",
+   "why": "Repliker som ger henne en egen åsikt om matchen (Match-fit); Han hade en av dem på sin bästa-lista.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-23": {
+   "what": "Situationen \"They're winning comfortably / 4 lines\" under HOW IT'S GOING.",
+   "proposal": "Behåll som det är.",
+   "why": "Repliker som ger henne en egen åsikt om matchen (Match-fit); Han hade en av dem på sin bästa-lista.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-24": {
+   "what": "Situationen \"Nothing is happening / 4 lines\" under HOW IT'S GOING.",
+   "proposal": "Behåll som det är.",
+   "why": "Repliker som ger henne en egen åsikt om matchen (Match-fit); Han hade en av dem på sin bästa-lista.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-25": {
+   "what": "Situationen \"It's the last ten minutes and it's close / 4 lines\" under HOW IT'S GOING.",
+   "proposal": "Behåll som det är.",
+   "why": "Repliker som ger henne en egen åsikt om matchen (Match-fit); Han hade en av dem på sin bästa-lista.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-26": {
+   "what": "Situationen \"The referee is having a bad day / 4 lines\" under HOW IT'S GOING.",
+   "proposal": "Behåll som det är.",
+   "why": "Repliker som ger henne en egen åsikt om matchen (Match-fit); Han hade en av dem på sin bästa-lista.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-27": {
+   "what": "Situationen \"The other team is winning ugly / 4 lines\" under HOW IT'S GOING.",
+   "proposal": "Behåll som det är.",
+   "why": "Repliker som ger henne en egen åsikt om matchen (Match-fit); Han hade en av dem på sin bästa-lista.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-28": {
+   "what": "Grupprubriken \"WHEN HE ASKS YOU\".",
+   "proposal": "Behåll som det är.",
+   "why": "Grupprubrik.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-29": {
+   "what": "Situationen \"Half-time and he asks what you think\", med användningstips under replikerna.",
+   "proposal": "Stryk tipsen 'The best tool in this app. Hand the question straight back.' och 'Vague enough to be true.'; behåll replikerna.",
+   "why": "Tips om hur hon ska hantera honom är ett fel: produkten ska få henne att låta smart, inte styra hans humör (Han reagerade).",
+   "if_accept": "Bara en innehållsuppdatering av My Turn-paketet på servern, ingen ny appversion; rättelsen når även dem som kör 2.2/2.3."
+  },
+  "MY-11-30": {
+   "what": "Situationen \"Full-time, they won\", med tips som 'He knows already. He wants to be asked.'",
+   "proposal": "Stryk smickertipsen ('Even if it was a bit in doubt.', 'He knows already. He wants to be asked.', 'in a good mood') och säg i stället när repliken passar.",
+   "why": "Tips om att smickra honom; Han hade dem på sin sämsta-lista.",
+   "if_accept": "Bara en innehållsuppdatering av My Turn-paketet på servern, ingen ny appversion; rättelsen når även dem som kör 2.2/2.3."
+  },
+  "MY-11-31": {
+   "what": "Situationen \"Full-time, they lost / 4 lines\".",
+   "proposal": "Behåll som det är.",
+   "why": "Korta ärliga reaktioner efter slutsignalen.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-32": {
+   "what": "Situationen \"Full-time, it was a draw / 3 lines\".",
+   "proposal": "Behåll som det är.",
+   "why": "Korta ärliga reaktioner efter slutsignalen.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-11-33": {
+   "what": "Situationen \"He asks who you thought played well\", med bl.a. 'You tell me. You watched it properly.'",
+   "proposal": "Stryk 'You tell me…' och 'Whoever was running the midfield.'; ersätt med ett namn appen kan belägga ('{bästa spelaren} was everywhere.') eller bara 'The keeper. Kept them in it.'",
+   "why": "Två av fyra repliker är inövat medhåll; Han satte båda och deras tips på sin sämsta-lista.",
+   "if_accept": "Textändringen är en innehållsuppdatering; ett namn från matchdata kräver även ny appversion."
+  },
+  "MY-11-34": {
+   "what": "Situationen \"He asks what you think of the manager\", med tips som 'Low risk of being wrong.'",
+   "proposal": "Stryk tipsen 'Fair and unfalsifiable.' och 'Low risk of being wrong.'; behåll replikerna.",
+   "why": "Tipsen säger att repliken är säker för att den inte säger något.",
+   "if_accept": "Bara en innehållsuppdatering av My Turn-paketet på servern, ingen ny appversion; rättelsen når även dem som kör 2.2/2.3."
+  },
+  "MY-11-35": {
+   "what": "Situationen \"He mentions a big game coming up\", med tipset 'Small offer, big impact.'",
+   "proposal": "Stryk tipset 'Small offer, big impact.' under 'What time is it on? I'll watch the start with you.'",
+   "why": "Ett tips om att hantera honom.",
+   "if_accept": "Bara en innehållsuppdatering av My Turn-paketet på servern, ingen ny appversion; rättelsen når även dem som kör 2.2/2.3."
+  },
+  "MY-12-00": {
+   "what": "En öppnad situation: 3–5 repliker, var och en med användningstips, märkt SAFE eller BOLD, ev. ordknapp och en stjärna.",
+   "proposal": "Ändra ordningen: Safe-repliker först på nivå 1 och Bold-repliker först på nivå 3.",
+   "why": "Light vill bara ha Safe ('Show me SAFE only'), Deep bara Bold; ordningen är det billiga sättet att ge båda.",
+   "if_accept": "Alla repliker finns kvar, bara sorterade efter nivå. Kräver en ny appversion."
+  },
+  "MY-12-01": {
+   "what": "Länken \"‹ All situations\".",
+   "proposal": "Behåll som det är.",
+   "why": "Navigering.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-12-02": {
+   "what": "Rubriken med situationens namn, t.ex. \"His team just scored\".",
+   "proposal": "Behåll som det är.",
+   "why": "Rubrik.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-12-03": {
+   "what": "Förklaringen \"Safe lines end the conversation. Bold lines make you sound like you know things, and he might ask a follow-up.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Den ärligaste meningen i appen; fem av sex kallade den ärlig eller hjälpsam.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-12-04": {
+   "what": "Krysset som stänger Safe/Bold-förklaringen.",
+   "proposal": "Gör tryckytan större (44 × 44 punkter, Apples minimum).",
+   "why": "I dag är den 28 × 28 och svår att träffa (UI-granskningen).",
+   "if_accept": "Lättare att stänga. Kräver en ny appversion."
+  },
+  "MY-12-05": {
+   "what": "Tunn färgad kant till vänster: rosa för Safe, guld för Bold.",
+   "proposal": "Behåll som det är.",
+   "why": "Färgsignal bredvid etiketten.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-12-06": {
+   "what": "Själva repliken, t.ex. \"Get in!\" eller \"Clinical. Absolutely clinical.\" (100 repliker).",
+   "proposal": "Ändra bara de två replikerna som nämns för 'passing it sideways' och 'who played well'; resten står kvar.",
+   "why": "Två repliker hon inte skulle säga; resten är appens bästa repliker under match (Han hade 'They're drawing lines. It'll be an armpit.' på topp-10).",
+   "if_accept": "Bara en innehållsuppdatering av My Turn-paketet på servern, ingen ny appversion; rättelsen når även dem som kör 2.2/2.3."
+  },
+  "MY-12-07": {
+   "what": "Användningstipset under varje replik, t.ex. \"A calm, precise finish rather than a scramble. He'll agree and repeat it.\"",
+   "proposal": "Skriv om varje tips så att det bara säger när repliken passar; stryk tips som coachar henne om hans humör (t.ex. 'The consolation he wants to hear', 'Then leave a pause').",
+   "why": "När han väl sett 'He wants to be asked' känns varje fråga som en manöver (Han: 'the handling is in the stage directions').",
+   "if_accept": "Bara en innehållsuppdatering av My Turn-paketet på servern, ingen ny appversion; rättelsen når även dem som kör 2.2/2.3. Gäller alla 100 tips, så det är en större skrivinsats."
+  },
+  "MY-12-08": {
+   "what": "Etiketten \"SAFE\" eller \"BOLD\" på varje replik (51 safe, 49 bold).",
+   "proposal": "Behåll som det är.",
+   "why": "Det enda som ger henne en egen åsikt; alla sex personas var positiva.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-12-09": {
+   "what": "Ordknapp på repliken (t.ex. 'Offside') som hoppar till ordet i Lingo.",
+   "proposal": "Behåll som det är.",
+   "why": "Betydelsen ett tryck bort.",
+   "if_accept": "Inget ändras."
+  },
+  "MY-12-10": {
+   "what": "Stjärnan som sparar repliken till \"Your lines\".",
+   "proposal": "Behåll som det är.",
+   "why": "Sparar repliken till matchen (Match-fit: 'Handy').",
+   "if_accept": "Inget ändras."
+  },
+  "MY-13-00": {
+   "what": "Say This-övningen: tio situationer en i taget; hon tänker ut en replik och trycker sedan Reveal.",
+   "proposal": "Ta bort övningsskärmen.",
+   "why": "Följer beslutet om övningsläget: fyra av fem som kommenterade skulle inte sakna det, listan visar redan alla repliker. Deep: 'rehearsing small talk'.",
+   "if_accept": "Försvinner med övningsläget. Övningens testinställningar tas bort samtidigt. Kräver en ny appversion."
+  },
+  "MY-13-01": {
+   "what": "Räknaren \"4 of 10\" i övningen.",
+   "proposal": "Ta bort räknaren.",
+   "why": "Följer beslutet om övningsläget: fyra av fem som kommenterade skulle inte sakna det, listan visar redan alla repliker.",
+   "if_accept": "Försvinner med övningsläget. Övningens testinställningar tas bort samtidigt. Kräver en ny appversion."
+  },
+  "MY-13-02": {
+   "what": "Knappen \"Stop\" i övningen.",
+   "proposal": "Ta bort knappen.",
+   "why": "Följer beslutet om övningsläget: fyra av fem som kommenterade skulle inte sakna det, listan visar redan alla repliker.",
+   "if_accept": "Försvinner med övningsläget. Övningens testinställningar tas bort samtidigt. Kräver en ny appversion."
+  },
+  "MY-13-03": {
+   "what": "Grupp-etiketten (MOMENTS, HOW IT'S GOING, WHEN HE ASKS YOU) i övningen.",
+   "proposal": "Ta bort etiketten.",
+   "why": "Följer beslutet om övningsläget: fyra av fem som kommenterade skulle inte sakna det, listan visar redan alla repliker.",
+   "if_accept": "Försvinner med övningsläget. Övningens testinställningar tas bort samtidigt. Kräver en ny appversion."
+  },
+  "MY-13-04": {
+   "what": "Situationens namn i övningen, t.ex. \"They keep passing it sideways\".",
+   "proposal": "Ta bort det med övningen.",
+   "why": "Följer beslutet om övningsläget: fyra av fem som kommenterade skulle inte sakna det, listan visar redan alla repliker.",
+   "if_accept": "Försvinner med övningsläget. Övningens testinställningar tas bort samtidigt. Kräver en ny appversion."
+  },
+  "MY-13-05": {
+   "what": "Uppmaningen \"Have a go in your head first.\"",
+   "proposal": "Ta bort uppmaningen.",
+   "why": "Följer beslutet om övningsläget: fyra av fem som kommenterade skulle inte sakna det, listan visar redan alla repliker.",
+   "if_accept": "Försvinner med övningsläget. Övningens testinställningar tas bort samtidigt. Kräver en ny appversion."
+  },
+  "MY-13-06": {
+   "what": "Knappen \"Reveal\" som visar replikerna.",
+   "proposal": "Ta bort knappen.",
+   "why": "Följer beslutet om övningsläget: fyra av fem som kommenterade skulle inte sakna det, listan visar redan alla repliker.",
+   "if_accept": "Försvinner med övningsläget. Övningens testinställningar tas bort samtidigt. Kräver en ny appversion."
+  },
+  "MY-13-07": {
+   "what": "Rubriken \"What you could say\" efter Reveal.",
+   "proposal": "Ta bort rubriken.",
+   "why": "Följer beslutet om övningsläget: fyra av fem som kommenterade skulle inte sakna det, listan visar redan alla repliker.",
+   "if_accept": "Försvinner med övningsläget. Övningens testinställningar tas bort samtidigt. Kräver en ny appversion."
+  },
+  "MY-13-08": {
+   "what": "Replikerna som visas efter Reveal (samma rader som i situationen).",
+   "proposal": "Ta bort dem ur övningen; de finns kvar i situationslistan.",
+   "why": "Följer beslutet om övningsläget: fyra av fem som kommenterade skulle inte sakna det, listan visar redan alla repliker.",
+   "if_accept": "Försvinner med övningsläget. Övningens testinställningar tas bort samtidigt. Kräver en ny appversion."
+  },
+  "MY-13-09": {
+   "what": "Knappen \"Next\" i övningen.",
+   "proposal": "Ta bort knappen.",
+   "why": "Följer beslutet om övningsläget: fyra av fem som kommenterade skulle inte sakna det, listan visar redan alla repliker.",
+   "if_accept": "Försvinner med övningsläget. Övningens testinställningar tas bort samtidigt. Kräver en ny appversion."
+  },
+  "MY-13-10": {
+   "what": "Knappen \"Finish\" på tionde situationen.",
+   "proposal": "Ta bort knappen.",
+   "why": "Följer beslutet om övningsläget: fyra av fem som kommenterade skulle inte sakna det, listan visar redan alla repliker.",
+   "if_accept": "Försvinner med övningsläget. Övningens testinställningar tas bort samtidigt. Kräver en ny appversion."
+  },
+  "MY-13-11": {
+   "what": "Övningen sparas inte; startar hon om appen börjar en ny omgång.",
+   "proposal": "Ta bort det med övningen.",
+   "why": "Följer beslutet om övningsläget: fyra av fem som kommenterade skulle inte sakna det, listan visar redan alla repliker.",
+   "if_accept": "Försvinner med övningsläget. Övningens testinställningar tas bort samtidigt. Kräver en ny appversion."
+  },
+  "MY-14-00": {
+   "what": "Slutskärmen efter Say This-övningen.",
+   "proposal": "Ta bort slutskärmen.",
+   "why": "Följer beslutet om övningsläget: fyra av fem som kommenterade skulle inte sakna det, listan visar redan alla repliker.",
+   "if_accept": "Försvinner med övningsläget. Övningens testinställningar tas bort samtidigt. Kräver en ny appversion."
+  },
+  "MY-14-01": {
+   "what": "Rubriken \"That's ten.\" på slutskärmen.",
+   "proposal": "Ta bort det tillsammans med slutskärmen.",
+   "why": "Följer beslutet om övningsläget: fyra av fem som kommenterade skulle inte sakna det, listan visar redan alla repliker.",
+   "if_accept": "Försvinner med övningsläget. Övningens testinställningar tas bort samtidigt. Kräver en ny appversion."
+  },
+  "MY-14-02": {
+   "what": "Raden \"You've got lines for these now.\"",
+   "proposal": "Ta bort det tillsammans med slutskärmen.",
+   "why": "Följer beslutet om övningsläget: fyra av fem som kommenterade skulle inte sakna det, listan visar redan alla repliker.",
+   "if_accept": "Försvinner med övningsläget. Övningens testinställningar tas bort samtidigt. Kräver en ny appversion."
+  },
+  "MY-14-03": {
+   "what": "Rosa kort med en kaxig rad, t.ex. \"Nearly the lot…\".",
+   "proposal": "Ta bort det tillsammans med slutskärmen.",
+   "why": "Följer beslutet om övningsläget: fyra av fem som kommenterade skulle inte sakna det, listan visar redan alla repliker.",
+   "if_accept": "Försvinner med övningsläget. Övningens testinställningar tas bort samtidigt. Kräver en ny appversion."
+  },
+  "MY-14-04": {
+   "what": "Knappen \"Go again\" på slutskärmen.",
+   "proposal": "Ta bort det tillsammans med slutskärmen.",
+   "why": "Följer beslutet om övningsläget: fyra av fem som kommenterade skulle inte sakna det, listan visar redan alla repliker.",
+   "if_accept": "Försvinner med övningsläget. Övningens testinställningar tas bort samtidigt. Kräver en ny appversion."
+  },
+  "MY-14-05": {
+   "what": "Knappen \"Back to all situations\".",
+   "proposal": "Ta bort det tillsammans med slutskärmen.",
+   "why": "Följer beslutet om övningsläget: fyra av fem som kommenterade skulle inte sakna det, listan visar redan alla repliker.",
+   "if_accept": "Försvinner med övningsläget. Övningens testinställningar tas bort samtidigt. Kräver en ny appversion."
+  },
+  "MY-15-00": {
+   "what": "Rosa kort som glider in mitt i en quizrunda när hon har 4 eller 8 rätt i rad, och försvinner efter 2 sekunder.",
+   "proposal": "Ta bort svit-kortet från quizen och från Matchday.",
+   "why": "Det avbryter en runda och strider mot arkitekturens 'inga streaks, med flit'. Ingen persona såg det och inget loggar det.",
+   "if_accept": "Inga avbrott mitt i rundan. Mätningen av kortet tas bort samtidigt. Beroendekontrollen: behåll streak-raderna i paketet på servern tills 2.2/2.3 försvunnit, annars visar de ett tomt kort. Kräver en ny appversion."
+  },
+  "MY-15-01": {
+   "what": "Raderna på svit-kortet, t.ex. \"Four in a row. Who's the fan now.\" (12 rader).",
+   "proposal": "Ta bort dem ur appen tillsammans med kortet.",
+   "why": "Följer beslutet om svit-kortet.",
+   "if_accept": "Raderna ligger kvar i paketet på servern tills gamla versioner försvunnit, annars visar 2.2/2.3 ett tomt kort."
+  },
+  "MY-16-00": {
+   "what": "Arket som öppnas när hon trycker på ett understruket fotbollsord i en artikel eller på klubbsidan.",
+   "proposal": "Behåll som det är.",
+   "why": "Rätt hjälp precis där hon möter ordet; innehållet flyttas (se nästa rad).",
+   "if_accept": "Inget ändras."
+  },
+  "MY-16-02": {
+   "what": "Förklaringen i understrykningsarket, från en egen ordlista med 46 ord, skild från Lingos 158 ord.",
+   "proposal": "Flytta förklaringarna in i Lingo så att appen har en enda ordlista; rätta samtidigt offside och Champions League, stryk 'cancel brunch plans' och sluta stryka under 'Premier League' och 'League Cup' på nivå 3.",
+   "why": "De två ordlistorna förklarar samma ord olika och har båda fel om offside (Deep-personorna). Tre av sex kände sig nedvärderade av understrukna 'Premier League'.",
+   "if_accept": "Ett ställe att rätta ord i. Kräver bygge och ny appversion; alla tävlingsnamn som strykes under måste fortfarande hitta en förklaring, annars öppnar de inget."
+  },
+  "MY-16-03": {
+   "what": "Ordlistan förklarar fortfarande \"World Championship\", en pensionerad funktion.",
+   "proposal": "Ta bort förklaringen av 'World Championship'.",
+   "why": "Funktionen är avstängd; inget länkar dit.",
+   "if_accept": "Villkor från beroendekontrollen: måste släppas i samma version som 'Stop following'-raden för land i Inställningar. Arkivera samtidigt 7 gamla World Championship-inlägg från juli som fortfarande är publicerade."
+  },
+  "SET-01-00": {
+   "what": "Kugghjulet uppe till höger i Feed och på klubbfliken som öppnar Inställningar.",
+   "proposal": "Behåll som det är.",
+   "why": "Enda vägen in till namn, klubb, nivå och radering.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-01-01": {
+   "what": "Själva kugghjulsknappen (skärmläsaren säger \"Settings\").",
+   "proposal": "Behåll som det är.",
+   "why": "Enda vägen in till Inställningar.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-01-02": {
+   "what": "Kugghjulet finns bara i Feed och på klubbfliken, inte i Matchday eller My Turn.",
+   "proposal": "Behåll som det är.",
+   "why": "Två ställen räcker för något hon sällan öppnar.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-01-03": {
+   "what": "Inställningar stänger sig själv när hon trycker på en push, så att det pushen öppnar syns.",
+   "proposal": "Behåll som det är.",
+   "why": "En push hamnar aldrig bakom Inställningar.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-00": {
+   "what": "Inställningsarket: två öppna delar (Notifications, Calendar) och två hopfällda (Change your setup, About).",
+   "proposal": "Behåll som det är.",
+   "why": "Själva inställningsarket; en Light-persona tyckte det var 'about right'.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-01": {
+   "what": "Rubriken \"Settings\".",
+   "proposal": "Behåll som det är.",
+   "why": "Rubrik.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-02": {
+   "what": "Knappen \"Done\" som stänger arket.",
+   "proposal": "Behåll som det är.",
+   "why": "Stänger arket.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-03": {
+   "what": "Rubriken \"NOTIFICATIONS\".",
+   "proposal": "Behåll som det är.",
+   "why": "Visar om pushar är på; pushar är produkten.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-04": {
+   "what": "Raden \"Notifications\".",
+   "proposal": "Behåll som det är.",
+   "why": "Visar om pushar är på.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-05": {
+   "what": "Status när pushar är på: \"Enabled\" med rosa bock.",
+   "proposal": "Behåll som det är.",
+   "why": "Visar om pushar är på.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-06": {
+   "what": "När hon aldrig sagt ja: \"Off  Turn on\" (öppnar iPhones fråga om notiser).",
+   "proposal": "Behåll som det är.",
+   "why": "Enda vägen tillbaka till pushar efter att hon tackat nej i introduktionen.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-07": {
+   "what": "När hon nekat notiser: \"Disabled  Open Settings\" (öppnar iPhones inställningar).",
+   "proposal": "Behåll som det är.",
+   "why": "Ett nej kan bara ändras i iPhones inställningar; detta är vägen dit.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-08": {
+   "what": "Rubriken \"CALENDAR\".",
+   "proposal": "Behåll som det är.",
+   "why": "Kalendervalet går att ångra här ('Good, so I CAN undo the 25 matches').",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-09": {
+   "what": "Raden \"Add Tom's fixtures to your calendar\".",
+   "proposal": "Behåll som det är.",
+   "why": "Kalendervalet går att ångra här.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-10": {
+   "what": "Texten \"On\" / \"Off\" bredvid kalenderreglaget.",
+   "proposal": "Ta bort texten; reglaget visar redan på eller av.",
+   "why": "Ren dubblett av reglaget.",
+   "if_accept": "Raden visar bara reglaget. Kräver en ny appversion."
+  },
+  "SET-02-11": {
+   "what": "Länken \"Re-add fixtures\" som tvingar fram en ny kalendersynk (syns bara när kalendern är på).",
+   "proposal": "Ta bort länken.",
+   "why": "Ett reparationsverktyg som ingen bad om; att slå av och på reglaget gör exakt samma sak (beroendekontrollen bekräftar).",
+   "if_accept": "Hon kan fortfarande synka om genom att slå av och på. Kräver en ny appversion."
+  },
+  "SET-02-12": {
+   "what": "Kalenderreglaget: på ber om kalenderåtkomst och lägger in matcherna, av frågar om de ska tas bort.",
+   "proposal": "Behåll som det är.",
+   "why": "Enda sättet att ändra kalendersvaret från introduktionen.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-13": {
+   "what": "Rosa snurra i stället för reglaget medan kalendern synkas.",
+   "proposal": "Behåll som det är.",
+   "why": "Visar att något händer.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-14": {
+   "what": "Den hopfällda delen \"CHANGE YOUR SETUP\" (namn, klubb, nivå), stängd från början.",
+   "proposal": "Ändra så att 'Change your setup' alltid är utfälld; 'About' förblir hopfälld.",
+   "why": "Namn, klubb och nivå är skälen till att hon öppnar Inställningar, och de göms bakom ett tryck.",
+   "if_accept": "Hon ser raderna direkt. Kräver en ny appversion."
+  },
+  "SET-02-15": {
+   "what": "Raden \"Your Name\" i Inställningar.",
+   "proposal": "Ta bort raden, men bara tillsammans med frågan om hennes namn i introduktionen. Om den frågan blir kvar ska raden stå kvar.",
+   "why": "Hennes namn används ingenstans utanför Inställningar: ingen text i appen eller på servern sätter in det.",
+   "if_accept": "Villkor från beroendekontrollen: i samma version ska appen skriva 'you' där hennes namn annars skulle stå, så att ett sparat namn aldrig kan dyka upp utan att gå att ändra. Kräver en ny appversion."
+  },
+  "SET-02-16": {
+   "what": "Värdet bredvid \"Your Name\" (hennes namn eller \"Not set\"), som öppnar ändringsrutan.",
+   "proposal": "Ta bort det tillsammans med raden och introduktionens namnfråga.",
+   "why": "Hennes namn används ingenstans utanför Inställningar.",
+   "if_accept": "Samma villkor som raden: appen ska skriva 'you' i stället för hennes namn, i samma version. Kräver en ny appversion."
+  },
+  "SET-02-17": {
+   "what": "Raden \"Tom's Name\" (\"Their Name\" om det inte är en partner).",
+   "proposal": "Behåll som det är.",
+   "why": "Hans namn syns på klubbfliken och i 73 texter; detta är enda sättet att ändra det.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-18": {
+   "what": "Värdet bredvid (hans namn eller \"Not set\"), som öppnar ändringsrutan.",
+   "proposal": "Behåll som det är.",
+   "why": "Enda sättet att ändra hans namn.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-19": {
+   "what": "Raden \"Tom's Country\" i Inställningar. Den är dold i dag eftersom landsfunktionen är avstängd.",
+   "proposal": "Visa raden som 'Stop following {land}' så fort hon följer ett land, oavsett om landsfunktionen är på.",
+   "why": "10 aktiva enheter följer fortfarande ett land men kan inte ta bort det. Samma misstag som 23 september, när en dold rad var enda vägen att byta land.",
+   "if_accept": "De tio kan sluta följa sitt land. Måste släppas i samma version som 'Stop following'-bekräftelsen och borttagningen av landsväljaren. Kräver en ny appversion."
+  },
+  "SET-02-20": {
+   "what": "Raden \"Tom's Team\".",
+   "proposal": "Behåll som det är.",
+   "why": "Enda sättet att byta hans klubb.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-21": {
+   "what": "Värdet bredvid (klubbnamnen eller \"None\"), som öppnar klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "Enda sättet att byta hans klubb.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-22": {
+   "what": "Raden \"Your Mode\".",
+   "proposal": "Behåll som det är.",
+   "why": "Visar vilken nivå hon har; där skulle en Light-persona ha upptäckt att hon låg på fel nivå.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-23": {
+   "what": "Nivåvärdet för nivå 1: \"Just enough to get by\".",
+   "proposal": "Behåll som det är.",
+   "why": "Visar hennes nivå.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-24": {
+   "what": "Nivåvärdet för nivå 2: \"Came to impress\".",
+   "proposal": "Behåll som det är.",
+   "why": "Visar hennes nivå.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-25": {
+   "what": "Nivåvärdet för nivå 3: \"The one he brags about\".",
+   "proposal": "Behåll som det är.",
+   "why": "Visar hennes nivå.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-26": {
+   "what": "Den hopfällda delen \"ABOUT\".",
+   "proposal": "Behåll som det är.",
+   "why": "Håller undan sådant hon sällan behöver.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-27": {
+   "what": "Rubriken \"GoalDigger\" i About.",
+   "proposal": "Behåll som det är.",
+   "why": "Rubrik.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-28": {
+   "what": "Texten \"For the girlfriend who's done nodding along. Made for her, not him.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Varumärkesrad; regeln om varumärkets röst behåller flickvänsramen. En persona: 'Belongs on the store page'.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-02-29": {
+   "what": "Raden \"Contact Us\" som öppnar ett mejl till hello@goaldigger.app.",
+   "proposal": "Visa adressen under raden och kopiera den om telefonen inte har Mail-appen.",
+   "why": "På en telefon utan Mail gör raden ingenting (inte kontrollerat på enhet).",
+   "if_accept": "Hon kan alltid nå er. Kräver en ny appversion."
+  },
+  "SET-02-30": {
+   "what": "Raden \"Privacy Policy\". Den öppnar marknadsföringssidan på carrd, inte en integritetspolicy.",
+   "proposal": "Ändra så att raden öppnar en riktig integritetspolicy (publicera utkastet, med texten om analysdata gjord sann) innan 2.4 skickas in.",
+   "why": "Apple kräver länken, och den går till startsidan. I 2.4 säger den nuvarande texten dessutom emot appen (säkerhetsgranskningen bekräftade).",
+   "if_accept": "En policysida måste publiceras; själva länken byts i appen. Krav innan 2.4 skickas in."
+  },
+  "SET-02-31": {
+   "what": "Raden \"Delete My Data\" (rosa, med snurra medan den raderar).",
+   "proposal": "Ändra så att raderingen verkligen raderar: analysdatan raderas på servern, enhetens id byts först när servern svarat ja, och kvarlämnade nycklar på telefonen rensas.",
+   "why": "Raden går inte att ta bort (Apple). Säkerhets- och spårningsgranskningen fann att den i 2.4 kan säga att analysdatan är borta när den inte är det, och lämnar nycklar kvar.",
+   "if_accept": "Både serverändring och ny appversion. Krav innan 2.4 skickas in. Hon ser ingen skillnad; löftet blir sant."
+  },
+  "SET-02-32": {
+   "what": "Versionsraden, t.ex. \"Version 2.4 (18)\".",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs när hon kontaktar er.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-03-00": {
+   "what": "Rutan \"Edit Your Name\" med ett textfält, från raden Your Name.",
+   "proposal": "Ta bort rutan tillsammans med raden och introduktionens namnfråga.",
+   "why": "Rutan ändrar ett namn som inget i appen använder.",
+   "if_accept": "Försvinner bara om introduktionens namnfråga också tas bort, i samma version, och appen skriver 'you' i stället för hennes namn. Annars står den kvar."
+  },
+  "SET-03-01": {
+   "what": "Rubriken \"Edit Your Name\".",
+   "proposal": "Ta bort den med rutan.",
+   "why": "Rutan ändrar ett namn som inget i appen använder.",
+   "if_accept": "Försvinner bara om introduktionens namnfråga också tas bort, i samma version, och appen skriver 'you' i stället för hennes namn. Annars står den kvar."
+  },
+  "SET-03-02": {
+   "what": "Textfältet \"Your name\", ifyllt med nuvarande namn.",
+   "proposal": "Ta bort det med rutan.",
+   "why": "Rutan ändrar ett namn som inget i appen använder.",
+   "if_accept": "Försvinner bara om introduktionens namnfråga också tas bort, i samma version, och appen skriver 'you' i stället för hennes namn. Annars står den kvar."
+  },
+  "SET-03-03": {
+   "what": "Knappen \"Save\" i namnrutan.",
+   "proposal": "Ta bort den med rutan.",
+   "why": "Rutan ändrar ett namn som inget i appen använder.",
+   "if_accept": "Försvinner bara om introduktionens namnfråga också tas bort, i samma version, och appen skriver 'you' i stället för hennes namn. Annars står den kvar."
+  },
+  "SET-03-04": {
+   "what": "Knappen \"Cancel\" i namnrutan.",
+   "proposal": "Ta bort den med rutan.",
+   "why": "Rutan ändrar ett namn som inget i appen använder.",
+   "if_accept": "Försvinner bara om introduktionens namnfråga också tas bort, i samma version, och appen skriver 'you' i stället för hennes namn. Annars står den kvar."
+  },
+  "SET-04-00": {
+   "what": "Rutan \"Edit Tom's Name\" med ett textfält, från raden med hans namn.",
+   "proposal": "Ersätt rutan med ett litet ark: hans namn plus fyra val för relation (Partner / Parent / Sibling / Friend).",
+   "why": "Relationen hon valde i introduktionen (som styr 'he' eller 'they') går i dag bara att ändra genom att radera all data.",
+   "if_accept": "Hon kan byta relation utan att börja om. Måste släppas i samma version som eventuella ändringar av relationsfrågan i introduktionen. Kräver en ny appversion."
+  },
+  "SET-04-01": {
+   "what": "Rubriken \"Edit Tom's Name\" (\"Edit Their Name\" om det inte är en partner).",
+   "proposal": "Behåll som det är.",
+   "why": "Följer med in i det nya arket.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-04-02": {
+   "what": "Textfältet för hans namn, ifyllt.",
+   "proposal": "Behåll som det är.",
+   "why": "Följer med in i det nya arket.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-04-03": {
+   "what": "Knappen \"Save\".",
+   "proposal": "Behåll som det är.",
+   "why": "Följer med in i det nya arket.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-04-04": {
+   "what": "Knappen \"Cancel\".",
+   "proposal": "Behåll som det är.",
+   "why": "Följer med in i det nya arket.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-00": {
+   "what": "Klubbväljaren \"Your Clubs\": välj en eller två klubbar, gäller när hon trycker Done.",
+   "proposal": "Behåll som det är.",
+   "why": "Enda sättet att byta hans klubbar.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-01": {
+   "what": "Rubriken \"Your Clubs\".",
+   "proposal": "Behåll som det är.",
+   "why": "Rubrik.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-02": {
+   "what": "Knappen \"Cancel\".",
+   "proposal": "Behåll som det är.",
+   "why": "Vägen ut utan ändring.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-03": {
+   "what": "Knappen \"Done\" (grå när ingen klubb är vald).",
+   "proposal": "Behåll som det är.",
+   "why": "Sparar valet.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-04": {
+   "what": "Raden \"Follow one or two clubs.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Förklarar regeln.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-05": {
+   "what": "Varje klubbrad i väljaren: namn, rosa bock om vald, annars en pil; inget klubbmärke.",
+   "proposal": "Ändra så att raderna ser ut som klubbkorten i introduktionen (med klubbmärke, utan pil).",
+   "why": "En pil betyder 'öppnar en sida' på en rad som bara väljs; samma val har två olika utseenden.",
+   "if_accept": "Väljaren ser ut som den hon redan mött. Kräver en ny appversion."
+  },
+  "SET-05-06": {
+   "what": "Klubbraden \"AFC Bournemouth\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-07": {
+   "what": "Klubbraden \"Arsenal\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-08": {
+   "what": "Klubbraden \"Aston Villa\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-09": {
+   "what": "Klubbraden \"Brentford\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-10": {
+   "what": "Klubbraden \"Brighton & Hove Albion\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-11": {
+   "what": "Klubbraden \"Chelsea\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-12": {
+   "what": "Klubbraden \"Coventry City\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-13": {
+   "what": "Klubbraden \"Crystal Palace\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-14": {
+   "what": "Klubbraden \"Everton\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-15": {
+   "what": "Klubbraden \"Fulham\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-16": {
+   "what": "Klubbraden \"Hull City\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-17": {
+   "what": "Klubbraden \"Ipswich Town\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-18": {
+   "what": "Klubbraden \"Leeds United\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-19": {
+   "what": "Klubbraden \"Liverpool\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-20": {
+   "what": "Klubbraden \"Manchester City\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-21": {
+   "what": "Klubbraden \"Manchester United\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-22": {
+   "what": "Klubbraden \"Newcastle United\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-23": {
+   "what": "Klubbraden \"Nottingham Forest\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-24": {
+   "what": "Klubbraden \"Sunderland\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-25": {
+   "what": "Klubbraden \"Tottenham Hotspur\" i klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "En av de 20 klubbarna hon kan följa; enda stället att byta till den.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-05-26": {
+   "what": "När hon trycker Done: flödet töms och laddas om för de nya klubbarna, och pusharna flyttas dit.",
+   "proposal": "Behåll som det är.",
+   "why": "Flyttar flöde och pushar till de nya klubbarna.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-06-00": {
+   "what": "Landsväljaren med 48 länder från World Championship. Den kan inte nås i dag eftersom landsfunktionen är avstängd.",
+   "proposal": "Ersätt väljaren med en bekräftelse 'Stop following {land}' från landsraden; den enda enheten som bara följer ett land skickas till klubbväljaren.",
+   "why": "De 10 enheter som följer ett land behöver en väg ut, inte en väljare för en avslutad turnering.",
+   "if_accept": "Villkor: måste släppas i samma version som den synliga landsraden och borttagningen av den gamla väljaren. Kräver en ny appversion."
+  },
+  "SET-06-01": {
+   "what": "Rubriken \"Change Country\" i landsväljaren.",
+   "proposal": "Ta bort det tillsammans med landsväljaren.",
+   "why": "Text och val för en avslutad turnering (World Championship), i en funktion som är avstängd.",
+   "if_accept": "Försvinner. Villkor från beroendekontrollen: bara i samma version som 'Stop following'-raden. 2.2 har sin egen kopia. Kräver en ny appversion."
+  },
+  "SET-06-02": {
+   "what": "Knappen \"Cancel\" i landsväljaren.",
+   "proposal": "Ta bort det tillsammans med landsväljaren.",
+   "why": "Text och val för en avslutad turnering (World Championship), i en funktion som är avstängd.",
+   "if_accept": "Försvinner. Villkor från beroendekontrollen: bara i samma version som 'Stop following'-raden. 2.2 har sin egen kopia. Kräver en ny appversion."
+  },
+  "SET-06-03": {
+   "what": "Glob-ikonen överst i landsväljaren.",
+   "proposal": "Ta bort det tillsammans med landsväljaren.",
+   "why": "Text och val för en avslutad turnering (World Championship), i en funktion som är avstängd.",
+   "if_accept": "Försvinner. Villkor från beroendekontrollen: bara i samma version som 'Stop following'-raden. 2.2 har sin egen kopia. Kräver en ny appversion."
+  },
+  "SET-06-04": {
+   "what": "Frågan \"Which national team does Tom support?\"",
+   "proposal": "Ta bort det tillsammans med landsväljaren.",
+   "why": "Text och val för en avslutad turnering (World Championship), i en funktion som är avstängd.",
+   "if_accept": "Försvinner. Villkor från beroendekontrollen: bara i samma version som 'Stop following'-raden. 2.2 har sin egen kopia. Kräver en ny appversion."
+  },
+  "SET-06-05": {
+   "what": "Underrubriken \"His country, every time they play.\"",
+   "proposal": "Ta bort det tillsammans med landsväljaren.",
+   "why": "Text och val för en avslutad turnering (World Championship), i en funktion som är avstängd.",
+   "if_accept": "Försvinner. Villkor från beroendekontrollen: bara i samma version som 'Stop following'-raden. 2.2 har sin egen kopia. Kräver en ny appversion."
+  },
+  "SET-06-06": {
+   "what": "Sökfältet \"Search his country...\"",
+   "proposal": "Ta bort det tillsammans med landsväljaren.",
+   "why": "Text och val för en avslutad turnering (World Championship), i en funktion som är avstängd.",
+   "if_accept": "Försvinner. Villkor från beroendekontrollen: bara i samma version som 'Stop following'-raden. 2.2 har sin egen kopia. Kräver en ny appversion."
+  },
+  "SET-06-07": {
+   "what": "Världsdelsrubrikerna (EUROPE, SOUTH AMERICA osv.).",
+   "proposal": "Ta bort det tillsammans med landsväljaren.",
+   "why": "Text och val för en avslutad turnering (World Championship), i en funktion som är avstängd.",
+   "if_accept": "Försvinner. Villkor från beroendekontrollen: bara i samma version som 'Stop following'-raden. 2.2 har sin egen kopia. Kräver en ny appversion."
+  },
+  "SET-06-08": {
+   "what": "De 48 landsraderna (Algeria, Argentina …) med flagga och bock.",
+   "proposal": "Ta bort det tillsammans med landsväljaren.",
+   "why": "Text och val för en avslutad turnering (World Championship), i en funktion som är avstängd.",
+   "if_accept": "Försvinner. Villkor från beroendekontrollen: bara i samma version som 'Stop following'-raden. 2.2 har sin egen kopia. Kräver en ny appversion."
+  },
+  "SET-06-09": {
+   "what": "Valet \"I want to add my own country too / Follow two countries this World Championship.\"",
+   "proposal": "Ta bort det tillsammans med landsväljaren.",
+   "why": "Text och val för en avslutad turnering (World Championship), i en funktion som är avstängd.",
+   "if_accept": "Försvinner. Villkor från beroendekontrollen: bara i samma version som 'Stop following'-raden. 2.2 har sin egen kopia. Kräver en ny appversion."
+  },
+  "SET-06-10": {
+   "what": "Knappen \"Continue\" / \"Continue with both\".",
+   "proposal": "Ta bort det tillsammans med landsväljaren.",
+   "why": "Text och val för en avslutad turnering (World Championship), i en funktion som är avstängd.",
+   "if_accept": "Försvinner. Villkor från beroendekontrollen: bara i samma version som 'Stop following'-raden. 2.2 har sin egen kopia. Kräver en ny appversion."
+  },
+  "SET-07-00": {
+   "what": "Nivåväljaren \"Change Mode\" från raden Your Mode; sparas och flyttar pusharna till den nya nivån.",
+   "proposal": "Behåll som det är.",
+   "why": "Enda sättet att byta nivå, och kanske enda stället att välja den om introduktionen slutar fråga.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-07-01": {
+   "what": "Rubriken \"Change Mode\".",
+   "proposal": "Behåll som det är.",
+   "why": "Rubrik.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-07-02": {
+   "what": "Knappen \"Cancel\".",
+   "proposal": "Behåll som det är.",
+   "why": "Vägen ut utan ändring.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-07-03": {
+   "what": "Knappen \"Save\".",
+   "proposal": "Behåll som det är.",
+   "why": "Sparar valet.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-07-04": {
+   "what": "Nivåvalet \"Just enough to get by — Just the essentials. No overload.\"",
+   "proposal": "Ändra beskrivningen så att den säger vad nivån ändrar (t.ex. 'Just his matches.'), och se till att My Turn faktiskt följer nivån.",
+   "why": "Ingenting talar om vad nivån gör (den ändrar 3 av 21 skärmar). Light: 'I said just enough to get by. This is a school.'",
+   "if_accept": "Hon vet vad hon väljer. Texten kräver ny appversion; löftet blir bara sant om My Turn-ändringen per nivå också godkänns."
+  },
+  "SET-07-05": {
+   "what": "Nivåvalet \"Came to impress — Enough to hold your own in any conversation.\"",
+   "proposal": "Ändra beskrivningen så att den säger vad nivån ändrar (t.ex. 'Plus live scores in the feed and the Sunday Brief.').",
+   "why": "Ingenting talar om vad nivån gör; Deep: 'Nothing shows me what The one he brags about changes'.",
+   "if_accept": "Hon vet vad hon väljer. Kräver en ny appversion."
+  },
+  "SET-07-06": {
+   "what": "Nivåvalet \"The one he brags about — She knows things he hasn't even googled yet.\"",
+   "proposal": "Ändra som de andra nivåerna, och tilltala henne: 'You know things he hasn't even googled yet.'",
+   "why": "Valet hon gör för sig själv pratar om 'She'.",
+   "if_accept": "Rätt tilltal och tydlig effekt. Kräver en ny appversion."
+  },
+  "SET-07-07": {
+   "what": "Rosa bock (guld för nivå 3) och ram på vald nivå.",
+   "proposal": "Behåll som det är.",
+   "why": "Visar vald nivå.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-08-00": {
+   "what": "Bekräftelsen när hon slår av kalendersynken.",
+   "proposal": "Behåll som det är.",
+   "why": "Bekräftar innan kalendern raderas; en Light-persona: 'Good, so I CAN undo'.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-08-01": {
+   "what": "Rubriken \"Remove fixtures from your calendar?\"",
+   "proposal": "Behåll som det är.",
+   "why": "Tydlig fråga.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-08-02": {
+   "what": "Texten \"This deletes the GoalDigger calendar and all its events. You can turn this back on anytime.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Säger vad som händer och att det går att ångra.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-08-03": {
+   "what": "Knappen \"Remove\" (röd).",
+   "proposal": "Behåll som det är.",
+   "why": "Bekräftar.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-08-04": {
+   "what": "Knappen \"Cancel\".",
+   "proposal": "Behåll som det är.",
+   "why": "Vägen ut.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-09-00": {
+   "what": "Felrutan när kalendersynken inte går att slå på.",
+   "proposal": "Behåll som det är.",
+   "why": "Säger varför och vad hon kan göra.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-09-01": {
+   "what": "Rubriken \"Calendar sync\".",
+   "proposal": "Behåll som det är.",
+   "why": "Rubrik.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-09-02": {
+   "what": "Texten \"Calendar access was denied. You can enable it in iOS Settings.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Säger vad hon kan göra.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-09-03": {
+   "what": "Texten \"Something went wrong adding the events. Try again in a sec.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Ärligt fel.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-09-04": {
+   "what": "Knappen \"OK\".",
+   "proposal": "Behåll som det är.",
+   "why": "Stänger rutan.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-09-05": {
+   "what": "iPhones fråga om kalenderåtkomst, när hon slår på reglaget för första gången.",
+   "proposal": "Behåll som det är.",
+   "why": "Frågan kommer när hon själv slår på, då den gör nytta.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-09-06": {
+   "what": "iPhones fråga om notiser när hon trycker \"Turn on\".",
+   "proposal": "Behåll som det är.",
+   "why": "Frågan kommer när hon själv slår på, då den gör nytta.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-10-00": {
+   "what": "Bekräftelsen när hon trycker Delete My Data.",
+   "proposal": "Behåll som det är.",
+   "why": "Apple kräver en bekräftelse; en Light-persona: 'clear warning'.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-10-01": {
+   "what": "Rubriken \"Delete My Data\".",
+   "proposal": "Behåll som det är.",
+   "why": "Apple kräver en bekräftelse.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-10-02": {
+   "what": "Texten \"This removes your data from our servers and clears everything GoalDigger keeps on this phone… This can't be undone.\"",
+   "proposal": "Behåll orden men gör dem sanna genom rättelsen av själva raderingen.",
+   "why": "'Clears everything GoalDigger keeps on this phone' stämmer inte helt i dag (säkerhetsgranskningen: 'rätta koden, inte orden').",
+   "if_accept": "Ingen textändring; blir sann när raderingsrättelsen släpps. Krav innan 2.4 skickas in."
+  },
+  "SET-10-03": {
+   "what": "Knappen \"Delete\" (röd).",
+   "proposal": "Behåll som det är.",
+   "why": "Apple kräver en bekräftelse.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-10-04": {
+   "what": "Knappen \"Cancel\".",
+   "proposal": "Behåll som det är.",
+   "why": "Vägen ut.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-11-00": {
+   "what": "Rutan när raderingen på servern misslyckas; inget raderas.",
+   "proposal": "Behåll som det är.",
+   "why": "Rätt ställe för offlinefallet som raderingsrättelsen kommer att använda.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-11-01": {
+   "what": "Rubriken \"Couldn't Delete\".",
+   "proposal": "Behåll som det är.",
+   "why": "Tydlig rubrik.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-11-02": {
+   "what": "Texten \"We couldn't reach the server to delete your data. Check your connection and try again.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Säger vad hon ska göra.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-11-03": {
+   "what": "Knappen \"OK\".",
+   "proposal": "Behåll som det är.",
+   "why": "Stänger rutan.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-12-00": {
+   "what": "Rutan \"Data Deleted\" ovanpå den omstartade introduktionen efter en lyckad radering.",
+   "proposal": "Behåll som det är.",
+   "why": "Bekräftar raderingen.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-12-01": {
+   "what": "Rubriken \"Data Deleted\".",
+   "proposal": "Behåll som det är.",
+   "why": "Bekräftar raderingen.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-12-02": {
+   "what": "Texten \"Your data has been deleted from our servers and this phone. You'll no longer receive notifications.\"",
+   "proposal": "Behåll orden; de blir sanna först när analysdatan också raderas på servern.",
+   "why": "'Deleted from our servers' är inte säkert sant i 2.4 (säkerhetsgranskningen).",
+   "if_accept": "Ingen textändring; beror på raderingsrättelsen. Krav innan 2.4 skickas in."
+  },
+  "SET-12-03": {
+   "what": "Knappen \"OK\".",
+   "proposal": "Behåll som det är.",
+   "why": "Stänger rutan.",
+   "if_accept": "Inget ändras."
+  },
+  "SET-12-04": {
+   "what": "Efter raderingen är hon tillbaka på välkomststeget; namn, klubbar, nivå, kalendrar och My Turn-framsteg är rensade.",
+   "proposal": "Behåll som det är.",
+   "why": "Bekräftar att allt är borta och startar om.",
+   "if_accept": "Inget ändras."
+  }
+ }
+}

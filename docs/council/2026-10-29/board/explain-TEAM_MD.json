@@ -1,0 +1,1713 @@
+{
+ "screens": {
+  "TEAM-01": {
+   "title": "Klubbsidan: Info-fliken",
+   "summary": "Hans klubbs egen sida, tredje fliken i appen, som hon öppnar för att se när nästa match är och lära sig grunderna. Toppen (Coming up med tid och favoritchip) är det bästa i båda kapitlen; resten är för långt och säger samma sak flera gånger. Med förslagen blir sidan kortare, Coming up ligger alltid överst och fyra döda delar försvinner.",
+   "shot": "seats/ui-shots/team-info.png"
+  },
+  "TEAM-02": {
+   "title": "Klubbsidan: korten öppnade",
+   "summary": "Samma Info-flik när hon trycker upp ett kort. Det är här hon riskerar att åka dit: en målfråga om skadade Saka, \"If Tom supports\" och tomma tränarfraser. Datan under är bra; rättningarna sitter mest i rutinerna och de handskrivna texterna, inte i layouten.",
+   "shot": "seats/ui-shots/team-ones-open.png"
+  },
+  "TEAM-03": {
+   "title": "Klubbsidan: Kalender",
+   "summary": "Hans kommande matcher och senaste resultat. Alla sex personas tyckte den var användbar och den behålls. Två saker rättas: prickarna för hur stor matchen är säger ingenting i dag, och en utslagning på straffar visas som oavgjord.",
+   "shot": "seats/ui-shots/team-calendar.png"
+  },
+  "TEAM-04": {
+   "title": "Klubbsidan: Tabell",
+   "summary": "Ligatabellen, och Europatabellen för klubbar i Europa. Ammunition i diskussioner för de mer insatta. Förslaget: öppna scrollad till hans klubb, förklara P och GD, och fixa kolumnerna vid stor text.",
+   "shot": "seats/ui-shots/team-table.png"
+  },
+  "TEAM-05": {
+   "title": "Ordlista från tabellen",
+   "summary": "Det lilla bladet som öppnas när hon trycker på ⓘ under tabellen. Ingången behålls; själva texten (där Champions League-raden är inaktuell) hanteras under flödets ordlista.",
+   "shot": null
+  },
+  "TEAM-06": {
+   "title": "Spelarkortet",
+   "summary": "Ett blad med fakta om en spelare, som hon når från quizen eller ett spelarnamn i en artikel (inte från klubbsidan). Behålls, men den felaktiga åldern, två taggar och en död låst text tas bort, och stängknappen görs större.",
+   "shot": null
+  },
+  "MD-01": {
+   "title": "Matchday-fliken",
+   "summary": "Fliken för hans match, uppdelad i After (förra matchen) och Before (nästa). Uppdelningen är tydlig, men fliken missar sina tre stunder: ingen tid på matchdagen, förberedelsekort medan matchen pågår, och After kan utebli om appen redan var öppen. Förslagen rättar alla tre.",
+   "shot": "seats/ui-shots/matchday-ars.png"
+  },
+  "MD-02": {
+   "title": "Matchday: Before",
+   "summary": "Det hon ser före matchen: tre stora kort (lär känna motståndaren, 7 ord, repliker att förbereda). I dag fyller ett kort med en mening hela skärmen och tiden saknas; bilden visar Newcastles matchdag. Förslaget: avsparksrad överst, 7 ord först och alla tre korten synliga direkt.",
+   "shot": "screens/states/newcastle-match-day-real-matchday-t2.png"
+  },
+  "MD-03": {
+   "title": "Lektion: lär känna motståndaren",
+   "summary": "En svepbar lektion om motståndaren (upp till åtta sidor) som leder till en quiz. Uppskattad av Match-fit-personorna, läxa för de andra. Förslaget kortar den till fyra sidor och tar bort skadade spelare.",
+   "shot": null
+  },
+  "MD-04": {
+   "title": "Quiz om motståndaren",
+   "summary": "Quizen efter lektionen: två svarsalternativ, en rad att säga efter varje svar och poäng i slutet. Förslaget: fem frågor i stället för tio, raderna ska passa resultaten och samma rad ska inte komma tre gånger.",
+   "shot": "seats/ui-shots/matchday-ars-prepq.png"
+  },
+  "MD-05": {
+   "title": "7 ord inför matchen",
+   "summary": "Ordleken: en replik från honom eller tv:n, \"What does he mean?\", två svar och en rad att säga. Det starkaste på Matchday. Förslaget anpassar orden efter nivå, tar bort xG-rader och staplar knapparna vid stor text. Bilden visar samma runda öppnad från My Turn.",
+   "shot": "seats/ui-shots/myturn-lingo-practise.png"
+  },
+  "MD-06": {
+   "title": "Repliker att förbereda",
+   "summary": "Hon väljer repliker att säga under matchen (\"If we score…\"). Idén gillas av Match-fit-personorna. Förslaget: tre repliker i stället för sju, och poolen rensas från rader i fel röst eller fel läge.",
+   "shot": null
+  },
+  "MD-07": {
+   "title": "Matchday: After",
+   "summary": "Det hon ser efter matchen: resultat, en rad att säga, målskyttar och tre siffror. I dag tar resultatkortet 82 % av skärmen, straffar syns inte i resultatet och raden handlar om hans humör. Med förslagen blir After det enda stället för senaste resultatet, med en konkret rad att säga.",
+   "shot": "seats/ui-shots/matchday-liv-before.png"
+  },
+  "MD-08": {
+   "title": "Matchartikeln",
+   "summary": "Den längre artikeln om matchen, som öppnas från After och finns i flödet. Layouten behålls; texten fick en läckt intern anteckning som alla sex kvinnliga personas såg. Rättningen sitter i rutinen som skriver artikeln.",
+   "shot": "seats/ui-shots/article-liv-matchday.png"
+  },
+  "MD-09": {
+   "title": "Liveboxen i flödet",
+   "summary": "Rutan överst i hans klubbs flöde medan matchen pågår, med ställning, minut och målskyttar – i dag bara nivå 2 och 3. Förslaget ger nivå 1 ställningen också, sätter hemmalaget först och tar bort humörråd ur texten. Ingen skärmbild finns (ingen match pågick när bilderna togs).",
+   "shot": null
+  }
+ },
+ "rows": {
+  "TEAM-01-00": {
+   "what": "Klubbsidans Info-flik: hans klubbs sida med korten Coming up, The basics, The manager, Ones to know, The rivalry, How they're doing, The season so far m.fl. Alla nivåer.",
+   "proposal": "Korta sidan: flytta After-kortet till Matchday, slå ihop The season so far med How they're doing, ta bort döda grenar och lägg datumraden på egen rad.",
+   "why": "Sidan är ca 526 ord lång och säger tabellplatsen tre gånger och senaste resultatet två gånger. 5 av 6 personas ville ta bort The season so far först; Coming up är kortet som bär sidan.",
+   "if_accept": "Hon får en kortare sida som alltid börjar med nästa match. Kräver ny appversion (2.4); innehållsrutinerna fortsätter som förut."
+  },
+  "TEAM-01-02": {
+   "what": "Klubbfliken visas inte alls om hon bara följer ett land (landsföljning är avstängd).",
+   "proposal": "Behåll som det är.",
+   "why": "Hellre ingen flik än en tom flik för den som saknar klubb.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-03": {
+   "what": "Sidan visar den klubb hon valt i flödets klubbväljare; med två klubbar är det enda sättet att se den andra klubbens sida.",
+   "proposal": "Behåll som det är.",
+   "why": "Enda vägen till klubb nummer två; inga problem hittades.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-04": {
+   "what": "Kugghjulet uppe till höger som öppnar Inställningar.",
+   "proposal": "Behåll som det är.",
+   "why": "Enda vägen in i Inställningar.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-05": {
+   "what": "Gråa platshållarkort medan sidan laddas första gången.",
+   "proposal": "Behåll som det är.",
+   "why": "Bättre än en tom skärm; uppkopplingsgranskningen godkände den.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-06": {
+   "what": "Felmeddelandet \"Couldn't load tom's team right now.\" när sidan inte går att ladda.",
+   "proposal": "Ändra så att hans namn får stor bokstav: \"Couldn't load Tom's team right now.\"",
+   "why": "UI-granskningen bekräftade i koden att namnet skrivs med gemener (\"tom's\"), vilket ser slarvigt ut.",
+   "if_accept": "Felraden visar namnet rätt. Liten ändring, kräver ny appversion."
+  },
+  "TEAM-01-07": {
+   "what": "Knappen \"Try again\" under felmeddelandet.",
+   "proposal": "Behåll som det är.",
+   "why": "Enda vägen ut ur felläget.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-08": {
+   "what": "Reservtexten \"We're getting tom's team ready. Check back in a moment.\" om klubbsidan saknas i databasen.",
+   "proposal": "Ändra så att hans namn får stor bokstav, samma fix som felmeddelandet.",
+   "why": "Visas nästan aldrig, men skriver hans namn med liten bokstav.",
+   "if_accept": "Namnet blir rätt. Ny appversion."
+  },
+  "TEAM-01-09": {
+   "what": "Klubbmärket högst upp på sidan.",
+   "proposal": "Behåll som det är.",
+   "why": "Visar direkt vilken klubb sidan gäller.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-10": {
+   "what": "Klubbens namn som sidrubrik, t.ex. \"Arsenal\".",
+   "proposal": "Behåll som det är.",
+   "why": "Sidrubrik; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-11": {
+   "what": "Underrubriken \"Tom's team\" under klubbnamnet.",
+   "proposal": "Behåll som det är.",
+   "why": "4 av 6 personas noterade den positivt, som varm och personlig.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-12": {
+   "what": "Flikknappen \"Info\".",
+   "proposal": "Behåll som det är.",
+   "why": "Alla personas förstod flikarna.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-13": {
+   "what": "Flikknappen \"Calendar\".",
+   "proposal": "Behåll som det är.",
+   "why": "Kalendern är sidans mest uppskattade vy: alla 6 tyckte den var användbar.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-14": {
+   "what": "Flikknappen \"Table\".",
+   "proposal": "Behåll som det är.",
+   "why": "Tabellen är ammunition i diskussioner; Deep-personan kallade den den mest användbara vyn för ett argument.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-15": {
+   "what": "Efter en match byts Coming up överst ut mot ett After-kort med resultatet i 1–2 dagar.",
+   "proposal": "Flytta resultatet till Matchday › After; klubbsidan behåller Coming up överst plus en länkrad, t.ex. \"After Chelsea: lost 6-5 on pens ›\".",
+   "why": "Samma resultat står på 4+ ställen, och på Liverpool dolde det förhandsvisningen av söndagens match. Match-fit-personan: \"fjärde gången jag läser det här\".",
+   "if_accept": "Nästa match står alltid överst; resultatet läses på Matchday. Ny appversion. Resultatkortet måste fortsätta skrivas så länge 2.2/2.3 används – där är det enda efter-matchen-ytan."
+  },
+  "TEAM-01-16": {
+   "what": "Rubriken på After-kortet: \"AFTER THE WIN / AFTER THE LOSS / AFTER THE DRAW\".",
+   "proposal": "Flytta med After-kortet till Matchday › After.",
+   "why": "Del av kortet som flyttas; After på Matchday har redan sin egen resultatfärg.",
+   "if_accept": "Försvinner från klubbsidan i 2.4; gamla versioner visar det som förut."
+  },
+  "TEAM-01-17": {
+   "what": "After-kortets rubrikrad, de första ~50 tecknen av resultattexten, t.ex. \"Liverpool beat Chelsea 6-5 on penalties after a…\".",
+   "proposal": "Flytta med After-kortet; länkraden på klubbsidan visar bara resultat och utfall.",
+   "why": "Datagranskningen visade att texten är tecken för tecken identisk med den på Matchday › After.",
+   "if_accept": "Försvinner från klubbsidan i 2.4; gamla versioner visar den som förut."
+  },
+  "TEAM-01-18": {
+   "what": "Rosa raden längst ner på After-kortet, t.ex. \"Their run is over. He might need a minute before he wants to talk about it.\"",
+   "proposal": "Flytta med After-kortet; själva raden skrivs om under MD-07-05.",
+   "why": "Dubblett, och raden handlar om hans humör eller en lottning som redan hänt. Deep-personan: \"hans känslor igen\".",
+   "if_accept": "Försvinner från klubbsidan i 2.4; den nya raden syns på Matchday › After."
+  },
+  "TEAM-01-19": {
+   "what": "After-kortets svaga färgton: rosa vid vinst, röd vid förlust.",
+   "proposal": "Flytta med After-kortet.",
+   "why": "Dubblett; After på Matchday är redan färgat efter resultatet.",
+   "if_accept": "Försvinner från klubbsidan i 2.4."
+  },
+  "TEAM-01-20": {
+   "what": "Rubriken \"COMING UP\" på kortet om nästa match.",
+   "proposal": "Behåll som det är.",
+   "why": "Det hon öppnar sidan för: när och mot vem. 5 av 6 kallade kortet mest användbart (\"most useful thing in the app\"); alla siffror stämde.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-21": {
+   "what": "Motståndarens klubbmärke till höger i Coming up.",
+   "proposal": "Behåll som det är.",
+   "why": "Gör motståndaren igenkännbar.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-22": {
+   "what": "Motståndare och plats i Coming up, t.ex. \"Liverpool (AWAY)\".",
+   "proposal": "Behåll som det är.",
+   "why": "Vem och var på fyra ord; alla 6 förstod.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-23": {
+   "what": "Avsparksraden i Coming up, t.ex. \"Sun 1 Nov at 16:30\".",
+   "proposal": "Lägg datum och tid på egen rad när en cup-etikett finns, så att tiden aldrig klipps.",
+   "why": "UI-granskningen såg att tiden klipps till \"at 1…\" just på matchdagen. Light-personan: \"visa tiden, det är det jag behöver\".",
+   "if_accept": "Tiden syns alltid hel. Ny appversion."
+  },
+  "TEAM-01-24": {
+   "what": "Cup-etiketten bredvid datumet, t.ex. \"League Cup, last 16\" (bara cupmatcher).",
+   "proposal": "Flytta etiketten till egen rad tillsammans med datumraden så att den aldrig klipps.",
+   "why": "Klipps till \"League Cu…\" på matchdagen (UI-granskningen).",
+   "if_accept": "Etikett och tid syns hela. Ny appversion."
+  },
+  "TEAM-01-25": {
+   "what": "Chippen \"Likely win / Could go either way / Likely loss\" i Coming up.",
+   "proposal": "Behåll som det är, och gör den till appens enda källa för vem som är favorit.",
+   "why": "Light-personan: \"de mest användbara tre orden i appen\"; 4 av 6 positiva. Datagranskningen såg att en dold favorit i sayings-listan ibland säger emot den.",
+   "if_accept": "Inget ändras här; sayings-listan ska läsa favoriten härifrån (MD-06-08)."
+  },
+  "TEAM-01-26": {
+   "what": "Rosa raden \"Pre game talk ›\" längst ner i Coming up, som öppnar kortet.",
+   "proposal": "Byt texten till \"The preview ›\".",
+   "why": "UI-granskningen: \"Pre-game\" betyder redan något annat (Matchday-sektionen), och raden öppnar bara kortet på plats.",
+   "if_accept": "Ny text på raden. Ny appversion."
+  },
+  "TEAM-01-27": {
+   "what": "En humörruta (bra/dålig/neutral) som skulle visas på sidan – visas aldrig i dag.",
+   "proposal": "Ta bort koden för humörrutan.",
+   "why": "0 av 73 klubbsidor har ett humörkort och inget skriver det; en humörtext går dessutom emot regeln att hon ska låta smart, inte läsa av hans humör.",
+   "if_accept": "Hon märker ingen skillnad. Kodrensning i 2.4; gamla versioner påverkas inte."
+  },
+  "TEAM-01-28": {
+   "what": "Ett rosa \"THIS WEEK\"-kort som bara visas när det inte finns någon nästa match – alltså i praktiken aldrig under säsongen.",
+   "proposal": "Ta bort kortet i appen nu, och sluta skriva datan när ingen 2.2/2.3 läser den längre.",
+   "why": "Döljs så fort nästa match finns, vilket gäller alla sidor; texten upprepar bara förhandsvisningens första meningar.",
+   "if_accept": "Ingen synlig skillnad under säsongen. Ny appversion. Datan (gratis, ingen AI-kostnad) måste fortsätta skrivas så länge 2.2/2.3 används."
+  },
+  "TEAM-01-29": {
+   "what": "Etiketten \"THIS WEEK\" på samma kort.",
+   "proposal": "Ta bort tillsammans med THIS WEEK-kortet.",
+   "why": "Del av ett kort som aldrig visas.",
+   "if_accept": "Ingen synlig skillnad; följer TEAM-01-28."
+  },
+  "TEAM-01-30": {
+   "what": "Texten och frågeraden i THIS WEEK-kortet, t.ex. \"Premier League this week: Arsenal are away at Liverpool…\".",
+   "proposal": "Ta bort tillsammans med THIS WEEK-kortet.",
+   "why": "Upprepar förhandsvisningen och visas aldrig.",
+   "if_accept": "Ingen synlig skillnad; följer TEAM-01-28."
+  },
+  "TEAM-01-31": {
+   "what": "Rubriken \"THE BASICS\".",
+   "proposal": "Behåll som det är.",
+   "why": "4 av 6 personas tyckte grundfakta var smart ammunition.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-32": {
+   "what": "Klubbens smeknamn i The basics, t.ex. \"The Gunners\".",
+   "proposal": "Behåll som det är.",
+   "why": "Smeknamnet är det hon oftast hör; förstods av de som kommenterade.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-33": {
+   "what": "Raden \"Last season: Champions, 85 points\" i The basics.",
+   "proposal": "Behåll som det är.",
+   "why": "Största nyheten för Light-personan (\"vann de ligan FÖRRA säsongen?\"); alla 20 klubbars siffror är verifierade.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-34": {
+   "what": "Rosa raden längst ner i The basics: oftast \"Tap for more ›\", för några klubbar en egen mening.",
+   "proposal": "Behåll som det är.",
+   "why": "Visar att kortet går att öppna; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-35": {
+   "what": "Etiketten \"THE MANAGER\".",
+   "proposal": "Behåll som det är.",
+   "why": "Etikett för ett kort som behålls.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-36": {
+   "what": "Tränarens namn, t.ex. \"Mikel Arteta\".",
+   "proposal": "Behåll som det är.",
+   "why": "Namnet är manuellt verifierat; alla 20 tränare kontrollerades 2026-10-29.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-37": {
+   "what": "Svartvit utklippt bild av tränaren bredvid namnet.",
+   "proposal": "Exportera om porträtten i högre upplösning (Newcastle, Spurs, Liverpool och Chelsea först).",
+   "why": "Personas gillade ansiktet (\"love the sticker photo\"), men UI-granskningen fann att 405 av 430 porträtt är för små och ser suddiga ut.",
+   "if_accept": "Skarpare bilder. Nya bildfiler kräver ny appversion."
+  },
+  "TEAM-01-38": {
+   "what": "Tränarstycket när kortet öppnas, t.ex. \"Mikel Arteta has been in charge since late 2019…\".",
+   "proposal": "Lägg in en kontroll av ordningstal i rutinens efterkontroll och behåll detta som appens enda fulla tränarstycke.",
+   "why": "Ett bekräftat faktafel: Brightons tränare står i \"second season\" men är inne på sin tredje. Light-personan såg samma text ord för ord i onboardingen.",
+   "if_accept": "Felet rättas i backend, ingen ny app. Om onboardingens kopia tas bort avgör onboarding-redaktören."
+  },
+  "TEAM-01-39": {
+   "what": "Etiketten \"Drop this:\" före tränarens rad att säga.",
+   "proposal": "Behåll som det är.",
+   "why": "Etiketten behålls om raden under (TEAM-01-40) skrivs om.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-40": {
+   "what": "Raden att säga om tränaren, t.ex. \"Arteta has been at Arsenal since 2019, which is why the team looks so well-drilled right now.\"",
+   "proposal": "Ändra prompten så att raden blir en konkret sak om mannen (förra klubben, spelarkarriären) som hennes åsikt; förbjud bedömningar som \"well-drilled\" och \"excellent start\".",
+   "why": "5 av 6 personas tyckte raden var dum (\"LinkedIn-rad\"); han (H) tyckte den lät som en expertbildtext. Deep-personan påpekar att Arteta var i Arsenal redan 2011 som spelare.",
+   "if_accept": "Nya rader nästa gång rutinen kör. Bara backend (prompten), ingen ny app."
+  },
+  "TEAM-01-41": {
+   "what": "Reservkort för tränaren när ingen inbyggd bild finns (rund bild i stället).",
+   "proposal": "Behåll som det är.",
+   "why": "Skyddsnät om en tränare får sparken mitt i säsongen innan en ny bild finns i appen.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-42": {
+   "what": "Etiketten \"ONES TO KNOW\" (tre spelare att känna till).",
+   "proposal": "Behåll som det är.",
+   "why": "5 av 6 sa att bilderna hjälper henne känna igen spelare på tv.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-43": {
+   "what": "Räknaren \"1 of 3\" i Ones to know.",
+   "proposal": "Behåll som det är.",
+   "why": "Visar att det finns tre spelare.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-44": {
+   "what": "Pilar ‹ › och svep för att bläddra mellan spelarna.",
+   "proposal": "Behåll som det är.",
+   "why": "Fungerar och är märkta för VoiceOver.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-45": {
+   "what": "Den stora svartvita spelarbilden i Ones to know.",
+   "proposal": "Exportera om porträtten i högre upplösning (bilden visas så stort att den behöver 840 px).",
+   "why": "UI-granskningen bekräftade suddiga, uppskalade bilder på 4 av 5 personas klubbar (t.ex. Solanke bara 201 px).",
+   "if_accept": "Skarpare bilder. Ny appversion."
+  },
+  "TEAM-01-46": {
+   "what": "Tröjnumret i rosa före namnet, t.ex. \"7 Saka\".",
+   "proposal": "Behåll som det är.",
+   "why": "Kommer från Premier Leagues officiella lista och stämmer.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-47": {
+   "what": "Spelarens namn, t.ex. \"B. Saka\".",
+   "proposal": "Behåll som det är.",
+   "why": "Namnet till ansiktet; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-48": {
+   "what": "Positionen under spelarens namn, t.ex. \"Midfielder\".",
+   "proposal": "Använd spelarprofilens position (t.ex. \"Wide forward\") eller ta bort etiketten.",
+   "why": "Gakpo, Rogers och Barnes står som \"Midfielder\" medan texten under säger anfallare; 3 personas såg motsägelsen.",
+   "if_accept": "Positionen stämmer med texten. Ny appversion."
+  },
+  "TEAM-01-49": {
+   "what": "En mening om spelaren, t.ex. Saka: \"Four goals this season… even while managing a thigh injury.\"",
+   "proposal": "Ändra urvalet så att skadade spelare hoppas över och målsiffrorna hämtas färska när sidan visas.",
+   "why": "Datagranskningen bekräftade att skadade Saka och João Pedro lyfts fram, att texten motsäger profilen på samma kort och att siffrorna ligger en match efter.",
+   "if_accept": "Hon ser bara friska spelare med aktuella siffror. Urvalet ändras i backend; färska siffror i vyn kräver ny appversion."
+  },
+  "TEAM-01-50": {
+   "what": "Rosa raden \"More about Saka ⌄\" som öppnar spelarprofilen och en rad att säga.",
+   "proposal": "Behåll som det är.",
+   "why": "Öppnar profilen; Match-fit-personan: \"det är en story!\"",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-51": {
+   "what": "En gemensam pratrad för hela Ones to know som rutinen skriver varje vecka men som inte visas i nya appen.",
+   "proposal": "Ta bort fältet ur rutinens prompt och sparskript.",
+   "why": "Visas inte i 2.3/2.4 och kostar bara rutintokens. Obs: beroendekontrollen fann att version 2.2 faktiskt visar raden (20 av 73 sidor), så \"visas aldrig\" stämmer inte helt.",
+   "if_accept": "Ingen ändring i 2.4. Enligt beroendekontrollen ska fältet skrivas tills 2.2 nästan försvunnit; annars försvinner en rad för 2.2-användare (ingen krasch)."
+  },
+  "TEAM-01-52": {
+   "what": "Rubriken \"THE RIVALRY\".",
+   "proposal": "Behåll som det är.",
+   "why": "5 av 6 positiva; Light-personan: \"bästa kortet på sidan\".",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-53": {
+   "what": "Rivalens klubbmärke.",
+   "proposal": "Behåll som det är.",
+   "why": "Gör rivalen igenkännbar.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-54": {
+   "what": "Rivalens namn, t.ex. \"Tottenham Hotspur\" för Arsenal.",
+   "proposal": "Ändra Coventrys rival från Birmingham till Leicester eller Aston Villa – Anton väljer vilken.",
+   "why": "Granskningen av inaktuella fakta misstänker fel rival för Coventry (alla källor eniga); då slår derbyigenkänningen i ordleken heller aldrig till.",
+   "if_accept": "Coventry får rätt rival och derbyord. Dataändring i backend, ingen ny app."
+  },
+  "TEAM-01-55": {
+   "what": "\"Tap for more ›\" längst ner i The rivalry.",
+   "proposal": "Behåll som det är.",
+   "why": "Enda tecknet på att kortet går att öppna.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-56": {
+   "what": "Rubriken \"HOW THEY'RE DOING\".",
+   "proposal": "Behåll som det är.",
+   "why": "Platsen för var laget ligger; placering och formprickar stämde med tabellen för alla fem testklubbar.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-57": {
+   "what": "Tabellplaceringen, t.ex. \"2nd in the Premier League\".",
+   "proposal": "Behåll som det är.",
+   "why": "Faktum hon använder; förstods av alla.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-58": {
+   "what": "Fem färgade prickar för de senaste fem matcherna, utan bokstäver eller förklaring.",
+   "proposal": "Skriv W / D / L i prickarna (som i kalenderns senaste matcher) eller lägg till raden \"Last five, newest right\".",
+   "why": "Alla 6 kvinnliga personas sa att prickarna inte går att förstå.",
+   "if_accept": "Hon kan läsa formen. Ny appversion."
+  },
+  "TEAM-01-59": {
+   "what": "\"Tap for more ›\" längst ner i How they're doing.",
+   "proposal": "Behåll som det är.",
+   "why": "Visar att kortet går att öppna.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-60": {
+   "what": "Kortet \"THE SEASON SO FAR\".",
+   "proposal": "Flytta säsongsmeningen in i How they're doing (syns när det kortet öppnas) och ta bort det separata kortet.",
+   "why": "Säger tabellplatsen en tredje gång; 5 av 6 ville ta bort det först. Texten blir dessutom inaktuell varje helg.",
+   "if_accept": "Ett kort mindre. Ny appversion; rutinen skriver texten som förut. Testverktyget och hälsokontrollens överlappskoll behöver justeras samtidigt."
+  },
+  "TEAM-01-61": {
+   "what": "Säsongskortets rubrikrad, t.ex. \"After eight games Arsenal are second in the…\".",
+   "proposal": "Flytta med säsongskortet; håll matchantal och placering utanför texten.",
+   "why": "Blir fel varje helg; Deep-personan hittade \"lost just once all season\", som inte längre stämde.",
+   "if_accept": "Följer TEAM-01-60; promptändringen (inga siffror i texten) är bara backend."
+  },
+  "TEAM-01-62": {
+   "what": "\"Tap for more ›\" längst ner på säsongskortet.",
+   "proposal": "Flytta/ta bort tillsammans med säsongskortet.",
+   "why": "Del av kortet som flyttas.",
+   "if_accept": "Följer TEAM-01-60."
+  },
+  "TEAM-01-63": {
+   "what": "Sektionen \"THINGS HE DOESN'T KNOW\" med kuriosa om klubben, för nivå 2 och 3.",
+   "proposal": "Behåll som det är.",
+   "why": "Han (H) sa att obskyra sanna fakta är det som landar; Match-fit-personan: \"bästa rubriken i appen\".",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-64": {
+   "what": "Nivå 1 (Light) ser aldrig sektionen; den döljs också om klubben saknar fakta.",
+   "proposal": "Behåll som det är.",
+   "why": "Nivå 1 bad om mindre.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-65": {
+   "what": "Typetiketten med ikon på varje faktarad: STAT, HISTORY, ODDITY, ANECDOTE.",
+   "proposal": "Behåll som det är.",
+   "why": "Visar vilken sorts fakta det är.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-66": {
+   "what": "STAT-raden, t.ex. \"Chelsea have been involved in 32 goals from their eight Premier League games.\"",
+   "proposal": "Ändra prompten så att statistik blir enkla tal hon kan säga (\"they've let in 15\"), och låt rutinen bara skriva för klubbar som går att följa.",
+   "why": "Enkla tal fungerade; \"involved in 32 goals\" kallades dumt. Rutinen lägger 75 % av sitt arbete på klubbar ingen kan följa.",
+   "if_accept": "Bättre statistikrader och mindre slöseri. Bara backend (rutinens prompt)."
+  },
+  "TEAM-01-67": {
+   "what": "HISTORY-raden, t.ex. \"Arsenal were the first southern club to win the English top-flight title.\"",
+   "proposal": "Ändra prompten: historia ska vara något en supporter inte redan vet och ha en källa; kontrollera Chelseas \"supermarket in the 1990s\".",
+   "why": "Två personas sa att han redan kan dessa, och en misstänker att Chelsea-faktat är fel. Han (H) hade dock just \"first southern club\" på sin topp 10.",
+   "if_accept": "Bara backend (rutinens prompt)."
+  },
+  "TEAM-01-68": {
+   "what": "ODDITY-raden, t.ex. \"Chelsea FC was formed after Fulham refused to move into Stamford Bridge.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Deep-personan kallade det appens bästa fakta och använde det i testet.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-69": {
+   "what": "ANECDOTE-raden, t.ex. \"Fleetwood play at a ground named Highbury, just like Arsenal once did.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Fanns på hans (H) topp 10.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-01-70": {
+   "what": "En liten grå rad längst ner om hur färsk sidan är – visas aldrig.",
+   "proposal": "Ta bort koden för raden.",
+   "why": "0 av 73 sidor har texten och inget skriver den.",
+   "if_accept": "Ingen synlig skillnad; kodrensning i 2.4."
+  },
+  "TEAM-02-00": {
+   "what": "Info-fliken med korten öppnade; varje öppnat kort slutar med en rosa rad \"Tap to close ›\".",
+   "proposal": "Lägg till luft längst ner så att \"Tap to close ›\" och \"Your opener:\" inte hamnar under flikraden.",
+   "why": "UI-granskningen och Deep-personan såg att öppningsraden skyms av den flytande flikraden.",
+   "if_accept": "Allt i öppnade kort går att läsa. Ny appversion."
+  },
+  "TEAM-02-01": {
+   "what": "Tidsetiketten i öppnad Coming up: \"Tonight: / This afternoon: / This weekend: / This week: / Coming up:\".",
+   "proposal": "Ändra så att en match som började för mer än 3 timmar sedan aldrig kallas \"This week:\"; visa \"Last game:\" eller dölj tills sidan uppdaterats.",
+   "why": "Uppkopplingsgranskningen misstänker att en sparad sida kan presentera en redan spelad match som kommande.",
+   "if_accept": "Ingen spelad match ser kommande ut. Ny appversion."
+  },
+  "TEAM-02-02": {
+   "what": "Hela avsparksraden i öppnad Coming up, t.ex. \"Sun 1 Nov, 16:30 · Premier League · away\".",
+   "proposal": "Behåll som det är.",
+   "why": "Visar allt om avsparken; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-02-03": {
+   "what": "Favoritchippen en gång till inne i öppnad Coming up.",
+   "proposal": "Ta bort den andra kopian av chippen.",
+   "why": "Den stängda chippen syns redan ovanför – samma chip två gånger på ett kort.",
+   "if_accept": "Chippen syns en gång. Ny appversion."
+  },
+  "TEAM-02-04": {
+   "what": "Förhandsvisningens första stycke, t.ex. \"Arsenal are away at Liverpool… 2nd against 4th in the table, six points between them.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Kort och med siffror hon kan upprepa; 3 av 4 positiva och alla siffror stämde.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-02-05": {
+   "what": "Ett mindre andra stycke med en åsikt om matchen, t.ex. att Newcastle möter Everton i cupen dagar före ligamötet.",
+   "proposal": "Behåll som det är.",
+   "why": "Ger henne en åsikt; Match-fit-personan: \"mer av detta\".",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-02-06": {
+   "what": "Rubriken \"Their ones to watch\" (motståndarens spelare) i öppnad Coming up.",
+   "proposal": "Flytta till Matchday › Get to know, som redan visar samma spelare, och ta bort från klubbsidan.",
+   "why": "Motståndarens spelare är matchförberedelse och har i dag två hem; ingen av de som kommenterade skulle sakna dem på klubbsidan.",
+   "if_accept": "Klubbsidan blir kortare. Ny appversion. Datan måste fortsätta skrivas – Matchday läser samma data."
+  },
+  "TEAM-02-07": {
+   "what": "Upp till tre rader om motståndarens spelare, t.ex. \"C. Gakpo midfielder Two goals and five assists…\".",
+   "proposal": "Flytta med rubriken till Get to know, där skadefiltret ska gälla.",
+   "why": "På Liverpools sida stod skadade Saka som Arsenals främsta spelare att hålla koll på, trots åtta veckors skada (datagranskningen).",
+   "if_accept": "Försvinner från klubbsidan i 2.4. Datan måste fortsätta skrivas för Matchday."
+  },
+  "TEAM-02-08": {
+   "what": "Frågan att ställa om matchen, t.ex. \"Ask him where he thinks the Liverpool game gets decided.\"",
+   "proposal": "Behåll som det är.",
+   "why": "En öppen fråga hon kan ställa utan att kunna något; 2 av 4 positiva (Light-personan: \"naturlig, den skulle jag ställa\").",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-02-09": {
+   "what": "\"Tap to close ›\" som stänger ett öppnat kort.",
+   "proposal": "Behåll som det är.",
+   "why": "Stängknapp; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-02-10": {
+   "what": "After-kortet öppnat: hela resultattexten plus \"Say this:\" / \"Tonight:\" / \"Ask him:\" och en rad att säga.",
+   "proposal": "Flytta med After-kortet till Matchday › After; etiketterna försvinner med det.",
+   "why": "Tecken för tecken samma text som Matchday › After (datagranskningen).",
+   "if_accept": "Försvinner från klubbsidan i 2.4; datan skrivs vidare för 2.2/2.3, där detta är enda efter-matchen-ytan."
+  },
+  "TEAM-02-11": {
+   "what": "Raden \"Known as The Gunners\" i öppnad The basics.",
+   "proposal": "Visa i stället det namn fansen faktiskt säger där det skiljer sig (\"the Toon\", \"the Lilywhites\"), annars ta bort raden.",
+   "why": "Raden upprepar rubriken. Light-personan: \"Var är the Toon? Det är bokstavligen därför jag laddade ner appen.\"",
+   "if_accept": "Newcastle visar \"the Toon\" osv. Ny appversion; namnen finns redan i databasen."
+  },
+  "TEAM-02-12": {
+   "what": "Raden \"Home ground\", t.ex. \"Emirates Stadium, London\".",
+   "proposal": "Behåll som det är.",
+   "why": "Light-personan: \"så DET är St James'\"; bara en persona ville ta bort den.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-02-13": {
+   "what": "Raden \"Top flight every season since 1919\" i The basics.",
+   "proposal": "Skriv med vanliga ord: \"In the top division every season since 1919\".",
+   "why": "4 av 6 (Light- och Match-fit-personorna) förstod inte \"top flight\"; bara Deep-personorna gillade uttrycket.",
+   "if_accept": "Begripligare rad för nybörjare. Liten textändring."
+  },
+  "TEAM-02-14": {
+   "what": "Raden \"Last season: Champions, 85 points\" i öppnad The basics.",
+   "proposal": "Behåll som det är.",
+   "why": "Ammunition; 4 positiva och alla 20 klubbar verifierade.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-02-15": {
+   "what": "Raden \"Last league title: 2025-26, last season\".",
+   "proposal": "Behåll som det är.",
+   "why": "4 av 6 tyckte den var smart (\"en pik direkt\").",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-02-16": {
+   "what": "Ett roligt faktum om klubben, t.ex. Arsenals obesegrade säsong (\"The Invincibles\").",
+   "proposal": "Rätta Spurs-texten (\"trophy cabinet… work in progress\" trots Europa League 2025) och Chelseas överdrift om tränare, ta bort tankstreck och lägg in texterna i faktagranskningen.",
+   "why": "4 personas gillade dessa, men datagranskningen bekräftade att Spurs-texten är fel – en Spurs-supporter skulle rätta henne direkt.",
+   "if_accept": "Rättade texter. Dataändring i backend och en ny punkt i den återkommande faktagranskningen; ingen ny app."
+  },
+  "TEAM-02-17": {
+   "what": "\"Say this:\" plus en handskriven rad i öppnad The basics – bara för några få klubbar.",
+   "proposal": "Ta bort raden; rosa raden blir \"Tap to close ›\" som för alla andra klubbar.",
+   "why": "Ingen persona mötte den. Obs: beroendekontrollen fann att den visas för 4 klubbar (Coventry, Hull, Leeds, Sunderland), inte 1, och för Leeds och Sunderland står det \"Say this: Say this:\".",
+   "if_accept": "Fyra klubbar tappar en handskriven rad och den dubbla etiketten försvinner. Ny appversion; gamla versioner visar den fortfarande."
+  },
+  "TEAM-02-18": {
+   "what": "Spelarprofilen i öppnad Ones to know, t.ex. \"Bukayo Saka is Arsenal's right-winger… facing around two months on the sidelines.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Den mest aktuella texten i appen; Match-fit-personan: \"det är en story!\"",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-02-19": {
+   "what": "En liten formtagg under profilen, t.ex. \"scored late vs Bayern in CL\".",
+   "proposal": "Ta bort taggen.",
+   "why": "Upprepar meningen ovanför; två personas noterade dubbleringen.",
+   "if_accept": "En rad mindre per spelare. Ny appversion; rutinen skriver fältet vidare så länge 2.2/2.3 används."
+  },
+  "TEAM-02-20": {
+   "what": "Etiketten \"Your opener:\" i öppnad spelarprofil.",
+   "proposal": "Behåll som det är.",
+   "why": "Behålls om raden under (TEAM-02-21) rättas.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-02-21": {
+   "what": "Öppningsraden om spelaren, t.ex. för Saka: \"When his name comes up: 'Is he scoring today, do you reckon?'\"",
+   "proposal": "Ändra så att en skadad spelare aldrig får en målrad, de tre spelarna får olika rader, aldrig \"our\", och det hängande \"too\" rättas.",
+   "why": "Hon får fråga om Saka gör mål idag när han är borta i två månader – Light- och Deep-personan och han (H) kallade det appens sämsta rad. 4 av 6 negativa.",
+   "if_accept": "Inga pinsamma rader om skadade spelare. Ny appversion (raden byggs i appen)."
+  },
+  "TEAM-02-22": {
+   "what": "\"Tap to close ›\" i öppnad Ones to know.",
+   "proposal": "Behåll som det är.",
+   "why": "Stängknapp; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-02-23": {
+   "what": "På sidan för klubb nummer två saknas tröjnummer och alla öppningsrader blir generiska.",
+   "proposal": "Ändra så att truppdatan sparas för båda följda klubbarna.",
+   "why": "Den andra klubbens sida blir tyst sämre eftersom appen bara sparar första klubbens trupp.",
+   "if_accept": "Klubb två får nummer och riktiga öppningsrader. Ny appversion."
+  },
+  "TEAM-02-24": {
+   "what": "Om en spelare saknar profil visas bara \"Your opener:\" och raden.",
+   "proposal": "Behåll som det är.",
+   "why": "Fungerar snyggt utan profil.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-02-25": {
+   "what": "Rivalitetstexten öppnad, t.ex. \"…neighbours… since 1887. If Tom supports Arsenal, he does NOT like Spurs.\"",
+   "proposal": "Skriv om de handskrivna texterna: ta bort \"If Tom supports X\" (hon har redan sagt det), ta bort tankstreck och ändra 1887 till 1913.",
+   "why": "Kortet är omtyckt, men 4 av 6 reagerade på \"If Tom supports\" som kopierad text; Arsenal låg i Woolwich fram till 1913.",
+   "if_accept": "Personligare och korrekt text. Dataändring i backend, ingen ny app."
+  },
+  "TEAM-02-26": {
+   "what": "En mätare Mild–Intense med raden \"Derby incoming. Tread carefully.\" – visas aldrig.",
+   "proposal": "Ta bort koden för mätaren.",
+   "why": "Inget skriver värdet (0 av 73 sidor), och \"Tread carefully\" är humörtext.",
+   "if_accept": "Ingen synlig skillnad; kodrensning i 2.4."
+  },
+  "TEAM-02-27": {
+   "what": "\"Use this:\" plus en rad i öppnad The rivalry – visas aldrig.",
+   "proposal": "Ta bort den delen av koden.",
+   "why": "0 av 73 sidor har en sådan rad.",
+   "if_accept": "Ingen synlig skillnad; kodrensning i 2.4."
+  },
+  "TEAM-02-28": {
+   "what": "Formtexten när How they're doing öppnas, t.ex. \"The run of results has Tom walking around with that slightly smug energy…\".",
+   "proposal": "Ändra prompten så att texten beskriver resultaten (vilka de slog, förlusten), aldrig hans humör; hit flyttas också säsongsmeningen.",
+   "why": "Humörtext går emot produktregeln att hon ska låta smart; Deep-personan kallade det utfyllnad.",
+   "if_accept": "Nya texter nästa körning, bara backend (prompten). Flytten av säsongsmeningen kräver ny appversion."
+  },
+  "TEAM-02-29": {
+   "what": "\"Say this:\" plus en rad i öppnad How they're doing – visas aldrig.",
+   "proposal": "Ta bort den delen av koden.",
+   "why": "0 av 73 sidor har en sådan rad.",
+   "if_accept": "Ingen synlig skillnad; kodrensning i 2.4."
+  },
+  "TEAM-02-30": {
+   "what": "Hela säsongstexten när The season so far öppnas.",
+   "proposal": "Flytta in i How they're doing tillsammans med säsongskortet.",
+   "why": "Dubblett av tabellplats och form.",
+   "if_accept": "Följer TEAM-01-60."
+  },
+  "TEAM-02-31": {
+   "what": "\"Drop this:\" plus en rad i öppnad The season so far – visas aldrig.",
+   "proposal": "Ta bort den delen av koden.",
+   "why": "0 av 73 sidor har en sådan rad.",
+   "if_accept": "Ingen synlig skillnad; kodrensning i 2.4."
+  },
+  "TEAM-03-00": {
+   "what": "Kalenderfliken: förklaring av prickarna, upp till 25 kommande matcher och \"Show last games\".",
+   "proposal": "Behåll som det är.",
+   "why": "Alla 6 tyckte den var användbar; Deep-personan: \"den mest användbara vyn på klubbsidan\".",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-03-01": {
+   "what": "\"No upcoming fixtures yet. Check back closer to kickoff.\" när inga matcher finns.",
+   "proposal": "Behåll som det är.",
+   "why": "Ärligt under uppehåll.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-03-02": {
+   "what": "Förklaringen \"●●●○○ How big the game is: more dots, bigger game\" överst i kalendern.",
+   "proposal": "Ändra så att prickarna betyder något (derby och toppmöte 5, sen cuprunda 4) – eller ta bort prickar och förklaring. Anton väljer.",
+   "why": "Alla 6 sa att prickarna inte säger något: varje ligamatch har 3 prickar, även derbyn.",
+   "if_accept": "Antingen prickar som stämmer (ändring i sidgeneratorn, backend) eller en enklare kalender (ny appversion)."
+  },
+  "TEAM-03-03": {
+   "what": "Veckodagen i varje kalenderrad, t.ex. \"SUN\".",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för raden; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-03-04": {
+   "what": "Datumet i varje kalenderrad, t.ex. \"1 Nov\".",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för raden; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-03-05": {
+   "what": "Avsparkstiden i kalenderraden, t.ex. \"16:30\" eller \"Time TBC\".",
+   "proposal": "Behåll som det är.",
+   "why": "Här står tiden alltid i sin helhet.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-03-06": {
+   "what": "Motståndarens klubbmärke i kalenderraden.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för raden; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-03-07": {
+   "what": "Motståndarens namn i kalendern, t.ex. \"Slavia Praha\" eller \"Club Brugge KV\".",
+   "proposal": "Kontrollera utländska klubbnamn mot en andra källa och ta bort suffix hon inte förstår (\"KV\").",
+   "why": "Deep-personan menar att \"Sabah FA\" ska vara Sabah FK från Baku; Match-fit-personan: \"vad är KV?\". Låg säkerhet.",
+   "if_accept": "Snyggare namn på Europamotståndare; troligen en namnlista i backend."
+  },
+  "TEAM-03-08": {
+   "what": "\"Home\" eller \"Away\" i kalenderraden.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för raden; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-03-09": {
+   "what": "1–5 rosa prickar per match i kalendern.",
+   "proposal": "Ändra enligt TEAM-03-02.",
+   "why": "Prickarna visar i dag bara turneringen, inte hur stor matchen är.",
+   "if_accept": "Följer TEAM-03-02."
+  },
+  "TEAM-03-10": {
+   "what": "Turneringsnamnet till höger i raden, t.ex. \"Premier League\".",
+   "proposal": "Behåll som det är.",
+   "why": "Säger vilken turnering det är.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-03-11": {
+   "what": "\"Postponed\" i stället för turneringen när en match skjutits upp.",
+   "proposal": "Behåll som det är.",
+   "why": "Ärligt när en match flyttas.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-03-12": {
+   "what": "Tryck på en kalenderrad för att öppna en förhandsartikel – fanns bara för VM-länder.",
+   "proposal": "Ta bort länken och hämtningen bakom den.",
+   "why": "VM är avslutat och ingen PL-klubb har en sådan artikel.",
+   "if_accept": "Ingen synlig skillnad; ett nätverksanrop mindre per sidladdning. Ny appversion."
+  },
+  "TEAM-03-13": {
+   "what": "Knappen \"SHOW LAST GAMES ⌄ / HIDE LAST GAMES ⌃\".",
+   "proposal": "Behåll som det är.",
+   "why": "Senaste resultat när hon vill; två personas använde den.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-03-14": {
+   "what": "Raden för en spelad match, t.ex. \"D Fleetwood Town 27 Oct · Away · FT 1-1\".",
+   "proposal": "Ändra så att straffar följer med: \"L · Fleetwood Town · 1-1 (3-5 pens)\".",
+   "why": "Datagranskningen bekräftade att en utslagning på straffar visas som oavgjort; Deep-personan reagerade på samma sak.",
+   "if_accept": "Rätt resultat här, i Get to know och i quizen. Främst backend (resultatdatan); straffvisningen kan kräva ny appversion."
+  },
+  "TEAM-04-00": {
+   "what": "Tabellfliken: ligatabellen (och Europatabell för klubbar i Europa) med en förklarande rad under.",
+   "proposal": "Ändra så att tabellen öppnas scrollad till hans klubb, och fixa sifferkolumnerna vid stor textstorlek.",
+   "why": "Spurs på 14:e plats syntes inte utan att scrolla (Match-fit-personan); UI-granskningen bekräftade att siffrorna går sönder med stor text.",
+   "if_accept": "Hans klubb syns direkt. Ny appversion."
+  },
+  "TEAM-04-01": {
+   "what": "\"Standings will appear when the data lands.\" när tabell saknas.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs om tabellen inte laddats.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-04-02": {
+   "what": "Knapparna \"Premier League | Champions League\" för klubbar som spelar i Europa.",
+   "proposal": "Behåll som det är.",
+   "why": "Europatabellen stämmer; Deep-personan gillade den.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-04-03": {
+   "what": "Rubriken \"PREMIER LEAGUE\" när det bara finns en tabell.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för tabellen; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-04-04": {
+   "what": "Tabellhuvudet \"# TEAM P GD PTS\".",
+   "proposal": "Gör huvudet tryckbart för en förklaring (\"P = played, GD = goals scored minus conceded\") eller skriv ut orden i liten text.",
+   "why": "4 av 6 personas visste inte vad GD betyder.",
+   "if_accept": "Hon förstår kolumnerna. Ny appversion."
+  },
+  "TEAM-04-05": {
+   "what": "Tabellraderna: placering, märke, lag, spelade, målskillnad, poäng.",
+   "proposal": "Behåll som det är.",
+   "why": "Siffrorna stämmer med alla kort.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-04-06": {
+   "what": "Hans klubbs rad markerad i rosa med fet stil.",
+   "proposal": "Behåll som det är.",
+   "why": "Fyra personas uppskattade markeringen.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-04-07": {
+   "what": "Raden under tabellen som förklarar turneringen, t.ex. \"England's top league.\" med ⓘ som öppnar ordlistan.",
+   "proposal": "Behåll som det är.",
+   "why": "Ingång till ordlistan. Obs: Champions League-texten \"Top four PL teams qualify\" är inaktuell – den rättas i flödets ordlista (FEED-07).",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-05-00": {
+   "what": "Ordlistans bottenblad som öppnas från tabellen (t.ex. om Champions League).",
+   "proposal": "Behåll som det är.",
+   "why": "Ingången behålls; innehållet ägs och rättas under flödets ordlista (FEED-07).",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-06-00": {
+   "what": "Spelarkortet (profilblad) som öppnas från en quizfråga eller ett spelarnamn i en artikel – inte från klubbsidan.",
+   "proposal": "Ta bort den döda kopplingen på klubbsidan; behåll själva bladet för quiz och artiklar.",
+   "why": "Bladet används från quiz och artiklar, men på klubbsidan finns kod för det som aldrig kan öppna det.",
+   "if_accept": "Ingen synlig skillnad; kodrensning i 2.4."
+  },
+  "TEAM-06-01": {
+   "what": "Stängknappen X uppe till höger på spelarkortet.",
+   "proposal": "Gör den 44 pt stor och ge den VoiceOver-namnet \"Close\".",
+   "why": "UI-granskningen: bara 28×28 pt och ingen etikett för skärmläsare.",
+   "if_accept": "Lättare att träffa och tillgänglig. Ny appversion."
+  },
+  "TEAM-06-02": {
+   "what": "Spelarens runda bild på spelarkortet.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för kortet; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-06-03": {
+   "what": "Spelarens namn på spelarkortet, t.ex. \"Bukayo Saka\".",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för kortet; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-06-04": {
+   "what": "Positionen i rosa versaler, t.ex. \"RIGHT-WINGER\".",
+   "proposal": "Behåll som det är.",
+   "why": "Profilens position är den korrekta (till skillnad från klubbsidans).",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-06-05": {
+   "what": "Faktaraden \"Number 41 · 26 years old\" på spelarkortet.",
+   "proposal": "Ta bort åldern; behåll \"Number 41\".",
+   "why": "Åldern är en gammal ögonblicksbild från datakällan: Rice står som 26 men är 27, Saka som 24 men är 25 (bekräftat i databasen).",
+   "if_accept": "Inga felaktiga åldrar. Ny appversion."
+  },
+  "TEAM-06-06": {
+   "what": "Raden \"1 goal · 4 assists · 11 starts\" (bara när kortet öppnas från quizen).",
+   "proposal": "Behåll som det är.",
+   "why": "Siffrorna hämtas färska.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-06-07": {
+   "what": "Raden att minnas honom för, t.ex. \"Rice has set up 4 goals for Arsenal this season…\" (bara från quizen).",
+   "proposal": "Behåll som det är.",
+   "why": "Faktumet att minnas; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-06-08": {
+   "what": "Spelarprofilens text, t.ex. om Sakas skada.",
+   "proposal": "Behåll som det är.",
+   "why": "Den mest aktuella texten i appen.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-06-09": {
+   "what": "En tagg som \"Big Game Player\" eller \"The One Arsenal Can't Do Without\".",
+   "proposal": "Ta bort taggen.",
+   "why": "Ingen persona eller granskning nämnde den; låg säkerhet – användningsdata bör avgöra när den finns.",
+   "if_accept": "En rad mindre. Ny appversion; rutinen skriver fältet vidare så länge 2.2/2.3 används."
+  },
+  "TEAM-06-10": {
+   "what": "En formtagg på spelarkortet, t.ex. \"suspended after red card vs Spurs\".",
+   "proposal": "Ta bort taggen.",
+   "why": "Upprepar profiltexten; två personas noterade att det sägs två gånger.",
+   "if_accept": "En rad mindre. Ny appversion; rutinen skriver fältet vidare så länge 2.2/2.3 används."
+  },
+  "TEAM-06-11": {
+   "what": "\"{namn}'s dossier lands Sunday evening.\" när profil saknas (öppnat från en artikel).",
+   "proposal": "Behåll som det är.",
+   "why": "Ärligt tomläge.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-06-12": {
+   "what": "\"No dossier on him yet. The facts above are all we can vouch for.\" (öppnat från quizen).",
+   "proposal": "Behåll som det är.",
+   "why": "Ärligt tomläge.",
+   "if_accept": "Inget ändras."
+  },
+  "TEAM-06-13": {
+   "what": "En låst text \"Player dossiers are part of the Premium tier… Bump to T3\" – visas aldrig.",
+   "proposal": "Ta bort koden.",
+   "why": "Profiler är öppna på alla nivåer, så texten kan aldrig visas.",
+   "if_accept": "Ingen synlig skillnad; kodrensning i 2.4."
+  },
+  "MD-01-00": {
+   "what": "Matchday-fliken med två halvor: \"After {senaste motståndare}\" och \"Before {nästa motståndare}\".",
+   "proposal": "Ändra tre saker: uppdatera när appen öppnas igen, visa liveresultatet medan matchen pågår, och visa avsparkstiden på Before.",
+   "why": "Buggranskningen bekräftade i koden att After kan utebli i en redan öppen app; under matchen visas förberedelsekort; på matchdagen saknas tiden (UI-granskningen).",
+   "if_accept": "Fliken gör sitt jobb före, under och efter match. Ny appversion; kräver att liveboxen öppnas för nivå 1 (MD-09-00)."
+  },
+  "MD-01-03": {
+   "what": "Rubriken \"Matchday\" högst upp.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för fliken; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-01-04": {
+   "what": "Knappen \"After Fleetwood Town\" (matchen som just spelats).",
+   "proposal": "Behåll som det är.",
+   "why": "4 av 6 tyckte uppdelningen After/Before var tydlig.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-01-05": {
+   "what": "Knappen \"Before Liverpool\" (eller \"Pre-game\" om ingen match finns inom 21 dagar).",
+   "proposal": "Behåll som det är.",
+   "why": "Hör ihop med After-knappen; tydlig.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-01-06": {
+   "what": "En liten guldprick på After-knappen om hon bläddrat bort från After inom ett dygn efter matchen.",
+   "proposal": "Ta bort pricken.",
+   "why": "Ingen har argumenterat för den, och fliken öppnar redan på After i det läget. Låg säkerhet – användningsdata bör avgöra.",
+   "if_accept": "Ingen prick. Ny appversion."
+  },
+  "MD-01-07": {
+   "what": "Utan nyligen spelad match visas bara Before, utan knappar.",
+   "proposal": "Behåll som det är.",
+   "why": "Rimligt när inget spelats nyligen.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-01-08": {
+   "what": "Regeln för vilken halva fliken öppnar på (After i 24 h efter slutsignal, annars Before).",
+   "proposal": "Lägg till: medan hans match pågår öppnar fliken på liveresultatet.",
+   "why": "Under matchen står fliken kvar på förberedelsekorten (UI-granskningen); en Match-fit-persona sa \"fel startläge för mig\".",
+   "if_accept": "Live under matchen. Ny appversion."
+  },
+  "MD-01-09": {
+   "what": "Notiser öppnar rätt halva: dagen-före-pushen öppnar Before, slutsignal-pushen öppnar After.",
+   "proposal": "Behåll som det är.",
+   "why": "Buggranskningen bekräftade att det fungerar.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-01-10": {
+   "what": "Med två klubbar visar Matchday alltid den första, oavsett vilken klubb hon valt i flödet.",
+   "proposal": "Ändra så att Matchday följer klubben i flödets väljare, som klubbsidan och liveboxen gör.",
+   "why": "Matchday och liveboxen kan annars visa två olika klubbar samtidigt.",
+   "if_accept": "Konsekvent klubbval. Ny appversion."
+  },
+  "MD-01-11": {
+   "what": "Ett litet kort som glider in efter flera rätt i rad, t.ex. \"Four in a row. Who's the fan now.\"",
+   "proposal": "Ta bort streak-kortet.",
+   "why": "Ingen har argumenterat för det, det går emot \"inga streaks\" i appens design och loggas dubbelt (spårningsgranskningen). Låg säkerhet.",
+   "if_accept": "Inget popup-kort. Ny appversion; streak-raderna i innehållsfilen måste ligga kvar tills 2.2/2.3 försvunnit, och spårningshändelsen tas bort samtidigt."
+  },
+  "MD-01-12": {
+   "what": "Ingen spinner: Matchday-korten dyker upp när datan finns på telefonen.",
+   "proposal": "Behåll som det är.",
+   "why": "Sparad data först, aldrig en spinner; uppkopplingsgranskningen godkände.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-01-13": {
+   "what": "Offline visas det som sparades senast, utan felmeddelande.",
+   "proposal": "Behåll som det är.",
+   "why": "Visar sparad sida; uppkopplingsgranskningen godkände.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-02-00": {
+   "what": "Before-halvan: tre helskärmskort under varandra – Get to know, 7 words, Prepare some sayings.",
+   "proposal": "Krymp korten så att alla tre syns direkt, med en topprad som \"Tonight, 19:45 · Everton away\", och lägg 7 words först.",
+   "why": "5 av 6 tyckte det stora kortet var tomt eller ofärdigt: 30 ord på 90 % av skärmen, och ingen tid på matchdagen.",
+   "if_accept": "Hon ser tid och alla val direkt. Ny appversion."
+  },
+  "MD-02-01": {
+   "what": "Kortet \"Get to know Liverpool\" (lektion om motståndaren + quiz).",
+   "proposal": "Gör det till andra kortet i halv höjd och korta lektionen till fyra sidor.",
+   "why": "Match-fit-personorna vill ha det (\"THIS is what I need\"); Light och Deep kallade det läxa. Obs: att dölja det helt på nivå 1 och 3 vore en hårdare kapning – Antons val.",
+   "if_accept": "Kortare lektion för alla. Ny appversion."
+  },
+  "MD-02-02": {
+   "what": "Get to know saknas när motståndaren inte är en PL-klubb (t.ex. Slavia Praha i Champions League).",
+   "proposal": "Behåll som det är.",
+   "why": "Ingen lektion utan data om motståndaren.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-02-03": {
+   "what": "Klar-knappen \"You know Liverpool / 9 of 10 right. Go again?\" efter quizen.",
+   "proposal": "Behåll som det är.",
+   "why": "Klarläge; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-02-04": {
+   "what": "Det rosa kortet \"7 words for the game\".",
+   "proposal": "Flytta det till första kortet på Before, i halv höjd.",
+   "why": "Det starkaste på Before: 4 av 6 skulle sakna det.",
+   "if_accept": "Ordleken syns först. Ny appversion."
+  },
+  "MD-02-05": {
+   "what": "Ordlekskortets rubrik när ingen match är nära, t.ex. \"Silly season\", med raden \"…you'll hear during the game\".",
+   "proposal": "Ändra raden under så att den inte säger \"during the game\" när ingen match finns.",
+   "why": "Raden säger emot rubriken. Låg säkerhet.",
+   "if_accept": "Liten textändring. Ny appversion."
+  },
+  "MD-02-06": {
+   "what": "\"Carry on with your words – Continue · 3 of 7\" när en runda är pausad.",
+   "proposal": "Behåll som det är.",
+   "why": "Låter henne fortsätta; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-02-07": {
+   "what": "Knappen \"Carry on with your words – Done for the game. Seven more in Lingo.\" efter rundan.",
+   "proposal": "Behåll som det är.",
+   "why": "Klarläge; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-02-08": {
+   "what": "Tomläget \"Nothing to deal yet. Search for a word you heard.\"",
+   "proposal": "Ändra till \"Nothing to deal yet. The words for his next game land here.\"",
+   "why": "Det finns ingen sökning på Matchday – den ligger i My Turn › Lingo.",
+   "if_accept": "Ny appversion."
+  },
+  "MD-02-09": {
+   "what": "Det guldfärgade kortet \"Prepare some sayings for the game – Pick up to seven lines…\".",
+   "proposal": "Ändra till tre repliker i stället för sju (\"Pick up to three\").",
+   "why": "Match-fit-personorna gillar idén (\"lovely idea\"), men Light-personan: \"sju är mycket. Tre.\"",
+   "if_accept": "Kortare val. Ny appversion; själva replikerna rensas under MD-06-03."
+  },
+  "MD-02-10": {
+   "what": "Sayings-kortet saknas när ingen match finns inom 21 dagar.",
+   "proposal": "Behåll som det är.",
+   "why": "Inget att förbereda; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-02-11": {
+   "what": "Knappen \"Your lines are ready – For Sunday. 3 lines on your slip.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Klarläge; en Deep-persona tyckte \"slip\" lät som en spelkupong.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-02-12": {
+   "what": "Rubriken \"Get in the game – For Sunday. Have a look before kick-off…\" när listan öppnas.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för listan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-02-13": {
+   "what": "En rad per sparad replik, t.ex. \"If we score\" / \"They don't concede many. We've cracked them.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för listan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-02-14": {
+   "what": "Tom lista: \"None of those took your fancy. More next game.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för listan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-02-15": {
+   "what": "Resultatet av hennes repliker, \"What you called – 2 of 3 came up\", som i dag nästan aldrig syns.",
+   "proposal": "Flytta till Matchday › After som en ruta \"Your lines: 2 of 3 came up\".",
+   "why": "Kortet lovar \"After full time, see which ones came up\", men under säsongen visas det aldrig eftersom Before alltid pekar på nästa match.",
+   "if_accept": "Löftet hålls: hon ser utfallet efter matchen. Ny appversion; rutan på After byggs nytt."
+  },
+  "MD-02-16": {
+   "what": "Ordningen på Before-korten (i dag kommer Get to know först).",
+   "proposal": "Ändra ordningen till: avsparksrad, 7 words, Get to know, Sayings – alla synliga utan att scrolla.",
+   "why": "I dag börjar fliken med det kort färst vill ha, och på matchdagen öppnar den på \"Get to know Everton\" utan tid.",
+   "if_accept": "Ny appversion."
+  },
+  "MD-02-17": {
+   "what": "Dag 1 och vecka 6 ser likadana ut, men ord hon missat kommer tillbaka och klara kort krymper.",
+   "proposal": "Behåll som det är.",
+   "why": "Upprepning av missade ord fungerar.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-02-18": {
+   "what": "En underrubrik per vecka (\"Derby week. 7 words you'll hear before Sunday.\") som appen bygger men aldrig visar.",
+   "proposal": "Visa den som Before-rubrik bredvid avsparkstiden; vill Anton inte det, ta bort koden.",
+   "why": "Byggs varje vecka utan att visas, och Before saknar just en sådan rad. Obs: en variant (\"Tread carefully tonight\") är humörtext och bör ses över.",
+   "if_accept": "Ny rad på Before. Ny appversion; Antons val."
+  },
+  "MD-02-19": {
+   "what": "Sparade repliker skickas till servern så att halvtids- och slutsignal-pushen kan säga vilka som slog in.",
+   "proposal": "Behåll som det är.",
+   "why": "I dag den enda belöningen för listan under säsongen.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-03-00": {
+   "what": "Lektionen \"Get to know Liverpool\": upp till 8 svepbara sidor om motståndaren, sedan en quiz.",
+   "proposal": "Korta till fyra sidor: matchen, en spelare att hålla koll på (utan skadade), tränaren, namn och arena; quizen bara på dessa.",
+   "why": "Åtta sidor plus tio frågor är läxa (Light-personorna); Deep-personorna tyckte det var för grundläggande.",
+   "if_accept": "Kortare lektion. Ny appversion."
+  },
+  "MD-03-01": {
+   "what": "Rubriken \"Get to know Liverpool\" i lektionen.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för lektionen; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-03-02": {
+   "what": "Stängknappen X i lektionen.",
+   "proposal": "Gör träffytan 44 pt.",
+   "why": "Bara 36×36 pt i dag (UI-granskningen).",
+   "if_accept": "Lättare att träffa. Ny appversion."
+  },
+  "MD-03-03": {
+   "what": "Sidan \"The game:\" med båda klubbmärkena, tabellplaceringar och senaste mötet.",
+   "proposal": "Behåll som det är.",
+   "why": "Felet med vänskapsmatcher som \"möten\" rättades i dag; Deep-personan bekräftade resten.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-03-04": {
+   "what": "Sidan \"Their scorer:\", t.ex. \"9. Isak – 6 goals for Liverpool this season…\".",
+   "proposal": "Behåll som det är.",
+   "why": "Räknas fram från spelardatan; han (H) tyckte den var ok en gång.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-03-05": {
+   "what": "Sidan \"One to watch:\" med en motståndarspelare och en mening om honom.",
+   "proposal": "Ta bort spelare som är skadade; detta blir enda platsen för motståndarens spelare.",
+   "why": "Datagranskningen bekräftade att skadade spelare visas som spelare att hålla koll på.",
+   "if_accept": "Bara friska spelare. Skadefiltret i backend; flytten från klubbsidan kräver ny appversion."
+  },
+  "MD-03-06": {
+   "what": "Sidan \"How they've been:\" med motståndarens tre senaste resultat.",
+   "proposal": "Ändra så att resultaten visar straffar (samma fix som kalendern, TEAM-03-14).",
+   "why": "En straffläggning läses som oavgjort (datagranskningen).",
+   "if_accept": "Följer TEAM-03-14; främst backend."
+  },
+  "MD-03-07": {
+   "what": "Sidan \"What they're called:\", t.ex. \"The Reds – Their fans: Kopites\".",
+   "proposal": "Behåll som det är.",
+   "why": "Light-personan: \"Kopites är ett roligt ord\".",
+   "if_accept": "Inget ändras."
+  },
+  "MD-03-08": {
+   "what": "Sidan \"Their ground:\", t.ex. \"Anfield – Where Arsenal play on Sunday\" (bara bortamatcher).",
+   "proposal": "Behåll som det är.",
+   "why": "\"Have you ever been to Anfield?\" landade hos honom (H).",
+   "if_accept": "Inget ändras."
+  },
+  "MD-03-09": {
+   "what": "Sidan \"The manager:\" med motståndarens tränare.",
+   "proposal": "Behåll som det är.",
+   "why": "Alla 20 tränare är verifierade; en sak hon annars lätt åker dit på.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-03-10": {
+   "what": "Prickarna som visar vilken sida i lektionen hon är på.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för lektionen; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-03-11": {
+   "what": "Knapparna \"Next\" och \"Now test yourself\" (sista sidan startar quizen).",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för lektionen; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-03-12": {
+   "what": "Länken \"Skip to the quiz\".",
+   "proposal": "Behåll som det är.",
+   "why": "Låter henne hoppa över läxan.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-03-13": {
+   "what": "Svartvita utklippta bilder av spelare, tränare och arenor i lektionen.",
+   "proposal": "Exportera om bilderna i högre upplösning.",
+   "why": "UI-granskningen: uppskalade, suddiga bilder.",
+   "if_accept": "Skarpare bilder. Ny appversion (nya bildfiler)."
+  },
+  "MD-04-00": {
+   "what": "Quizen om motståndaren: två svarsalternativ per fråga, svar i en popup, poängkort i slutet.",
+   "proposal": "Begränsa till fem frågor (de som den kortare lektionen tar upp).",
+   "why": "Tio frågor om det andra laget är det första Light-personorna skulle ta bort (\"läxa\").",
+   "if_accept": "Kortare quiz. Ny appversion."
+  },
+  "MD-04-01": {
+   "what": "Tillbakalänken \"‹ Pre-game\".",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för quizen; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-02": {
+   "what": "\"Question 1 of 10\".",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för quizen; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-03": {
+   "what": "\"‹ Previous\" för att gå tillbaka en fråga.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för quizen; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-04": {
+   "what": "Frågan \"Who manages Liverpool?\" med raden \"ASK HIM: 'What do you make of Andoni Iraola?'\"",
+   "proposal": "Behåll som det är.",
+   "why": "Tränaren är manuellt verifierad.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-05": {
+   "what": "Frågan \"Where are Liverpool in the table right now?\" med \"They're 4th, aren't they? Should we be beating them?\"",
+   "proposal": "Behåll som det är.",
+   "why": "\"as of today\" är ärligt; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-06": {
+   "what": "Frågan om motståndarens tre senaste resultat med en SAY IT-rad, t.ex. \"They've been flying lately, haven't they?\"",
+   "proposal": "Ändra så att straffar syns och SAY IT-raden följer resultaten: \"flying\" bara efter tre vinster.",
+   "why": "Raden kom direkt efter en 0-3-förlust mot City – Deep-personan och han (H) ryckte till.",
+   "if_accept": "Raden passar resultaten. Ny appversion (frågan byggs i appen) plus straffdata i backend."
+  },
+  "MD-04-07": {
+   "what": "Reservfrågan \"How have Liverpool been playing lately?\" när färre än tre resultat finns.",
+   "proposal": "Ändra så att samma regel gäller: raden ska passa resultaten.",
+   "why": "Reserven har samma problem som MD-04-06.",
+   "if_accept": "Ny appversion."
+  },
+  "MD-04-08": {
+   "what": "Frågan \"Who's scored most for Liverpool this season?\" med \"Is he the one to worry about?\"",
+   "proposal": "Behåll som det är.",
+   "why": "Fungerar; han (H): \"ok, en gång\".",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-09": {
+   "what": "Frågan \"The last time Arsenal played Liverpool, how did it go?\"",
+   "proposal": "Behåll som det är.",
+   "why": "Vänskapsmatcher räknas inte längre (rättat i dag).",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-10": {
+   "what": "Frågan \"Where did Liverpool finish last season?\" (bara när inget senaste möte finns).",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs som reserv; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-11": {
+   "what": "Frågan \"What are Liverpool known as?\" med raden \"So we're playing the Reds. Got it.\"",
+   "proposal": "Byt raden mot en som använder smeknamnet som en supporter skulle.",
+   "why": "Han (H): det låter som en GPS-röst. Låg säkerhet.",
+   "if_accept": "Ny rad; liten text- eller appändring."
+  },
+  "MD-04-12": {
+   "what": "Frågan \"What do Liverpool fans call themselves?\" med \"So it's us against the Kopites.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Light-personan gillade \"Kopites\".",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-13": {
+   "what": "Frågan \"Where do Liverpool play their home games?\" med \"Have you ever been to Anfield?\"",
+   "proposal": "Behåll som det är.",
+   "why": "Frågan landade hos honom (H) och Light-personan.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-14": {
+   "what": "Frågan \"Who is this?\" över en spelarbild, med \"Is he the one to worry about?\"",
+   "proposal": "Ge varje spelare en egen rad och ta bort skadade spelare.",
+   "why": "Samma rad tre gånger i rad – 3 av 7 i panelen märkte mallen.",
+   "if_accept": "Ny appversion; skadefiltret i backend."
+  },
+  "MD-04-15": {
+   "what": "Bilden ovanför svarsknapparna (tränare, målskytt, \"Who is this?\").",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för frågan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-16": {
+   "what": "De två svarsknapparna.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för frågan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-17": {
+   "what": "Svaret i popupen: \"Right.\" / \"Not that one.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för frågan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-18": {
+   "what": "Förklaringen i svarspopupen.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för frågan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-19": {
+   "what": "Rutan ASK HIM / SAY IT / TO IMPRESS med en rad att säga.",
+   "proposal": "Behåll som det är.",
+   "why": "Formatet fungerar när raden är rätt (Light-personan: \"kort fakta plus en rad\").",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-20": {
+   "what": "Knapparna \"Next\" / \"See the score\" i popupen.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för quizen; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-21": {
+   "what": "Poängkortet \"8 out of 10.\" med en peppande rad, t.ex. \"Half a pub quiz team already.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Light-personan log åt motsvarande rad i My Turn.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-22": {
+   "what": "\"The ones you missed\" med ett kort per missad fråga.",
+   "proposal": "Behåll som det är.",
+   "why": "Visar vad hon ska läsa igen.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-23": {
+   "what": "Knappen \"Retry the two you missed\".",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för quizen; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-04-24": {
+   "what": "Knappen \"Done\" tillbaka till Before.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för quizen; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-05-00": {
+   "what": "Ordleken \"7 words\": en replik i taget, \"What does he mean?\", två svar, en popup med en rad att säga, poäng i slutet.",
+   "proposal": "Ändra så att svaren staplas vid stor text och orden anpassas efter nivå.",
+   "why": "Ord bryts mitt i vid stor text (UI-granskningen); Light-personorna tycker orden är för svåra, Deep (\"jag kan alla sju\") för lätta.",
+   "if_accept": "Ny appversion."
+  },
+  "MD-05-01": {
+   "what": "Tillbakalänken \"‹ Pre-game\" i ordleken.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för rundan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-05-02": {
+   "what": "\"3 of 7\" överst i ordleken.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för rundan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-05-03": {
+   "what": "Etiketten för vem som säger repliken: TOM / THE TELLY / GROUP CHAT / THE PUNDIT.",
+   "proposal": "Behåll som det är.",
+   "why": "Match-fit-personan: \"precis som jag kommer att höra dem\".",
+   "if_accept": "Inget ändras."
+  },
+  "MD-05-04": {
+   "what": "Repliken med ordet i fetstil, t.ex. \"Get it in the box. Stop passing it sideways.\"",
+   "proposal": "Behåll som det är.",
+   "why": "\"Precis vad han skriker\" – tre personas.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-05-05": {
+   "what": "Popup när hon trycker på ett spelarnamn i repliken, t.ex. \"Isak / Forward, Liverpool\".",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för rundan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-05-06": {
+   "what": "Frågan \"What does he mean?\" under repliken.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för rundan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-05-07": {
+   "what": "De två svarsalternativen sida vid sida.",
+   "proposal": "Ändra så att de staplas på höjden vid stor text.",
+   "why": "Vid stor text bryts ord mitt i (\"defend / er\"), enligt UI-granskningen.",
+   "if_accept": "Ny appversion."
+  },
+  "MD-05-08": {
+   "what": "Svarspopupen med \"NOW YOU SAY\" och en rad, t.ex. \"What was the xG?\"",
+   "proposal": "Ta bort NOW YOU SAY-rader med jargong hon inte kan förklara på en mening, som xG.",
+   "why": "Två personas: \"jag skulle ALDRIG säga xG\" – han skulle förstå att hon blivit coachad. xG är uttryckligen bannat i regeln om att låta smart.",
+   "if_accept": "Rensade rader i ordinnehållet (lingo.json)."
+  },
+  "MD-05-09": {
+   "what": "\"That's seven.\" när rundan är klar.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för rundan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-05-10": {
+   "what": "\"You got 5 of 7.\" plus en peppande rad.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för rundan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-05-11": {
+   "what": "\"The ones you missed come round again.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för rundan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-05-12": {
+   "what": "Knappen \"Go again\" som delar ut sju ord till för samma match.",
+   "proposal": "Ta bort knappen.",
+   "why": "Fjorton ord per match är mer än någon nivå bad om, och My Turn › Lingo delar redan ut fler. Låg säkerhet.",
+   "if_accept": "Ny appversion."
+  },
+  "MD-05-13": {
+   "what": "Knappen \"Back to the words\" som avslutar rundan.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för rundan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-05-14": {
+   "what": "\"Those words have moved on. Search for the one you heard.\"",
+   "proposal": "Ta bort \"Search for the one you heard\".",
+   "why": "Det finns ingen sökning på Matchday.",
+   "if_accept": "Ny appversion."
+  },
+  "MD-05-15": {
+   "what": "Vilka sju ord som delas ut (av 158), valda efter matchen.",
+   "proposal": "Ändra så att nivå 1 aldrig får xG, low block eller back four, och nivå 3 slipper basord som box och nil-nil.",
+   "why": "Samma sju för nybörjare och livslång supporter; Light-personan: \"avancerat\", Deep: \"jag kan alla sju\".",
+   "if_accept": "Ny appversion (urvalet görs i appen)."
+  },
+  "MD-06-00": {
+   "what": "Sayings-erbjudandet: upp till sju repliker, en per kort, med \"Save for the game\" eller \"Ignore for now\".",
+   "proposal": "Ändra till tre repliker.",
+   "why": "Light-personan: \"Tre.\"; han (H) skulle rycka till av ungefär en tredjedel av raderna.",
+   "if_accept": "Ny appversion."
+  },
+  "MD-06-01": {
+   "what": "Raden med punkter som visar vilken replik hon är på.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för listan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-06-02": {
+   "what": "När hon ska säga repliken, t.ex. \"If we score\".",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för listan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-06-03": {
+   "what": "Själva repliken, t.ex. \"Behind at the break. The gaffer won't be happy.\"",
+   "proposal": "Rensa poolen: bort med \"gaffer\", \"we\"/\"our\" i hennes mun, \"This is why he stays up\", \"run-in\" på hösten, \"Backs to the wall\" i ledning och felsorterade rader.",
+   "why": "4 av 6 reagerade på \"gaffer\"; Match-fit-personan: \"vi är inte jag\". Fel röst eller fel läge avslöjar henne.",
+   "if_accept": "Rensat innehåll i ordlistefilen (lingo.json)."
+  },
+  "MD-06-04": {
+   "what": "En valfri rad om när/varför hon ska säga repliken.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för listan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-06-05": {
+   "what": "Knappen \"Save for the game\".",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för listan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-06-06": {
+   "what": "Knappen \"Ignore for now\".",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för listan; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-06-07": {
+   "what": "Knapparna staplas på höjden vid stor text.",
+   "proposal": "Behåll som det är.",
+   "why": "Stor text hanteras redan.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-06-08": {
+   "what": "Hur listan sätts ihop (säkra, troliga och chansrader) utifrån matchens taggar, t.ex. favorit/underdog.",
+   "proposal": "Ändra så att favorit/underdog läses från Coming up-chippen, inte från en annan modell.",
+   "why": "Datagranskningen bekräftade att listan kan säga \"We were supposed to be walking this\" när sidan säger \"Could go either way\".",
+   "if_accept": "Samma favorit överallt. Ny appversion."
+  },
+  "MD-06-09": {
+   "what": "Cupmatchens lista, t.ex. \"A point's a point. We've had worse afternoons.\" i en utslagsmatch.",
+   "proposal": "Ändra så att utslagsmatcher aldrig får repliker om poäng.",
+   "why": "Det finns inga poäng i en cupmatch; han (H) skulle rycka till.",
+   "if_accept": "Ny appversion eller innehållsändring."
+  },
+  "MD-07-00": {
+   "what": "After-halvan: ett stort rosa resultatkort, sedan \"Say this now\", målskyttar, tre siffror och länkar.",
+   "proposal": "Krymp resultatkortet till innehållet (~45 %), uppdatera vid öppning, och gör After till enda platsen för senaste resultatet.",
+   "why": "82 % av skärmen går till en mening, raden hon kom för ligger under flikraden, och After kan utebli i en öppen app (bekräftat i koden).",
+   "if_accept": "Raden att säga syns direkt; After tar över klubbsidans After-kort och sayings-resultatet. Ny appversion."
+  },
+  "MD-07-01": {
+   "what": "Resultatraden överst, t.ex. \"Liverpool 1-1 Chelsea\".",
+   "proposal": "Ändra så att straffar står med: \"Liverpool 1-1 Chelsea · 6-5 pens\"; två rader vid stor text.",
+   "why": "Största texten säger oavgjort för en vinst på straffar. Match-fit-personan: \"säger att vi spelade lika. Vi vann.\"",
+   "if_accept": "Ny appversion; straffdatan måste finnas i backend."
+  },
+  "MD-07-02": {
+   "what": "Resultatkortets färg: rosa vid vinst/förlust, ljus vid oavgjort.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för kortet; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-07-03": {
+   "what": "Domen i en mening, t.ex. \"Won it in the 88th minute after Chelsea had more of the chances.\"",
+   "proposal": "Ändra färg eller storlek så att kontrasten klarar tillgänglighetskravet; innehållet oförändrat.",
+   "why": "Kontrasten 3,95:1 klarar inte kravet (UI-granskningen) – raden som betyder mest är svårläst för vissa.",
+   "if_accept": "Ny appversion."
+  },
+  "MD-07-04": {
+   "what": "Etiketten \"Say this now:\".",
+   "proposal": "Behåll som det är.",
+   "why": "Behålls om raden under (MD-07-05) blir något att säga.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-07-05": {
+   "what": "Raden att säga efter matchen, t.ex. \"Their run is over. He might need a minute before he wants to talk about it\".",
+   "proposal": "Ändra så att raden blir något konkret hon kan säga om matchen (\"26 shots and still out to a League Two side\"), aldrig om hans humör eller en framtida händelse.",
+   "why": "5 av 6 negativa; han (H): \"den hanterar mig\". \"Ask him who he wants to draw\" blev inaktuell inom timmar. Obs: Light-personorna gillade humörrådet – den nivån förlorar något.",
+   "if_accept": "Nya rader efter nästa match. Bara backend (match-watcher), ingen ny app."
+  },
+  "MD-07-06": {
+   "what": "Etiketten \"Goal scorers:\".",
+   "proposal": "Behåll som det är.",
+   "why": "Målskytt och minut är pubammunition (två personas).",
+   "if_accept": "Inget ändras."
+  },
+  "MD-07-07": {
+   "what": "\"No goals. Nothing for either side to celebrate.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för kortet; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-07-08": {
+   "what": "Svartvit bild av målskytten.",
+   "proposal": "Exportera om bilderna i högre upplösning.",
+   "why": "Uppskalade och suddiga (UI-granskningen).",
+   "if_accept": "Ny appversion (nya bildfiler)."
+  },
+  "MD-07-09": {
+   "what": "Målskyttens nummer och namn, t.ex. \"14. Gyökeres\".",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för kortet; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-07-10": {
+   "what": "Ställning och minut vid målet, t.ex. \"1–1 Arsenal, 50'\".",
+   "proposal": "Ändra tankstreck till vanliga bindestreck i ställningen.",
+   "why": "Husregeln, och liveboxen använder redan bindestreck (bugg- och datagranskningen).",
+   "if_accept": "Bara backend."
+  },
+  "MD-07-11": {
+   "what": "En rad per mål, t.ex. \"His first goal of the season.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Light-personan gillade raden; tvivlet på Gyökeres första mål bekräftades inte – datan stämmer.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-07-12": {
+   "what": "Pilarna för att bläddra mellan målskyttar.",
+   "proposal": "Gör pilarna 44 pt.",
+   "why": "Bara 28×40 pt i dag (UI-granskningen).",
+   "if_accept": "Ny appversion."
+  },
+  "MD-07-13": {
+   "what": "Etiketten \"Three numbers that matter:\".",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för kortet; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-07-14": {
+   "what": "Tre siffror med bildtext, t.ex. \"26–3 shots. Arsenal were all over them.\"",
+   "proposal": "Kontrollera statistikkällan mot en omgång, låt bildtexten följa resultatet och visa bollinnehav bara med en kommentar.",
+   "why": "4 personas värderade skottsiffran, men Deep-personan tyckte något inte gick ihop och källan är inte verifierad.",
+   "if_accept": "Bara backend."
+  },
+  "MD-07-15": {
+   "what": "Siffrorutan visas inte när statistik saknas.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-07-16": {
+   "what": "Länken \"The full story ›\" till matchartikeln.",
+   "proposal": "Ändra så att artikeln ligger publicerad lika länge som After-kortet (7 dagar).",
+   "why": "Artikeln arkiveras efter ~2 dagar och länken försvinner medan After fortfarande visas.",
+   "if_accept": "Bara backend (arkiveringsregeln)."
+  },
+  "MD-07-17": {
+   "what": "Raden \"Next: Liverpool (away), Sunday.\" längst ner på After.",
+   "proposal": "Ta bort raden.",
+   "why": "Before-knappen säger redan \"Before Liverpool\", och nästa match bor på Coming up.",
+   "if_accept": "Ny appversion."
+  },
+  "MD-08-00": {
+   "what": "Matchartikeln som öppnas från After (samma artikel finns i flödet).",
+   "proposal": "Behåll som det är.",
+   "why": "Lång text för den som vill; layouten ägs av flödet, innehållsfixarna står nedan.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-08-01": {
+   "what": "Artikelns rubrik, t.ex. \"Arsenal held 1-1 at Fleetwood Town in the League Cup (Carabao Cup) last 16…\".",
+   "proposal": "Ändra prompten så att arenans ägare nämns (\"at Fleetwood's Highbury\") och bara ett turneringsnamn används (\"League Cup\").",
+   "why": "\"1-1 at Highbury\" läses som Arsenals gamla arena (Deep-personan).",
+   "if_accept": "Bara backend (rutinens prompt)."
+  },
+  "MD-08-02": {
+   "what": "Artikeltexten, där en intern anteckning läckt: \"Worth checking before she says anything about who is through\".",
+   "proposal": "Ändra prompten och efterkontrollen: inga anteckningar till redaktören, aldrig \"she\" om henne, vänta på straffar/förlängning, ett rött kort beskrivs en gång.",
+   "why": "Alla 6 kvinnliga personas såg den läckta anteckningen – det mest uppmärksammade felet i båda kapitlen.",
+   "if_accept": "Rena artiklar. Bara backend (rutinens prompt och kontroll)."
+  },
+  "MD-08-03": {
+   "what": "Tre pratpunkter i artikeln, t.ex. \"Fleetwood scored first and held on for a draw. Fair play to them.\"",
+   "proposal": "Ändra så att pratpunkterna stämmer med utfallet.",
+   "why": "\"Held on for a draw\" är fel när Arsenal åkte ut på straffar (han, H).",
+   "if_accept": "Bara backend."
+  },
+  "MD-08-06": {
+   "what": "Ingen \"The full story\"-rad när artikel saknas.",
+   "proposal": "Behåll som det är.",
+   "why": "Döljer länken när det inte finns något att länka. Obs: artikeln från Forest 18 okt saknar match-id, så rutinen bör alltid skriva det.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-09-00": {
+   "what": "Liveboxen överst i hans klubbs flöde medan matchen pågår, med ställning, minut och målskyttar – i dag bara nivå 2 och 3.",
+   "proposal": "Flytta till alla nivåer: ställning, minut och målskyttar även på nivå 1; brödtexten stannar på nivå 2+.",
+   "why": "En målpush på nivå 1 landar i ett flöde utan ställning, vilket bryter produktregeln (UI-granskningen, allvarligt).",
+   "if_accept": "Nivå 1 ser liveresultatet. Ny appversion; försumbar serverkostnad, ingen AI-kostnad."
+  },
+  "MD-09-01": {
+   "what": "Den pulserande rosa pricken i liveboxen.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för liveboxen; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-09-02": {
+   "what": "Ordet \"LIVE\" i liveboxen.",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för liveboxen; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-09-03": {
+   "what": "Periodetiketten, t.ex. \"HALF TIME\", \"BREAK\", \"PENALTIES\".",
+   "proposal": "Ändra så att en cupmatch som går direkt till straffar visar \"PENALTIES\", aldrig \"BREAK\".",
+   "why": "Buggranskningen bekräftade att servern gör om appens egen rättning.",
+   "if_accept": "Bara backend."
+  },
+  "MD-09-04": {
+   "what": "Matchklockan, t.ex. \"75' / 90\", som tickar på telefonen mellan uppdateringar.",
+   "proposal": "Stoppa klockan och visa \"last update\" efter 3 min utan uppdatering; dölj efter 10.",
+   "why": "Fryst ställning med tickande klocka ser trasigt ut (uppkopplingsgranskningen).",
+   "if_accept": "Ny appversion."
+  },
+  "MD-09-05": {
+   "what": "Rubriken med ställningen, t.ex. \"Arsenal 0-1 Fleetwood Town\" – hans klubb står alltid först.",
+   "proposal": "Ändra så att hemmalaget står först (\"Fleetwood Town 1-0 Arsenal\").",
+   "why": "Ser ut som hemmamatch när han spelar borta, och målskyttarna hamnar under fel lag; 4 av 7 i panelen såg det, bekräftat i koden.",
+   "if_accept": "Bara backend."
+  },
+  "MD-09-06": {
+   "what": "Målskyttar: hemma till vänster, borta till höger, t.ex. \"21' Aaron Loupalo-Bi\".",
+   "proposal": "Behåll som det är.",
+   "why": "Behövs för liveboxen; rätt när rubriken blir hemma-först.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-09-07": {
+   "what": "Brödtexten i halvtid, t.ex. råd som \"He will be quiet, give him space\".",
+   "proposal": "Ändra prompten: en skarp iakttagelse hon kan säga, inga scenanvisningar om honom; aldrig \"Break before extra time\" när det blir direkt straffar.",
+   "why": "Han (H) ryckte till. Light-personan gillade humörrådet, men produktregeln (låta smart, inte hantera hans humör) går före.",
+   "if_accept": "Bara backend (rutinens prompt)."
+  },
+  "MD-09-08": {
+   "what": "En minitabell i liveboxen – servern skickar ingen för klubbar sedan 27 okt (rest från VM).",
+   "proposal": "Ta bort koden för tabellen.",
+   "why": "Visas aldrig.",
+   "if_accept": "Ingen synlig skillnad; kodrensning i 2.4."
+  },
+  "MD-09-09": {
+   "what": "Regeln att nivå 1 aldrig ser liveboxen (appen hämtar den inte ens).",
+   "proposal": "Ändra så att nivå 1 hämtar och ser rubrik, minut och målskyttar; brödtexten bara på nivå 2+.",
+   "why": "Genomför MD-09-00.",
+   "if_accept": "Ny appversion; försumbar serverkostnad."
+  },
+  "MD-09-10": {
+   "what": "VoiceOver-texten \"Live match update for your team: …\".",
+   "proposal": "Behåll som det är.",
+   "why": "Tillgänglighet; ingen anmärkning.",
+   "if_accept": "Inget ändras."
+  },
+  "MD-09-11": {
+   "what": "Med två klubbar följer liveboxen klubben i flödets väljare.",
+   "proposal": "Behåll som det är.",
+   "why": "Rätt beteende; Matchday ska följa samma regel (MD-01-10).",
+   "if_accept": "Inget ändras."
+  }
+ }
+}

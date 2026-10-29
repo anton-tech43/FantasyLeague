@@ -355,7 +355,7 @@ A row that fails this check becomes Iterate or Move, with the reason.
    - **Findings** from the experts, ranked HIGH to LOW.
    - **What holds up.**
    - **Decisions for Anton**: taste, trade-offs and cost.
-4. Publish a **decision board** (the 2026-10-29 build script and template are in that run's scratchpad `board/`; the board itself is at https://claude.ai/artifact/Mz1QxUvht2wDBkQUiK2KQi) as an Artifact with a database (load
+4. Publish a **decision board** (template, build script, explanation brief and Swedish explanations are in `docs/council/2026-10-29/board/`; the board itself is at https://claude.ai/artifact/Mz1QxUvht2wDBkQUiK2KQi) as an Artifact with a database (load
    `artifact-capabilities`): one row per verdict, where Anton marks accept,
    reject or change, with a comment. The carousel feedback board is the
    precedent. Send him the link and a summary of a few sentences, in his

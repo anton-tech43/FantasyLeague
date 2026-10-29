@@ -1,0 +1,47 @@
+{
+  "calls": [
+    {"q": "Korta onboarding i 2.4, eller en version senare?", "ctx": "2.4 är första versionen med mätning. Kortar vi onboarding i samma version får vi aldrig veta hur många som hoppade av vid varje steg i dagens längre flöde. Väntar vi några veckor får vi den siffran, men nya användare möter det långa flödet så länge."},
+    {"q": "Korta onboarding från 10 skärmar till 2 (Välkommen, hans klubb) och landa på klubbsidan?", "ctx": "Alla 6 kvinnliga personas sa \"inte värt det än\" vid första flödesskärmen. 4 av 6 tyckte att klubbsidan var där appen levererade, och \"Meet the boss\" var första \"åh, vad bra\" för 4 av 6. I dag: cirka 620 ord, 13–15 tryck, 2 namn att skriva och upp till 3 systemfrågor innan något användbart. Förslaget: cirka 110 ord och 3 tryck. Hennes namn syns ingenstans utom i Inställningar, och tiern ändrar 0 av 21 skärmar första dagen."},
+    {"q": "Hans namn och relationen: bort ur första sessionen, eller en frivillig skärm \"Vem är han?\"?", "ctx": "Hans namn syns bara som \"Tom's team\". Relationen (partner, förälder, syskon, vän) kan i dag bara ändras genom att radera all data, så Inställningar behöver ett val för det oavsett."},
+    {"q": "Flytta frågan om spårning (ATT) till hennes andra besök?", "ctx": "Alla 6 sa nej till spårning. Frågan dyker upp 1,5 sekunder efter att hon kommit in, ovanpå första kortet, direkt efter en App Store-sida som säger \"no tracking\". Kostnad: Meta kan koppla färre installationer till annonserna."},
+    {"q": "Fråga om notiser vid matchen i stället för i onboarding (och kanske tysta \"provisoriska\" notiser i slutet av onboarding)?", "ctx": "5 av 6 tyckte att dagens fråga kändes påträngande, och den visar ett hårdkodat \"Chelsea today at 15:00\". Förslaget: fråga på klubbsidan inom 48 timmar före hans nästa match, med den riktiga matchen."},
+    {"q": "Ge tiers en verklig effekt och flytta valet till Inställningar?", "ctx": "I dag ändrar tiern ingenting ovanför skärmkanten, och My Turn bryr sig inte om den. Förslaget: My Turn börjar på The Basics, His squad eller His club beroende på tier, och Light får bara stora nyheter. Det sista kräver att varje nyhet får en vikt, vilket inte skrivs i dag."},
+    {"q": "Humörraderna (\"He might need a minute\"): bort överallt, eller behåll för Light?", "ctx": "Produktregeln säger att hon vill låta smart, inte läsa av hans humör, och han (H) och Deep-personas ryckte till. Men de två Light-personas gillade dem som råd."},
+    {"q": "Turneringsnyheter (Champions League, Europa League, ligacupen) bara i flödet, utan push?", "ctx": "De pushas till alla telefoner oavsett vilken klubb hon följer, runt 06:00. 5 av 6 tyckte det var störande, och Spurs-följare fick \"Arsenal are out of the cup\". Den vägen står inte i PUSH_RULES."},
+    {"q": "Tyst till 07:00 Londontid i stället för 05:59 UTC?", "ctx": "5 av 6 störde sig på pushar klockan 6. Morgonrutinen för nyheter måste då flyttas till runt 07:30 London, annars pushas dess nyheter aldrig."},
+    {"q": "Skicka matchdagspåminnelsen 07:00 även för tidiga cuprundor?", "ctx": "Vänder delvis på regeln från 27 oktober. Alla som fick en påminnelse uppskattade den, och tre personas saknade en på cupdagen."},
+    {"q": "Ta bort pushen \"Kickoff soon\" 30 minuter före avspark?", "ctx": "0 av 3 som fick den tyckte den var värd att vibrera för. Platsen sparas för den planerade laguppställningsraden."},
+    {"q": "Delning: ta bort, eller laga?", "ctx": "Personas säger att den delade texten avslöjar henne (\"via GoalDigger\", ingen länk). Samtidigt är delning den enda organiska kanalen, och den mäts redan, så användardata kan avgöra."},
+    {"q": "Lördagsquizet: pensionerat eller trasigt?", "ctx": "TIERS lovar det fortfarande, men inget har skrivits sedan 17 oktober. Redaktören föreslår att det går upp i Matchdays quiz om motståndaren."},
+    {"q": "\"Get to know\" motståndaren: dölj för Light och Deep?", "ctx": "Light och Deep kallade det läxa. Match-fit älskade det."},
+    {"q": "Viktighetsprickarna i kalendern: ge dem mening, eller ta bort?", "ctx": "Alla 6 underkände dem: varje match får tre prickar."},
+    {"q": "Ta bort streak-kortet, övningsläget i Say This och granskningsläget i quizet?", "ctx": "Streak-kortet strider mot arkitekturens \"inga streaks\". Övningsläget mäts inte, så användardata kan inte avgöra det."},
+    {"q": "Coventrys rival: Leicester eller Aston Villa?", "ctx": "Lagrat som Birmingham City. Källorna säger Leicester (M69-derbyt) eller Villa. Det styr också derbykollen i Lingo."},
+    {"q": "Kortet \"The season so far\" blir inaktuellt varje helg: slå ihop med \"How they're doing\", eller skriv om efter varje omgång?", "ctx": "5 av 6 kallade det en dubblett. Det säger \"After eight games… ninth\" ända tills måndagens omskrivning."},
+    {"q": "Pensionera quizregeln \"why + use + useType\"?", "ctx": "Redaktörerna vill ta bort det aldrig visade fältet `why` i appen. 2.2 och 2.3 visar det fortfarande, så det publicerade paketet måste skriva det tills de versionerna är borta."}
+  ],
+  "pre": [
+    "App Store-texten: skriv om (din uppgift i App Store Connect). Den säljer fortfarande VM (\"48 nations\", \"June 11\", \"pick his country\") och säger \"no tracking\" medan integritetsetiketten deklarerar spårning. Alla 6 personas såg båda.",
+    "Integritetslänken: getgoaldigger.com misslyckas med HTTPS (vanlig HTTP ger 409), och det är länken på App Store-sidan. Appens länk öppnar carrd-startsidan, inte en policy. Publicera policyn på en fungerande adress och peka båda dit.",
+    "Integritetsetiketten: uppdatera för 2.4:s mätning och Meta-SDK:t.",
+    "Radera min data: radera hennes mätdata på servern via installations-id, byt id först när raderingen lyckats, och rensa nycklarna som blir kvar på telefonen (säkerhetsgranskningen och mätgranskningen).",
+    "Den anonyma utträdesraden sparar klubb, relation, tier och appversion, mer än policytexten lovar. Ta bort dem.",
+    "Mätningens hastighetsgräns räknar på telefonens klocka. Räkna på serverns tid och lägg till ett larm på tabellens storlek.",
+    "TestFlight-versioner loggas som produktion. Lägg till en kanal så att de första veckornas användning inte är testare.",
+    "Mätningen skickas utan bakgrundsuppgift, så avhoppen i onboarding är de händelser som lättast tappas.",
+    "Tio aktiva telefoner följer ett land, och Inställningar döljer den enda raden som kan ta bort det.",
+    "Meta-händelser skickas från start, före spårningsfrågan. Kan kräva samtycke först enligt brittisk lag (PECR), en juridisk tolkning."
+  ],
+  "now": [
+    "Straffutslagningar lagras som 1–1 oavgjort (Arsenal mot Fleetwood, Liverpool mot Chelsea): kalendern visar \"D\" och quizet frågar \"Was the draw with Fleetwood fair?\". Rätta resultaten i team-page-generator så att straffarna följer med.",
+    "\"Ones to know\" lyfter skadade spelare (Saka \"managing a thigh injury\", João Pedro \"the main scoring threat\") och motsäger spelarkortet. Lägg till ett skadefilter och aktuella målsiffror.",
+    "En publicerad Newcastle-nyhet kallar Eddie Howe \"Newcastle manager\". Lägg till tränarkollen i post_news.sh (post_team_page.sh har en) och arkivera nyheten.",
+    "Faktakontroller för nyheter: veckodag mot matchen i Londontid, tabellplats mot tabellen, priser kräver en källa, en historia per klubb och 48 timmar.",
+    "Tre färdigspelade matcher från avbrottet 24 oktober är lagrade som avbrutna (Arsenal–Everton, Coventry–Fulham, Chelsea–Spurs). Städjobbet borde skriva \"inte observerad\".",
+    "Gamla kort i flödet: kort inför match försvinner två timmar efter avspark, och rubriker säger aldrig \"tomorrow\" eller \"tonight\" efter att stunden passerat.",
+    "Matchartiklar kan innehålla anteckningar menade för oss (\"Worth checking before she says anything about who is through\"). Lägg till en kontroll i producenten.",
+    "Brightons tränarkort säger \"second season\" (det är hans tredje). Kontrollen tittar bara på årtal.",
+    "75 % av förra veckans insider-poster gick till pensionerade länder och nedflyttade klubbar: INSIDER_PROMPT.md saknar filter på aktiva lag.",
+    "Live Activity-uppdateringar och påminnelsen 07:00 loggas inte, så det går inte att mäta hur många prioriterade uppdateringar en match ger eller om påminnelsen kom fram."
+  ]
+}

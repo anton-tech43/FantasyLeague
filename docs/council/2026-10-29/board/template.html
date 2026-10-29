@@ -1,0 +1,288 @@
+<title>GoalDigger Council Board</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a team sheet per screen. Legend, your calls, then each screen with its picture and its verdict rows. */
+:root {
+  --bg: #FAF0F4; --surface: #FFFFFF; --ink: #2D1B2E; --muted: #75677A; --line: #E9D9E2;
+  --accent: #E8397D; --accent-ink: #FFFFFF; --gold: #A47F12;
+  --keep: #2E7D4F; --keep-bg: #E3F2E8; --iter: #8A6400; --iter-bg: #FBF0CF;
+  --move: #3F51B5; --move-bg: #E5E8FA; --del: #C62E47; --del-bg: #FBE1E6;
+  --font-ui: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #2D1B2E; --surface: #3A2639; --ink: #F5F0F0; --muted: #B9A9BC; --line: #4B3449;
+  --accent: #F0558F; --accent-ink: #2D1B2E; --gold: #E8C547;
+  --keep: #7FD39D; --keep-bg: #24402F; --iter: #F0CF6A; --iter-bg: #4A3D17;
+  --move: #A6B1F5; --move-bg: #2C3160; --del: #FF8A9C; --del-bg: #5A2230; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #2D1B2E; --surface: #3A2639; --ink: #F5F0F0; --muted: #B9A9BC; --line: #4B3449;
+  --accent: #F0558F; --accent-ink: #2D1B2E; --gold: #E8C547;
+  --keep: #7FD39D; --keep-bg: #24402F; --iter: #F0CF6A; --iter-bg: #4A3D17;
+  --move: #A6B1F5; --move-bg: #2C3160; --del: #FF8A9C; --del-bg: #5A2230; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-ui); }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1 { font-size: clamp(26px, 4vw, 36px); font-weight: 800; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+h2 { font-size: 19px; font-weight: 800; margin: 0; text-wrap: balance; }
+h3 { font-size: 17px; font-weight: 800; margin: 0; text-wrap: balance; }
+.eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: 12px; font-weight: 700; color: var(--accent); }
+.lede { color: var(--muted); max-width: 70ch; margin: 6px 0 0; }
+.strip { display: flex; flex-wrap: wrap; gap: 10px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; min-width: 110px; }
+.stat b { display: block; font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 12px; min-width: 0; }
+.legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.legend div { display: grid; gap: 4px; align-content: start; }
+.legend p { margin: 0; font-size: 14px; color: var(--muted); }
+.calls { display: grid; gap: 12px; }
+.call { border-left: 3px solid var(--gold); padding: 2px 0 2px 12px; display: grid; gap: 4px; }
+.call p { margin: 0; }
+.call .q { font-weight: 700; }
+.call .ctx { color: var(--muted); font-size: 14px; }
+.pre { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--bg); padding-block: 10px; border-bottom: 1px solid var(--line); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+select, input[type=search], textarea { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; min-width: 0; }
+input[type=search] { flex: 1 1 200px; }
+.count { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.screens { display: grid; gap: 26px; }
+.screen { display: grid; gap: 10px; min-width: 0; }
+.shead { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: start; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; min-width: 0; }
+.shead.noshot { grid-template-columns: 1fr; }
+.shot { width: 120px; border: 0; padding: 0; background: none; cursor: zoom-in; border-radius: 10px; overflow: hidden; }
+.shot img { display: block; width: 100%; border-radius: 10px; border: 1px solid var(--line); }
+.shot.big { width: min(340px, 100%); cursor: zoom-out; }
+.sinfo { display: grid; gap: 6px; min-width: 0; }
+.sinfo p { margin: 0; color: var(--muted); font-size: 14px; max-width: 70ch; }
+.sid { font: 600 12px var(--font-mono); color: var(--muted); }
+.tally { display: flex; flex-wrap: wrap; gap: 6px; }
+.rows { display: grid; gap: 10px; padding-left: 12px; border-left: 2px solid var(--line); }
+.row { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 8px; min-width: 0; }
+.row.done { opacity: .6; }
+.head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
+.id { font: 600 12px var(--font-mono); color: var(--muted); }
+.chip { font-size: 12px; font-weight: 700; border-radius: 999px; padding: 2px 9px; }
+.v-Keep { color: var(--keep); background: var(--keep-bg); }
+.v-Iterate { color: var(--iter); background: var(--iter-bg); }
+.v-Move { color: var(--move); background: var(--move-bg); }
+.v-Delete { color: var(--del); background: var(--del-bg); }
+.dg { font-size: 12px; font-weight: 700; color: var(--gold); }
+.fields { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 0; }
+.fields dt { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding-top: 2px; }
+.fields dd { margin: 0; overflow-wrap: anywhere; min-width: 0; }
+.fields dd.prop { font-weight: 700; }
+@media (max-width: 560px) { .fields { grid-template-columns: 1fr; } .fields dd { margin-bottom: 6px; } .shead { grid-template-columns: 1fr; } .shot { width: 160px; } }
+details summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+details p { margin: 6px 0 0; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.act { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.act button { font: 600 13px var(--font-ui); border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+.act button:hover { border-color: var(--accent); }
+.act button[aria-pressed="true"].a { background: var(--keep); border-color: var(--keep); color: var(--surface); }
+.act button[aria-pressed="true"].r { background: var(--del); border-color: var(--del); color: var(--surface); }
+.act button[aria-pressed="true"].c { background: var(--iter); border-color: var(--iter); color: var(--surface); }
+.act textarea { flex: 1 1 260px; min-height: 36px; resize: vertical; }
+button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+.status { font-size: 13px; color: var(--muted); }
+.empty { color: var(--muted); padding: 20px 0; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Appens råd · 29 okt 2026 · version 2.4 (18)</div>
+    <h1>Varje del av appen, ett beslut</h1>
+    <p class="lede">Sju personas (tre tiers plus han), sju expertgranskningar och fyra redaktörer har gått igenom 1 037 delar av appen, från App Store-sidan till sista valet i Inställningar. Utgångspunkten var att allt ska bort tills det visat sig förtjäna sin plats. Du väljer för varje rad. Bara det du godkänner byggs.</p>
+  </header>
+
+  <section class="strip" id="strip" aria-label="Totalt"></section>
+
+  <section class="panel" aria-labelledby="leg-h">
+    <h2 id="leg-h">Så läser du tavlan</h2>
+    <div class="legend">
+      <div><span class="chip v-Delete" style="justify-self:start">Ta bort</span><p>Delen försvinner ur appen. Raden säger vad som går förlorat och om något i bakgrunden måste fortsätta köra.</p></div>
+      <div><span class="chip v-Move" style="justify-self:start">Flytta</span><p>Rätt sak på fel ställe eller vid fel tillfälle. Raden säger vart den ska, till exempel bakom ett tryck, till Inställningar eller bara på matchdag.</p></div>
+      <div><span class="chip v-Iterate" style="justify-self:start">Förbättra</span><p>Delen ska vara kvar men inte som nu. Raden säger exakt vad som ändras och varför.</p></div>
+      <div><span class="chip v-Keep" style="justify-self:start">Behåll</span><p>Förtjänar sin plats som den är. Dolda som standard; välj "Alla förslag" i filtret för att se dem.</p></div>
+    </div>
+    <p class="note">Knapparna: <b>Godkänn</b> betyder bygg det som raden föreslår. <b>Avvisa</b> betyder låt det vara som i dag. <b>Annat</b> betyder att du vill något tredje; skriv vad i kommentaren. Allt sparas direkt.</p>
+    <p class="note">Varje skärm har en bild (tryck för att förstora) och en sammanfattning, sedan raderna för just den skärmen. Alla bedömningar är preliminära: det finns ingen användardata än (den kommer med 2.4), och personas är AI, inte riktiga kvinnor.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="calls-h">
+    <h2 id="calls-h">Dina beslut</h2>
+    <p class="note">Smak, avvägningar och kostnad. Redaktörerna ville inte avgöra dessa åt dig.</p>
+    <div class="calls" id="calls"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="pre-h">
+    <h2 id="pre-h">Innan 2.4 (18) skickas in</h2>
+    <ul class="pre" id="pre"></ul>
+  </section>
+
+  <section class="panel" aria-labelledby="now-h">
+    <h2 id="now-h">Fel i dag som går att rätta utan ny appversion</h2>
+    <ul class="pre" id="now"></ul>
+  </section>
+
+  <section aria-labelledby="v-h" style="display:grid;gap:12px;min-width:0">
+    <h2 id="v-h">Förslagen, skärm för skärm</h2>
+    <div class="toolbar">
+      <select id="f-ch" aria-label="Kapitel"></select>
+      <select id="f-v" aria-label="Förslag">
+        <option value="nokeep">Ta bort, flytta, förbättra</option><option value="">Alla förslag</option>
+        <option value="Delete">Ta bort</option><option value="Move">Flytta</option><option value="Iterate">Förbättra</option><option value="Keep">Behåll</option>
+      </select>
+      <select id="f-d" aria-label="Ditt beslut">
+        <option value="">Beslutade eller inte</option><option value="open">Inte beslutade</option><option value="accept">Godkända</option><option value="reject">Avvisade</option><option value="change">Annat</option>
+      </select>
+      <input type="search" id="f-q" placeholder="Sök ord, id, skäl" aria-label="Sök">
+      <span class="count" id="count"></span>
+    </div>
+    <div class="status" id="status">Ansluter till sparade beslut…</div>
+    <div class="screens" id="screens"></div>
+  </section>
+</div>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+(function () {
+  const D = JSON.parse(document.getElementById("data").textContent);
+  const CH = { STO: "App Store-sidan", ONB: "Onboarding", FEED: "Flödet", LOCK: "Låsskärmen", TEAM: "Klubbsidan", MD: "Matchday", MY: "My Turn", SET: "Inställningar" };
+  const CHORDER = Object.keys(CH);
+  const VSV = { Delete: "Ta bort", Move: "Flytta", Iterate: "Förbättra", Keep: "Behåll" };
+  const ORDER = { Delete: 0, Move: 1, Iterate: 2, Keep: 3 };
+  let decisions = {}, db = null;
+  const $ = (id) => document.getElementById(id);
+  const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  const sid = (id) => id.split("-").slice(0, 2).join("-");
+  const num = (s) => parseInt(String(s).replace(/\D/g, "") || "0", 10);
+
+  const tot = { Keep: 0, Iterate: 0, Move: 0, Delete: 0 };
+  D.rows.forEach(r => tot[r.v]++);
+  [["Delar", D.rows.length], ["Ta bort", tot.Delete], ["Flytta", tot.Move], ["Förbättra", tot.Iterate], ["Behåll", tot.Keep], ["Beslutade", "–"]].forEach(([k, v]) => {
+    const s = mk("div", "stat"); const b = mk("b", null, v); if (k === "Beslutade") b.id = "decided";
+    s.append(b, mk("span", null, k)); $("strip").append(s);
+  });
+  D.calls.forEach(c => { const d = mk("div", "call"); d.append(mk("p", "q", c.q), mk("p", "ctx", c.ctx)); $("calls").append(d); });
+  D.pre.forEach(t => $("pre").append(mk("li", null, t)));
+  D.now.forEach(t => $("now").append(mk("li", null, t)));
+
+  const fch = $("f-ch");
+  fch.append(new Option("Alla kapitel", ""));
+  Object.entries(CH).forEach(([k, v]) => fch.append(new Option(v, k)));
+  try { const s = JSON.parse(localStorage.getItem("council-filters-v2") || "{}");
+    if (s.ch != null) fch.value = s.ch; if (s.v != null) $("f-v").value = s.v; if (s.d != null) $("f-d").value = s.d; } catch (e) {}
+  ["f-ch", "f-v", "f-d", "f-q"].forEach(id => $(id).addEventListener("input", () => {
+    try { localStorage.setItem("council-filters-v2", JSON.stringify({ ch: fch.value, v: $("f-v").value, d: $("f-d").value })); } catch (e) {}
+    render();
+  }));
+
+  function match(r) {
+    const ch = fch.value, v = $("f-v").value, d = $("f-d").value, q = $("f-q").value.trim().toLowerCase();
+    if (ch && r.ch !== ch) return false;
+    if (v === "nokeep" && r.v === "Keep") return false;
+    if (v && v !== "nokeep" && r.v !== v) return false;
+    const dec = decisions[r.id] && decisions[r.id].decision;
+    if (d === "open" && dec) return false;
+    if (d && d !== "open" && dec !== d) return false;
+    if (q && !([r.id, r.el, r.t, r.what, r.proposal, r.why, r.ifa, r.h, r.w].join(" ").toLowerCase().includes(q))) return false;
+    return true;
+  }
+
+  function save(id, patch) {
+    decisions[id] = Object.assign({}, decisions[id] || {}, patch, { at: new Date().toISOString() });
+    render();
+    if (!db) { $("status").textContent = "Inte sparat: sparade beslut finns inte i den här vyn."; return; }
+    db.doc("decisions/" + id).set(decisions[id]).catch(e => { $("status").textContent = "Kunde inte spara " + id + ": " + ((e && e.message) || "försök igen"); });
+  }
+
+  function rowEl(r) {
+    const dec = decisions[r.id] || {};
+    const el = mk("article", "row" + (dec.decision ? " done" : ""));
+    const head = mk("div", "head");
+    head.append(mk("span", "chip v-" + r.v, VSV[r.v]), mk("span", "id", r.id));
+    if (r.dg) head.append(mk("span", "dg", "Villkor: " + r.dg));
+    el.append(head);
+    const dl = mk("dl", "fields");
+    [["Vad det är", r.what || r.el, ""], ["Förslag", r.proposal || r.h, "prop"], ["Varför", r.why || r.w, ""], ["Om du godkänner", r.ifa, ""]].forEach(([k, v, cls]) => {
+      if (!v) return; dl.append(mk("dt", null, k), mk("dd", cls, v));
+    });
+    el.append(dl);
+    const det = mk("details"); det.append(mk("summary", null, "Underlag på engelska (exakt text, bevis, beroenden)"));
+    [["Text i appen", r.t && ("“" + r.t + "”")], ["Redaktörens förslag", r.h], ["Redaktörens skäl", r.w], ["Bevis", r.e], ["Beroenden", r.dep], ["Säkerhet", r.conf + (r.u === "y" ? " · användardata kan avgöra detta" : "")]].forEach(([k, v]) => {
+      if (!v) return; const p = mk("p"); p.append(mk("b", null, k + ": "), document.createTextNode(v)); det.append(p);
+    });
+    el.append(det);
+    const act = mk("div", "act");
+    [["accept", "Godkänn", "a"], ["reject", "Avvisa", "r"], ["change", "Annat", "c"]].forEach(([k, label, cls]) => {
+      const b = mk("button", cls, label); b.type = "button";
+      b.setAttribute("aria-pressed", dec.decision === k ? "true" : "false");
+      b.addEventListener("click", () => save(r.id, { decision: dec.decision === k ? null : k }));
+      act.append(b);
+    });
+    const ta = mk("textarea"); ta.id = "c-" + r.id; ta.placeholder = "Kommentar (valfri)"; ta.value = dec.comment || "";
+    ta.setAttribute("aria-label", "Kommentar till " + r.id);
+    ta.addEventListener("change", () => save(r.id, { comment: ta.value }));
+    act.append(ta); el.append(act);
+    return el;
+  }
+
+  function screenEl(key, rows, all) {
+    const S = D.screens[key] || {};
+    const sec = mk("section", "screen");
+    const head = mk("div", "shead" + (S.img ? "" : " noshot"));
+    if (S.img) {
+      const b = mk("button", "shot"); b.type = "button"; b.setAttribute("aria-label", "Förstora skärmbilden");
+      const img = mk("img"); img.src = S.img; img.alt = "Skärmbild: " + (S.title || key); img.loading = "lazy";
+      b.append(img); b.addEventListener("click", () => b.classList.toggle("big"));
+      head.append(b);
+    }
+    const info = mk("div", "sinfo");
+    info.append(mk("span", "sid", (CH[key.split("-")[0]] || "") + " · " + key), mk("h3", null, S.title || key));
+    if (S.summary) info.append(mk("p", null, S.summary));
+    const tally = mk("div", "tally");
+    const t = { Delete: 0, Move: 0, Iterate: 0, Keep: 0 }; all.forEach(r => t[r.v]++);
+    ["Delete", "Move", "Iterate", "Keep"].forEach(v => { if (t[v]) tally.append(mk("span", "chip v-" + v, VSV[v] + " " + t[v])); });
+    info.append(tally); head.append(info);
+    const list = mk("div", "rows");
+    rows.forEach(r => list.append(rowEl(r)));
+    sec.append(head, list);
+    return sec;
+  }
+
+  function render() {
+    const groups = new Map();
+    D.rows.forEach(r => { const k = sid(r.id); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); });
+    const keys = [...groups.keys()].sort((a, b) => CHORDER.indexOf(a.split("-")[0]) - CHORDER.indexOf(b.split("-")[0]) || num(a.split("-")[1]) - num(b.split("-")[1]));
+    const out = $("screens"); out.replaceChildren();
+    let n = 0;
+    keys.forEach(k => {
+      const all = groups.get(k);
+      const vis = all.filter(match).sort((a, b) => ORDER[a.v] - ORDER[b.v] || num(a.id.split("-")[2]) - num(b.id.split("-")[2]));
+      if (!vis.length) return;
+      n += vis.length; out.append(screenEl(k, vis, all));
+    });
+    if (!n) out.append(mk("p", "empty", "Inga rader matchar filtret."));
+    $("count").textContent = n + " rader visas";
+    $("decided").textContent = Object.values(decisions).filter(d => d && d.decision).length;
+  }
+  render();
+
+  (async () => {
+    try {
+      db = await (window.claude && window.claude.use ? window.claude.use("db") : null);
+      if (!db) { $("status").textContent = "Beslut kan inte sparas i den här vyn. Öppna tavlan på claude.ai."; return; }
+      db.collection("decisions").onSnapshot(snap => {
+        const next = {}; snap.docs.forEach(d => { next[d.id] = d.data() || {}; });
+        decisions = next; $("status").textContent = "Besluten sparas när du klickar."; render();
+      }, e => { $("status").textContent = "Sparade beslut slutade uppdateras: " + ((e && e.message) || "ladda om sidan"); });
+    } catch (e) { $("status").textContent = "Beslut kan inte sparas i den här vyn."; }
+  })();
+})();
+</script>

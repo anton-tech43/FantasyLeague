@@ -1,0 +1,1452 @@
+{
+ "screens": {
+  "FEED-01": {
+   "title": "Klubbflödet (Feed-fliken)",
+   "summary": "Det hon ser när hon öppnar appen: helskärmskort om hans klubb med en replik att säga. Editorn behåller skärmen men rensar: ålder på varje kort, förhandskort försvinner efter avspark, en enda etikett \"Your move:\", inget \"9+\" och ingen notisbanner dag 1. Största felet i dag är tid: 5 av 6 personas fick gamla kort.",
+   "shot": "seats/ui-shots/feed-ars-t2.png"
+  },
+  "FEED-02": {
+   "title": "Tomt flöde, laddning och fel",
+   "summary": "Det flödet visar när det saknas kort, när det laddar eller när något gått fel. Skärmen behålls; felet slutar skylla på hennes wifi, och \"Worth knowing\"-faktat går till alla nivåer eftersom tysta veckor blir vanligare när gamla kort försvinner. Landsvarianterna tas bort.",
+   "shot": null
+  },
+  "FEED-03": {
+   "title": "Lördagsquizet i flödet",
+   "summary": "Ett femfrågorsquiz om helgens match som bara Deep ser i flödet, lördag till söndag. Editorn slår ihop det med motståndarquizet i Matchday › Before och tar bort allt här. Ingen persona mötte det och inget quiz har skrivits sedan 17 okt.",
+   "shot": null
+  },
+  "FEED-04": {
+   "title": "Klubbväljaren",
+   "summary": "Rullgardinen under klubbknappen där hon byter mellan sina klubbar och Football. Behålls med hennes klubbar och Football; landsraden och olästsiffrorna tas bort.",
+   "shot": null
+  },
+  "FEED-05": {
+   "title": "Football-flödet (Everyone's talking about)",
+   "summary": "Ett gemensamt flöde med neutrala nyheter från alla klubbar och cuper. Det behålls och blir hemmet för turneringsnyheter när de slutar pushas. Etiketterna blir en (\"Talk about it:\"), och en kontroll stoppar motsägelser som de två Ballon d'Or-vinnarna.",
+   "shot": "screens/country-only/01-everyones-talking-feed-first-screen.png"
+  },
+  "FEED-06": {
+   "title": "Artikeln bakom ett kort",
+   "summary": "Det hon ser när hon trycker på ett kort: rubrik, faktakort och repliker att säga. Den blir mycket kortare: kvar blir tid, rubrik, Good to know (med \"To impress\" direkt synligt) och Things to say med större kopiera-knapp. Uppläsning, delning, spelarchips, tomma sektioner och bakgrundstexten försvinner.",
+   "shot": "seats/ui-shots/article-ars.png"
+  },
+  "FEED-07": {
+   "title": "Ordlistan",
+   "summary": "Ett litet blad som förklarar ett fotbollsord när hon trycker på ett understruket ord eller en cup. Behålls helt; för Light är det livlinan som gör att hon förstår utan att känna sig dum.",
+   "shot": null
+  },
+  "FEED-08": {
+   "title": "Delningsarket",
+   "summary": "iPhones delningsark med vår text, från kort, artiklar, repliker och quiz. Editorn tar bort all delning eftersom texten slutar med \"via GoalDigger\" och avslöjar henne; kopiera finns kvar. Osäkert beslut som du behöver ta, eftersom delning är appens enda mun-till-mun-väg.",
+   "shot": null
+  },
+  "LOCK-01": {
+   "title": "Behörighetsfrågor från iOS",
+   "summary": "iPhones egna frågor om notiser och Live Activities, och reglaget i iOS-inställningar. Alla tre behålls; de är Apples, och när notisfrågan ska ställas avgör granskningen av första sessionen.",
+   "shot": null
+  },
+  "LOCK-02": {
+   "title": "Pushar på låsskärmen",
+   "summary": "Allt som kan få hennes telefon att buzza. Kvar blir morgonpåminnelsen (nu även tidiga cuprundor), mål, halvtid (Match-fit och Deep), förlängning, full tid, skärpta nyhetspushar och söndagsbrevet före 11. Turneringspushen till alla, 30-minuterspushen, konsekvenskorten och 08:00-reserven slutar buzza. Light går från cirka 10 till cirka 5 buzzar i veckan.",
+   "shot": null
+  },
+  "LOCK-03": {
+   "title": "Live Activity på låsskärmen",
+   "summary": "Resultatkortet som ligger på låsskärmen under hans match, med ställning, klocka och straffläggning. Panelens favoritfunktion behålls med fyra rättningar: inget fruset resultat hela kvällen, appen skriver inte över serverns läge, råa koder blir ord och straffanteckningen raderas inte.",
+   "shot": null
+  },
+  "LOCK-04": {
+   "title": "Live Activity i Dynamic Island",
+   "summary": "Samma resultatkort i Dynamic Island högst upp på nyare iPhones, utfällt och i liten form. Behålls; den lilla vyn ska visa hennes klubbs kod i stället för hemmalagets tre första bokstäver (\"MAN\", \"CRY\").",
+   "shot": null
+  }
+ },
+ "rows": {
+  "FEED-01-00": {
+   "what": "Klubbflödet i Feed-fliken: helskärmskort med mörk överdel (rubrik och liknelse) och rosa nederdel (en replik att säga), nyast först.",
+   "proposal": "Ändra skärmen i ett svep: ålder på varje kort, förhandskort försvinner efter avspark, en enda etikett, inget olästmärke, notisbannern bort dag 1 och livescore för alla nivåer.",
+   "why": "Det är dagens viktigaste ögonblick, men gamla kort med 'tomorrow' och 'tonight' fick 5 av 6 personas att tro på fel dag. Det är precis det hon laddade ner appen för att slippa.",
+   "if_accept": "Summan av raderna nedan: färre och färskare kort och en tydlig etikett. Kräver ny appversion plus ändringar i nyhetsrutinen."
+  },
+  "FEED-01-01": {
+   "what": "Fliken \"Feed\" (hus-ikon) i menyn längst ner, den första fliken när appen öppnas.",
+   "proposal": "Behåll som det är.",
+   "why": "Här ligger dagens replik; en återkommande användare når den utan ett enda tryck.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-02": {
+   "what": "Fliken \"Matchday\" (boll-ikon) i menyn längst ner.",
+   "proposal": "Behåll som det är.",
+   "why": "Vägen till matchen; full-tid-pushen landar här, och panelen använde fliken i varje session.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-03": {
+   "what": "Matchday-fliken döljs när hon inte följer någon klubb (bara ett land).",
+   "proposal": "Behåll som det är.",
+   "why": "Skydd för de cirka 11 gamla enheter som bara följer ett land; utan det får de en tom flik.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-04": {
+   "what": "Fliken med klubbens namn, t.ex. \"Arsenal\", som öppnar klubbsidan.",
+   "proposal": "Behåll som det är.",
+   "why": "Light-personorna kallade klubbsidan \"the page I'd actually come back to\" och \"most useful screen so far\".",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-05": {
+   "what": "När hon byter flödet till Football byter klubbfliken namn till \"His Team\".",
+   "proposal": "Ändra så att fliken visar första klubbens namn (t.ex. \"Arsenal\") även när hon är på Football.",
+   "why": "Fliken öppnar ändå den klubbens sida, och \"His\" är hårdkodat trots regeln att det ska stå \"their\" när hon följer någon annan än en partner.",
+   "if_accept": "Fliken heter alltid klubbens namn. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-01-06": {
+   "what": "Klubbfliken döljs om det inte finns någon klubb att visa; då hamnar hon på Feed i stället.",
+   "proposal": "Behåll som det är.",
+   "why": "Skydd så att hon aldrig får en tom sida.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-07": {
+   "what": "Fliken \"My Turn\" (bok-ikon) i menyn längst ner.",
+   "proposal": "Behåll som det är.",
+   "why": "Bara navigeringen; innehållet bedöms i My Turn-gruppen. En persona tyckte namnet inte säger vad det är, men en persona räcker inte som bevis.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-08": {
+   "what": "Efter säsongsintroduktionen hamnar hon på klubbfliken (\"teach me more\") eller Feed (\"take me to the news\").",
+   "proposal": "Behåll som det är.",
+   "why": "Följer introts två knappar; om introt ska finnas kvar avgör granskningen av första sessionen.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-09": {
+   "what": "Menyraden längst ner är genomskinlig över korten, så den rosa delen och \"scroll\"-tipset hamnar bakom den.",
+   "proposal": "Ändra så att korten slutar ovanför menyraden, så att den rosa delen och repliken aldrig hamnar under den.",
+   "why": "UI-granskningen såg i skärmbilden att scroll-tipset och slutet av den rosa ytan ritas under menyn.",
+   "if_accept": "Hela repliken syns alltid ovanför menyn. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-01-10": {
+   "what": "Klubbknappen överst (märke, \"Arsenal\" och en pil) som öppnar klubbväljaren.",
+   "proposal": "Behåll som det är.",
+   "why": "Enda sättet att byta klubb eller nå Football från flödet.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-11": {
+   "what": "Det lilla klubbmärket i klubbknappen; grå sköld om bilden inte laddar.",
+   "proposal": "Behåll som det är.",
+   "why": "Hon känner igen klubben direkt, och reservbilden går aldrig sönder.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-12": {
+   "what": "Den rosa siffran i klubbknappen, t.ex. \"9+\", som räknar olästa kort.",
+   "proposal": "Ta bort olästräknaren helt, både här och i klubbväljaren.",
+   "why": "4 av 6 personas förstod inte \"9+\". Den syns redan första gången hon öppnar appen, så den säger inget och får henne att känna sig efter.",
+   "if_accept": "Ingen siffra i knappen. Kräver ny appversion; inget i backend påverkas."
+  },
+  "FEED-01-13": {
+   "what": "Kortet \"Notifications are off\" som ligger överst, ovanför första nyheten, när notiser är av eller inte efterfrågade.",
+   "proposal": "Flytta det från toppen dag 1 till ett enda kort i flödet på morgonen inför hans första match, högst var 14:e dag.",
+   "why": "6 av 6 personas var negativa. Det är tredje notisfrågan i rad och täcker rubriken vid stor text. Inställningar har redan en notisrad.",
+   "if_accept": "Första skärmen visar nyheten direkt. Villkor: måste släppas i samma appversion som den nya notisfrågan vid rätt tillfälle, annars blir nya användare aldrig tillfrågade."
+  },
+  "FEED-01-14": {
+   "what": "Bannerns rubrik \"Notifications are off\".",
+   "proposal": "Behåll texten; den följer med bannern till dess nya plats.",
+   "why": "Alla 6 personas förstod den. Kort, och säger vad hon missar.",
+   "if_accept": "Texten ändras inte; den flyttar med bannern."
+  },
+  "FEED-01-15": {
+   "what": "Bannerns text \"You'll miss the score as it happens and the heads-up before his next game.\"",
+   "proposal": "Behåll texten; den följer med bannern till dess nya plats.",
+   "why": "Alla 6 personas förstod den. Kort, och säger vad hon missar.",
+   "if_accept": "Texten ändras inte; den flyttar med bannern."
+  },
+  "FEED-01-16": {
+   "what": "Bannerns knapp \"Turn them on\".",
+   "proposal": "Behåll texten; den följer med bannern till dess nya plats.",
+   "why": "Alla 6 personas förstod den. Kort, och säger vad hon missar.",
+   "if_accept": "Texten ändras inte; den flyttar med bannern."
+  },
+  "FEED-01-17": {
+   "what": "Vad \"Turn them on\" gör: visar iPhones notisfråga om hon aldrig fått den, annars öppnas appens sida i iOS-inställningar.",
+   "proposal": "Behåll som det är.",
+   "why": "Rätt iOS-beteende och det enda sättet tillbaka om hon sagt nej.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-18": {
+   "what": "Bannerns knapp \"Not now\" som döljer den i 14 dagar.",
+   "proposal": "Behåll som det är.",
+   "why": "En fråga måste gå att tacka nej till.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-19": {
+   "what": "Livekortet med ställning och minut som ligger först i flödet medan hans match pågår; i dag bara för Match-fit och Deep.",
+   "proposal": "Ändra så att alla nivåer ser ställning och minut, och att kortet säger \"Score paused, reconnecting\" efter 3 minuter utan uppdatering och försvinner efter 10.",
+   "why": "En Light-användare som trycker på en målpush landar i dag i ett flöde utan ställning. Vid avbrottet 24 okt hade kortet visat 1-0 med en klocka som tickade förbi 100 minuter.",
+   "if_accept": "Light ser livescore i appen (texten om matchen kan fortsatt vara för Match-fit och uppåt). Inget fruset resultat. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-01-20": {
+   "what": "Kortet \"Coming up\" om landets nästa match, bara i landsflödet.",
+   "proposal": "Ta bort tillsammans med hela landsflödet.",
+   "why": "Vilande: landsföljning är avstängd och VM-delen är pensionerad, så ingen aktiv användare kan nå det.",
+   "if_accept": "Ingen aktiv användare ser skillnad. Villkor från beroendekontrollen: \"Sluta följa land\" i Inställningar måste släppas i samma version, så att de cirka 10 enheter som följer ett land kan ta sig ur det."
+  },
+  "FEED-01-21": {
+   "what": "Etiketten \"COMING UP\" på landskortet.",
+   "proposal": "Ta bort tillsammans med hela landsflödet.",
+   "why": "Vilande: landsföljning är avstängd och VM-delen är pensionerad, så ingen aktiv användare kan nå det.",
+   "if_accept": "Ingen aktiv användare ser skillnad. Villkor från beroendekontrollen: \"Sluta följa land\" i Inställningar måste släppas i samma version, så att de cirka 10 enheter som följer ett land kan ta sig ur det."
+  },
+  "FEED-01-22": {
+   "what": "Raden \"{land} face {motståndare}\" på landskortet.",
+   "proposal": "Ta bort tillsammans med hela landsflödet.",
+   "why": "Vilande: landsföljning är avstängd och VM-delen är pensionerad, så ingen aktiv användare kan nå det.",
+   "if_accept": "Ingen aktiv användare ser skillnad. Villkor från beroendekontrollen: \"Sluta följa land\" i Inställningar måste släppas i samma version, så att de cirka 10 enheter som följer ett land kan ta sig ur det."
+  },
+  "FEED-01-23": {
+   "what": "Nedräkningen till avspark på landskortet.",
+   "proposal": "Ta bort tillsammans med hela landsflödet.",
+   "why": "Vilande: landsföljning är avstängd och VM-delen är pensionerad, så ingen aktiv användare kan nå det.",
+   "if_accept": "Ingen aktiv användare ser skillnad. Villkor från beroendekontrollen: \"Sluta följa land\" i Inställningar måste släppas i samma version, så att de cirka 10 enheter som följer ett land kan ta sig ur det."
+  },
+  "FEED-01-24": {
+   "what": "Den lilla \"Saturday Quiz\"-knappen i flödet på helger, bara för Deep.",
+   "proposal": "Flytta quizet till Matchday › Before, där motståndarquizet redan finns för alla nivåer, och ta bort det ur flödet.",
+   "why": "Två quiz om samma helg. Det här är bara för Deep, ingen persona mötte det, och rutinen har inte skrivit något sedan 17 okt.",
+   "if_accept": "Inget quiz i flödet i nya appen. Beroendekontrollen: quizrutinen måste fortsätta köra så länge 2.2/2.3 används (30 av 85 aktiva enheter är Deep), om den inte redan är död."
+  },
+  "FEED-01-25": {
+   "what": "Själva nyhetskortet i helskärm: mörk överdel med rubrik och liknelse, rosa nederdel med en replik.",
+   "proposal": "Ändra så att kortets ålder (\"3h ago\", \"Yesterday\") står i den mörka delen, bredvid tipset om att trycka.",
+   "why": "Utan datum läses varje \"tomorrow\" och \"tonight\" som i dag. UI-granskningen såg Newcastles \"cup game tomorrow\" på själva matchdagen.",
+   "if_accept": "Varje kort visar hur gammalt det är, med samma text som artikeln redan har. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-01-26": {
+   "what": "Kortets nedre yta är guld på ett resultatkort efter full tid och rosa på nyheter och söndagsbrev.",
+   "proposal": "Behåll som det är.",
+   "why": "Guld skiljer ett resultat från en nyhet med en blick.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-27": {
+   "what": "Den rosa raden ovanför rubriken som namnger cupen, t.ex. \"LEAGUE CUP\" med en i-knapp som öppnar ordlistan.",
+   "proposal": "Behåll som det är.",
+   "why": "Förklarar cupen där hon möter den. En Light-persona: \"This answered my Carabao/League Cup confusion\".",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-28": {
+   "what": "Kortets stora rubrik i gemener på tre rader, t.ex. \"arteta. / caught in the moment. / was he wrong.\"",
+   "proposal": "Ändra nyhetsrutinens regler: rubriken säger vem och vad i klartext, inga gåtor, inga \"tomorrow/tonight\" (veckodag i stället) och \"manager\" bara när det stämmer.",
+   "why": "5 av 6 personas mötte en rubrik de inte kunde tyda (\"riddle\", \"what meeting?\"), tre fastnade på inaktuella \"tomorrow\", och Howe kallades felaktigt Newcastles manager.",
+   "if_accept": "Tydligare rubriker som tål att läsas dagen efter. Bara ändring i rutinens prompt och spärrskript; ingen ny appversion."
+  },
+  "FEED-01-29": {
+   "what": "Liknelsen under rubriken, t.ex. \"Like posting a voice note to the group chat calling out someone's behaviour…\"",
+   "proposal": "Ändra så att liknelsen bara visas för Light och Match-fit; Deep får den sakliga raden som redan sparas. Rutinen spärrar liknelser som inte passar fakta.",
+   "why": "Fyra Light- och Match-fit-personas valde en liknelse som bästa raden; båda Deep-personorna ville ta bort den först. Två liknelser passade inte nyheten.",
+   "if_accept": "Deep ser en faktarad i stället. Kräver ny appversion för uppdelningen plus en spärr i nyhetsrutinen."
+  },
+  "FEED-01-30": {
+   "what": "Den grå raden \"Press for more info and things to say\" längst ner i kortets mörka del.",
+   "proposal": "Ändra till \"Tap for the full story and more to say\" och ge den samma kontrast som vanlig text.",
+   "why": "5 av 6 personas missade eller missförstod den: \"Press\" låter som tryck-och-håll, och grått syns dåligt.",
+   "if_accept": "Ny text och tydligare färg. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-01-31": {
+   "what": "Etiketten \"Your move:\" ovanför repliken på första kortet.",
+   "proposal": "Behåll, och gör den till den enda etiketten på alla klubbkort.",
+   "why": "I dag byter etiketten namn efter kortets plats i flödet; en sak ska ha ett namn. \"Your move:\" passar både frågor och påståenden.",
+   "if_accept": "Alla klubbkort får \"Your move:\". Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-01-32": {
+   "what": "Etiketten \"Top talking point:\" som visas på kort 2 och framåt i stället för \"Your move:\", beroende på kortets plats.",
+   "proposal": "Ta bort; \"Your move:\" ersätter den på alla klubbkort.",
+   "why": "Samma kort får olika etikett beroende på vad som publiceras efter det, och \"Drop this:\"/\"Say this:\" hamnar över frågor och över \"Tell him…\"-repliker som pojkvänspersonan tyckte var nedlåtande.",
+   "if_accept": "Alla klubbkort har samma etikett. Bara appändring i ny version; inget i backend."
+  },
+  "FEED-01-33": {
+   "what": "Etiketten \"Say this:\" som visas på kort 2 och framåt i stället för \"Your move:\", beroende på kortets plats.",
+   "proposal": "Ta bort; \"Your move:\" ersätter den på alla klubbkort.",
+   "why": "Samma kort får olika etikett beroende på vad som publiceras efter det, och \"Drop this:\"/\"Say this:\" hamnar över frågor och över \"Tell him…\"-repliker som pojkvänspersonan tyckte var nedlåtande.",
+   "if_accept": "Alla klubbkort har samma etikett. Bara appändring i ny version; inget i backend."
+  },
+  "FEED-01-34": {
+   "what": "Etiketten \"Drop this:\" som visas på kort 2 och framåt i stället för \"Your move:\", beroende på kortets plats.",
+   "proposal": "Ta bort; \"Your move:\" ersätter den på alla klubbkort.",
+   "why": "Samma kort får olika etikett beroende på vad som publiceras efter det, och \"Drop this:\"/\"Say this:\" hamnar över frågor och över \"Tell him…\"-repliker som pojkvänspersonan tyckte var nedlåtande.",
+   "if_accept": "Alla klubbkort har samma etikett. Bara appändring i ny version; inget i backend."
+  },
+  "FEED-01-35": {
+   "what": "Etiketten \"Your opener:\" som visas på kort 2 och framåt i stället för \"Your move:\", beroende på kortets plats.",
+   "proposal": "Ta bort; \"Your move:\" ersätter den på alla klubbkort.",
+   "why": "Samma kort får olika etikett beroende på vad som publiceras efter det, och \"Drop this:\"/\"Say this:\" hamnar över frågor och över \"Tell him…\"-repliker som pojkvänspersonan tyckte var nedlåtande.",
+   "if_accept": "Alla klubbkort har samma etikett. Bara appändring i ny version; inget i backend."
+  },
+  "FEED-01-36": {
+   "what": "Etiketten \"Use this:\" som visas på kort 2 och framåt i stället för \"Your move:\", beroende på kortets plats.",
+   "proposal": "Ta bort; \"Your move:\" ersätter den på alla klubbkort.",
+   "why": "Samma kort får olika etikett beroende på vad som publiceras efter det, och \"Drop this:\"/\"Say this:\" hamnar över frågor och över \"Tell him…\"-repliker som pojkvänspersonan tyckte var nedlåtande.",
+   "if_accept": "Alla klubbkort har samma etikett. Bara appändring i ny version; inget i backend."
+  },
+  "FEED-01-37": {
+   "what": "Etiketten \"Tonight:\" på resultatkortet när matchen började 17:00 eller senare.",
+   "proposal": "Ändra så att alla resultatkort får en och samma etikett, \"After {motståndare}:\", t.ex. \"After Everton:\".",
+   "why": "\"Tonight\" och \"This afternoon\" ligger kvar på kortet i flera dagar; 3 av 6 personas såg det som inaktuellt (\"This afternoon\" på en torsdag).",
+   "if_accept": "Etiketten stämmer oavsett när hon läser. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-01-38": {
+   "what": "Etiketten \"This afternoon:\" på resultatkortet när matchen började 12:00–16:59.",
+   "proposal": "Ta bort; ersätts av \"After {motståndare}:\".",
+   "why": "Samma problem som \"Tonight:\": den ligger kvar i dagar och blir fel.",
+   "if_accept": "En etikett för alla resultatkort. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-01-39": {
+   "what": "Etiketten \"Today:\" på resultatkortet när matchen började före 12:00 eller tiden saknas.",
+   "proposal": "Ta bort; ersätts av \"After {motståndare}:\".",
+   "why": "Samma problem som \"Tonight:\": den ligger kvar i dagar och blir fel.",
+   "if_accept": "En etikett för alla resultatkort. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-01-40": {
+   "what": "Repliken i den rosa delen, t.ex. \"Tell him Gyökeres scored but Arsenal still lost on pens… He'll need a moment.\"",
+   "proposal": "Ändra nyhetsrutinens regler: inga \"Tell him [nyhet om hans klubb]\", inga regianvisningar om hans humör, minst en egen åsikt per kort och inga ord hon inte kan förklara.",
+   "why": "Hon vill låta smart, inte läsa av hans humör. Pojkvänspersonan underkände \"Tell him…\" (han visste först), och en Light-persona fick två okända ord (\"rotate\", \"full strength\") i sin första replik.",
+   "if_accept": "Bättre repliker i flödet. Bara ändring i rutinens prompt och spärrskript; ingen ny appversion."
+  },
+  "FEED-01-41": {
+   "what": "Dela-knappen i kortets rosa del, som skickar kortet som text via iPhones delningsark.",
+   "proposal": "Ta bort dela-knappen; kopiera-knappen i artikeln finns kvar.",
+   "why": "Texten slutar med \"via GoalDigger\" utan länk och avslöjar henne för honom (3 av 6 personas), och ingen skulle sakna knappen. Editorn vill att du avgör: delning är appens enda mun-till-mun-väg.",
+   "if_accept": "Ingen delning från kort. Kräver ny appversion; 2.2/2.3 behåller det gamla. Alternativ: behåll delning utan \"via GoalDigger\", eller vänta tre veckor på delningsdata från 2.4."
+  },
+  "FEED-01-42": {
+   "what": "De två nedåtpilarna med ordet \"scroll\" längst ner på kortet.",
+   "proposal": "Ta bort pilarna; korten snäpper vidare när hon sveper ändå.",
+   "why": "De ritas under menyraden, och ingen persona hade svårt att bläddra.",
+   "if_accept": "Inga pilar. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-01-43": {
+   "what": "Tryck på kortets mörka del öppnar artikeln från början.",
+   "proposal": "Behåll som det är.",
+   "why": "Vägen till artikeln; 4 av 6 personas tryckte på det översta kortet först.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-44": {
+   "what": "Tryck på kortets rosa del öppnar artikeln direkt vid \"Things to say\".",
+   "proposal": "Behåll som det är.",
+   "why": "Hon landar på replikerna, som är skälet att öppna.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-45": {
+   "what": "Uppläsningstexten för skärmläsaren (VoiceOver) på kortet: \"Press for more info and things to say\".",
+   "proposal": "Ändra till samma ord som den synliga raden: \"Tap for the full story and more to say\".",
+   "why": "Skärmläsaren ska säga samma sak som syns.",
+   "if_accept": "Ny text för VoiceOver-användare. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-01-46": {
+   "what": "Skärmläsarens extra val \"What is the {cup}?\" på cupkort.",
+   "proposal": "Behåll som det är.",
+   "why": "Tillgänglighet: ordlistan nås utan att träffa den lilla cupraden.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-47": {
+   "what": "Korten slutar växa vid den största vanliga textstorleken; artikeln följer alla storlekar.",
+   "proposal": "Behåll som det är.",
+   "why": "Hindrar helskärmskortet från att flöda över vid tillgänglighetsstorlekar.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-48": {
+   "what": "Dra nedåt för att ladda om flödet.",
+   "proposal": "Behåll som det är.",
+   "why": "Billig och förväntad reserv till omladdningen när appen öppnas.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-49": {
+   "what": "Svep snäpper kort för kort; nästa 20 laddas när hon är tre från slutet.",
+   "proposal": "Behåll som det är.",
+   "why": "Fungerar som det ska.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-50": {
+   "what": "Nyhetskorten, de flesta korten i flödet för alla nivåer, t.ex. \"Saka (Arsenal winger) has won the 2026 Ballon d'Or…\"",
+   "proposal": "Lägg till fem faktakontroller i nyhetsrutinens spärrskript: manager mot vår tabell, veckodag mot spelschemat, tabellplats, priser och troféer, och högst en story per klubb per 48 timmar.",
+   "why": "Fem felaktiga fakta på 14 dagar: två olika Ballon d'Or-vinnare, Howe som Newcastles manager, \"Saturday\" för en söndagsmatch, 12:e i stället för 14:e, plus tre kort om samma Kane-story.",
+   "if_accept": "Färre men korrekta kort; en uppföljning uppdaterar det gamla kortet i stället för att lägga till ett nytt. Bara backend (spärrskriptet); ingen ny appversion."
+  },
+  "FEED-01-51": {
+   "what": "Söndagsbrevet: ett kort per klubb varje söndag som blickar fram, t.ex. \"level with city. / both on 21. / anfield saturday.\" Match-fit och Deep.",
+   "proposal": "Ändra så att rutinen kontrollerar veckodagar mot spelschemat och slutar skriva manus som \"Tell him you've kept Saturday evening clear\".",
+   "why": "Den skrev \"Saturday\" om en match söndag 1 nov och pushade det. En Deep-persona: \"right idea, wrong day\".",
+   "if_accept": "Bara ändring i söndagsrutinen; ingen ny appversion."
+  },
+  "FEED-01-52": {
+   "what": "Regeln att Light aldrig ser söndagsbrevet i flödet.",
+   "proposal": "Ta bort regeln så att Light också ser söndagskortet i appen (det pushas fortfarande inte till dem).",
+   "why": "Nivådokumentet säger själv att kortet försvinner ur Light-flödet utan något skäl som går att försvara.",
+   "if_accept": "Light får ett kort till i veckan i flödet, ingen push. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-01-53": {
+   "what": "Resultatkortet som skrivs vid full tid, med guldyta, t.ex. Chelsea \"out. / last 16, anfield. / penalties.\"",
+   "proposal": "Ändra: etiketten blir \"After {motståndare}:\", \"after extra time\" skrivs bara när det blev förlängning, inga \"Ask how he's feeling\", och resultatartikeln arkiveras inte efter två dagar.",
+   "why": "Kortet är rätt i grunden, men två matcher fick felaktigt \"after extra time\", och en Deep-persona: \"Ask how he's feeling is the exact thing I hate\".",
+   "if_accept": "Rätta fakta och längre liv för resultatet (det syns också i Matchday › After). Mest rutin och backend; etiketten kräver ny appversion."
+  },
+  "FEED-01-54": {
+   "what": "Korttypen \"Starting XI\" som appen kan visa men som aldrig har skrivits (0 rader).",
+   "proposal": "Ta bort korttypen och dess märke; laguppställningen får i stället plats i 30-minuterspushen för Deep.",
+   "why": "Ingen rutin skriver den; koden visar något som aldrig finns.",
+   "if_accept": "Ingen ser skillnad. Ny appversion. Samordna med laguppställningsfunktionen som testkörs, så den inte planerar ett sådant kort."
+  },
+  "FEED-01-55": {
+   "what": "Ordningen i flödet: nyast först, bara hennes klubb plus stora gemensamma nyheter.",
+   "proposal": "Behåll nyast först, men ta bort förhandskort om en match som började för mer än två timmar sedan.",
+   "why": "5 av 6 personas fastnade på ett förhandskort under resultatet, t.ex. \"Palace must-win\" efter segern eller \"Chelsea tomorrow\" dagen efter.",
+   "if_accept": "Gamla förhandskort försvinner efter avspark, så tysta veckor blir tommare (därför ska \"Worth knowing\" gå till alla). Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-01-56": {
+   "what": "Vart hon hamnar när hon trycker på en avspark-, mål- eller halvtidspush: flödet för den klubben.",
+   "proposal": "Ändra så att trycket under pågående match landar på livekortet överst i flödet, för alla nivåer.",
+   "why": "I dag öppnar en Light-användares tryck på en målpush gårdagens nyhetskort.",
+   "if_accept": "Trycket på målpushen visar ställningen. Kräver ny appversion och att livekortet visas för alla nivåer."
+  },
+  "FEED-01-57": {
+   "what": "Vart trycket på morgonpåminnelsen (\"… play today\") leder: Matchday › Before för första klubben, annars den klubbens flöde.",
+   "proposal": "Behåll som det är.",
+   "why": "Raden var felmärkt som den pausade dag-före-pushen, men det är morgonpåminnelsens väg och kan inte tas bort så länge den används.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-58": {
+   "what": "Trycket på full-tid-pushen öppnar Matchday › After för första klubben, med färsk data.",
+   "proposal": "Behåll som det är.",
+   "why": "Hon ser resultatet utan ett enda extra tryck.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-59": {
+   "what": "En push om en av hennes klubbar byter flödet till den klubben.",
+   "proposal": "Behåll som det är.",
+   "why": "Hon hamnar på rätt klubb.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-01-60": {
+   "what": "En push som kommer medan appen är öppen visas som banner med ljud.",
+   "proposal": "Behåll som det är.",
+   "why": "Ett mål når henne även när hon är inne i appen.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-02-00": {
+   "what": "Det flödet visar när det inte finns kort: laddning, fel eller tomt läge.",
+   "proposal": "Behåll som det är.",
+   "why": "Varje läge har text och en väg vidare; inga återvändsgränder.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-02-01": {
+   "what": "Två skimrande platshållarkort utan text vid första laddningen.",
+   "proposal": "Ändra så att appen hoppar över den extra faktahämtningen när flödet redan misslyckats, så felet visas efter cirka 10 sekunder i stället för 20.",
+   "why": "Platshållarna är rätt, men vid avbrottet 24 okt fick hon vänta dubbelt så länge på att få veta att något var fel.",
+   "if_accept": "Snabbare felbesked vid avbrott. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-02-02": {
+   "what": "Senast hämtade flöde visas direkt från telefonen medan nytt laddas, och finns kvar utan nät.",
+   "proposal": "Behåll som det är.",
+   "why": "Därför såg appen inte död ut för befintliga användare den 24 okt.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-02-03": {
+   "what": "Felrubriken \"That didn't load.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Kort och sant.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-02-04": {
+   "what": "Feltexten \"Probably your connection. Give it another go.\"",
+   "proposal": "Ändra till \"We couldn't load this just now. Give it another go.\"",
+   "why": "Fyra avbrott på fem månader var vårt fel, och varje gång sa appen åt henne att kolla sitt wifi.",
+   "if_accept": "Felet skyller inte längre på henne. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-02-05": {
+   "what": "Knappen \"Try again\" under felet.",
+   "proposal": "Behåll som det är.",
+   "why": "Enda vägen ut ur felet.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-02-06": {
+   "what": "Grå ikon med två pratbubblor i det tomma läget.",
+   "proposal": "Behåll som det är.",
+   "why": "Del av tomläget; ofarlig.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-02-07": {
+   "what": "Rubriken \"Quiet on his end.\" när klubben inte har några kort.",
+   "proposal": "Behåll som det är.",
+   "why": "Ärligt en dag utan nyheter, i rätt ton; blir vanligare när gamla förhandskort försvinner.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-02-08": {
+   "what": "Texten \"Nothing from {club} worth reporting. Enjoy it while it lasts.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Ärligt en dag utan nyheter, i rätt ton.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-02-09": {
+   "what": "Utan nyheter visas ändå livekortet (eller quizet) i stället för tomläget.",
+   "proposal": "Behåll som det är.",
+   "why": "Livekortet syns även när flödet är tomt.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-02-10": {
+   "what": "Etiketten \"NO NEWS RIGHT NOW. WORTH KNOWING:\" när flödet är tomt; i dag bara för Match-fit och Deep.",
+   "proposal": "Ändra så att alla nivåer, även Light, får \"Worth knowing\"-faktat när klubbflödet är tomt.",
+   "why": "När förhandskorten försvinner blir tysta veckor tomma. Ett specifikt, lite okänt faktum är det bästa en dålig vecka kan ge, och Light behöver det mest; en Deep-persona tog sin pubreplik från ett sådant kort.",
+   "if_accept": "Light ser ett faktakort i stället för bara \"Quiet on his end.\" Kräver ny appversion; 2.2/2.3 behåller det gamla. Rutinen skriver redan korten."
+  },
+  "FEED-02-11": {
+   "what": "Faktakortet under den etiketten, t.ex. HISTORY \"Arsenal were the first southern club to win the English top-flight title.\"; i dag bara Match-fit och Deep.",
+   "proposal": "Ändra så att alla nivåer, även Light, får \"Worth knowing\"-faktat när klubbflödet är tomt.",
+   "why": "När förhandskorten försvinner blir tysta veckor tomma. Ett specifikt, lite okänt faktum är det bästa en dålig vecka kan ge, och Light behöver det mest; en Deep-persona tog sin pubreplik från ett sådant kort.",
+   "if_accept": "Light ser ett faktakort i stället för bara \"Quiet on his end.\" Kräver ny appversion; 2.2/2.3 behåller det gamla. Rutinen skriver redan korten."
+  },
+  "FEED-02-12": {
+   "what": "Typetiketten \"STAT\" med ikon på faktakortet.",
+   "proposal": "Behåll som det är.",
+   "why": "Säger vilken sorts fakta det är: en siffra att säga eller en historia att berätta.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-02-13": {
+   "what": "Typetiketten \"ANECDOTE\" med ikon på faktakortet.",
+   "proposal": "Behåll som det är.",
+   "why": "Säger vilken sorts fakta det är: en siffra att säga eller en historia att berätta.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-02-14": {
+   "what": "Typetiketten \"HISTORY\" med ikon på faktakortet.",
+   "proposal": "Behåll som det är.",
+   "why": "Säger vilken sorts fakta det är: en siffra att säga eller en historia att berätta.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-02-15": {
+   "what": "Typetiketten \"ODDITY\" med ikon på faktakortet.",
+   "proposal": "Behåll som det är.",
+   "why": "Säger vilken sorts fakta det är: en siffra att säga eller en historia att berätta.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-02-16": {
+   "what": "\"Read more\" på faktakortet när texten är lång; tryck fäller ut och ihop.",
+   "proposal": "Behåll som det är.",
+   "why": "Långa texter behöver det.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-02-17": {
+   "what": "Skärmläsarens text för faktakortet, \"{TYPE} about your team: …\".",
+   "proposal": "Behåll som det är.",
+   "why": "Tillgänglighet.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-02-18": {
+   "what": "Etiketten \"UP NEXT\" i landsflödets tomläge.",
+   "proposal": "Ta bort tillsammans med hela landsflödet.",
+   "why": "Vilande: landsföljning är avstängd och VM-delen är pensionerad, så ingen aktiv användare kan nå det.",
+   "if_accept": "Ingen aktiv användare ser skillnad. Villkor från beroendekontrollen: \"Sluta följa land\" i Inställningar måste släppas i samma version, så att de cirka 10 enheter som följer ett land kan ta sig ur det."
+  },
+  "FEED-02-19": {
+   "what": "Raden \"{land} face {motståndare}\" med nedräkning i landsflödets tomläge.",
+   "proposal": "Ta bort tillsammans med hela landsflödet.",
+   "why": "Vilande: landsföljning är avstängd och VM-delen är pensionerad, så ingen aktiv användare kan nå det.",
+   "if_accept": "Ingen aktiv användare ser skillnad. Villkor från beroendekontrollen: \"Sluta följa land\" i Inställningar måste släppas i samma version, så att de cirka 10 enheter som följer ett land kan ta sig ur det."
+  },
+  "FEED-02-20": {
+   "what": "Texten \"We'll have the build-up here the day before…\" i landsflödets tomläge.",
+   "proposal": "Ta bort tillsammans med hela landsflödet.",
+   "why": "Vilande: landsföljning är avstängd och VM-delen är pensionerad, så ingen aktiv användare kan nå det.",
+   "if_accept": "Ingen aktiv användare ser skillnad. Villkor från beroendekontrollen: \"Sluta följa land\" i Inställningar måste släppas i samma version, så att de cirka 10 enheter som följer ett land kan ta sig ur det."
+  },
+  "FEED-02-21": {
+   "what": "Etiketten \"NOTHING NEW RIGHT NOW\" i landsflödet när ingen match finns.",
+   "proposal": "Ta bort tillsammans med hela landsflödet.",
+   "why": "Vilande: landsföljning är avstängd och VM-delen är pensionerad, så ingen aktiv användare kan nå det.",
+   "if_accept": "Ingen aktiv användare ser skillnad. Villkor från beroendekontrollen: \"Sluta följa land\" i Inställningar måste släppas i samma version, så att de cirka 10 enheter som följer ett land kan ta sig ur det."
+  },
+  "FEED-02-22": {
+   "what": "Texten \"We'll post his {country} updates around each match…\" i landsflödet.",
+   "proposal": "Ta bort tillsammans med hela landsflödet.",
+   "why": "Vilande: landsföljning är avstängd och VM-delen är pensionerad, så ingen aktiv användare kan nå det.",
+   "if_accept": "Ingen aktiv användare ser skillnad. Villkor från beroendekontrollen: \"Sluta följa land\" i Inställningar måste släppas i samma version, så att de cirka 10 enheter som följer ett land kan ta sig ur det."
+  },
+  "FEED-03-00": {
+   "what": "Lördagsquizet: en knapp i flödet på helgen (bara Deep) som fälls ut till fem frågor om helgens match och ett resultat.",
+   "proposal": "Flytta: slå ihop med motståndarquizet i Matchday › Before och ta bort quizet ur flödet.",
+   "why": "Två quiz om samma helg. Det här är bara för Deep, ingen av sju personas mötte det, och rutinen har inte skrivit något sedan 17 okt. Nivådokumentet lovar fortfarande ett lördagsquiz, så du behöver avgöra om det är pensionerat eller trasigt.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-01": {
+   "what": "Rubriken \"SATURDAY QUIZ\" på quizknappen. Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-02": {
+   "what": "Skiljetecknet \"·\" på quizknappen. Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-03": {
+   "what": "Quizets rubrik, t.ex. \"Nottm Forest weekend\". Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-04": {
+   "what": "\"Tap to play\" på quizknappen. Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-05": {
+   "what": "Skärmläsarens text för quizknappen. Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-06": {
+   "what": "Frågehuvudet \"SATURDAY QUIZ 1 of 5\". Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-07": {
+   "what": "Quizfrågorna, t.ex. \"Who manages Nottingham Forest?\" med tre svar. Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-08": {
+   "what": "Svarsalternativ A. Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-09": {
+   "what": "Svarsalternativ B. Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-10": {
+   "what": "Svarsalternativ C. Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-11": {
+   "what": "Bocken och krysset som visar rätt och fel svar. Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-12": {
+   "what": "Förklaringen efter svaret, t.ex. \"Glasner (Forest manager) has them 15th…\" Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-13": {
+   "what": "Knappen \"Next question\". Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-14": {
+   "what": "Knappen \"See your score\". Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-15": {
+   "what": "Resultatets rubrik \"SATURDAY QUIZ\". Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-16": {
+   "what": "Poängen, t.ex. \"4/5 ⚽⚽⚽⚽\". Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-17": {
+   "what": "Kommentaren vid alla rätt: \"Top of the table. You've been paying attention.\" Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-18": {
+   "what": "Kommentaren vid minst hälften rätt: \"Solid. A slip or two…\" Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-19": {
+   "what": "Kommentaren vid några rätt: \"On the board. Worth a scroll back through this week.\" Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-20": {
+   "what": "Kommentaren vid noll rätt: \"A reset week. The cards are still here when you want them.\" Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-21": {
+   "what": "Knappen \"Share score\", t.ex. \"GoalDigger Saturday Quiz: 4/5, Arsenal v Nottm Forest\". Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-22": {
+   "what": "Knappen \"Done\" som fäller ihop quizet. Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-03-23": {
+   "what": "Regeln som döljer quizet för Light och Match-fit, utanför helgen, på Football och vid fel. Bara Deep ser det.",
+   "proposal": "Ta bort tillsammans med lördagsquizet i flödet; quizet i Matchday › Before har egna frågor och resultat.",
+   "why": "Följer av att lördagsquizet slås ihop med motståndarquizet i Matchday.",
+   "if_accept": "Försvinner i nya appen. Quizrutinen måste fortsätta så länge 2.2/2.3 används av många, om den inte redan är död efter kontobytet; då kan du låta den vara."
+  },
+  "FEED-04-00": {
+   "what": "Rullgardinen under klubbknappen: en rad per följd klubb, sedan \"Everyone's talking about\".",
+   "proposal": "Behåll som det är.",
+   "why": "Enda sättet att byta klubb i flödet.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-04-01": {
+   "what": "Raden för en följd klubb, t.ex. \"Arsenal\" med märke; vald rad markeras rosa.",
+   "proposal": "Behåll som det är.",
+   "why": "Hennes klubbar, högst två.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-04-02": {
+   "what": "En andra rad när hon följer två klubbar.",
+   "proposal": "Behåll som det är.",
+   "why": "Hennes klubbar, högst två.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-04-03": {
+   "what": "Raden \"Everyone's talking about\" som öppnar Football-flödet.",
+   "proposal": "Behåll som det är.",
+   "why": "Vägen till Football, som blir hemmet för andra klubbars och cupernas nyheter när den breda pushen slutar.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-04-04": {
+   "what": "Raden för ett följt land (flagga och namn) överst i rullgardinen.",
+   "proposal": "Ta bort tillsammans med landsflödet.",
+   "why": "Vilande: landsföljning är avstängd och VM-delen är pensionerad, så ingen aktiv användare kan nå det.",
+   "if_accept": "Ingen aktiv användare ser skillnad. Villkor från beroendekontrollen: \"Sluta följa land\" i Inställningar måste släppas i samma version, så att de cirka 10 enheter som följer ett land kan ta sig ur det."
+  },
+  "FEED-04-05": {
+   "what": "Olästsiffran, t.ex. \"9+\", på raderna i klubbväljaren.",
+   "proposal": "Ta bort tillsammans med olästsiffran i klubbknappen.",
+   "why": "Samma räknare med samma \"9+\"-problem: 4 av 6 personas förstod den inte.",
+   "if_accept": "Inga siffror i väljaren. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-04-06": {
+   "what": "Tryck utanför rullgardinen stänger den.",
+   "proposal": "Behåll som det är.",
+   "why": "Förväntat beteende.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-04-07": {
+   "what": "Byte av klubb tömmer och laddar om flödet för den klubben; klubbfliken följer med.",
+   "proposal": "Behåll som det är.",
+   "why": "Förväntat beteende.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-05-00": {
+   "what": "Football-flödet (\"Everyone's talking about\"): samma helskärmskort, men neutrala nyheter från alla klubbar och cuper.",
+   "proposal": "Behåll som det är.",
+   "why": "Enda platsen för andra klubbars och cupernas nyheter, och blir deras hem när den breda pushen slutar. Tre personas tyckte en rivals dåliga kväll var bra \"banter\", men inte värd en buzz klockan sex.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-05-01": {
+   "what": "Knappen \"Football\" med boll-ikon överst när hon är i Football-flödet.",
+   "proposal": "Behåll som det är.",
+   "why": "Säger var hon är.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-05-02": {
+   "what": "Rubriken på Football-korten, t.ex. \"kane wins it all / just not in lilywhite\".",
+   "proposal": "Ändra med samma rubrikregler som klubbflödet, plus en kontroll mot motsägelser mellan klubbar innan ett kort hamnar här.",
+   "why": "Två olika spelare \"vann 2026 års Ballon d'Or\" i det här flödet inom 10 timmar, och tre personas såg det.",
+   "if_accept": "Inga motsägande kort i Football. Bara ändring i rutinen och spärrskriptet; ingen ny appversion."
+  },
+  "FEED-05-03": {
+   "what": "Liknelsen under rubriken på Football-korten, samma fält som i klubbflödet.",
+   "proposal": "Ändra som i klubbflödet: liknelsen för Light och Match-fit, den sakliga raden för Deep.",
+   "why": "Samma fält och samma delade omdöme: Light och Match-fit älskar liknelsen, Deep tycker den är nedlåtande.",
+   "if_accept": "Deep ser en faktarad. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-05-04": {
+   "what": "Etiketten \"The chat:\" ovanför repliken på vissa Football-kort, beroende på kortets plats.",
+   "proposal": "Ta bort; \"Talk about it:\" blir den enda etiketten i Football.",
+   "why": "Samma problem som i klubbflödet: samma ruta byter namn efter kortets plats.",
+   "if_accept": "Alla Football-kort har samma etikett. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-05-05": {
+   "what": "Etiketten \"Everyone's saying:\" ovanför repliken på vissa Football-kort, beroende på kortets plats.",
+   "proposal": "Ta bort; \"Talk about it:\" blir den enda etiketten i Football.",
+   "why": "Samma problem som i klubbflödet: samma ruta byter namn efter kortets plats.",
+   "if_accept": "Alla Football-kort har samma etikett. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-05-06": {
+   "what": "Etiketten \"Drop this:\" ovanför repliken på vissa Football-kort, beroende på kortets plats.",
+   "proposal": "Ta bort; \"Talk about it:\" blir den enda etiketten i Football.",
+   "why": "Samma problem som i klubbflödet: samma ruta byter namn efter kortets plats.",
+   "if_accept": "Alla Football-kort har samma etikett. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-05-07": {
+   "what": "Etiketten \"Talk about it:\" på vissa Football-kort.",
+   "proposal": "Behåll, och gör den till den enda etiketten i Football.",
+   "why": "En sak ska ha ett namn, och den passar både frågor och påståenden.",
+   "if_accept": "Alla Football-kort får \"Talk about it:\". Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-05-08": {
+   "what": "Etiketten \"Conversation starter:\" ovanför repliken på vissa Football-kort, beroende på kortets plats.",
+   "proposal": "Ta bort; \"Talk about it:\" blir den enda etiketten i Football.",
+   "why": "Samma problem som i klubbflödet: samma ruta byter namn efter kortets plats.",
+   "if_accept": "Alla Football-kort har samma etikett. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-05-09": {
+   "what": "Etiketten \"Worth knowing:\" som gör nedre ytan guld på utvalda Football-kort.",
+   "proposal": "Ta bort guldvarianten; kortet visas med den vanliga Football-etiketten.",
+   "why": "Ingen persona märkte etiketten, och flaggan lyfte fram båda de motsägande Ballon d'Or-korten.",
+   "if_accept": "Inga guldkort i Football. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-05-10": {
+   "what": "Repliken på Football-korten, t.ex. \"Does he think Kane deserved it over Mbappe and Yamal?\"",
+   "proposal": "Ändra med samma replikregler som i klubbflödet, och dölj den rosa raden helt när repliken saknas i stället för att visa en tom ruta.",
+   "why": "Även de neutrala replikerna slutar i \"Does he think…\" i stället för att ge henne en egen åsikt.",
+   "if_accept": "Bättre repliker via rutinen; den dolda tomma rutan kräver ny appversion."
+  },
+  "FEED-05-11": {
+   "what": "I Football finns ingen \"Your move:\" på första kortet, och inget livekort eller quiz.",
+   "proposal": "Behåll som det är.",
+   "why": "Football har ingen personlig replik och ingen egen match.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-05-12": {
+   "what": "Nyheter om en hel turnering (t.ex. League Cup) visas bara i Football, aldrig i klubbflödet.",
+   "proposal": "Behåll som det är.",
+   "why": "Här bor turneringsnyheterna, även när de slutar pushas.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-05-13": {
+   "what": "Rosa boll-ikon i Football-flödets tomläge.",
+   "proposal": "Behåll som det är.",
+   "why": "Ett lugnt tomläge med väg tillbaka.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-05-14": {
+   "what": "Rubriken \"Nothing huge in football today.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Ett lugnt tomläge med väg tillbaka.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-05-15": {
+   "what": "Texten \"Enjoy the quiet. We'll flag it the moment {club} do something.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Ett lugnt tomläge med väg tillbaka.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-05-16": {
+   "what": "Samma text utan klubb: \"…the moment something happens.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Reservtext för en enhet utan klubb.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-05-17": {
+   "what": "Knappen \"Back to {club}\" i tomläget.",
+   "proposal": "Behåll som det är.",
+   "why": "Vägen tillbaka till hennes klubb.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-05-18": {
+   "what": "När hon trycker på en push om en hel turnering öppnas Football-flödet.",
+   "proposal": "Ta bort den vägen i nästa appversion, efter att turneringspushen har stoppats.",
+   "why": "Bara den breda turneringspushen landar här, och den blir enbart flödesinnehåll.",
+   "if_accept": "Ordning: stoppa först pushen i backend och uppdatera push-reglerna, sedan tas vägen bort i nästa app. Gamla appar behåller en oanvänd väg, ofarligt."
+  },
+  "FEED-06-00": {
+   "what": "Artikeln bakom ett kort: märke och tid, rubrik, faktakort, repliker och fler sektioner.",
+   "proposal": "Behåll som det är.",
+   "why": "Hela historien och platsen där replikerna bor; panelen använde den i alla 6 sessioner. En Light-persona: \"This is what the feed card should have said\".",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-06-01": {
+   "what": "Tillbaka-pilen uppe till vänster.",
+   "proposal": "Behåll som det är.",
+   "why": "iPhones vanliga tillbaka.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-06-02": {
+   "what": "Play-knappen uppe till höger som läser upp artikeln med telefonens röst.",
+   "proposal": "Ta bort uppläsningsknappen.",
+   "why": "5 av 6 personas förstod inte vad den gör.",
+   "if_accept": "Knappen försvinner; iPhones egen uppläsning och VoiceOver fungerar fortfarande. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-03": {
+   "what": "Dela-knappen uppe till höger som delar rubriken plus \"via GoalDigger\".",
+   "proposal": "Ta bort dela-knappen i artikeln.",
+   "why": "Den avslöjar henne för honom (3 av 6 personas) och har ingen länk, så den ger inte ens nya användare. Editorn vill att du avgör delningsfrågan som helhet.",
+   "if_accept": "Ingen delning av artiklar; kopiera finns kvar. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-04": {
+   "what": "Märket \"NEWS\" överst i artikeln.",
+   "proposal": "Ta bort märket; tidsangivelsen står kvar.",
+   "why": "Alla artiklar är nyheter, så märket säger ingenting; tre personas skulle inte sakna det.",
+   "if_accept": "Inget NEWS-märke. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-05": {
+   "what": "Märket \"MATCH DAY\" på resultatartikeln.",
+   "proposal": "Behåll som det är.",
+   "why": "Skiljer resultatet från vanliga nyheter.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-06-06": {
+   "what": "Märket \"SUNDAY BRIEF\" på söndagsbrevet.",
+   "proposal": "Behåll som det är.",
+   "why": "Märker veckobrevet; Light ser det också när filtret tas bort.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-06-07": {
+   "what": "Märket \"STARTING XI\" för en korttyp som aldrig skrivits.",
+   "proposal": "Ta bort tillsammans med korttypen.",
+   "why": "Ingen rutin skriver sådana kort.",
+   "if_accept": "Ingen ser skillnad. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-08": {
+   "what": "Cupmärket, t.ex. \"LEAGUE CUP\" med i-knapp, i stället för typmärket på cupartiklar.",
+   "proposal": "Behåll som det är.",
+   "why": "Namnger cupen och öppnar ordlistan.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-06-09": {
+   "what": "Tidsangivelsen \"{n}m ago\" uppe till höger i artikeln.",
+   "proposal": "Behåll, och visa samma text även på kortet i flödet.",
+   "why": "Det är enda stället kortets ålder syns i dag; två Light-personas använde \"Yesterday\" för att förstå ett \"tomorrow\".",
+   "if_accept": "Texten ändras inte här, men den dyker också upp på korten (ny appversion)."
+  },
+  "FEED-06-10": {
+   "what": "Tidsangivelsen \"{n}h ago\" uppe till höger i artikeln.",
+   "proposal": "Behåll, och visa samma text även på kortet i flödet.",
+   "why": "Det är enda stället kortets ålder syns i dag; två Light-personas använde \"Yesterday\" för att förstå ett \"tomorrow\".",
+   "if_accept": "Texten ändras inte här, men den dyker också upp på korten (ny appversion)."
+  },
+  "FEED-06-11": {
+   "what": "Tidsangivelsen \"Yesterday\" uppe till höger i artikeln.",
+   "proposal": "Behåll, och visa samma text även på kortet i flödet.",
+   "why": "Det är enda stället kortets ålder syns i dag; två Light-personas använde \"Yesterday\" för att förstå ett \"tomorrow\".",
+   "if_accept": "Texten ändras inte här, men den dyker också upp på korten (ny appversion)."
+  },
+  "FEED-06-12": {
+   "what": "Tidsangivelsen \"{n} days ago\" uppe till höger i artikeln.",
+   "proposal": "Behåll, och visa samma text även på kortet i flödet.",
+   "why": "Det är enda stället kortets ålder syns i dag; två Light-personas använde \"Yesterday\" för att förstå ett \"tomorrow\".",
+   "if_accept": "Texten ändras inte här, men den dyker också upp på korten (ny appversion)."
+  },
+  "FEED-06-13": {
+   "what": "Ett eller två klubbmärken ovanför rubriken.",
+   "proposal": "Ta bort märkena.",
+   "why": "Dekoration; rubriken namnger redan klubbarna, och två personas skulle inte sakna dem.",
+   "if_accept": "Inga märken över rubriken. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-14": {
+   "what": "Artikelns rubrik i klartext, t.ex. \"Arteta (Arsenal manager) under fire for how he reacted…\"",
+   "proposal": "Behåll som det är.",
+   "why": "Panelens favoritmening: \"what the feed card should have said\", \"clear, plain English\". Kontrollen av managernamnet ligger i nyhetsrutinen.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-06-15": {
+   "what": "Raden med stjärna och matchtips (t.ex. \"Too close to call\") under rubriken på förhandsartiklar.",
+   "proposal": "Ta bort raden.",
+   "why": "Vilande: bara VM-förhandsartiklar från juli har någonsin haft den.",
+   "if_accept": "Ingen klubbanvändare ser skillnad; sparar också ett anrop per klubbsida. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-16": {
+   "what": "Rubriken \"WHO'S WHO\" i artikeln.",
+   "proposal": "Ta bort spelarchipsen i artiklar.",
+   "why": "Tre personas skulle inte sakna dem, och en grå tom cirkel för spelaren nyheten handlar om ser trasig ut. Obs: beroendekontrollen visar att klubbsidan redan kan öppna spelarkortet, så det försvinner inte.",
+   "if_accept": "Inga spelarchips i artikeln; spelarkortet nås från klubbsidan och quizet. Sparar upp till två anrop per artikel. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-17": {
+   "what": "Spelarchipsen under \"WHO'S WHO\", t.ex. \"Max Dowman\" med rund bild, som öppnar spelarkortet.",
+   "proposal": "Ta bort spelarchipsen i artiklar.",
+   "why": "Tre personas skulle inte sakna dem, och en grå tom cirkel för spelaren nyheten handlar om ser trasig ut. Obs: beroendekontrollen visar att klubbsidan redan kan öppna spelarkortet, så det försvinner inte.",
+   "if_accept": "Inga spelarchips i artikeln; spelarkortet nås från klubbsidan och quizet. Sparar upp till två anrop per artikel. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-18": {
+   "what": "Rubriken \"GOALS\" i resultatartikeln. Bara VM-finalen i juli har haft innehåll.",
+   "proposal": "Ta bort sektionen.",
+   "why": "Vilande dubblett: målskyttar finns i Matchday › After och i målpusharna.",
+   "if_accept": "Ingen ser skillnad. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-19": {
+   "what": "Målraderna, t.ex. \"106' Ferrán Torres SPAIN\". Bara VM-finalen i juli har haft innehåll.",
+   "proposal": "Ta bort sektionen.",
+   "why": "Vilande dubblett: målskyttar finns i Matchday › After och i målpusharna.",
+   "if_accept": "Ingen ser skillnad. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-20": {
+   "what": "Rubriken \"GOOD TO KNOW\" över faktakorten.",
+   "proposal": "Behåll som det är.",
+   "why": "Här sitter fakta hon kommer ihåg; panelen gillade dem (\"the one bit I'd remember\").",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-06-21": {
+   "what": "Reservrubriker på faktakorten: \"THE GIST\", \"THE WIDER PICTURE\", \"TO IMPRESS\".",
+   "proposal": "Behåll som det är.",
+   "why": "Används bara när kortet saknar egen rubrik.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-06-22": {
+   "what": "Faktakorten under Good to know, t.ex. WHAT HAPPENED \"Arsenal lost to League Two Fleetwood Town on penalties…\"",
+   "proposal": "Ändra rutinens regler: varje kort handlar om hennes klubb, \"after extra time\" bara när det stämmer, och veckodagar kontrolleras mot spelschemat.",
+   "why": "Den bästa delen av artikeln, men med utfyllnad (två Light-personas fick ett kort om Palace-managern) och två felaktiga fakta.",
+   "if_accept": "Bara ändring i rutinen och spärrskriptet; ingen ny appversion."
+  },
+  "FEED-06-23": {
+   "what": "Guldknappen \"To impress – one more, for when he's listening\" som döljer det bästa faktakortet.",
+   "proposal": "Ta bort knappen; kortet visas direkt i stället.",
+   "why": "Personas: \"If it's the good stuff, show it\", \"No idea what's inside\", \"the label is cringe\".",
+   "if_accept": "Knappen och texten \"for when he's listening\" försvinner. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-24": {
+   "what": "Det gula \"To impress\"-kortet som visas efter tryck på knappen, t.ex. \"Arsenal are the reigning Premier League champions…\"",
+   "proposal": "Ändra så att kortet visas direkt som sista faktakortet för Match-fit och Deep, utan knapp.",
+   "why": "\"To impress\"-faktat är själva poängen med artikeln för Deep, och ingen öppnar det bakom en knapp.",
+   "if_accept": "Match-fit och Deep ser kortet utan tryck; Light ser det inte längre alls (i dag når alla det via knappen). Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-25": {
+   "what": "Rubriken \"THINGS TO SAY\" över replikerna.",
+   "proposal": "Behåll som det är.",
+   "why": "Rubriken över det hon kom för.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-06-26": {
+   "what": "Replikkorten i artikeln, t.ex. \"Tell him Arteta had to justify himself to the press this morning. He'll have opinions.\"",
+   "proposal": "Ändra med samma replikregler som på korten, och låt aldrig artikelns första replik upprepa kortets.",
+   "why": "Replikerna är produkten; upprepning och humöranvisningar slösar bort dem. En persona: \"Third time I've read this exact line\".",
+   "if_accept": "Bara ändring i rutinen och spärrskriptet; ingen ny appversion."
+  },
+  "FEED-06-27": {
+   "what": "Kopiera-knappen vid varje replik, som blir en bock i 1,5 sekunder.",
+   "proposal": "Ändra så att kopiera-knappen blir 44 punkter stor (i dag 32).",
+   "why": "Det är så hon flyttar en replik till WhatsApp till honom, och knappen är mindre än Apples minsta tryckyta.",
+   "if_accept": "Lättare att träffa. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-28": {
+   "what": "Dela-knappen vid varje replik (förhandsrubrik \"From GoalDigger\").",
+   "proposal": "Ta bort dela-knappen; kopiera gör samma sak utan \"From GoalDigger\".",
+   "why": "Rubriken avslöjar henne, och kopiera täcker behovet. Editorn vill att du avgör delningsfrågan som helhet.",
+   "if_accept": "Bara kopiera finns kvar vid replikerna. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-29": {
+   "what": "När hon kommer från kortets rosa del rullar artikeln själv ner till Things to say.",
+   "proposal": "Behåll som det är.",
+   "why": "Hon landar på replikerna.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-06-30": {
+   "what": "Rubriken \"AFTER THE MATCH\" i artikeln. Gammalt format som ingen publicerad artikel använder.",
+   "proposal": "Ta bort sektionen.",
+   "why": "Vilande; Matchday › After äger resultatet.",
+   "if_accept": "Ingen ser skillnad. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-31": {
+   "what": "Raden \"IF THEY WIN: …\". Gammalt format som ingen publicerad artikel använder.",
+   "proposal": "Ta bort sektionen.",
+   "why": "Vilande; Matchday › After äger resultatet.",
+   "if_accept": "Ingen ser skillnad. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-32": {
+   "what": "Raden \"IF THEY LOSE: …\". Gammalt format som ingen publicerad artikel använder.",
+   "proposal": "Ta bort sektionen.",
+   "why": "Vilande; Matchday › After äger resultatet.",
+   "if_accept": "Ingen ser skillnad. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-33": {
+   "what": "Rubriken \"ONES TO WATCH\" under resultatartikeln.",
+   "proposal": "Ta bort sektionen; nyckelspelare finns på klubbsidans \"Ones to know\".",
+   "why": "Koden sorterar inte, så de tre spelarna är slumpade, och efter full tid finns inget kvar att titta på.",
+   "if_accept": "Tre slumpade spelare försvinner; sparar ett anrop per artikel. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-34": {
+   "what": "Tre spelarrader under \"ONES TO WATCH\", t.ex. \"Cristhian Mosquera, CENTRE-BACK…\"",
+   "proposal": "Ta bort sektionen; nyckelspelare finns på klubbsidans \"Ones to know\".",
+   "why": "Koden sorterar inte, så de tre spelarna är slumpade, och efter full tid finns inget kvar att titta på.",
+   "if_accept": "Tre slumpade spelare försvinner; sparar ett anrop per artikel. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-35": {
+   "what": "Knappen \"THE BACKSTORY\" som fäller ut den långa texten.",
+   "proposal": "Ta bort bakgrundstexten ur artikeln.",
+   "why": "Den upprepar rubriken och faktakorten; ingen av de 5 som kommenterade skulle sakna den.",
+   "if_accept": "Försvinner ur appen; ordlisteorden finns kvar i faktakorten. Villkor: rutinen måste fortsätta skriva texten, annars kan alla appversioner tappa hela kortet. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-36": {
+   "what": "Den långa bakgrundstexten, t.ex. \"Arsenal went out of the Carabao Cup on penalties…\"",
+   "proposal": "Ta bort bakgrundstexten ur artikeln.",
+   "why": "Den upprepar rubriken och faktakorten; ingen av de 5 som kommenterade skulle sakna den.",
+   "if_accept": "Försvinner ur appen; ordlisteorden finns kvar i faktakorten. Villkor: rutinen måste fortsätta skriva texten, annars kan alla appversioner tappa hela kortet. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "FEED-06-37": {
+   "what": "Rosa snurra när artikeln öppnas från en push och inte finns i minnet.",
+   "proposal": "Behåll som det är.",
+   "why": "Ärlig laddning från push.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-06-38": {
+   "what": "Felrubriken \"This one didn't load.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Ärligt fel med väg vidare.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-06-39": {
+   "what": "Feltexten \"It might have been removed, or your connection dropped.\"",
+   "proposal": "Behåll som det är.",
+   "why": "Ärlig; \"or\" gör att den inte skyller på henne.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-06-40": {
+   "what": "Knappen \"Try again\" i artikelns felläge.",
+   "proposal": "Behåll som det är.",
+   "why": "Väg ut ur felet.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-06-41": {
+   "what": "Öppnad från Football visar artikeln den neutrala versionen utan personliga repliker.",
+   "proposal": "Behåll som det är.",
+   "why": "Rätt version på rätt ställe.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-06-42": {
+   "what": "En push med en artikel öppnar artikeln direkt ovanpå klubbens flöde, även vid kallstart.",
+   "proposal": "Behåll som det är.",
+   "why": "Push-vägen fungerar.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-07-00": {
+   "what": "Ordlistan: ett litet blad nerifrån som förklarar ett fotbollsord, från en cuprad, ett cupmärke eller ett understruket ord.",
+   "proposal": "Behåll som det är.",
+   "why": "Förklarar ett ord där hon möter det; så tar sig Light igenom utan att känna sig dum. En Light-persona: \"Thank you!\"",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-07-01": {
+   "what": "Etiketten \"GLOSSARY\" överst på bladet.",
+   "proposal": "Behåll som det är.",
+   "why": "Förklarar ett ord där hon möter det; så tar sig Light igenom utan att känna sig dum. En Light-persona: \"Thank you!\"",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-07-02": {
+   "what": "Ordet som förklaras, i fetstil.",
+   "proposal": "Behåll som det är.",
+   "why": "Förklarar ett ord där hon möter det; så tar sig Light igenom utan att känna sig dum. En Light-persona: \"Thank you!\"",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-07-03": {
+   "what": "Förklaringen, t.ex. League Cup: \"The smaller of England's two knockout cups…\" (46 ord finns).",
+   "proposal": "Behåll som det är.",
+   "why": "Förklarar ett ord där hon möter det; så tar sig Light igenom utan att känna sig dum. En Light-persona: \"Thank you!\"",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-07-04": {
+   "what": "Understrukna rosa ord i rubriker och faktakort som öppnar ordlistan.",
+   "proposal": "Behåll som det är.",
+   "why": "Två personas lyfte särskilt fram de understrukna orden som bra.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-07-05": {
+   "what": "En cup som inte finns i ordlistan visas som vanlig text, inte som knapp.",
+   "proposal": "Behåll som det är.",
+   "why": "Inga knappar som leder ingenstans.",
+   "if_accept": "Inget ändras."
+  },
+  "FEED-08-00": {
+   "what": "iPhones delningsark som öppnas från kort, artikel, replik eller quizpoäng, med vår text.",
+   "proposal": "Ta bort alla delningsark i appen.",
+   "why": "Varje delad text slutar med \"via GoalDigger\" eller \"From GoalDigger\" och avslöjar henne för honom (3 av 6 personas); ingen länk följer med, och ingen skulle sakna knappen. Editorn vill att du avgör detta.",
+   "if_accept": "Ingen delning i appen; kopiera finns kvar. Kräver ny appversion; 2.2/2.3 behåller det gamla. Alternativ: behåll delning utan GoalDigger-namnet, eller vänta tre veckor på delningsdata från 2.4."
+  },
+  "FEED-08-01": {
+   "what": "Texten när ett kort delas: rubrik, liknelse, etikett och replik, sist \"via GoalDigger\".",
+   "proposal": "Ta bort texten tillsammans med dess dela-knapp.",
+   "why": "Varje delad text slutar med \"via GoalDigger\" eller \"From GoalDigger\" och avslöjar henne för honom (3 av 6 personas); ingen länk följer med, och ingen skulle sakna knappen. Editorn vill att du avgör detta.",
+   "if_accept": "Ingen delning i appen; kopiera finns kvar. Kräver ny appversion; 2.2/2.3 behåller det gamla. Alternativ: behåll delning utan GoalDigger-namnet, eller vänta tre veckor på delningsdata från 2.4."
+  },
+  "FEED-08-02": {
+   "what": "Texten när en artikel delas: rubriken plus \"via GoalDigger\".",
+   "proposal": "Ta bort texten tillsammans med dess dela-knapp.",
+   "why": "Varje delad text slutar med \"via GoalDigger\" eller \"From GoalDigger\" och avslöjar henne för honom (3 av 6 personas); ingen länk följer med, och ingen skulle sakna knappen. Editorn vill att du avgör detta.",
+   "if_accept": "Ingen delning i appen; kopiera finns kvar. Kräver ny appversion; 2.2/2.3 behåller det gamla. Alternativ: behåll delning utan GoalDigger-namnet, eller vänta tre veckor på delningsdata från 2.4."
+  },
+  "FEED-08-03": {
+   "what": "Texten när en replik delas, med förhandsrubriken \"From GoalDigger\".",
+   "proposal": "Ta bort texten tillsammans med dess dela-knapp.",
+   "why": "Varje delad text slutar med \"via GoalDigger\" eller \"From GoalDigger\" och avslöjar henne för honom (3 av 6 personas); ingen länk följer med, och ingen skulle sakna knappen. Editorn vill att du avgör detta.",
+   "if_accept": "Ingen delning i appen; kopiera finns kvar. Kräver ny appversion; 2.2/2.3 behåller det gamla. Alternativ: behåll delning utan GoalDigger-namnet, eller vänta tre veckor på delningsdata från 2.4."
+  },
+  "FEED-08-04": {
+   "what": "Texten när quizpoängen delas, t.ex. \"GoalDigger Saturday Quiz: 4/5, Arsenal v Nottm Forest\" (Deep).",
+   "proposal": "Ta bort texten tillsammans med dess dela-knapp.",
+   "why": "Varje delad text slutar med \"via GoalDigger\" eller \"From GoalDigger\" och avslöjar henne för honom (3 av 6 personas); ingen länk följer med, och ingen skulle sakna knappen. Editorn vill att du avgör detta.",
+   "if_accept": "Ingen delning i appen; kopiera finns kvar. Kräver ny appversion; 2.2/2.3 behåller det gamla. Alternativ: behåll delning utan GoalDigger-namnet, eller vänta tre veckor på delningsdata från 2.4."
+  },
+  "LOCK-01-01": {
+   "what": "iPhones egen fråga \"GoalDigger Would Like to Send You Notifications\", som visas i steg 9 av introduktionen.",
+   "proposal": "Behåll; när frågan ska visas avgör granskningen av första sessionen.",
+   "why": "Apples obligatoriska fråga som inte kan tas bort, och pusharna är produkten.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-01-02": {
+   "what": "iPhones fråga på låsskärmen om Live Activities, första gången hans match startar efter introduktionen.",
+   "proposal": "Behåll som det är.",
+   "why": "iOS ställer frågan själv. Live Activity är panelens favoritfunktion: 4 av 4 som såg en straffläggning tyckte den var värd det.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-01-03": {
+   "what": "Reglaget \"Live Activities\" i iOS-inställningar för GoalDigger.",
+   "proposal": "Behåll som det är.",
+   "why": "Enda sättet att stänga av resultatkortet, och det är Apples.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-02-01": {
+   "what": "Målpushen, t.ex. \"GOAL: Crystal Palace 0-2 Newcastle – Harvey Barnes 58'…\". Alla nivåer (Light, Match-fit, Deep) får den, i alla tävlingar.",
+   "proposal": "Behåll för alla nivåer men ändra texten: hennes klubbs ställning först, aldrig \"1-1 to Liverpool\" vid kvittering, och inga rader om vad han sa eller gjorde.",
+   "why": "6 av 6 personas tyckte målet var värt en buzz, även Light. Bara texten brister: fyra störde sig på rader som \"He called it, apparently\".",
+   "if_accept": "Samma pushar, bättre text. Bara backend; ingen ny appversion. Obs: nivådokumentet säger att mål bara visas i appen för Light och Match-fit, push-reglerna säger push; ett av dokumenten måste rättas."
+  },
+  "LOCK-02-02": {
+   "what": "\"Kickoff soon: Liverpool v Brighton – … kick off against Brighton in 30. He'll be settling in.\" 30 minuter före avspark, till Match-fit och Deep, ej tidiga cuprundor.",
+   "proposal": "Ta bort den allmänna 30-minuterspushen; platsen sparas bara för en laguppställningsrad till Deep när något sticker ut.",
+   "why": "0 av 3 som fick den tyckte den var värd det (\"three pre-match buzzes in one day\"). Morgonpåminnelsen säger redan tiden, och Live Activity visar att matchen startat.",
+   "if_accept": "En buzz mindre per match. Bara backend. Match-fit med Live Activities avstängt får ingen \"nu börjar det\"-signal. Nivåregeln för avspark ligger kvar i koden, eftersom påminnelserna använder den."
+  },
+  "LOCK-02-03": {
+   "what": "Halvtidspushen med ställning, läge och en replik, t.ex. \"Half-time: Liverpool 2-0 Brighton – … Say: '…'\". Match-fit och Deep, ej tidiga cuprundor.",
+   "proposal": "Behåll som det är (texten skrevs om 29 okt).",
+   "why": "Ett femtonminutersfönster med en replik hon kan använda. Båda som fick den gillade den (\"a great line, and I'd text it\").",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-02-04": {
+   "what": "Förlängningspushen \"Extra time: … 1-1 after 90, so another 30 minutes. Penalties if it's still level.\" Alla nivåer, i cupmatcher som kan gå till förlängning.",
+   "proposal": "Behåll som det är.",
+   "why": "Den kommer när hon väntar sig full tid och säger att kvällen drar ut en halvtimme. Byggd 29 okt utan skarpt exempel än, så bedömningen är preliminär.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-02-05": {
+   "what": "Full-tid-pushen, t.ex. \"Full-time: Fleetwood 1-1 Arsenal (5-3 on pens)\" med läge och \"Say: …\". Alla nivåer.",
+   "proposal": "Behåll för alla nivåer men ändra texten: samma ordning på ställningen i rubrik och text, aldrig \"Easy in the end\" efter sent avgörande, inga tröstande eller styrande Say-rader.",
+   "why": "6 av 6 tyckte den var värd en buzz (\"the perfect push\"), men \"5-3\" följt av \"3-5\" fick en att haja till, och \"Easy in the end\" om en match avgjord i 96:e minuten avslöjar henne.",
+   "if_accept": "Samma push, rättad text. Bara backend; ingen ny appversion."
+  },
+  "LOCK-02-06": {
+   "what": "Nyhetspushen från nyhetsrutinen, t.ex. \"Cup cruise, probably – Arsenal play League Two Fleetwood…\". I dag kan alla nivåer få den, redan från 06:00 UTC.",
+   "proposal": "Behåll men skärp: Light får bara stora nyheter (värvning, sparkning, lång skada, titel, uttåg), inget före 07:00 London, högst en per klubb per 3 timmar, rubriken säger faktumet.",
+   "why": "Light lovas 3–5 pushar i veckan men Light-personorna fick 10 och 12. 5 av 6 klagade på pushar runt sex på morgonen, och rubriker om hans humör (\"He'll be muttering all day\") stör.",
+   "if_accept": "Färre och senare nyhetspushar. Bara backend, men morgonkörningen måste flyttas till cirka 07:30 London, och rutinen måste börja märka nyheter som \"stora\", annars får Light inga nyhetspushar alls."
+  },
+  "LOCK-02-07": {
+   "what": "Pushen om en hel turnering (Champions League, League Cup m.fl.) som går till ALLA enheter oavsett klubb, t.ex. \"Arsenal are out of the cup…\" (83 enheter, 07:09).",
+   "proposal": "Flytta till enbart flödet: turneringsnyheter ligger kvar i Football men pushas aldrig.",
+   "why": "5 av 6 personas tyckte den var irriterande eller ett skäl att stänga av notiser, och Arsenal-följare fick sitt eget resultat igen nästa morgon. Vägen saknas dessutom i push-reglerna.",
+   "if_accept": "Ingen bred morgonpush. Bara backend och gäller alla appversioner direkt. Push-reglerna och kontrollskriptet uppdateras i samma ändring; därefter kan appens Football-väg tas bort."
+  },
+  "LOCK-02-08": {
+   "what": "Söndagspushen från söndagsbrevet, t.ex. \"Level at the top – Arsenal beat Everton 2-0 Saturday…\". Match-fit och Deep.",
+   "proposal": "Behåll för Match-fit och Deep men skicka bara före 11:00 London, annars bara i flödet, och kontrollera veckodagar mot spelschemat.",
+   "why": "Den sätter upp veckan när hon har tid att läsa, men 25 okt gick den ut 13:27 efter avbrottet (\"20 hours late\") och en sa fel veckodag.",
+   "if_accept": "Försenade brev pushas inte. Bara backend och rutin; ingen ny appversion."
+  },
+  "LOCK-02-09": {
+   "what": "Morgonpåminnelsen 07:00 UTC på matchdagen, t.ex. \"Newcastle play today – Newcastle face Chelsea today at 15:00…\". Alla nivåer, i dag ej tidiga cuprundor.",
+   "proposal": "Behåll för alla nivåer och skicka den även i tidiga cuprundor; rubriken använder kortnamnet (\"Newcastle play today\") och varje körning loggas.",
+   "why": "3 av 3 som fick den uppskattade den (\"Exactly what I want\"), och tre personas saknade den inför en cupmatch.",
+   "if_accept": "Påminnelse även i ligacupens tidiga rundor. Bara backend. Det vänder delvis beslutet från 27 okt; avspark- och halvtidspushen förblir spärrade där."
+  },
+  "LOCK-02-10": {
+   "what": "Reservpushen \"Game day at {klubb}\" kl 08:00 UTC, bara om 07:00-påminnelsen inte gick ut.",
+   "proposal": "Ta bort, och låt i stället påminnelsefunktionen försöka igen tills varje dagens match fått sin påminnelse.",
+   "why": "0 utskick på 14 dagar, och de enda dagar den behövdes (24–25 okt) gick den inte heller, eftersom den hänger på samma överbelastade schemaläggare.",
+   "if_accept": "En push-väg mindre. Bara backend. Ordning: bygg omförsöket först, ta sedan bort funktionen och dess schemajobb i samma steg."
+  },
+  "LOCK-02-11": {
+   "what": "\"{Motståndare} tomorrow\"-pushen dagen före match. Pausad sedan 26 okt och går till ingen.",
+   "proposal": "Ta bort koden och den vilande migreringen helt; behåll bara tryck-vägen som morgonpåminnelsen använder.",
+   "why": "Du har beslutat att en push före match räcker, och död kod frestar till att slå på den igen.",
+   "if_accept": "Ingen märker något. Bara backend; STATUS.md ska rättas eftersom den fortfarande säger att migrering 130 ska köras."
+  },
+  "LOCK-02-12": {
+   "what": "Konsekvenskort (tabellen rörde sig, vem går vidare) som kan pushas via ett timsvep; 0 pushade på 14 dagar.",
+   "proposal": "Flytta till enbart flödet; för Deep följer tabellkonsekvensen med i full-tid-pushens text i stället.",
+   "why": "Det har inget eget ögonblick: full-tid-pushen har redan stört henne om samma match.",
+   "if_accept": "Inga konsekvenspushar. Backendändring; tillägget i Deeps full-tid-push är nytt bygge. Kör kontrollskriptet efteråt."
+  },
+  "LOCK-02-13": {
+   "what": "Varningen \"{Hemma} v {Borta} – It's kicked off.\" som tänder Live Activity på låsskärmen. Alla med Live Activities på, oavsett nivå.",
+   "proposal": "Behåll men skicka den utan ljud; texten \"It's kicked off.\" står kvar.",
+   "why": "Kortet på låsskärmen är signalen i sig. 3 av 6 tyckte ljudet var irriterande (\"the live score card is on my lock screen anyway\").",
+   "if_accept": "Live Activity tänds som förut men telefonen låter inte. Bara backend."
+  },
+  "LOCK-02-14": {
+   "what": "Laguppställningspushen som bara testkörs: skulle säga när något sticker ut (stjärna borta, oväntad startspelare, fem eller fler byten). Går till ingen i dag.",
+   "proposal": "Ändra så att den bara går till Deep, bara när raden är anmärkningsvärd, på 30-minutersplatsen, och att testkörningen loggar varför den hoppar över.",
+   "why": "Deep lovas laguppställningen med den förändring som spelar roll, men testkörningen har inte loggat något alls på sex matcher, så det finns inget att bedöma.",
+   "if_accept": "Inget skickas förrän du sett en helgs riktiga exempel. Bara backend."
+  },
+  "LOCK-02-15": {
+   "what": "Larmpush till utvecklarens telefon, t.ex. när Apples push-tjänst avvisar oss; aldrig till användare.",
+   "proposal": "Behåll som det är.",
+   "why": "Inte för henne; det är larmet för avbrott som 24 okt. Larmlistan har bara haft en telefon sedan 25 okt.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-03-01": {
+   "what": "Raden överst på resultatkortet med tävlingen, t.ex. \"PREMIER LEAGUE\" eller \"LEAGUE CUP\".",
+   "proposal": "Behåll som det är.",
+   "why": "Säger att det är en cupmatch utan ett ord förklaring.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-03-02": {
+   "what": "Lagens kortnamn, t.ex. \"Spurs\" och \"Nottm Forest\", på resultatkortet.",
+   "proposal": "Behåll som det är.",
+   "why": "Vem som spelar och ställningen, tyst, innan han tittar upp. En Light-persona: \"Best thing in the week\"; en Deep-persona: \"That's the product\".",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-03-03": {
+   "what": "Ställningen \"2 - 1\" på resultatkortet.",
+   "proposal": "Behåll som det är.",
+   "why": "Vem som spelar och ställningen, tyst, innan han tittar upp. En Light-persona: \"Best thing in the week\"; en Deep-persona: \"That's the product\".",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-03-04": {
+   "what": "Löpande klocka, t.ex. \"63:12 / 90\", på resultatkortet.",
+   "proposal": "Behåll som det är.",
+   "why": "Klockan går av sig själv från 2.4, utan att vi skickar uppdateringar varje minut, och står still under straffar.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-03-05": {
+   "what": "\"63:--\" när låsskärmen är nedtonad.",
+   "proposal": "Behåll som det är.",
+   "why": "iPhones egen regel för löpande klockor.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-03-06": {
+   "what": "Status \"HT\" i halvtid.",
+   "proposal": "Behåll som det är.",
+   "why": "Enkelt och begripligt.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-03-07": {
+   "what": "Status \"2nd half\" på telefoner med äldre app utan klocka.",
+   "proposal": "Behåll som det är.",
+   "why": "Alla telefoner i produktion kör 2.2, som saknar klocka; det här är vad de visar.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-03-08": {
+   "what": "Status \"1st half\" på telefoner med äldre app utan klocka.",
+   "proposal": "Behåll som det är.",
+   "why": "Alla telefoner i produktion kör 2.2, som saknar klocka; det här är vad de visar.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-03-09": {
+   "what": "Status \"Extra time\" under förlängning och pausen före.",
+   "proposal": "Behåll som det är.",
+   "why": "Visas rätt sedan rättningen 29 okt.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-03-10": {
+   "what": "Status \"Penalties\" under straffläggning.",
+   "proposal": "Behåll som det är.",
+   "why": "Visas rätt sedan rättningen 29 okt.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-03-11": {
+   "what": "Status \"After 90\" när en cupmatch står lika efter full tid och kan gå till förlängning.",
+   "proposal": "Behåll som det är.",
+   "why": "Ärligt medan vi väntar på förlängning.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-03-12": {
+   "what": "Status \"FT\" när matchen är slut.",
+   "proposal": "Behåll som det är.",
+   "why": "Sluttillstånd; straffanteckningen bär resultatet.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-03-13": {
+   "what": "Flödets råa statuskoder som visas rakt av, t.ex. \"SUSP\", \"INT\" eller \"LIVE\".",
+   "proposal": "Ändra så att koderna blir ord: \"Suspended\", \"Interrupted\", \"Abandoned\", \"Postponed\", och \"LIVE\" visas inte alls.",
+   "why": "\"INT\" eller \"SUSP\" på låsskärmen betyder ingenting för en Light-användare.",
+   "if_accept": "Begripliga ord. Översättningen sker på servern, så bara backend."
+  },
+  "LOCK-03-14": {
+   "what": "Minutmärket \"63' / 90\" på telefoner med äldre app utan löpande klocka.",
+   "proposal": "Behåll som det är.",
+   "why": "Det 2.2-telefonerna visar; minuten flyttas nu med lågprioriterade uppdateringar.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-03-15": {
+   "what": "\"LAST UPDATE\" i stället för klockan när inget kommit på 90 minuter, t.ex. 24 okt då Arsenal 1-0 Everton stod kvar hela kvällen.",
+   "proposal": "Ändra så att kortet blir inaktuellt efter cirka 20 minuter utan uppdatering, visar ställningen nedtonad med \"No update since 63'\" och avslutas med rätt slutresultat när systemet är tillbaka.",
+   "why": "Ett fel resultat på låsskärmen hela kvällen är värre än inget. Två personas skulle stänga av notiser för det (det stod 1-0, Arsenal vann 2-0).",
+   "if_accept": "Inget fruset resultat. Både backend och ny appversion (det nedtonade läget ritas i appen)."
+  },
+  "LOCK-03-16": {
+   "what": "Straffanteckningen \"Shootout: 4-3\" spark för spark, sedan \"{lag} win 5-4 on penalties\".",
+   "proposal": "Behåll anteckningen men skicka sparkarna med lägre prioritet och slutresultatet med högsta, och stoppa appen från att radera den när hon öppnar appen.",
+   "why": "Panelens favoritögonblick: 4 av 4 som såg det tyckte det var värt det. En kvarvarande bugg raderar anteckningen när appen öppnas.",
+   "if_accept": "Straffläggningen syns hela vägen. Backend plus ny appversion."
+  },
+  "LOCK-03-17": {
+   "what": "Slutresultat med \"FT\" ligger kvar 30 minuter och försvinner sedan; ett svep avslutar missade.",
+   "proposal": "Behåll som det är.",
+   "why": "Fungerar: inga kvarglömda kort just nu.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-03-18": {
+   "what": "När hon öppnar appen startar den själv ett Live Activity om en match pågår och inget finns, och avslutar gamla.",
+   "proposal": "Ändra så att appen bara startar ett saknat Live Activity och aldrig skriver över ett som redan körs; serverns läge gäller.",
+   "why": "Det var den vägen som skrev över \"Penalties\" med \"Extra time\", och den raderar fortfarande straffanteckningen.",
+   "if_accept": "Låsskärmen visar alltid serverns korrekta läge. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "LOCK-04-01": {
+   "what": "Utfälld Dynamic Island: hemmalaget till vänster, bortalaget till höger (iPhone 14 Pro och senare).",
+   "proposal": "Behåll som det är.",
+   "why": "Den utfällda vyn speglar resultatkortet på låsskärmen.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-04-02": {
+   "what": "Utfälld Dynamic Island: ställningen \"2 - 1\" i mitten med klocka eller status.",
+   "proposal": "Behåll som det är.",
+   "why": "Den utfällda vyn speglar resultatkortet på låsskärmen.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-04-03": {
+   "what": "Utfälld Dynamic Island: straffanteckningen längst ner, högst två rader.",
+   "proposal": "Behåll som det är.",
+   "why": "Den utfällda vyn speglar resultatkortet på låsskärmen.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-04-04": {
+   "what": "Vänstra delen av den lilla Dynamic Island: hemmalagets tre första bokstäver, t.ex. \"MAN\" eller \"CRY\".",
+   "proposal": "Ändra så att den visar hennes klubbs kod från en fast tabell (ARS, NEW, MCI, MUN, NFO, TOT…).",
+   "why": "\"MAN\" kan vara båda Manchesterklubbarna, och när hennes klubb spelar borta visas motståndaren (\"CRY\" för Palace–Newcastle).",
+   "if_accept": "Hon ser alltid sin klubb. Kräver ny appversion; 2.2/2.3 behåller det gamla."
+  },
+  "LOCK-04-05": {
+   "what": "Högra delen av den lilla Dynamic Island: ställningen \"2-1\" i rosa.",
+   "proposal": "Behåll som det är.",
+   "why": "Ställningen med en blick.",
+   "if_accept": "Inget ändras."
+  },
+  "LOCK-04-06": {
+   "what": "Minsta Dynamic Island (när en annan aktivitet också körs): ställningen i rosa.",
+   "proposal": "Behåll som det är.",
+   "why": "Ställningen med en blick.",
+   "if_accept": "Inget ändras."
+  }
+ }
+}
