@@ -33,6 +33,23 @@ Branch `claude/matchday-tab`. Nothing deployed until the PR is kept.
 - Matchday › After: the game just played, from a `last_match` card match-watcher writes at full time (needs the match-watcher deploy). Matchday › Before: Pre-game, moved out of My Turn.
 - The full-time push opens After; the day-before push and "Pre-game ›" open Before.
 
+## Next TestFlight build: 2.4 (18), not uploaded yet
+
+Bumped 2026-10-29. The archive stops at signing until the account holder accepts Apple's
+updated Program License Agreement (developer.apple.com); Xcode then registers the new
+App Group by itself.
+
+- Usage tracking: 23 events into `app_events` (migrations 142–144), weekly digest
+  `scripts/tracking-digest.sh`, Meta `activated` event. Plan and status:
+  [docs/TRACKING_PLAN.md](./docs/TRACKING_PLAN.md).
+- `push_delivered` from a new Notification Service Extension: shows push-only users
+  (active / passive / quiet per week). Verify on a phone: the simulator never runs it.
+- Onboarding's notifications step shows an example push and the live score.
+- Server side, already live: Live Activity minute-only updates at priority 5.
+- Before submitting: App Store Connect privacy answers (Product Interaction: Analytics +
+  Third-Party Advertising, tracking yes) and the policy paragraph on carrd (TRACKING_PLAN
+  "Step 3").
+
 ## On the branch for the next build
 
 - Feed cards end at the bottom of the screen, so "Your move" no longer runs under the iOS 26 tab bar.
@@ -56,13 +73,13 @@ Branch `claude/matchday-tab`. Nothing deployed until the PR is kept.
 - Alerts reach nobody: `dev_alert_devices` is empty (74 unalerted `client_errors`).
 - My Turn copy says he/him for every relationship type (deferred, NEW-9).
 - Privacy policy: new text in [docs/PRIVACY_POLICY_DRAFT.md](./docs/PRIVACY_POLICY_DRAFT.md), not published; Settings opens the site's home page.
-- No in-app analytics beyond Meta's automatic app-activation event. Plan: [docs/TRACKING_PLAN.md](./docs/TRACKING_PLAN.md).
+- Usage analytics are built but reach nobody until 2.4 (18) is out; the digest is empty until then.
 
 ## Next
 
 1. When Apple releases 2.3: apply migration 130.
 2. Publish the privacy policy at its own URL and match the App Store privacy label to the privacy manifest.
-3. Build the tracking plan's first phase into the next build.
+3. Upload 2.4 (18) to TestFlight once the licence agreement is accepted; after release switch the ad set's goal to `activated`.
 4. Register a device in `dev_alert_devices`.
 5. Decide `gd-season-state`: retire it or move it to 2026-27.
 

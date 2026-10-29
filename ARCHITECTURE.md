@@ -170,6 +170,10 @@ There is **no** content → review → send chain in production for pushes. The 
   followed clubs' matches in all six competitions (migration 083). One push-to-start
   token per device, per-activity update tokens by `fixture_id`. Registered only after
   onboarding (`LiveActivityManager`), with a 150-minute stale date and a local end.
+  The minute runs on the phone from `clockStart` (2.4+), so match-watcher sends a
+  priority-10 update only on a goal or status change; minute-only updates, still needed
+  by 2.2/2.3's fixed minute, go at priority 5, which iOS does not count against the
+  update budget (2026-10-29).
   `live-match-current` / `live-brief-current` serve the in-app live box; score, minute and
   scorers are always deterministic from `match_status_state`, and the routine only
   supplies prose.
@@ -261,8 +265,18 @@ There is **no** content → review → send chain in production for pushes. The 
   tier: §5.
 - **Attribution:** Meta `FacebookCore` (app events + SKAdNetwork, no Login) auto-logs app
   activation from launch (`App/AppDelegate.swift`); `Services/AttributionService.swift`
-  asks ATT. `PrivacyInfo.xcprivacy` declares tracking. There are no in-app analytics
-  events of our own yet; the plan is `docs/TRACKING_PLAN.md`.
+  asks ATT. `PrivacyInfo.xcprivacy` declares tracking. Meta gets one custom event,
+  `activated` (her first pre-game card, once per install, never from DEBUG).
+- **Usage analytics** (2026-10-29, `docs/TRACKING_PLAN.md`): `Services/Analytics.swift`
+  queues 23 named events in UserDefaults and sends them in batches to the `log_events`
+  RPC (`app_events`, migrations 142–144), keyed by a random install id rotated by Delete
+  My Data. A Notification Service Extension (`NotificationService/`, its own target)
+  logs `push_delivered` for every alert push iOS shows, so a user who only reads pushes
+  on the Lock Screen still counts; it reads the install id and common props from the
+  App Group `group.com.goaldigger.app` (`Services/SharedAnalytics.swift`). Every query
+  reads the `analytics_events` view (production only, blackout windows out, Arsenal vs
+  other). Weekly digest: `scripts/tracking-digest.sh` (MAINTENANCE.md A9); drift check:
+  `scripts/verify-tracking-plan.sh`.
 
 ## 7. Onboarding flow (current order)
 
@@ -273,6 +287,10 @@ what we ask for. `completeOnboarding()` sets
 `hasCompletedOnboarding=true`, points the feed at the first club, marks the season primer
 as seen and calls `NotificationService.reregisterForFollowChange()` (the single
 canonical registration path). `SeasonPrimerView` is therefore unreachable.
+`notificationPrompt` shows what she is agreeing to: an example match-day push (the real
+copy) and the live score as it looks on the Lock Screen, in her club's name, plus one line
+asking her to allow Live Activities when iOS asks. iOS has no permission dialog for Live
+Activities that the app can trigger.
 
 ## 8. Tiers & monetization
 
@@ -282,7 +300,7 @@ deleted. Tiers are self-chosen and control feature visibility (§6) and live-pus
 
 ## 9. Data layer
 
-Migrations 001 to 129, **applied by hand** with psql. `schema_migrations` records only
+Migrations 001 to 144, **applied by hand** with psql. `schema_migrations` records only
 001 to 017; numbers 027, 072, 089, 107 and 119 are unused and 112, 117 and 124 are each
 used twice, so `supabase db push` cannot be used.
 
@@ -292,12 +310,13 @@ Key tables: `teams`, `team_pages`, `team_season_state`, `team_context`,
 `live_match_briefs`, `my_turn_content`, `device_tokens`, `live_activity_tokens`,
 `match_status_state`, `match_watcher_ticks`, `matchday_reminders_sent`,
 `prep_reminders_sent`, `raw_fetch_logs`, `pipeline_health`, `client_errors`,
-`dev_alert_devices`, `apns_jwt_cache`. Human-verified facts live in our own columns
+`dev_alert_devices`, `apns_jwt_cache`, `app_events`, `app_events_daily`,
+`analytics_blackouts`. Human-verified facts live in our own columns
 (`teams.manager_name`, migration 085; `teams.fan_name`, 128), per `DATA_SOURCES.md`.
 
 **Access posture:**
-- The app's publishable key can call exactly three RPCs: `register_device_token`,
-  `register_la_token`, `save_match_calls`. It has no access to the token tables
+- The app's publishable key can call exactly four RPCs: `register_device_token`,
+  `register_la_token`, `save_match_calls`, `log_events` (write-only, capped). It has no access to the token tables
   (migrations 106, 120) and reads published content only. `./scripts/db-health.sh` §7
   fails on any other anon-executable function.
 - Every new function needs its own `REVOKE ... FROM PUBLIC, anon, authenticated`
