@@ -330,6 +330,18 @@ class APIClient {
         try validateResponse(response)
     }
 
+    /// A batch of usage events (`log_events`, migration 142). `events` is the
+    /// JSON array `Analytics` built; this only carries it.
+    func logEvents(installId: UUID, events: Data) async throws {
+        let url = try requireBaseURL().appendingPathComponent("rpc/log_events")
+        var body = Data("{\"p_install_id\":\"\(installId.uuidString)\",\"p_events\":".utf8)
+        body.append(events)
+        body.append(Data("}".utf8))
+        let request = makeRequest(url: url, method: "POST", body: body)
+        let (_, response) = try await URLSession.shared.data(for: request)
+        try validateResponse(response)
+    }
+
     // updateTokenTeam / updateTokenCountry were retired in V2.2: the partial
     // PATCH couldn't express the multi-follow arrays or NULL a removed scalar.
     // updateTokenTier followed them in 2.3 (SEC-2): it was the last direct

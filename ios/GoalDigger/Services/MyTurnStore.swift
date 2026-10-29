@@ -504,6 +504,11 @@ final class MyTurnStore {
             if let key = round.fixtureKey {
                 state.opponentQuizDone = OpponentQuizDone(fixtureKey: key, score: round.score,
                                                           total: round.questionIds.count)
+                analytics?.log(.pregameCardCompleted, ["card": "opponent_quiz", "score": round.score,
+                    "of": round.questionIds.count, "phase": Self.phase(key), "fixture_key": key])
+            } else {
+                analytics?.log(.practiceCompleted, ["module": MyTurnModule.quiz.rawValue, "pack": round.packId,
+                    "score": round.score, "of": round.questionIds.count])
             }
         } else {
             round.index += 1
@@ -597,7 +602,11 @@ final class MyTurnStore {
             // Lingo's next practise deals around them.
             if s.origin == nil, let key = s.fixtureKey {
                 state.prepRoundDone = PrepRoundDone(fixtureKey: key, ids: s.queue)
+                analytics?.log(.pregameCardCompleted, ["card": "seven_words", "score": s.knew,
+                    "of": s.queue.count, "phase": Self.phase(key), "fixture_key": key])
             }
+            analytics?.log(.overheardRoundFinished, ["score": s.knew, "of": s.queue.count,
+                "deck": s.deckId, "origin": s.origin ?? "game"])
         } else {
             s.index += 1
             s.selected = nil
@@ -607,6 +616,15 @@ final class MyTurnStore {
     }
 
     func endDrill() { state.drillSession = nil }
+
+    /// Only the real store logs: the DEBUG self-checks below play rounds
+    /// through throwaway stores at launch.
+    private var analytics: Analytics? { self === MyTurnStore.shared ? Analytics.shared : nil }
+
+    /// `MatchContext.fixtureKey` is "b|…" before a game and "a|…" after.
+    static func phase(_ fixtureKey: String) -> String {
+        fixtureKey.hasPrefix("a|") ? "after" : "before"
+    }
 
     /// Transient, deliberately not persisted: "Go again" deals a fresh seven
     /// from the same context, but reopening the tab tomorrow should not.

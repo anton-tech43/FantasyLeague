@@ -16,6 +16,7 @@ struct CopyButton: View {
     var body: some View {
         Button {
             UIPasteboard.general.string = text
+            Analytics.shared.log(.lineShared, ["surface": "copy"])
             UINotificationFeedbackGenerator().notificationOccurred(.success)
             withAnimation { justCopied = true }
             Task {

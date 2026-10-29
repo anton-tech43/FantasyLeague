@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 struct OnboardingFlow: View {
     @Environment(AppState.self) var appState
@@ -12,6 +13,7 @@ struct OnboardingFlow: View {
         #endif
         return .welcome
     }()
+    @State private var startedAt = Date()
 
     /// Onboarding step order (V2.1, post World Championship).
     ///
@@ -137,6 +139,10 @@ struct OnboardingFlow: View {
             }
         }
         .animation(.easeInOut(duration: 0.3), value: step)
+        .onAppear { Analytics.shared.log(.onboardingStepViewed, ["step": String(describing: step)]) }
+        .onChange(of: step) { _, new in
+            Analytics.shared.log(.onboardingStepViewed, ["step": String(describing: new)])
+        }
     }
 
     /// Final completion: marks contexts as viewed, registers the APNs token
@@ -180,6 +186,17 @@ struct OnboardingFlow: View {
         // registration — one code path for the full follow-set (arrays + scope),
         // no duplicated body here.
         appState.hasCompletedOnboarding = true
+        let seconds = Int(Date().timeIntervalSince(startedAt))
+        let calendar = appState.calendarSyncEnabled ? "on" : "off"
+        Task {
+            let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+            Analytics.shared.log(.onboardingCompleted, [
+                "seconds": seconds, "calendar": calendar,
+                "notifications": status == .authorized || status == .provisional ? "granted"
+                    : status == .denied ? "denied" : "later",
+            ])
+            Analytics.shared.flush() // the first-session drop-off is the one we most want
+        }
         NotificationService.shared.reregisterForFollowChange()
         // ONB-3: cover the case where the APNs token hasn't been delivered yet
         // (slow network / sim) — redrive so registration happens this session.

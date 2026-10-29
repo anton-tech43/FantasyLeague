@@ -108,6 +108,20 @@ class NotificationService {
 
     func checkNotificationStatus() async -> UNAuthorizationStatus {
         let settings = await UNUserNotificationCenter.current().notificationSettings()
+        logPermissionChange(settings.authorizationStatus)
         return settings.authorizationStatus
+    }
+
+    /// notification_permission_changed: compared with the status last seen,
+    /// so a refusal weeks later (in iOS Settings) is caught on the next check.
+    /// The first sighting is the baseline, not a change.
+    private func logPermissionChange(_ status: UNAuthorizationStatus) {
+        let now = status == .authorized || status == .provisional || status == .ephemeral ? "granted"
+            : status == .denied ? "denied" : "not_determined"
+        let key = "analyticsNotificationStatus"
+        let before = UserDefaults.standard.string(forKey: key)
+        UserDefaults.standard.set(now, forKey: key)
+        guard let before, before != now, now != "not_determined" else { return }
+        Task { @MainActor in Analytics.shared.log(.notificationPermissionChanged, ["from": before, "to": now]) }
     }
 }

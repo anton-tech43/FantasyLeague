@@ -19,6 +19,10 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         Attribution.selfCheck()
         assert(MatchdaySection.selfCheck(), "Matchday opens on the wrong section")
         assert(NamedPlayer.selfCheck(), "Who's who matches the wrong players")
+        assert(Self.pushKind("live-goal-123") == "goal" && Self.pushKind("myturn-prep-arsenal-9") == "prep"
+               && Self.pushKind("matchday-arsenal-9") == "matchday" && Self.pushKind("fixture:9") == "fixture"
+               && Self.pushKind(UUID().uuidString) == "article" && Self.pushKind(nil) == "none",
+               "push_opened kinds drifted")
         #endif
 
         UNUserNotificationCenter.current().delegate = self
@@ -120,6 +124,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         let contentId = userInfo["content_id"] as? String
         let teamId = userInfo["team_id"] as? String
         AppState.shared.pushTapTick += 1
+        Analytics.shared.log(.pushOpened, ["kind": Self.pushKind(contentId), "club": teamId ?? ""])
         routeFeedContext(teamId: teamId,
                          everyoneTalking: userInfo["everyone_talking"] as? Bool == true)
         // Matchday is built on her first club. A pre-game or full-time push
@@ -141,6 +146,16 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
             AppState.shared.pendingOpenFeed = true
         }
         completionHandler()
+    }
+
+    /// `live-goal-123` → goal, `myturn-prep-…` → prep, `matchday-…` →
+    /// matchday, an article UUID → article.
+    static func pushKind(_ contentId: String?) -> String {
+        guard let contentId else { return "none" }
+        if UUID(uuidString: contentId) != nil { return "article" }
+        let parts = contentId.split(whereSeparator: { $0 == "-" || $0 == ":" })
+        if parts.first == "live" || parts.first == "myturn", parts.count > 1 { return String(parts[1]) }
+        return parts.first.map(String.init) ?? "none"
     }
 
     /// Which feed a tapped push opens on. A push about one of her clubs

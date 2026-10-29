@@ -101,6 +101,10 @@ struct SettingsView: View {
         .task {
             notificationStatus = await NotificationService.shared.checkNotificationStatus()
         }
+        .onAppear { Analytics.shared.log(.settingsOpened) }
+        .onChange(of: showTeamPicker) { _, open in if open { Analytics.shared.log(.settingsRowOpened, ["row": "clubs"]) } }
+        .onChange(of: showCountryPicker) { _, open in if open { Analytics.shared.log(.settingsRowOpened, ["row": "countries"]) } }
+        .onChange(of: showTierPicker) { _, open in if open { Analytics.shared.log(.settingsRowOpened, ["row": "tier"]) } }
         .sheet(isPresented: $showTeamPicker) {
             TeamPickerSheet()
         }
@@ -540,6 +544,9 @@ struct SettingsView: View {
     private func deleteData() async {
         isDeleting = true
         defer { isDeleting = false }
+        // Sent before anything is wiped: the server deletes this install's
+        // events and keeps only the exit, without an id (TRACKING_PLAN).
+        await Analytics.shared.forgetInstall(["clubs": appState.selectedTeams.count])
 
         // Privacy-impact: a silent failure here would tell the user their data
         // is gone when it isn't. Surface server errors as an alert so the user
@@ -654,6 +661,12 @@ struct TeamPickerSheet: View {
     }
 
     private func apply() {
+        for team in picks where !appState.selectedTeams.contains(team) {
+            Analytics.shared.log(.followChanged, ["action": "added", "club": team.rawValue, "count_after": picks.count])
+        }
+        for team in appState.selectedTeams where !picks.contains(team) {
+            Analytics.shared.log(.followChanged, ["action": "removed", "club": team.rawValue, "count_after": picks.count])
+        }
         appState.selectedTeams = picks
         CacheService.shared.clearAll(in: modelContext)
         // Keep the active feed context valid if its club was removed. Club
@@ -810,6 +823,9 @@ struct TierPickerSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
+                        if selected != appState.selectedTier {
+                            Analytics.shared.log(.tierChanged, ["from": appState.selectedTier, "to": selected])
+                        }
                         appState.selectedTier = selected
                         // SEC-2: the tier used to go out as a direct anon PATCH
                         // on device_tokens, and that one call was the last thing

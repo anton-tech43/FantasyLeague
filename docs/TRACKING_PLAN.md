@@ -1,10 +1,28 @@
 # Tracking plan: activation and behaviour
 
-Status: plan, not built. Written 2026-10-07. Revised and verified against the
-app 2026-10-25. Owner: Anton.
+Status: steps 1 and 2 built 2026-10-29 (migration 142, `Services/Analytics.swift`,
+the hooks below). Steps 3–5 open. Written 2026-10-07, revised 2026-10-25.
+Owner: Anton.
 
-Nothing in it is built: there is no `app_events` table, no `log_events` RPC and
-no `Analytics` service in `ios/GoalDigger/Services/`.
+**What the build changed from this plan** (the tables below are updated to it):
+- `app_opened` has no `source`. The tap callback lands after the scene goes
+  active, so the app cannot know in time; SQL reads a `push_opened` in the same
+  few seconds instead.
+- `pregame_opened.entry` is `tab` or `link` (a push or "Pre-game ›"), for the
+  same reason; which link is the neighbouring `push_opened`.
+- `hype_shown` logs the in-round streak card only. The end-of-round card's
+  category is a function of the score, which `practice_completed` and
+  `overheard_round_finished` already carry.
+- `next_fixture_in_hours` is not a common property (`// ponytail:` in
+  Analytics.swift). Pre-game events carry `fixture_key` (`b|Opponent|day`)
+  and, where known, `fixture_id`.
+- Every event carries `env`: `development` from Xcode builds. **Every view and
+  digest keeps `env = 'production'` only.**
+- `my_turn_module_switched` has no `prep_available`: Pre-game left My Turn for
+  the Matchday tab on 2026-10-27, so module values are `quiz`, `lingo`,
+  `saythis`.
+- `scripts/verify-tracking-plan.sh` checks that the app, the RPC's allow-list
+  and the tables below name the same events, and that each is logged somewhere.
 
 ---
 
@@ -267,34 +285,32 @@ app's own rawValues wherever one exists.
 
 | Event | Properties | Hook |
 |---|---|---|
-| `app_opened` | `source` (icon, push, link) | `GoalDiggerApp` scene becomes active |
+| `app_opened` | — (source: see "What the build changed") | `GoalDiggerApp` scene becomes active, after onboarding |
 | `onboarding_step_viewed` | `step` | `OnboardingFlow`, on `step` change |
 | `onboarding_completed` | `seconds`, `notifications` (granted, denied, later), `calendar` (on, off) | `OnboardingFlow.completeOnboarding()` |
-| `push_opened` | `kind` (kickoff, goal, ht, ft, news, prep, sunday_brief), `content_id` | `AppDelegate.userNotificationCenter(_:didReceive:)` |
-| `tab_viewed` | `tab` (feed, matchday, club, my_turn) | `MainTabView` selection change (`AppTab`). Settings is a sheet from 2.4: log `settings_opened` instead |
+| `push_opened` | `kind` (`AppDelegate.pushKind`: goal, ht, ft, … from `live-<kind>-`, prep, matchday, fixture, article), `club` | `AppDelegate.userNotificationCenter(_:didReceive:)` |
+| `tab_viewed` | `tab` (feed, matchday, club, my_turn) | `MainTabView` selection change (`AppTab.analyticsName`) |
+| `settings_opened` | — | `SettingsView` appears (a sheet since 2.4, so not a tab) |
 
 ### B. What she reads
 
 | Event | Properties | Hook |
 |---|---|---|
 | `feed_card_opened` | `position`, `content_type`, `zone` (story, things_to_say) | `ImmersiveCard` zone taps |
-| `line_shared` | `surface` (feed, article, say_this) | the `ShareLink`s and copy buttons |
-| `line_saved` | `source` (slip, say_this) | slip "Save for the game", Say This save |
+| `line_shared` | `surface` (feed, article, talking_point, quiz, copy) | the `ShareLink`s and `CopyButton` |
+| `line_saved` | `source` (slip, say_this) | slip "Save for the game", Say This star |
 
 ### C. My Turn, corrected to the app
 
 | Event | Properties | Hook |
 |---|---|---|
-| `my_turn_module_switched` | `from`, `to` (prep, quiz, lingo, saythis), `prep_available` | `MyTurnView` segmented control |
-| `pregame_opened` | `entry` (tab, push, club_page), `phase` (before, after) | `MatchdayView` when Before appears (My Turn's prep segment before 2.4) |
-| `matchday_after_opened` | `entry` (tab, ft_push), `hours_since_ft`, `fixture_id` | `MatchdayView` when After appears |
-| `pregame_card_completed` | `card` (opponent_quiz, seven_words, slip), `score`, `of`, `phase`, `fixture_id` | the round-finished paths in `MyTurnStore` |
-| `practice_completed` | `module` (prep, quiz, lingo, saythis), `pack`, `score`, `of` | the existing end-of-round screens |
-| `overheard_round_finished` | `score`, `of`, `terms` | `LingoOverheardView`, on `MyTurnStore.DrillSession` end |
-| `hype_shown` | `category` (perfect, strong, mid, rough, streak), `streak_tick` | `HypeStreakOverlay` present |
-
-`my_turn_module_switched` carries `prep_available` so the conditional first
-segment is measurable: how often is Pre-game simply not there when she arrives?
+| `my_turn_module_switched` | `from`, `to` (quiz, lingo, saythis) | `MyTurnView` segmented control |
+| `pregame_opened` | `entry` (tab, link), `phase` (before), `fixture_id` | `MatchdayView` when Before shows |
+| `matchday_after_opened` | `entry` (tab, link), `hours_since_ft`, `fixture_id` | `MatchdayView` when After shows |
+| `pregame_card_completed` | `card` (opponent_quiz, seven_words, slip), `score`, `of`, `phase`, `fixture_key`, `fixture_id` (slip) | `MyTurnStore.nextQuestion` / `nextDrillCard` finish, `LingoCallsView.answer` past the last line |
+| `practice_completed` | `module` (quiz), `pack`, `score`, `of` | `MyTurnStore.nextQuestion` finish without a fixture |
+| `overheard_round_finished` | `score`, `of`, `deck`, `origin` | `MyTurnStore.nextDrillCard` finish |
+| `hype_shown` | `category` (streak), `streak_tick` | `HypeStreakOverlay` shows the card |
 
 ### D. What she changes
 
@@ -307,10 +323,10 @@ signal in it: a person changing a setting has formed an opinion and acted on it.
 |---|---|---|---|
 | `follow_changed` | `action` (added, removed), `club`, `count_after` | `TeamPickerSheet` on Done, one event per change | Which clubs people reach for, and whether the two-club feature is used at all. 5 of 72 follow two clubs today. |
 | `tier_changed` | `from`, `to` (1–3) | the tier control in `SettingsView` | **The only honest "too many pushes" signal we will ever have.** Every entry in `PUSH_RULES.md` §3 shipped first and was walked back after someone complained. A complaint is a user who bothered; a user who silently turns the dial down holds the same opinion, uncounted. It is also the one event that moves the *eligible* denominator, so it has to be logged for the rest of the data to be readable. |
-| `notification_permission_changed` | `to` (granted, denied), `via` (banner, settings, os) | `NotificationService` authorization callback | Separates "never asked properly" from "asked and refused". A refusal weeks later, after a bad push run, is a different fact from one at onboarding. |
+| `notification_permission_changed` | `from`, `to` (granted, denied) | `NotificationService.checkNotificationStatus`, against the last status seen | Separates "never asked properly" from "asked and refused". A refusal weeks later, after a bad push run, is a different fact from one at onboarding. |
 | `notifications_banner` | `action` (shown, turn_on, not_now) | the Feed banner | The banner is the recovery path for the biggest single failure mode we have seen — a user with notifications off who assumes the app is broken. |
-| `settings_row_opened` | `row` | `SettingsView` row taps | The *exposed* denominator for everything in Settings. Distinguishes a setting nobody wants from one nobody can find. |
-| `data_deleted` | `days_since_install`, `last_tier`, `clubs` | `SettingsView.deleteData()`, sent **before** the wipe | The clearest exit in the app, and today it leaves nothing behind at all: the row vanishes and so does the reason. |
+| `settings_row_opened` | `row` (clubs, countries, tier) | `SettingsView` picker sheets opening | The *exposed* denominator for everything in Settings. Distinguishes a setting nobody wants from one nobody can find. |
+| `data_deleted` | `clubs` (+ the common `tier`, `days_since_install`) | `Analytics.forgetInstall`, from `SettingsView.deleteData()` **before** the wipe | The clearest exit in the app, and today it leaves nothing behind at all: the row vanishes and so does the reason. |
 
 `data_deleted` must be sent and flushed **before** the local wipe, and it
 survives on the server by design — the `install_id` is deleted with everything

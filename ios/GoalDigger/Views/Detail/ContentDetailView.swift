@@ -119,6 +119,7 @@ struct ContentDetailView: View {
                         item: "\(displayHeadline)\n\nvia GoalDigger"
                     ) {
                         Image(systemName: "square.and.arrow.up")
+                            .simultaneousGesture(TapGesture().onEnded { Analytics.shared.log(.lineShared, ["surface": "article"]) })
                             .foregroundColor(.hotRose)
                     }
                 }
@@ -514,6 +515,7 @@ struct TalkingPointCard: View {
                 CopyButton(text: text, tint: .charcoal)
                 ShareLink(item: text, preview: SharePreview("From GoalDigger")) {
                     Image(systemName: "square.and.arrow.up")
+                        .simultaneousGesture(TapGesture().onEnded { Analytics.shared.log(.lineShared, ["surface": "talking_point"]) })
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.charcoal)
                         .frame(width: 32, height: 32)

@@ -376,6 +376,16 @@ private extension Int {
 enum AppTab: Hashable {
     case feed, matchday, club, myTurn
 
+    /// The `tab` value of the tab_viewed event (TRACKING_PLAN).
+    var analyticsName: String {
+        switch self {
+        case .feed: return "feed"
+        case .matchday: return "matchday"
+        case .club: return "club"
+        case .myTurn: return "my_turn"
+        }
+    }
+
     /// `-gdTab N` in the screenshot harness: the position in the bar.
     init?(index: Int) {
         switch index {

@@ -124,6 +124,10 @@ struct ImmersiveCard: View {
 
     // MARK: - Zone 2 label rotation
 
+    private func logOpen(_ zone: String) {
+        Analytics.shared.log(.feedCardOpened, ["position": feedPosition, "content_type": item.type.rawValue, "zone": zone])
+    }
+
     private var zone2Label: String {
         if isYourMove {
             return "Your move:"
@@ -180,7 +184,7 @@ struct ImmersiveCard: View {
                 .frame(height: zone1Height)
                 .clipped()
                 .contentShape(Rectangle())
-                .onTapGesture { onZone1Tap() }
+                .onTapGesture { logOpen("story"); onZone1Tap() }
                 // Spelled out rather than .combine: the headline is a UILabel
                 // (TightHeadline). Still a heading, so the rotor steps card
                 // to card.
@@ -200,7 +204,7 @@ struct ImmersiveCard: View {
             zone2
                 .frame(height: zone2Height)
                 .contentShape(Rectangle())
-                .onTapGesture { onZone2Tap() }
+                .onTapGesture { logOpen("things_to_say"); onZone2Tap() }
         }
         .frame(height: cardHeight)
         .clipped()
@@ -322,6 +326,7 @@ struct ImmersiveCard: View {
                         // (which opens the detail view) doesn't also fire.
                         ShareLink(item: shareText) {
                             Image(systemName: "square.and.arrow.up")
+                                .simultaneousGesture(TapGesture().onEnded { Analytics.shared.log(.lineShared, ["surface": "feed"]) })
                                 .font(.system(size: 18, weight: .semibold))
                                 .foregroundColor(zone2TextColor)
                                 .frame(width: 40, height: 40)

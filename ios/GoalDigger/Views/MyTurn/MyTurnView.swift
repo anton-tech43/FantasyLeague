@@ -157,6 +157,9 @@ struct MyTurnView: View {
         HStack(spacing: 0) {
             ForEach(segments) { module in
                 Button {
+                    if module != store.lastModule {
+                        Analytics.shared.log(.myTurnModuleSwitched, ["from": store.lastModule.rawValue, "to": module.rawValue])
+                    }
                     withAnimation(.spring(duration: 0.25)) { store.lastModule = module }
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 } label: {

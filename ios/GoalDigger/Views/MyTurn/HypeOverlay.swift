@@ -147,6 +147,7 @@ struct HypeStreakOverlay: View {
                 store.streakTick = 0
                 return
             }
+            Analytics.shared.log(.hypeShown, ["category": "streak", "streak_tick": store.streakTick])
             withAnimation(.spring(duration: 0.35, bounce: 0.2)) { line = next }
             try? await Task.sleep(for: Self.dwell)
             guard !Task.isCancelled else { return }

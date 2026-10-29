@@ -252,6 +252,7 @@ struct FeedView: View {
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 16) {
                 Button {
+                    Analytics.shared.log(.notificationsBanner, ["action": "turn_on"])
                     Task {
                         if notificationStatus == .notDetermined {
                             _ = await NotificationService.shared.requestPermission()
@@ -270,6 +271,7 @@ struct FeedView: View {
                         .background(Capsule().fill(Color.hotRose))
                 }
                 Button("Not now") {
+                    Analytics.shared.log(.notificationsBanner, ["action": "not_now"])
                     bannerSnoozedUntil = Date().addingTimeInterval(14 * 24 * 3600).timeIntervalSince1970
                 }
                 .font(.jakarta(13, weight: .semiBold))
@@ -283,6 +285,7 @@ struct FeedView: View {
         .padding(14)
         .background(RoundedRectangle(cornerRadius: 16).fill(Color.cardBackground))
         .accessibilityElement(children: .contain)
+        .onAppear { Analytics.shared.log(.notificationsBanner, ["action": "shown"]) }
     }
 
     // MARK: - Live brief poll loop (V1.1 task C5)

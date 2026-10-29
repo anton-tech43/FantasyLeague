@@ -27,6 +27,7 @@
 		6CA1FD4A864451C12D212143 /* LiveMatchCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A88D0BF10EC36C829985F7 /* LiveMatchCard.swift */; };
 		6DB27580A7465723CA70926A /* LiveMatchBrief.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9B40C83CE30947DD4E9AB4 /* LiveMatchBrief.swift */; };
 		73A1A94EF89C814DE83C183E /* LiveClubPack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D8F505623CCED3CAAB391AA /* LiveClubPack.swift */; };
+		A11A0E0E0E0E0E0E0E0E0001 /* Analytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11A0E0E0E0E0E0E0E0E0002 /* Analytics.swift */; };
 		754DEA162AF85F46038029EC /* LiveSquadPack.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC063CF34EB46623A471C9F6 /* LiveSquadPack.swift */; };
 		785C14F6B48F7E69523A45EC /* SayThisPractiseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED6D8160AFC958A96956341D /* SayThisPractiseView.swift */; };
 		7AE5C40C19D72FA48BC51F30 /* SaturdayQuiz.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BC4A29F62D389F4A4751E27 /* SaturdayQuiz.swift */; };
@@ -262,6 +263,7 @@
 		D8C25D6C48090CD68B903A14 /* InsiderCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InsiderCard.swift; sourceTree = "<group>"; };
 		DCA4D1D232DB07DA5CC85E8B /* LiveMatchSnapshot.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveMatchSnapshot.swift; sourceTree = "<group>"; };
 		E5B6B4EAC55CB925992D81ED /* ShareableCardRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareableCardRenderer.swift; sourceTree = "<group>"; };
+		A11A0E0E0E0E0E0E0E0E0002 /* Analytics.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Analytics.swift; sourceTree = "<group>"; };
 		EC063CF34EB46623A471C9F6 /* LiveSquadPack.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveSquadPack.swift; sourceTree = "<group>"; };
 		ED6D8160AFC958A96956341D /* SayThisPractiseView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SayThisPractiseView.swift; sourceTree = "<group>"; };
 		FFF77F3DBF5A4E6FED9FA92D /* MyTurnContentService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyTurnContentService.swift; sourceTree = "<group>"; };
@@ -477,6 +479,7 @@
 				FFF77F3DBF5A4E6FED9FA92D /* MyTurnContentService.swift */,
 				07B8C8BE4CFA3444C2C316A0 /* MyTurnStore.swift */,
 				4D8F505623CCED3CAAB391AA /* LiveClubPack.swift */,
+				A11A0E0E0E0E0E0E0E0E0002 /* Analytics.swift */,
 				EC063CF34EB46623A471C9F6 /* LiveSquadPack.swift */,
 				5D5FD984EA8B545ADF846F1C /* PlayerHooks.swift */,
 				5D5FD984EA8B545ADF846F2F /* PlayerSlots.swift */,
@@ -806,6 +809,7 @@
 				DB5039EBD938A4E4B32D5BFC /* Competition.swift in Sources */,
 				9D8349CC509C7124A5EB9F29 /* MyTurnPractiseButton.swift in Sources */,
 				785C14F6B48F7E69523A45EC /* SayThisPractiseView.swift in Sources */,
+				A11A0E0E0E0E0E0E0E0E0001 /* Analytics.swift in Sources */,
 				754DEA162AF85F46038029EC /* LiveSquadPack.swift in Sources */,
 				17B1A6C8E309B3DB90A2F28E /* PlayerHooks.swift in Sources */,
 				17B1A6C8E309B3DB90A2F29F /* PlayerSlots.swift in Sources */,

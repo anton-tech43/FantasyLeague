@@ -19,6 +19,10 @@ struct MatchdayView: View {
     /// What she picked. Nil means the default for this moment, so a new game
     /// opens on its own default rather than on whatever she last tapped.
     @State private var picked: MatchdaySection?
+    /// "link" when a push or "Pre-game ›" asked for a section, else "tab".
+    /// Which link it was is read off push_opened in SQL (same second).
+    @State private var entry = "tab"
+    @State private var lastLogged: (MatchdaySection, Date)?
 
     var body: some View {
         ZStack {
@@ -55,8 +59,11 @@ struct MatchdayView: View {
         .toolbarBackground(.visible, for: .navigationBar)
         // A new game starts from its own default.
         .onChange(of: lastMatch?.fixtureId) { _, _ in picked = nil }
+        .onAppear { logSection() }
+        .onChange(of: section) { _, _ in logSection() }
         .onChange(of: appState.requestedMatchdaySection, initial: true) { _, wanted in
             guard let wanted else { return }
+            entry = "link"
             picked = wanted
             appState.requestedMatchdaySection = nil
         }
@@ -71,6 +78,25 @@ struct MatchdayView: View {
     }
 
     // MARK: State
+
+    /// pregame_opened / matchday_after_opened. A link both changes the section
+    /// and makes the tab appear, so the second of those is skipped.
+    private func logSection() {
+        if let (s, at) = lastLogged, s == section, Date().timeIntervalSince(at) < 2 { return }
+        lastLogged = (section, Date())
+        defer { entry = "tab" }
+        switch section {
+        case .before:
+            var props: [String: Any] = ["entry": entry, "phase": "before"]
+            if let id = nextContext.fixtureId { props["fixture_id"] = id }
+            Analytics.shared.log(.pregameOpened, props)
+        case .after:
+            guard let card = lastMatch else { return }
+            var props: [String: Any] = ["entry": entry, "fixture_id": card.fixtureId]
+            if let ft = card.finishedDate { props["hours_since_ft"] = Int(Date().timeIntervalSince(ft) / 3600) }
+            Analytics.shared.log(.matchdayAfterOpened, props)
+        }
+    }
 
     private var lastMatch: LastMatchCard? {
         #if DEBUG

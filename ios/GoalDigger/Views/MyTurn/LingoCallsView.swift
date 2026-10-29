@@ -229,6 +229,7 @@ struct LingoCallsView: View {
     @ViewBuilder
     private func answerButtons(_ call: LingoCall, of offered: [LingoCall]) -> some View {
         let yes = Button {
+            Analytics.shared.log(.lineSaved, ["source": "slip"])
             answer(call, yes: true, of: offered)
         } label: {
             answerLabel("Save for the game", filled: true)
@@ -273,7 +274,11 @@ struct LingoCallsView: View {
             index += 1
         }
         UIImpactFeedbackGenerator(style: yes ? .medium : .light).impactOccurred()
-        if index >= offered.count { confirm(offered) }
+        if index >= offered.count {
+            Analytics.shared.log(.pregameCardCompleted, ["card": "slip", "score": picked.count, "of": offered.count,
+                "phase": "before", "fixture_key": context.fixtureKey, "fixture_id": context.fixtureId ?? 0])
+            confirm(offered)
+        }
     }
 
     /// Smaller since the slip took the Matchday card type (2026-10-08): 14pt

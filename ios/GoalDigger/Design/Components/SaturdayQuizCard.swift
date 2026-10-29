@@ -288,6 +288,7 @@ struct SaturdayQuizCard: View {
                     .padding(.horizontal, 14)
                     .background(Color.hotRose)
                     .cornerRadius(Layout.buttonCornerRadius)
+                    .simultaneousGesture(TapGesture().onEnded { Analytics.shared.log(.lineShared, ["surface": "quiz"]) })
                 }
 
                 Button {

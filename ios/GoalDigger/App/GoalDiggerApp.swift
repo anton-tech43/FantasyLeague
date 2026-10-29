@@ -56,8 +56,12 @@ struct GoalDiggerApp: App {
                         // persisted toggles) against a force-quit that would
                         // otherwise drop unflushed writes. See AppState.persistNow.
                         appState.persistNow()
+                        Analytics.shared.flush()
                     }
                     if newPhase == .active {
+                        // Whether it came from a push is read off push_opened
+                        // in SQL (same second); the tap callback lands after this.
+                        if appState.hasCompletedOnboarding { Analytics.shared.log(.appOpened) }
                         // Foreground fallback: re-assert the push-to-start
                         // registration and, if the followed country has a live
                         // match with no running activity, start one locally.
@@ -406,6 +410,9 @@ struct MainTabView: View {
         .onChange(of: appState.selectedTeam) { _, team in
             if team == nil && selectedTab == .matchday { selectedTab = .feed }
         }
+        .onChange(of: selectedTab) { _, tab in
+            Analytics.shared.log(.tabViewed, ["tab": tab.analyticsName])
+        }
         // His club's page, squad and fixture context, refreshed once here for
         // both Matchday and My Turn (they only read these caches).
         .task(id: appState.selectedTeam?.rawValue) {
@@ -450,53 +457,58 @@ struct MainTabView: View {
                 feedPath.append(dest)
             }
         }
-        .onAppear {
-            // Consume the Season Primer's "Teach me more" / "Take me to the
-            // news" preference, set by SeasonPrimerView's CTAs before the
-            // primer dismissed. Clear immediately so subsequent re-appears
-            // (e.g., scenePhase background→active) don't snap back to it.
-            if let tab = appState.pendingTabAfterPrimer {
-                selectedTab = (tab == .club && teamPageEntityId == nil) ? .feed : tab
-                appState.pendingTabAfterPrimer = nil
-            }
-            #if DEBUG
-            // Screenshot harness. `xcrun simctl launch <udid> com.goaldigger.app
-            // -gdSkipATT -gdTab 3 -gdOpenItem <uuid>` lands on a tab or a
-            // detail view without anyone tapping — simctl cannot tap, and a
-            // deterministic starting point is what a visual check needs.
-            // `-gdSkipATT` belongs on every harness launch: without it the ATT
-            // sheet slides up 1.5 s after the tabs appear and covers whatever
-            // was being photographed (IOS_GOTCHAS §19).
-            let args = ProcessInfo.processInfo.arguments
-            // -gdTab is the position in the bar: 0 Feed, 1 Matchday, 2 club,
-            // 3 My Turn.
-            if let i = args.firstIndex(of: "-gdTab"), i + 1 < args.count,
-               let n = Int(args[i + 1]), let tab = AppTab(index: n) {
-                let hidden = (tab == .club && teamPageEntityId == nil) || (tab == .matchday && appState.selectedTeam == nil)
-                selectedTab = hidden ? .feed : tab
-            }
-            if let i = args.firstIndex(of: "-gdOpenItem"), i + 1 < args.count, let id = UUID(uuidString: args[i + 1]) {
-                appState.deepLinkContentId = id
-            }
-            #endif
-            if appState.pendingOpenPrep { openMatchday(.before) }
-            if appState.pendingOpenAfter { openMatchday(.after) }
-            if appState.pendingOpenFeed { openFeed() }
-            // Cold-launch deep-link catch. If the user tapped a notification
-            // while the app was killed, AppDelegate sets deepLinkContentId
-            // during launch — which may run BEFORE this view first mounts.
-            // The `.onChange` below only fires on subsequent transitions, so
-            // an already-set value would otherwise be silently dropped.
-            if let id = appState.deepLinkContentId {
-                selectedTab = .feed
-                let isEveryone = appState.activeContext == .everyoneTalking
-                feedPath.append(ContentDetailDestination(
-                    contentId: id,
-                    scrollToTalkingPoints: deepLinkScrollsToTalk,
-                    isEveryoneContext: isEveryone
-                ))
-                appState.deepLinkContentId = nil
-            }
+        .onAppear { handleAppear() }
+    }
+
+    /// Pulled out of `body` so the modifier chain type-checks in time.
+    private func handleAppear() {
+        // Consume the Season Primer's "Teach me more" / "Take me to the
+        // news" preference, set by SeasonPrimerView's CTAs before the
+        // primer dismissed. Clear immediately so subsequent re-appears
+        // (e.g., scenePhase background→active) don't snap back to it.
+        if let tab = appState.pendingTabAfterPrimer {
+            selectedTab = (tab == .club && teamPageEntityId == nil) ? .feed : tab
+            appState.pendingTabAfterPrimer = nil
+        }
+        #if DEBUG
+        // Screenshot harness. `xcrun simctl launch <udid> com.goaldigger.app
+        // -gdSkipATT -gdTab 3 -gdOpenItem <uuid>` lands on a tab or a
+        // detail view without anyone tapping — simctl cannot tap, and a
+        // deterministic starting point is what a visual check needs.
+        // `-gdSkipATT` belongs on every harness launch: without it the ATT
+        // sheet slides up 1.5 s after the tabs appear and covers whatever
+        // was being photographed (IOS_GOTCHAS §19).
+        let args = ProcessInfo.processInfo.arguments
+        // -gdTab is the position in the bar: 0 Feed, 1 Matchday, 2 club,
+        // 3 My Turn.
+        if let i = args.firstIndex(of: "-gdTab"), i + 1 < args.count,
+           let n = Int(args[i + 1]), let tab = AppTab(index: n) {
+            let clubHidden: Bool = tab == .club && teamPageEntityId == nil
+            let matchdayHidden: Bool = tab == .matchday && appState.selectedTeam == nil
+            let hidden = clubHidden || matchdayHidden
+            selectedTab = hidden ? .feed : tab
+        }
+        if let i = args.firstIndex(of: "-gdOpenItem"), i + 1 < args.count, let id = UUID(uuidString: args[i + 1]) {
+            appState.deepLinkContentId = id
+        }
+        #endif
+        if appState.pendingOpenPrep { openMatchday(.before) }
+        if appState.pendingOpenAfter { openMatchday(.after) }
+        if appState.pendingOpenFeed { openFeed() }
+        // Cold-launch deep-link catch. If the user tapped a notification
+        // while the app was killed, AppDelegate sets deepLinkContentId
+        // during launch — which may run BEFORE this view first mounts.
+        // The `.onChange` below only fires on subsequent transitions, so
+        // an already-set value would otherwise be silently dropped.
+        if let id = appState.deepLinkContentId {
+            selectedTab = .feed
+            let isEveryone = appState.activeContext == .everyoneTalking
+            feedPath.append(ContentDetailDestination(
+                contentId: id,
+                scrollToTalkingPoints: deepLinkScrollsToTalk,
+                isEveryoneContext: isEveryone
+            ))
+            appState.deepLinkContentId = nil
         }
     }
 }

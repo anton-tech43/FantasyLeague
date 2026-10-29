@@ -295,6 +295,7 @@ struct SayThisLineRow: View {
             Spacer(minLength: 0)
 
             Button {
+                if !store.isStarred(line.id) { Analytics.shared.log(.lineSaved, ["source": "say_this"]) }
                 store.toggleStar(line.id)
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
             } label: {
