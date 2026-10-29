@@ -96,6 +96,7 @@ Goal: is the backend actually serving the app, and will it keep serving until Fr
 | A6 | API balance sanity | is `team-page-generator` failing with IDLE_TIMEOUT? | function healthy or idle | IDLE_TIMEOUT pattern = **balance depleted, not broken** (`BACKFILL_RULES.md`). Do NOT refire. **Push.** |
 | A7 | Secret hygiene | `./scripts/pre-commit-secret-scan.sh`; `ls .claude/worktrees/` | clean; no stray worktrees holding `.env` | remove abandoned worktrees; **push** if a secret leaked |
 | A8 | Content still true | section 8 of `./scripts/db-health.sh` (runs with A1) | the featured players clear their minutes bar, no card claiming a league-wide rank, no club's prose older than 8 days, history under 5 MB | **report only, no push, until ~2026-10-14** — see below |
+| A9 | Usage digest | `./scripts/tracking-digest.sh` and `./scripts/verify-tracking-plan.sh` | the digest runs; the verify exits 0 | **report only, never a push**: paste the digest into the report. A verify failure means an event was added or renamed without the plan — fix the plan, it is a table row |
 
 **A8 is deliberately quiet until the measurement period ends.** Its three content
 checks emit `WARN`, which appears in the report without touching the exit code,

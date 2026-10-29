@@ -1,7 +1,11 @@
 # Tracking plan: activation and behaviour
 
-Status: steps 1 and 2 built 2026-10-29 (migration 142, `Services/Analytics.swift`,
-the hooks below). Steps 3–5 open. Written 2026-10-07, revised 2026-10-25.
+Status: built 2026-10-29 except step 3 — migration 142 (table, RPC,
+retention), `Services/Analytics.swift` and the hooks below, migration 143
+(`analytics_events` view), `scripts/tracking-digest.sh` (MAINTENANCE.md A9)
+and the Meta `activated` event (`Attribution.logActivatedOnce`). Open: step 3
+(privacy label and policy text) before the build is submitted, and switching
+the ad set's optimisation goal to `activated` once the build is out. Written 2026-10-07, revised 2026-10-25.
 Owner: Anton.
 
 **What the build changed from this plan** (the tables below are updated to it):

@@ -2,8 +2,8 @@ import UIKit
 import AppTrackingTransparency
 import FBSDKCoreKit
 
-/// App-install attribution for Meta ads: the ATT consent prompt. No events are
-/// logged from here — `isAutoLogAppEventsEnabled` makes the SDK log
+/// App-install attribution for Meta ads: the ATT consent prompt and the one
+/// custom event, `activated`. `isAutoLogAppEventsEnabled` makes the SDK log
 /// `fb_mobile_activate_app` itself on every foreground.
 ///
 /// There is no advertiser-tracking flag to set. `isAdvertiserTrackingEnabled`'s
@@ -18,6 +18,19 @@ enum Attribution {
     static var sdkLaunched = false
 
     private static let promptedKey = "attPrompted"
+    private static let activatedKey = "metaActivatedSent"
+
+    /// The one behaviour event Meta gets (TRACKING_PLAN step 5): her first
+    /// pre-game card before a game, once per install, so the ad set can
+    /// optimise for women who get ready for a match rather than for installs.
+    /// Not from Xcode builds: a test tap would teach the ad set the wrong person.
+    static func logActivatedOnce() {
+        #if !DEBUG
+        guard !UserDefaults.standard.bool(forKey: activatedKey) else { return }
+        UserDefaults.standard.set(true, forKey: activatedKey)
+        AppEvents.shared.logEvent(AppEvents.Name("activated"))
+        #endif
+    }
 
     /// Show the ATT sheet once per install, 1.5 s after the main tab view
     /// appears — never during onboarding (the notification prompt lives there;

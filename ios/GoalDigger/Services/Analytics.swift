@@ -80,6 +80,9 @@ final class Analytics {
         // out; the pre-game events carry fixture_id, which the SQL joins to
         // kickoff. Add it here if a query ever needs it on every event.
         all.merge(props) { _, new in new }
+        if event == .pregameCardCompleted, props["phase"] as? String == "before" {
+            Attribution.logActivatedOnce()
+        }
         queue.append([
             "name": event.rawValue,
             "at": ISO8601DateFormatter().string(from: Date()),
