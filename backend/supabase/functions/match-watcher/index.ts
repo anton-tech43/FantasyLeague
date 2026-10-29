@@ -2040,7 +2040,7 @@ async function handleRequest(req: Request): Promise<Response> {
           // or status change, plus one every 15 minutes to pull the clock back
           // into line (stoppage time, API lag). See the ponytail note below for
           // why it is still per-minute.
-          const liveMinute = isLive && status !== "HT" && status !== "BT"
+          const liveMinute = isLive && status !== "HT" && status !== "BT" && status !== "P"
             ? (elapsed ?? null)
             : null;
           // A held level FT is not a break the feed told us about, so it must

@@ -12,7 +12,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { WC_LEAGUE_ID } from "../_shared/detect-consequences.ts";
-import { competitionName } from "../_shared/league-helpers.ts";
+import { competitionName, displayStatus } from "../_shared/league-helpers.ts";
 
 const PRE_KICKOFF_BUFFER_MS = 10 * 60 * 1000;   // 10 min before kickoff
 // 200, not 130: extra time, penalties and a long stoppage run past 130, and
@@ -105,7 +105,7 @@ serve(async (req) => {
     away_name: nameById.get(r.away_team_id as string) ?? null,
     home_goals: r.home_goals ?? 0,
     away_goals: r.away_goals ?? 0,
-    status: r.status,
+    status: displayStatus(r.status as string, r.league_id as number | null),
     // The widget renders group_label above the score. For a World Championship
     // group match match-watcher's own group logic owns it, so leave it unset;
     // for a club match the competition is the useful thing to say.

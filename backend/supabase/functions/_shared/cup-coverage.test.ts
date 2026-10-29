@@ -13,6 +13,7 @@ import {
   roundLabel,
   seasonForLeague,
   isSingleLegTie,
+  displayStatus,
   straightToPenalties,
 } from "./league-helpers.ts";
 import { buildPollPairs } from "./poll-plan.ts";
@@ -426,4 +427,11 @@ Deno.test("resultStillNews: the same evening buzzes, the middle of the night doe
   // Afternoon kickoff settled hours late: past five hours is not news.
   assertEquals(resultStillNews("2026-01-10T12:30:00Z", new Date("2026-01-10T17:00:00Z")), true);
   assertEquals(resultStillNews("2026-01-10T12:30:00Z", new Date("2026-01-10T17:31:00Z")), false);
+});
+
+Deno.test("displayStatus: a held League Cup tie reads as the shootout, nothing else changes", () => {
+  if (displayStatus("BT", 48) !== "P") throw new Error("League Cup BT must show as penalties");
+  if (displayStatus("BT", 45) !== "BT") throw new Error("FA Cup BT is left alone");
+  if (displayStatus("2H", 48) !== "2H") throw new Error("other statuses are untouched");
+  if (displayStatus("BT", null) !== "BT") throw new Error("unknown league is untouched");
 });

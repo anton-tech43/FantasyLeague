@@ -17,6 +17,7 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { formatMinute, type StoredGoalEvent } from "../_shared/goal-push.ts";
 import { WC_LEAGUE_ID } from "../_shared/detect-consequences.ts";
+import { displayStatus } from "../_shared/league-helpers.ts";
 
 const PRE_KICKOFF_BUFFER_MS = 10 * 60 * 1000;   // 10 min before kickoff
 // 200, not 130: extra time, penalties and a long stoppage run past 130, and
@@ -75,7 +76,7 @@ serve(async (req) => {
     const { data: wcRows, error: wcErr } = await supabase
       .from("match_status_state")
       .select(
-        "fixture_id, status, home_team_id, away_team_id, home_goals, away_goals, elapsed, goal_events",
+        "fixture_id, league_id, status, home_team_id, away_team_id, home_goals, away_goals, elapsed, goal_events",
       )
       .eq("league_id", WC_LEAGUE_ID)
       .gte("kickoff_time", windowStartIso)
@@ -125,7 +126,7 @@ serve(async (req) => {
   const { data: stateRows, error: stateErr } = await supabase
     .from("match_status_state")
     .select(
-      "fixture_id, status, home_team_id, away_team_id, home_goals, away_goals, elapsed, goal_events",
+      "fixture_id, league_id, status, home_team_id, away_team_id, home_goals, away_goals, elapsed, goal_events",
     )
     .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
     .gte("kickoff_time", windowStartIso)
@@ -167,7 +168,8 @@ serve(async (req) => {
     });
   }
 
-  const state = stateRows[0] as MatchState;
+  const row = stateRows[0] as MatchState & { league_id: number | null };
+  const state: MatchState = { ...row, status: displayStatus(row.status, row.league_id) };
   // Team short/display names for both playing sides — fetched once and reused
   // for the live headline AND the scorers list, so the 60s poll does a single
   // teams read rather than one per surface.

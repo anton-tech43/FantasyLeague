@@ -198,6 +198,20 @@ export function straightToPenalties(leagueId: number | undefined, round: string 
 }
 
 /**
+ * The status the app's own live surfaces should show for a stored row.
+ * match-watcher stores a held level League Cup tie as "BT", and the app maps
+ * BT to "Extra time" when it refreshes the Live Activity on foreground
+ * (LiveMatchSnapshot, every build since 2.1). A League Cup tie never has a
+ * break before extra time, so it is shown as the shootout it is.
+ * ponytail: match_status_state has no round, so the League Cup FINAL (which
+ * does have extra time) would also read "Penalties" during its break. Store
+ * the round and use straightToPenalties before the final (March 2027).
+ */
+export function displayStatus(status: string, leagueId: number | null | undefined): string {
+  return status === "BT" && leagueId === 48 ? "P" : status;
+}
+
+/**
  * How much a fixture matters, 1-5, for the Calendar tab's dots.
  *
  * Everything used to be a flat 3, so a Champions League away leg in Naples read
