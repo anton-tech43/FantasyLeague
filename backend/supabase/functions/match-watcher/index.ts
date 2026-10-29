@@ -26,6 +26,7 @@ import {
   competitionName,
   competitionProse,
   isSingleLegTie,
+  parseRound,
   roundLabel,
 } from "../_shared/league-helpers.ts";
 import { detectConsequences, loadPostResultWcContext, WC_LEAGUE_ID } from "../_shared/detect-consequences.ts";
@@ -57,6 +58,7 @@ import {
   attachScorerPhotos,
   detectGoal,
   formatScorerLine,
+  type CupResult,
   type GoalEvent,
   type GoalPushCopy,
   pickLatestGoalForTeam,
@@ -713,6 +715,14 @@ async function sweepLiveActivities(
   return new Response(JSON.stringify({ swept: due.length, ended: ok, failures: reasons }), {
     headers: { "Content-Type": "application/json" },
   });
+}
+
+/// How a settled tie ended for one side, for the full-time push. Null when
+/// the game settled nothing (league, first leg).
+function cupResult(through: boolean | null, leagueId: number, round: string | undefined): CupResult | null {
+  if (through === null) return null;
+  if (!through) return "out";
+  return parseRound(round, leagueId).stage === 1 ? "won" : "through";
 }
 
 /// One /fixtures/statistics call at full time, for the Matchday tab's three
@@ -2582,22 +2592,23 @@ async function handleRequest(req: Request): Promise<Response> {
             // list we already hold (minute <= 45), which fails to 0-0 when that
             // list is missing, so the worst case is that her longshot quietly
             // does not land rather than landing when it should not.
+            // Three sources, best first. This tick's payload is authoritative
+            // and still carries score.halftime at full-time; the stored column
+            // covers a payload that has dropped it; counting goal_events by
+            // minute covers a row written before migration 118, and fails to
+            // 0-0, so the worst case is her longshot (or the push's comeback
+            // line) quietly not landing.
+            const feedHt = fx.score?.halftime;
+            const ht = typeof feedHt?.home === "number" && typeof feedHt?.away === "number"
+              ? { home: feedHt.home, away: feedHt.away }
+              : typeof prior?.ht_home === "number" && typeof prior?.ht_away === "number"
+              ? { home: prior.ht_home as number, away: prior.ht_away as number }
+              : halfTimeGoals(goalEventsStored ?? prior?.goal_events);
             const ftOutcomes: Record<string, Outcome> = (() => {
               const [h, a] = ftPen && typeof ftPen.home === "number" && typeof ftPen.away === "number" &&
                   ftPen.home !== ftPen.away && status === "PEN"
                 ? [ftPen.home, ftPen.away]
                 : [homeGoals ?? 0, awayGoals ?? 0];
-              // Three sources, best first. This tick's payload is authoritative
-              // and still carries score.halftime at full-time; the stored column
-              // covers a payload that has dropped it; counting goal_events by
-              // minute covers a row written before migration 118, and fails to
-              // 0-0, so the worst case is her longshot quietly not landing.
-              const feedHt = fx.score?.halftime;
-              const ht = typeof feedHt?.home === "number" && typeof feedHt?.away === "number"
-                ? { home: feedHt.home, away: feedHt.away }
-                : typeof prior?.ht_home === "number" && typeof prior?.ht_away === "number"
-                ? { home: prior.ht_home as number, away: prior.ht_away as number }
-                : halfTimeGoals(goalEventsStored ?? prior?.goal_events);
               const side = (mine: number, theirs: number, conceded: number, htMine: number, htTheirs: number): Outcome => ({
                 kind: "fulltime",
                 state: sideState(mine, theirs, "win" as const, "draw" as const, "loss" as const),
@@ -2616,6 +2627,17 @@ async function handleRequest(req: Request): Promise<Response> {
               homeGoals: homeGoals ?? 0,
               awayGoals: awayGoals ?? 0,
               competitionBySide,
+              // What kind of game it was: comeback, late goal, cup exit. The
+              // copy only claims a late goal when goal_events accounts for
+              // every goal (ftSituation), so a list missing a scorer falls
+              // back to the plain result.
+              ht,
+              goals: (goalEventsStored ?? prior?.goal_events) as StoredGoalEvent[] | null | undefined,
+              cupBySide: {
+                [homeTeamId]: cupResult(homeThrough, fixtureLeagueId, fixtureRound),
+                [awayTeamId]: cupResult(homeThrough === null ? null : !homeThrough, fixtureLeagueId, fixtureRound),
+              },
+              extraTime: status === "AET" || status === "PEN",
               rng: seededRng(fixtureId * 7 + 3),
               pens: status === "PEN" &&
                   typeof ftPen?.home === "number" && typeof ftPen?.away === "number" &&

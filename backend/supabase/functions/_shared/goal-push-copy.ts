@@ -1,8 +1,9 @@
 // _shared/goal-push-copy.ts
 //
-// Copy pools for the WC live pushes (goal / half-time / full-time). Each
-// event-and-perspective bucket holds 40 variants; goal-push.ts picks one at
-// fire-time so the same line never repeats across a long tournament. Kept apart
+// Copy for the live pushes (goal / kickoff-soon / half-time / full-time). The
+// goal pools hold 40 variants per perspective; half-time and full-time are
+// keyed by situation (see HT_COPY / FT_COPY at the end). goal-push.ts picks
+// at fire-time, seeded per fixture. Kept apart
 // from goal-push.ts so the logic file stays readable and the copy is easy to
 // edit in bulk.
 //
@@ -25,10 +26,8 @@
 //     "full-time" and in scorelines are fine.
 //   - Rendered worst-case (longest names + tag-flag + two-digit score) stays
 //     <=90 chars. Enforced by the sweep in goal-push.test.ts.
-//   - Voice: gf-to-bf older-sister, dry and warm. Scorer/win celebrates with a
-//     varied "text him" nudge; conceder/loss is muted and kind; level/draw is
-//     neutral; HT-behind is hopeful. Some lines carry no nudge so 40 never feel
-//     formulaic.
+//   - Voice (goal pools): gf-to-bf older-sister, dry and warm. Scorer
+//     celebrates, conceder is muted and kind.
 
 // ============================================================
 // GOAL pools. {flag}/{team} = the SCORER. {score} = home-away.
@@ -164,272 +163,6 @@ export const GOAL_BOTH: readonly string[] = [
 ];
 
 // ============================================================
-// HALF-TIME pools. {score} = follower-first. {team} = follower's team.
-// ============================================================
-
-export const HT_AHEAD: readonly string[] = [
-  "Up {score} at the break. He's already insufferable. Lean in, it's adorable.",
-  "{score} up at half. He's \"staying calm.\" He is absolutely not staying calm.",
-  "Up {score}! One more goal and he's completely unbearable. Cherish it.",
-  "Half-time, {score} up. He's got the smug face on. You know the one.",
-  "Up {score} at the break. He's basically claiming he predicted this.",
-  "{score} ahead at half. He's strutting around like he's playing.",
-  "Up {score}! He's narrating the highlights to himself already.",
-  "{score} up at the break. Peak smug. Let him have his little moment.",
-  "Up {score} at half. Do not say the word \"easy.\" You'll curse it.",
-  "{score} ahead at the break. Don't mention the score. He'll panic.",
-  "Up {score}! He won't move from his spot. Respect the lucky cushion.",
-  "Half-time, {score} up. Same seat, same mug, do not break the spell.",
-  "{score} up at half. He's terrified of jinxing it. Tread carefully.",
-  "Up {score} at the break. He'd rather you didn't celebrate yet. Superstitions.",
-  "Up {score} at half. \"It's not over,\" he says, grinning ear to ear.",
-  "{score} ahead at the break. He's playing it cool. He is not cool.",
-  "Up {score}! He's pretending this is normal. It is not normal.",
-  "Half-time, {score} up. Cautiously optimistic, loudly relieved.",
-  "Up {score} at the break. Bank this mood, you're cashing it in at full-time.",
-  "{score} up at half. Good mood loading. Save the big ask for the whistle.",
-  "Up {score}! Keep this energy noted. Full-time you is going to need it.",
-  "Half-time, {score} up. If it holds, tonight's ask writes itself.",
-  "Up {score} at the break. He's having a great time. Drop him a line.",
-  "{score} ahead at half. He's buzzing quietly. Good moment to say hi.",
-  "Up {score} at the break. He's chuffed. Send him a quick something.",
-  "Half-time, {score} up. He'll take that. Text him while he's happy.",
-  "Up {score} at half. He's already planning the celebration. Bold.",
-  "{score} up at the break. He's calling his mates to gloat. Predictable.",
-  "Up {score}! He's doing the little fist pump on repeat. Cute.",
-  "Half-time, {score} up. He's insufferable AND right. Worst combo.",
-  "Up {score} at the break. He's acting like he's at the final already.",
-  "{score} ahead at half. He's got opinions on the trophy now. Steady on.",
-  "Up {score}! Don't ask how he is. He'll tell you. At length.",
-  "Half-time, {score} up. He's a goal into a victory speech. It's 45 early.",
-  "Up {score} at the break. He's beaming. Let him be ridiculous.",
-  "{score} up at half. He's googling the knockout bracket. Optimist.",
-  "Up {score}! He's so happy he might even do the washing up. Strike now.",
-  "Half-time, {score} up. The smug is strong. Roll your eyes fondly.",
-  "Up {score} at the break. He's pretending not to check the table. He is.",
-  "{score} ahead at half. He's living his best life. Join him for a sec.",
-];
-
-export const HT_BEHIND: readonly string[] = [
-  "Down {score} at half. He's already blaming the ref. Just nod along.",
-  "{score} down at the break. He's gone quiet and tragic. Give it the second half.",
-  "Down {score}! He's reenacting the missed chance for the third time.",
-  "Half-time, {score} down. He's sighing like a Victorian widow. Bless him.",
-  "{score} down at half. He's taking it personally. He always does.",
-  "Down {score} at the break. He's muttering darkly at the telly. Let him.",
-  "{score} down! He's declared it \"men against boys.\" It's half-time.",
-  "Half-time, {score} down. He's in his feelings. Tread gently.",
-  "Down {score} at half. He'd have made five changes by now. None of them legal.",
-  "{score} down at the break. He's redesigning the midfield in his head. Let him cook.",
-  "Down {score}! Suddenly he's the manager, and the manager is furious.",
-  "Half-time, {score} down. He's got a tactical fix and a team talk ready. Nod along.",
-  "{score} down at half. He's screaming at the formation. It can't hear him.",
-  "Down {score} at the break. He could fix this in two subs, apparently.",
-  "{score} down! He's questioning the lineup, the tactics, the ref, the grass.",
-  "Half-time, {score} down. One bad pass from becoming the gaffer. Let him rant.",
-  "Down {score} at half. Bad moment to ask for anything. File it for later.",
-  "{score} down at the break. Park the favour. He can't take good news now.",
-  "Down {score}! Not the time for the holiday chat. Noted for full-time.",
-  "Half-time, {score} down. Hold your news. He's not in a yes mood.",
-  "Down {score} at half. He's deflated. A kind word goes a long way.",
-  "{score} down at the break. Comeback's still on. Keep him hopeful.",
-  "Down {score}! Plenty of time, even if he's forgotten that. Remind him gently.",
-  "Half-time, {score} down. He'll need a lift. Be the calm one.",
-  "{score} down at half. He's doing the head-in-hands thing. Dramatic, him.",
-  "Down {score} at the break. He's blaming everyone but the players. Classic.",
-  "{score} down! He's threatening to turn it off. He won't. He never does.",
-  "Half-time, {score} down. He's rehearsing his post-match misery. Save him.",
-  "Down {score} at half. He's gone full pundit, full grump. Let it pass.",
-  "{score} down at the break. He's annoyed at the world. Mostly the left back.",
-  "Down {score}! He's convinced the ref has a grudge. He does not.",
-  "Half-time, {score} down. He's sulking with style. Give him a minute.",
-  "{score} down at half. He's already drafting the group-chat complaints.",
-  "Down {score} at the break. He's taking deep breaths. Many of them.",
-  "{score} down! He wants to \"have words\" with the manager. Good luck.",
-  "Half-time, {score} down. He's lost the plot, found the snacks. Coping.",
-  "Down {score} at half. He's quiet. The dangerous kind. Tread softly.",
-  "{score} down at the break. He's blaming his socks now. Reaching.",
-  "Down {score}! He needs a hug and a substitution. You can only offer one.",
-  "Half-time, {score} down. He's grumpy but it's not over. Stay upbeat.",
-];
-
-export const HT_LEVEL: readonly string[] = [
-  "Level {score} at the break. Coin-flip stuff. His mood tonight is still TBD.",
-  "All square {score}. The second half decides what evening you're getting.",
-  "{score} at half. Could go either way, and so could he. Brace yourself.",
-  "Level {score}. 45 minutes to decide if tonight's a celebration or a sulk.",
-  "{score} at the break. His whole night hinges on the next 45. No pressure.",
-  "All square {score} at half. Heads he's lovely, tails he's a nightmare.",
-  "Level {score}. The result decides the vibe. Stay flexible, soldier.",
-  "{score} at the break. Anyone's game, anyone's mood. Pack a coping plan.",
-  "Level {score} at half. Tonight's forecast: entirely score-dependent.",
-  "All square {score}. Could be wine and chats, could be sulking. TBD.",
-  "{score} at half. He's suddenly the manager, full of formation opinions.",
-  "All square {score}. He's shouting tactics at men who cannot hear him.",
-  "Level {score} at the break. He'd \"make three changes.\" He manages nothing.",
-  "{score} at half. Expect a TED talk on the midfield any second now.",
-  "All square {score}. He's diagrammed a better setup on the sofa. Visionary.",
-  "Level {score}. He's analysing it like he's on the panel. Let him present.",
-  "{score} at the break. He has notes. Many notes. For the actual coach.",
-  "All square {score} at half. He's solved the game. The game disagrees.",
-  "Level {score}. He's calling for a sub no one else can see the need for.",
-  "{score} at half. He'd win this in five minutes. From the couch. Sure.",
-  "{score} at half. He won't move from his spot. Respect the lucky cushion.",
-  "Level {score}. Do not comment on the score. You'll jinx it, apparently.",
-  "All square {score} at the break. Same seat, same mug, same nerves.",
-  "{score} at half. He's blaming his socks. The socks are now load-bearing.",
-  "Level {score}. He's convinced the lucky shirt is working. Don't argue.",
-  "All square {score}. He sat down and they levelled. His fault now, obviously.",
-  "{score} at the break. Don't jinx it, don't praise it, barely breathe.",
-  "Level {score} at half. He hasn't moved in an hour. Ritual in progress.",
-  "{score} at half. The remote stays exactly there. House rules now.",
-  "All square {score}. He's doing the lucky routine. Humour the man.",
-  "{score} at the break. He's \"not worried.\" He's worried. Bless him.",
-  "Level {score}. He says it's fine. His knee hasn't stopped bouncing.",
-  "All square {score} at half. \"Plenty of time,\" he says, gripping the remote.",
-  "{score} at the break. Cool as anything, apart from the pacing.",
-  "Level {score}. He's calm. The cushion he's strangling disagrees.",
-  "{score} at half. \"No stress,\" he lies, checking the clock again.",
-  "All square {score}. He's relaxed. In the way a coiled spring is relaxed.",
-  "Level {score} at the break. He's fine. He's said it nine times. He's fine.",
-  "{score} at half. Totally chilled, aside from the death grip on his phone.",
-  "Level {score}. He's the picture of calm. The picture is shaking slightly.",
-];
-
-// ============================================================
-// FULL-TIME pools. {score} = follower-first. {team} = follower's team.
-// ============================================================
-
-export const FT_WIN: readonly string[] = [
-  "Full-time, they win {score}! He's glowing all night. Prime time for the trip chat.",
-  "Win! {score}. He'd say yes to anything for the next hour. Use it wisely.",
-  "They've won {score}! Game's done, he's buzzing. Slide in that favour now.",
-  "Full-time win {score}! Catch him beaming, the weekend away books itself.",
-  "Win, {score}! He's happy and off the telly. Now ask about those tickets.",
-  "Full-time {score}! Best mood he'll be in all week. Strike now.",
-  "They win {score}! Match over, mood sky high. Mention the summer plan.",
-  "Win! {score}. He's floating. Perfect window for the dinner-with-mum chat.",
-  "Full-time, won {score}! He'll agree to anything for an hour. Move fast.",
-  "They've done it, {score}! Catch him glowing, the big ask lands easy.",
-  "Win {score}! The man is putty right now. Ask for the nice thing.",
-  "Full-time win {score}! Cash in the good mood while it's hot.",
-  "Won {score}! He's generous in victory. Test that theory now.",
-  "Full-time {score}! He's saying yes to life. And probably to you. Try it.",
-  "Win! {score}. He's beaming. The holiday basically books itself right now.",
-  "They win {score}! He's unbreakable right now. Sneak in the favour.",
-  "Full-time, won {score}! Good mood window open. You have one hour.",
-  "Win {score}! He's so pleased he forgot to be sensible. Pounce.",
-  "Full-time win {score}! Now's the moment for \"so, about that thing\".",
-  "Won {score}! He's high on it. Ride the wave, ask the question.",
-  "Full-time, they win {score}! He'll be over the moon. Send him a heart.",
-  "Win! {score} at the whistle. He's made up. Say well played.",
-  "They win {score}! He'll be buzzing for ages. Drop him a quick text.",
-  "Full-time win {score}! He's delighted. Tell him you watched it all.",
-  "Victory, {score}! He's on cloud nine. Perfect moment to message him.",
-  "Win {score}! He'll be grinning all evening. Good time to text.",
-  "Full-time, won {score}! He's thrilled. Send him something nice.",
-  "They've won {score}! He'll be celebrating. Drop him a line.",
-  "Win! {score}. He's beaming. A quick \"get in!\" will make his night.",
-  "Full-time {score}, a win! He's loving life. Say hi.",
-  "Won {score}! He'll be buzzing. Tell him how good they looked.",
-  "Victory {score}! He's made up. Good moment to reach out.",
-  "Full-time win {score}! He's over the moon. Send a heart.",
-  "They win {score}! He's thrilled to bits. Text him now.",
-  "Win, {score}! He's on top of the world. Say well played.",
-  "Full-time, they win {score}! He's delighted. A quick text lands well.",
-  "Won {score}! He'll be glowing. Good time to check in.",
-  "Win! {score}. He's buzzing. Drop him a celebratory line.",
-  "Full-time win {score}! He couldn't be happier. Message him.",
-  "They've done it, {score}! He's over the moon. Say something nice.",
-];
-
-export const FT_LOSS: readonly string[] = [
-  "Full-time, lost {score}. Whatever you were going to ask, file it for another day.",
-  "Lost {score}. Not the night for the big conversation. Bank it, be kind.",
-  "Full-time {score}. Park the favour. Tonight he needs a snack and sympathy.",
-  "Beaten {score}. Hold that thought till next time. Tonight's a write-off for asks.",
-  "Lost {score} at full-time. Shelve the holiday chat. Wrong night entirely.",
-  "Full-time, lost {score}. Save your news. He can't take good vibes right now.",
-  "Beaten {score}. The ask can wait. Tonight is purely comfort duty.",
-  "Lost {score}. Don't bring up the trip. Bring snacks instead.",
-  "Full-time {score}. File the favour under \"another day\". Be gentle tonight.",
-  "Lost {score} at the whistle. Not a yes-mood. Hold your fire.",
-  "Beaten {score}. Park the big plan. Right now he needs you, not questions.",
-  "Full-time, lost {score}. Whatever you wanted, ask it tomorrow. Tonight, kindness.",
-  "Full-time, lost {score}. He'll need a minute on this one.",
-  "Beaten {score} at the whistle. He'll be gutted, go easy on him.",
-  "Full-time {score}, a defeat. He'll be quiet. Be gentle tonight.",
-  "Lost {score} at full-time. He'll be down. A kind word helps.",
-  "Defeat, {score}. He'll be frustrated. Maybe leave him be for a bit.",
-  "Full-time and they've lost {score}. He'll need space. Be soft.",
-  "Beaten {score}. He'll be deflated. Not the teasing time.",
-  "Lost {score} at the whistle. He'll be sighing. Go easy on him.",
-  "Full-time {score}, tough one. He'll be gutted. Send some warmth.",
-  "Defeat {score}. He'll be quiet for a while. A gentle text lands well.",
-  "They've lost {score}. He'll be frustrated. Be patient with him.",
-  "Full-time, beaten {score}. Not his night. Just check he's okay.",
-  "Lost {score}. He'll be down about it. A little support goes far.",
-  "Full-time {score}, a loss. He'll need a beat. Be the kind voice.",
-  "Beaten {score} at full-time. He'll be deflated. Go softly tonight.",
-  "Defeat, {score}. He'll be muttering about it. Let him, then be kind.",
-  "Lost {score} at the whistle. He'll be gutted. Hold the jokes.",
-  "Full-time and it's a defeat, {score}. He'll be quiet. Be gentle.",
-  "Beaten {score}. He'll need a minute before he talks. Give it to him.",
-  "Lost {score}. Tough watch for him. A warm message helps.",
-  "Full-time {score}, defeat. He'll be frustrated. Stay soft with him.",
-  "They've lost {score}. He'll be down. Maybe just send a heart.",
-  "Beaten {score} at full-time. Not what he wanted. Go easy.",
-  "Defeat {score}. He'll be deflated. Now's a good time to be soft.",
-  "Lost {score} at the whistle. He'll be gutted. Be patient tonight.",
-  "Full-time, lost {score}. He'll need space. A kind word means a lot.",
-  "Beaten {score}. He'll be sighing at the telly. Be gentle with him.",
-  "Full-time {score}, a loss. He'll be down. Be the calm one for him.",
-];
-
-export const FT_DRAW: readonly string[] = [
-  "Full-time, {score} draw. Honours even.",
-  "It ends {score}. A point apiece, he'll take it or rue it.",
-  "Full-time {score}, all square. A fair result, he'll say.",
-  "Draw, {score} at the whistle. Even contest, even result.",
-  "Full-time and it's {score}. Honours shared. He'll have thoughts.",
-  "{score} draw at full-time. A point each. He'll be mulling it over.",
-  "It finishes {score}. All square. He'll be philosophical about it.",
-  "Full-time {score}, a draw. Nobody wins. Ask him how he feels.",
-  "Drawn {score}. Even stevens at the whistle. He'll take a point.",
-  "Full-time, all square {score}. Fair enough, he'll probably say.",
-  "{score} at full-time, a draw. He'll have mixed feelings. Ask him.",
-  "It ends level, {score}. Point shared. He'll be reflecting on it.",
-  "Full-time draw, {score}. Honours even. Good time to check in.",
-  "Drawn {score} at the whistle. He'll weigh it up. Ask his verdict.",
-  "Full-time {score}. All square. A point gained or two dropped, ask him.",
-  "It finishes {score}, a draw. He'll be chewing it over. Text him.",
-  "Level at full-time, {score}. Honours shared. He'll have a view.",
-  "{score} draw. Even result for an even game. He'll take it.",
-  "Full-time, {score}. A point each. He'll be weighing the result.",
-  "Drawn {score} at full-time. A fair shout, he'll say. Ask him.",
-  "It ends {score}, all square. He'll be thoughtful about this one.",
-  "Full-time draw {score}. Honours even. He'll have plenty to say.",
-  "{score} at the whistle, a draw. Point apiece. Ask how he rates it.",
-  "Level {score} at full-time. Shared spoils. He'll be reflecting.",
-  "Full-time {score}, drawn. Nobody loses. Good moment to ask his take.",
-  "It finishes all square, {score}. He'll mull it over. Drop him a line.",
-  "Draw, {score}. Even game, even result. He'll take the point.",
-  "Full-time, {score} draw. Honours shared. He'll have an opinion.",
-  "{score} at full-time. All square. Ask if he's happy with it.",
-  "Drawn {score}. A point each at the whistle. He'll weigh it up.",
-  "Full-time {score}, level. A fair result, he'll agree. Text him.",
-  "It ends {score}, a draw. He'll be philosophical. Ask his verdict.",
-  "Level at full-time, {score}. Spoils shared. He'll have thoughts.",
-  "Full-time draw, {score}. Honours even. He'll be chewing it over.",
-  "{score} at the whistle, all square. A point. Ask how he feels.",
-  "Drawn {score} at full-time. Even contest. He'll take the point.",
-  "Full-time, {score}. A draw. Nobody wins. Good time to check in.",
-  "It finishes {score}, level. He'll be reflecting. Drop him a text.",
-  "Full-time {score}, all square. Honours shared. He'll have a take.",
-  "Draw, {score} at the whistle. A point each. Ask him his verdict.",
-];
-
-// ============================================================
 // 30-MINUTES-TO-KICKOFF pool. {team} = follower's team, {opp} = opponent.
 // No score (the game hasn't started). The "it's about to start" nudge.
 // ============================================================
@@ -449,47 +182,309 @@ export const KICKOFF_SOON: readonly string[] = [
   "Not long now. {team} vs {opp} kicks off in 30 minutes.",
 ];
 
-// ── A line to say, on the half-time and full-time pushes ──
+// ============================================================
+// HALF-TIME and FULL-TIME: what kind of game it is, then a line to say
+// ============================================================
 //
-// The break and the final whistle are the two moments with time to talk, and
-// she gets the score there anyway, so the push carries one line she can say
-// to him (Anton, 2026-10-02). Not a separate push, and nothing she has to have
-// saved: a goal push arrives a minute or two after the goal, too late to say
-// anything in the moment, but half-time lasts fifteen minutes and full-time
-// the rest of the evening. Her voice to him, first person; no em-dashes.
+// Rewritten 2026-10-29 (Anton). The old body was a 40-deep pool per result
+// about HIS mood ("He's already insufferable", "ask for the favour now"): a
+// handful of ideas reworded forty times, "he" even when she follows her dad,
+// and "a point apiece" after a cup tie. It is gone. The body is now one short
+// line saying what kind of game it was (a comeback, a late winner, a cup
+// exit), which only we can write because we hold the half-time score and the
+// goal minutes, followed by `Say: "…"`: one line she can say to him.
+//
+// The half-time and full-time pushes are the two moments with time to talk.
+// A goal push arrives a minute or two late; half-time lasts fifteen minutes
+// and full-time the rest of the evening (Anton, 2026-10-02).
+//
+// Rules for the lines to say (goal-push.test.ts sweeps every one):
+//   - Her voice to him, first person, "we" for his team. No em-dashes.
+//   - At most 60 characters.
+//   - Assume nothing about the opponent: "first goal wins this" is only true
+//     against some sides. Prefer what OUR team should do.
+//   - No "point" or "points": these pools also serve cup ties.
+//   - Match the size of the score: a 1-1 is not "nobody can defend".
+//
+// Body placeholders: {score} follower-first, {team} her team, {when} "in the
+// 88th minute" / "in stoppage time", {how} "" / " after extra time" /
+// " on penalties".
 
-export const HT_SAY_AHEAD: readonly string[] = [
-  "Half the job done. Don't let them back in it.",
-  "Ahead at the break. Game management from here.",
-  "Keep doing that and we're fine. Don't change a thing.",
-];
+export type HtSituation = "ahead_big" | "ahead_one" | "nil_nil" | "level_goals" | "behind_one" | "behind_big";
 
-export const HT_SAY_LEVEL: readonly string[] = [
-  "Level at half-time. Anyone's game, this.",
-  "Still all to play for. We need a goal.",
-  "I'll take that. Second half's ours.",
-];
+export type FtSituation =
+  | "win_big" | "win_narrow" | "win_late" | "win_comeback"
+  | "draw_nil" | "draw_goals" | "draw_late_for" | "draw_late_against"
+  | "loss_narrow" | "loss_big" | "loss_late"
+  | "cup_through" | "cup_out" | "cup_won";
 
-export const HT_SAY_BEHIND: readonly string[] = [
-  "Plenty of time. One goal changes everything.",
-  "We've come back from worse. Forty-five minutes.",
-  "Behind at the break. The gaffer won't be happy.",
-];
+export interface SituationCopy {
+  body: readonly string[];
+  say: readonly string[];
+}
 
-export const FT_SAY_WIN: readonly string[] = [
-  "Get in. Three points.",
-  "Massive, that. Three points.",
-  "Told you. Never in doubt.",
-];
+export const HT_COPY: Record<HtSituation, SituationCopy> = {
+  ahead_big: {
+    body: ["{team} are {score} up at the break.", "{score} up at half-time. A good half's work."],
+    say: [
+      "Two up. Just don't do anything silly now.",
+      "Don't get sloppy after the break.",
+      "That's how you start a game.",
+      "Keep the ball and let them chase it.",
+      "Go for another. Kill it off.",
+      "Don't sit back. Keep going at them.",
+      "Keep this up and it's done by sixty.",
+      "Just need to stay switched on now.",
+    ],
+  },
+  ahead_one: {
+    body: ["{team} lead {score} at the break.", "{score} up at half-time. Not safe yet."],
+    say: [
+      "One goal's never enough. We need a second.",
+      "Good half, but one goal is never safe.",
+      "Get the next one and it's done.",
+      "Don't sit back on one goal.",
+      "Keep pressing. The second goal kills it.",
+      "Need to stay switched on at the back.",
+      "Keep the ball more. Make them run.",
+      "Good start. Now finish the job.",
+    ],
+  },
+  nil_nil: {
+    body: ["Still goalless at the break.", "0-0 at half-time. Nothing in it yet."],
+    say: [
+      "We need to shoot more. Make the keeper work.",
+      "Need to get more people in the box.",
+      "We need to be braver going forward.",
+      "Get it wide and get crosses in.",
+      "Someone needs to have a go from distance.",
+      "Need to move the ball quicker.",
+      "Need a bit more urgency second half.",
+      "Keep it tight, but we need a goal.",
+    ],
+  },
+  level_goals: {
+    body: ["Level at {score} at the break.", "{score} at half-time. All to play for."],
+    say: [
+      "Proper game, this. Anything could happen.",
+      "Good to see us scoring. Now tighten up.",
+      "We need to stop giving them chances.",
+      "Need to tidy up at the back.",
+      "Keep attacking like that, it'll come.",
+      "Better than a boring nil-nil.",
+      "Next goal is massive.",
+      "Fun to watch. Bit nervy though.",
+    ],
+  },
+  behind_one: {
+    body: ["{team} trail {score} at the break.", "{score} down at half-time. One goal in it."],
+    say: [
+      "One goal in it. Plenty of time.",
+      "Get the next one and it's a different game.",
+      "We've come back from worse. Forty-five minutes.",
+      "Need to be braver. Get bodies forward.",
+      "Keep calm. No need to rush it yet.",
+      "Need a quick start to the second half.",
+      "Need to shoot more. Test the keeper.",
+      "Stick at it. The chances will come.",
+    ],
+  },
+  behind_big: {
+    body: ["{team} are {score} down at the break.", "{score} down at half-time. A tough half."],
+    say: [
+      "Something has to change at half-time.",
+      "We need an early goal after the break.",
+      "Long way back. The next goal is huge.",
+      "Need a change. Fresh legs, maybe.",
+      "Get one back early and it's game on.",
+      "Nothing to lose now. Just go for it.",
+      "Need to be way more aggressive.",
+      "Don't let it get any worse first.",
+    ],
+  },
+};
 
-export const FT_SAY_DRAW: readonly string[] = [
-  "A point's a point. We've had worse afternoons.",
-  "Could've been worse. We go again.",
-  "Not a bad point, that. We'll take it.",
-];
-
-export const FT_SAY_LOSS: readonly string[] = [
-  "Nothing to say about that. We go again.",
-  "Not our day. Next one.",
-  "Gutted. Forget that one.",
-];
+export const FT_COPY: Record<FtSituation, SituationCopy> = {
+  win_big: {
+    body: ["Won {score}, and comfortably.", "{team} win {score}. A proper result."],
+    say: [
+      "Told you. Never in doubt.",
+      "Easy in the end.",
+      "Could get used to that.",
+      "That's more like it.",
+      "Sit back and enjoy that one.",
+      "Everyone was up for that today.",
+      "Proper performance, that.",
+      "That's a statement, that.",
+    ],
+  },
+  win_narrow: {
+    body: ["Won {score}. Tight, but a win.", "{team} edge it {score}."],
+    say: [
+      "Ugly, but we'll take it.",
+      "Nervy. But a win's a win.",
+      "Didn't enjoy those last ten minutes.",
+      "Job done. Not pretty, but job done.",
+      "Should've been more. Still, we won.",
+      "Hard work, that. Got there.",
+      "Those are the ones that matter.",
+      "Didn't make it easy for ourselves.",
+    ],
+  },
+  win_late: {
+    body: ["Won {score} with a winner {when}.", "{score}, and the winner came {when}."],
+    say: [
+      "Left it late! My heart can't take that.",
+      "That's why you never leave early.",
+      "Right at the death. Get in.",
+      "Never stopped going. Love that.",
+      "Late winners are the best winners.",
+      "Thought that was slipping away. Get in.",
+      "Scenes! What a finish.",
+      "Kept going till the end. Deserved that.",
+    ],
+  },
+  win_comeback: {
+    body: ["Behind at the break and won it {score}.", "Came from behind to win {score}."],
+    say: [
+      "Behind at half-time and won it. Love that.",
+      "Whatever was said at half-time worked.",
+      "What a second half.",
+      "Showed some character there.",
+      "Completely different team after the break.",
+      "Never gave up. Brilliant.",
+      "Comebacks feel twice as good.",
+      "Turned it round. Proper fight, that.",
+    ],
+  },
+  draw_nil: {
+    body: ["Finished 0-0.", "Goalless at full-time."],
+    say: [
+      "Not one for the highlights.",
+      "Ninety minutes and nothing. Fair enough.",
+      "Needed to be braver going forward.",
+      "Solid at the back, nothing up front.",
+      "At least we didn't concede.",
+      "One of those. Move on.",
+      "Needed a bit of magic from someone.",
+      "Needed more shots, honestly.",
+    ],
+  },
+  draw_goals: {
+    body: ["Finished {score}.", "A {score} draw at full-time."],
+    say: [
+      "Entertaining, at least.",
+      "Could've won it, could've lost it.",
+      "Fair result, honestly.",
+      "Good going forward, sloppy at the back.",
+      "Not a bad game to watch.",
+      "Happy we scored. Annoyed we conceded.",
+      "Mixed feelings on that one.",
+      "Either side could've nicked that.",
+    ],
+  },
+  draw_late_for: {
+    body: ["Drew {score} with an equaliser {when}.", "Rescued a {score} draw {when}."],
+    say: [
+      "Snatched it at the end! Never give up.",
+      "Feels like a win, that one.",
+      "Thought we'd lost that. Get in.",
+      "Kept going right to the end.",
+      "That's character, that.",
+      "Not dead till the whistle.",
+      "Late drama. I'll take it.",
+      "My heart. Saved it right at the end.",
+    ],
+  },
+  draw_late_against: {
+    body: ["Drew {score} after conceding {when}.", "Pegged back {when}. It finished {score}."],
+    say: [
+      "So close. That one hurts.",
+      "Should've seen that out.",
+      "Need to learn to see games out.",
+      "Thought we had that. Gutted.",
+      "Needed to keep the ball at the end.",
+      "Feels like a defeat, that.",
+      "Need to kill games off earlier.",
+      "Minutes from a win. Cruel.",
+    ],
+  },
+  loss_narrow: {
+    body: ["Lost {score}.", "Beaten {score}. One goal in it."],
+    say: [
+      "Not our day. Next one.",
+      "Close, but no. On to the next.",
+      "One goal in it. Annoying.",
+      "Need to be more clinical.",
+      "Fine margins. Next one.",
+      "Didn't do enough to win, sadly.",
+      "Frustrating. Need a goal from somewhere.",
+      "Shake it off. Next game.",
+    ],
+  },
+  loss_big: {
+    body: ["Lost {score}.", "Beaten {score}. A tough one."],
+    say: [
+      "Let's not talk about that one.",
+      "Gutted. Forget that one.",
+      "Forget it. Next week.",
+      "One of those days. Move on.",
+      "Nothing went right today.",
+      "Need a proper reaction next game.",
+      "Delete that one from memory.",
+      "Bad day. It happens to everyone.",
+    ],
+  },
+  loss_late: {
+    body: ["Lost {score} to a goal {when}.", "Beaten {score}, the winner coming {when}."],
+    say: [
+      "Losing it that late is the worst.",
+      "So close. Cruel, that.",
+      "Thought we'd got something. Gutted.",
+      "That last goal really hurts.",
+      "Need to see games out better.",
+      "Minutes from a draw. Painful.",
+      "Brutal. Right at the end.",
+      "Hate losing like that.",
+    ],
+  },
+  cup_through: {
+    body: ["Won {score}{how}.", "{team} win {score}{how}."],
+    say: [
+      "Through! Who do we get next?",
+      "Into the next round. That's all that matters.",
+      "Job done. On to the next round.",
+      "Love a cup run.",
+      "Still in it. Who's next?",
+      "Didn't matter how. We're through.",
+      "Next round, here we come.",
+      "Cup dream's still alive.",
+    ],
+  },
+  cup_out: {
+    body: ["Lost {score}{how}.", "Beaten {score}{how}."],
+    say: [
+      "Out of the cup. All about the league now.",
+      "Never mind. One less thing to worry about.",
+      "Gutted. Liked having a cup run.",
+      "Focus on the league now.",
+      "Out. At least it frees up the schedule.",
+      "Shame. Next year.",
+      "Cup's gone. League's what matters.",
+      "Bit gutted. We'll go again next season.",
+    ],
+  },
+  cup_won: {
+    body: ["Won the final {score}{how}.", "{team} win the final {score}{how}."],
+    say: [
+      "Cup winners! Enjoy every second of this.",
+      "Trophy! Get the champagne out.",
+      "What a day. Cup winners!",
+      "They'll remember this one forever.",
+      "Silverware! I'm so happy for you.",
+      "Winners! Nobody can take that away.",
+      "A trophy. Doesn't get better than this.",
+      "Get the open-top bus ready.",
+    ],
+  },
+};

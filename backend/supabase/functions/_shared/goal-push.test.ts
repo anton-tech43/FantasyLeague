@@ -7,7 +7,9 @@ import {
   formatMinute,
   formatScorerLine,
   formatScorers,
+  ftSituation,
   type GoalEvent,
+  htSituation,
   interpolate,
   pickLatestGoalForTeam,
   renderFullTimePush,
@@ -15,25 +17,16 @@ import {
   renderHalfTimePush,
   renderKickoffSoonPush,
   seededRng,
+  type StoredGoalEvent,
   withSaying,
   toStoredGoalEvents,
 } from "./goal-push.ts";
 import {
-  FT_DRAW,
-  FT_LOSS,
-  FT_WIN,
+  FT_COPY,
   GOAL_BOTH,
   GOAL_CONCEDED,
   GOAL_SCORED,
-  FT_SAY_DRAW,
-  FT_SAY_LOSS,
-  FT_SAY_WIN,
-  HT_AHEAD,
-  HT_BEHIND,
-  HT_LEVEL,
-  HT_SAY_AHEAD,
-  HT_SAY_BEHIND,
-  HT_SAY_LEVEL,
+  HT_COPY,
   KICKOFF_SOON,
 } from "./goal-push-copy.ts";
 import { WC_COUNTRY_META } from "./wc-countries.ts";
@@ -133,58 +126,102 @@ Deno.test("renderGoalPush: 'both' shares one neutral body across both slugs", ()
 });
 
 // ============================================================
-// renderHalfTimePush perspective routing
+// Half-time and full-time: situation, then a line to say
 // ============================================================
 
-Deno.test("renderHalfTimePush: ahead/behind pools by perspective, score follower-first", () => {
+/// A stored goal: side, minute, optional stoppage.
+const g = (side: "home" | "away", minute: number, extra: number | null = null): StoredGoalEvent =>
+  ({ side, player: null, minute, extra, isOwnGoal: false, isPenalty: false });
+
+Deno.test("renderHalfTimePush: each side gets its own situation, score follower-first", () => {
   const copy = renderHalfTimePush({ home: MEX, away: RSA, homeGoals: 2, awayGoals: 0, rng: zero });
   eq(copy.title, "Half-time: Mexico 2-0 S. Africa", "title carries home-away scoreline");
-  eq(copy.bodies.mexico, said(interpolate(HT_AHEAD[0], { score: "2-0", team: "Mexico" }), HT_SAY_AHEAD), "leader from HT_AHEAD");
-  eq(copy.bodies.south_africa, said(interpolate(HT_BEHIND[0], { score: "0-2", team: "S. Africa" }), HT_SAY_BEHIND), "trailer from HT_BEHIND");
+  eq(copy.bodies.mexico, said("Mexico are 2-0 up at the break.", HT_COPY.ahead_big.say), "leader");
+  eq(copy.bodies.south_africa, said("S. Africa are 0-2 down at the break.", HT_COPY.behind_big.say), "trailer");
 });
 
-Deno.test("renderHalfTimePush: level draws both sides from HT_LEVEL", () => {
-  const copy = renderHalfTimePush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 1, rng: zero });
-  eq(copy.bodies.mexico, said(interpolate(HT_LEVEL[0], { score: "1-1", team: "Mexico" }), HT_SAY_LEVEL), "home from HT_LEVEL");
-  eq(copy.bodies.south_africa, said(interpolate(HT_LEVEL[0], { score: "1-1", team: "S. Africa" }), HT_SAY_LEVEL), "away from HT_LEVEL");
+Deno.test("htSituation: by goal difference, and 0-0 is not a 1-1", () => {
+  eq(htSituation(2, 0), "ahead_big", "2-0");
+  eq(htSituation(1, 0), "ahead_one", "1-0");
+  eq(htSituation(0, 0), "nil_nil", "0-0");
+  eq(htSituation(1, 1), "level_goals", "1-1");
+  eq(htSituation(0, 1), "behind_one", "0-1");
+  eq(htSituation(1, 4), "behind_big", "1-4");
 });
 
-// ============================================================
-// renderFullTimePush perspective routing
-// ============================================================
-
-Deno.test("renderFullTimePush: win/loss pools by perspective", () => {
-  const copy = renderFullTimePush({ home: MEX, away: RSA, homeGoals: 2, awayGoals: 0, rng: zero });
-  eq(copy.title, "Full-time: Mexico 2-0 S. Africa", "title carries the scoreline");
-  eq(copy.bodies.mexico, said(interpolate(FT_WIN[0], { score: "2-0", team: "Mexico" }), FT_SAY_WIN), "winner from FT_WIN");
-  eq(copy.bodies.south_africa, said(interpolate(FT_LOSS[0], { score: "0-2", team: "S. Africa" }), FT_SAY_LOSS), "loser from FT_LOSS");
+Deno.test("ftSituation: plain results by margin", () => {
+  eq(ftSituation({ mine: 3, theirs: 1 }).situation, "win_big", "3-1");
+  eq(ftSituation({ mine: 1, theirs: 0 }).situation, "win_narrow", "1-0");
+  eq(ftSituation({ mine: 0, theirs: 0 }).situation, "draw_nil", "0-0");
+  eq(ftSituation({ mine: 2, theirs: 2 }).situation, "draw_goals", "2-2");
+  eq(ftSituation({ mine: 1, theirs: 2 }).situation, "loss_narrow", "1-2");
+  eq(ftSituation({ mine: 0, theirs: 2 }).situation, "loss_big", "0-2");
 });
 
-Deno.test("renderFullTimePush: draw draws both sides from FT_DRAW", () => {
-  const copy = renderFullTimePush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 1, rng: zero });
-  eq(copy.bodies.mexico, said(interpolate(FT_DRAW[0], { score: "1-1", team: "Mexico" }), FT_SAY_DRAW), "home from FT_DRAW");
-  eq(copy.bodies.south_africa, said(interpolate(FT_DRAW[0], { score: "1-1", team: "S. Africa" }), FT_SAY_DRAW), "away from FT_DRAW");
+Deno.test("ftSituation: late goals from the goal list, minute in words", () => {
+  const winLate = ftSituation({ mine: 2, theirs: 1, goals: [g("home", 10), g("away", 50), g("home", 88)], ctx: { side: "home" } });
+  eq(winLate.situation, "win_late", "88' winner");
+  eq(winLate.when, "in the 88th minute", "minute in words");
+  const stoppage = ftSituation({ mine: 1, theirs: 0, goals: [g("home", 90, 4)], ctx: { side: "home" } });
+  eq(stoppage.when, "in stoppage time", "90+4 is stoppage time");
+  // Away side of the same game: lost it late.
+  eq(ftSituation({ mine: 1, theirs: 2, goals: [g("home", 10), g("away", 50), g("home", 88)], ctx: { side: "away" } }).situation,
+    "loss_late", "the other side lost it late");
+  // A late goal that only padded the lead decides nothing.
+  eq(ftSituation({ mine: 3, theirs: 1, goals: [g("home", 10), g("away", 20), g("home", 60), g("home", 89)], ctx: { side: "home" } }).situation,
+    "win_big", "late third goal is not a late winner");
+  eq(ftSituation({ mine: 1, theirs: 1, goals: [g("home", 10), g("away", 87)], ctx: { side: "home" } }).situation,
+    "draw_late_against", "pegged back late");
+  eq(ftSituation({ mine: 1, theirs: 1, goals: [g("home", 10), g("away", 87)], ctx: { side: "away" } }).situation,
+    "draw_late_for", "rescued it late");
 });
 
-Deno.test("renderFullTimePush: shootout — pens pick the pools and the {score}", () => {
-  const copy = renderFullTimePush({
-    home: MEX, away: RSA, homeGoals: 1, awayGoals: 1, pens: { home: 4, away: 2 }, rng: zero,
+Deno.test("ftSituation: no late claim without a complete goal list or after extra time", () => {
+  eq(ftSituation({ mine: 2, theirs: 1, goals: [g("home", 88)], ctx: { side: "home" } }).situation,
+    "win_narrow", "one goal missing from the list: plain result");
+  eq(ftSituation({ mine: 2, theirs: 1, goals: null, ctx: { side: "home" } }).situation, "win_narrow", "no list");
+  eq(ftSituation({ mine: 2, theirs: 1, goals: [g("home", 10), g("away", 50), g("home", 118)], ctx: { side: "home" }, extraTime: true }).situation,
+    "win_narrow", "a 118' winner after extra time is not 'late' in this sense");
+});
+
+Deno.test("ftSituation: comeback needs a half-time deficit; a late winner reads first", () => {
+  eq(ftSituation({ mine: 2, theirs: 1, ctx: { side: "home", ht: { mine: 0, theirs: 1 } } }).situation, "win_comeback", "behind at HT");
+  eq(ftSituation({ mine: 2, theirs: 1, ctx: { side: "home", ht: { mine: 1, theirs: 1 } } }).situation, "win_narrow", "level at HT");
+  eq(ftSituation({ mine: 2, theirs: 1, ctx: { side: "home", ht: null } }).situation, "win_narrow", "unknown HT");
+  eq(ftSituation({
+    mine: 2, theirs: 1, goals: [g("away", 30), g("home", 60), g("home", 89)], ctx: { side: "home", ht: { mine: 0, theirs: 1 } },
+  }).situation, "win_late", "late winner beats comeback");
+});
+
+Deno.test("ftSituation: a settled tie wins over the scoreline, and a shootout settles one", () => {
+  eq(ftSituation({ mine: 1, theirs: 0, ctx: { side: "home", cup: "through" } }).situation, "cup_through", "through");
+  eq(ftSituation({ mine: 0, theirs: 1, ctx: { side: "home", cup: "out" } }).situation, "cup_out", "out");
+  eq(ftSituation({ mine: 2, theirs: 1, ctx: { side: "home", cup: "won" } }).situation, "cup_won", "final");
+  eq(ftSituation({ mine: 1, theirs: 1, pens: { mine: 4, theirs: 2 } }).situation, "cup_through", "shootout won");
+  eq(ftSituation({ mine: 1, theirs: 1, pens: { mine: 2, theirs: 4 } }).situation, "cup_out", "shootout lost");
+});
+
+Deno.test("renderFullTimePush: comeback and cup bodies, clause before the line to say", () => {
+  const comeback = renderFullTimePush({ home: MEX, away: RSA, homeGoals: 2, awayGoals: 1, ht: { home: 0, away: 1 }, rng: zero });
+  eq(comeback.bodies.mexico, said("Behind at the break and won it 2-1.", FT_COPY.win_comeback.say), "comeback");
+  eq(comeback.bodies.south_africa, said("Lost 1-2.", FT_COPY.loss_narrow.say), "the other side");
+  const cup = renderFullTimePush({
+    home: MEX, away: RSA, homeGoals: 1, awayGoals: 0, rng: zero,
+    cupBySide: { mexico: "through", south_africa: "out" },
+    competitionBySide: { mexico: "Through to the last 16.", south_africa: "Out of the League Cup." },
   });
+  eq(cup.bodies.mexico, said("Won 1-0. Through to the last 16.", FT_COPY.cup_through.say), "through");
+  eq(cup.bodies.south_africa, said("Lost 0-1. Out of the League Cup.", FT_COPY.cup_out.say), "out");
+});
+
+Deno.test("renderFullTimePush: shootout reads the pens, never 'drew'", () => {
+  const copy = renderFullTimePush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 1, pens: { home: 4, away: 2 }, rng: zero });
   eq(copy.title, "Full-time: Mexico 1-1 S. Africa (4-2 on pens)", "title carries goals + shootout");
-  eq(copy.bodies.mexico, said(interpolate(FT_WIN[0], { score: "4-2", team: "Mexico" }), FT_SAY_WIN), "shootout winner from FT_WIN, never drew");
-  eq(copy.bodies.south_africa, said(interpolate(FT_LOSS[0], { score: "2-4", team: "S. Africa" }), FT_SAY_LOSS), "shootout loser from FT_LOSS");
-  assert(!copy.title.includes("–") && !copy.title.includes("—"), "no em/en dashes");
-});
-
-Deno.test("renderFullTimePush: away shootout winner + null pens keeps draw behavior", () => {
-  const away = renderFullTimePush({
-    home: MEX, away: RSA, homeGoals: 0, awayGoals: 0, pens: { home: 3, away: 5 }, rng: zero,
-  });
-  eq(away.bodies.south_africa, said(interpolate(FT_WIN[0], { score: "5-3", team: "S. Africa" }), FT_SAY_WIN), "away shootout winner from FT_WIN");
-  eq(away.bodies.mexico, said(interpolate(FT_LOSS[0], { score: "3-5", team: "Mexico" }), FT_SAY_LOSS), "home from FT_LOSS");
+  eq(copy.bodies.mexico, said("Won 4-2 on penalties.", FT_COPY.cup_through.say), "shootout winner");
+  eq(copy.bodies.south_africa, said("Lost 2-4 on penalties.", FT_COPY.cup_out.say), "shootout loser");
   const nullPens = renderFullTimePush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 1, pens: null, rng: zero });
   eq(nullPens.title, "Full-time: Mexico 1-1 S. Africa", "null pens = unchanged title");
-  eq(nullPens.bodies.mexico, said(interpolate(FT_DRAW[0], { score: "1-1", team: "Mexico" }), FT_SAY_DRAW), "null pens = draw pool");
+  eq(nullPens.bodies.mexico, said("Finished 1-1.", FT_COPY.draw_goals.say), "null pens = draw");
 });
 
 // ============================================================
@@ -218,12 +255,6 @@ const POOLS: Record<string, readonly string[]> = {
   GOAL_SCORED,
   GOAL_CONCEDED,
   GOAL_BOTH,
-  HT_AHEAD,
-  HT_BEHIND,
-  HT_LEVEL,
-  FT_WIN,
-  FT_LOSS,
-  FT_DRAW,
 };
 
 Deno.test("every pool has exactly 40 unique variants", () => {
@@ -242,18 +273,11 @@ Deno.test("every variant: non-empty, <=90 chars, no em/en dashes, contains the s
 
   const goalVars = { flag: longestFlag, team: longestName, score };
   const bothVars = { home: longestName, away: longestName, score };
-  const periodVars = { score, team: longestName };
 
   const groups: Array<[readonly string[], Record<string, string>]> = [
     [GOAL_SCORED, goalVars],
     [GOAL_CONCEDED, goalVars],
     [GOAL_BOTH, bothVars],
-    [HT_AHEAD, periodVars],
-    [HT_BEHIND, periodVars],
-    [HT_LEVEL, periodVars],
-    [FT_WIN, periodVars],
-    [FT_LOSS, periodVars],
-    [FT_DRAW, periodVars],
   ];
 
   for (const [pool, vars] of groups) {
@@ -481,15 +505,29 @@ Deno.test("seededRng: the same fixture and score draw the same line, the next go
   }
 });
 
-Deno.test("withSaying: every HT/FT line fits, and the line to say survives a long body", () => {
-  for (const pool of [HT_SAY_AHEAD, HT_SAY_BEHIND, HT_SAY_LEVEL, FT_SAY_WIN, FT_SAY_LOSS, FT_SAY_DRAW]) {
-    for (const line of pool) {
+Deno.test("HT/FT copy: house rules on every line, and every body fits with its line to say", () => {
+  const all = [...Object.values(HT_COPY), ...Object.values(FT_COPY)];
+  for (const c of all) {
+    assert(c.say.length >= 8, `a situation with fewer than 8 lines to say: "${c.say[0]}"`);
+    assert(c.body.length >= 2, `a situation with one body: "${c.body[0]}"`);
+    for (const line of [...c.say, ...c.body]) {
       assert(!line.includes("\u2014") && !line.includes("\u2013"), `dash in "${line}"`);
-      assert(line.length <= 60, `"${line}" is too long to sit behind a colour line`);
+      // The pools serve cup ties too, where there are no points.
+      assert(!/\bpoints?\b/i.test(line), `"${line}" talks about points`);
+      // His mood was the old body; it is gone on purpose (2026-10-29).
+      assert(!/\b(he|him|his)\b/i.test(line), `"${line}" is about him`);
     }
+    for (const line of c.say) assert(line.length <= 60, `"${line}" is too long to sit behind a situation line`);
+  }
+  // Worst case: longest body, longest names, a two-digit score, a long clause.
+  const clause = "Through to the quarter-finals.";
+  for (const c of all) {
+    const body = [...c.body].sort((x, y) => y.length - x.length)[0]
+      .replace("{team}", "Nottingham Forest").replace("{score}", "10-10")
+      .replace("{when}", "in the 88th minute").replace("{how}", " after extra time");
+    const longestSay = [...c.say].sort((x, y) => y.length - x.length)[0];
+    assert(`${body} ${clause} Say: \u201C${longestSay}\u201D`.length <= 178, `"${body}" + "${longestSay}" overflow the lock screen`);
   }
   const long = "x".repeat(200);
-  const copy = renderHalfTimePush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 1, rng: zero });
-  assert(copy.bodies.mexico.length <= 178, "an HT body overflowed the lock screen");
-  eq(withSaying(long, HT_SAY_LEVEL, zero), `Say: \u201C${HT_SAY_LEVEL[0]}\u201D`, "the colour line goes first");
+  eq(withSaying(long, HT_COPY.level_goals.say, zero), `Say: \u201C${HT_COPY.level_goals.say[0]}\u201D`, "the situation line goes first");
 });

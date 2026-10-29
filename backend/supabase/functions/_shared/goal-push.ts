@@ -14,23 +14,16 @@
 
 import { competitionName, parseRound, roundLabel } from "./league-helpers.ts";
 import {
-  FT_DRAW,
-  FT_LOSS,
-  FT_SAY_DRAW,
-  FT_SAY_LOSS,
-  FT_SAY_WIN,
-  FT_WIN,
+  FT_COPY,
+  type FtSituation,
   GOAL_BOTH,
   GOAL_CONCEDED,
   GOAL_SCORED,
-  HT_AHEAD,
-  HT_BEHIND,
-  HT_LEVEL,
-  HT_SAY_AHEAD,
-  HT_SAY_BEHIND,
-  HT_SAY_LEVEL,
+  HT_COPY,
+  type HtSituation,
   KICKOFF_SOON,
 } from "./goal-push-copy.ts";
+import { decidingGoal, ordinal, sideGoals } from "./last-match.ts";
 
 export type GoalSide = "home" | "away" | "both";
 
@@ -404,9 +397,9 @@ export function renderKickoffSoonPush(args: {
   };
 }
 
-/// Half-time push for the two PLAYING countries' followers. Title carries the
-/// home-away scoreline; each side's body is drawn from the ahead / behind /
-/// level pool by its own perspective, score shown their-team-first.
+/// Half-time push for the two PLAYING teams' followers. Title carries the
+/// home-away scoreline; each side's body says what kind of half it was from
+/// its own perspective, score shown their-team-first, then a line to say.
 export function renderHalfTimePush(args: {
   home: GoalPushTeam;
   away: GoalPushTeam;
@@ -416,27 +409,83 @@ export function renderHalfTimePush(args: {
   rng?: () => number;
 }): GoalPushCopy {
   const { home, away, homeGoals, awayGoals, competition, rng = Math.random } = args;
+  const body = (team: GoalPushTeam, mine: number, theirs: number) => {
+    const c = HT_COPY[htSituation(mine, theirs)];
+    const line = interpolate(pick(c.body, rng), { score: `${mine}-${theirs}`, team: team.name });
+    return withSaying(appendClause(line, competition), c.say, rng);
+  };
   return {
     title: `Half-time: ${home.name} ${homeGoals}-${awayGoals} ${away.name}`,
-    bodies: {
-      [home.id]: withSaying(
-        appendClause(periodBody(HT_AHEAD, HT_BEHIND, HT_LEVEL, homeGoals, awayGoals, home.name, rng), competition),
-        sayPool(HT_SAY_AHEAD, HT_SAY_BEHIND, HT_SAY_LEVEL, homeGoals, awayGoals), rng),
-      [away.id]: withSaying(
-        appendClause(periodBody(HT_AHEAD, HT_BEHIND, HT_LEVEL, awayGoals, homeGoals, away.name, rng), competition),
-        sayPool(HT_SAY_AHEAD, HT_SAY_BEHIND, HT_SAY_LEVEL, awayGoals, homeGoals), rng),
-    },
+    bodies: { [home.id]: body(home, homeGoals, awayGoals), [away.id]: body(away, awayGoals, homeGoals) },
   };
 }
 
-/// Full-time own-result push for the two PLAYING countries' followers. Title
-/// carries the scoreline; each side's body is drawn from the win / loss / draw
-/// pool by its own perspective.
+export function htSituation(mine: number, theirs: number): HtSituation {
+  const d = mine - theirs;
+  if (d >= 2) return "ahead_big";
+  if (d === 1) return "ahead_one";
+  if (d <= -2) return "behind_big";
+  if (d === -1) return "behind_one";
+  return mine === 0 ? "nil_nil" : "level_goals";
+}
+
+/// How a settled knockout tie ended for one side; null when the game settled
+/// nothing (a league game, a first leg).
+export type CupResult = "through" | "out" | "won";
+
+export interface FtSideContext {
+  side: "home" | "away";
+  /// Half-time score, this side first. Null when unknown: no comeback claim.
+  ht?: { mine: number; theirs: number } | null;
+  cup?: CupResult | null;
+}
+
+/// What kind of game it was for one side, plus the {when} of a late goal.
+/// Late (85'+) and comeback claims need the goal list to account for every
+/// goal, and are never made after extra time, where the minutes mean
+/// something else. Anything uncertain falls back to the plain result.
+export function ftSituation(a: {
+  mine: number;
+  theirs: number;
+  ctx?: FtSideContext;
+  goals?: readonly StoredGoalEvent[] | null;
+  pens?: { mine: number; theirs: number } | null;
+  extraTime?: boolean;
+}): { situation: FtSituation; when?: string } {
+  const { mine, theirs, ctx, pens } = a;
+  if (ctx?.cup) return { situation: ctx.cup === "won" ? "cup_won" : ctx.cup === "out" ? "cup_out" : "cup_through" };
+  // A shootout settles a tie even when we could not say which round it was.
+  if (pens) return { situation: pens.mine > pens.theirs ? "cup_through" : "cup_out" };
+
+  const goals = ctx && !a.extraTime ? sideGoals(a.goals, ctx.side) : [];
+  const trusted = goals.length > 0 && goals.length === mine + theirs;
+  const late = (g: { minute: number; shownMinute: string }) =>
+    g.minute >= 85 ? (g.shownMinute.includes("+") ? "in stoppage time" : `in the ${ordinal(Math.floor(g.minute))} minute`) : null;
+
+  if (mine === theirs) {
+    const last = trusted ? goals[goals.length - 1] : null;
+    const when = last ? late(last) : null;
+    if (last && when) return { situation: last.ours ? "draw_late_for" : "draw_late_against", when };
+    return { situation: mine === 0 ? "draw_nil" : "draw_goals" };
+  }
+  const deciding = trusted ? decidingGoal(goals, mine, theirs) : null;
+  const when = deciding ? late(deciding) : null;
+  if (mine > theirs) {
+    if (when) return { situation: "win_late", when };
+    if (!a.extraTime && ctx?.ht && ctx.ht.mine < ctx.ht.theirs) return { situation: "win_comeback" };
+    return { situation: mine - theirs >= 2 ? "win_big" : "win_narrow" };
+  }
+  if (when) return { situation: "loss_late", when };
+  return { situation: theirs - mine >= 2 ? "loss_big" : "loss_narrow" };
+}
+
+/// Full-time own-result push for the two PLAYING teams' followers. Title
+/// carries the scoreline; each side's body says what kind of game it was
+/// (ftSituation), then the competition clause, then a line to say.
 ///
 /// `pens` (optional): shootout score when the match ended on penalties. Level
-/// goals are then NOT a draw — the title appends "(4-2 on pens)" and both the
-/// pool selection and the {score} placeholder use the shootout numbers, so the
-/// winner's followers get win copy reading "4-2", never "drew 1-1".
+/// goals are then NOT a draw: the title appends "(4-2 on pens)" and the body
+/// reads "Won 4-2 on penalties.", never "drew 1-1".
 export function renderFullTimePush(args: {
   home: GoalPushTeam;
   away: GoalPushTeam;
@@ -446,38 +495,41 @@ export function renderFullTimePush(args: {
   /// Per-side closing clause: "Through to the last 16." for one, "Out of the
   /// League Cup." for the other. Keyed by team slug; missing means no clause.
   competitionBySide?: Record<string, string>;
+  /// Half-time score (home-away), for the comeback line.
+  ht?: { home: number; away: number } | null;
+  /// Goal events in stored shape, for the late-goal lines.
+  goals?: readonly StoredGoalEvent[] | null;
+  /// How a settled knockout tie ended, keyed by team slug.
+  cupBySide?: Record<string, CupResult | null>;
+  extraTime?: boolean;
   rng?: () => number;
 }): GoalPushCopy {
   const { home, away, homeGoals, awayGoals, pens, competitionBySide, rng = Math.random } = args;
   const title = pens
     ? `Full-time: ${home.name} ${homeGoals}-${awayGoals} ${away.name} (${pens.home}-${pens.away} on pens)`
     : `Full-time: ${home.name} ${homeGoals}-${awayGoals} ${away.name}`;
-  const [h, a] = pens ? [pens.home, pens.away] : [homeGoals, awayGoals];
-  return {
-    title,
-    bodies: {
-      [home.id]: withSaying(
-        appendClause(periodBody(FT_WIN, FT_LOSS, FT_DRAW, h, a, home.name, rng), competitionBySide?.[home.id]),
-        sayPool(FT_SAY_WIN, FT_SAY_LOSS, FT_SAY_DRAW, h, a), rng),
-      [away.id]: withSaying(
-        appendClause(periodBody(FT_WIN, FT_LOSS, FT_DRAW, a, h, away.name, rng), competitionBySide?.[away.id]),
-        sayPool(FT_SAY_WIN, FT_SAY_LOSS, FT_SAY_DRAW, a, h), rng),
-    },
+  const body = (team: GoalPushTeam, side: "home" | "away") => {
+    const [mine, theirs] = side === "home" ? [homeGoals, awayGoals] : [awayGoals, homeGoals];
+    const sidePens = pens ? (side === "home" ? { mine: pens.home, theirs: pens.away } : { mine: pens.away, theirs: pens.home }) : null;
+    const ht = args.ht ? (side === "home" ? { mine: args.ht.home, theirs: args.ht.away } : { mine: args.ht.away, theirs: args.ht.home }) : null;
+    const { situation, when } = ftSituation({
+      mine, theirs, pens: sidePens, goals: args.goals, extraTime: args.extraTime,
+      ctx: { side, ht, cup: args.cupBySide?.[team.id] ?? null },
+    });
+    const c = FT_COPY[situation];
+    const score = sidePens ? `${sidePens.mine}-${sidePens.theirs}` : `${mine}-${theirs}`;
+    const how = sidePens ? " on penalties" : args.extraTime ? " after extra time" : "";
+    const line = interpolate(pick(c.body, rng), { score, team: team.name, when: when ?? "", how });
+    return withSaying(appendClause(line, competitionBySide?.[team.id]), c.say, rng);
   };
+  return { title, bodies: { [home.id]: body(home, "home"), [away.id]: body(away, "away") } };
 }
 
 /// What a lock-screen notification shows before it truncates, near enough.
 export const SAYING_BODY_BUDGET = 178;
 
-/// The pool of lines to say for this follower's side of the score.
-function sayPool(
-  lead: readonly string[], trail: readonly string[], level: readonly string[], mine: number, theirs: number,
-): readonly string[] {
-  return mine > theirs ? lead : mine < theirs ? trail : level;
-}
-
 /// The HT/FT body with one line for her to say on the end. If both will not
-/// fit what the lock screen shows, the line to say is kept and the colour
+/// fit what the lock screen shows, the line to say is kept and the situation
 /// line goes: it is the reason this push carries anything at all.
 export function withSaying(body: string, pool: readonly string[], rng: () => number): string {
   const say = `Say: \u201C${pick(pool, rng)}\u201D`;
@@ -485,19 +537,3 @@ export function withSaying(body: string, pool: readonly string[], rng: () => num
   return both.length <= SAYING_BODY_BUDGET ? both : say;
 }
 
-/// Shared body builder for the HT and FT pushes: picks from the leading /
-/// trailing / level pool (or win / loss / draw) by the follower's own
-/// perspective, score rendered their-team-first.
-function periodBody(
-  leadPool: readonly string[],
-  trailPool: readonly string[],
-  levelPool: readonly string[],
-  mine: number,
-  theirs: number,
-  team: string,
-  rng: () => number,
-): string {
-  const score = `${mine}-${theirs}`;
-  const pool = mine > theirs ? leadPool : mine < theirs ? trailPool : levelPool;
-  return interpolate(pick(pool, rng), { score, team });
-}

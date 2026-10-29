@@ -169,7 +169,7 @@ export function renderVerdict(v: VerdictInput): string {
 
 /// The goal that decided a game that has a winner: the winning side's goal
 /// that put them one ahead for the last time.
-function decidingGoal(goals: SideGoal[], gf: number, ga: number): SideGoal | null {
+export function decidingGoal(goals: SideGoal[], gf: number, ga: number): SideGoal | null {
   if (gf === ga) return null;
   const winnerOurs = gf > ga;
   const loserTotal = winnerOurs ? ga : gf;
