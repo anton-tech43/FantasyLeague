@@ -2013,12 +2013,15 @@ async function handleRequest(req: Request): Promise<Response> {
             clockStart: liveMinute != null ? Math.round(Date.now() / 1000 - liveMinute * 60) : null,
           };
           // ponytail: still per-minute (minuteBucket = the minute) because the
-          // App Store build reads `elapsed` and has no running clock — a
-          // quarter-hour bucket would freeze its minute for up to 15. Switch to
-          // Math.floor(liveMinute / 15) once the build with MatchMinute has
-          // been out long enough that old builds no longer matter.
+          // App Store builds (2.2, 2.3) read `elapsed` and have no running
+          // clock. A minute-only change goes at priority 5, which iOS does not
+          // count against the update budget; only a goal or a status change
+          // goes at 10 (well under 15 a match). Switch the bucket to
+          // Math.floor(liveMinute / 15) once 2.4 has been out long enough that
+          // old builds no longer matter.
           const minuteBucket = liveMinute ?? "";
-          const sig = `${contentState.homeScore}-${contentState.awayScore}-${contentState.statusLabel}-${minuteBucket}`;
+          const sigCore = `${contentState.homeScore}-${contentState.awayScore}-${contentState.statusLabel}`;
+          const sig = `${sigCore}-${minuteBucket}`;
           const matchFinished = FINISHED_STATUSES.has(status);
 
           // Active Live Activity tokens matching `filter`, every page (QA-04).
@@ -2117,9 +2120,11 @@ async function handleRequest(req: Request): Promise<Response> {
             laStarted = true;
             laSig = sig;
           } else if (isLive && laStarted && sig !== laSig) {
-            // UPDATE — goal or period change since the last push.
+            // UPDATE — goal or period change (priority 10), or only the minute
+            // moved (priority 5, for the builds without a running clock).
+            const minuteOnly = laSig !== null && laSig.replace(/-[^-]*$/, "") === sigCore;
             const updTokens = await laTokens((q) => q.eq("kind", "update").eq("fixture_id", fixtureId));
-            await sendAll(updTokens, { event: "update", contentState, staleSeconds: 5400 });
+            await sendAll(updTokens, { event: "update", contentState, staleSeconds: 5400, priority: minuteOnly ? 5 : 10 });
             laSig = sig;
           }
         }
