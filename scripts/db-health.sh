@@ -233,7 +233,7 @@ echo "── 7. WHAT CAN THE SHIPPED KEY REACH? ──────────�
 # anon-executable. So this cannot be prevented at creation, only noticed: every
 # CREATE FUNCTION needs its own REVOKE, and this is what catches the one that
 # forgets. Migrations 084/095/096/103 went a year without anybody noticing.
-ALLOWED='register_device_token|register_la_token|save_match_calls'
+ALLOWED='register_device_token|register_la_token|save_match_calls|log_events'
 OPEN=$(q "SELECT string_agg(p.proname, ', ' ORDER BY p.proname)
             FROM pg_proc p
            WHERE p.pronamespace = 'public'::regnamespace
