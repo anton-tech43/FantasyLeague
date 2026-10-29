@@ -16,16 +16,16 @@ struct NotificationPromptView: View {
                 VStack(spacing: 24) {
                     Spacer()
 
-                    LockScreenPreview(team: appState.selectedTeam ?? .arsenal)
-                        .padding(.horizontal, Layout.screenPadding)
-
                     Text("It only works if\nwe can reach you.")
                         .font(.onboardingTitle)
                         .foregroundColor(.textOnDark)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, Layout.screenPadding)
 
-                    Text("A heads-up on match day, then the score on your lock screen while it's on. If your iPhone asks about Live Activities, say yes: that's the score.")
+                    LockScreenPreview(team: appState.selectedTeam ?? .arsenal)
+                        .padding(.horizontal, Layout.screenPadding)
+
+                    Text("If your iPhone asks about Live Activities, say yes.")
                         .font(.onboardingBody)
                         .foregroundColor(.textOnDark.opacity(0.8))
                         .multilineTextAlignment(.center)
