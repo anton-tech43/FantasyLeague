@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B22B0F0F0F0F0F0F0F0F0002 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B22B0F0F0F0F0F0F0F0F0001 /* NotificationService.swift */; };
+		B22B0F0F0F0F0F0F0F0F0004 /* SharedAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = B22B0F0F0F0F0F0F0F0F0003 /* SharedAnalytics.swift */; };
+		B22B0F0F0F0F0F0F0F0F0005 /* SharedAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = B22B0F0F0F0F0F0F0F0F0003 /* SharedAnalytics.swift */; };
+		B22B0F0F0F0F0F0F0F0F0008 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B22B0F0F0F0F0F0F0F0F0007 /* PrivacyInfo.xcprivacy */; };
+		B22B0F0F0F0F0F0F0F0F000A /* GoalDiggerNotificationService.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B22B0F0F0F0F0F0F0F0F0009 /* GoalDiggerNotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, CodeSignOnCopy, ); }; };
 		003F6A856B6B334723F84F32 /* MatchLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCDB9E93E3CF813F605541EE /* MatchLiveActivity.swift */; };
 		11668C80EB1ED7F740D84481 /* TierGating.swift in Sources */ = {isa = PBXBuildFile; fileRef = 427A2A492E809AB52CDF85A0 /* TierGating.swift */; };
 		14474256E2DD1E7DA90DA178 /* GlossaryText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1969411F418AE27184440E14 /* GlossaryText.swift */; };
@@ -124,6 +129,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		B22B0F0F0F0F0F0F0F0F0010 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AF000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B22B0F0F0F0F0F0F0F0F000C;
+			remoteInfo = GoalDiggerNotificationService;
+		};
 		F29E822EDC8481A7A4F775C9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = AF000001 /* Project object */;
@@ -141,6 +153,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				4F7EFB5C35390135CD067439 /* GoalDiggerLiveActivity.appex in Embed Foundation Extensions */,
+				B22B0F0F0F0F0F0F0F0F000A /* GoalDiggerNotificationService.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -148,6 +161,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B22B0F0F0F0F0F0F0F0F0001 /* NotificationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		B22B0F0F0F0F0F0F0F0F0003 /* SharedAnalytics.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SharedAnalytics.swift; sourceTree = "<group>"; };
+		B22B0F0F0F0F0F0F0F0F0006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B22B0F0F0F0F0F0F0F0F0007 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		B22B0F0F0F0F0F0F0F0F0009 /* GoalDiggerNotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GoalDiggerNotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B22B0F0F0F0F0F0F0F0F0015 /* NotificationService.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NotificationService.entitlements; sourceTree = "<group>"; };
 		07B8C8BE4CFA3444C2C316A0 /* MyTurnStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyTurnStore.swift; sourceTree = "<group>"; };
 		0E9B40C83CE30947DD4E9AB4 /* LiveMatchBrief.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveMatchBrief.swift; sourceTree = "<group>"; };
 		1969411F418AE27184440E14 /* GlossaryText.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlossaryText.swift; sourceTree = "<group>"; };
@@ -270,6 +289,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		B22B0F0F0F0F0F0F0F0F000E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		187FD6B6B752FCC5E5FDB83A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -327,7 +353,20 @@
 				AC000099 /* Products */,
 				EC4E473D3864E71C2025A110 /* Frameworks */,
 				9BDC8E03FFB595370D8F671B /* LiveActivity */,
+				B22B0F0F0F0F0F0F0F0F000B /* NotificationService */,
 			);
+			sourceTree = "<group>";
+		};
+		B22B0F0F0F0F0F0F0F0F000B /* NotificationService */ = {
+			isa = PBXGroup;
+			children = (
+				B22B0F0F0F0F0F0F0F0F0001 /* NotificationService.swift */,
+				B22B0F0F0F0F0F0F0F0F0006 /* Info.plist */,
+				B22B0F0F0F0F0F0F0F0F0007 /* PrivacyInfo.xcprivacy */,
+				B22B0F0F0F0F0F0F0F0F0015 /* NotificationService.entitlements */,
+			);
+			name = NotificationService;
+			path = GoalDigger/NotificationService;
 			sourceTree = "<group>";
 		};
 		AC000002 /* GoalDigger */ = {
@@ -480,6 +519,7 @@
 				07B8C8BE4CFA3444C2C316A0 /* MyTurnStore.swift */,
 				4D8F505623CCED3CAAB391AA /* LiveClubPack.swift */,
 				A11A0E0E0E0E0E0E0E0E0002 /* Analytics.swift */,
+				B22B0F0F0F0F0F0F0F0F0003 /* SharedAnalytics.swift */,
 				EC063CF34EB46623A471C9F6 /* LiveSquadPack.swift */,
 				5D5FD984EA8B545ADF846F1C /* PlayerHooks.swift */,
 				5D5FD984EA8B545ADF846F2F /* PlayerSlots.swift */,
@@ -580,6 +620,7 @@
 			children = (
 				AB000099 /* GoalDigger.app */,
 				2C3E6B0D62430537E6511905 /* GoalDiggerLiveActivity.appex */,
+				B22B0F0F0F0F0F0F0F0F0009 /* GoalDiggerNotificationService.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -603,6 +644,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		B22B0F0F0F0F0F0F0F0F000C /* GoalDiggerNotificationService */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B22B0F0F0F0F0F0F0F0F0012 /* Build configuration list for PBXNativeTarget "GoalDiggerNotificationService" */;
+			buildPhases = (
+				B22B0F0F0F0F0F0F0F0F000D /* Sources */,
+				B22B0F0F0F0F0F0F0F0F000E /* Frameworks */,
+				B22B0F0F0F0F0F0F0F0F000F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GoalDiggerNotificationService;
+			productName = GoalDiggerNotificationService;
+			productReference = B22B0F0F0F0F0F0F0F0F0009 /* GoalDiggerNotificationService.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		7E34607F1890727D5CFF3540 /* GoalDiggerLiveActivity */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 35E4E7E5D6C66DDF23070C5F /* Build configuration list for PBXNativeTarget "GoalDiggerLiveActivity" */;
@@ -633,6 +691,7 @@
 			);
 			dependencies = (
 				B49859D075866BFE9AB20E81 /* PBXTargetDependency */,
+				B22B0F0F0F0F0F0F0F0F0011 /* PBXTargetDependency */,
 			);
 			name = GoalDigger;
 			packageProductDependencies = (
@@ -675,11 +734,20 @@
 			targets = (
 				AD000001 /* GoalDigger */,
 				7E34607F1890727D5CFF3540 /* GoalDiggerLiveActivity */,
+				B22B0F0F0F0F0F0F0F0F000C /* GoalDiggerNotificationService */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		B22B0F0F0F0F0F0F0F0F000F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B22B0F0F0F0F0F0F0F0F0008 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AD000003 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -714,6 +782,15 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		B22B0F0F0F0F0F0F0F0F000D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B22B0F0F0F0F0F0F0F0F0002 /* NotificationService.swift in Sources */,
+				B22B0F0F0F0F0F0F0F0F0005 /* SharedAnalytics.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		2ED390361D01176DC5A81686 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -810,6 +887,7 @@
 				9D8349CC509C7124A5EB9F29 /* MyTurnPractiseButton.swift in Sources */,
 				785C14F6B48F7E69523A45EC /* SayThisPractiseView.swift in Sources */,
 				A11A0E0E0E0E0E0E0E0E0001 /* Analytics.swift in Sources */,
+				B22B0F0F0F0F0F0F0F0F0004 /* SharedAnalytics.swift in Sources */,
 				754DEA162AF85F46038029EC /* LiveSquadPack.swift in Sources */,
 				17B1A6C8E309B3DB90A2F28E /* PlayerHooks.swift in Sources */,
 				17B1A6C8E309B3DB90A2F29F /* PlayerSlots.swift in Sources */,
@@ -825,6 +903,12 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		B22B0F0F0F0F0F0F0F0F0011 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = GoalDiggerNotificationService;
+			target = B22B0F0F0F0F0F0F0F0F000C /* GoalDiggerNotificationService */;
+			targetProxy = B22B0F0F0F0F0F0F0F0F0010 /* PBXContainerItemProxy */;
+		};
 		B49859D075866BFE9AB20E81 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = GoalDiggerLiveActivity;
@@ -834,6 +918,59 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		B22B0F0F0F0F0F0F0F0F0013 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AB000025 /* Configuration.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = GoalDigger/NotificationService/NotificationService.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 17;
+				DEVELOPMENT_TEAM = XG9549JP5L;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = GoalDigger/NotificationService/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.4;
+				PRODUCT_BUNDLE_IDENTIFIER = com.goaldigger.app.NotificationService;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		B22B0F0F0F0F0F0F0F0F0014 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AB000025 /* Configuration.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = GoalDigger/NotificationService/NotificationService.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 17;
+				DEVELOPMENT_TEAM = XG9549JP5L;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = GoalDigger/NotificationService/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.4;
+				PRODUCT_BUNDLE_IDENTIFIER = com.goaldigger.app.NotificationService;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		1C468A9E96051C806BCCD3C0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1013,6 +1150,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		B22B0F0F0F0F0F0F0F0F0012 /* Build configuration list for PBXNativeTarget "GoalDiggerNotificationService" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B22B0F0F0F0F0F0F0F0F0014 /* Release */,
+				B22B0F0F0F0F0F0F0F0F0013 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		35E4E7E5D6C66DDF23070C5F /* Build configuration list for PBXNativeTarget "GoalDiggerLiveActivity" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

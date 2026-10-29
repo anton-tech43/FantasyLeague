@@ -6,6 +6,8 @@
   this one declares what the app itself does. Keep it in step with the App
   Privacy answers in App Store Connect and with the privacy policy.
   - UserDefaults (CA92.1): settings, follows, caches, tokens, all app-only.
+    1C8F.1: the install id and common usage props, shared through the App
+    Group with the Notification Service Extension (push_delivered).
     No other required-reason API is called from app code (grep 2026-10-04).
   - Device ID: the APNs token (push delivery) and, after ATT consent, the
     advertising ID the Meta SDK sends for install attribution.
@@ -34,6 +36,7 @@
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
 				<string>CA92.1</string>
+				<string>1C8F.1</string>
 			</array>
 		</dict>
 	</array>

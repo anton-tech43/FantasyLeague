@@ -27,6 +27,11 @@ Owner: Anton.
   `saythis`.
 - `scripts/verify-tracking-plan.sh` checks that the app, the RPC's allow-list
   and the tables below name the same events, and that each is logged somewhere.
+- `push_delivered` (added 2026-10-29, migration 144): a Notification Service
+  Extension logs every alert push iOS shows, app closed or not, so a user who
+  only reads pushes on the Lock Screen is visible. The extension reads the
+  install id and common props from the App Group `group.com.goaldigger.app`.
+  `push_opened.kind` comes from `SharedAnalytics.pushKind`.
 
 ---
 
@@ -199,6 +204,8 @@ fixes, and only the second is ever a reason to cut something.
 | Match retention | Of her club's first 3 fixtures after install, how many she was ready for (0–3). Report the share with 2 or more. |
 | Classic retention | Opened the app in week 1 and in week 4 after install, for comparing with other apps. |
 | Push open rate | `push_opened` ÷ pushes sent (`pipeline_health` stage `apns_send`), by push kind. |
+| **Weekly status** | Per install per week: **active** = opened the app; **passive** = no open, but at least one `push_delivered`; **quiet** = neither. Passive counts as retained: the push is the product. Gone (uninstalled) shows as `device_tokens.is_active = false`, which is not linked to an install id. |
+| **Retained** | Active or passive in week N after the install's first event, by install week. |
 | **Push tolerance** | Net tier movement per 100 devices per month. Negative means we push more than she wants. |
 | **Prep reach** | Of fixtures where `prepAvailable` was true, the share where she opened prep at all. Separates "did not want it" from "it was not there when she looked". |
 
@@ -315,7 +322,8 @@ app's own rawValues wherever one exists.
 | `app_opened` | — (source: see "What the build changed") | `GoalDiggerApp` scene becomes active, after onboarding |
 | `onboarding_step_viewed` | `step` | `OnboardingFlow`, on `step` change |
 | `onboarding_completed` | `seconds`, `notifications` (granted, denied, later), `calendar` (on, off) | `OnboardingFlow.completeOnboarding()` |
-| `push_opened` | `kind` (`AppDelegate.pushKind`: goal, ht, ft, … from `live-<kind>-`, prep, matchday, fixture, article), `club` | `AppDelegate.userNotificationCenter(_:didReceive:)` |
+| `push_opened` | `kind` (`SharedAnalytics.pushKind`: goal, ht, ft, … from `live-<kind>-`, prep, matchday, fixture, article), `club` | `AppDelegate.userNotificationCenter(_:didReceive:)` |
+| `push_delivered` | `kind` (as `push_opened`) + the common props of her last app event, without `days_since_install` | `NotificationService` extension, on every alert push iOS shows. Not run when her notifications are off, nor before she has opened this build once. |
 | `tab_viewed` | `tab` (feed, matchday, club, my_turn) | `MainTabView` selection change (`AppTab.analyticsName`) |
 | `settings_opened` | — | `SettingsView` appears (a sheet since 2.4, so not a tab) |
 

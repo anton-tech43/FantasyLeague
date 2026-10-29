@@ -27,6 +27,8 @@ enum AnalyticsEvent: String, CaseIterable {
     case notificationsBanner = "notifications_banner"
     case settingsRowOpened = "settings_row_opened"
     case dataDeleted = "data_deleted"
+    /// Logged by the Notification Service Extension, never by the app.
+    case pushDelivered = "push_delivered"
 }
 
 /// First-party usage events: queued on the phone, sent in batches through
@@ -61,6 +63,7 @@ final class Analytics {
         defaults.set(installedAt, forKey: sinceKey)
         queue = (defaults.data(forKey: queueKey))
             .flatMap { try? JSONSerialization.jsonObject(with: $0) as? [[String: Any]] } ?? []
+        SharedAnalytics.defaults?.set(installId.uuidString, forKey: SharedAnalytics.installIdKey)
     }
 
     /// Log one event. `props` values must be String, Int, Double or Bool.
@@ -76,6 +79,10 @@ final class Analytics {
             "days_since_install": Calendar.current.dateComponents([.day], from: installedAt, to: Date()).day ?? 0,
         ]
         if let club = state.selectedTeam?.rawValue { all["club"] = club }
+        // The extension logs deliveries while the app is closed; it splits
+        // them by these. days_since_install would be stale there, so it stays.
+        SharedAnalytics.defaults?.set(all.filter { $0.key != "days_since_install" },
+                                      forKey: SharedAnalytics.commonPropsKey)
         // ponytail: next_fixture_in_hours (TRACKING_PLAN common props) is left
         // out; the pre-game events carry fixture_id, which the SQL joins to
         // kickoff. Add it here if a query ever needs it on every event.
@@ -131,6 +138,7 @@ final class Analytics {
         installedAt = Date()
         defaults.set(installId.uuidString, forKey: idKey)
         defaults.set(installedAt, forKey: sinceKey)
+        SharedAnalytics.defaults?.set(installId.uuidString, forKey: SharedAnalytics.installIdKey)
     }
 
     /// The oldest events that fit in one request, up to the RPC's 50.

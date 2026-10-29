@@ -74,6 +74,45 @@ SELECT club_group,
        count(*) FILTER (WHERE name = 'notification_permission_changed' AND props->>'to' = 'granted') AS notifs_turned_on
   FROM analytics_events WHERE $W GROUP BY 1 ORDER BY 1"
 
+q "WEEKLY STATUS (installs seen in the last 8 weeks; active = opened the app, passive = no open but a push was delivered, quiet = neither)" "
+WITH weeks AS (
+  SELECT generate_series(date_trunc('week', now()) - interval '7 weeks', date_trunc('week', now()), interval '1 week') AS wk),
+installs AS (
+  SELECT install_id, club_group, date_trunc('week', min(occurred_at)) AS first_wk
+    FROM analytics_events WHERE install_id IS NOT NULL GROUP BY 1, 2),
+per_week AS (
+  SELECT install_id, date_trunc('week', occurred_at) AS wk,
+         bool_or(name = 'app_opened') AS opened, bool_or(name = 'push_delivered') AS delivered
+    FROM analytics_events WHERE occurred_at > now() - interval '8 weeks' GROUP BY 1, 2)
+SELECT to_char(w.wk, 'YYYY-MM-DD') AS week, i.club_group,
+       count(*) FILTER (WHERE p.opened) AS active,
+       count(*) FILTER (WHERE NOT coalesce(p.opened, false) AND p.delivered) AS passive,
+       count(*) FILTER (WHERE NOT coalesce(p.opened, false) AND NOT coalesce(p.delivered, false)) AS quiet
+  FROM weeks w JOIN installs i ON i.first_wk <= w.wk
+  LEFT JOIN per_week p ON p.install_id = i.install_id AND p.wk = w.wk
+ GROUP BY 1, 2 ORDER BY 1, 2"
+
+q "RETAINED BY INSTALL WEEK (installs active or passive in week 1, 2 and 4 after their first event; denominator = installs; recent weeks have not reached wk4 yet)" "
+WITH installs AS (
+  SELECT install_id, club_group, date_trunc('week', min(occurred_at)) AS first_wk
+    FROM analytics_events WHERE install_id IS NOT NULL GROUP BY 1, 2),
+seen AS (
+  SELECT DISTINCT install_id, date_trunc('week', occurred_at) AS wk
+    FROM analytics_events WHERE name IN ('app_opened', 'push_delivered'))
+SELECT to_char(i.first_wk, 'YYYY-MM-DD') AS install_week, i.club_group, count(*) AS installs,
+       count(*) FILTER (WHERE EXISTS (SELECT 1 FROM seen s WHERE s.install_id = i.install_id AND s.wk = i.first_wk + interval '1 week')) AS wk1,
+       count(*) FILTER (WHERE EXISTS (SELECT 1 FROM seen s WHERE s.install_id = i.install_id AND s.wk = i.first_wk + interval '2 weeks')) AS wk2,
+       count(*) FILTER (WHERE EXISTS (SELECT 1 FROM seen s WHERE s.install_id = i.install_id AND s.wk = i.first_wk + interval '4 weeks')) AS wk4
+  FROM installs i WHERE i.first_wk > now() - interval '12 weeks'
+ GROUP BY 1, 2 ORDER BY 1, 2"
+
+q "PUSH DELIVERED vs OPENED (production; delivered = shown on the phone)" "
+SELECT props->>'kind' AS kind,
+       count(*) FILTER (WHERE name = 'push_delivered') AS delivered,
+       count(*) FILTER (WHERE name = 'push_opened') AS opened
+  FROM analytics_events WHERE $W AND name IN ('push_delivered', 'push_opened')
+ GROUP BY 1 ORDER BY 2 DESC"
+
 q "EXITS (Delete My Data; anonymous by design)" "
 SELECT count(*) AS deleted, round(avg((props->>'days_since_install')::int), 1) AS avg_days_in
   FROM analytics_events WHERE $W AND name = 'data_deleted'"

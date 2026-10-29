@@ -43,9 +43,14 @@ compare "the plan" "$doc" "the app" "$app"
 echo
 echo "── EVERY EVENT IS SENT FROM SOMEWHERE ──────────────────"
 missing=""
-for e in $(sed -n '/^enum AnalyticsEvent/,/^}/p' "$SWIFT" | grep -oE 'case [a-zA-Z]+' | awk '{print $2}'); do
-  grep -rqE "log\(\.$e[,)]" "$ROOT/ios/GoalDigger" --include=*.swift || missing="$missing $e"
-done
+# The app logs with log(.case); the Notification Service Extension cannot
+# link Analytics and names its one event as a string.
+NSE="$ROOT/ios/GoalDigger/NotificationService"
+while read -r e raw; do
+  grep -rqE "log\(\.$e[,)]" "$ROOT/ios/GoalDigger" --include=*.swift \
+    || grep -rqF "\"$raw\"" "$NSE" --include=*.swift \
+    || missing="$missing $e"
+done < <(sed -n '/^enum AnalyticsEvent/,/^}/p' "$SWIFT" | sed -nE 's/.*case ([a-zA-Z]+) = "([a-z_]+)".*/\1 \2/p')
 if [ -z "$missing" ]; then ok "every case has a call site"; else bad "never logged:$missing"; fi
 
 echo
