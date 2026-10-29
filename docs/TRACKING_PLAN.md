@@ -277,6 +277,29 @@ after that. Budget it before building it:
   `days_since_install` it narrows a small base fast. Keep it; revisit if the
   base stays small and the slices get used for anything but aggregates.
 
+### Step 3, ready to paste (Anton publishes; the carrd page is not in this repo)
+
+**Privacy policy paragraph** (getgoaldigger.carrd.co), under the existing
+"what we collect" section, which stays as it is:
+
+> **How you use the app.** To learn which parts of GoalDigger are useful, the
+> app records what you do in it — which screens you open, which games you get
+> ready for, which notifications you tap, which settings you change. These
+> records carry a random number created on your phone, not your name, the
+> names you type in, your email or your location, and nothing you write. They
+> are stored on our own database, kept for 13 months and then reduced to daily
+> totals. One of them — that you got ready for your first game — is also sent
+> to Meta, so our ads reach people who use the app rather than people who only
+> install it. "Delete My Data" in Settings deletes these records too. We keep
+> only one anonymous line that someone deleted their data, and how many days
+> after install. That line has no number or anything else that could link it
+> to you.
+
+**App Store Connect → App Privacy**, to match `PrivacyInfo.xcprivacy`:
+Product Interaction → used for App Functionality, Analytics and Third-Party
+Advertising; not linked to the user; **used for tracking: yes** (the
+`activated` event goes to Meta). Everything else unchanged.
+
 ---
 
 ## Events (version 1)

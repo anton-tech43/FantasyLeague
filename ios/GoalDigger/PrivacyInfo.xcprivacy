@@ -9,8 +9,13 @@
     No other required-reason API is called from app code (grep 2026-10-04).
   - Device ID: the APNs token (push delivery) and, after ATT consent, the
     advertising ID the Meta SDK sends for install attribution.
-  - Product interaction: Called It picks. Other usage data: followed clubs,
-    tier, timezone. Neither is linked to an identity (there are no accounts).
+  - Product interaction: Called It picks, and from 2026-10-29 first-party
+    usage events (app_events, docs/TRACKING_PLAN.md) for Analytics, keyed by
+    a random install id. One of them, `activated` (her first pre-game card),
+    also goes to Meta through the SDK for ad optimisation, so the type is
+    declared as tracking for third-party advertising too.
+    Other usage data: followed clubs, tier, timezone. Nothing is linked to an
+    identity (there are no accounts).
   Names stay on the phone and are not collected.
 -->
 <plist version="1.0">
@@ -53,10 +58,12 @@
 			<key>NSPrivacyCollectedDataTypeLinked</key>
 			<false/>
 			<key>NSPrivacyCollectedDataTypeTracking</key>
-			<false/>
+			<true/>
 			<key>NSPrivacyCollectedDataTypePurposes</key>
 			<array>
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+				<string>NSPrivacyCollectedDataTypePurposeThirdPartyAdvertising</string>
 			</array>
 		</dict>
 		<dict>
