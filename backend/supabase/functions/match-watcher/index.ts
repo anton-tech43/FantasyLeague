@@ -26,6 +26,7 @@ import {
   competitionName,
   competitionProse,
   isSingleLegTie,
+  straightToPenalties,
   parseRound,
   roundLabel,
 } from "../_shared/league-helpers.ts";
@@ -34,7 +35,7 @@ import { renderConsequence } from "../_shared/consequence-templates.ts";
 import { buildContentItem } from "../_shared/build-content-item.ts";
 import { buildPollPairs } from "../_shared/poll-plan.ts";
 import { competitionSuffix, knockoutOutcome } from "../_shared/goal-push.ts";
-import { type LiveEvent, minTierForLiveEvent, tierReceives, TIER_NOBODY } from "../_shared/push-tiers.ts";
+import { type LiveEvent, minTierForLiveEvent, resultStillNews, tierReceives, TIER_NOBODY } from "../_shared/push-tiers.ts";
 import type { Team } from "../_shared/types.ts";
 import { groupSituation } from "../_shared/stakes-engine.ts";
 import {
@@ -65,7 +66,9 @@ import {
   renderFullTimePush,
   renderGoalPush,
   seededRng,
+  renderExtraTimePush,
   renderHalfTimePush,
+  shootoutNote,
   renderKickoffSoonPush,
   formatScorers,
   type StoredGoalEvent,
@@ -1338,6 +1341,31 @@ async function handleRequest(req: Request): Promise<Response> {
         });
       }
       const isLive = LIVE_STATUSES.has(status);
+
+      // Extra time and shootout trace (2026-10-29). API-Football stamps no
+      // wall-clock time on a shootout kick, so the only way to learn whether
+      // `score.penalty` moves live during "P", or only once it is over, is to
+      // write down what each poll saw. One row a minute while a tie is past
+      // 90, read with:
+      //   select created_at, message from pipeline_health
+      //    where target = 'et_trace:<fixture>' order by created_at;
+      // ponytail: delete once DATA_SOURCES.md has the answer for a few
+      // shootouts.
+      if (
+        prior !== null &&
+        (["ET", "BT", "P", "AET", "PEN"].includes(rawStatus) || levelSingleLegFt ||
+          ["ET", "BT", "P"].includes(prior.status as string))
+      ) {
+        await supabase.from("pipeline_health").insert({
+          stage: "watch",
+          status: "success",
+          target: `et_trace:${fixtureId}`,
+          message: JSON.stringify({
+            raw: rawStatus, elapsed, goals: fx.goals, penalty: fx.score?.penalty ?? null,
+            extratime: fx.score?.extratime ?? null, held: levelSingleLegFt,
+          }),
+        }).then(({ error }) => error && console.warn("et_trace insert failed:", error.message));
+      }
       const newTriggers: string[] = [];
       const pendingLaStarts: Array<() => Promise<unknown>> = [];
       // Markers for direct-push idempotency (HT_PUSH / FT_PUSH). Kept SEPARATE
@@ -2015,12 +2043,22 @@ async function handleRequest(req: Request): Promise<Response> {
           const liveMinute = isLive && status !== "HT" && status !== "BT"
             ? (elapsed ?? null)
             : null;
+          // A held level FT is not a break the feed told us about, so it must
+          // not claim "Extra time": the League Cup goes straight to penalties,
+          // and for anything else we do not know yet.
+          const statusLabel = levelSingleLegFt
+            ? (straightToPenalties(fixtureLeagueId, fx.league?.round) ? "Penalties" : "After 90")
+            : wcStatusLabel(status);
+          // The shootout score, kick by kick if the feed has it, and the winner
+          // at the end: a level score under "FT" was all the Lock Screen said.
+          const note = shootoutNote(status, fx.score?.penalty, homeMeta.name, awayMeta.name);
           const contentState = {
             homeScore: homeGoals ?? 0,
             awayScore: awayGoals ?? 0,
-            statusLabel: wcStatusLabel(status),
+            statusLabel,
             elapsed: liveMinute,
             clockStart: liveMinute != null ? Math.round(Date.now() / 1000 - liveMinute * 60) : null,
+            ...(note ? { note } : {}),
           };
           // ponytail: still per-minute (minuteBucket = the minute) because the
           // App Store builds (2.2, 2.3) read `elapsed` and have no running
@@ -2030,7 +2068,9 @@ async function handleRequest(req: Request): Promise<Response> {
           // Math.floor(liveMinute / 15) once 2.4 has been out long enough that
           // old builds no longer matter.
           const minuteBucket = liveMinute ?? "";
-          const sigCore = `${contentState.homeScore}-${contentState.awayScore}-${contentState.statusLabel}`;
+          // The note is in the core, so each shootout kick is a full update.
+          const sigCore = `${contentState.homeScore}-${contentState.awayScore}-${contentState.statusLabel}` +
+            (note ? `-${note}` : "");
           const sig = `${sigCore}-${minuteBucket}`;
           const matchFinished = FINISHED_STATUSES.has(status);
 
@@ -2441,6 +2481,37 @@ async function handleRequest(req: Request): Promise<Response> {
             });
           }
 
+          // EXTRA TIME — level after 90 in a one-off tie, and the full-time
+          // push she would expect now is half an hour away (Anton, 2026-10-29).
+          // It must be true, so it waits for the feed's own "ET", never the
+          // competition's rules or a held level FT (Fleetwood v Arsenal's feed
+          // said "Match Finished" during a shootout). Seen on two ticks in a row
+          // at the same level score, and inside the first ten minutes of extra
+          // time so it is never late. A goal in extra time makes it moot: the
+          // goal push says more.
+          if (
+            rawStatus === "ET" && prior !== null && prior.status === "ET" &&
+            homeGoals != null && homeGoals === awayGoals &&
+            prior.home_goals === homeGoals && prior.away_goals === awayGoals &&
+            (elapsed == null || elapsed <= 100) &&
+            isSingleLegTie(fixtureLeagueId, fixtureRound) &&
+            !briefsFired.includes("ET_PUSH")
+          ) {
+            pendingAlertPushes.push({
+              args: {
+                homeTeamId,
+                awayTeamId,
+                copy: renderExtraTimePush({ home: homeTeam, away: awayTeam, goals: homeGoals }),
+                category: "WC_HALFTIME",
+                fixtureId,
+                label: "et",
+                minTier: minTierForLiveEvent("et", fixtureLeagueId, fixtureRound),
+                marker: "ET_PUSH",
+              },
+              isGoal: false,
+            });
+          }
+
           // FULL-TIME own-result — the gap that left tonight silent. Fire once
           // when we OBSERVE the live→finished transition. `!FINISHED_STATUSES
           // .has(prior.status)` is the first-observation guard (mirrors
@@ -2645,7 +2716,12 @@ async function handleRequest(req: Request): Promise<Response> {
                 ? { home: ftPen.home, away: ftPen.away }
                 : null,
             });
-            pendingAlertPushes.push({
+            // A held tie the feed settled late (after 23:30 London, or five
+            // hours on) gets its cards above but no push: a result at 01:00
+            // would wake her for something that can wait until morning.
+            if (!resultStillNews(kickoffTime)) {
+              console.log(`FT push fixture=${fixtureId}: result settled too late to push, cards only`);
+            } else pendingAlertPushes.push({
               args: {
                 homeTeamId,
                 awayTeamId,

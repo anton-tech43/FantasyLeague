@@ -14,7 +14,9 @@ import {
   pickLatestGoalForTeam,
   renderFullTimePush,
   renderGoalPush,
+  renderExtraTimePush,
   renderHalfTimePush,
+  shootoutNote,
   renderKickoffSoonPush,
   seededRng,
   type StoredGoalEvent,
@@ -530,4 +532,24 @@ Deno.test("HT/FT copy: house rules on every line, and every body fits with its l
   }
   const long = "x".repeat(200);
   eq(withSaying(long, HT_COPY.level_goals.say, zero), `Say: \u201C${HT_COPY.level_goals.say[0]}\u201D`, "the situation line goes first");
+});
+
+Deno.test("renderExtraTimePush: the same plain fact for both sides, within budget", () => {
+  const home = { id: "nottingham_forest", name: "Nottingham Forest", flag: "" };
+  const away = { id: "wolves", name: "Wolves", flag: "" };
+  const c = renderExtraTimePush({ home, away, goals: 1 });
+  eq(c.title, "Extra time: Nottingham Forest 1-1 Wolves", "");
+  eq(c.bodies.nottingham_forest, "1-1 after 90, so another 30 minutes. Penalties if it's still level.", "");
+  eq(c.bodies.wolves, c.bodies.nottingham_forest, "");
+  assert(c.bodies.wolves.length <= 178, "fits the lock screen");
+  assert(!/[\u2013\u2014]/.test(c.bodies.wolves + c.title), "no dashes");
+});
+
+Deno.test("shootoutNote: running score during, the winner named after, nothing without data", () => {
+  eq(shootoutNote("P", { home: 4, away: 3 }, "Fleetwood Town", "Arsenal"), "Shootout: 4-3", "");
+  eq(shootoutNote("PEN", { home: 5, away: 3 }, "Fleetwood Town", "Arsenal"), "Fleetwood Town win 5-3 on penalties", "");
+  eq(shootoutNote("PEN", { home: 2, away: 4 }, "Fleetwood Town", "Arsenal"), "Arsenal win 4-2 on penalties", "");
+  eq(shootoutNote("P", { home: null, away: null }, "A", "B"), null, "");
+  eq(shootoutNote("FT", { home: 5, away: 3 }, "A", "B"), null, "");
+  eq(shootoutNote("P", null, "A", "B"), null, "");
 });

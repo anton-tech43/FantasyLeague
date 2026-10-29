@@ -13,10 +13,11 @@ import {
   roundLabel,
   seasonForLeague,
   isSingleLegTie,
+  straightToPenalties,
 } from "./league-helpers.ts";
 import { buildPollPairs } from "./poll-plan.ts";
 import { competitionSuffix, knockoutOutcome } from "./goal-push.ts";
-import { minTierForLiveEvent, TIER_NOBODY, tierReceives } from "./push-tiers.ts";
+import { minTierForLiveEvent, resultStillNews, TIER_NOBODY, tierReceives } from "./push-tiers.ts";
 import { renderMatchdayReminder } from "./matchday-reminder-copy.ts";
 
 // ── Rounds ────────────────────────────────────────────────────────────────────
@@ -354,6 +355,15 @@ Deno.test("isSingleLegTie: only rounds known to be one match settle a tie", () =
   assertEquals(isSingleLegTie(undefined, "Final"), false);
 });
 
+Deno.test("straightToPenalties: the League Cup before its final, nothing else", () => {
+  assertEquals(straightToPenalties(48, "Round of 16"), true);
+  assertEquals(straightToPenalties(48, "Quarter-finals"), true);
+  assertEquals(straightToPenalties(48, "Semi-finals"), false); // two legs
+  assertEquals(straightToPenalties(48, "Final"), false); // extra time
+  assertEquals(straightToPenalties(45, "3rd Round"), false); // unconfirmed, not claimed
+  assertEquals(straightToPenalties(2, "Final"), false);
+});
+
 Deno.test("parseRound: the League Cup first round and the FA Cup's numbered rounds", () => {
   assertEquals(parseRound("Round of 128", 48).stage, 64);
   assertEquals(parseRound("Round of 128", 48).label, "first round");
@@ -397,4 +407,23 @@ Deno.test("seasonForLeague: the season of the date asked about, not of today", (
   assertEquals(seasonForLeague(45, new Date("2026-01-10T15:00:00Z")), 2025);
   assertEquals(seasonForLeague(45, new Date("2026-08-10T15:00:00Z")), 2026);
   assertEquals(seasonForLeague(39, new Date("2027-05-20T15:00:00Z")), 2026);
+});
+
+Deno.test("minTierForLiveEvent: extra time goes where full time goes", () => {
+  assertEquals(minTierForLiveEvent("et", 45, "3rd Round"), 1);
+  assertEquals(minTierForLiveEvent("et", 48, "Final"), 1);
+  assertEquals(minTierForLiveEvent("et", 2, "Final"), 1);
+});
+
+Deno.test("resultStillNews: the same evening buzzes, the middle of the night does not", () => {
+  // Winter (London = UTC). 20:00 kickoff, extra time and penalties.
+  assertEquals(resultStillNews("2026-10-27T20:00:00Z", new Date("2026-10-27T22:50:00Z")), true);
+  assertEquals(resultStillNews("2026-10-27T20:00:00Z", new Date("2026-10-27T23:29:00Z")), true);
+  assertEquals(resultStillNews("2026-10-27T20:00:00Z", new Date("2026-10-27T23:31:00Z")), false);
+  assertEquals(resultStillNews("2026-10-27T20:00:00Z", new Date("2026-10-28T06:00:00Z")), false);
+  // Summer (BST): 22:40 UTC is 23:40 London.
+  assertEquals(resultStillNews("2026-08-26T18:45:00Z", new Date("2026-08-26T22:40:00Z")), false);
+  // Afternoon kickoff settled hours late: past five hours is not news.
+  assertEquals(resultStillNews("2026-01-10T12:30:00Z", new Date("2026-01-10T17:00:00Z")), true);
+  assertEquals(resultStillNews("2026-01-10T12:30:00Z", new Date("2026-01-10T17:31:00Z")), false);
 });

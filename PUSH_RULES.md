@@ -24,7 +24,8 @@ page drift apart**, so this is a contract rather than a description — see §6.
 | **A goal** | `match-watcher` → `_shared/goal-push-copy.ts` | **every tier, every competition** | The one push nobody is gated out of. It is the most time-critical fact in the product and the least ambiguous. Copy is 40 hand-written variants, seeded so a line does not repeat. |
 | **Kickoff** | `match-watcher` → `_shared/push-tiers.ts` | **tier 2+**, and not in early cup rounds | She can see he is watching, so it tells her less than a goal does. A second-round League Cup tie at Lincoln is not an occasion, and a push claiming it is teaches her to ignore the next one. Semi-finals and finals go to everyone. |
 | **Half time** | `match-watcher` → `_shared/push-tiers.ts` | **tier 2+** | The clearest purpose of any push here. During play he is not listening and afterwards the moment is gone; half time is a fifteen-minute window and it closes. Ends with a line she can actually use. |
-| **Full time** | `match-watcher` → `_shared/push-tiers.ts` | **every tier** | How it ended is the single fact that most shapes the next few hours in her house. Worth an interruption whether or not she has paid. |
+| **Extra time** | `match-watcher` → `_shared/push-tiers.ts` | **every tier**, every round | A one-off cup tie level after 90 (2026-10-29). It lands when she expects the full-time push and tells her the evening runs another half hour. Sent only on the feed's own `ET`, seen on two polls at the same level score and before 100', so it is never a guess from the competition's rules: the League Cup goes straight to penalties and gets nothing here. Not sent when the shootout starts either; the Live Activity shows it kick by kick and the result push follows minutes later. |
+| **Full time** | `match-watcher` → `_shared/push-tiers.ts` | **every tier** | How it ended is the single fact that most shapes the next few hours in her house. Worth an interruption whether or not she has paid. A level cup tie the feed calls finished is held until it says PEN or AET (polled up to 14 hours, mig 145); a result that settles after 23:30 London or five hours after kickoff corrects the cards and does not push (`resultStillNews`). |
 | **A news card** | `post_news.sh` (~60 guards) → `notification-sender` | tier depends on the card | The only route from the model to a lock screen, and the narrowest. Seven separate reasons downgrade a card to feed-only (§3); most cards never push at all. |
 | **The Sunday brief** | same path as a news card | **tier 2+** | The one piece that sets up her week rather than reacting to something, published at the one hour she might read something longer. |
 | **Game day** | `morning-push`, 08:00 UTC | every tier **with a fixture today**, **only if the 07:00 reminder did not go** | A fallback, not a second push: it skips any fixture already in `matchday_reminders_sent`. Templated once and reused forever — no model, no cost. |
@@ -91,7 +92,7 @@ Five files, and nothing else may send a push.
 
 | File | Decides |
 |---|---|
-| `backend/supabase/functions/match-watcher/index.ts` | The four live-match pushes. |
+| `backend/supabase/functions/match-watcher/index.ts` | The five live-match pushes. |
 | `backend/supabase/functions/_shared/push-tiers.ts` | Which tier and which cup rounds get the framing pushes. A goal bypasses it. |
 | `backend/supabase/functions/notification-sender/index.ts` | The single gate for everything written. Claims before sending, 5-minute per-team throttle, tier filter, pages past 1,000 rows. |
 | `backend/supabase/functions/morning-push/index.ts`, `matchday-reminder/index.ts` | The two scheduled pushes. |

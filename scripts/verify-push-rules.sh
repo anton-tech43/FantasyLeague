@@ -41,8 +41,9 @@ echo "── 2. THE LIVE-MATCH TIER FLOORS MATCH ──────────�
 TIERS="$FN/_shared/push-tiers.ts"
 phrase_for() { case "$1" in 1) echo "every tier";; 2) echo "tier 2+";; 3) echo "tier 3";; *) echo "__tier_$1__";; esac; }
 row_for()    { case "$1" in kickoff) echo '| \*\*Kickoff\*\*';; goal) echo '| \*\*A goal\*\*';;
-                            ht) echo '| \*\*Half time\*\*';; ft) echo '| \*\*Full time\*\*';; esac; }
-for ev in kickoff goal ht ft; do
+                            ht) echo '| \*\*Half time\*\*';; et) echo '| \*\*Extra time\*\*';;
+                            ft) echo '| \*\*Full time\*\*';; esac; }
+for ev in kickoff goal ht et ft; do
   # awk, not sed: \+ and \? are GNU extensions and this also runs on BSD.
   n=$(awk -v ev="$ev" '/^const BASE/,/^};/ { if ($1 == ev ":") { gsub(/[^0-9]/, "", $2); print $2; exit } }' "$TIERS")
   if [ -z "$n" ]; then bad "could not read the tier floor for '$ev' out of push-tiers.ts"; continue; fi

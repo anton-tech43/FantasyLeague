@@ -187,6 +187,17 @@ export function isSingleLegTie(leagueId: number | undefined, round: string | und
 }
 
 /**
+ * Does a tie that is level after 90 minutes go straight to a shootout? Only the
+ * League Cup before the final (EFL rules since 2018-19, still the case in
+ * 2026-27; the final has extra time). The FA Cup was consulting on dropping
+ * extra time and nothing confirmed it (checked 2026-10-29), so it is not
+ * claimed either way: the extra-time push waits for the feed to say "ET".
+ */
+export function straightToPenalties(leagueId: number | undefined, round: string | undefined): boolean {
+  return leagueId === 48 && isSingleLegTie(leagueId, round) && parseRound(round, leagueId).stage !== 1;
+}
+
+/**
  * How much a fixture matters, 1-5, for the Calendar tab's dots.
  *
  * Everything used to be a flat 3, so a Champions League away leg in Naples read

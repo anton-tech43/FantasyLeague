@@ -420,6 +420,40 @@ export function renderHalfTimePush(args: {
   };
 }
 
+/// Level after 90 and extra time under way (match-watcher sends this only on
+/// the feed's own "ET"). The useful fact is that the evening runs another half
+/// hour, so the body is the same for both sides.
+export function renderExtraTimePush(args: {
+  home: GoalPushTeam;
+  away: GoalPushTeam;
+  goals: number;
+}): GoalPushCopy {
+  const { home, away, goals } = args;
+  const body = `${goals}-${goals} after 90, so another 30 minutes. Penalties if it's still level.`;
+  return {
+    title: `Extra time: ${home.name} ${goals}-${goals} ${away.name}`,
+    bodies: { [home.id]: body, [away.id]: body },
+  };
+}
+
+/// The Live Activity's note line during and after a shootout. The activity
+/// shows both teams to both sets of followers, so the winner is named rather
+/// than "won". Null when the feed carries no shootout score.
+export function shootoutNote(
+  status: string,
+  pen: { home?: number | null; away?: number | null } | null | undefined,
+  homeName: string,
+  awayName: string,
+): string | null {
+  const h = pen?.home, a = pen?.away;
+  if (typeof h !== "number" || typeof a !== "number") return null;
+  if (status === "P") return `Shootout: ${h}-${a}`;
+  if (status === "PEN" && h !== a) {
+    return h > a ? `${homeName} win ${h}-${a} on penalties` : `${awayName} win ${a}-${h} on penalties`;
+  }
+  return null;
+}
+
 export function htSituation(mine: number, theirs: number): HtSituation {
   const d = mine - theirs;
   if (d >= 2) return "ahead_big";

@@ -29,7 +29,7 @@
 
 import { parseRound } from "./league-helpers.ts";
 
-export type LiveEvent = "kickoff" | "goal" | "ht" | "ft";
+export type LiveEvent = "kickoff" | "goal" | "ht" | "et" | "ft";
 
 /// Above the highest real tier: nothing receives it.
 export const TIER_NOBODY = 99;
@@ -42,6 +42,10 @@ const BASE: Record<LiveEvent, number> = {
   kickoff: 2,
   goal: 1,
   ht: 2,
+  // Level after 90, extra time starting: the result she is waiting for is
+  // half an hour away. It stands in for the full-time push at the moment she
+  // would expect one, so it goes where that goes.
+  et: 1,
   ft: 1,
 };
 
@@ -76,7 +80,7 @@ export function minTierForLiveEvent(
   // is an early or unknown one and gets the quiet treatment, not the loud one.
   const earlyLeagueCup = leagueId === 48 && (stage === 0 || stage > 4);
   const earlyFaCup = leagueId === 45 && (stage === 0 || stage > 8);
-  if (earlyLeagueCup || earlyFaCup) return event === "ft" ? 1 : TIER_NOBODY;
+  if (earlyLeagueCup || earlyFaCup) return event === "ft" || event === "et" ? 1 : TIER_NOBODY;
 
   return BASE[event];
 }
@@ -84,4 +88,22 @@ export function minTierForLiveEvent(
 /** Does a device on `tier` receive a push whose floor is `minTier`? */
 export function tierReceives(tier: number | null | undefined, minTier: number): boolean {
   return (tier ?? DEFAULT_TIER) >= minTier;
+}
+
+/**
+ * Is a full-time result still news when we first learn it? Normally the
+ * whistle and the push are a minute apart. When the feed holds a level cup tie
+ * (match-watcher's levelSingleLegFt) and only settles it late, the result may
+ * arrive after she has gone to bed: then the cards are corrected silently and
+ * nothing buzzes (Anton, 2026-10-29: "rather the right result the same evening
+ * than none at all"). Within five hours of kickoff and before 23:30 London.
+ * The latest normal finish, a 20:00 London kickoff with extra time and
+ * penalties, is about 22:50.
+ */
+export function resultStillNews(kickoffIso: string, now: Date = new Date()): boolean {
+  if (now.getTime() - new Date(kickoffIso).getTime() > 5 * 3600_000) return false;
+  const [h, m] = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).format(now).split(":").map(Number);
+  return h >= 6 && h * 60 + m < 23 * 60 + 30;
 }
