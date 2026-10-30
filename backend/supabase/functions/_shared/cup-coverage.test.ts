@@ -14,10 +14,11 @@ import {
   seasonForLeague,
   isSingleLegTie,
   displayStatus,
+  playedExtraTime,
   straightToPenalties,
 } from "./league-helpers.ts";
 import { buildPollPairs } from "./poll-plan.ts";
-import { competitionSuffix, knockoutOutcome } from "./goal-push.ts";
+import { competitionSuffix, knockoutOutcome, renderFullTimePush } from "./goal-push.ts";
 import { minTierForLiveEvent, resultStillNews, TIER_NOBODY, tierReceives } from "./push-tiers.ts";
 import { renderMatchdayReminder } from "./matchday-reminder-copy.ts";
 
@@ -363,6 +364,31 @@ Deno.test("straightToPenalties: the League Cup before its final, nothing else", 
   assertEquals(straightToPenalties(48, "Final"), false); // extra time
   assertEquals(straightToPenalties(45, "3rd Round"), false); // unconfirmed, not claimed
   assertEquals(straightToPenalties(2, "Final"), false);
+});
+
+// FEED-01-53, 2026-10-28: the feed put extratime 0-0 on Liverpool v Chelsea, a
+// League Cup last-16 tie that went 90 minutes and then to penalties, and the
+// cards said "after extra time".
+Deno.test("playedExtraTime: only a filled extratime in a competition that plays it", () => {
+  assertEquals(playedExtraTime(48, "Round of 16", { home: 0, away: 0 }), false); // the feed was wrong
+  assertEquals(playedExtraTime(48, "Round of 16", { home: null, away: null }), false);
+  assertEquals(playedExtraTime(48, "Final", { home: 1, away: 0 }), true);
+  assertEquals(playedExtraTime(45, "3rd Round", { home: 1, away: 0 }), true);
+  assertEquals(playedExtraTime(45, "3rd Round", { home: null, away: null }), false); // AET status alone is not enough
+  assertEquals(playedExtraTime(45, "3rd Round", null), false);
+  assertEquals(playedExtraTime(2, "Final", undefined), false);
+});
+
+Deno.test("renderFullTimePush: 'after extra time' only when it was played", () => {
+  const team = (id: string, name: string) => ({ id, name, flag: "" });
+  const base = {
+    home: team("liverpool", "Liverpool"), away: team("chelsea", "Chelsea"), homeGoals: 2, awayGoals: 1, rng: () => 0,
+    cupBySide: { liverpool: "through" as const, chelsea: "out" as const },
+  };
+  const ran = renderFullTimePush({ ...base, extraTime: true, afterExtraTime: true });
+  const didNot = renderFullTimePush({ ...base, extraTime: true, afterExtraTime: false });
+  assertEquals(/after extra time/.test(ran.bodies.liverpool + ran.bodies.chelsea), true);
+  assertEquals(/after extra time/.test(didNot.bodies.liverpool + didNot.bodies.chelsea), false);
 });
 
 Deno.test("parseRound: the League Cup first round and the FA Cup's numbered rounds", () => {

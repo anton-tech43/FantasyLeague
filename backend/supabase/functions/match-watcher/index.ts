@@ -26,6 +26,7 @@ import {
   competitionName,
   competitionProse,
   isSingleLegTie,
+  playedExtraTime,
   straightToPenalties,
   parseRound,
   roundLabel,
@@ -1718,7 +1719,8 @@ async function handleRequest(req: Request): Promise<Response> {
                     pen.home !== pen.away
                   ? { home: pen.home, away: pen.away }
                   : null;
-                const aet = status === "AET";
+                const aet = status === "AET" &&
+                  playedExtraTime(fx.league?.id, fx.league?.round, fx.score?.extratime);
                 // true = home won, false = away won, null = draw (group stage,
                 // or a PEN row whose shootout scores the API hasn't filled yet).
                 const homeWon: boolean | null = pens
@@ -2601,7 +2603,7 @@ async function handleRequest(req: Request): Promise<Response> {
                   state: pmState,
                   competition: competitionProse(fixtureLeagueId),
                   round: isCupTie ? roundLabel(fixtureRound, fixtureLeagueId) : undefined,
-                  afterExtraTime: status === "AET",
+                  afterExtraTime: playedExtraTime(fixtureLeagueId, fixtureRound, fx.score?.extratime),
                   shootout,
                   // competitionBySide already holds knockoutOutcome for this
                   // side, but it falls back to naming the competition when the
@@ -2709,6 +2711,7 @@ async function handleRequest(req: Request): Promise<Response> {
                 [awayTeamId]: cupResult(homeThrough === null ? null : !homeThrough, fixtureLeagueId, fixtureRound),
               },
               extraTime: status === "AET" || status === "PEN",
+              afterExtraTime: playedExtraTime(fixtureLeagueId, fixtureRound, fx.score?.extratime),
               rng: seededRng(fixtureId * 7 + 3),
               pens: status === "PEN" &&
                   typeof ftPen?.home === "number" && typeof ftPen?.away === "number" &&

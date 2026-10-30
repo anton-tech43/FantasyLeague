@@ -198,6 +198,24 @@ export function straightToPenalties(leagueId: number | undefined, round: string 
 }
 
 /**
+ * Was extra time actually played? Only when the feed filled `score.extratime`
+ * AND the competition plays it. On 2026-10-28 the feed put an extratime of 0-0
+ * on two League Cup ties that went straight to penalties (Liverpool v Chelsea,
+ * Man City v Brighton) and the full-time cards said "after extra time". Never
+ * inferred from the status, `elapsed: 120` or a shootout (app council
+ * FEED-01-53). goaldigger-routines' fact_checks.py holds the routine's card to
+ * the same rule.
+ */
+export function playedExtraTime(
+  leagueId: number | undefined,
+  round: string | undefined,
+  extratime: { home?: number | null; away?: number | null } | null | undefined,
+): boolean {
+  return !straightToPenalties(leagueId, round) &&
+    typeof extratime?.home === "number" && typeof extratime?.away === "number";
+}
+
+/**
  * The status the app's own live surfaces should show for a stored row.
  * match-watcher stores a held level League Cup tie as "BT", and the app maps
  * BT to "Extra time" when it refreshes the Live Activity on foreground

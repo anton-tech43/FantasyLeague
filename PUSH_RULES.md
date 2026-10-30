@@ -60,6 +60,7 @@ The interesting half. Each line is a decision that silence serves her better.
 | **Player cards** (`gd-player-dossier`) | Reference material. Nobody wants to be told reference material was updated. |
 | **The club page** (`gd-team-page`) | An alert saying a page changed is an alert about our own maintenance. |
 | **The live brief** (`gd-live-brief`) | The app polls it while the match is on. She is already watching. |
+| **A follow-up to a story already on her feed** (`post_news.sh` same-story update, 2026-10-29) | The card is rewritten in place and moves to the top of the feed instead of a second card arriving (three Kane cards in a row was the evidence). A story pushes at most once: if the first card pushed, the update is silent and `pushed_at` stays; if it never pushed, the update may push only by passing every downgrade in §3, and otherwise gets `push_eligible=false` so the hourly sweep cannot find the fresh `published_at`. The test is `same_story()` in `goaldigger-routines/fact_checks.py`. |
 
 For the last five of these the absence is structural, not configured: those
 routines have **no push path at all**. That is the strongest available form of

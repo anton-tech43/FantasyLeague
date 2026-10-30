@@ -535,7 +535,11 @@ export function renderFullTimePush(args: {
   goals?: readonly StoredGoalEvent[] | null;
   /// How a settled knockout tie ended, keyed by team slug.
   cupBySide?: Record<string, CupResult | null>;
+  /// The tie ran past 90 (AET or PEN): minute-based "late" and comeback lines are off.
   extraTime?: boolean;
+  /// Extra time was actually PLAYED (league-helpers playedExtraTime). Only this
+  /// writes "after extra time": a League Cup tie goes 90 minutes, then penalties.
+  afterExtraTime?: boolean;
   rng?: () => number;
 }): GoalPushCopy {
   const { home, away, homeGoals, awayGoals, pens, competitionBySide, rng = Math.random } = args;
@@ -552,7 +556,7 @@ export function renderFullTimePush(args: {
     });
     const c = FT_COPY[situation];
     const score = sidePens ? `${sidePens.mine}-${sidePens.theirs}` : `${mine}-${theirs}`;
-    const how = sidePens ? " on penalties" : args.extraTime ? " after extra time" : "";
+    const how = sidePens ? " on penalties" : args.afterExtraTime ? " after extra time" : "";
     const line = interpolate(pick(c.body, rng), { score, team: team.name, when: when ?? "", how });
     return withSaying(appendClause(line, competitionBySide?.[team.id]), c.say, rng);
   };
