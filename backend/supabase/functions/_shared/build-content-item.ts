@@ -15,7 +15,9 @@
 
 export interface ContentItemDraft {
   team_id: string;
-  type: "news" | "matchday" | "sunday_brief" | "starting_xi";
+  // No "starting_xi": app 2.4+ has no such card (council 2026-10-30), so a
+  // lineup line in the feed goes out as "news".
+  type: "news" | "matchday" | "sunday_brief";
   headline: string;
   body: string;
   immersive_headline: string;
