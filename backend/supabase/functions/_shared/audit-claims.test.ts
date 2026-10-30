@@ -21,3 +21,14 @@ Deno.test("still flags the same sentence against a finished table", () => {
   const f = auditContentClaims(TEXT, { ...base, seasonComplete: true });
   assertEquals(f.map((x) => x.code), ["champions_but_not_first"]);
 });
+
+// 2026-10-30 maintenance pass: a 2026-27 promoted club (coventry/hull/ipswich)
+// had no PL_ALIASES entry, so nearestTeam() could never resolve to its own
+// teamId and every claim about it was silently skipped (0 findings, forever).
+Deno.test("a promoted club's own name is a recognised alias (not silently unauditable)", () => {
+  const f = auditContentClaims(
+    "Coventry are relegated after a dismal run of results.",
+    { teamId: "coventry", rank: 1, totalTeams: 20, leagueId: 39, seasonComplete: true },
+  );
+  assertEquals(f.map((x) => x.code), ["relegated_but_safe"]);
+});

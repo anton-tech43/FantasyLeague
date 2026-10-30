@@ -64,9 +64,12 @@ const PL_ALIASES: Record<string, string[]> = {
   brighton: ["Brighton"],
   burnley: ["Burnley"],
   chelsea: ["Chelsea"],
+  coventry: ["Coventry", "Coventry City"],
   crystal_palace: ["Crystal Palace", "Palace"],
   everton: ["Everton"],
   fulham: ["Fulham"],
+  hull: ["Hull", "Hull City"],
+  ipswich: ["Ipswich", "Ipswich Town"],
   leeds: ["Leeds"],
   liverpool: ["Liverpool"],
   man_city: ["Manchester City", "Man City"],
@@ -77,6 +80,9 @@ const PL_ALIASES: Record<string, string[]> = {
   sunderland: ["Sunderland"],
   west_ham: ["West Ham"],
   wolves: ["Wolves", "Wolverhampton"],
+  // burnley/west_ham/wolves (2025-26 PL, relegated) kept: their aliases
+  // still disambiguate mentions of them inside a current club's content
+  // (e.g. "beat Wolves 3-0" must not attribute to the nearest current club).
 };
 
 // alias (lowercase) -> slug, longest-first regex for nearest-team lookup.
