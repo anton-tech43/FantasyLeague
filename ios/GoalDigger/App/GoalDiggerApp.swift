@@ -262,9 +262,9 @@ struct MainTabView: View {
     }
 
     /// V2.0: Tab label tracks the active entity so the user sees "Arsenal"
-    /// or "Sweden" rather than the generic "His Team" — clarifies which
-    /// entity the tab is currently showing. On the cross-team feed we fall
-    /// back to "His Team" since neither entity is primary.
+    /// or "Sweden" rather than the generic "His Team". On the cross-team feed
+    /// it names her first club, the page the tab opens there: the label
+    /// used to rename itself to a hardcoded "His" (council 2026-10-29).
     private var teamTabLabel: String {
         switch appState.activeContext {
         case .team(let team):
@@ -272,7 +272,8 @@ struct MainTabView: View {
         case .country(let country):
             return CountryFollowing.isEnabled ? country.displayName : "His Team"
         case .everyoneTalking:
-            return "His Team"
+            if CountryFollowing.isEnabled, let country = appState.selectedCountry { return country.displayName }
+            return appState.selectedTeam?.displayName ?? "His Team"
         }
     }
 

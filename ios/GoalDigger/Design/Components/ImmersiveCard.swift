@@ -103,25 +103,6 @@ struct ImmersiveCard: View {
         return appState.personalise(item.regularTalkingPoints.first ?? "")
     }
 
-    // MARK: - Share
-
-    /// Text package shared by the bottom-right ShareLink on the immersive
-    /// card. Combines headline + analogy + talking point + a soft attribution.
-    /// Multi-line so it pastes cleanly into iMessage / WhatsApp.
-    private var shareText: String {
-        var lines: [String] = []
-        lines.append(headline)
-        if let context = contextLine, !context.isEmpty {
-            lines.append("")
-            lines.append(context)
-        }
-        lines.append("")
-        lines.append("\(zone2Label) \(talkingPoint)")
-        lines.append("")
-        lines.append("via GoalDigger")
-        return lines.joined(separator: "\n")
-    }
-
     // MARK: - Zone 2 label rotation
 
     private func logOpen(_ zone: String) {
@@ -133,7 +114,7 @@ struct ImmersiveCard: View {
             return "Your move:"
         }
         if item.type == .matchday {
-            return matchdayTimeLabel
+            return Self.matchdayLabel(result: item.matchResult, teamId: item.teamId)
         }
         if feedContext == .everyoneTalking && item.worthKnowing {
             return "Worth knowing:"
@@ -147,12 +128,22 @@ struct ImmersiveCard: View {
         return labels[feedPosition % labels.count]
     }
 
-    private var matchdayTimeLabel: String {
-        guard let kickoff = item.kickoffTime else { return "Today:" }
-        let hour = Calendar.current.component(.hour, from: kickoff)
-        if hour >= 17 { return "Tonight:" }
-        if hour >= 12 { return "This afternoon:" }
-        return "Today:"
+    /// "After Everton:" on every result card. "Tonight:" and "This
+    /// afternoon:" stayed on the card for days (council 2026-10-29). The
+    /// opponent is the side of `match_result` ("Newcastle 1-3 Everton (AET)")
+    /// that is not her club, matched on the first word of either of its
+    /// names, since the feed writes "Man United" where the app says "Man Utd".
+    static func matchdayLabel(result: String?, teamId: String) -> String {
+        let fallback = "After the game:"
+        guard let result, let team = Team(rawValue: teamId),
+              let m = result.firstMatch(of: /^(.+?) \d+-\d+ ([^(]+?)(?: \(.*)?$/) else { return fallback }
+        let ownWords = Set([team.displayName, team.shortName].compactMap { $0.split(separator: " ").first.map(String.init) })
+        func isOwn(_ side: Substring) -> Bool { side.split(separator: " ").first.map { ownWords.contains(String($0)) } ?? false }
+        switch (isOwn(m.1), isOwn(m.2)) {
+        case (true, false): return "After \(m.2):"
+        case (false, true): return "After \(m.1):"
+        default: return fallback
+        }
     }
 
     // MARK: - Body
@@ -177,9 +168,8 @@ struct ImmersiveCard: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // To VoiceOver zone 1 is one button that opens the story; zone 2
-            // keeps its share button separate, so only its talking point
-            // carries the button trait (see zone2).
+            // To VoiceOver zone 1 is one button that opens the story; in
+            // zone 2 only the talking point carries the button trait.
             zone1
                 .frame(height: zone1Height)
                 .clipped()
@@ -189,8 +179,8 @@ struct ImmersiveCard: View {
                 // (TightHeadline). Still a heading, so the rotor steps card
                 // to card.
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel([competitionLabel, headline, contextLine].compactMap { $0 }.joined(separator: ". "))
-                .accessibilityHint("Press for more info and things to say")
+                .accessibilityLabel([competitionLabel, headline, contextLine, item.publishedAt.relativeTimestamp].compactMap { $0 }.joined(separator: ". "))
+                .accessibilityHint("Tap for the full story and more to say")
                 .accessibilityAddTraits([.isButton, .isHeader])
                 .accessibilityAction { onZone1Tap() }
                 // The pink competition strap is a button VoiceOver cannot
@@ -270,11 +260,19 @@ struct ImmersiveCard: View {
 
                 Spacer()
 
-                // Press hint
-                Text("Press for more info and things to say")
-                    .font(.immersiveHint)
-                    .foregroundColor(.warmWhite.opacity(0.45))
-                    .padding(.bottom, 16)
+                // Press hint, and how old the card is: without a date every
+                // "tomorrow" and "tonight" on a card reads as today's
+                // (council 2026-10-29). Same words as the article's timestamp.
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Press for more info and things to say")
+                        .foregroundColor(.warmWhite.opacity(0.45))
+                    Spacer(minLength: 8)
+                    Text(item.publishedAt.relativeTimestamp)
+                        .foregroundColor(.warmWhite.opacity(0.75))
+                        .fixedSize()
+                }
+                .font(.immersiveHint)
+                .padding(.bottom, 16)
             }
             .padding(20)
         }
@@ -310,30 +308,11 @@ struct ImmersiveCard: View {
             // of getting partially covered by it.
             VStack(alignment: .leading, spacing: 0) {
                 VStack(alignment: .leading, spacing: 6) {
-                    // Top row: rotating label on the left, share button on
-                    // the right. The share button has to live up here (not
-                    // bottom-right of zone 2) because the bottom of zone 2
-                    // sits behind the translucent tab bar — anything tappable
-                    // there is invisible and ungrabbable.
-                    HStack(alignment: .firstTextBaseline) {
-                        Text(zone2Label)
-                            .font(.jakarta(20, weight: .bold))
-                        Spacer()
-                        // Share the full card (headline + analogy + talking
-                        // point + attribution) as a text package she can
-                        // paste into iMessage / a group chat. ShareLink
-                        // consumes the tap so the parent zone2 onTapGesture
-                        // (which opens the detail view) doesn't also fire.
-                        ShareLink(item: shareText) {
-                            Image(systemName: "square.and.arrow.up")
-                                .simultaneousGesture(TapGesture().onEnded { Analytics.shared.log(.lineShared, ["surface": "feed"]) })
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(zone2TextColor)
-                                .frame(width: 40, height: 40)
-                                .contentShape(Rectangle())
-                        }
-                        .accessibilityLabel("Share this card")
-                    }
+                    // No share button: the shared text ("via GoalDigger")
+                    // gave her away to him (council 2026-10-29). The
+                    // article's copy button stays.
+                    Text(zone2Label)
+                        .font(.jakarta(20, weight: .bold))
                     // Shrinks rather than running under the tab bar when the
                     // line is long or the text size is large.
                     // ponytail: at accessibility sizes a long line still ends

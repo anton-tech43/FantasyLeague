@@ -5,9 +5,14 @@ import SwiftUI
 /// normal feed cards: hot-rose live indicator that pulses, trigger label
 /// (HALF TIME / 75 MIN / etc), then the brief headline + body. No vertical
 /// rose accent bar — this is the loudest card on the feed and shouldn't be
-/// camouflaged among the others. T2+ only; gating handled in FeedView.
+/// camouflaged among the others. Every tier sees the score, minute and
+/// scorers; the written commentary and the table are Match-fit and up.
 struct LiveMatchCard: View {
     let brief: LiveMatchBrief
+    var showsProse = true
+    /// No successful poll for three minutes: the clock stops and the card
+    /// says so, rather than run a frozen score past 100' (24 Oct outage).
+    var isPaused = false
 
     @State private var pulseOn = false
 
@@ -39,8 +44,8 @@ struct LiveMatchCard: View {
                 Circle()
                     .fill(Color.hotRose)
                     .frame(width: 10, height: 10)
-                    .scaleEffect(pulseOn ? 1.4 : 1.0)
-                    .opacity(pulseOn ? 0.5 : 1.0)
+                    .scaleEffect(pulseOn && !isPaused ? 1.4 : 1.0)
+                    .opacity(pulseOn && !isPaused ? 0.5 : 1.0)
                     .animation(
                         .easeInOut(duration: 1.0).repeatForever(autoreverses: true),
                         value: pulseOn
@@ -62,7 +67,14 @@ struct LiveMatchCard: View {
 
                 // The clock only runs in play. At a break or in a shoot-out the
                 // server's minute stands still and RunningMinute would not.
-                if let minute = brief.minute,
+                if isPaused {
+                    Text("·")
+                        .font(.jakarta(11, weight: .bold))
+                        .foregroundColor(.warmWhite.opacity(0.5))
+                    Text("Score paused, reconnecting")
+                        .font(.jakarta(11, weight: .semiBold))
+                        .foregroundColor(.warmWhite.opacity(0.8))
+                } else if let minute = brief.minute,
                    !["HT", "BREAK", "PENALTIES"].contains(brief.triggerLabel ?? "") {
                     Text("·")
                         .font(.jakarta(11, weight: .bold))
@@ -94,15 +106,17 @@ struct LiveMatchCard: View {
             }
 
             // Body — the context, regular
+            if showsProse {
             Text(brief.body)
                 .font(.jakarta(15, weight: .regular))
                 .foregroundColor(.warmWhite.opacity(0.85))
                 .lineSpacing(3)
                 .fixedSize(horizontal: false, vertical: true)
+            }
 
             // Group standings — the live box doubles as group context during
             // the match. Compact: position, team, played, points.
-            if let standings = brief.standings, !standings.entries.isEmpty {
+            if showsProse, let standings = brief.standings, !standings.entries.isEmpty {
                 VStack(alignment: .leading, spacing: 5) {
                     Text(standings.competitionLabel.uppercased())
                         .font(.jakarta(11, weight: .bold))
@@ -153,7 +167,7 @@ struct LiveMatchCard: View {
             pulseOn = true
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Live match update for your team: \(brief.headline). \(brief.body)")
+        .accessibilityLabel("Live match update for your team: \(brief.headline)." + (isPaused ? " Score paused, reconnecting." : "") + (showsProse ? " \(brief.body)" : ""))
     }
 }
 

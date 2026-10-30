@@ -14,9 +14,6 @@ struct FeedView: View {
     // Per-context loading state
     @State private var isLoading = true
     @State private var hasError = false
-    /// The followed country's next fixture, fetched lazily when the country feed
-    /// is empty, so the empty state can show a countdown instead of generic copy.
-    @State private var countryNextFixture: TeamSeasonState.NextFixture?
     /// Bumped when the app returns to the foreground, to re-fire the live-brief
     /// poll task (which SwiftUI cancels on background and won't restart on its
     /// own for the same context). Keeps the live box from going stale.
@@ -28,7 +25,7 @@ struct FeedView: View {
     @State private var isLoadingMore = false
     @State private var freshnessCardDismissed = false
     @State private var matchdayPlayers: [PlayerCard] = []
-    /// Filled in when the team feed is empty AND the user is T2+. Lets us
+    /// Filled in when the team feed is empty, for every tier. Lets us
     /// surface an Insider item ("Things he doesn't know") instead of the
     /// generic "nothing today" empty state, so the user always has
     /// something to read on opening the app. V1.1 task C1.
@@ -38,11 +35,10 @@ struct FeedView: View {
     /// 60-second poll loop while the user is on the feed AND scenePhase
     /// is active. Cleared when the poll returns 204 (no live match).
     @State private var liveBrief: LiveMatchBrief?
-    /// Saturday Quiz surface (V1.1 task C3). T3+ tier-gated. Fetched once
-    /// on view load and on team change via the same `.task(id:)` that
-    /// loads the live brief poll — no poll loop. The 36-hour freshness
-    /// window lives server-side; iOS just renders whatever it gets back.
-    @State private var currentQuiz: SaturdayQuiz?
+    /// When the live brief last arrived. Three minutes without one pauses
+    /// the card's clock; ten minutes hides the card.
+    @State private var liveBriefAt = Date()
+    @State private var liveBriefPaused = false
     @State private var notificationStatus: UNAuthorizationStatus = .authorized
 
     private let pageSize = 20
@@ -100,9 +96,6 @@ struct FeedView: View {
         return nil
     }
 
-    private var hasTopCard: Bool {
-        (shouldShowLiveBrief && liveBrief != nil) || (shouldShowQuiz && currentQuiz != nil)
-    }
 
     var body: some View {
         ZStack {
@@ -129,10 +122,10 @@ struct FeedView: View {
                         }
                     }
                 )
-            } else if displayItems.isEmpty && !hasTopCard {
+            } else if displayItems.isEmpty && !shouldShowLiveBrief {
                 emptyView
             } else {
-                // With no items but a live match or the quiz on, the feed
+                // With no items but a live match on, the feed
                 // still renders: the live score must not hide behind
                 // "Quiet on his end" (bug hunt 2026-10-27).
                 feedContent
@@ -177,16 +170,8 @@ struct FeedView: View {
             // change (team OR country context), and on a foreground return (via
             // livePollGeneration). The task body is the poll loop itself; it
             // exits when SwiftUI cancels the task (view disappear, id change,
-            // app suspend). T1 users opt-out via TierGating.
+            // app suspend). Every tier: a goal push lands on the score.
             await runLiveBriefPoll()
-        }
-        .task(id: activeEntityId) {
-            // Saturday Quiz fetch (V1.1 task C3). Single-shot, not a poll
-            // — the routine writes once a week and the server gates on a
-            // 36-hour freshness window. T3+ only; T1/T2 users skip the
-            // fetch entirely. Failure (network blip, 5xx) silently leaves
-            // currentQuiz nil so the card simply doesn't render.
-            await loadSaturdayQuiz()
         }
         .onChange(of: activeEntityId) { _, newEntity in
             // Keyed on the entity `teamItems` belongs to, not selectedTeam
@@ -199,10 +184,8 @@ struct FeedView: View {
             teamCanLoadMore = true
             freshnessCardDismissed = false
             matchdayPlayers = []
-            countryNextFixture = nil
             emptyStateInsider = nil
             liveBrief = nil   // drop stale live card from prior entity
-            currentQuiz = nil // and stale quiz card for prior entity
             guard newEntity != nil else { return }
             isLoading = true
             Task { await loadTeamFeed() }
@@ -292,11 +275,10 @@ struct FeedView: View {
 
     /// Polls the live-brief-current Edge Function every 60 seconds for the
     /// user's selected team. On 200 sets `liveBrief`; on 204 clears it.
-    /// T1 users skip the poll entirely. Cancelled by SwiftUI when the
-    /// view disappears or scenePhase transitions to .background.
+    /// Cancelled by SwiftUI when the view disappears or scenePhase
+    /// transitions to .background.
     private func runLiveBriefPoll() async {
-        guard TierGating.isAvailable(.matchDayLive, tier: appState.selectedTier),
-              let teamId = activeEntityId else {
+        guard let teamId = activeEntityId else {
             liveBrief = nil
             return
         }
@@ -306,10 +288,16 @@ struct FeedView: View {
             do {
                 let brief = try await APIClient.shared.fetchCurrentLiveBrief(teamId: teamId)
                 liveBrief = brief
+                liveBriefAt = Date()
+                liveBriefPaused = false
             } catch {
-                // Network blip or backend hiccup. Don't blow away an
-                // existing card on a transient error — keep the last
-                // good value visible until the next successful poll.
+                // Network blip or backend hiccup. A transient error keeps the
+                // last good card; three minutes without one stops its clock
+                // and says so, ten minutes takes it down. During the 24 Oct
+                // outage the card would have shown a frozen 1-0 with the
+                // clock running past 100'.
+                let silent = Date().timeIntervalSince(liveBriefAt)
+                if silent > 600 { liveBrief = nil } else if silent > 180 { liveBriefPaused = true }
                 #if DEBUG
                 print("⚠️ live brief poll error: \(error)")
                 #endif
@@ -331,31 +319,6 @@ struct FeedView: View {
             } catch {
                 return
             }
-        }
-    }
-
-    // MARK: - Saturday Quiz fetch (V1.1 task C3)
-
-    /// Single-shot fetch for the weekend's Saturday Quiz. T3+ users only.
-    /// The server returns 204 outside the 36-hour weekend window, which
-    /// maps to nil here and hides the card. Failures leave `currentQuiz`
-    /// untouched (either nil from this load, or the previously-fetched
-    /// value if a transient error hit a refresh) so a hiccup never blows
-    /// away a card the user was about to tap.
-    private func loadSaturdayQuiz() async {
-        guard TierGating.isAvailable(.saturdayQuiz, tier: appState.selectedTier),
-              let teamId = activeEntityId else {
-            currentQuiz = nil
-            return
-        }
-        do {
-            currentQuiz = try await APIClient.shared.fetchCurrentQuiz(teamId: teamId)
-        } catch {
-            #if DEBUG
-            print("⚠️ saturday quiz fetch error: \(error)")
-            #endif
-            // Leave currentQuiz at its existing value — don't blank a
-            // visible card on a transient failure.
         }
     }
 
@@ -454,62 +417,17 @@ struct FeedView: View {
     //
     // V1.1 task C5: LiveMatchCard renders as the first item INSIDE the feed's
     // scroll view so it scrolls away with content rather than pinning to the
-    // top. It gates on `shouldShowLiveBrief` so the card never appears for T1
-    // users or in the "Everyone Talking" context.
+    // top. It gates on `shouldShowLiveBrief` so the card never appears in the
+    // "Everyone Talking" context.
 
     private var feedContent: some View { immersiveFeed }
 
-    /// Whether the LiveMatchCard should render right now. Combines the
-    /// data check (we have a brief), the tier gate, and the context check
-    /// ("Everyone Talking" surface shouldn't show team-specific live).
+    /// Whether the LiveMatchCard should render right now: we have a brief
+    /// and the context is a club ("Everyone Talking" shouldn't show
+    /// team-specific live). Every tier sees the score; the commentary under
+    /// it is Match-fit and up (LiveMatchCard.showsProse).
     private var shouldShowLiveBrief: Bool {
-        guard liveBrief != nil, appState.activeContext != .everyoneTalking else { return false }
-        return TierGating.isAvailable(.matchDayLive, tier: appState.selectedTier)
-    }
-
-    /// Whether the SaturdayQuizCard should render right now. T3+ only,
-    /// data must be loaded, and the team context must be active (the
-    /// quiz is team-specific). Sits BELOW LiveMatchCard in render order
-    /// — during a live match the live card takes visual priority.
-    private var shouldShowQuiz: Bool {
-        currentQuiz?.questions.isEmpty == false &&
-        TierGating.isAvailable(.saturdayQuiz, tier: appState.selectedTier) &&
-        appState.activeContext != .everyoneTalking
-    }
-
-    /// Persistent "Coming up" card: the country feed always leads with the next
-    /// known WC match. Hidden only when a live match is on (the live card takes
-    /// priority) or in the Everyone Talking context.
-    private var shouldShowComingUp: Bool {
-        countryNextFixture != nil &&
-        !shouldShowLiveBrief &&
-        appState.activeContext != .everyoneTalking
-    }
-
-    @ViewBuilder
-    private var comingUpFeedCard: some View {
-        if let fixture = countryNextFixture, case .country(let country) = appState.activeContext {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("COMING UP")
-                    .font(.sectionHeader)
-                    .tracking(1)
-                    .foregroundColor(.hotRose)
-                Text("\(country.shortName) face \(fixture.opponent)")
-                    .font(.feedHeadline)
-                    .foregroundColor(.warmWhite)
-                TeamPageCountdown(targetDate: ISO8601DateFormatter().string(from: fixture.kickoffTime))
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
-                    .fill(Color.warmWhite.opacity(0.06))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
-                    .stroke(Color.hotRose.opacity(0.25), lineWidth: 1)
-            )
-        }
+        liveBrief != nil && appState.activeContext != .everyoneTalking
     }
 
     // MARK: - Immersive Feed
@@ -535,25 +453,15 @@ struct FeedView: View {
                     // animation modifier on the outer scroll view fades
                     // it in/out as the poll loop updates `liveBrief`.
                     if shouldShowLiveBrief, let brief = liveBrief {
-                        LiveMatchCard(brief: brief)
+                        LiveMatchCard(
+                            brief: brief,
+                            showsProse: TierGating.isAvailable(.matchDayLive, tier: appState.selectedTier),
+                            isPaused: liveBriefPaused
+                        )
                             .padding(.horizontal, Layout.screenPadding)
                             .padding(.vertical, 8)
                             .transition(.move(edge: .top).combined(with: .opacity))
-                    }
-                    if shouldShowComingUp {
-                        comingUpFeedCard
-                            .padding(.horizontal, Layout.screenPadding)
-                            .padding(.vertical, 8)
-                            .transition(.move(edge: .top).combined(with: .opacity))
-                    }
-                    // Quiz below live card. Same scroll-with-feed treatment
-                    // as the live card so neither pins to the top of the
-                    // immersive scroll view.
-                    if shouldShowQuiz, let quiz = currentQuiz {
-                        SaturdayQuizCard(quiz: quiz)
-                            .padding(.horizontal, Layout.screenPadding)
-                            .padding(.vertical, 8)
-                            .transition(.opacity)
+                            .id(Self.liveCardID)
                     }
                     ForEach(Array(bodyItems.enumerated()), id: \.element.id) { index, item in
                         let isYourMove = index == 0 && appState.activeContext != .everyoneTalking
@@ -595,6 +503,11 @@ struct FeedView: View {
             .background(Color.deepMauve)
             .scrollContentBackground(.hidden)
             .refreshable { await refresh() }
+            // A kickoff, goal or half-time push lands on the score, not on
+            // whichever card she last left the feed on.
+            .onChange(of: appState.pushTapTick) { _, _ in
+                if shouldShowLiveBrief { proxy.scrollTo(Self.liveCardID, anchor: .top) }
+            }
             #if DEBUG
             // `-gdFeedIndex N` lands on the Nth card once the feed has loaded,
             // so a screenshot can reach any card without a swipe (simctl cannot tap).
@@ -626,7 +539,7 @@ struct FeedView: View {
             Text("That didn't load.")
                 .font(.feedHeadline)
                 .foregroundColor(.textPrimaryOnCard)
-            Text("Probably your connection. Give it another go.")
+            Text("We couldn't load this just now. Give it another go.")
                 .font(.onboardingBody)
                 .foregroundColor(.textSecondaryOnCard)
             Button {
@@ -650,48 +563,11 @@ struct FeedView: View {
 
     @ViewBuilder
     private var emptyView: some View {
-        // A country context gets its own empty state. Evergreen copy (no
-        // hardcoded date — the old "starts June 11" line read as broken once
-        // the tournament was live): there's simply no fresh article this
-        // moment, so point her at his team page where the next match + stakes
-        // always render deterministically.
-        if case .country(let country) = appState.activeContext {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    if let fixture = countryNextFixture {
-                        // Match-aware: show the countdown to the next match so the
-                        // feed is useful between fixtures (the build-up item lands
-                        // the day before; until then this is the floor).
-                        Text("UP NEXT")
-                            .font(.sectionHeader)
-                            .tracking(1)
-                            .foregroundColor(.mutedText)
-                        Text("\(country.shortName) face \(fixture.opponent)")
-                            .font(.feedHeadline)
-                            .foregroundColor(.warmWhite)
-                        TeamPageCountdown(targetDate: ISO8601DateFormatter().string(from: fixture.kickoffTime))
-                        Text("We'll have the build-up here the day before. Open the \(country.shortName) tab for the full preview.")
-                            .font(.onboardingBody)
-                            .foregroundColor(.textOnDark.opacity(0.7))
-                            .fixedSize(horizontal: false, vertical: true)
-                    } else {
-                        Text("NOTHING NEW RIGHT NOW")
-                            .font(.sectionHeader)
-                            .tracking(1)
-                            .foregroundColor(.mutedText)
-                        Text("We'll post \(appState.pPossessive) \(country.shortName) updates around each match. Open the \(country.shortName) tab to see what's coming up next.")
-                            .font(.onboardingBody)
-                            .foregroundColor(.textOnDark.opacity(0.8))
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .padding(.horizontal, Layout.screenPadding)
-                .padding(.top, 32)
-            }
-        } else if TierGating.isAvailable(.insiderCard, tier: appState.selectedTier),
-                  let insider = emptyStateInsider {
-            // T2+ PL users with an insider item available get a useful card
-            // to read instead of the generic "nothing today" empty state.
+        // The country feed's own empty state (a World Championship countdown)
+        // went with the retired tournament (council 2026-10-29).
+        if let insider = emptyStateInsider {
+            // Every tier gets one specific fact instead of the generic
+            // "nothing today": a quiet week is when Light needs it most.
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("NO NEWS RIGHT NOW. WORTH KNOWING:")
@@ -708,8 +584,8 @@ struct FeedView: View {
                 .padding(.top, 24)
             }
         } else {
-            // T1 users and teams without an insider row fall back to the
-            // original empty state.
+            // Clubs without an insider row fall back to the original empty
+            // state.
             // The club on screen, not her first one.
             EmptyStateView(teamName: activeTeam?.shortName ?? appState.selectedTeam?.shortName ?? "your team")
         }
@@ -787,7 +663,7 @@ struct FeedView: View {
             in: modelContext
         )
         if !cached.isEmpty, teamItems.isEmpty {
-            teamItems = Self.applyTierFilter(Self.uniqued(cached), tier: appState.selectedTier)
+            teamItems = Self.uniqued(cached)
             isLoading = false
         }
 
@@ -820,27 +696,11 @@ struct FeedView: View {
             let page = try await APIClient.shared.fetchFeed(teamId: teamId, limit: pageSize, offset: 0)
             let fetched = page.items
             if isStale { return }
-            // Sunday Brief (V1.1 C2) is T2+. Filter client-side so a T1
-            // user never sees the card even if it slipped into the response.
-            // Server-side push gating in notification-sender stops the
-            // notification; this guard handles the feed render.
-            teamItems = Self.applyTierFilter(Self.uniqued(fetched), tier: appState.selectedTier)
+            teamItems = Self.uniqued(fetched)
             teamOffset = page.rows
             teamCanLoadMore = page.rows == pageSize
             hasError = false
             CacheService.shared.upsertItems(fetched, in: modelContext)
-            // Next WC fixture for the country, powering the persistent "Coming
-            // up" card at the top of the feed (and the countdown empty state).
-            // Always fetched in country context so the next match is shown
-            // whether or not there are news items.
-            if case .country = appState.activeContext {
-                let next = (try? await APIClient.shared.fetchTeamSeasonState(teamId: teamId))?
-                    .fixturesForSync.first(where: { $0.kickoffTime > Date() })
-                if isStale { return }
-                countryNextFixture = next
-            } else {
-                countryNextFixture = nil
-            }
         } catch {
             if isStale { return }
             if teamItems.isEmpty {
@@ -856,17 +716,18 @@ struct FeedView: View {
                 #endif
             }
         }
-        // When the team feed is empty for a T2+ user, pull the latest
-        // insider item BEFORE flipping isLoading to false so the UI never
-        // flashes the generic "nothing today" state. The fetch is
-        // best-effort: failure leaves emptyStateInsider nil and emptyView
-        // falls back to the generic state. Cleared when items come back.
+        // When the team feed is empty, pull the latest insider item BEFORE
+        // flipping isLoading to false so the UI never flashes the generic
+        // "nothing today" state. The fetch is best-effort: failure leaves
+        // emptyStateInsider nil and emptyView falls back to the generic
+        // state. Cleared when items come back. Skipped when the feed itself
+        // failed: against a hung backend it doubled the wait before the
+        // error showed (~20 s instead of ~10).
         // Use the ACTIVE entity (teamId, resolved above from activeContext),
         // not appState.selectedTeam — otherwise a country feed shows the
         // club's "things he doesn't know" (or nothing, for a WC-only user
         // with no club). Countries have their own insider rows. (bug 2026-06-01)
-        if teamItems.isEmpty,
-           TierGating.isAvailable(.insiderCard, tier: appState.selectedTier) {
+        if teamItems.isEmpty, !hasError {
             let items = (try? await APIClient.shared.fetchInsiderItems(teamId: teamId, limit: 1)) ?? []
             if isStale { return }
             emptyStateInsider = items.first
@@ -892,14 +753,14 @@ struct FeedView: View {
         if everyoneItems.isEmpty {
             let cached = CacheService.shared.fetchCachedEveryoneFeed(in: modelContext)
             if !cached.isEmpty {
-                everyoneItems = Self.applyTierFilter(Self.uniqued(cached), tier: appState.selectedTier)
+                everyoneItems = Self.uniqued(cached)
             }
         }
 
         do {
             let page = try await APIClient.shared.fetchEveryoneFeed(limit: pageSize, offset: 0)
             let fetched = page.items
-            everyoneItems = Self.applyTierFilter(Self.uniqued(fetched), tier: appState.selectedTier)
+            everyoneItems = Self.uniqued(fetched)
             everyoneOffset = page.rows
             everyoneCanLoadMore = page.rows == pageSize
             // A failed club feed must not keep Football on "didn't load".
@@ -941,7 +802,7 @@ struct FeedView: View {
                 // Offset paging shifts when a story is published between
                 // pages, so page N+1 can repeat the tail of page N. A repeated
                 // id breaks ForEach(id:), so drop what is already shown.
-                everyoneItems = Self.uniqued(everyoneItems + Self.applyTierFilter(fetched, tier: appState.selectedTier))
+                everyoneItems = Self.uniqued(everyoneItems + fetched)
                 everyoneOffset += page.rows
                 everyoneCanLoadMore = page.rows == pageSize
                 CacheService.shared.upsertItems(fetched, in: modelContext)
@@ -962,7 +823,7 @@ struct FeedView: View {
             // to the previous entity, whose list has already been replaced.
             guard activeEntityId == teamId else { return }
             // Same de-dup as the Everyone feed above: offset paging can repeat ids.
-            teamItems = Self.uniqued(teamItems + Self.applyTierFilter(fetched, tier: appState.selectedTier))
+            teamItems = Self.uniqued(teamItems + fetched)
             teamOffset += page.rows
             teamCanLoadMore = page.rows == pageSize
             CacheService.shared.upsertItems(fetched, in: modelContext)
@@ -981,22 +842,7 @@ struct FeedView: View {
         return items.filter { seen.insert($0.id).inserted }
     }
 
-    // MARK: - Tier filter
-
-    /// Strips content items above the user's tier. Sunday Brief (V1.1 C2)
-    /// is T2+. Future tier-3-only types (Saturday Quiz, Player Dossier,
-    /// Group-chat Prep) hook in here. Server-side gating handles push;
-    /// this is the read/render side.
-    static func applyTierFilter(_ items: [ContentItem], tier: Int) -> [ContentItem] {
-        items.filter { item in
-            switch item.type {
-            case .news, .matchday, .startingXi:
-                return true   // all tiers see the basics + pre-match lineup
-            case .sundayBrief:
-                return tier >= 2
-            }
-        }
-    }
+    static let liveCardID = "live-card"
 }
 
 // MARK: - Notification Name for Feed Navigation

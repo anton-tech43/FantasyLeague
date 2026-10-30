@@ -35,9 +35,7 @@
 		A11A0E0E0E0E0E0E0E0E0001 /* Analytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11A0E0E0E0E0E0E0E0E0002 /* Analytics.swift */; };
 		754DEA162AF85F46038029EC /* LiveSquadPack.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC063CF34EB46623A471C9F6 /* LiveSquadPack.swift */; };
 		785C14F6B48F7E69523A45EC /* SayThisPractiseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED6D8160AFC958A96956341D /* SayThisPractiseView.swift */; };
-		7AE5C40C19D72FA48BC51F30 /* SaturdayQuiz.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BC4A29F62D389F4A4751E27 /* SaturdayQuiz.swift */; };
 		8B0B08958242D8A2904E2895 /* LingoDeck.swift in Sources */ = {isa = PBXBuildFile; fileRef = B704D2F20367B101AF1B118A /* LingoDeck.swift */; };
-		8DF6B51D2AE83FB59CD63041 /* SaturdayQuizCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD5B3A073E49AF5B5862F38 /* SaturdayQuizCard.swift */; };
 		9D8349CC509C7124A5EB9F29 /* MyTurnPractiseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0C75FEEE6727814C8D4456 /* MyTurnPractiseButton.swift */; };
 		AA000001 /* GoalDiggerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001 /* GoalDiggerApp.swift */; };
 		AA000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002 /* AppDelegate.swift */; };
@@ -172,13 +170,11 @@
 		1969411F418AE27184440E14 /* GlossaryText.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlossaryText.swift; sourceTree = "<group>"; };
 		19D7EA257F3133FF29F0A866 /* TeamSeasonState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TeamSeasonState.swift; sourceTree = "<group>"; };
 		1ADF83F8ECC74099BBB0BB27 /* SayThisView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SayThisView.swift; sourceTree = "<group>"; };
-		1BC4A29F62D389F4A4751E27 /* SaturdayQuiz.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SaturdayQuiz.swift; sourceTree = "<group>"; };
 		270994EEE49DF138BC2540A0 /* GlossaryTerm.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlossaryTerm.swift; sourceTree = "<group>"; };
 		2AD6B0120F684DF2FDE52DDA /* GlossaryService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlossaryService.swift; sourceTree = "<group>"; };
 		2B5B3A50DCC8E9B41626BB81 /* SeasonPrimerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SeasonPrimerView.swift; sourceTree = "<group>"; };
 		2BDA3526673665ADFD98752B /* MatchActivityAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MatchActivityAttributes.swift; sourceTree = "<group>"; };
 		2C3E6B0D62430537E6511905 /* GoalDiggerLiveActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GoalDiggerLiveActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		2CD5B3A073E49AF5B5862F38 /* SaturdayQuizCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SaturdayQuizCard.swift; sourceTree = "<group>"; };
 		36F66AB00E15F67DAA68C18A /* AudioPlayerService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioPlayerService.swift; sourceTree = "<group>"; };
 		37D3E46E7BC8929DF2B09425 /* CalendarSyncService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarSyncService.swift; sourceTree = "<group>"; };
 		3F288B1DCFB01F70EA2722C7 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -428,7 +424,6 @@
 				AB000310 /* CollapsibleSection.swift */,
 				AB000311 /* AffectedTeamsHeader.swift */,
 				D5A88D0BF10EC36C829985F7 /* LiveMatchCard.swift */,
-				2CD5B3A073E49AF5B5862F38 /* SaturdayQuizCard.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -498,7 +493,6 @@
 				19D7EA257F3133FF29F0A866 /* TeamSeasonState.swift */,
 				CCC2F8DAF9A3D770423F8C38 /* InsiderItem.swift */,
 				0E9B40C83CE30947DD4E9AB4 /* LiveMatchBrief.swift */,
-				1BC4A29F62D389F4A4751E27 /* SaturdayQuiz.swift */,
 				7053F7511B38A308FC409BEB /* MyTurnContent.swift */,
 				87C6A674DCE8CC6E44C5136A /* Competition.swift */,
 			);
@@ -870,8 +864,6 @@
 				AA000311 /* AffectedTeamsHeader.swift in Sources */,
 				6DB27580A7465723CA70926A /* LiveMatchBrief.swift in Sources */,
 				6CA1FD4A864451C12D212143 /* LiveMatchCard.swift in Sources */,
-				7AE5C40C19D72FA48BC51F30 /* SaturdayQuiz.swift in Sources */,
-				8DF6B51D2AE83FB59CD63041 /* SaturdayQuizCard.swift in Sources */,
 				244B4E7A89E82714DCF2F917 /* MatchActivityAttributes.swift in Sources */,
 				25B33D3555E190DC97F79521 /* LiveActivityManager.swift in Sources */,
 				159D99B3A0BD1457CA4C4F47 /* LiveMatchSnapshot.swift in Sources */,

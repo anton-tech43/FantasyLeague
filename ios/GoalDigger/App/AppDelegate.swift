@@ -23,6 +23,12 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                && SharedAnalytics.pushKind("matchday-arsenal-9") == "matchday" && SharedAnalytics.pushKind("fixture:9") == "fixture"
                && SharedAnalytics.pushKind(UUID().uuidString) == "article" && SharedAnalytics.pushKind(nil) == "none",
                "push_opened kinds drifted")
+        assert(ImmersiveCard.matchdayLabel(result: "Newcastle 1-3 Everton", teamId: "newcastle") == "After Everton:"
+               && ImmersiveCard.matchdayLabel(result: "Everton 3-1 Newcastle (AET)", teamId: "newcastle") == "After Everton:"
+               && ImmersiveCard.matchdayLabel(result: "Man United 2-0 Spurs", teamId: "man_utd") == "After Spurs:"
+               && ImmersiveCard.matchdayLabel(result: "Arsenal 1-1 Fleetwood Town (Arsenal won 4-3 on penalties)", teamId: "arsenal") == "After Fleetwood Town:"
+               && ImmersiveCard.matchdayLabel(result: nil, teamId: "arsenal") == "After the game:",
+               "result card label names the wrong side")
         #endif
 
         UNUserNotificationCenter.current().delegate = self

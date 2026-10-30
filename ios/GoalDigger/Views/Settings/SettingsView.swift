@@ -54,6 +54,11 @@ struct SettingsView: View {
                             // 22 July onwards.
                             if CountryFollowing.isEnabled {
                                 hisCountryRow
+                            } else if !appState.selectedCountries.isEmpty {
+                                // The country feed is gone, but about ten
+                                // devices still follow one from the World
+                                // Championship. This is their only way out.
+                                stopFollowingCountryRow
                             }
                             hisTeamRow
                             yourModeRow
@@ -257,6 +262,35 @@ struct SettingsView: View {
                         .foregroundColor(.textSecondaryOnCard)
                         .font(.system(size: 12))
                 }
+            }
+        }
+    }
+
+    @ViewBuilder private var stopFollowingCountryRow: some View {
+        settingsRow {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("\(appState.namePossessiveCap) Country")
+                        .font(.feedTimestamp)
+                        .foregroundColor(.textSecondaryOnCard)
+                    Text(appState.selectedCountries.map(\.displayName).joined(separator: ", "))
+                        .font(.feedHeadline)
+                        .foregroundColor(.textPrimaryOnCard)
+                }
+                Spacer()
+                Button("Stop following") {
+                    appState.selectedCountries = []
+                    if case .country = appState.activeContext {
+                        appState.activeContext = appState.selectedTeams.first.map { FeedContext.team($0) } ?? .everyoneTalking
+                    }
+                    NotificationService.shared.reregisterForFollowChange()
+                    // A country-only device has nothing left to follow: send
+                    // her straight to the clubs.
+                    if appState.selectedTeams.isEmpty { showTeamPicker = true }
+                }
+                .font(.jakarta(14, weight: .semiBold))
+                .foregroundColor(.hotRose)
+                .frame(minHeight: 44)
             }
         }
     }

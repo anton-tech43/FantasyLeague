@@ -332,7 +332,7 @@ app's own rawValues wherever one exists.
 | Event | Properties | Hook |
 |---|---|---|
 | `feed_card_opened` | `position`, `content_type`, `zone` (story, things_to_say) | `ImmersiveCard` zone taps |
-| `line_shared` | `surface` (feed, article, talking_point, quiz, copy) | the `ShareLink`s and `CopyButton` |
+| `line_shared` | `surface` (article, talking_point, quiz, copy; `feed` until 2.4 — the card share button was removed 2026-10-30) | the `ShareLink`s and `CopyButton` |
 | `line_saved` | `source` (slip, say_this) | slip "Save for the game", Say This star |
 
 ### C. My Turn, corrected to the app
