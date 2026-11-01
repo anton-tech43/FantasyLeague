@@ -20,6 +20,10 @@ import SwiftUI
 struct HypeContent: Codable {
     let contentVersion: String
     let categories: [String: [String]]
+    /// Lines that only fit a quiz result ("Ask him the same questions"), kept
+    /// out of the Lingo and Say This results (MY-10-04). Optional: hype.json
+    /// published before 2026-11-01 has none.
+    var quizOnly: [String]? = nil
 
     func lines(_ category: HypeCategory) -> [String] { categories[category.rawValue] ?? [] }
 }
@@ -46,14 +50,16 @@ enum HypeCategory: String {
 /// shown) and the content service (which holds the lines).
 enum Hype {
     @MainActor
-    static func line(_ category: HypeCategory, store: MyTurnStore) -> String? {
+    /// `quiz` false for a Lingo or Say This result, which skips `quizOnly`.
+    static func line(_ category: HypeCategory, store: MyTurnStore, quiz: Bool = true) -> String? {
         // Past four in a row, a line that says "four" is a lie. `streakTick` is
         // the run that just triggered, and it is the only source: the streak
         // now comes from the quiz or from a Lingo round, and reading
         // `quizRound` would say "four" over an eight in Lingo (2026-09-22).
         let pastFour = category == .streak && store.streakTick > 4
+        let quizOnly = quiz ? [] : Set(MyTurnContentService.shared.hype.quizOnly ?? [])
         return store.hypeLine(category, from: MyTurnContentService.shared.hype.lines(category),
-                              excluding: { pastFour && $0.lowercased().contains("four") })
+                              excluding: { (pastFour && $0.lowercased().contains("four")) || quizOnly.contains($0) })
     }
 }
 

@@ -189,7 +189,7 @@ struct SayThisPractiseView: View {
         // Nothing is marked right or wrong here, so there is no score to show
         // and no band to work out: she gets a strong-band line.
         HypeCard(hype: hype)
-            .task { if hype == nil { hype = Hype.line(.strong, store: store) } }
+            .task { if hype == nil { hype = Hype.line(.strong, store: store, quiz: false) } }
             .padding(.bottom, 20)
 
         bigButton("Go again", icon: "arrow.clockwise", action: onRestart)

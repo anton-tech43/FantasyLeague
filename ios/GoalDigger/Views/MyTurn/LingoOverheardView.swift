@@ -239,7 +239,7 @@ struct LingoOverheardView: View {
                 // stale snapshot here would band the wrong score.
                 guard let s = store.drillSession, s.finished, s.hypeLine == nil else { return }
                 let band = HypeCategory.band(score: s.knew, of: s.queue.count)
-                store.drillSession?.hypeLine = Hype.line(band, store: store)
+                store.drillSession?.hypeLine = Hype.line(band, store: store, quiz: false)
             }
 
         // Only when she actually missed one: on seven out of seven the line
