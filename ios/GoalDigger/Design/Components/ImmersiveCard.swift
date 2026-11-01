@@ -179,7 +179,7 @@ struct ImmersiveCard: View {
                 // (TightHeadline). Still a heading, so the rotor steps card
                 // to card.
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel([competitionLabel, headline, contextLine, item.publishedAt.relativeTimestamp].compactMap { $0 }.joined(separator: ". "))
+                .accessibilityLabel([competitionLabel, headline, contextLine, item.isPastPreMatch ? "Written before the match" : nil, item.publishedAt.relativeTimestamp].compactMap { $0 }.joined(separator: ". "))
                 .accessibilityHint("Tap for the full story and more to say")
                 .accessibilityAddTraits([.isButton, .isHeader])
                 .accessibilityAction { onZone1Tap() }
@@ -267,9 +267,20 @@ struct ImmersiveCard: View {
                     Text("Press for more info and things to say")
                         .foregroundColor(.warmWhite.opacity(0.45))
                     Spacer(minLength: 8)
-                    Text(item.publishedAt.relativeTimestamp)
-                        .foregroundColor(.warmWhite.opacity(0.75))
-                        .fixedSize()
+                    if item.isPastPreMatch {
+                        // Kept, not hidden, once the game has started: she may
+                        // look back or show someone (Anton, 2026-11-01).
+                        Text("Before the match · \(item.publishedAt.relativeTimestamp)")
+                            .foregroundColor(.warmWhite)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .overlay(Capsule().stroke(Color.warmWhite.opacity(0.5), lineWidth: 1))
+                            .fixedSize()
+                    } else {
+                        Text(item.publishedAt.relativeTimestamp)
+                            .foregroundColor(.warmWhite.opacity(0.75))
+                            .fixedSize()
+                    }
                 }
                 .font(.immersiveHint)
                 .padding(.bottom, 16)

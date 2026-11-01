@@ -1133,3 +1133,13 @@ extension ISO8601DateFormatter {
         return f1.date(from: raw) ?? f2.date(from: raw)
     }
 }
+
+extension ContentItem {
+    /// Written for a game that has since kicked off: its "tomorrow" and
+    /// "tonight" are about a moment that has passed. A result card carries
+    /// the score and is never this.
+    var isPastPreMatch: Bool {
+        guard let kickoffTime, matchResult == nil else { return false }
+        return publishedAt < kickoffTime && kickoffTime < .gdNow
+    }
+}
