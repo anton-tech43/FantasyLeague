@@ -209,28 +209,34 @@ export function formatSquadStats(squad: PlayerStatRow[]): string {
     .join("\n");
 }
 
-/** API-Football player id from a `.../players/<id>.png` photo URL. */
-const photoId = (p: Record<string, unknown>): number | undefined => {
-  const m = /\/players\/(\d+)\./.exec(String(p.photo_url ?? ""));
-  return m ? Number(m[1]) : undefined;
-};
-
 /**
- * Ones to know without the men who are out. The routine writes the three once
- * a week; the injury list moves every two hours, and a player card saying
- * "out, thigh" beside "Arsenal's most productive attacker" is the
- * contradiction the council found (2026-10-29: Saka, João Pedro). A man out of
- * the latest fixture waits in `out` and comes back when he is off the list.
- * `injured` is [{id, name}] for type "Missing Fixture" on the latest fixture.
+ * cards.injuries, the contract the app (and My Turn) reads: who is missing the
+ * latest fixture on the injury list, as [{name, reason}] (TEAM-01-49,
+ * 2026-11-01). The payload is keyed by fixture and spans several, with
+ * duplicates (DATA_SOURCES.md): latest fixture only, "Missing Fixture" only,
+ * one row per player. `name` is the players-table name ("B. Saka", the same
+ * as ones to know), matched on id and then on surname; the feed's own name
+ * when neither finds him. `reason` is short and lower case; any card ban is
+ * "suspended". Ones to know keeps an injured man now: the app labels him.
  */
-export function benchInjured(
-  otk: Record<string, unknown>,
-  injured: Array<{ id?: number; name?: string }>,
-): Record<string, unknown> {
-  const all = [...(otk.players as Array<Record<string, unknown>> ?? []), ...(otk.out as Array<Record<string, unknown>> ?? [])];
-  const isOut = (p: Record<string, unknown>) =>
-    injured.some((i) => (i.id != null && i.id === photoId(p)) || (!!i.name && sameName(i.name, String(p.name ?? ""))));
-  const { out: _old, ...rest } = otk;
-  const out = all.filter(isOut);
-  return { ...rest, players: all.filter((p) => !isOut(p)), ...(out.length ? { out } : {}) };
+export function injuryList(
+  rows: Array<Record<string, any>>,
+  squad: Array<{ api_player_id?: number | null; name: string }>,
+): Array<{ name: string; reason: string }> {
+  const latest = rows.map((r) => String(r.fixture?.date ?? "")).sort().at(-1);
+  const seen = new Set<string>();
+  const out: Array<{ name: string; reason: string }> = [];
+  for (const r of rows) {
+    if (r.fixture?.date !== latest || r.player?.type !== "Missing Fixture") continue;
+    const id = r.player?.id as number | undefined;
+    const feedName = String(r.player?.name ?? "").trim();
+    const bySurname = squad.filter((p) => sameName(p.name, feedName));
+    const name = squad.find((p) => id != null && p.api_player_id === id)?.name ??
+      (bySurname.length === 1 ? bySurname[0].name : feedName);
+    if (!name || seen.has(name)) continue;
+    seen.add(name);
+    const raw = String(r.player?.reason ?? "").trim().toLowerCase();
+    out.push({ name, reason: /card|suspen/.test(raw) ? "suspended" : raw || "out" });
+  }
+  return out;
 }

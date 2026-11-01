@@ -206,21 +206,27 @@ Deno.test("the guard reads a sequence, not a bag of names", () => {
   assertEquals(describeSubstitution(f, [{}, {}, {}]) !== null, true);
 });
 
-Deno.test("benchInjured: a man out of the latest fixture leaves ones to know, and comes back", async () => {
-  const { benchInjured } = await import("./featured-players.ts");
-  const saka = { name: "B. Saka", photo_url: "https://media.api-sports.io/football/players/1460.png" };
-  const pedro = { name: "João Pedro", photo_url: "https://media.api-sports.io/football/players/10329.png" };
-  const rice = { name: "D. Rice", photo_url: "https://media.api-sports.io/football/players/2937.png" };
-  const otk = { talking_point: "x", players: [saka, pedro, rice] };
-  // By id (Saka) and by name with the accent the feed drops (Joao Pedro, no photo id match).
-  const benched = benchInjured(otk, [{ id: 1460, name: "B. Saka" }, { name: "Joao Pedro" }]);
-  assertEquals(benched.players, [rice]);
-  assertEquals(benched.out, [saka, pedro]);
-  assertEquals(benched.talking_point, "x");
-  // Off the list again: back in, and `out` is gone.
-  const back = benchInjured(benched, []);
-  assertEquals(back.players, [rice, saka, pedro]);
-  assertEquals("out" in back, false);
-  // Nobody injured, nothing moves.
-  assertEquals(benchInjured(otk, []).players, [saka, pedro, rice]);
+Deno.test("injuryList: latest fixture, Missing Fixture only, deduped, named as in players", async () => {
+  const { injuryList } = await import("./featured-players.ts");
+  const row = (date: string, id: number, name: string, type: string, reason: string) =>
+    ({ fixture: { date }, player: { id, name, type, reason } });
+  const rows = [
+    row("2026-08-21T19:00:00+00:00", 22090, "W. Saliba", "Missing Fixture", "Back Injury"), // old fixture
+    row("2026-10-31T15:00:00+00:00", 1460, "B. Saka", "Missing Fixture", "Thigh Injury"),
+    row("2026-10-31T15:00:00+00:00", 1460, "B. Saka", "Missing Fixture", "Thigh Injury"),   // duplicate
+    row("2026-10-31T15:00:00+00:00", 10329, "Joao Pedro", "Missing Fixture", "Red Card"),  // name only
+    row("2026-10-31T15:00:00+00:00", 2937, "D. Rice", "Questionable", "Knock"),            // not out
+    row("2026-10-31T15:00:00+00:00", 77, "Nobody Known", "Missing Fixture", "Illness"),
+  ];
+  const squad = [
+    { api_player_id: 1460, name: "B. Saka" },
+    { api_player_id: 1, name: "João Pedro" },
+    { api_player_id: 22090, name: "W. Saliba" },
+  ];
+  assertEquals(injuryList(rows, squad), [
+    { name: "B. Saka", reason: "thigh injury" },
+    { name: "João Pedro", reason: "suspended" },
+    { name: "Nobody Known", reason: "illness" },
+  ]);
+  assertEquals(injuryList([], squad), []);
 });

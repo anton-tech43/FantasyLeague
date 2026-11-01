@@ -39,7 +39,7 @@ import {
 import { classifyBestThird, type GroupThirdBounds } from "../_shared/best-third.ts";
 import { classifyExactForTeam, coarseThirdPointsBounds, type GroupTeam, type RemainingGame } from "../_shared/group-scenarios.ts";
 import { guaranteedExactlyThird } from "../_shared/detect-consequences.ts";
-import { benchInjured, describeSubstitution, formatSquadStats, pickFeaturedPlayers, type PlayerStatRow } from "../_shared/featured-players.ts";
+import { describeSubstitution, injuryList, formatSquadStats, pickFeaturedPlayers, type PlayerStatRow } from "../_shared/featured-players.ts";
 
 // ============================================================
 // SYSTEM PROMPT
@@ -1419,27 +1419,37 @@ async function updateDynamicFields(
     }
   }
 
-  // Ones to know, without the men out of the latest fixture (benchInjured).
-  // The injury payload is keyed by fixture and spans several (DATA_SOURCES.md):
-  // the newest non-empty snapshot, its latest fixture only. No snapshot, no
-  // change: an unreadable list never empties the card.
-  if (cards.ones_to_know) {
-    const { data: injLogs } = await supabase
-      .from("raw_fetch_logs")
-      .select("data")
-      .eq("team_id", team.id)
-      .eq("source", "api_football_injuries")
-      .order("fetched_at", { ascending: false })
-      .limit(5);
-    const rows = (injLogs ?? []).map((l) => (l.data as { response?: unknown[] })?.response)
-      .find((r) => Array.isArray(r) && r.length > 0) as Array<Record<string, any>> | undefined;
-    if (rows) {
-      const latest = rows.map((r) => String(r.fixture?.date ?? "")).sort().at(-1);
-      const injured = rows
-        .filter((r) => r.fixture?.date === latest && r.player?.type === "Missing Fixture")
-        .map((r) => ({ id: r.player?.id as number | undefined, name: r.player?.name as string | undefined }));
-      cards.ones_to_know = benchInjured(cards.ones_to_know as Record<string, unknown>, injured);
-    }
+  // cards.injuries: who is out of the latest fixture, [{name, reason}]
+  // (injuryList; the app's "Out" label and My Turn read it). The newest
+  // non-empty snapshot; none readable leaves the card as it was. Ones to know
+  // no longer benches anyone (2026-11-01): a man parked in `out` by the old
+  // benchInjured goes back into `players`.
+  const { data: injLogs } = await supabase
+    .from("raw_fetch_logs")
+    .select("data")
+    .eq("team_id", team.id)
+    .eq("source", "api_football_injuries")
+    .order("fetched_at", { ascending: false })
+    .limit(5);
+  const injRows = (injLogs ?? []).map((l) => (l.data as { response?: unknown[] })?.response)
+    .find((r) => Array.isArray(r) && r.length > 0) as Array<Record<string, any>> | undefined;
+  // A clean empty answer (no errors) means nobody is out; a rate-limited or
+  // failed fetch is stored with errors and changes nothing.
+  const cleanEmpty = (injLogs ?? []).some((l) => {
+    const d = l.data as { response?: unknown; errors?: unknown } | null;
+    const errs = d?.errors;
+    return Array.isArray(d?.response) && (errs == null || (Array.isArray(errs) ? errs.length === 0 : Object.keys(errs as object).length === 0));
+  });
+  if (injRows) {
+    const { data: squad } = await supabase.from("players").select("api_player_id, name").eq("team_id", team.id);
+    cards.injuries = injuryList(injRows, (squad ?? []) as Array<{ api_player_id: number | null; name: string }>);
+  } else if (cleanEmpty) {
+    cards.injuries = [];
+  }
+  const otk = cards.ones_to_know as Record<string, unknown> | undefined;
+  if (otk && Array.isArray(otk.out)) {
+    const { out, ...rest } = otk;
+    cards.ones_to_know = { ...rest, players: [...((otk.players as unknown[]) ?? []), ...(out as unknown[])] };
   }
 
   // Cards, not the document (mig 141). match-watcher writes post_match and
