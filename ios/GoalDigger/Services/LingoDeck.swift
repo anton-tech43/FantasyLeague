@@ -7,18 +7,30 @@ import Foundation
 /// field, so these are hand-maintained. The `stale-data-audit` skill lists
 /// this enum among the surfaces it checks. Last verified 2026-09-22.
 enum LingoCalendar {
-    /// Summer window, and the off-season with it: 10 June to 31 August.
-    static let summerWindow = (open: 610, shut: 831)
-    /// Winter window: 1 January to 2 February.
-    static let winterWindow = (open: 101, shut: 202)
+    /// Month and day as one number (615 is 15 June), the way the windows are
+    /// written. Every window sits inside one calendar year.
+    typealias Span = (open: Int, shut: Int)
+
+    /// The Premier League's own dates, by year (premierleague.com, checked
+    /// 2026-11-01): January 2026 shut on Monday 2 February, summer 2026 ran
+    /// 15 June to Tuesday 1 September, January 2027 runs to Monday 1 February.
+    /// Add each year as the league announces it: the `stale-data-audit` skill
+    /// checks this table.
+    static let confirmed: [Int: (summer: Span?, winter: Span?)] = [
+        2026: (summer: (615, 901), winter: (101, 202)),
+        2027: (summer: nil, winter: (101, 201)),
+    ]
+    /// A year the league has not announced yet keeps the old guess:
+    /// 10 June to 31 August, and 1 January to 2 February.
+    // ponytail: a guess, not a fact. Upgrade path: the row above for that year.
+    static let summerWindow: Span = (610, 831)
+    static let winterWindow: Span = (101, 202)
     /// A window's last three days are deadline days.
     static let deadlineDays = 3
     /// "New season" and "the run-in", by month.
     static let earlySeasonMonths: Set<Int> = [8, 9]
     static let runInMonths: Set<Int> = [4, 5]
 
-    /// Month and day as one comparable number, the way the windows above are
-    /// written. Both windows sit inside a calendar year, so this is enough.
     static func stamp(_ date: Date) -> Int {
         let c = Calendar.current.dateComponents([.month, .day], from: date)
         return (c.month ?? 1) * 100 + (c.day ?? 1)
@@ -26,21 +38,37 @@ enum LingoCalendar {
 
     /// (window open, deadline days, it is the summer one).
     static func window(at date: Date) -> (open: Bool, deadline: Bool, summer: Bool) {
+        let cal = Calendar.current
+        let year = cal.component(.year, from: date)
         let md = stamp(date)
-        // The last three days of a window are "deadline day" territory.
-        // Summer shuts on 31 August, so `shut - (deadlineDays - 1)` is a real
-        // date there. Winter shuts on 2 February and 202 - 2 is not a date at
-        // all, so its last three days (31 Jan, 1 and 2 Feb) are written out as
-        // `md >= 131` — deliberately one day early, because deadline day in
-        // January is the one everybody talks about.
-        if md >= summerWindow.open, md <= summerWindow.shut {
-            return (true, md > summerWindow.shut - deadlineDays, true)
+        let summer = confirmed[year]?.summer ?? summerWindow
+        let winter = confirmed[year]?.winter ?? winterWindow
+        // Days to the shut date, counted on the calendar: 1 September minus
+        // two is 30 August, which `shut - 2` as a number is not.
+        func deadline(_ s: Span) -> Bool {
+            guard let shut = cal.date(from: DateComponents(year: year, month: s.shut / 100, day: s.shut % 100)),
+                  let left = cal.dateComponents([.day], from: cal.startOfDay(for: date), to: shut).day else { return false }
+            return left < deadlineDays
         }
-        if md >= winterWindow.open, md <= winterWindow.shut {
-            return (true, md >= 131, false)
-        }
+        if md >= summer.open, md <= summer.shut { return (true, deadline(summer), true) }
+        if md >= winter.open, md <= winter.shut { return (true, deadline(winter), false) }
         return (false, false, false)
     }
+
+    #if DEBUG
+    static func selfCheck() -> Bool {
+        let f = DateFormatter()
+        f.calendar = Calendar.current; f.dateFormat = "yyyy-MM-dd HH:mm"
+        func w(_ s: String) -> (open: Bool, deadline: Bool, summer: Bool) { window(at: f.date(from: s + " 12:00")!) }
+        return w("2026-11-01") == (false, false, false)
+            && w("2026-06-12") == (false, false, false) && w("2026-06-15") == (true, false, true)
+            && w("2026-08-30") == (true, true, true) && w("2026-09-01") == (true, true, true)
+            && w("2026-09-02") == (false, false, false)
+            && w("2026-02-02") == (true, true, false)
+            && w("2027-01-15") == (true, false, false) && w("2027-01-30") == (true, true, false)
+            && w("2027-02-01") == (true, true, false) && w("2027-02-02") == (false, false, false)
+    }
+    #endif
 }
 
 // MARK: - What weekend it is
@@ -801,7 +829,8 @@ enum LingoWeekendDeck {
     static func build(terms: [LingoTerm], known: Set<String>, learning: Set<String>,
                       context: MatchContext?, seed: String,
                       canNameTheirs: Bool = false,
-                      avoid: Set<String> = []) -> (ids: [String], refresher: Bool) {
+                      avoid: Set<String> = [],
+                      windowOpen: Bool = false) -> (ids: [String], refresher: Bool) {
         // `basic` words stay in the list and in search but never get dealt: the
         // first round on a fresh install fills from `any` sorted by level, and
         // asking a grown woman what "kick-off" means at the moment she is
@@ -809,7 +838,18 @@ enum LingoWeekendDeck {
         // Six-pointer only when the fixture is one; its tags otherwise deal
         // it before any title or relegation game (Fulham, 19th v 11th).
         let ruledOut: Set<String> = context.map { $0.excludedTermIds.union($0.sixPointer ? [] : [sixPointerTermId]) } ?? []
-        let playable = terms.filter { $0.basic != true && options(for: $0) != nil && !ruledOut.contains($0.id) }
+        // Transfer talk only while a window is open: "There's no window open
+        // in October" (council MY-08-11). A word tagged for the window and
+        // nothing but the calendar is not dealt otherwise, not even as filler.
+        // The context knows (it tags "window" when one is open); without one,
+        // the caller says.
+        let open = context.map { $0.tags.contains("window") } ?? windowOpen
+        func windowOnly(_ t: LingoTerm) -> Bool {
+            let when = Set(t.when ?? [])
+            return when.contains("window") && when.isSubset(of: calendarTags)
+        }
+        let playable = terms.filter { $0.basic != true && options(for: $0) != nil && !ruledOut.contains($0.id)
+            && (open || !windowOnly($0)) }
         guard !playable.isEmpty else { return ([], false) }
 
         let top = terms.compactMap(\.level).max() ?? 1
@@ -1422,6 +1462,16 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
     // the function Lingo already fires once per launch, and because the gate
     // it guards is built out of `LingoFixtures` above.
     assert(PlayerSlots.selfCheck(), "PlayerSlots broke: a Lingo card may be naming the wrong man")
+
+    // --- The transfer window ----------------------------------------------
+    // The league's dates, by year, and no window word dealt while it is shut.
+    let windowWords = [term("deadline-day", level: 1, when: ["window"]),
+                       term("loan", level: 1, when: ["window", "early-season"]),
+                       term("striker", level: 1, when: ["any", "window"])]
+    let shut = LingoWeekendDeck.build(terms: windowWords, known: [], learning: [], context: nil, seed: "w")
+    let ajar = LingoWeekendDeck.build(terms: windowWords, known: [], learning: [], context: nil, seed: "w", windowOpen: true)
+    assert(shut.ids == ["striker"] && Set(ajar.ids) == Set(windowWords.map(\.id)),
+           "a transfer-window word was dealt with no window open: \(shut.ids)")
 
     // --- The bundled content ---------------------------------------------
     // Against the copy in the app bundle, not against `bundled`: that is

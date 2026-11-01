@@ -256,8 +256,12 @@ enum PlayerSlots {
     /// its whole build on survives: the first word that can be named is. Each
     /// man is claimed once, no slot is used twice, and when both sides have a
     /// pool the two cards are one a side.
+    /// `fits`: the context's tags. A word is named, on either side, only when
+    /// its own `when` meets them: "If they got relegated, would Isak stay?" was
+    /// said before a Liverpool game because the round dealt the word as filler
+    /// (council MY-09-05). Nil names any word, for the table test.
     static func assign(_ dealt: [LingoTerm], pools: [Slot: [Named]], seed: String,
-                       max: Int = maxPlayerCards) -> [String: Resolved] {
+                       max: Int = maxPlayerCards, fits: Set<String>? = nil) -> [String: Resolved] {
         guard !pools.isEmpty else { return [:] }
         let bothSides = Side.allCases.allSatisfy { side in pools.keys.contains { $0.side == side } }
         // With both sides in play, one of ours and the rest theirs: at the
@@ -268,7 +272,8 @@ enum PlayerSlots {
         var claimed: Set<String> = [], usedSlots: Set<Slot> = [], perSide: [Side: Int] = [:]
 
         for term in dealt where out.count < max {
-            guard let variants = term.playerVariants, !variants.isEmpty else { continue }
+            guard let variants = term.playerVariants, !variants.isEmpty,
+                  fits.map({ !Set(term.when ?? []).isDisjoint(with: $0) }) ?? true else { continue }
             // A term may carry two variants (one a side). Which one it offers
             // first is seeded, so the same fixture deals the same card twice.
             var rng = LiveClubPack.SeededGenerator(seed: seed + "|" + term.id)
@@ -293,8 +298,9 @@ enum PlayerSlots {
     /// Returns the input unchanged when nothing resolves, which is the cold
     /// start, the off-season and every term published without a variant.
     static func apply(_ dealt: [LingoTerm], inputs: Inputs, seed: String, max: Int = maxPlayerCards,
+                      fits: Set<String>? = nil,
                       print printer: ([String]) -> [String: String] = displayNames) -> [LingoTerm] {
-        let picks = assign(dealt, pools: pools(inputs, print: printer), seed: seed, max: max)
+        let picks = assign(dealt, pools: pools(inputs, print: printer), seed: seed, max: max, fits: fits)
         guard !picks.isEmpty else { return dealt }
         return dealt.map { term in
             picks[term.id].map { term.naming($0.named.display, $0.variant, role: role($0.named.slot, inputs)) } ?? term
@@ -338,9 +344,9 @@ enum PlayerSlots {
         let out = apply(deck, inputs: base, seed: "f|0")
         guard out.count == 3,
               out[0].overheard?.contains("Kolo Muani") == true,
-              // The line she says glosses the name; the bubble keeps it bare
-              // (it has no room) and carries the role for a tap instead.
-              out[0].sayIt?.contains("Kolo Muani (forward, Chelsea)") == true,
+              // The line she says is said out loud, so no "(forward, Chelsea)"
+              // in it (MY-09-05); the role travels for a tap instead.
+              out[0].sayIt == "\u{201C}Kolo Muani is their target man.\u{201D}",
               out[0].overheard?.contains("(forward") == false,
               out[0].namedPlayer == LingoTerm.NamedPlayer(name: "Kolo Muani", role: "forward, Chelsea"),
               out[1].namedPlayer?.role == "midfielder, Arsenal",
@@ -352,6 +358,18 @@ enum PlayerSlots {
         guard let needle = out[0].overheardTerm, let line = out[0].overheard,
               let bold = line.range(of: needle), let name = line.range(of: "Kolo Muani"),
               String(line[bold]) == "target man", !bold.overlaps(name) else { return false }
+
+        // A word that does not fit the week is never named, ours or theirs:
+        // a relegation line before a mid-table game stays plain.
+        func fitted(_ id: String, _ when: [String], _ v: LingoTerm.PlayerVariant) -> LingoTerm {
+            LingoTerm(id: id, category: .tactics, term: "target man", meaning: "m", heard: "h",
+                      sayIt: "Plain.", seeAlso: nil, level: 1, overheard: "Plain, that.", overheardTerm: "target man",
+                      speaker: .him, gist: "g", decoy: "d1", spare: "d2", when: when, basic: nil, moment: "common",
+                      playerVariants: [v])
+        }
+        let offWeek = [fitted("r", ["relegation", "run-in"], ourMid), fitted("w", ["relegation"], theirForward)]
+        guard apply(offWeek, inputs: base, seed: "f|0", fits: ["after-win", "any"]) == offWeek,
+              apply(offWeek, inputs: base, seed: "f|0", fits: ["relegation", "any"]) != offWeek else { return false }
 
         // Two men with the same surname: neither prints it, and both print
         // short enough to stay usable.

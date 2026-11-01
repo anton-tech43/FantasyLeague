@@ -32,22 +32,46 @@ struct QuizView: View {
     @State private var sheetPlayer: QuizPlayer?
     /// An earlier question she has stepped back to, to read its answer again.
     @State private var reviewIndex: Int?
+    /// "More packs" opened. Session-only: the list opens on the three again.
+    @State private var showMore = false
 
     private var livePacks: [QuizPack] { [livePack, squadPack, leaguePack, opponentPack].compactMap { $0 } }
     private var allPacks: [QuizPack] { content.packs + livePacks }
 
     /// The basics first: it is the only pack that assumes nothing. Then his
     /// squad, his club now, his club's history, the league, then the rest.
-    private var visiblePacks: [QuizPack] {
+    private var visiblePacks: [QuizPack] { shownPacks.shown + shownPacks.more }
+
+    private var shownPacks: (shown: [QuizPack], more: [QuizPack]) {
+        Self.packs(content: content, clubId: clubId, squad: squadPack, live: livePack, league: leaguePack)
+    }
+
+    /// Three packs on the list for every tier, everything else behind "More
+    /// packs" (council MY-02-00/19: eight packs read as a syllabus).
+    static func packs(content: QuizContent, clubId: String?, squad: QuizPack?, live: QuizPack?,
+                      league: QuizPack?) -> (shown: [QuizPack], more: [QuizPack]) {
         let general = content.packs.filter { !$0.isClubPack }
         let basics = general.first { $0.id == "the-basics" }
         let rest = general.filter { $0.id != "the-basics" }
         let history = clubId.flatMap { id in
             content.packs.first { $0.id == "club-" + id.replacingOccurrences(of: "_", with: "-") }
         }
-        guard clubId != nil else { return [basics, leaguePack].compactMap { $0 } + rest }
-        return [basics, squadPack, livePack, history, leaguePack].compactMap { $0 } + rest
+        guard clubId != nil else { return ([basics].compactMap { $0 }, [league].compactMap { $0 } + rest) }
+        return ([basics, squad, live].compactMap { $0 }, [history, league].compactMap { $0 } + rest)
     }
+
+    #if DEBUG
+    static func selfCheck() -> Bool {
+        func pack(_ id: String) -> QuizPack { QuizPack(id: id, label: id, questions: []) }
+        let content = QuizContent(contentVersion: "t", packs: [pack("legends"), pack("the-basics"), pack("club-man-utd")])
+        let split = packs(content: content, clubId: "man_utd", squad: pack(LiveSquadPack.packId),
+                          live: pack(LiveClubPack.packId), league: pack(LiveSquadPack.leaguePackId))
+        let none = packs(content: content, clubId: nil, squad: nil, live: nil, league: pack(LiveSquadPack.leaguePackId))
+        return split.shown.map(\.id) == ["the-basics", LiveSquadPack.packId, LiveClubPack.packId]
+            && split.more.map(\.id) == ["club-man-utd", LiveSquadPack.leaguePackId, "legends"]
+            && none.shown.map(\.id) == ["the-basics"] && none.more.map(\.id) == [LiveSquadPack.leaguePackId, "legends"]
+    }
+    #endif
 
     /// What the big button starts. The basics until she has a score on them,
     /// his squad after that.
@@ -118,11 +142,12 @@ struct QuizView: View {
         }
         #if DEBUG
         // `-gdQuizPause` lands on the pack list with the round still going, for
-        // the screenshot simctl cannot tap its way to.
-        .onAppear { if ProcessInfo.processInfo.arguments.contains("-gdQuizPause") { paused = true } }
-        // Leaving the My Turn tab lands her back on the pack list when she
-        // returns; the round itself is kept and one tap resumes it.
-        .onDisappear { paused = true }
+        // the screenshot simctl cannot tap its way to. `-gdQuizMorePacks`
+        // opens "More packs" for the same reason.
+        .onAppear {
+            if ProcessInfo.processInfo.arguments.contains("-gdQuizPause") { paused = true }
+            if ProcessInfo.processInfo.arguments.contains("-gdQuizMorePacks") { showMore = true }
+        }
         // `-gdQuizPlayer` opens the "Who he is" sheet as soon as a question has
         // been answered, for the screenshot harness.
         .task(id: round?.selected) {
@@ -192,19 +217,16 @@ struct QuizView: View {
         return pack.isClubPack ? "His club, the history" : pack.label
     }
 
+    /// The pack's description, or her best score. A paused round is the big
+    /// button's to mention, and a count of rounds played meant nothing to her
+    /// (council MY-02-15/16).
     private func packSubtitle(_ pack: QuizPack) -> String {
-        // A round she has stepped away from says so, above anything else.
-        if let round, round.packId == pack.id, !round.finished {
-            return "Continue · question \(round.index + 1) of \(round.questionIds.count)"
-        }
         let progress = store.progress(for: pack.id)
         // Best is only kept for full ten-question rounds; a squad pack can be
         // shorter, and "Best: 0 / 10" after a perfect six was a lie.
-        if progress.played > 0 {
-            return progress.best > 0 ? "Best: \(progress.best) / 10" : "Played \(progress.played)"
-        }
+        if progress.played > 0, progress.best > 0 { return "Best: \(progress.best) / 10" }
         switch pack.id {
-        case LiveSquadPack.packId:      return "Faces, numbers, and what each one is for."
+        case LiveSquadPack.packId:      return "Faces and shirt numbers."
         case LiveClubPack.packId:       return "The table, the last result, the next one."
         case LiveSquadPack.leaguePackId: return "The names he'll mention who don't play for his club."
         default: break
@@ -216,27 +238,48 @@ struct QuizView: View {
     @ViewBuilder
     private var packList: some View {
         MyTurnSectionLabel(text: "Or pick a pack")
-        ForEach(visiblePacks) { pack in
+        ForEach(shownPacks.shown) { packRow($0) }
+        if !shownPacks.more.isEmpty {
             Button {
-                if round?.packId == pack.id, round?.finished == false {
-                    paused = false
-                } else {
-                    paused = false
-                    store.startRound(pack: pack)
-                }
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                withAnimation(.easeInOut(duration: 0.2)) { showMore.toggle() }
             } label: {
-                MyTurnRow(
-                    title: packTitle(pack),
-                    subtitle: packSubtitle(pack)
-                ) {
-                    Image(systemName: "chevron.right")
+                HStack(spacing: 6) {
+                    Text("More packs").font(.jakarta(15, weight: .semiBold))
+                    Image(systemName: "chevron.down")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(.hotRose)
+                        .rotationEffect(.degrees(showMore ? 180 : 0))
+                    Spacer(minLength: 0)
                 }
+                .foregroundColor(.hotRose)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(showMore ? "Fewer packs" : "More packs")
+            if showMore { ForEach(shownPacks.more) { packRow($0) } }
         }
+    }
+
+    private func packRow(_ pack: QuizPack) -> some View {
+        Button {
+            if round?.packId == pack.id, round?.finished == false {
+                paused = false
+            } else {
+                paused = false
+                store.startRound(pack: pack)
+            }
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        } label: {
+            MyTurnRow(
+                title: packTitle(pack),
+                subtitle: packSubtitle(pack)
+            ) {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.hotRose)
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: Question

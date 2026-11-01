@@ -143,7 +143,6 @@ enum LiveClubPack {
                 question: "Who manages \(club)?",
                 answer: m.name, distractors: rivalsManagers,
                 explanation: (["\(m.name) is \(club)'s manager.", summary].filter { !$0.isEmpty }).joined(separator: " "),
-                why: "The manager is the one he'll praise or blame after every single match.",
                 useType: .ask,
                 use: quote(line)
             )
@@ -164,7 +163,6 @@ enum LiveClubPack {
                 question: "Where are \(club) in the table right now?",
                 answer: ordinal(row.rank), distractors: nearby.map(ordinal),
                 explanation: "\(club) are \(ordinal(row.rank)) with \(points(row.points)) from \(row.played) games.",
-                why: "The table is the first thing he checks, and it moves every weekend.",
                 useType: .ask,
                 // Not "Are we still 8th?", which asks what the card just said.
                 use: quote(row.rank <= 4 ? "Can we stay up there till May?"
@@ -177,7 +175,6 @@ enum LiveClubPack {
                 answer: "\(row.points)",
                 distractors: [3, -3, 6, -6, 1, -1].map { row.points + $0 }.filter { $0 >= 0 }.map(String.init),
                 explanation: "\(points(row.points)) from \(row.played) games, which has them \(ordinal(row.rank)) as of today.",
-                why: "Three for a win, one for a draw. The number is the whole season in one figure.",
                 useType: .impress,
                 // The verdict follows the points per game, not a fixed line:
                 // "a decent start" was said of clubs in the bottom three.
@@ -202,12 +199,11 @@ enum LiveClubPack {
                 id: "live-last-result", difficulty: 2,
                 question: "Who did \(club) play last, and how did it go?",
                 answer: resultLine(last), distractors: wrong,
-                explanation: "\(club) played \(clubShort(last.opponent)) \(last.venue == "home" ? "at home" : "away") and it finished \(last.teamScore)-\(last.oppScore)\(last.penaltiesText.map { ", then \($0)" } ?? ""). That is the game he is still talking about.",
-                why: "The last result decides what kind of week he has had.",
+                explanation: "\(club) played \(clubShort(last.opponent)) \(last.venue == "home" ? "at home" : "away") and it finished \(last.teamScore)-\(last.oppScore)\(last.penaltiesText.map { ", then \($0)" } ?? "").",
                 useType: .ask,
-                use: quote(last.outcome == "W" ? "Still buzzing about the \(clubShort(last.opponent)) game?"
-                           : last.outcome == "D" ? "Was the draw with \(clubShort(last.opponent)) fair?"
-                           : "Have you got over the \(clubShort(last.opponent)) game yet?")
+                // A shootout settles the outcome (`RecentResult.outcome`), so a
+                // 1-1 lost on pens asks what went wrong (MY-03 council).
+                use: quote(last.outcome == "L" ? "What went wrong?" : "Who was your man of the match?")
             )
         }
 
@@ -226,54 +222,29 @@ enum LiveClubPack {
                     "\(club) play \(opponent) \(next.venue.lowercased() == "away" ? "away" : "at home")",
                     next.competition.map { "in the \($0)" },
                 ].compactMap { $0 }.joined(separator: " ") + ". That is the next one in the diary.",
-                why: "Whatever the plan was for that afternoon, this is what it is now.",
                 useType: .ask,
                 use: quote("Is the \(opponent) game on the telly?")
             )
         }
 
-        // How they have been playing: five letters on the team page, in words.
-        if let f = cards.form {
-            let letters = f.recentForm.uppercased().filter { "WDL".contains($0) }
-            let w = letters.filter { $0 == "W" }.count
-            let d = letters.filter { $0 == "D" }.count
-            let l = letters.filter { $0 == "L" }.count
-            if letters.count >= 3 {
-                let answer = formLabel(w, d, l)
-                let wrong = [(w + 1, d - 1, l), (w - 1, d + 1, l), (w, d + 1, l - 1),
-                             (w, d - 1, l + 1), (w - 1, d, l + 1), (w + 1, d, l - 1)]
-                    .filter { $0.0 >= 0 && $0.1 >= 0 && $0.2 >= 0 }
-                    .map { formLabel($0.0, $0.1, $0.2) }
-                qs += question(
-                    id: "live-form", difficulty: 2,
-                    question: "How have \(club) been playing?",
-                    answer: answer, distractors: wrong,
-                    explanation: ["\(answer), as of today.", clip(personalise(f.formSummary), 110)]
-                        .filter { !$0.isEmpty }.joined(separator: " "),
-                    why: "Form is the mood. It explains why he is fine or unbearable this week.",
-                    useType: .ask,
-                    // The line follows the form: "playing well, or just winning?"
-                    // was asked of clubs that had not won.
-                    use: quote(w * 2 > letters.count ? "We've been flying lately, haven't we?"
-                               : l * 2 > letters.count ? "It's been a rough few weeks, hasn't it?"
-                               : w > l ? "More good days than bad lately. Happy with it?"
-                               : l > w ? "Up and down lately. What's going wrong?"
-                               : "Up and down lately. What do they need to fix?")
-                )
-            }
-        }
+        // How they have been playing, counted from the same results the last
+        // game comes from, so a shootout is a win or a loss in both.
+        qs += clubForm(recent, club: club)
 
         // Who has the goals. Skipped on a tie: "joint top scorer" is not a
         // question with one right answer.
         if let scorer = sources.topScorers[team.rawValue], !scorer.tied, scorer.goals > 0 {
+            let name = shortName(scorer.name)
+            // Never "watch him" when he is on the injury list (MY-03-15).
+            let out = TeamInjury.isOut(scorer.name, in: cards.injuries)
             qs += question(
                 id: "live-top-scorer", difficulty: 2,
                 question: "Who's scored most for \(club) this season?",
-                answer: shortName(scorer.name), distractors: scorer.rivals.map(shortName),
-                explanation: "\(shortName(scorer.name)) has \(scorer.goals) \(scorer.goals == 1 ? "goal" : "goals") for \(club) this season, more than anyone else in the squad.",
-                why: "When the ball goes in, this is the name the room shouts most often.",
-                useType: .say,
-                use: "When they win a corner: " + quote("Watch \(shortName(scorer.name)) here.")
+                answer: name, distractors: scorer.rivals.map(shortName),
+                explanation: "\(name) has \(scorer.goals) \(scorer.goals == 1 ? "goal" : "goals") for \(club) this season, more than anyone else in the squad.",
+                useType: out ? .ask : .say,
+                use: out ? quote("How long is \(name) out for?")
+                    : "When they win a corner: " + quote("Watch \(name) here.")
             )
         }
 
@@ -286,7 +257,6 @@ enum LiveClubPack {
                     question: "How did \(club) do last season?",
                     answer: last, distractors: otherBasics.compactMap(\.lastSeason),
                     explanation: [last, b.plSince].compactMap { $0 }.joined(separator: ". ") + ".",
-                    why: "Last season is the yardstick for everything he says about this one.",
                     useType: .ask,
                     use: quote("Better or worse than last season so far?")
                 )
@@ -307,7 +277,6 @@ enum LiveClubPack {
                     explanation: never
                         ? "\(club) have never won the top-flight title."
                         : "\(club) were champions in \(year).",
-                    why: "It's the first thing a rival fan brings up, so he has an answer ready.",
                     useType: use.0, use: use.1
                 )
             }
@@ -318,15 +287,13 @@ enum LiveClubPack {
                 question: "What are \(club) known as?",
                 answer: b.nickname, distractors: otherBasics.map(\.nickname),
                 explanation: "\(club) are \(b.nickname). Commentators and fans use it without thinking, so he will too.",
-                why: "Half the time he won't say the club's name at all.",
                 useType: .say,
                 use: quote("Come on you \(nick)!")
             )
             }
             qs += fanQuestion(id: "live-fans", team: team, club: club, sources: sources, options: 3,
-                              why: "It's what he calls himself and everyone he watches with.",
                               after: "He'll say it about himself and the people he watches with.",
-                              use: { "Does that make you one of the \($0) then?" })
+                              use: { "Am I allowed to call myself one of the \($0) yet?" })
             if let ground = b.stadium {
                 let short = stadiumShort(ground)
                 qs += question(
@@ -334,9 +301,10 @@ enum LiveClubPack {
                     question: "Where do \(club) play their home games?",
                     answer: short, distractors: otherBasics.compactMap(\.stadium).map(stadiumShort),
                     explanation: "\(ground). When he says \"we're at home\", this is where he means.",
-                    why: "Home or away is the first thing he'll say about any fixture.",
                     useType: .ask,
-                    use: quote("Have you ever been to \(withArticle(short))?"),
+                    // His own ground: he has been, so ask about it (the
+                    // opponent's keeps "Have you ever been to…").
+                    use: quote("Best game you've seen at \(withArticle(short))?"),
                     answerImage: groundImage(team)
                 )
             }
@@ -354,7 +322,6 @@ enum LiveClubPack {
                 explanation: clip(personalise(r.text), 170).isEmpty
                     ? "\(rival). The derby is the game that matters most to him."
                     : clip(personalise(r.text), 170),
-                why: "The derby is the one match he'll be unbearable about, win or lose.",
                 useType: .say,
                 use: quote("Forget the table. Just beat \(rivalShort).")
             )
@@ -393,10 +360,10 @@ enum LiveClubPack {
         // Two options, not three: she knows nothing about the other side, and
         // one in three was a guess (Anton, 2026-10-02).
         func two(id: String, difficulty: Int, question q: String, answer: String, distractors: [String],
-                 explanation: String, why: String, useType: QuestionUseType, use: String,
+                 explanation: String, useType: QuestionUseType, use: String,
                  image: String? = nil, answerImage: String? = nil) -> [MyTurnQuestion] {
             question(id: id, difficulty: difficulty, question: q, answer: answer, distractors: distractors,
-                     explanation: explanation, why: why, useType: useType, use: use, image: image, options: 2,
+                     explanation: explanation, useType: useType, use: use, image: image, options: 2,
                      answerImage: answerImage)
         }
 
@@ -409,7 +376,6 @@ enum LiveClubPack {
                 question: "Who manages \(club)?",
                 answer: m.name, distractors: wrong,
                 explanation: "\(m.name). He'll be in the other dugout, and the cameras cut to him every time they score.",
-                why: "After the game, the other manager is the one he'll either blame or grudgingly rate.",
                 useType: .ask, use: quote("What do you make of \(m.name)?"),
                 // His face, so she knows him when the camera finds him.
                 image: PlayerPortrait.source(club: team.rawValue, name: m.name)
@@ -426,7 +392,6 @@ enum LiveClubPack {
                 question: "Where are \(club) in the table right now?",
                 answer: ordinal(row.rank), distractors: nearby.map(ordinal),
                 explanation: "\(club) are \(ordinal(row.rank)) with \(points(row.points)) from \(row.played) games, as of today.",
-                why: "Where they sit tells you whether a draw would be a good result or a bad one.",
                 useType: .ask, use: quote("They're \(ordinal(row.rank)), aren't they? Should we be beating them?"))
         }
 
@@ -453,7 +418,6 @@ enum LiveClubPack {
                     question: "How have \(club) been playing lately?",
                     answer: answer, distractors: wrong,
                     explanation: "\(answer), as of today.",
-                    why: "Their form is how nervous he'll be before kick-off.",
                     useType: .ask, use: quote("Are \(club) in form at the moment? Should I be worried?"))
             }
         }
@@ -468,7 +432,6 @@ enum LiveClubPack {
                 question: "Who's scored most for \(club) this season?",
                 answer: name, distractors: scorer.rivals.map(shortName),
                 explanation: "\(name)\(shirt) with \(scorer.goals) \(scorer.goals == 1 ? "goal" : "goals") for \(club) this season, more than anyone else in their squad.",
-                why: "He's the one to worry about when they come forward.",
                 // Something he can answer, not just the name back at him
                 // (Anton, 2026-10-28: "yeah, uh, duh?").
                 useType: .ask, use: quote("\(name)'s got \(scorer.goals) already this season. Is he the one to worry about?"),
@@ -489,7 +452,6 @@ enum LiveClubPack {
                 question: "Where did \(club) finish last season?",
                 answer: ordinal(place), distractors: nearby.map(ordinal),
                 explanation: "\(club) finished \(ordinal(place)) in the Premier League last season.",
-                why: "It tells you what kind of side we're up against, before a ball is kicked.",
                 useType: .ask, use: quote("Were \(club) any good last season?"))
         }
 
@@ -503,11 +465,9 @@ enum LiveClubPack {
                 question: "What are \(club) known as?",
                 answer: b.nickname, distractors: otherBasics.map(\.nickname),
                 explanation: "\(club) are \(b.nickname). The commentators will say it all game.",
-                why: "Half the time nobody says their name, just the nickname.",
                 useType: .say, use: quote("So we're playing the \(nick). Got it."))
             }
             qs += fanQuestion(id: "opp-fans", team: team, club: club, sources: sources, options: 2, excluding: mine,
-                              why: "The name he'll use for the people in the away end.",
                               after: "It's what they call themselves, and what he'll call them.",
                               use: { "So it's us against the \($0)." })
             if let ground = b.stadium {
@@ -517,7 +477,6 @@ enum LiveClubPack {
                     question: "Where do \(club) play their home games?",
                     answer: short, distractors: otherBasics.compactMap(\.stadium).map(stadiumShort),
                     explanation: "\(ground).",
-                    why: "Whether the game is at theirs or ours changes how he feels about it.",
                     useType: .ask, use: quote("Have you ever been to \(withArticle(short))?"),
                     answerImage: groundImage(team))
             }
@@ -541,7 +500,6 @@ enum LiveClubPack {
                 question: "Who is this?",
                 answer: name, distractors: names.filter { $0 != name },
                 explanation: p.line ?? "\(name), one of their three to watch.",
-                why: "One of the three to watch. If \(club) score, it's likely him.",
                 useType: .ask, use: quote(watchLine(name: name, fact: p.line)),
                 image: sticker)
         }
@@ -619,8 +577,37 @@ enum LiveClubPack {
             question: "The last time \(ours) played \(club), how did it go?",
             answer: answer, distractors: Array(wrong.prefix(1)),
             explanation: "\(home) \(hg)-\(ag) \(away), at \(m.weAreHome ? "ours" : "theirs")\(when).",
-            why: "He'll remember it, and he'll bring it up before kick-off.",
             useType: .ask, use: quote(line), options: 2)
+    }
+
+    /// His club's form from its recent results, newest first: at most five, at
+    /// least three. The count comes from `outcome`, which reads a shootout as
+    /// the win or loss it was; the line follows the latest result, because
+    /// that is the mood he is in (council, 2026-11-01), and only leans on the
+    /// run when the run agrees with it.
+    static func clubForm(_ results: [RecentResult], club: String) -> [MyTurnQuestion] {
+        let games = Array(results.prefix(5))
+        guard games.count >= 3, let latest = games.first else { return [] }
+        let w = games.filter { $0.outcome == "W" }.count
+        let d = games.filter { $0.outcome == "D" }.count
+        let l = games.filter { $0.outcome == "L" }.count
+        let answer = formLabel(w, d, l)
+        let wrong = [(w + 1, d - 1, l), (w - 1, d + 1, l), (w, d + 1, l - 1),
+                     (w, d - 1, l + 1), (w - 1, d, l + 1), (w + 1, d, l - 1)]
+            .filter { $0.0 >= 0 && $0.1 >= 0 && $0.2 >= 0 }
+            .map { formLabel($0.0, $0.1, $0.2) }
+        let line: String
+        switch latest.outcome {
+        case "W": line = w * 2 > games.count ? "We've been flying lately, haven't we?" : "Is that last win the start of a run?"
+        case "L": line = l * 2 > games.count ? "It's been a rough few weeks, hasn't it?" : "Was that last one just a bad day?"
+        default:  line = "A draw last time. Happy with that?"
+        }
+        return question(
+            id: "live-form", difficulty: 2,
+            question: "How have \(club) been playing?",
+            answer: answer, distractors: wrong,
+            explanation: "\(answer), as of today. The last one: \(resultLine(latest).prefix(1).lowercased() + resultLine(latest).dropFirst()).",
+            useType: .ask, use: quote(line))
     }
 
     /// Their last three, by name: "Leeds have played Wolves, Fulham and
@@ -652,7 +639,6 @@ enum LiveClubPack {
             question: "\(club) have played \(list). How did it go?",
             answer: answer, distractors: [mirror],
             explanation: "They \(told).",
-            why: "Their form is how nervous he'll be before kick-off.",
             useType: .say, use: quote(line), options: 2)
     }
 
@@ -682,7 +668,7 @@ enum LiveClubPack {
         guard let pack = buildOpponent(team: .chelsea, page: page, sources: src, mine: .arsenal) else {
             return page.cards.basics == nil  // too little on the fixture to build is fine, not a failure
         }
-        let text = pack.questions.flatMap { [$0.question, $0.explanation, $0.why ?? "", $0.use ?? ""] }.joined(separator: " ")
+        let text = pack.questions.flatMap { [$0.question, $0.explanation, $0.use ?? ""] }.joined(separator: " ")
         // Leeds 0-4 Arsenal away: ours is the win, and the flip is offered.
         let meeting = lastMeetingQuestion(.init(date: "2026-01-31", weAreHome: false, ours: 4, theirs: 0),
                                           club: "Leeds", ours: "Arsenal").first
@@ -710,6 +696,26 @@ enum LiveClubPack {
             && pack.questions.allSatisfy { $0.id.hasPrefix("opp-") && $0.options.count == 2 }
             && !text.contains("[his") && !text.contains("Come on you")
     }
+
+    /// His club's form and last game, with a shootout among them, and the
+    /// scorer's line when he is out.
+    static func clubSelfCheck() -> Bool {
+        func r(_ opp: String, _ us: Int, _ them: Int, _ result: String? = nil, pens: (Int, Int)? = nil) -> RecentResult {
+            RecentResult(date: "2026-10-28", opponent: opp, venue: "home", teamScore: us, oppScore: them,
+                         result: result, penTeam: pens?.0, penOpp: pens?.1)
+        }
+        // Newest first: lost a 1-1 on pens, then W, W, D.
+        let games = [r("Fleetwood Town", 1, 1, "L", pens: (3, 5)), r("Wolves", 2, 0), r("Fulham", 3, 1), r("Burnley", 0, 0)]
+        guard let q = clubForm(games, club: "Arsenal").first,
+              q.options[q.answer] == "Won 2, drew 1, lost 1 of the last four",
+              q.use == quote("Was that last one just a bad day?"),
+              q.explanation.contains("lost to Fleetwood Town on pens") else { return false }
+        let won = clubForm([r("Wolves", 2, 0), r("Fulham", 0, 1), r("Burnley", 0, 2)], club: "Arsenal").first
+        guard won?.use == quote("Is that last win the start of a run?"),
+              clubForm([r("Wolves", 2, 0), r("Fulham", 0, 1)], club: "Arsenal").isEmpty else { return false }
+        let out = [TeamInjury(name: "B. Saka", reason: "Hamstring")]
+        return TeamInjury.isOut("Bukayo Saka", in: out) && !TeamInjury.isOut("D. Rice", in: out)
+    }
     #endif
 
     // MARK: Question assembly
@@ -720,8 +726,8 @@ enum LiveClubPack {
     /// Options are shuffled with a generator seeded from the id so the order is
     /// stable across launches and re-renders. Shared with `LiveSquadPack`.
     static func question(id: String, difficulty: Int, question: String, answer: String,
-                         distractors: [String], explanation: String, why: String,
-                         useType: QuestionUseType, use: String, image: String? = nil,
+                         distractors: [String], explanation: String,
+                         useType: QuestionUseType?, use: String?, image: String? = nil,
                          player: QuizPlayer? = nil, options optionCount: Int = 3,
                          answerImage: String? = nil) -> [MyTurnQuestion] {
         var seen: Set<String> = [answer.lowercased()]
@@ -736,14 +742,14 @@ enum LiveClubPack {
         options.shuffle(using: &rng)
         return [MyTurnQuestion(id: id, difficulty: difficulty, question: question, options: options,
                                answer: options.firstIndex(of: answer)!, explanation: explanation,
-                               why: why, use: use, useType: useType, image: image, player: player,
+                               use: use, useType: useType, image: image, player: player,
                                answerImage: answerImage)]
     }
 
     /// "What do Arsenal fans call themselves?", only for a club whose fans
     /// have a name of their own; the wrong answers are other clubs' names.
     static func fanQuestion(id: String, team: Team, club: String, sources: Sources, options: Int,
-                            excluding mine: Team? = nil, why: String, after: String,
+                            excluding mine: Team? = nil, after: String,
                             use: (String) -> String) -> [MyTurnQuestion] {
         guard let fans = sources.managers.first(where: { $0.id == team.rawValue })?.fan_name, !fans.isEmpty else { return [] }
         // Not his own club's: "Gooners" offered as Liverpool's would be his.
@@ -752,7 +758,7 @@ enum LiveClubPack {
         return question(id: id, difficulty: 1, question: "What do \(club) fans call themselves?",
                         answer: fans, distractors: others,
                         explanation: "\(club) fans are \(the). \(after)",
-                        why: why, useType: .say, use: quote(use(fans)),
+                        useType: .say, use: quote(use(fans)),
                         options: options)
     }
 

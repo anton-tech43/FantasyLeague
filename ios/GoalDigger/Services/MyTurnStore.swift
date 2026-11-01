@@ -267,7 +267,7 @@ final class MyTurnStore {
     }
 
     private struct Persisted: Codable {
-        var lastModule: MyTurnModule = .quiz
+        var lastModule: MyTurnModule = .sayThis
         var starredLineIds: [String] = []
         var hasSeenRiskExplainer: Bool = false
         var sayThisSituationId: String? = nil
@@ -879,7 +879,7 @@ func myTurnMissSelfCheck() {
     // Finishing "Get to know" is remembered against the game, with the score.
     let pack = QuizPack(id: "live-opponent", label: "Get to know Leeds", questions:
         LiveClubPack.question(id: "opp-a", difficulty: 1, question: "q", answer: "a", distractors: ["b", "c"],
-                              explanation: "e", why: "w", useType: .ask, use: "u"))
+                              explanation: "e", useType: .ask, use: "u"))
     store.startRound(pack: pack, fixtureKey: "b|Leeds|2026-10-10")
     store.answer(pack.questions[0].answer, correct: true, questionId: "opp-a")
     store.nextQuestion()

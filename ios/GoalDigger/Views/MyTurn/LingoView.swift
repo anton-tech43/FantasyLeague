@@ -113,7 +113,8 @@ struct LingoView: View {
             terms: content.terms, known: known, learning: learning, context: context,
             seed: LingoWeekendDeck.seed(team: team, context: context, now: .gdNow, nonce: store.lingoDealNonce),
             canNameTheirs: canName,
-            avoid: context == nil ? Set(store.prepRoundDone?.ids ?? []) : [])
+            avoid: context == nil ? Set(store.prepRoundDone?.ids ?? []) : [],
+            windowOpen: LingoCalendar.window(at: .gdNow).open)
     }
 
     /// Everything the hero depends on, and nothing else. `store.lingoQuery` is
@@ -200,9 +201,12 @@ struct LingoView: View {
         #endif
         var prep = false
         if case .before = shown.phase { prep = true }
+        // Named only on a word that fits this week, the calendar aside: "the
+        // run-in" is no reason to ask about relegation (MY-09-05).
         let resolved = PlayerSlots.apply(plain, inputs: inputs(for: shown),
                                          seed: shown.fixtureKey + "|\(store.lingoDealNonce)",
-                                         max: prep ? PlayerSlots.prepPlayerCards : PlayerSlots.maxPlayerCards)
+                                         max: prep ? PlayerSlots.prepPlayerCards : PlayerSlots.maxPlayerCards,
+                                         fits: Set(shown.tags).subtracting(LingoWeekendDeck.calendarTags))
         var named: [String: LingoTerm] = [:]
         for (before, after) in zip(plain, resolved) where before != after { named[after.id] = after }
         #if DEBUG
@@ -374,9 +378,12 @@ struct LingoView: View {
                             backLabel: mode == .dictionary ? "Lingo" : "Pre-game",
                             onPause: { withAnimation(.easeInOut(duration: 0.2)) { showingLanding = true } })
                     } else if mode == .dictionary {
-                        practiseButton
+                        // Search first: looking a word up under the table is
+                        // why she opens Lingo (council MY-07-00). Practise last.
                         searchField
+                            .padding(.top, 8)
                         wordList
+                        practiseButton
                     } else if showingCalledIt {
                         // Fills the Lingo content, with the module tabs above and
                         // the bottom bar below still in view — Anton's "helskärm
@@ -653,8 +660,7 @@ struct LingoView: View {
                 deal(nil)
             }
         }
-        .padding(.top, 8)
-        .padding(.bottom, 20)
+        .padding(.top, 20)
     }
 
     private struct OpponentKey: Hashable {
@@ -873,7 +879,6 @@ struct LingoView: View {
 
     @ViewBuilder
     private func categoryFold(_ category: LingoCategory, known: Set<String>) -> some View {
-        let count = content.terms.filter { $0.category == category }.count
         let open = isOpen(category)
 
         Button {
@@ -886,7 +891,8 @@ struct LingoView: View {
             }
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
         } label: {
-            MyTurnRow(title: category.tag, subtitle: "\(count) words") {
+            // No "46 words": counts read as an exam (MY-07-06..09).
+            MyTurnRow(title: category.tag) {
                 Image(systemName: "chevron.down")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.hotRose)
@@ -896,7 +902,7 @@ struct LingoView: View {
         .buttonStyle(.plain)
         // The tag, not the title: it is what the row says on screen, and a
         // VoiceOver label that names something else is a second control.
-        .accessibilityLabel("\(category.tag). \(count) words.")
+        .accessibilityLabel(category.tag)
         .accessibilityHint(open ? "Hides the words" : "Shows the words")
 
         if open {
@@ -1270,7 +1276,7 @@ struct LingoView: View {
         guard args.contains("-gdAuditDump"), mode == .prep, let weekend else { return }
         func q(_ x: MyTurnQuestion) -> [String: Any] {
             ["id": x.id, "question": x.question, "options": x.options, "answer": x.options[safe: x.answer] ?? "?",
-             "explanation": x.explanation, "why": x.why ?? "", "use": x.use ?? "", "image": x.image ?? "", "answerImage": x.answerImage ?? ""]
+             "explanation": x.explanation, "use": x.use ?? "", "image": x.image ?? "", "answerImage": x.answerImage ?? ""]
         }
         func pack(_ p: QuizPack?) -> Any { p.map { ["id": $0.id, "label": $0.label, "questions": $0.questions.map(q)] } ?? NSNull() }
         func term(_ id: String) -> [String: Any] {

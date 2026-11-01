@@ -109,8 +109,12 @@ enum LiveSquadPack {
     ///     not about a player. It lives here rather than in `LiveClubPack`
     ///     because this pack is the people and that pack is the state of the
     ///     club.
+    ///   - injuries: the team page's `cards.injuries`. A man on it keeps his
+    ///     face and number questions but gets no line that sends her looking
+    ///     for him on the pitch (MY-03-23/26).
     static func build(team: Team, players: [Player], cards: [PlayerCard], played: Int?,
                       manager: ManagerCard?, managerNames: [String], silhouettes: [String],
+                      injuries: [TeamInjury] = [],
                       personalise: (String) -> String) -> QuizPack? {
         let club = team.shortName
         let named = players.filter { !$0.name.isEmpty }
@@ -168,15 +172,18 @@ enum LiveSquadPack {
             PlayerPortrait.source(club: team.rawValue, name: m.name)
                 ?? m.photoURL.flatMap { !$0.isEmpty && !silhouettes.contains($0) ? $0 : nil }
         }
+        // No "point at the screen" line (MY-03-22): the fact of how long he has
+        // been there when the page says it, else no line at all.
         if let m = manager, let photo = managerPhoto {
+            let tenure = tenureSentence(m.summary)
             qs += LiveClubPack.question(
                 id: "squad-manager-photo", difficulty: 2,
                 question: "Who is this?",
                 answer: m.name, distractors: managerNames.filter { $0 != m.name },
-                explanation: "\(m.name), \(club)'s manager. " + LiveClubPack.clip(personalise(m.summary), 120),
-                why: "He's on screen every couple of minutes during a match, arms folded.",
-                useType: .say,
-                use: "Point at the screen: " + LiveClubPack.quote("That's \(m.name), isn't it?"),
+                explanation: ["\(m.name), \(club)'s manager.", tenure == nil ? LiveClubPack.clip(personalise(m.summary), 120) : ""]
+                    .filter { !$0.isEmpty }.joined(separator: " "),
+                useType: tenure == nil ? nil : .impress,
+                use: tenure.map(LiveClubPack.quote),
                 image: photo
             )
         }
@@ -195,6 +202,9 @@ enum LiveSquadPack {
             // is not a fact about any of them: it is left out of the
             // explanation and the player card as well as the question.
             let number = Self.shirtNumber(of: p, in: named)
+            // On the injury list: the facts stay, the lines that send her
+            // looking for him go.
+            let out = TeamInjury.isOut(p.name, in: injuries)
             let hook = hooks[p.api_player_id]?.top
             let photo = PlayerPortrait.source(club: team.rawValue, name: p.name) ?? p.photo
             let person = QuizPlayer(name: short, position: label, number: number,
@@ -220,13 +230,11 @@ enum LiveSquadPack {
                     distractors: sameShirt.count >= 3 ? sameShirt
                         : asked.filter { printable[$0.name] != nil && $0.name != p.name }.map(display),
                     explanation: who,
-                    why: p.isFringe
-                        ? "One of the squad players. If he comes on late, you will be the one who knows the name."
-                        : "Faces come before names. Once you know his, the commentary starts to make sense.",
                     // The bare "There's X" is the line for a man there is
                     // nothing else to say about, not the line for everybody.
-                    useType: hook?.useType ?? .say,
-                    use: hook?.use ?? ("When the camera finds him: " + LiveClubPack.quote("There's \(short).")),
+                    useType: out ? .ask : hook?.useType ?? .say,
+                    use: out ? outLine(short)
+                        : hook?.use ?? ("When the camera finds him: " + LiveClubPack.quote("There's \(short).")),
                     image: photo, player: person
                 )
             }
@@ -240,9 +248,8 @@ enum LiveSquadPack {
                     answer: "\(n)",
                     distractors: asked.compactMap { Self.shirtNumber(of: $0, in: named) }.filter { $0 != n }.map(String.init),
                     explanation: who,
-                    why: "The shirt number is the quickest way to find one man among eleven.",
-                    useType: .ask,
-                    use: LiveClubPack.quote("Is that \(short), number \(n)?"),
+                    useType: out ? nil : .ask,
+                    use: out ? nil : LiveClubPack.quote("Is that \(short), number \(n)?"),
                     // Every question about a man shows him, not only "Who is
                     // this?": the face, the name and the number land together
                     // (Anton, 2026-10-01).
@@ -258,22 +265,20 @@ enum LiveSquadPack {
                 // who plays every week and a strange one for a sixteen-year-old
                 // who has not. A fringe player gets the honest question; a man
                 // whose stats have not synced gets neither line.
-                let (why, useType, use): (String, QuestionUseType, String)
+                let (useType, use): (QuestionUseType, String)
                 switch p.standing {
                 case .fringe:
-                    why = "Squad players come and go from the bench. Knowing the name is enough."
                     useType = .ask
                     use = LiveClubPack.quote("Is \(short) going to get a run this season?")
                 case .regular:
-                    why = "He'll say the surname and expect you to know the job that comes with it."
                     useType = LiveClubPack.positionUseType(label)
                     use = LiveClubPack.positionUse(label, short: short)
                 case .unknown:
-                    why = "He'll say the surname and expect you to know the job that comes with it."
                     useType = .ask
                     use = LiveClubPack.quote("Is \(short) playing this weekend?")
                 }
-                let (useType2, use2) = hook.map { ($0.useType, $0.use) } ?? (useType, use)
+                let (useType2, use2): (QuestionUseType?, String?) = out ? (nil, nil)
+                    : hook.map { ($0.useType, $0.use) } ?? (useType, use)
                 qs += LiveClubPack.question(
                     id: "squad-pos-\(p.api_player_id)", difficulty: p.isFringe ? 3 : 1,
                     question: "What position does \(short) play?",
@@ -282,7 +287,7 @@ enum LiveSquadPack {
                     // wrong answer at all: the three lines are the question.
                     distractors: LiveClubPack.positionDistractors(for: label).filter { photo == nil || $0 != "Goalkeeper" },
                     explanation: who,
-                    why: why, useType: useType2, use: use2,
+                    useType: useType2, use: use2,
                     image: photo, player: person
                 )
             }
@@ -290,6 +295,49 @@ enum LiveSquadPack {
 
         guard qs.count >= 4 else { return nil }
         return QuizPack(id: packId, label: "His squad", questions: qs)
+    }
+
+    #if DEBUG
+    /// An injured man keeps his face and number questions and loses every line
+    /// that sends her looking for him; the manager gets his tenure or nothing.
+    static func injurySelfCheck() -> Bool {
+        func p(_ id: Int, _ name: String, _ n: Int) -> Player {
+            Player(api_player_id: id, name: name, position: "Midfielder", photo_url: "https://x/\(id).png",
+                   number: n, appearances: 6, minutes: 500, team_id: "arsenal", goals: id == 1 ? 5 : 0,
+                   assists: 0, starts: 6, league_starts: 6)
+        }
+        let squad = [p(1, "B. Saka", 7), p(2, "D. Rice", 41), p(3, "M. Odegaard", 8), p(4, "M. Merino", 23)]
+        guard let pack = build(team: .arsenal, players: squad, cards: [], played: 6, manager: nil, managerNames: [],
+                               silhouettes: [], injuries: [TeamInjury(name: "Bukayo Saka", reason: "Hamstring")],
+                               personalise: { $0 }) else { return false }
+        let saka = pack.questions.filter { $0.player?.name == "Saka" }
+        let rice = pack.questions.filter { $0.player?.name == "Rice" }
+        return !saka.isEmpty && saka.allSatisfy { $0.use == nil || $0.use == outLine("Saka") }
+            && rice.contains { $0.use?.contains("Rice") == true }
+            && tenureSentence("Mikel Arteta took over in December 2019. His side press high.") == "Mikel Arteta took over in December 2019."
+            && tenureSentence("Arteta has been in charge since late 2019, which gives him one of the longest tenures.")
+                == "Arteta has been in charge since late 2019."
+            && tenureSentence("He wants his side to press high.") == nil
+    }
+    #endif
+
+    /// The one line for a man on the injury list.
+    static func outLine(_ short: String) -> String { LiveClubPack.quote("How long is \(short) out for?") }
+
+    /// The manager summary's sentence about how long he has been there, which
+    /// the team-page routine checks against `manager_started_on`
+    /// (post_team_page.sh). Nil when no sentence says it, or one says it about
+    /// [his name] rather than the manager.
+    static func tenureSentence(_ summary: String) -> String? {
+        let marker = #"\b(took over|in charge since|appointed|arrived in|been (here|there|at \w+) since|(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|\d+(st|nd|rd|th)) (full )?season)\b"#
+        // Up to ", which": "…since late 2019, which gives him one of the
+        // longest tenures in the division" — the date is checked, the rest is not.
+        return summary.components(separatedBy: ". ")
+            .map { $0.components(separatedBy: ", which").first ?? $0 }
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .map { $0.hasSuffix(".") ? $0 : $0 + "." }
+            .first { $0.range(of: marker, options: [.regularExpression, .caseInsensitive]) != nil
+                && !$0.contains("[") && $0.count <= PlayerHooks.copyCap }
     }
 
     /// Dossier first when there is one, then the hook as one sentence. With no
@@ -417,15 +465,24 @@ enum LiveSquadPack {
                                     goals: p.goals, assists: p.assists, starts: p.starts,
                                     nationality: p.nationality, hook: hook)
 
+            let leagueFact: String? = {
+                if isTopScorer, let g = leader?.goals, g > 0 {
+                    return p.appearances.map { "\(short)'s got \(g) in \($0) for \(club)." }
+                        ?? "\(short)'s got \(g) for \(club) this season."
+                }
+                if let g = p.goals, g >= 2 { return "\(short)'s got \(g) for \(club) this season." }
+                return nil
+            }()
             if let photo = p.photo {
                 qs += LiveClubPack.question(
                     id: "league-photo-\(p.api_player_id)", difficulty: 3,
                     question: hook.map { "Who is this? \($0)" } ?? "Who is this?",
                     answer: short, distractors: awayNames,
                     explanation: hook == nil ? who : whoWithoutHook,
-                    why: "He turns up on the highlights whoever is playing, so his face is worth knowing.",
-                    useType: .say,
-                    use: "When he appears on the screen: " + LiveClubPack.quote("That's \(short), isn't it?"),
+                    // The fact, not a point at the telly (MY-03-27): "Haaland's
+                    // got 13 in 11 for City." Nothing worth saying, no line.
+                    useType: leagueFact == nil ? nil : .impress,
+                    use: leagueFact.map(LiveClubPack.quote),
                     image: photo, player: person
                 )
             }
@@ -435,7 +492,6 @@ enum LiveSquadPack {
                 question: "Which club does \(short) play for?",
                 answer: club, distractors: everyClub.filter { $0 != club },
                 explanation: who,
-                why: "Twenty clubs is a lot. Knowing who plays where is most of the way there.",
                 useType: .ask,
                 use: LiveClubPack.quote("Are \(club) any good this season?"),
                 player: person
@@ -617,7 +673,8 @@ final class LiveSquadService {
 
         pack = LiveSquadPack.build(team: team, players: cache.players, cards: cache.cards, played: played,
                                    manager: cards?.manager, managerNames: cache.managerNames,
-                                   silhouettes: cache.silhouettes, personalise: personalise)
+                                   silhouettes: cache.silhouettes, injuries: cards?.injuries ?? [],
+                                   personalise: personalise)
     }
 
     private var checkedManagerPhotos: Set<String> = []

@@ -1000,6 +1000,14 @@ struct TeamInjury: Codable, Hashable {
         let hits = injuries.filter { key != nil && PlayerPortrait.surname($0.name) == key }
         return hits.count == 1 ? hits[0].reason : nil
     }
+
+    /// Whether any listed man has `player`'s surname. Looser than `reason` on
+    /// purpose: a My Turn line that sends her looking for him is dropped when
+    /// it might be him (MY-03-15/23/26), and a dropped line costs nothing.
+    static func isOut(_ player: String, in injuries: [TeamInjury]) -> Bool {
+        guard let key = PlayerPortrait.surname(player) else { return false }
+        return injuries.contains { PlayerPortrait.surname($0.name) == key }
+    }
 }
 
 struct TeamPostMatchCard: Codable {

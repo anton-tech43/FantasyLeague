@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The toolbox tab. One segmented control, three modules, exactly one visible:
-/// Quiz, Lingo and Say This. Pre-game, the first segment until 2026-10-07, is
+/// Say This, Lingo and Quiz. Pre-game, the first segment until 2026-10-07, is
 /// the Matchday tab's "Before" now.
 ///
 /// All three module views stay mounted (opacity-switched) so scroll position,
@@ -34,12 +34,12 @@ struct MyTurnView: View {
                         .allowsHitTesting(module == .sayThis)
                         .accessibilityHidden(module != .sayThis)
                     LingoView(content: content.lingo, store: store,
-                              team: appState.selectedTeam, page: live.page, mode: .dictionary)
+                              team: appState.contextTeam, page: live.page, mode: .dictionary)
                         .opacity(module == .lingo ? 1 : 0)
                         .allowsHitTesting(module == .lingo)
                         .accessibilityHidden(module != .lingo)
                     // No opponent pack: "Get to know Leeds" lives in Pre-game only.
-                    QuizView(content: content.quiz, store: store, clubId: appState.selectedTeam?.rawValue,
+                    QuizView(content: content.quiz, store: store, clubId: appState.contextTeam?.rawValue,
                              livePack: live.pack, squadPack: squad.pack, leaguePack: live.leaguePack)
                         .opacity(module == .quiz ? 1 : 0)
                         .allowsHitTesting(module == .quiz)
@@ -149,8 +149,9 @@ struct MyTurnView: View {
     private var module: MyTurnModule { store.lastModule }
 
     /// Say This still reads the fixture context: its lines follow the game.
+    /// The switcher's club, like the packs `LiveClubPackService` builds.
     private var prepContext: MatchContext {
-        MatchContext.current(page: live.page, team: appState.selectedTeam)
+        MatchContext.current(page: live.page, team: appState.contextTeam)
     }
 
     private var segmentedControl: some View {

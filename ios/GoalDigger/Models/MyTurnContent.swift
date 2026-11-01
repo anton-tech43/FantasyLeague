@@ -10,13 +10,14 @@ import Foundation
 // not a content bug.
 
 enum MyTurnModule: String, CaseIterable, Identifiable, Codable {
-    // Order is the segment order. Quiz first: the module a newcomer can use
-    // before she knows anything. Pre-game ("prep") was the first segment
-    // until 2026-10-07 and is the Matchday tab now; a stored "prep" decodes
-    // as Quiz (see init(from:)).
-    case quiz
-    case lingo
+    // Order is the segment order. Say This first, then Lingo: what she uses
+    // comes first (council MY-01-00, 2026-11-01), and the first open lands on
+    // Say This. Pre-game ("prep") was a segment until 2026-10-07 and is the
+    // Matchday tab now; a stored value this enum no longer has decodes as
+    // Say This (see init(from:)).
     case sayThis = "saythis"
+    case lingo
+    case quiz
 
     var id: String { rawValue }
 
@@ -38,8 +39,17 @@ enum MyTurnModule: String, CaseIterable, Identifiable, Codable {
     /// her whole state down with it.
     init(from decoder: Decoder) throws {
         let raw = try decoder.singleValueContainer().decode(String.self)
-        self = MyTurnModule(rawValue: raw) ?? .quiz
+        self = MyTurnModule(rawValue: raw) ?? .sayThis
     }
+
+    #if DEBUG
+    /// Segment order and the fallback for a retired value.
+    static func selfCheck() -> Bool {
+        let decode = { (raw: String) in try? JSONDecoder().decode(MyTurnModule.self, from: Data("\"\(raw)\"".utf8)) }
+        return allCases == [.sayThis, .lingo, .quiz]
+            && decode("prep") == .sayThis && decode("drills") == .sayThis && decode("quiz") == .quiz
+    }
+    #endif
 }
 
 // MARK: Say This
@@ -260,16 +270,15 @@ struct LingoTerm: Codable, Identifiable, Hashable {
     /// the line the round leaves her with can never disagree about what he
     /// was called.
     ///
-    /// `role` ("defender, Arsenal") glosses the name in `sayIt` — she may never
-    /// have heard of him. The bubble keeps the bare name: its 90-character cap
-    /// is what holds it to three lines, and a gloss would break it on every
-    /// variant. There the role travels in `namedPlayer`, for a tap.
+    /// `role` ("defender, Arsenal") travels in `namedPlayer`, for a tap. It
+    /// is never in `sayIt`, which she says out loud: nobody says "Isak
+    /// (forward, Liverpool)" (council MY-09-05).
     func naming(_ named: String, _ variant: PlayerVariant, role: String? = nil) -> LingoTerm {
         let token = "{\(variant.slot)}"
         var copy = self
         copy.overheard = variant.overheard.replacingOccurrences(of: token, with: named)
         copy.overheardTerm = variant.overheardTerm ?? overheardTerm
-        copy.sayIt = variant.sayIt.replacingOccurrences(of: token, with: role.map { "\(named) (\($0))" } ?? named)
+        copy.sayIt = variant.sayIt.replacingOccurrences(of: token, with: named)
         copy.namedPlayer = role.map { NamedPlayer(name: named, role: $0) }
         return copy
     }
@@ -442,8 +451,6 @@ struct MyTurnQuestion: Codable, Identifiable, Hashable {
     let answer: Int
     /// The fact, with the context a non-fan lacks (who this person is).
     let explanation: String
-    /// Why she would ever need this — one line. CONTENT_PRINCIPLES.md §1.
-    let why: String?
     /// The line: something to say, ask or impress with.
     let use: String?
     let useType: QuestionUseType?
@@ -458,11 +465,11 @@ struct MyTurnQuestion: Codable, Identifiable, Hashable {
     let answerImage: String?
 
     init(id: String, difficulty: Int, verified: Bool = true, question: String, options: [String], answer: Int,
-         explanation: String, why: String? = nil, use: String? = nil, useType: QuestionUseType? = nil,
+         explanation: String, use: String? = nil, useType: QuestionUseType? = nil,
          image: String? = nil, player: QuizPlayer? = nil, answerImage: String? = nil) {
         self.id = id; self.difficulty = difficulty; self.verified = verified; self.question = question
         self.options = options; self.answer = answer; self.explanation = explanation
-        self.why = why; self.use = use; self.useType = useType; self.image = image; self.player = player
+        self.use = use; self.useType = useType; self.image = image; self.player = player
         self.answerImage = answerImage
     }
 }

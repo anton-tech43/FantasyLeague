@@ -54,6 +54,11 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                && last(1, 1, .loss).afterLine(recent: [shootout]) == "After Chelsea: lost 6-5 on pens"
                && last(1, 1, .win).afterLine(recent: []) == "After Chelsea: won on pens",
                "club page's After line misreads the result")
+        assert(MyTurnModule.selfCheck(), "My Turn opens on the wrong module or loses a retired one")
+        assert(QuizView.selfCheck(), "Quiz shows the wrong packs before More packs")
+        assert(LiveClubPack.clubSelfCheck(), "the club pack misreads form or a shootout")
+        assert(LiveSquadPack.injurySelfCheck(), "an injured man got a line that sends her looking for him")
+        assert(LingoCalendar.selfCheck(), "the transfer window is open on the wrong days")
         #endif
 
         UNUserNotificationCenter.current().delegate = self

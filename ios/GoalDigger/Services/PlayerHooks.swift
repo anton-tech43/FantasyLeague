@@ -161,7 +161,9 @@ enum PlayerHooks {
             }
             // Last resort, and only when there is nothing about his football to
             // say. "\(nationality) international" is not derivable from the feed.
-            if hooks.isEmpty, let n = p.nationality, !n.isEmpty {
+            // Never for a man who has started league games: "Is White going to
+            // get a game soon?" was asked of one with seven starts (MY-03-26).
+            if hooks.isEmpty, starts == nil, let n = p.nationality, !n.isEmpty {
                 // The fact is the nationality; the line asks the next thing.
                 hooks.append(Hook(
                     fact: "\(him) is from \(country(n)). He is in \(LiveSquadPack.possessive(club)) squad this season.",
@@ -235,12 +237,14 @@ enum PlayerHooks {
         guard fact(v, 14).contains("the youngest"), fact(v, 17).contains("the oldest"),
               v[15]!.hooks.contains(where: { $0.fact.contains("11 saves") }) else { return false }
 
-        // 11: nationality only when nothing else is true.
+        // 11: nationality only when nothing else is true, and never for a
+        // man who has started league games.
         let onlyNation = build(players: [
-            p(20, "Q. Quiet", goals: 0, assists: 0, starts: 2, minutes: 100, apps: 2, nationality: "Sweden"),
+            p(20, "Q. Quiet", goals: 0, assists: 0, minutes: 100, apps: 2, nationality: "Sweden"),
             p(21, "R. Regular", goals: 1, assists: 1, starts: 4, minutes: 400, apps: 4),
+            p(24, "W. White", goals: 0, assists: 0, starts: 2, minutes: 180, apps: 2, nationality: "England"),
         ], club: "Arsenal", played: 4)
-        guard fact(onlyNation, 20).contains("from Sweden") else { return false }
+        guard fact(onlyNation, 20).contains("from Sweden"), onlyNation[24]?.hooks.isEmpty == true else { return false }
 
         // 11b: the line builds on the fact rather than asking it back. An
         // assist leader with no goals is asked whether he scores, not
