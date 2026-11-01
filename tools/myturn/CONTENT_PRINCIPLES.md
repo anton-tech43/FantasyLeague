@@ -5,12 +5,12 @@ validator enforces the mechanical half of them.
 
 ## 1. A fact is not a question. Every question carries its use.
 
-Each quiz question has four parts and all four are required:
+Each quiz question has three parts and all three are required (`why` was dropped
+2026-11-01; the explanation carries the context):
 
 | field | job | cap |
 |---|---|---|
 | `explanation` | the fact, **with the context a non-fan lacks** — who this person is, why this era matters | 170 |
-| `why` | why she would ever need this, in one line | 110 |
 | `use` | the line: something to say, something to ask him, or something to impress with | 140 |
 | `useType` | `say` / `ask` / `impress` — the app labels the line with it | — |
 
@@ -36,7 +36,7 @@ cannot see the present, so **superlatives tied to now are banned outright**:
 *only, last, most, record, latest, newest, all-time, more than any other,
 never, still*. Write the dated fact instead: "Arsenal reached the Champions
 League final in 2006, in Paris" cannot go stale. `validate_content.py` fails the
-build on any of those words in a question, explanation, why or use.
+build on any of those words in a question, explanation or use.
 
 Numbers are allowed when dated ("five substitutions since 2022"). Undated
 numbers about the present ("five allowed per game") are not.

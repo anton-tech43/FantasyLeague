@@ -26,7 +26,7 @@ from validate_overheard import validate_overheard  # noqa: E402
 ROOT = os.path.join(os.path.dirname(__file__), "..", "..", "ios", "GoalDigger", "Resources", "MyTurn")
 ID_RE = re.compile(r"^[a-z0-9-]+$")
 
-LIMITS = {"text": 60, "usage": 100, "meaning": 170, "heard": 90, "sayIt": 100, "question": 100, "option": 40, "explanation": 170, "why": 110, "use": 140}
+LIMITS = {"text": 60, "usage": 100, "meaning": 170, "heard": 90, "sayIt": 100, "question": 100, "option": 40, "explanation": 170, "use": 140}
 
 # UK idiom banlist. Generated football English drifts American. Word-boundary,
 # case-insensitive; "field" and "tie" are banned outright because the validator
@@ -333,10 +333,12 @@ def validate_quiz(d: dict) -> tuple[int, int]:
             if not expl:
                 err(f"quiz/{qid}: explanation is required — it is where the learning happens")
             check_len(f"quiz/{qid}", "explanation", expl)
-            why, use, use_type = q.get("why", ""), q.get("use", ""), q.get("useType")
-            if not why or not use:
-                err(f"quiz/{qid}: why and use are required — a fact with no use is not a question (CONTENT_PRINCIPLES.md §1)")
-            check_len(f"quiz/{qid}", "why", why)
+            use, use_type = q.get("use", ""), q.get("useType")
+            if not use:
+                err(f"quiz/{qid}: use is required — a fact with no use is not a question (CONTENT_PRINCIPLES.md §1)")
+            # `why` was dropped 2026-11-01 (MY-04-07); 2.2/2.3 decode it as optional.
+            if "why" in q:
+                err(f"quiz/{qid}: has a 'why' field, which was retired — the explanation carries the context")
             check_len(f"quiz/{qid}", "use", use)
             if use_type not in ("say", "ask", "impress"):
                 err(f"quiz/{qid}: useType must be say, ask or impress")
@@ -346,8 +348,8 @@ def validate_quiz(d: dict) -> tuple[int, int]:
             # Newlines, not spaces: joined with spaces the option "Zero" and an
             # explanation opening "Zero." read as the banned "zero zero", and
             # which fields end up adjacent is decided by the shuffle.
-            check_idiom(f"quiz/{qid}", "\n".join([question, *opts, expl, why, use]))
-            for field, text in (("question", question), ("explanation", expl), ("why", why), ("use", use)):
+            check_idiom(f"quiz/{qid}", "\n".join([question, *opts, expl, use]))
+            for field, text in (("question", question), ("explanation", expl), ("use", use)):
                 m = SUPERLATIVE.search(text)
                 if m:
                     err(f"quiz/{qid}: {field} has a superlative that can go stale ('{m.group(0)}') — write the dated fact: {text[:60]}")

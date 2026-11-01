@@ -6,9 +6,10 @@ and review; this script gives them ids, checks the shape, and writes the JSON
 the app reads. Then run validate_content.py.
 
 Each question, since the 2026-09-08 rewrite (see CONTENT_PRINCIPLES.md):
-  (difficulty, question, [three options], answer_index, explanation, why, useType, use)
-explanation carries the fact AND the context a non-fan lacks; why is the one
-line on why she would need it; use is the line she gets — useType say/ask/impress.
+  (difficulty, question, [three options], answer_index, explanation, useType, use)
+explanation carries the fact AND the context a non-fan lacks; use is the line
+she gets — useType say/ask/impress. `why` was dropped 2026-11-01 (MY-04-07):
+2.2 and 2.3 decode it as optional, so the shipped builds lose nothing.
 
 Every question here is marked verified: true. That flag is the spec's promise
 that a human checked the fact against a source. The 2026-09-07 batch was
@@ -34,7 +35,7 @@ for m in MODULES:
     mod = importlib.import_module(m)
     for pack_id, label, questions in mod.PACKS:
         qs = []
-        for i, (diff, q, opts, ans, expl, why, use_type, use) in enumerate(questions, 1):
+        for i, (diff, q, opts, ans, expl, use_type, use) in enumerate(questions, 1):
             assert len(opts) == 3, (pack_id, q)
             assert 0 <= ans < 3, (pack_id, q)
             # Shuffle per question, seeded on the id, so the slot is stable
@@ -53,7 +54,6 @@ for m in MODULES:
                 "options": shuffled,
                 "answer": order.index(ans),
                 "explanation": expl,
-                "why": why,
                 "useType": use_type,
                 "use": use,
             })
