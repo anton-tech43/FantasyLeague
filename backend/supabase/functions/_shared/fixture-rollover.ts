@@ -217,3 +217,24 @@ export function buildUpcomingFixtures(
   }
   return out.length > 0 ? out : null;
 }
+
+/**
+ * W / D / L for one side of a finished fixture, a shootout included. A level
+ * score on a PEN fixture is not a draw: Fleetwood v Arsenal was 1-1 and an
+ * Arsenal loss, 5-3 on penalties, and the calendar said "D" and the quiz asked
+ * "Was the draw with Fleetwood fair?" (council 2026-10-29). `penalties` is
+ * this side's shootout first, null when there was none.
+ */
+export function sideResult(
+  fixture: Record<string, unknown>,
+  isHome: boolean,
+): { result: "W" | "D" | "L"; penalties: [number, number] | null } | null {
+  const g = fixture.goals as { home?: number | null; away?: number | null } | undefined;
+  if (g?.home == null || g?.away == null) return null;
+  const p = (fixture.score as Record<string, { home?: number | null; away?: number | null }> | undefined)?.penalty;
+  const pens = p?.home != null && p?.away != null
+    ? (isHome ? [p.home, p.away] : [p.away, p.home]) as [number, number]
+    : null;
+  const [us, them] = pens && pens[0] !== pens[1] ? pens : isHome ? [g.home, g.away] : [g.away, g.home];
+  return { result: us > them ? "W" : us < them ? "L" : "D", penalties: pens };
+}

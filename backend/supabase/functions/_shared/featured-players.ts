@@ -208,3 +208,29 @@ export function formatSquadStats(squad: PlayerStatRow[]): string {
     )
     .join("\n");
 }
+
+/** API-Football player id from a `.../players/<id>.png` photo URL. */
+const photoId = (p: Record<string, unknown>): number | undefined => {
+  const m = /\/players\/(\d+)\./.exec(String(p.photo_url ?? ""));
+  return m ? Number(m[1]) : undefined;
+};
+
+/**
+ * Ones to know without the men who are out. The routine writes the three once
+ * a week; the injury list moves every two hours, and a player card saying
+ * "out, thigh" beside "Arsenal's most productive attacker" is the
+ * contradiction the council found (2026-10-29: Saka, João Pedro). A man out of
+ * the latest fixture waits in `out` and comes back when he is off the list.
+ * `injured` is [{id, name}] for type "Missing Fixture" on the latest fixture.
+ */
+export function benchInjured(
+  otk: Record<string, unknown>,
+  injured: Array<{ id?: number; name?: string }>,
+): Record<string, unknown> {
+  const all = [...(otk.players as Array<Record<string, unknown>> ?? []), ...(otk.out as Array<Record<string, unknown>> ?? [])];
+  const isOut = (p: Record<string, unknown>) =>
+    injured.some((i) => (i.id != null && i.id === photoId(p)) || (!!i.name && sameName(i.name, String(p.name ?? ""))));
+  const { out: _old, ...rest } = otk;
+  const out = all.filter(isOut);
+  return { ...rest, players: all.filter((p) => !isOut(p)), ...(out.length ? { out } : {}) };
+}

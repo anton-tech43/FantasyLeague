@@ -205,3 +205,22 @@ Deno.test("the guard reads a sequence, not a bag of names", () => {
   assertEquals(describeSubstitution(f, [{ name: "C" }, { name: "B" }, { name: "A" }]) !== null, true);
   assertEquals(describeSubstitution(f, [{}, {}, {}]) !== null, true);
 });
+
+Deno.test("benchInjured: a man out of the latest fixture leaves ones to know, and comes back", async () => {
+  const { benchInjured } = await import("./featured-players.ts");
+  const saka = { name: "B. Saka", photo_url: "https://media.api-sports.io/football/players/1460.png" };
+  const pedro = { name: "João Pedro", photo_url: "https://media.api-sports.io/football/players/10329.png" };
+  const rice = { name: "D. Rice", photo_url: "https://media.api-sports.io/football/players/2937.png" };
+  const otk = { talking_point: "x", players: [saka, pedro, rice] };
+  // By id (Saka) and by name with the accent the feed drops (Joao Pedro, no photo id match).
+  const benched = benchInjured(otk, [{ id: 1460, name: "B. Saka" }, { name: "Joao Pedro" }]);
+  assertEquals(benched.players, [rice]);
+  assertEquals(benched.out, [saka, pedro]);
+  assertEquals(benched.talking_point, "x");
+  // Off the list again: back in, and `out` is gone.
+  const back = benchInjured(benched, []);
+  assertEquals(back.players, [rice, saka, pedro]);
+  assertEquals("out" in back, false);
+  // Nobody injured, nothing moves.
+  assertEquals(benchInjured(otk, []).players, [saka, pedro, rice]);
+});

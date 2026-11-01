@@ -182,3 +182,16 @@ Deno.test("isCoveredFixture: league and covered cups, never a friendly", () => {
   if (isCoveredFixture(fx(667))) throw new Error("a club friendly counted as next up (Villa v Sevilla, 2026-10-02)");
   if (isCoveredFixture({})) throw new Error("a fixture with no league counted");
 });
+
+Deno.test("sideResult: a shootout decides a level tie, from either side", async () => {
+  const { sideResult } = await import("./fixture-rollover.ts");
+  // Fleetwood v Arsenal, League Cup last 16, 2026-10-27: 1-1, Fleetwood 5-3 on penalties.
+  const fleetwood = { goals: { home: 1, away: 1 }, score: { penalty: { home: 5, away: 3 } } };
+  eq(JSON.stringify(sideResult(fleetwood, false)), JSON.stringify({ result: "L", penalties: [3, 5] }), "Arsenal lost");
+  eq(JSON.stringify(sideResult(fleetwood, true)), JSON.stringify({ result: "W", penalties: [5, 3] }), "Fleetwood won");
+  // A league draw stays a draw; penalty null as the feed sends it.
+  const draw = { goals: { home: 2, away: 2 }, score: { penalty: { home: null, away: null } } };
+  eq(JSON.stringify(sideResult(draw, true)), JSON.stringify({ result: "D", penalties: null }), "a draw");
+  eq(sideResult({ goals: { home: 2, away: 0 } }, false)?.result, "L", "away side of a 2-0");
+  eq(sideResult({ goals: { home: null, away: null } }, true), null, "no score, no result");
+});

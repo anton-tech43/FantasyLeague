@@ -27,7 +27,7 @@ import {
   renderOpponentDetail,
   renderThisWeek,
 } from "../_shared/stakes-templates.ts";
-import { buildUpcomingFixtures, collectFinishedFixtureIds, isCoveredFixture, dropFinished, FINISHED_STATUSES, FIXTURE_PAST_GRACE_MS, filterFixturesByLeague } from "../_shared/fixture-rollover.ts";
+import { buildUpcomingFixtures, collectFinishedFixtureIds, isCoveredFixture, dropFinished, FINISHED_STATUSES, FIXTURE_PAST_GRACE_MS, filterFixturesByLeague, sideResult } from "../_shared/fixture-rollover.ts";
 import { knockoutOutcome } from "../_shared/goal-push.ts";
 import { clubPreMatchVerdict, preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
 import {
@@ -39,7 +39,7 @@ import {
 import { classifyBestThird, type GroupThirdBounds } from "../_shared/best-third.ts";
 import { classifyExactForTeam, coarseThirdPointsBounds, type GroupTeam, type RemainingGame } from "../_shared/group-scenarios.ts";
 import { guaranteedExactlyThird } from "../_shared/detect-consequences.ts";
-import { describeSubstitution, formatSquadStats, pickFeaturedPlayers, type PlayerStatRow } from "../_shared/featured-players.ts";
+import { benchInjured, describeSubstitution, formatSquadStats, pickFeaturedPlayers, type PlayerStatRow } from "../_shared/featured-players.ts";
 
 // ============================================================
 // SYSTEM PROMPT
@@ -1401,13 +1401,7 @@ async function updateDynamicFields(
   for (const payload of lastPayloads) {
     const results = parseRecentResults(payload, team.api_football_id);
     if (results.length > 0) {
-      cards.recent_results = results.slice(0, 3).map((r) => ({
-        date: r.date,
-        opponent: r.opponentName,
-        venue: r.venue,
-        team_score: r.teamScore,
-        opp_score: r.oppScore,
-      }));
+      cards.recent_results = results.slice(0, 3).map(resultRow);
       // The last three per competition, for "How they've been" before a
       // game in that competition: Premier League form before a league game,
       // Champions League results before a Champions League night (Anton,
@@ -1417,12 +1411,34 @@ async function updateDynamicFields(
         if (r.leagueId == null) continue;
         const k = String(r.leagueId);
         if ((byComp[k] ??= []).length < 3) {
-          byComp[k].push({ date: r.date, opponent: r.opponentName, venue: r.venue,
-                           team_score: r.teamScore, opp_score: r.oppScore });
+          byComp[k].push(resultRow(r));
         }
       }
       cards.recent_by_competition = byComp;
       break;
+    }
+  }
+
+  // Ones to know, without the men out of the latest fixture (benchInjured).
+  // The injury payload is keyed by fixture and spans several (DATA_SOURCES.md):
+  // the newest non-empty snapshot, its latest fixture only. No snapshot, no
+  // change: an unreadable list never empties the card.
+  if (cards.ones_to_know) {
+    const { data: injLogs } = await supabase
+      .from("raw_fetch_logs")
+      .select("data")
+      .eq("team_id", team.id)
+      .eq("source", "api_football_injuries")
+      .order("fetched_at", { ascending: false })
+      .limit(5);
+    const rows = (injLogs ?? []).map((l) => (l.data as { response?: unknown[] })?.response)
+      .find((r) => Array.isArray(r) && r.length > 0) as Array<Record<string, any>> | undefined;
+    if (rows) {
+      const latest = rows.map((r) => String(r.fixture?.date ?? "")).sort().at(-1);
+      const injured = rows
+        .filter((r) => r.fixture?.date === latest && r.player?.type === "Missing Fixture")
+        .map((r) => ({ id: r.player?.id as number | undefined, name: r.player?.name as string | undefined }));
+      cards.ones_to_know = benchInjured(cards.ones_to_know as Record<string, unknown>, injured);
     }
   }
 
@@ -1685,13 +1701,7 @@ async function updateWcDynamicFields(
   for (const lg of lastLogs) {
     const results = parseRecentResults(lg.data, team.api_football_id, WC_LEAGUE_ID);
     if (results.length > 0) {
-      cards.recent_results = results.slice(0, 3).map((r) => ({
-        date: r.date,
-        opponent: r.opponentName,
-        venue: r.venue,
-        team_score: r.teamScore,
-        opp_score: r.oppScore,
-      }));
+      cards.recent_results = results.slice(0, 3).map(resultRow);
       break;
     }
   }
@@ -2127,6 +2137,23 @@ interface ParsedResult {
   venue: "home" | "away";
   teamScore: number;
   oppScore: number;
+  result: "W" | "D" | "L";
+  /// [ours, theirs] when a shootout decided it, else null.
+  penalties: [number, number] | null;
+}
+
+/// One row of "last games". `result` is the shootout's when there was one,
+/// so a level PEN tie is W or L, never D; `pen_team`/`pen_opp` carry its score.
+function resultRow(r: ParsedResult): Record<string, unknown> {
+  return {
+    date: r.date,
+    opponent: r.opponentName,
+    venue: r.venue,
+    team_score: r.teamScore,
+    opp_score: r.oppScore,
+    result: r.result,
+    ...(r.penalties ? { pen_team: r.penalties[0], pen_opp: r.penalties[1] } : {}),
+  };
 }
 
 /// Parse api_football_fixtures_last into this team's recent FINISHED results
@@ -2160,7 +2187,9 @@ function parseRecentResults(
       const ag = goals.away as number | null;
       if (hg == null || ag == null) continue;
       const isHome = (home.id as number | undefined) === teamApiFootballId;
+      const decided = sideResult(rec, isHome)!;
       out.push({
+        ...decided,
         leagueId: (rec.league as Record<string, unknown> | undefined)?.id as number | undefined,
         date: fixtureInfo.date as string,
         opponentName: (isHome ? away.name : home.name) as string,
