@@ -36,7 +36,8 @@ struct LiveMatchSnapshot: Codable {
 
     /// Live = the match is being played (so an activity should run). FT and
     /// pre-kickoff are excluded — the activity ends / hasn't started.
-    var isLive: Bool { ["1H", "HT", "2H", "ET", "BT", "P", "LIVE"].contains(status) }
+    /// INT/SUSP count: the match is stopped, not over, and its activity stays.
+    var isLive: Bool { ["1H", "HT", "2H", "ET", "BT", "P", "LIVE", "INT", "SUSP"].contains(status) }
 
     /// Period-based badge label, matching the backend's wcStatusLabel (the
     /// foreground-started activity is then updated by period-based pushes, so
@@ -50,9 +51,19 @@ struct LiveMatchSnapshot: Codable {
         case "ET", "BT":         return "Extra time"
         case "P":                return "Penalties"
         case "FT", "AET", "PEN": return "FT"
+        case "SUSP":             return "Suspended"
+        case "INT":              return "Interrupted"
+        case "ABD":              return "Abandoned"
+        case "PST":              return "Postponed"
+        // "LIVE" is API-Football's "playing, period unknown"; the badge never says it.
+        case "LIVE":             return "In play"
         default:                 return status
         }
     }
+
+    /// Stopped but not over (wcStatusLabel's words): the activity must not be
+    /// ended because live-match-current no longer lists the match.
+    static let pausedLabels: Set<String> = ["Suspended", "Interrupted"]
 
     var contentState: MatchActivityAttributes.ContentState {
         .init(homeScore: homeGoals, awayScore: awayGoals, statusLabel: statusLabel,

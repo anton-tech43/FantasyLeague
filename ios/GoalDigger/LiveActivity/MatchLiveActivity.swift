@@ -35,6 +35,7 @@ struct MatchLiveActivity: Widget {
                         Text("\(context.state.homeScore) - \(context.state.awayScore)")
                             .font(.system(size: 26, weight: .bold, design: .rounded))
                             .foregroundStyle(LA.warmWhite)
+                            .opacity(context.isStale ? 0.5 : 1)
                         MatchMinute(state: context.state, size: 11, isStale: context.isStale)
                     }
                 }
@@ -102,6 +103,7 @@ private struct LockScreenView: View {
                     Text("\(state.homeScore) - \(state.awayScore)")
                         .font(.system(size: 34, weight: .heavy, design: .rounded))
                         .foregroundStyle(LA.warmWhite)
+                        .opacity(isStale ? 0.5 : 1)
                     MatchMinute(state: state, size: 12, isStale: isStale)
                 }
                 .frame(minWidth: 96)
@@ -138,8 +140,9 @@ private struct LockScreenView: View {
 private struct MatchMinute: View {
     let state: MatchActivityAttributes.ContentState
     let size: CGFloat
-    /// No update reached it for a while (a lost end push, no signal): the
-    /// score is the last one we know, so the clock must not look live.
+    /// No update reached it for a while (a lost end push, no signal, a frozen
+    /// feed): the score is the last one we know, dimmed by the caller, and the
+    /// clock must not look live.
     var isStale = false
 
     /// The minute at render time — only decides the "/ 90"; the digits
@@ -152,7 +155,7 @@ private struct MatchMinute: View {
     var body: some View {
         Group {
             if isStale {
-                Text("LAST UPDATE")
+                Text(state.elapsed.map { "No update since \($0)'" } ?? "No recent update")
             } else if let start = state.clockStartDate {
                 HStack(spacing: 0) {
                     // Renders "63:12". On a dimmed lock screen iOS shows

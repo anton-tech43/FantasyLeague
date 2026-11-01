@@ -114,7 +114,8 @@ final class LiveActivityManager {
 
     /// On foreground: re-assert the push-to-start registration, and if a
     /// followed team has a live match with no running activity, start one
-    /// locally (which vends its update token to the backend). Then end any
+    /// locally (which vends its update token to the backend); a running one is
+    /// never touched. Then end any
     /// running activity whose match is no longer live, so a missed end push
     /// can't leave a frozen score on the Lock Screen.
     @MainActor
@@ -128,7 +129,7 @@ final class LiveActivityManager {
         Task { await registerPushToStartIfPossible() }
         // Each followed team — any could be live (e.g. his Arsenal and her
         // Sweden) — then, tournament-wide, whichever World Championship match
-        // is live right now, for every user. startOrUpdate is keyed by
+        // is live right now, for every user. startIfMissing is keyed by
         // fixtureId, so two live matches each get their own activity and a
         // followed country's WC match is an update, not a second activity.
         // live-match-current matches on home/away id, so a club slug works the
@@ -143,7 +144,7 @@ final class LiveActivityManager {
                     guard let snap = try await APIClient.shared.fetchCurrentLiveMatch(countryId: entityId),
                           snap.isLive else { continue }
                     liveFixtureIds.insert(snap.fixtureId)
-                    startOrUpdate(from: snap)
+                    startIfMissing(from: snap)
                 } catch {
                     everyAnswerIn = false
                 }
@@ -160,9 +161,12 @@ final class LiveActivityManager {
             // .stale too: an activity whose end push never arrived goes stale
             // (no update for 90 min) and was skipped here — exactly the ones
             // this cleanup exists for (Anton, 2026-10-27: they never go away).
+            // A suspended or interrupted match drops out of live-match-current
+            // but is not over: match-watcher keeps that activity and ends it.
             for activity in Activity<MatchActivityAttributes>.activities
             where (activity.activityState == .active || activity.activityState == .stale)
-                && !liveFixtureIds.contains(activity.attributes.fixtureId) {
+                && !liveFixtureIds.contains(activity.attributes.fixtureId)
+                && !LiveMatchSnapshot.pausedLabels.contains(activity.content.state.statusLabel) {
                 await activity.end(nil, dismissalPolicy: .immediate)
             }
         }
@@ -200,18 +204,17 @@ final class LiveActivityManager {
         }
     }
 
-    private func startOrUpdate(from snap: LiveMatchSnapshot) {
+    /// Starts an activity only when none runs for the fixture. A running one
+    /// belongs to match-watcher's pushes: overwriting it from here erased the
+    /// note (the half-time line, the shootout) and reset its stale date.
+    private func startIfMissing(from snap: LiveMatchSnapshot) {
+        guard !Activity<MatchActivityAttributes>.activities
+            .contains(where: { $0.attributes.fixtureId == snap.fixtureId }) else { return }
         // Stale once no update has landed for longer than a whole match with
         // extra time and penalties, so a dead activity says so instead of
         // showing a score that might be hours old.
         let content = ActivityContent(state: snap.contentState,
                                       staleDate: Date().addingTimeInterval(150 * 60))
-
-        if let existing = Activity<MatchActivityAttributes>.activities
-            .first(where: { $0.attributes.fixtureId == snap.fixtureId }) {
-            Task { await existing.update(content) }
-            return
-        }
 
         guard let home = Self.side(snap.homeTeamId, serverName: snap.homeName),
               let away = Self.side(snap.awayTeamId, serverName: snap.awayName) else { return }

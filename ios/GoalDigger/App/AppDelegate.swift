@@ -29,6 +29,11 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                && ImmersiveCard.matchdayLabel(result: "Arsenal 1-1 Fleetwood Town (Arsenal won 4-3 on penalties)", teamId: "arsenal") == "After Fleetwood Town:"
                && ImmersiveCard.matchdayLabel(result: nil, teamId: "arsenal") == "After the game:",
                "result card label names the wrong side")
+        assert(["SUSP": "Suspended", "INT": "Interrupted", "ABD": "Abandoned", "PST": "Postponed", "LIVE": "In play", "P": "Penalties"]
+                .allSatisfy { LiveMatchSnapshot(fixtureId: 0, homeTeamId: "", awayTeamId: "", homeName: nil, awayName: nil, homeGoals: 0,
+                                                awayGoals: 0, status: $0.key, elapsed: nil, clockStart: nil, groupLabel: nil).statusLabel == $0.value }
+               && LiveMatchSnapshot.pausedLabels == ["Suspended", "Interrupted"],
+               "Live Activity status words drifted from wcStatusLabel")
         #endif
 
         UNUserNotificationCenter.current().delegate = self
