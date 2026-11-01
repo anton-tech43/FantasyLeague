@@ -115,6 +115,34 @@ class AppState {
     var activeContext: FeedContext = .everyoneTalking
     var isContextSwitcherOpen: Bool = false
 
+    /// The club the app is on: the one picked in the feed's switcher, else
+    /// his first. Matchday and the club page follow it (council MD-01-10:
+    /// Matchday stayed on club one while the club page showed club two).
+    var contextTeam: Team? {
+        if case .team(let t) = activeContext, selectedTeams.contains(t) { return t }
+        return selectedTeam
+    }
+
+    /// The entity (club or country) the feed is showing. Quiz, live-brief,
+    /// insider, and player-card fetches all key off THIS — not selectedTeam —
+    /// so a country context loads country data, and a WC-only user (no club)
+    /// still works. (2026-06-01)
+    var feedEntityId: String? {
+        switch activeContext {
+        case .country(let c): return c.rawValue
+        case .team(let t):    return t.rawValue
+        case .everyoneTalking:
+            // Club only while country following is off. A country-only device
+            // sits on .everyoneTalking now, and falling back to her country
+            // here kept the live-brief poller running against an entity whose
+            // card can never render, and let a failed country request set
+            // hasError — which shows the error screen instead of the
+            // cross-team empty state.
+            if let team = selectedTeam { return team.rawValue }
+            return CountryFollowing.isEnabled ? selectedCountry?.rawValue : nil
+        }
+    }
+
     /// Who the followed person is to the user. Partner is the default framing;
     /// the others let someone following a parent / sibling / friend keep the
     /// app's voice without it assuming a romantic partner.

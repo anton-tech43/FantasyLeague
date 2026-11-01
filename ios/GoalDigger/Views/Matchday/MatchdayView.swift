@@ -16,6 +16,7 @@ struct MatchdayView: View {
     @State private var store = MyTurnStore.shared
     @State private var content = MyTurnContentService.shared
     @State private var live = LiveClubPackService.shared
+    @State private var liveBriefs = LiveBriefPoller.shared
     /// What she picked. Nil means the default for this moment, so a new game
     /// opens on its own default rather than on whatever she last tapped.
     @State private var picked: MatchdaySection?
@@ -29,22 +30,38 @@ struct MatchdayView: View {
             Color.appBackground.ignoresSafeArea()
 
             VStack(spacing: 0) {
+                // While his game is on, the score comes first (council
+                // MD-01-08). The written commentary stays on the feed.
+                if let brief = liveBrief {
+                    LiveMatchCard(brief: brief, showsProse: false, isPaused: liveBriefs.isPaused)
+                        .padding(.horizontal, MatchdayCard.edge)
+                        .padding(.top, 8)
+                }
                 if lastMatch != nil {
                     segments
                         .padding(.horizontal, Layout.screenPadding)
                         .padding(.top, 8)
                         .padding(.bottom, 8)
                 }
+                if section == .before, let kickoffLine {
+                    Text(kickoffLine)
+                        .font(.jakarta(13, weight: .semiBold))
+                        .foregroundColor(.softBlush)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, MatchdayCard.edge + 2)
+                        .padding(.top, lastMatch == nil ? 8 : 0)
+                        .padding(.bottom, 8)
+                }
 
                 ZStack {
-                    if let card = lastMatch, let team = appState.selectedTeam {
+                    if let card = lastMatch, let team = appState.contextTeam {
                         AfterView(card: card, team: team, next: live.page?.cards.nextFixture)
                             .opacity(section == .after ? 1 : 0)
                             .allowsHitTesting(section == .after)
                             .accessibilityHidden(section != .after)
                     }
                     LingoView(content: content.lingo, store: store,
-                              team: appState.selectedTeam, page: live.page, mode: .prep)
+                              team: appState.contextTeam, page: live.page, mode: .prep)
                         .opacity(section == .before ? 1 : 0)
                         .allowsHitTesting(section == .before)
                         .accessibilityHidden(section != .before)
@@ -107,7 +124,22 @@ struct MatchdayView: View {
     }
 
     private var nextContext: MatchContext {
-        MatchContext(page: live.page, team: appState.selectedTeam, now: .gdNow, preferBefore: true)
+        MatchContext(page: live.page, team: appState.contextTeam, now: .gdNow, preferBefore: true)
+    }
+
+    /// The club's live brief, when the poll is on this club.
+    private var liveBrief: LiveMatchBrief? {
+        guard let team = appState.contextTeam, liveBriefs.entityId == team.rawValue else { return nil }
+        return liveBriefs.brief
+    }
+
+    /// "Kick-off Saturday 15:00" on Before, in her own time zone; the date
+    /// instead of the day when it is more than a week off.
+    private var kickoffLine: String? {
+        guard let kickoff = nextKickoff, kickoff > .gdNow else { return nil }
+        let f = DateFormatter()
+        f.setLocalizedDateFormatFromTemplate(kickoff.timeIntervalSince(.gdNow) < 6 * 86_400 ? "EEEEjmm" : "EEEdMMMjmm")
+        return "Kick-off \(f.string(from: kickoff))"
     }
 
     private var nextKickoff: Date? {

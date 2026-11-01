@@ -14,10 +14,6 @@ struct FeedView: View {
     // Per-context loading state
     @State private var isLoading = true
     @State private var hasError = false
-    /// Bumped when the app returns to the foreground, to re-fire the live-brief
-    /// poll task (which SwiftUI cancels on background and won't restart on its
-    /// own for the same context). Keeps the live box from going stale.
-    @State private var livePollGeneration = 0
     @State private var teamOffset = 0
     @State private var everyoneOffset = 0
     @State private var teamCanLoadMore = true
@@ -30,15 +26,10 @@ struct FeedView: View {
     /// generic "nothing today" empty state, so the user always has
     /// something to read on opening the app. V1.1 task C1.
     @State private var emptyStateInsider: InsiderItem?
-    /// LiveMatchCard surface (V1.1 task C5). When non-nil, a top-of-feed
-    /// card renders showing live in-match commentary. Populated by a
-    /// 60-second poll loop while the user is on the feed AND scenePhase
-    /// is active. Cleared when the poll returns 204 (no live match).
-    @State private var liveBrief: LiveMatchBrief?
-    /// When the live brief last arrived. Three minutes without one pauses
-    /// the card's clock; ten minutes hides the card.
-    @State private var liveBriefAt = Date()
-    @State private var liveBriefPaused = false
+    /// LiveMatchCard surface (V1.1 task C5), polled by MainTabView for this
+    /// feed's entity and shared with Matchday.
+    @State private var live = LiveBriefPoller.shared
+    private var liveBrief: LiveMatchBrief? { live.entityId == activeEntityId ? live.brief : nil }
     @State private var notificationStatus: UNAuthorizationStatus = .authorized
 
     private let pageSize = 20
@@ -49,32 +40,8 @@ struct FeedView: View {
         return month >= 6 && month <= 8
     }
 
-    /// The entity (club or country) the feed is currently showing, resolved
-    /// from activeContext. Quiz, live-brief, insider, and player-card fetches
-    /// all key off THIS — not appState.selectedTeam — so a country context
-    /// loads country data, and a WC-only user (no club) still works. (2026-06-01)
-    private var activeEntityId: String? {
-        switch appState.activeContext {
-        case .country(let c): return c.rawValue
-        case .team(let t):    return t.rawValue
-        case .everyoneTalking:
-            // Club only while country following is off. A country-only device
-            // sits on .everyoneTalking now, and falling back to her country
-            // here kept the live-brief poller running against an entity whose
-            // card can never render, and let a failed country request set
-            // hasError — which shows the error screen instead of the
-            // cross-team empty state.
-            if let team = appState.selectedTeam { return team.rawValue }
-            return CountryFollowing.isEnabled ? appState.selectedCountry?.rawValue : nil
-        }
-    }
-
-    /// Live-brief poll task id: the active entity plus a generation counter so a
-    /// foreground return (which bumps the counter) re-fires the poll task even
-    /// when the context is unchanged.
-    private var livePollTaskID: String {
-        "\(activeEntityId ?? "none")#\(livePollGeneration)"
-    }
+    /// The entity (club or country) the feed is showing (AppState.feedEntityId).
+    private var activeEntityId: String? { appState.feedEntityId }
 
     /// Items for the active context
     private var displayItems: [ContentItem] {
@@ -165,14 +132,6 @@ struct FeedView: View {
         .toolbarBackground(.hidden, for: .tabBar)
         .task { await loadInitial() }
         .task { await checkNotifications() }
-        .task(id: livePollTaskID) {
-            // Live brief poll lifecycle. Kicks off on first appear, on entity
-            // change (team OR country context), and on a foreground return (via
-            // livePollGeneration). The task body is the poll loop itself; it
-            // exits when SwiftUI cancels the task (view disappear, id change,
-            // app suspend). Every tier: a goal push lands on the score.
-            await runLiveBriefPoll()
-        }
         .onChange(of: activeEntityId) { _, newEntity in
             // Keyed on the entity `teamItems` belongs to, not selectedTeam
             // (.first): following [A, B] on B and removing B in Settings moves
@@ -185,20 +144,15 @@ struct FeedView: View {
             freshnessCardDismissed = false
             matchdayPlayers = []
             emptyStateInsider = nil
-            liveBrief = nil   // drop stale live card from prior entity
             guard newEntity != nil else { return }
             isLoading = true
             Task { await loadTeamFeed() }
         }
         .onChange(of: scenePhase) { oldPhase, newPhase in
-            // The 60s live-brief poll runs inside `.task(id: livePollTaskID)`,
-            // which SwiftUI cancels when the view disappears / on background.
-            // On returning to the app, bump the generation so `.task(id:)`
-            // re-fires for the same context, and re-fetch the feed so a "stale
-            // empty during the match" view is replaced by the latest (e.g. the
-            // FT result).
+            // Re-fetch the feed on return so a "stale empty during the match"
+            // view is replaced by the latest (e.g. the FT result). The live
+            // brief poll restarts in MainTabView.
             if newPhase == .active && oldPhase == .background {
-                livePollGeneration += 1
                 Task { await refresh() }
             }
             // Back from iOS Settings: the banner goes the moment she turns
@@ -269,57 +223,6 @@ struct FeedView: View {
         .background(RoundedRectangle(cornerRadius: 16).fill(Color.cardBackground))
         .accessibilityElement(children: .contain)
         .onAppear { Analytics.shared.log(.notificationsBanner, ["action": "shown"]) }
-    }
-
-    // MARK: - Live brief poll loop (V1.1 task C5)
-
-    /// Polls the live-brief-current Edge Function every 60 seconds for the
-    /// user's selected team. On 200 sets `liveBrief`; on 204 clears it.
-    /// Cancelled by SwiftUI when the view disappears or scenePhase
-    /// transitions to .background.
-    private func runLiveBriefPoll() async {
-        guard let teamId = activeEntityId else {
-            liveBrief = nil
-            return
-        }
-
-        // Loop until cancelled. CancellationError exits cleanly.
-        while !Task.isCancelled {
-            do {
-                let brief = try await APIClient.shared.fetchCurrentLiveBrief(teamId: teamId)
-                liveBrief = brief
-                liveBriefAt = Date()
-                liveBriefPaused = false
-            } catch {
-                // Network blip or backend hiccup. A transient error keeps the
-                // last good card; three minutes without one stops its clock
-                // and says so, ten minutes takes it down. During the 24 Oct
-                // outage the card would have shown a frozen 1-0 with the
-                // clock running past 100'.
-                let silent = Date().timeIntervalSince(liveBriefAt)
-                if silent > 600 { liveBrief = nil } else if silent > 180 { liveBriefPaused = true }
-                #if DEBUG
-                print("⚠️ live brief poll error: \(error)")
-                #endif
-            }
-            // 60s between polls near a match, ten minutes otherwise: a T2+
-            // feed on screen polled once a minute all week for a 204 (bug
-            // hunt 2026-10-27). Near = from 15 min before the next kickoff on
-            // the cached club page to four hours after; no page or no
-            // fixture means near, so a match is never missed. Task.sleep is
-            // cancellation-aware: a view that disappears exits the loop.
-            let kickoff = TeamPageCache.load(teamId: teamId)?.content.cards.nextFixture
-                .flatMap { MatchContext.parseISO($0.date) }
-            let near = liveBrief != nil || kickoff.map {
-                let mins = $0.timeIntervalSinceNow / 60
-                return mins < 15 && mins > -240
-            } ?? true
-            do {
-                try await Task.sleep(for: .seconds(near ? 60 : 600))
-            } catch {
-                return
-            }
-        }
     }
 
     // MARK: - Context Pill
@@ -456,7 +359,7 @@ struct FeedView: View {
                         LiveMatchCard(
                             brief: brief,
                             showsProse: TierGating.isAvailable(.matchDayLive, tier: appState.selectedTier),
-                            isPaused: liveBriefPaused
+                            isPaused: live.isPaused
                         )
                             .padding(.horizontal, Layout.screenPadding)
                             .padding(.vertical, 8)

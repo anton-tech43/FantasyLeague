@@ -138,10 +138,11 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         Analytics.shared.log(.pushOpened, ["kind": SharedAnalytics.pushKind(contentId), "club": teamId ?? ""])
         routeFeedContext(teamId: teamId,
                          everyoneTalking: userInfo["everyone_talking"] as? Bool == true)
-        // Matchday is built on her first club. A pre-game or full-time push
-        // about her second club would open it on the wrong club, so those
-        // land on that club's feed instead (bug hunt 2026-10-27).
-        let forMatchdayClub = teamId == nil || teamId == AppState.shared.selectedTeam?.rawValue
+        // Matchday follows the switcher, which routeFeedContext has just moved
+        // to the push's club, so a pre-game or full-time push about either
+        // club opens Matchday on that club. One about a club she no longer
+        // follows lands on the feed.
+        let forMatchdayClub = teamId == nil || teamId == AppState.shared.contextTeam?.rawValue
         // The pre-game push opens Matchday › Before, the full-time push
         // (`live-ft-<fixture>`, match-watcher) opens Matchday › After.
         if let contentId, contentId.hasPrefix("myturn-prep"), forMatchdayClub {

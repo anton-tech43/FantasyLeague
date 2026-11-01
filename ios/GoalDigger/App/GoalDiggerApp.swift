@@ -200,7 +200,7 @@ struct MainTabView: View {
     private func openMatchday(_ section: MatchdaySection) {
         appState.pendingOpenPrep = false
         appState.pendingOpenAfter = false
-        guard let team = appState.selectedTeam else { return }
+        guard let team = appState.contextTeam else { return }
         appState.requestedMatchdaySection = section
         selectedTab = .matchday
         // An article left open on Matchday would cover the section asked for.
@@ -236,6 +236,11 @@ struct MainTabView: View {
     @State private var squad = LiveSquadService.shared
     @State private var feedPath = NavigationPath()
     @State private var matchdayPath = NavigationPath()
+    @State private var liveBriefs = LiveBriefPoller.shared
+    /// Bumped on a return from the background, so the live-brief poll and the
+    /// Matchday club page restart for the same club.
+    @State private var foregroundTick = 0
+    @Environment(\.scenePhase) private var scenePhase
 
     /// V2.0: The "His Team" tab follows the active feed context, so the team
     /// page shows whatever the user has currently selected in the switcher.
@@ -416,13 +421,23 @@ struct MainTabView: View {
         .onChange(of: selectedTab) { _, tab in
             Analytics.shared.log(.tabViewed, ["tab": tab.analyticsName])
         }
-        // His club's page, squad and fixture context, refreshed once here for
-        // both Matchday and My Turn (they only read these caches).
-        .task(id: appState.selectedTeam?.rawValue) {
-            let personalise = appState.personalise
-            async let club: Void = live.refresh(team: appState.selectedTeam, personalise: personalise)
-            async let squadRefresh: Void = squad.refresh(team: appState.selectedTeam, personalise: personalise)
+        // The club's page, squad and fixture context, refreshed here for
+        // both Matchday and My Turn (they only read these caches). The club
+        // is the one the switcher is on. A return to the app fetches the page
+        // past the cache: Matchday used to keep the morning's page all day.
+        .task(id: "\(appState.contextTeam?.rawValue ?? "")#\(foregroundTick)") {
+            let personalise = appState.personalise, team = appState.contextTeam
+            async let club: Void = live.refresh(team: team, personalise: personalise, force: foregroundTick > 0)
+            async let squadRefresh: Void = squad.refresh(team: team, personalise: personalise)
             _ = await (club, squadRefresh)
+        }
+        // The live score for the feed's club, polled once for Feed and
+        // Matchday. Every tier: a goal push lands on the score.
+        .task(id: "\(appState.feedEntityId ?? "")#\(foregroundTick)") {
+            await liveBriefs.poll(entityId: appState.feedEntityId)
+        }
+        .onChange(of: scenePhase) { old, new in
+            if old == .background && new == .active { foregroundTick += 1 }
         }
         .onChange(of: appState.requestedTab) { _, tab in
             if let tab {
