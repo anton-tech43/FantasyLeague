@@ -33,11 +33,12 @@ struct SkeletonLine: View {
     var height: CGFloat = 14
 
     var body: some View {
-        RoundedRectangle(cornerRadius: height / 2)
-            .fill(Color.deepMauve)
+        Capsule()
+            .fill(Color.shimmer)
+            .shimmering()
+            .clipShape(Capsule())
             .frame(maxWidth: width ?? .infinity)
             .frame(height: height)
-            .shimmering()
     }
 }
 

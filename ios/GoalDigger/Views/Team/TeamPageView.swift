@@ -1593,7 +1593,7 @@ struct TeamPageView: View {
             }
         }
         .padding(.horizontal, 16)
-        .frame(maxHeight: .infinity, alignment: .top)
+        .frame(minHeight: 0, maxHeight: .infinity, alignment: .top)
         .clipped()
         .loadingSkeleton()
     }
