@@ -578,9 +578,15 @@ struct SettingsView: View {
     private func deleteData() async {
         isDeleting = true
         defer { isDeleting = false }
-        // Sent before anything is wiped: the server deletes this install's
-        // events and keeps only the exit, without an id (TRACKING_PLAN).
-        await Analytics.shared.forgetInstall(["clubs": appState.selectedTeams.count])
+        // Usage events first: the server deletes this install's events and
+        // keeps one anonymous line (TRACKING_PLAN). A failure stops here with
+        // nothing wiped, so she can try again.
+        do {
+            try await Analytics.shared.forgetInstall()
+        } catch {
+            showDeleteError = true
+            return
+        }
 
         // Privacy-impact: a silent failure here would tell the user their data
         // is gone when it isn't. Surface server errors as an alert so the user

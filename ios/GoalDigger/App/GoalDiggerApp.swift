@@ -56,7 +56,9 @@ struct GoalDiggerApp: App {
                         // persisted toggles) against a force-quit that would
                         // otherwise drop unflushed writes. See AppState.persistNow.
                         appState.persistNow()
-                        Analytics.shared.flush()
+                        // Background: with time asked of iOS, so the send
+                        // finishes before suspension (an onboarding drop-off).
+                        if newPhase == .background { Analytics.shared.flushBeforeSuspend() } else { Analytics.shared.flush() }
                     }
                     if newPhase == .active {
                         // Whether it came from a push is read off push_opened

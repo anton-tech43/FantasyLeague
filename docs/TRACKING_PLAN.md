@@ -365,9 +365,9 @@ signal in it: a person changing a setting has formed an opinion and acted on it.
 | `notification_permission_changed` | `from`, `to` (granted, denied) | `NotificationService.checkNotificationStatus`, against the last status seen | Separates "never asked properly" from "asked and refused". A refusal weeks later, after a bad push run, is a different fact from one at onboarding. |
 | `notifications_banner` | `action` (shown, turn_on, not_now) | the Feed banner | The banner is the recovery path for the biggest single failure mode we have seen — a user with notifications off who assumes the app is broken. |
 | `settings_row_opened` | `row` (clubs, countries, tier) | `SettingsView` picker sheets opening | The *exposed* denominator for everything in Settings. Distinguishes a setting nobody wants from one nobody can find. |
-| `data_deleted` | `clubs` (+ the common `tier`, `days_since_install`) | `Analytics.forgetInstall`, from `SettingsView.deleteData()` **before** the wipe | The clearest exit in the app, and today it leaves nothing behind at all: the row vanishes and so does the reason. |
+| `data_deleted` | `days_since_install` only, as the privacy paragraph promises (no club, tier, relationship or version since migration 148; none written for TestFlight or Xcode builds) | the server, in `delete_app_events`, called by `Analytics.forgetInstall` from `SettingsView.deleteData()` **before** the wipe; the install id rotates only after it succeeded | The clearest exit in the app, and today it leaves nothing behind at all: the row vanishes and so does the reason. |
 
-`data_deleted` must be sent and flushed **before** the local wipe, and it
+`data_deleted` must be written **before** the local wipe, and it
 survives on the server by design — the `install_id` is deleted with everything
 else, so the event is anonymous by the time anyone reads it. That is the one
 place where "delete everything" and "learn from the exit" have to be reconciled

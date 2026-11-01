@@ -342,6 +342,20 @@ class APIClient {
         try validateResponse(response)
     }
 
+    /// Delete My Data for usage events (`delete_app_events`, migration 148).
+    /// Throws on anything but a 2xx, so the caller keeps the install id and
+    /// can retry.
+    func deleteAppEvents(installId: UUID, daysSinceInstall: Int, channel: String) async throws {
+        let url = try requireBaseURL().appendingPathComponent("rpc/delete_app_events")
+        let body = try JSONSerialization.data(withJSONObject: [
+            "p_install_id": installId.uuidString,
+            "p_days_since_install": daysSinceInstall,
+            "p_channel": channel,
+        ] as [String: Any])
+        let (_, response) = try await URLSession.shared.data(for: makeRequest(url: url, method: "POST", body: body))
+        try validateResponse(response)
+    }
+
     // updateTokenTeam / updateTokenCountry were retired in V2.2: the partial
     // PATCH couldn't express the multi-follow arrays or NULL a removed scalar.
     // updateTokenTier followed them in 2.3 (SEC-2): it was the last direct

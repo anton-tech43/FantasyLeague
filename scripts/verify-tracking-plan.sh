@@ -47,6 +47,8 @@ missing=""
 # link Analytics and names its one event as a string.
 NSE="$ROOT/ios/GoalDigger/NotificationService"
 while read -r e raw; do
+  # Written by delete_app_events (migration 148), not by log().
+  [ "$raw" = data_deleted ] && continue
   grep -rqE "log\(\.$e[,)]" "$ROOT/ios/GoalDigger" --include=*.swift \
     || grep -rqF "\"$raw\"" "$NSE" --include=*.swift \
     || missing="$missing $e"
