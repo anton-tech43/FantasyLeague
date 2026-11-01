@@ -829,18 +829,33 @@ struct RecentResult: Codable, Identifiable {
     let venue: String        // "home" | "away"
     let teamScore: Int
     let oppScore: Int
+    /// W / D / L as the server decided it: a shootout makes a 1-1 a W or an L.
+    /// Nil on pages written before 2026-11-01.
+    var result: String? = nil
+    /// The shootout, when there was one.
+    var penTeam: Int? = nil
+    var penOpp: Int? = nil
 
     enum CodingKeys: String, CodingKey {
-        case date, opponent, venue
+        case date, opponent, venue, result
         case teamScore = "team_score"
         case oppScore = "opp_score"
+        case penTeam = "pen_team"
+        case penOpp = "pen_opp"
     }
 
     /// W / D / L from this team's perspective.
     var outcome: String {
+        if let result, ["W", "D", "L"].contains(result) { return result }
         if teamScore > oppScore { return "W" }
         if teamScore < oppScore { return "L" }
         return "D"
+    }
+
+    /// "4-3 on pens" when a shootout settled it.
+    var penaltiesText: String? {
+        guard let penTeam, let penOpp else { return nil }
+        return "\(penTeam)-\(penOpp) on pens"
     }
 }
 

@@ -194,13 +194,15 @@ enum LiveClubPack {
         // the outcome.
         let recent = cards.recentResults ?? []
         if let last = recent.first {
-            var wrong = [resultLine(last, flip: .loss), resultLine(last, flip: .draw), resultLine(last, flip: .win)]
+            // After a shootout "Drew 1-1" is half true, so it is no wrong answer.
+            var wrong = [resultLine(last, flip: .loss), resultLine(last, flip: .win)]
+            if last.penaltiesText == nil { wrong.append(resultLine(last, flip: .draw)) }
             for r in recent.dropFirst() { wrong += [resultLine(r), resultLine(r, flip: .loss)] }
             qs += question(
                 id: "live-last-result", difficulty: 2,
                 question: "Who did \(club) play last, and how did it go?",
                 answer: resultLine(last), distractors: wrong,
-                explanation: "\(club) played \(clubShort(last.opponent)) \(last.venue == "home" ? "at home" : "away") and it finished \(last.teamScore)-\(last.oppScore). That is the game he is still talking about.",
+                explanation: "\(club) played \(clubShort(last.opponent)) \(last.venue == "home" ? "at home" : "away") and it finished \(last.teamScore)-\(last.oppScore)\(last.penaltiesText.map { ", then \($0)" } ?? ""). That is the game he is still talking about.",
                 why: "The last result decides what kind of week he has had.",
                 useType: .ask,
                 use: quote(last.outcome == "W" ? "Still buzzing about the \(clubShort(last.opponent)) game?"
@@ -699,7 +701,11 @@ enum LiveClubPack {
                 && $0.options[$0.answer] == "Won 2, drew 1, lost 0 of the last three"
                 && $0.options.count == 2 && $0.explanation.hasPrefix("They beat Wolves 2-0")
         } ?? false
-        return meetingOK && formOK && leadingPlace("14th, 47 points") == 14 && leadingPlace("Champions, 85 points") == nil
+        let shootout = RecentResult(date: "2026-10-28", opponent: "Fleetwood Town", venue: "home",
+                                    teamScore: 1, oppScore: 1, result: "L", penTeam: 3, penOpp: 5)
+        let shootoutOK = shootout.outcome == "L" && shootout.penaltiesText == "3-5 on pens"
+            && resultLine(shootout).hasPrefix("Lost to ") && resultLine(shootout).hasSuffix(" on pens (home)")
+        return meetingOK && formOK && shootoutOK && leadingPlace("14th, 47 points") == 14 && leadingPlace("Champions, 85 points") == nil
             && leadingPlace("Promoted through the play-offs, 6th") == nil
             && pack.questions.allSatisfy { $0.id.hasPrefix("opp-") && $0.options.count == 2 }
             && !text.contains("[his") && !text.contains("Come on you")
@@ -786,6 +792,10 @@ enum LiveClubPack {
         let opp = clubShort(r.opponent)
         let where_ = r.venue.lowercased() == "away" ? "away" : "home"
         let hi = max(r.teamScore, r.oppScore), lo = min(r.teamScore, r.oppScore)
+        if flip == nil, r.penaltiesText != nil {
+            // Short: an option over 40 characters drops the whole question.
+            return "\(r.outcome == "W" ? "Beat" : "Lost to") \(opp) on pens (\(where_))"
+        }
         switch flip ?? (r.outcome == "W" ? .win : r.outcome == "L" ? .loss : .draw) {
         // A 1-1 cannot be flipped to "Beat them 1-1", so a level score gains
         // a goal for the win and loss variants.

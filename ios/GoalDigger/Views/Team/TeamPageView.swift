@@ -731,7 +731,7 @@ struct TeamPageView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(r.opponent)
                     .font(.feedHeadline).foregroundColor(.warmWhite)
-                Text("\(parsed.map { Self.dayMonth($0) } ?? r.date) · \(r.venue.capitalized) · FT")
+                Text("\(parsed.map { Self.dayMonth($0) } ?? r.date) · \(r.venue.capitalized) · \(r.penaltiesText ?? "FT")")
                     .font(.feedTimestamp).foregroundColor(.warmWhite.opacity(0.6))
             }
             Spacer(minLength: 0)
