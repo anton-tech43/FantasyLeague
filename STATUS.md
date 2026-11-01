@@ -61,7 +61,7 @@ App Group by itself.
 
 ## Paused, and why
 
-- **Day-before push** (migration 125, "{opponent} tomorrow"): paused by migration 126 until 2.3 is live, because only 2.3 opens Pre-game from it. `130_unpause_prep_reminder.sql.PENDING_APP_RELEASE` turns it back on; apply it when Apple releases 2.3.
+- **Lineup line in the T−30 push** (LOCK-02-14): built behind the `LINEUP_PUSH_ENABLED` secret, off. Anton turns it on after reading the `starting_xi_fire` rows; none were captured on 31 Oct / 1 Nov, and a T−31 row now says why.
 - `content-generator` and `content-reviewer` Edge Functions: dormant by design. All live content comes from routines.
 - `gd-news-wc` is off and `gd-champions-league` is retired (Europe is `gd-europe`).
 

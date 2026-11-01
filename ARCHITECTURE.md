@@ -146,16 +146,17 @@ There is **no** content → review → send chain in production for pushes. The 
   `apns_send` row to `pipeline_health`.
 - **`notification-sender`** (`notification-sweep`, hourly at :15, plus an on-demand path
   from `post_*.sh`): the single APNs gate for `content_items`. Requires
-  `push_eligible=true`; claims the item before sending; per-team 5-minute throttle; tier
-  filter; matches tokens across scalar and array follows; pages past 1,000 rows.
-- **`morning-push`** (`gd-morning-push`, 08:00 UTC): "game day" for followed clubs with a
-  fixture today.
-- **`matchday-reminder`** (`goaldigger-matchday-reminder`, 07:00 UTC): the pre-match
-  reminder for every active club, kickoff rendered in the device's timezone
-  (`device_tokens.timezone`, migration 082). Its `?mode=prep` path is the **day-before
-  push** that opens Pre-game, Matchday › Before since 2.4 (`goaldigger-prep-reminder`, 08:00 and 09:00 UTC,
-  migration 125). That job is paused until the app version that opens Pre-game is live
-  (migration 126).
+  `push_eligible=true`; claims the item before sending; one push per club per three
+  hours; quiet 21:00 UTC to 07:00 London; tier filter (Light only significance-2 news,
+  tournaments and the Monday brief Match-fit up); skips consequence cards and the
+  League Cup feed; matches tokens across scalar and array follows; pages past 1,000
+  rows. PUSH_RULES.md §1 is the contract.
+- **`matchday-reminder`** (`goaldigger-matchday-reminder`, hourly 07:00–19:00 UTC,
+  migration 152): the one pre-match push, for every active club and every cup round,
+  kickoff rendered in the device's timezone (`device_tokens.timezone`, migration 082).
+  The first run sends; later runs retry today's fixtures with no
+  `matchday_reminders_sent` row until an hour before kickoff. `morning-push` and the
+  day-before push were removed 2026-11-01.
 - **Dead tokens:** every sender uses `isTokenDead` (`_shared/supabase-client.ts`): only
   410, `Unregistered`, `BadDeviceToken` and `DeviceTokenNotForTopic` deactivate a token;
   other 400s are payload problems and leave tokens alone. Deactivation is batched.

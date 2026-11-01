@@ -159,7 +159,7 @@ which today disappears from a Light user's feed for no reason anyone can defend.
 
 | Surface | Light | Match-fit | Deep | Exists today? |
 |---|---|---|---|---|
-| Match-day heads-up (morning) | P | P | P | yes (`morning-push`, `matchday-reminder`) |
+| Match-day heads-up (morning) | P | P | P | yes (`matchday-reminder`) |
 | Kickoff | — | P | P | yes (`match-watcher`, ungated) |
 | Goal / red / penalty | A | A | P | yes (`match-watcher`, ungated) |
 | Half-time brief | A | P | P | yes (`live_match_briefs`, 261 rows) |
