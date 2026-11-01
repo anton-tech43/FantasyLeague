@@ -110,3 +110,19 @@ CATEGORIES = {
     "rough": ROUGH,
     "streak": STREAK,
 }
+
+# Lines that only make sense after a quiz round: they talk about gossip, names
+# or questions, and read as pasted after a round of rules words (MY-10-04). The
+# app leaves them out of Lingo and Say This results.
+#
+# A list beside `categories`, not a flag on each line: 2.2 and 2.3 decode
+# categories as [String: [String]], so turning a line into an object would fail
+# the whole module there, while a key they do not know is ignored.
+QUIZ_ONLY = [
+    "No misses. Ask him the same questions and watch.",
+    "Not a single miss. You know his team better than his mates do.",
+    "Nearly the lot. The ones you missed are the good gossip anyway.",
+    "Half a pub quiz team already.",
+    "Brutal round. They get easier once the names stick.",
+    "Not your round. The names are the hard part.",
+]

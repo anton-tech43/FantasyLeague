@@ -391,6 +391,7 @@ def validate_quiz(d: dict) -> tuple[int, int]:
 # vocabulary below is what turns hype into a points system, and it is banned.
 HYPE_CATEGORIES = ("perfect", "strong", "mid", "rough", "streak")
 HYPE_MIN_PER_CATEGORY = 12
+HYPE_MIN_FOR_LINGO = 8
 HYPE_CAP = 90
 GAMIFICATION = re.compile(
     r"\b(level up|levelled up|leveled up|awesome|amazing|streak|streaks|xp|badge|badges"
@@ -442,6 +443,20 @@ def validate_hype(d: dict) -> int:
                         f"(the app prints the score above the line): {line}")
             check_idiom(f"hype/{cat}", line)
         total += len(lines)
+    # `quizOnly` (optional): lines only a quiz round may show (MY-10-04). Each
+    # must be a real line, and every band must keep enough for a Lingo round.
+    quiz_only = d.get("quizOnly", [])
+    if not isinstance(quiz_only, list):
+        err("hype: quizOnly must be a list of lines")
+        quiz_only = []
+    every = {l for c in HYPE_CATEGORIES for l in (cats.get(c) or []) if isinstance(l, str)}
+    for line in quiz_only:
+        if line not in every:
+            err(f"hype: quizOnly line is in no category, so it filters nothing: {line}")
+    for cat in HYPE_CATEGORIES:
+        left = [l for l in cats.get(cat) or [] if l not in quiz_only]
+        if len(left) < HYPE_MIN_FOR_LINGO:
+            err(f"hype/{cat}: {len(left)} lines left outside quizOnly (need {HYPE_MIN_FOR_LINGO} for Lingo and Say This)")
     return total
 
 

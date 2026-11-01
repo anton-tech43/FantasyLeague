@@ -1,5 +1,5 @@
 {
-  "contentVersion": "2026-09-23.1",
+  "contentVersion": "2026-11-01.1",
   "categories": {
     "perfect": [
       "Not one wrong. Sit next to him tonight.",
@@ -71,5 +71,13 @@
       "Four right. Someone's been paying attention.",
       "Rolling. Next one's yours as well."
     ]
-  }
+  },
+  "quizOnly": [
+    "No misses. Ask him the same questions and watch.",
+    "Not a single miss. You know his team better than his mates do.",
+    "Nearly the lot. The ones you missed are the good gossip anyway.",
+    "Half a pub quiz team already.",
+    "Brutal round. They get easier once the names stick.",
+    "Not your round. The names are the hard part."
+  ]
 }
