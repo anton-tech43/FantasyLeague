@@ -1,166 +1,55 @@
 // _shared/goal-push-copy.ts
 //
 // Copy for the live pushes (goal / kickoff-soon / half-time / full-time). The
-// goal pools hold 40 variants per perspective; half-time and full-time are
+// goal pools are keyed by score state; half-time and full-time are
 // keyed by situation (see HT_COPY / FT_COPY at the end). goal-push.ts picks
 // at fire-time, seeded per fixture. Kept apart
 // from goal-push.ts so the logic file stays readable and the copy is easy to
 // edit in bulk.
 //
 // Placeholders, filled by goal-push.ts:
-//   {flag}  scorer's flag emoji        (goal pools only)
-//   {team}  scorer's short name        (goal pools); follower's own team (HT/FT)
-//   {score} scoreline. GOAL pools: home-away (matches the title). HT/FT pools:
-//           follower-first ("their team first"), e.g. a 0-2 trailer sees "0-2".
-//   {home} {away}  short names         (GOAL_BOTH only)
+//   {team}  the follower's own team    {opp}  the other side
+//   {score} follower-first ("their team first"), in every pool: an Arsenal
+//           follower at Anfield sees "Arsenal 1-0", never "0-1 to Liverpool".
 //
-// GOAL pools (rewritten 2026-09-09): the scorer and minute now LEAD the body
-// ("Ødegaard 71'. ..."), so a line is a reaction, not a report, and stays
-// under 60 chars so the whole body fits 90 with the longest lead. Five of the
-// old forty said "he's buzzing" and thirty said "text him"; a phone that gets
-// three goals in a night heard the same sentence three times. Each phrase
-// appears once now, and the pick is seeded per fixture and score.
+// GOAL pools (rewritten 2026-11-01, app council LOCK-02-01): one short fact,
+// keyed by where the goal leaves her team (ahead, level, behind), with the
+// scorer and minute leading ("Ødegaard 71'. Arsenal lead 1-0."). The old
+// forty-line pools were reactions about him; a goal push is read in one
+// glance and the fact is what she wants. No "he/his/him" anywhere.
 //
 // House rules baked into every line:
 //   - NO em-dashes or en-dashes (campaign rule). Hyphens in "half-time" /
 //     "full-time" and in scorelines are fine.
-//   - Rendered worst-case (longest names + tag-flag + two-digit score) stays
-//     <=90 chars. Enforced by the sweep in goal-push.test.ts.
-//   - Voice (goal pools): gf-to-bf older-sister, dry and warm. Scorer
-//     celebrates, conceder is muted and kind.
+//   - Rendered worst-case (longest names + two-digit score) leaves room for
+//     the scorer lead within 90 chars. Enforced in goal-push.test.ts.
 
 // ============================================================
-// GOAL pools. {flag}/{team} = the SCORER. {score} = home-away.
+// GOAL pools. Keyed by the follower's state after the goal.
 // ============================================================
 
-export const GOAL_SCORED: readonly string[] = [
-  "{team} score, {score}. He is off the sofa.",
-  "{score} to {team}. Whatever you were saying can wait.",
-  "Get in. {team} lead {score} and he knows it.",
-  "{team} score! {score}. Expect a text before you send one.",
-  "That's {score}. He will replay this one all week.",
-  "{team} make it {score}. The room just got louder.",
-  "Goal, {team}. {score}. Say the scorer's name back to him.",
-  "{score}. He has the grin. Ask him who scored.",
-  "{team} strike, {score}. Good time to appear with a drink.",
-  "{team} are winning {score}. Tell him you saw it.",
-  "{score} to {team}. He called it, apparently.",
-  "Goal for {team}, {score}. He is hugging a stranger.",
-  "{team} score. {score}. Ask him if that was a good one.",
-  "{score}. Somewhere he is clapping at a television.",
-  "{team} lead {score}. He will talk about the pass.",
-  "{team} go {score}. Send the goal emoji, nothing else.",
-  "{team} score, {score}. Not the time to ask about dinner.",
-  "{score} to {team}. He is texting his mates. Beat them.",
-  "Goal, {team}! {score}. Tell him you were watching.",
-  "{team} make it {score}. His night just turned.",
-  "{score}. He has stood up and he is not sitting down.",
-  "{team} strike, {score}. Ask him to explain it later.",
-  "{team} score. {score}. A heart is enough.",
-  "That's {team}, {score}. Whatever he said, he was right.",
-  "{score}. He is going to say 'told you'. He did not.",
-  "{team} score, {score}. Big smile, small ask: who was it?",
-  "Goal. {team} {score}. He heard the roar first.",
-  "{team} ahead, {score}. Ask him if that was the plan.",
-  "{score} to {team}. He is doing the little run.",
-  "{team} score! {score}. Two words: nice one.",
-  "{team} make it {score}. He wanted this one badly.",
-  "{score}. He is on his feet, and so is half the street.",
-  "Goal for {team}. {score}. Tell him you got there first.",
-  "{team} score, {score}. Ask him to send you the clip.",
-  "{team} lead {score}. He will need a minute of pure joy.",
-  "{score} to {team}. He is a man at peace, briefly.",
-  "{team} score. {score}. Say one thing tonight: this.",
-  "Goal, {team}. {score}. That is the sound you just heard.",
-  "{team} go {score}. He is buzzing. Yes, that is the word.",
-  "{score}. Somebody give that man a hug, ideally you.",
-];
+export type GoalState = "ahead" | "level" | "behind";
 
-export const GOAL_CONCEDED: readonly string[] = [
-  "{team} score. {score}. Give him a minute.",
-  "{score} to {team}. Not the time for a question.",
-  "{team} make it {score}. He has gone quiet. Let him.",
-  "Goal, {team}. {score}. Tea, not talk.",
-  "{score}. He is blaming somebody. Let him finish.",
-  "{team} strike, {score}. A hand on the shoulder, no words.",
-  "{team} score. {score}. He will say 'typical'. Agree.",
-  "{score} to {team}. Put the kettle on and say nothing.",
-  "{team} lead {score}. Not the moment for the dishes chat.",
-  "Goal for {team}. {score}. Give him five minutes.",
-  "{team} score, {score}. Sit down next to him. That is all.",
-  "{score}. He is staring at the television. It is not personal.",
-  "{team} make it {score}. Save the jokes for tomorrow.",
-  "{team} strike. {score}. He is replaying it. Let him.",
-  "{score} to {team}. A nod is the right amount of talking.",
-  "Goal, {team}. {score}. He is not annoyed with you.",
-  "{team} score. {score}. Ask nothing until the restart.",
-  "{team} ahead, {score}. He wants it back. Wait.",
-  "{score}. He is quiet for now. It passes.",
-  "{team} score, {score}. This is the deep breath part.",
-  "Goal for {team}, {score}. Be around, not on.",
-  "{team} make it {score}. He has views on the referee.",
-  "{score} to {team}. Not the moment. In ten minutes, maybe.",
-  "{team} strike, {score}. The muttering is not at you.",
-  "{team} score. {score}. A biscuit fixes a lot.",
-  "{score}. He knew this was coming, he will say. He did not.",
-  "Goal, {team}. {score}. Sit tight. Plenty of time left.",
-  "{team} lead {score}. Do not mention the last one.",
-  "{team} score, {score}. He is calm on the outside only.",
-  "{score} to {team}. The remote is safe. Probably.",
-  "{team} make it {score}. Now is the time for quiet company.",
-  "Goal for {team}. {score}. He wants a goal, not advice.",
-  "{team} score. {score}. Let the sigh happen.",
-  "{score}. His face says it all. Yours should say nothing.",
-  "{team} strike. {score}. Skip the 'it's only a game'.",
-  "{team} ahead, {score}. He needs a comeback, not a chat.",
-  "Goal, {team}. {score}. Just be there.",
-  "{score} to {team}. He will say it is fine. Not yet.",
-  "{team} score, {score}. Speak after the next attack.",
-  "{team} make it {score}. Small kindness, big effect.",
-];
+/// Her team scored.
+export const GOAL_SCORED: Record<GoalState, readonly string[]> = {
+  ahead: ["{team} lead {score}.", "Goal for {team}. {score} up."],
+  level: ["{team} equalise. {score}.", "{team} level it at {score}."],
+  behind: ["{team} pull one back. {score}.", "Goal for {team}. Still {score} down."],
+};
 
-export const GOAL_BOTH: readonly string[] = [
-  "It's {score} between {home} and {away}. Goals flying in!",
-  "End to end stuff, {home} and {away} at {score}. Chaos!",
-  "{score}! {home} and {away} are trading goals. What a game.",
-  "Both teams scoring, {score}. {home} vs {away} is wide open.",
-  "Goals galore! {home} {score} {away}. This one's a thriller.",
-  "{score} and counting. {home} and {away} can't stop scoring.",
-  "What a match, {home} {score} {away}. Goals at both ends.",
-  "It's {score}! {home} and {away} are putting on a show.",
-  "Mad game. {home} {score} {away}. Neither side wants to defend.",
-  "Goals flying in, {score}. {home} and {away} are going for it.",
-  "{score}! End to end between {home} and {away}. Edge of your seat.",
-  "Both nets bulging, {home} {score} {away}. Proper entertainment.",
-  "It's basketball out there, {score}. {home} and {away} trading blows.",
-  "{home} {score} {away} and the goals keep coming. What a watch.",
-  "Wild one, {score}! {home} and {away} both finding the net.",
-  "Goals everywhere, {home} {score} {away}. This game has it all.",
-  "{score} already! {home} and {away} are not holding back.",
-  "Trading goals, {home} {score} {away}. Hope his heart can take it.",
-  "It's {score}! Defences optional in {home} vs {away}.",
-  "Helter skelter, {home} {score} {away}. Goals at a rate of knots.",
-  "{score} and rising. {home} and {away} are putting on a clinic.",
-  "Both teams at it, {score}. {home} vs {away} is pure chaos.",
-  "Goal fest! {home} {score} {away}. He'll be loving this one.",
-  "It's {score}! {home} and {away} keep answering each other.",
-  "What a spectacle, {home} {score} {away}. Goals galore.",
-  "{score}! Neither {home} nor {away} can stop scoring tonight.",
-  "End to end again, {home} {score} {away}. Breathless stuff.",
-  "Goals raining down, {score}. {home} and {away} both on it.",
-  "It's a shootout, {home} {score} {away}. Edge of the sofa time.",
-  "{score} and open as you like. {home} vs {away} is bonkers.",
-  "Both finding the net, {home} {score} {away}. Some game this.",
-  "Goals, goals, goals. {home} {score} {away}. He's glued to it.",
-  "It's {score}! {home} and {away} have thrown the script away.",
-  "Frantic stuff, {home} {score} {away}. Goals flowing both ways.",
-  "{score}! Toe to toe, {home} and {away}. What a contest.",
-  "Both teams firing, {home} {score} {away}. Tell him not to blink.",
-  "It's wild, {score}. {home} and {away} trading punches.",
-  "Goals everywhere you look, {home} {score} {away}. Brilliant.",
-  "{score} and end to end. {home} vs {away} is a proper watch.",
-  "Madness, {home} {score} {away}. Both nets getting plenty of action.",
-];
+/// The other side scored.
+export const GOAL_CONCEDED: Record<GoalState, readonly string[]> = {
+  ahead: ["{opp} pull one back. {team} still lead {score}.", "{opp} score. {team} lead {score}."],
+  level: ["{opp} equalise. {score}.", "{opp} level it at {score}."],
+  behind: ["{opp} score. {team} trail {score}.", "Goal for {opp}. {team} are {score} down."],
+};
+
+/// Both sides scored between two polls.
+export const GOAL_BOTH: Record<GoalState, readonly string[]> = {
+  ahead: ["Goals at both ends. {team} lead {score}."],
+  level: ["Goals at both ends. {score}."],
+  behind: ["Goals at both ends. {team} trail {score}."],
+};
 
 // ============================================================
 // 30-MINUTES-TO-KICKOFF pool. {team} = follower's team, {opp} = opponent.
@@ -205,6 +94,9 @@ export const KICKOFF_SOON: readonly string[] = [
 //     against some sides. Prefer what OUR team should do.
 //   - No "point" or "points": these pools also serve cup ties.
 //   - Match the size of the score: a 1-1 is not "nobody can defend".
+//   - An opinion about the game, never comfort or an instruction to him
+//     ("Forget it. Next week.", "Enjoy every second"): dropped 2026-11-01
+//     (LOCK-02-05).
 //
 // Body placeholders: {score} follower-first, {team} her team, {when} "in the
 // 88th minute" / "in stoppage time", {how} "" / " after extra time" /
@@ -213,7 +105,7 @@ export const KICKOFF_SOON: readonly string[] = [
 export type HtSituation = "ahead_big" | "ahead_one" | "nil_nil" | "level_goals" | "behind_one" | "behind_big";
 
 export type FtSituation =
-  | "win_big" | "win_narrow" | "win_late" | "win_comeback"
+  | "win_big" | "win_plain" | "win_narrow" | "win_late" | "win_comeback"
   | "draw_nil" | "draw_goals" | "draw_late_for" | "draw_late_against"
   | "loss_narrow" | "loss_big" | "loss_late"
   | "cup_through" | "cup_out" | "cup_won";
@@ -308,14 +200,22 @@ export const FT_COPY: Record<FtSituation, SituationCopy> = {
   win_big: {
     body: ["Won {score}, and comfortably.", "{team} win {score}. A proper result."],
     say: [
-      "Told you. Never in doubt.",
-      "Easy in the end.",
       "Could get used to that.",
       "That's more like it.",
-      "Sit back and enjoy that one.",
       "Everyone was up for that today.",
       "Proper performance, that.",
       "That's a statement, that.",
+    ],
+  },
+  // A win by two or more when we cannot say when it was decided (the goal
+  // list is incomplete, or it went to extra time): no "comfortably".
+  win_plain: {
+    body: ["Won {score}.", "{team} win {score}."],
+    say: [
+      "Good win, that.",
+      "Job done.",
+      "Happy with that.",
+      "That's more like it.",
     ],
   },
   win_narrow: {
@@ -365,7 +265,6 @@ export const FT_COPY: Record<FtSituation, SituationCopy> = {
       "Needed to be braver going forward.",
       "Solid at the back, nothing up front.",
       "At least we didn't concede.",
-      "One of those. Move on.",
       "Needed a bit of magic from someone.",
       "Needed more shots, honestly.",
     ],
@@ -412,27 +311,19 @@ export const FT_COPY: Record<FtSituation, SituationCopy> = {
   loss_narrow: {
     body: ["Lost {score}.", "Beaten {score}. One goal in it."],
     say: [
-      "Not our day. Next one.",
-      "Close, but no. On to the next.",
       "One goal in it. Annoying.",
       "Need to be more clinical.",
-      "Fine margins. Next one.",
       "Didn't do enough to win, sadly.",
       "Frustrating. Need a goal from somewhere.",
-      "Shake it off. Next game.",
     ],
   },
   loss_big: {
     body: ["Lost {score}.", "Beaten {score}. A tough one."],
     say: [
-      "Let's not talk about that one.",
-      "Gutted. Forget that one.",
-      "Forget it. Next week.",
-      "One of those days. Move on.",
       "Nothing went right today.",
       "Need a proper reaction next game.",
-      "Delete that one from memory.",
-      "Bad day. It happens to everyone.",
+      "Never got going today.",
+      "Too easy for them today.",
     ],
   },
   loss_late: {
@@ -465,26 +356,18 @@ export const FT_COPY: Record<FtSituation, SituationCopy> = {
     body: ["Lost {score}{how}.", "Beaten {score}{how}."],
     say: [
       "Out of the cup. All about the league now.",
-      "Never mind. One less thing to worry about.",
       "Gutted. Liked having a cup run.",
-      "Focus on the league now.",
-      "Out. At least it frees up the schedule.",
-      "Shame. Next year.",
-      "Cup's gone. League's what matters.",
       "Bit gutted. We'll go again next season.",
+      "Wanted a proper cup run this year.",
     ],
   },
   cup_won: {
     body: ["Won the final {score}{how}.", "{team} win the final {score}{how}."],
     say: [
-      "Cup winners! Enjoy every second of this.",
-      "Trophy! Get the champagne out.",
       "What a day. Cup winners!",
       "They'll remember this one forever.",
-      "Silverware! I'm so happy for you.",
       "Winners! Nobody can take that away.",
       "A trophy. Doesn't get better than this.",
-      "Get the open-top bus ready.",
     ],
   },
 };

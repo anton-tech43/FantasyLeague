@@ -19,6 +19,7 @@ import {
   GOAL_BOTH,
   GOAL_CONCEDED,
   GOAL_SCORED,
+  type GoalState,
   HT_COPY,
   type HtSituation,
   KICKOFF_SOON,
@@ -299,7 +300,11 @@ function appendClause(body: string, clause: string | null | undefined): string {
 }
 
 export interface GoalPushCopy {
+  /// Home-away, for logs and any sender that has no side.
   title: string;
+  /// Per follower side: her club and its score first (LOCK-02-01). Senders
+  /// prefer this over `title`.
+  titles?: Record<string, string>;
   /// Push body per follower country (keyed by country slug).
   bodies: Record<string, string>;
 }
@@ -334,16 +339,32 @@ function appendScorerLine(body: string, scorerLine: string | null | undefined): 
   return `${line} ${body}`;
 }
 
-/// Goal push for the two PLAYING countries' followers. Title carries the
-/// home-away scoreline; the body flips perspective by routing the scorer pool
-/// to the scoring country's slug and the conceder pool to the other. {flag} and
-/// {team} both refer to the SCORER (so the conceding side's body reads "Mexico
-/// score, he's not loving this"). No em-dashes (campaign rule).
+/// "Arsenal 1-0 Liverpool" for an Arsenal follower at Anfield, and the reverse
+/// for a Liverpool follower: her club and its score first, in the title as in
+/// the body, so a lock screen never reads "1-1 to Liverpool" (LOCK-02-01).
+export function sideTitles(
+  prefix: string,
+  home: GoalPushTeam,
+  away: GoalPushTeam,
+  homeGoals: number,
+  awayGoals: number,
+  pens?: { home: number; away: number } | null,
+): Record<string, string> {
+  const one = (me: GoalPushTeam, them: GoalPushTeam, mine: number, theirs: number, pm?: number, pt?: number) =>
+    `${prefix}${me.name} ${mine}-${theirs} ${them.name}${pens ? ` (${pm}-${pt} on pens)` : ""}`;
+  return {
+    [home.id]: one(home, away, homeGoals, awayGoals, pens?.home, pens?.away),
+    [away.id]: one(away, home, awayGoals, homeGoals, pens?.away, pens?.home),
+  };
+}
+
+/// Goal push for the two PLAYING teams' followers. Each side gets its own
+/// title and one short fact from where the goal leaves it (ahead, level,
+/// behind), score follower-first. No em-dashes (campaign rule).
 ///
-/// `scorerLine` (optional) is a pre-formatted factual line like "⚽ Pedri 47'"
-/// (see formatScorerLine). When present it is appended to BOTH bodies as a
-/// distinct trailing fact; when absent the copy is unchanged (clean fallback
-/// when the events endpoint is empty / lagging).
+/// `scorerLine` (optional) is a pre-formatted factual line like "Pedri 47'."
+/// (see formatScorerLine). When present it LEADS both bodies; when absent the
+/// copy is unchanged (clean fallback when the events endpoint is lagging).
 export function renderGoalPush(args: {
   home: GoalPushTeam;
   away: GoalPushTeam;
@@ -354,25 +375,17 @@ export function renderGoalPush(args: {
   rng?: () => number;
 }): GoalPushCopy {
   const { home, away, homeGoals, awayGoals, side, scorerLine, rng = Math.random } = args;
-  const score = `${homeGoals}-${awayGoals}`;
-  const title = `GOAL: ${home.name} ${score} ${away.name}`;
-
-  if (side === "both") {
-    const body = appendScorerLine(
-      interpolate(pick(GOAL_BOTH, rng), { home: home.name, away: away.name, score }),
-      scorerLine,
-    );
-    return { title, bodies: { [home.id]: body, [away.id]: body } };
-  }
-
-  const scorer = side === "home" ? home : away;
-  const conceder = side === "home" ? away : home;
-  const vars = { flag: scorer.flag, team: scorer.name, score };
+  const body = (me: GoalPushTeam, them: GoalPushTeam, mine: number, theirs: number, scored: boolean) => {
+    const state: GoalState = mine > theirs ? "ahead" : mine === theirs ? "level" : "behind";
+    const pool = side === "both" ? GOAL_BOTH : scored ? GOAL_SCORED : GOAL_CONCEDED;
+    return appendScorerLine(interpolate(pick(pool[state], rng), { team: me.name, opp: them.name, score: `${mine}-${theirs}` }), scorerLine);
+  };
   return {
-    title,
+    title: `GOAL: ${home.name} ${homeGoals}-${awayGoals} ${away.name}`,
+    titles: sideTitles("GOAL: ", home, away, homeGoals, awayGoals),
     bodies: {
-      [scorer.id]: appendScorerLine(interpolate(pick(GOAL_SCORED, rng), vars), scorerLine),
-      [conceder.id]: appendScorerLine(interpolate(pick(GOAL_CONCEDED, rng), vars), scorerLine),
+      [home.id]: body(home, away, homeGoals, awayGoals, side === "home"),
+      [away.id]: body(away, home, awayGoals, homeGoals, side === "away"),
     },
   };
 }
@@ -416,6 +429,7 @@ export function renderHalfTimePush(args: {
   };
   return {
     title: `Half-time: ${home.name} ${homeGoals}-${awayGoals} ${away.name}`,
+    titles: sideTitles("Half-time: ", home, away, homeGoals, awayGoals),
     bodies: { [home.id]: body(home, homeGoals, awayGoals), [away.id]: body(away, awayGoals, homeGoals) },
   };
 }
@@ -432,6 +446,7 @@ export function renderExtraTimePush(args: {
   const body = `${goals}-${goals} after 90, so another 30 minutes. Penalties if it's still level.`;
   return {
     title: `Extra time: ${home.name} ${goals}-${goals} ${away.name}`,
+    titles: sideTitles("Extra time: ", home, away, goals, goals),
     bodies: { [home.id]: body, [away.id]: body },
   };
 }
@@ -507,7 +522,10 @@ export function ftSituation(a: {
   if (mine > theirs) {
     if (when) return { situation: "win_late", when };
     if (!a.extraTime && ctx?.ht && ctx.ht.mine < ctx.ht.theirs) return { situation: "win_comeback" };
-    return { situation: mine - theirs >= 2 ? "win_big" : "win_narrow" };
+    if (mine - theirs < 2) return { situation: "win_narrow" };
+    // "Comfortably" only when the goal list shows it was decided before 85'
+    // (LOCK-02-05: "Easy in the end" after an 88th-minute winner).
+    return { situation: deciding ? "win_big" : "win_plain" };
   }
   if (when) return { situation: "loss_late", when };
   return { situation: theirs - mine >= 2 ? "loss_big" : "loss_narrow" };
@@ -560,7 +578,7 @@ export function renderFullTimePush(args: {
     const line = interpolate(pick(c.body, rng), { score, team: team.name, when: when ?? "", how });
     return withSaying(appendClause(line, competitionBySide?.[team.id]), c.say, rng);
   };
-  return { title, bodies: { [home.id]: body(home, "home"), [away.id]: body(away, "away") } };
+  return { title, titles: sideTitles("Full-time: ", home, away, homeGoals, awayGoals, pens), bodies: { [home.id]: body(home, "home"), [away.id]: body(away, "away") } };
 }
 
 /// What a lock-screen notification shows before it truncates, near enough.

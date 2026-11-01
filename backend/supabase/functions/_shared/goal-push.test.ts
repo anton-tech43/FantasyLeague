@@ -105,26 +105,31 @@ Deno.test("renderGoalPush: PL club with empty flag renders clean copy (no leadin
 // renderGoalPush perspective routing (rng:zero pins pool index 0)
 // ============================================================
 
-Deno.test("renderGoalPush: scorer pool to scorer slug, conceder pool to conceder slug", () => {
+Deno.test("renderGoalPush: each side gets its own title and fact, her club first", () => {
   const copy = renderGoalPush({ home: MEX, away: RSA, homeGoals: 2, awayGoals: 0, side: "home", rng: zero });
-  eq(copy.title, "GOAL: Mexico 2-0 S. Africa", "title carries home-away scoreline");
-  const vars = { flag: MEX.flag, team: MEX.name, score: "2-0" };
-  eq(copy.bodies.mexico, interpolate(GOAL_SCORED[0], vars), "scorer body from GOAL_SCORED");
-  eq(copy.bodies.south_africa, interpolate(GOAL_CONCEDED[0], vars), "conceder body from GOAL_CONCEDED");
+  eq(copy.title, "GOAL: Mexico 2-0 S. Africa", "neutral title stays home-away");
+  eq(copy.titles?.mexico, "GOAL: Mexico 2-0 S. Africa", "scorer's title");
+  eq(copy.titles?.south_africa, "GOAL: S. Africa 0-2 Mexico", "conceder's title, her club first");
+  eq(copy.bodies.mexico, "Mexico lead 2-0.", "scored, ahead");
+  eq(copy.bodies.south_africa, "Mexico score. S. Africa trail 0-2.", "conceded, behind");
 });
 
-Deno.test("renderGoalPush: side away flips which slug gets the scorer pool", () => {
-  const copy = renderGoalPush({ home: MEX, away: RSA, homeGoals: 0, awayGoals: 1, side: "away", rng: zero });
-  const vars = { flag: RSA.flag, team: RSA.name, score: "0-1" };
-  eq(copy.bodies.south_africa, interpolate(GOAL_SCORED[0], vars), "away scorer body");
-  eq(copy.bodies.mexico, interpolate(GOAL_CONCEDED[0], vars), "home conceder body references the scorer");
+Deno.test("renderGoalPush: an away equaliser reads level for both, never '1-1 to' anyone", () => {
+  const copy = renderGoalPush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 1, side: "away", rng: zero });
+  eq(copy.bodies.south_africa, "S. Africa equalise. 1-1.", "away scorer");
+  eq(copy.bodies.mexico, "S. Africa equalise. 1-1.", "home conceder");
+  const pull = renderGoalPush({ home: MEX, away: RSA, homeGoals: 2, awayGoals: 1, side: "away", rng: zero });
+  eq(pull.bodies.south_africa, "S. Africa pull one back. 1-2.", "still behind, score her-first");
+  eq(pull.bodies.mexico, "S. Africa pull one back. Mexico still lead 2-1.", "still ahead");
+  for (const b of [...Object.values(copy.bodies), ...Object.values(pull.bodies)]) {
+    assert(!/\d+-\d+ to\b/.test(b), `no "x-y to Team": ${b}`);
+  }
 });
 
-Deno.test("renderGoalPush: 'both' shares one neutral body across both slugs", () => {
-  const copy = renderGoalPush({ home: JPN, away: NED, homeGoals: 1, awayGoals: 1, side: "both", rng: zero });
-  const body = interpolate(GOAL_BOTH[0], { home: "Japan", away: "Netherlands", score: "1-1" });
-  eq(copy.bodies.japan, body, "japan body from GOAL_BOTH");
-  eq(copy.bodies.netherlands, body, "same neutral body both sides");
+Deno.test("renderGoalPush: 'both' reads from each side's own state", () => {
+  const copy = renderGoalPush({ home: JPN, away: NED, homeGoals: 2, awayGoals: 1, side: "both", rng: zero });
+  eq(copy.bodies.japan, "Goals at both ends. Japan lead 2-1.", "leader");
+  eq(copy.bodies.netherlands, "Goals at both ends. Netherlands trail 1-2.", "trailer");
 });
 
 // ============================================================
@@ -138,6 +143,7 @@ const g = (side: "home" | "away", minute: number, extra: number | null = null): 
 Deno.test("renderHalfTimePush: each side gets its own situation, score follower-first", () => {
   const copy = renderHalfTimePush({ home: MEX, away: RSA, homeGoals: 2, awayGoals: 0, rng: zero });
   eq(copy.title, "Half-time: Mexico 2-0 S. Africa", "title carries home-away scoreline");
+  eq(copy.titles?.south_africa, "Half-time: S. Africa 0-2 Mexico", "her club first");
   eq(copy.bodies.mexico, said("Mexico are 2-0 up at the break.", HT_COPY.ahead_big.say), "leader");
   eq(copy.bodies.south_africa, said("S. Africa are 0-2 down at the break.", HT_COPY.behind_big.say), "trailer");
 });
@@ -152,7 +158,13 @@ Deno.test("htSituation: by goal difference, and 0-0 is not a 1-1", () => {
 });
 
 Deno.test("ftSituation: plain results by margin", () => {
-  eq(ftSituation({ mine: 3, theirs: 1 }).situation, "win_big", "3-1");
+  eq(ftSituation({ mine: 3, theirs: 1 }).situation, "win_plain", "3-1, not known when it was decided");
+  eq(ftSituation({ mine: 2, theirs: 0, goals: [g("home", 20), g("home", 60)], ctx: { side: "home" } }).situation,
+    "win_big", "decided in the 20th minute");
+  eq(ftSituation({ mine: 2, theirs: 0, goals: [g("home", 86), g("home", 90, 2)], ctx: { side: "home" } }).situation,
+    "win_late", "decided in the 86th: never 'easy in the end'");
+  eq(ftSituation({ mine: 3, theirs: 1, goals: [g("home", 10), g("away", 50), g("home", 118), g("home", 120)], ctx: { side: "home" }, extraTime: true }).situation,
+    "win_plain", "after extra time");
   eq(ftSituation({ mine: 1, theirs: 0 }).situation, "win_narrow", "1-0");
   eq(ftSituation({ mine: 0, theirs: 0 }).situation, "draw_nil", "0-0");
   eq(ftSituation({ mine: 2, theirs: 2 }).situation, "draw_goals", "2-2");
@@ -219,6 +231,7 @@ Deno.test("renderFullTimePush: comeback and cup bodies, clause before the line t
 Deno.test("renderFullTimePush: shootout reads the pens, never 'drew'", () => {
   const copy = renderFullTimePush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 1, pens: { home: 4, away: 2 }, rng: zero });
   eq(copy.title, "Full-time: Mexico 1-1 S. Africa (4-2 on pens)", "title carries goals + shootout");
+  eq(copy.titles?.south_africa, "Full-time: S. Africa 1-1 Mexico (2-4 on pens)", "her club and her shootout score first");
   eq(copy.bodies.mexico, said("Won 4-2 on penalties.", FT_COPY.cup_through.say), "shootout winner");
   eq(copy.bodies.south_africa, said("Lost 2-4 on penalties.", FT_COPY.cup_out.say), "shootout loser");
   const nullPens = renderFullTimePush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 1, pens: null, rng: zero });
@@ -250,45 +263,21 @@ Deno.test("KICKOFF_SOON pool: unique, <=90 chars, no em/en dashes, names team + 
 });
 
 // ============================================================
-// Pool integrity + safety sweep across all 360 variants
+// Goal pools: one fact, room for the scorer lead, nothing about him
 // ============================================================
 
-const POOLS: Record<string, readonly string[]> = {
-  GOAL_SCORED,
-  GOAL_CONCEDED,
-  GOAL_BOTH,
-};
-
-Deno.test("every pool has exactly 40 unique variants", () => {
-  for (const [name, pool] of Object.entries(POOLS)) {
-    eq(pool.length, 40, `${name} length`);
-    eq(new Set(pool).size, 40, `${name} has no duplicate lines`);
-  }
-});
-
-Deno.test("every variant: non-empty, <=90 chars, no em/en dashes, contains the score", () => {
-  const names = Object.values(WC_COUNTRY_META).map((m) => m.name);
-  const longestName = [...names].sort((a, b) => b.length - a.length)[0];
-  const longestFlag = [...Object.values(WC_COUNTRY_META).map((m) => m.flag)]
-    .sort((a, b) => b.length - a.length)[0]; // England/Scotland tag-flags are the widest
-  const score = "10-10"; // worst-case width
-
-  const goalVars = { flag: longestFlag, team: longestName, score };
-  const bothVars = { home: longestName, away: longestName, score };
-
-  const groups: Array<[readonly string[], Record<string, string>]> = [
-    [GOAL_SCORED, goalVars],
-    [GOAL_CONCEDED, goalVars],
-    [GOAL_BOTH, bothVars],
-  ];
-
-  for (const [pool, vars] of groups) {
-    for (const template of pool) {
-      const body = interpolate(template, vars);
-      assert(body.length > 0, `non-empty: ${template}`);
-      assert(body.length <= 90, `<=90 chars (got ${body.length}): ${body}`);
-      assert(!body.includes("—") && !body.includes("–"), `no em/en dash: ${body}`);
-      assert(body.includes(score), `contains score: ${body}`);
+Deno.test("GOAL pools: every line fits behind the longest scorer lead, carries the score, no him", () => {
+  for (const [name, pools] of [["GOAL_SCORED", GOAL_SCORED], ["GOAL_CONCEDED", GOAL_CONCEDED], ["GOAL_BOTH", GOAL_BOTH]] as const) {
+    for (const [state, pool] of Object.entries(pools)) {
+      assert(pool.length >= 1 && new Set(pool).size === pool.length, `${name}.${state}: unique lines`);
+      for (const line of pool) {
+        // Longest lead "Calvert-Lewin 90+3' (pen). " is 27 chars; 27 + 63 = 90.
+        const body = interpolate(line, { team: "Nottm Forest", opp: "Crystal Palace", score: "10-10" });
+        assert(body.length <= 63, `${name}: ${body.length} chars is too long for a lead: ${body}`);
+        assert(body.includes("10-10"), `${name}: carries the score: ${body}`);
+        assert(!/[\u2013\u2014]/.test(body), `${name}: no dashes: ${body}`);
+        assert(!/\b(he|his|him)\b/i.test(body), `${name}: about him: ${body}`);
+      }
     }
   }
 });
@@ -303,10 +292,10 @@ Deno.test("titles carry the scoreline, stay bounded, no em/en dashes", () => {
   const home = { id: "a", name: a, flag: "🏳️" };
   const away = { id: "b", name: b, flag: "🏳️" };
   const titles = [
-    renderGoalPush({ home, away, homeGoals: 10, awayGoals: 10, side: "home", rng: zero }).title,
-    renderHalfTimePush({ home, away, homeGoals: 10, awayGoals: 10, rng: zero }).title,
-    renderFullTimePush({ home, away, homeGoals: 10, awayGoals: 10, rng: zero }).title,
-  ];
+    renderGoalPush({ home, away, homeGoals: 10, awayGoals: 10, side: "home", rng: zero }),
+    renderHalfTimePush({ home, away, homeGoals: 10, awayGoals: 10, rng: zero }),
+    renderFullTimePush({ home, away, homeGoals: 10, awayGoals: 10, rng: zero }),
+  ].flatMap((c) => [c.title, ...Object.values(c.titles ?? {})]);
   for (const t of titles) {
     assert(t.length <= 50, `title bounded (got ${t.length}): ${t}`);
     assert(t.includes("10-10"), `title carries the score: ${t}`);
@@ -469,37 +458,10 @@ Deno.test("renderGoalPush: scorerLine LEADS both bodies, additive", () => {
   );
 });
 
-// ============================================================
-// 2026-09-09: eight pushes, one phone; "he's buzzing" three times a night
-// ============================================================
-
-Deno.test("GOAL pools: no phrase repeats, every line leaves room for the scorer lead", () => {
-  for (const [name, pool] of [["GOAL_SCORED", GOAL_SCORED], ["GOAL_CONCEDED", GOAL_CONCEDED]] as const) {
-    assert(pool.length >= 40, `${name} has 40+ lines`);
-    const seen = new Set<string>();
-    for (const line of pool) {
-      assert(!seen.has(line), `${name}: duplicate line ${line}`);
-      seen.add(line);
-      // Longest realistic lead: "Calvert-Lewin 90+3' (pen). " is 27 chars, so a
-      // 60-char reaction plus the longest club name and a two-digit score fits 90.
-      // The longest active club short_name is 13 chars ("Nottm Forest" class);
-      // the longest lead is "Calvert-Lewin 90+3' (pen). " at 27, and 27 + 63 = 90.
-      const rendered = interpolate(line, { team: "Crystal Palace", score: "10-9" });
-      assert(rendered.length <= 63, `${name}: ${rendered.length} chars is too long for a lead: ${line}`);
-    }
-    const buzzing = pool.filter((l) => /buzzing/i.test(l)).length;
-    assert(buzzing <= 1, `${name}: "buzzing" appears ${buzzing} times`);
-    const textHim = pool.filter((l) => /text him|drop him a/i.test(l)).length;
-    assert(textHim <= 2, `${name}: the text-him nudge appears ${textHim} times`);
-  }
-});
-
-Deno.test("seededRng: the same fixture and score draw the same line, the next goal draws another", () => {
+Deno.test("seededRng: the same fixture and score draw the same line", () => {
   const a = renderGoalPush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 0, side: "home", rng: seededRng(4200 * 100 + 10) });
   const b = renderGoalPush({ home: MEX, away: RSA, homeGoals: 1, awayGoals: 0, side: "home", rng: seededRng(4200 * 100 + 10) });
-  const c = renderGoalPush({ home: MEX, away: RSA, homeGoals: 2, awayGoals: 0, side: "home", rng: seededRng(4200 * 100 + 20) });
   eq(a.bodies.mexico, b.bodies.mexico, "deterministic for one (fixture, score)");
-  assert(a.bodies.mexico.replace("1-0", "") !== c.bodies.mexico.replace("2-0", ""), "the second goal reads differently");
   const r = seededRng(7);
   for (let i = 0; i < 1000; i++) {
     const x = r();
@@ -510,7 +472,7 @@ Deno.test("seededRng: the same fixture and score draw the same line, the next go
 Deno.test("HT/FT copy: house rules on every line, and every body fits with its line to say", () => {
   const all = [...Object.values(HT_COPY), ...Object.values(FT_COPY)];
   for (const c of all) {
-    assert(c.say.length >= 8, `a situation with fewer than 8 lines to say: "${c.say[0]}"`);
+    assert(c.say.length >= 4, `a situation with fewer than 4 lines to say: "${c.say[0]}"`);
     assert(c.body.length >= 2, `a situation with one body: "${c.body[0]}"`);
     for (const line of [...c.say, ...c.body]) {
       assert(!line.includes("\u2014") && !line.includes("\u2013"), `dash in "${line}"`);
@@ -520,6 +482,13 @@ Deno.test("HT/FT copy: house rules on every line, and every body fits with its l
       assert(!/\b(he|him|his)\b/i.test(line), `"${line}" is about him`);
     }
     for (const line of c.say) assert(line.length <= 60, `"${line}" is too long to sit behind a situation line`);
+  }
+  // An opinion about the game, never comfort or an order (LOCK-02-05).
+  for (const c of Object.values(FT_COPY)) {
+    for (const line of c.say) {
+      assert(!/forget|move on|never mind|enjoy (every|that)|shake it off|happy for you|champagne|easy in the end|next one\b/i.test(line),
+        `"${line}" consoles or steers`);
+    }
   }
   // Worst case: longest body, longest names, a two-digit score, a long clause.
   const clause = "Through to the quarter-finals.";
