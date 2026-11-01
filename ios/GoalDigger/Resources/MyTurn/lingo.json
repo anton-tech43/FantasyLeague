@@ -1,5 +1,5 @@
 {
-  "contentVersion": "2026-11-01.1",
+  "contentVersion": "2026-11-01.2",
   "terms": [
     {
       "id": "premier-league",
@@ -1260,15 +1260,7 @@
         "opp-set-piece",
         "opp-aerial"
       ],
-      "moment": "anytime",
-      "playerVariants": [
-        {
-          "slot": "ours.defender",
-          "overheard": "I'd play {ours.defender} at centre-back and worry about the rest later.",
-          "sayIt": "\"Is {ours.defender} a centre-back, or does he play out wide?\"",
-          "overheardTerm": "centre-back"
-        }
-      ]
+      "moment": "anytime"
     },
     {
       "id": "full-back",
@@ -1333,15 +1325,7 @@
       "when": [
         "any"
       ],
-      "moment": "common",
-      "playerVariants": [
-        {
-          "slot": "ours.midfielder",
-          "overheard": "They need a proper holding midfielder. Could {ours.midfielder} do that job?",
-          "sayIt": "\"Is {ours.midfielder} a holding midfielder, or does he get forward?\"",
-          "overheardTerm": "holding midfielder"
-        }
-      ]
+      "moment": "common"
     },
     {
       "id": "box-to-box",

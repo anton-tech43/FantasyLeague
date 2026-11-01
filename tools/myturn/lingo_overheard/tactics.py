@@ -28,11 +28,6 @@ OVERHEARD = {
         spare="The one who whips the crosses in from wide",
         when=["any", "after-clean-sheet", "opp-aerial", "opp-set-piece"],
         moment="anytime",
-        player=dict(
-            slot='ours.defender',
-            overheard="I'd play {ours.defender} at centre-back and worry about the rest later.",
-            sayIt='"Is {ours.defender} a centre-back, or does he play out wide?"',
-        ),
     ),
     "full-back": dict(
         overheard="Both full-backs are booked now. That's a worry with an hour to go.",
@@ -60,11 +55,6 @@ OVERHEARD = {
         spare="The one who plays just behind the striker",
         when=["any"],
         moment="common",
-        player=dict(
-            slot='ours.midfielder',
-            overheard='They need a proper holding midfielder. Could {ours.midfielder} do that job?',
-            sayIt='"Is {ours.midfielder} a holding midfielder, or does he get forward?"',
-        ),
     ),
     "box-to-box": dict(
         overheard="He's box-to-box, that lad. Doesn't half make it look easy.",
