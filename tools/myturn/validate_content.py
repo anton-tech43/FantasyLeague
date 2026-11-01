@@ -211,12 +211,15 @@ def validate_lingo(d: dict) -> int:
         if t.get("category") not in ("rules", "tactics", "match_situations", "culture"):
             err(f"lingo/{tid}: category '{t.get('category')}' invalid")
         meaning, heard, say_it = t.get("meaning", ""), t.get("heard", ""), t.get("sayIt", "")
-        if not t.get("term") or not meaning or not heard:
-            err(f"lingo/{tid}: term, meaning and heard are all required")
+        # `heard` is optional since 2026-11-01 (MY-07-16): nothing renders it.
+        # The data stays while 2.2/2.3 decode it as a required String.
+        if not t.get("term") or not meaning:
+            err(f"lingo/{tid}: term and meaning are both required")
         if not say_it:
             err(f"lingo/{tid}: sayIt is required — a definition without a line to say is not a tool")
         check_len(f"lingo/{tid}", "meaning", meaning)
-        check_len(f"lingo/{tid}", "heard", heard)
+        if heard:
+            check_len(f"lingo/{tid}", "heard", heard)
         check_len(f"lingo/{tid}", "sayIt", say_it)
         check_idiom(f"lingo/{tid}", meaning + " " + heard + " " + say_it)
         # Progression level, 1 upwards. A word may point one level ahead (the

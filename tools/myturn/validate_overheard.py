@@ -350,7 +350,7 @@ def validate_overheard(terms: list[dict], *, err, warn, check_idiom, superlative
         if norm(o) == norm(say_it):
             err(f"{where}: overheard is sayIt copied over. sayIt is her line back; overheard is the line that made her need one")
         heard = t.get("heard") or ""
-        if norm(o) and (norm(o) in norm(heard) or norm(heard) in norm(o)):
+        if norm(o) and norm(heard) and (norm(o) in norm(heard) or norm(heard) in norm(o)):
             warn(f"{where}: overheard duplicates heard")
         m = STALE_FACT.search(o)
         if m:
