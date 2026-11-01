@@ -258,6 +258,14 @@ def validate_lingo(d: dict) -> int:
 # the three wrong answers cut, so what she picks between is the two that tempt.
 OPTIONS_PER_QUESTION = 3
 DETERMINER = re.compile(r"(an?|the)\b", re.I)
+# A use line is one quoted line. 128 shipped as 'Ask him: "…"' and 19 trailed a
+# stage direction after the quote ("He has a list.", "(With an a. He will
+# notice.)"); both were struck 2026-11-01 (MY-02 board). Nothing outside quotes.
+USE_LINE = re.compile(r'"[^"]+"')
+
+assert USE_LINE.fullmatch('"Ugly win, but three points is three points."')
+assert not USE_LINE.fullmatch('Ask him: "Who goes down?"')
+assert not USE_LINE.fullmatch('"Who goes down?" He has a list.')
 
 
 def longest_option_solver(questions: list[dict]) -> float:
@@ -332,6 +340,9 @@ def validate_quiz(d: dict) -> tuple[int, int]:
             check_len(f"quiz/{qid}", "use", use)
             if use_type not in ("say", "ask", "impress"):
                 err(f"quiz/{qid}: useType must be say, ask or impress")
+            if use and not USE_LINE.fullmatch(use):
+                err(f"quiz/{qid}: use is the line she says, in quotes, and nothing else — no 'Ask him:' "
+                    f"(useType already labels it) and no stage direction after the quote: {use[:70]}")
             # Newlines, not spaces: joined with spaces the option "Zero" and an
             # explanation opening "Zero." read as the banned "zero zero", and
             # which fields end up adjacent is decided by the shuffle.
