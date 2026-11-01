@@ -258,7 +258,7 @@
           "answer": 2,
           "explanation": "Two transfer windows: the summer, and the month of January. Outside them, nothing moves, whatever the newspapers say.",
           "useType": "say",
-          "use": "\"Window's shut. That rumour can't happen until January.\""
+          "use": "\"Is the window open, or is that just a rumour for now?\""
         },
         {
           "id": "the-basics-18",

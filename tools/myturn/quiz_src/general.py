@@ -53,7 +53,7 @@ BASICS = [
      "impress", "\"They're level on points, so it's on goal difference. Every goal counts now.\""),
     (1, "When can clubs buy and sell players?", ["Any time", "Summer and January", "Only in summer"], 1,
      "Two transfer windows: the summer, and the month of January. Outside them, nothing moves, whatever the newspapers say.",
-     "say", "\"Window's shut. That rumour can't happen until January.\""),
+     "say", "\"Is the window open, or is that just a rumour for now?\""),
     (2, "How long is each half of extra time in a cup match?", ["Fifteen minutes", "Twenty minutes", "Thirty minutes"], 0,
      "Two halves of fifteen minutes, played when a cup match is level after ninety. If it is level after that, it is penalties.",
      "say", "\"Extra time. Thirty more minutes, then penalties. Put the kettle on.\""),
