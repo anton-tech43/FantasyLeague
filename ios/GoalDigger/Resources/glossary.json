@@ -44,7 +44,7 @@
   {
     "term": "offside",
     "aliases": [],
-    "explanation": "When an attacker is past the last defender at the moment a pass is made. Goals get chalked off for this all the time."
+    "explanation": "When the ball is played to an attacker, he is nearer the goal line than the ball and the last defender. Level is onside. You can't be offside in your own half."
   },
   {
     "term": "yellow card",

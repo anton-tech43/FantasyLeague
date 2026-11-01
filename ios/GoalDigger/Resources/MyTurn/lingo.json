@@ -1,5 +1,5 @@
 {
-  "contentVersion": "2026-10-04.1",
+  "contentVersion": "2026-11-01.1",
   "terms": [
     {
       "id": "premier-league",
@@ -114,7 +114,7 @@
       "id": "offside",
       "category": "rules",
       "term": "Offside",
-      "meaning": "When the ball is passed to you, you can't already be nearer the goal than the last defender. If you are, the flag goes up and the goal doesn't count.",
+      "meaning": "When the ball is played to him, he is nearer the goal line than the ball and the last defender. Level is onside. You can't be offside in your own half.",
       "heard": "Every time a flag goes up and someone on the sofa groans.",
       "sayIt": "\"Was he offside? He looked level to me.\"",
       "level": 1,
@@ -124,7 +124,7 @@
       "overheard": "That's never offside. I don't care what the replay says.",
       "overheardTerm": "offside",
       "speaker": "him",
-      "gist": "He was beyond the final defender for the pass",
+      "gist": "He was ahead of the last defender when it was played",
       "decoy": "He got in the keeper's way at the near post",
       "spare": "The ball had already gone out for a goal kick",
       "when": [

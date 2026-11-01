@@ -84,7 +84,7 @@ OVERHEARD = {
     "offside": dict(
         overheard="That's never offside. I don't care what the replay says.",
         speaker="him",
-        gist="He was beyond the final defender for the pass",
+        gist="He was ahead of the last defender when it was played",
         decoy="He got in the keeper's way at the near post",
         spare="The ball had already gone out for a goal kick",
         when=["any"],

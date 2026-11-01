@@ -53,10 +53,12 @@ BANNED = {
 SUPERLATIVE = re.compile(
     r"\b(the|their|its|his|club's) only\b"            # "their only final" — the exact shape that went stale
     r"|\bonly (club|team|player|manager|time|final|title|trophy|english|one)\b"
-    r"|\b(the|their|its|his) last\b(?! (minute|kick|second|three minutes|game of|day of))|\blast time\b|\bmost recent\b"
+    r"|\b(the|their|its|his) last\b(?! (minute|kick|second|three minutes|game of|day of|defender))|\blast time\b|\bmost recent\b"
     r"|\bmost\b|(?<!world-)(?<!world )\brecord\b(?! at the time)|\b(latest|newest|all-time)\b|more than any other"
     r"|\bstill\b|\bnever\b(?! walk alone)",
     re.I)
+# "the last defender" is the offside rule's own wording, not a claim about now.
+assert not SUPERLATIVE.search("ahead of the last defender") and SUPERLATIVE.search("the last final")
 
 # House copy rule (ARCHITECTURE.md §2): app-visible text says "World
 # Championship", never "World Cup", and carries no em or en dash. Checked over
