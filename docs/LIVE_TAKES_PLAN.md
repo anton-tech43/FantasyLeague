@@ -1,6 +1,7 @@
 # Live takes: plan
 
-**Status:** plan, agreed with Anton on 2026-10-29. Nothing is built yet.
+**Status:** plan agreed with Anton on 2026-10-29. Phase 0 built and deployed
+2026-11-01 (dry run: decided and logged, nothing sent). Phases 1-3 not built.
 
 Match statistics turned into one line she can say, so she sounds like one of
 the lads (memory: she wants to sound smart). It is the "4. stats" item.
@@ -120,6 +121,45 @@ HT saying and today's verdict.
 - One weekend of dry run. By hand, compare 4–5 matches' 30', HT and FT
   numbers against BBC or Sky, and write the result into DATA_SOURCES.md.
   Anton reads the logged takes and says which ones he would say.
+
+**How to review the dry run** (phase 0 as built, 2026-11-01)
+- Code: `_shared/match-take.ts` (rules, thresholds at the top, 15 situations),
+  `match-watcher` `liveTakeDryRun` (after the tick's pushes; markers
+  `TAKE_30`, `TAKE_HT`, `TAKE_70`, `TAKE_FT`, claimed before the stats call),
+  migration 155. `LIVE_TAKES_MODE` in match-watcher is `"dry_run"`.
+- Only followed clubs get a row. A silent moment logs `silent | <reason>`
+  (`no stats`, `missing …`, `nothing stands out`).
+- The weekend's takes per match, side by side with the score at that moment
+  and the final score:
+
+  ```sql
+  SELECT to_char(m.kickoff_time AT TIME ZONE 'Europe/London', 'Dy HH24:MI') AS ko,
+         m.home_team_id || ' v ' || m.away_team_id AS match,
+         split_part(p.target, ':', 4) AS moment,
+         m.stat_snapshots -> split_part(p.target, ':', 4) ->> 'score' AS score_then,
+         m.home_goals || '-' || m.away_goals AS final,
+         split_part(p.target, ':', 3) AS side,
+         p.message
+    FROM pipeline_health p
+    JOIN match_status_state m ON m.fixture_id = split_part(p.target, ':', 2)::int
+   WHERE p.stage = 'live_take' AND p.created_at > now() - interval '4 days'
+   ORDER BY m.kickoff_time, m.fixture_id,
+            array_position(ARRAY['30', 'ht', '70', 'ft'], split_part(p.target, ':', 4)), side;
+  ```
+
+- The numbers behind them, for the BBC/Sky comparison:
+
+  ```sql
+  SELECT m.fixture_id, m.home_team_id || ' v ' || m.away_team_id AS match, s.moment,
+         s.snap ->> 'elapsed' AS min, s.snap ->> 'score' AS score, s.snap -> 'home' AS home, s.snap -> 'away' AS away
+    FROM match_status_state m, jsonb_each(m.stat_snapshots) AS s(moment, snap)
+   WHERE m.kickoff_time > now() - interval '4 days'
+   ORDER BY m.kickoff_time, m.fixture_id, array_position(ARRAY['30', 'ht', '70', 'ft'], s.moment);
+  ```
+
+- Budget: 3 new calls per match (30', HT, 70'); full time reuses the After
+  card's call. A full Premier League Saturday is about 30 calls against the
+  7,500 cap.
 
 **Phase 1: Live Activity note (backend only; works on 2.2/2.3/2.4)**
 - Traps 1–5 and 9. `LIVE_TAKES_MODE = "live"`.
