@@ -288,6 +288,29 @@ after that. Budget it before building it:
   `days_since_install` it narrows a small base fast. Keep it; revisit if the
   base stays small and the slices get used for anything but aggregates.
 
+### PECR and the Meta SDK — decide later (app council 2026-11-01)
+
+**Where it stands.** The first-party events above are fine under the ATT
+reasoning, but the Meta SDK is a separate question under UK PECR (reg. 6):
+storing or reading anything on her phone that is not strictly necessary needs
+consent first. Today `AppDelegate` starts the SDK at launch with
+`isAutoLogAppEventsEnabled = true` and `isAdvertiserIDCollectionEnabled = true`,
+so `fb_mobile_activate_app` (and the install it attributes) is sent on the
+first launch, before the ATT sheet, which `Attribution` only shows after
+onboarding. ATT governs the IDFA; it is not PECR consent, and a "no" there
+does not stop the auto-logged events.
+
+**The fix, when we do it.** Turn auto-logging off in code (and
+`FacebookAutoLogAppEventsEnabled = NO` in Info.plist so nothing logs before
+the delegate runs), and start Meta logging (`activateApp`, `logActivatedOnce`)
+only after an ATT "yes", which then doubles as the consent. A "no" or no
+answer means no Meta events at all. Cost: attribution for every install that
+says no; ad optimisation would run on the yes share only.
+
+**Status: decide later.** Anton, 2026-11-01: documented now, changed later,
+together with the next look at the Meta campaigns. Nothing in the app changes
+until then.
+
 ### Step 3, ready to paste (Anton publishes; the carrd page is not in this repo)
 
 **Privacy policy paragraph** (getgoaldigger.carrd.co), under the existing
