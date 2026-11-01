@@ -3,8 +3,8 @@
 # look at"). The digest is the product, not a dashboard: a number nobody is
 # sent is a number nobody reads.
 #
-# Reads public.analytics_events (migration 143), which already keeps production
-# only, drops the blackout windows and splits Arsenal from everyone else. Every
+# Reads public.analytics_events (migrations 143, 149), which already keeps App
+# Store builds only (no Xcode, no TestFlight), drops the blackout windows and splits Arsenal from everyone else. Every
 # line names its denominator. With this few users every percentage is an
 # anecdote with a denominator — read paths, not rates.
 #
@@ -23,7 +23,7 @@ DAYS="${1:-7}"
 q() { echo; echo "── $1"; $PSQL "$SUPABASE_DB_URL" -X -q -P footer=off -v ON_ERROR_STOP=1 -c "$2"; }
 W="occurred_at > now() - interval '$DAYS days'"
 
-echo "USAGE DIGEST — last $DAYS days, production builds, blackout windows excluded"
+echo "USAGE DIGEST — last $DAYS days, App Store builds (TestFlight and Xcode excluded), blackout windows excluded"
 
 q "WHO (denominator for everything below: active = any event in the window)" "
 SELECT club_group,

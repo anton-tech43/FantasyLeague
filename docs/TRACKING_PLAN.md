@@ -21,7 +21,11 @@ Owner: Anton.
   Analytics.swift). Pre-game events carry `fixture_key` (`b|Opponent|day`)
   and, where known, `fixture_id`.
 - Every event carries `env`: `development` from Xcode builds. **Every view and
-  digest keeps `env = 'production'` only.**
+  digest keeps `env = 'production'` only.** Since migration 149 events also
+  carry `channel` (`appstore`, `testflight`, `debug`, from
+  `AppTransaction.environment`, stamped when the batch is sent), and
+  `analytics_events` drops `testflight` and `debug`; no channel (builds before
+  it) reads as unknown and is kept.
 - `my_turn_module_switched` has no `prep_available`: Pre-game left My Turn for
   the Matchday tab on 2026-10-27, so module values are `quiz`, `lingo`,
   `saythis`.
