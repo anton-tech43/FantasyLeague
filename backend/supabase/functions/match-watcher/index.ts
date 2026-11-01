@@ -858,16 +858,20 @@ async function liveTakeDryRun(
 }
 
 // ─── Lineups (dry run) ─────────────────────────────────────────────────────
-// Between T−75 and T−30 for a fixture one of our clubs plays, every fifth
-// minute until API-Football has the lineup: store both sides in
+// Between T−75 and T−10 for a fixture one of our clubs plays, until
+// API-Football has the lineup: store both sides in
 // fixture_lineups (mig 137) and decide, in _shared/lineup-notable.ts, whether
 // our side's lineup is worth a line to her. DRY RUN: the line is only logged
 // to pipeline_health (stage starting_xi_fire, target lineup:<fixture>), and
 // no push or card is sent. The line is also kept in fixture_lineups.note
 // (mig 151): with the LINEUP_PUSH_ENABLED secret set to "1" it replaces the
 // T−30 kickoff body for that side (LOCK-02-14). Off until Anton has read real
-// cases; the first two weekends logged none (see lastCall below).
-const LINEUP_WINDOW_MIN = { from: 30, to: 75 };
+// cases. The first two weekends logged none: API-Football publishes lineups
+// 20-40 minutes before kickoff, and the window used to close at T−30, while
+// the league is only polled from T−35, so it asked five times, too early. It
+// now runs to T−10; a lineup that lands after T−30 still makes the record
+// and the dry run, just not the T−30 push.
+const LINEUP_WINDOW_MIN = { from: 10, to: 75 };
 const LINEUP_PUSH_ENABLED = Deno.env.get("LINEUP_PUSH_ENABLED") === "1";
 
 async function lineupDryRun(
@@ -876,9 +880,11 @@ async function lineupDryRun(
   ourClubApiIds: Set<number>,
   teamIdMap: Map<number, string>,
   apiKey: string,
-  /// The last poll of the window: if the lineup is still missing, say why.
-  lastCall = false,
+  /// Minutes to kickoff: logged with the lineup (did it land before the T−30
+  /// push?), and the last poll of the window says why it is still missing.
+  minsToKickoff: number,
 ): Promise<void> {
+  const lastCall = minsToKickoff <= LINEUP_WINDOW_MIN.from + 1;
   const fixtureId = fx.fixture.id;
   const { data: have, error: haveErr } = await supabase.from("fixture_lineups")
     .select("team_api_id").eq("fixture_id", fixtureId).limit(1);
@@ -891,7 +897,7 @@ async function lineupDryRun(
   const sides = (json?.response ?? []) as Array<Record<string, any>>;
   if (sides.length < 2 || sides.some((s) => (s.startXI ?? []).length !== 11)) { // not out yet
     // Nothing reached fixture_lineups on 31 Oct / 1 Nov, with eight fixtures
-    // in the window. One row per fixture at T−31 says which of "not
+    // in the window. One row per fixture at the window's end says which of "not
     // published yet", a rate limit or an error it was.
     if (lastCall) {
       const ours = [fx.teams.home.id, fx.teams.away.id].map((id) => teamIdMap.get(id)).find((t) => t) ?? null;
@@ -901,7 +907,7 @@ async function lineupDryRun(
         status: "skipped",
         target: `lineup:${fixtureId}`,
         http_status: resp.status,
-        message: `no lineup by T-31: results=${json?.results ?? "?"} sides=${sides.length} ` +
+        message: `no lineup by T-${LINEUP_WINDOW_MIN.from + 1}: results=${json?.results ?? "?"} sides=${sides.length} ` +
           `xi=${sides.map((s) => (s.startXI ?? []).length).join("/")} errors=${JSON.stringify(json?.errors ?? null)}`.slice(0, 400),
       }).then(({ error }) => error && console.warn("pipeline_health insert failed:", error.message));
     }
@@ -945,7 +951,7 @@ async function lineupDryRun(
         stage: "starting_xi_fire",
         status: "success",
         target: `lineup:${fixtureId}`,
-        message: (note ? `DRY RUN ${note.kind}: ${note.line}` : "DRY RUN silent").slice(0, 400),
+        message: (`T-${Math.round(minsToKickoff)} ` + (note ? `DRY RUN ${note.kind}: ${note.line}` : "DRY RUN silent")).slice(0, 400),
       }).then(({ error }) => error && console.warn("pipeline_health insert failed:", error.message));
     }
     const { error: upErr } = await supabase.from("fixture_lineups").upsert({
@@ -2421,7 +2427,7 @@ async function handleRequest(req: Request): Promise<Response> {
             (ourClubApiIds.has(homeApiId) || ourClubApiIds.has(awayApiId))
           ) {
             try {
-              await lineupDryRun(supabase, fx, ourClubApiIds, teamIdMap, apiFootballKey, minsToKickoff <= 31);
+              await lineupDryRun(supabase, fx, ourClubApiIds, teamIdMap, apiFootballKey, minsToKickoff);
             } catch (e) {
               console.warn(`lineups: fixture ${fixtureId} failed (non-fatal):`, e instanceof Error ? e.message : String(e));
             }
