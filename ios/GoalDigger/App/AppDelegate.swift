@@ -34,6 +34,26 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                                                 awayGoals: 0, status: $0.key, elapsed: nil, clockStart: nil, groupLabel: nil).statusLabel == $0.value }
                && LiveMatchSnapshot.pausedLabels == ["Suspended", "Interrupted"],
                "Live Activity status words drifted from wcStatusLabel")
+        assert(TeamPageFormDots.results("wWDL-") == ["W", "W", "D", "L"], "form dots reorder or keep junk")
+        let injuries = [TeamInjury(name: "B. Saka", reason: "Hamstring"), TeamInjury(name: "Gabriel Jesus", reason: "Knee"),
+                        TeamInjury(name: "J. Timber", reason: "Ankle"), TeamInjury(name: "Jurriën Timber", reason: "Ankle")]
+        assert(TeamInjury.reason(for: "Bukayo Saka", in: injuries) == "Hamstring"
+               && TeamInjury.reason(for: "G. Jesus", in: injuries) == "Knee"
+               && TeamInjury.reason(for: "Declan Rice", in: injuries) == nil
+               && TeamInjury.reason(for: "Jurrien Timber", in: injuries) == nil,   // two rows: not sure which
+               "Out tag matches the wrong man")
+        func last(_ us: Int, _ them: Int, _ state: TeamPostMatchCard.TeamPostMatchState) -> LastMatchCard {
+            LastMatchCard(fixtureId: 1, kickoff: "2026-10-28T19:45:00Z", finishedAt: "2026-10-28T22:00:00Z", competition: nil,
+                          opponent: "Chelsea", venue: "home", teamScore: us, oppScore: them, state: state, verdict: "",
+                          talkingPoint: "", goals: [], numbers: [], expiresAt: "2026-11-04T22:00:00Z")
+        }
+        let shootout = RecentResult(date: "2026-10-28T19:45:00+00:00", opponent: "Chelsea", venue: "home",
+                                    teamScore: 1, oppScore: 1, result: "L", penTeam: 5, penOpp: 6)
+        assert(last(1, 2, .loss).afterLine(recent: []) == "After Chelsea: lost 2-1"
+               && last(1, 1, .draw).afterLine(recent: []) == "After Chelsea: drew 1-1"
+               && last(1, 1, .loss).afterLine(recent: [shootout]) == "After Chelsea: lost 6-5 on pens"
+               && last(1, 1, .win).afterLine(recent: []) == "After Chelsea: won on pens",
+               "club page's After line misreads the result")
         #endif
 
         UNUserNotificationCenter.current().delegate = self

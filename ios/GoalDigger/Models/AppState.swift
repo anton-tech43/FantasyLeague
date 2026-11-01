@@ -320,6 +320,8 @@ class AppState {
     var pWill: String { usesHeVoice ? "he'll" : "they'll" }     // he'll / they'll
     /// Name-first possessive for labels/headers: "Ada's" or, with no name, "His"/"Their".
     var namePossessiveCap: String { hisName.isEmpty ? pPossessiveCap : hisName + "'s" }
+    /// Mid-sentence: "Ada's" or "his". `namePossessiveCap.lowercased()` gave "ada's".
+    var namePossessive: String { hisName.isEmpty ? pPossessive : hisName + "'s" }
 
     /// Force pending UserDefaults writes to disk NOW.
     ///

@@ -1,54 +1,41 @@
 import SwiftUI
 
+/// The last five league results as lettered dots, newest on the left. Plain
+/// dots were unreadable to all six personas (council TEAM-01-58).
+///
+/// `recent_form` comes newest first: checked against the dated league results
+/// on four cached pages (Arsenal, Liverpool, Newcastle, Man Utd, 2026-11-01),
+/// so it is drawn as it comes.
 struct TeamPageFormDots: View {
     let recentForm: String
-    let isExpanded: Bool
-    @State private var appeared: [Bool] = []
+
+    /// The results in drawing order, anything but W/D/L dropped.
+    static func results(_ recentForm: String) -> [Character] {
+        recentForm.uppercased().filter { "WDL".contains($0) }.map { $0 }
+    }
 
     var body: some View {
-        HStack(spacing: 4) {
-            ForEach(Array(recentForm.enumerated()), id: \.offset) { index, char in
-                Circle()
-                    .fill(dotColor(for: char))
-                    .frame(width: 8, height: 8)
-                    .opacity(dotVisible(at: index) ? 1 : 0)
-                    .scaleEffect(dotVisible(at: index) ? 1 : 0.3)
-                    .animation(
-                        .spring(duration: 0.3).delay(Double(index) * 0.08),
-                        value: appeared
-                    )
+        let results = Self.results(recentForm)
+        HStack(spacing: 5) {
+            ForEach(Array(results.enumerated()), id: \.offset) { _, result in
+                Text(String(result))
+                    .font(.jakarta(11, weight: .bold))
+                    .foregroundColor(result == "D" ? .deepMauve : .warmWhite)
+                    .frame(width: 22, height: 22)
+                    .background(Circle().fill(color(result)))
             }
             Spacer()
         }
-        .onChange(of: isExpanded) { _, expanded in
-            if expanded {
-                appeared = Array(repeating: false, count: recentForm.count)
-                // Trigger staggered appearance
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                    appeared = Array(repeating: true, count: recentForm.count)
-                }
-            } else {
-                appeared = []
-            }
-        }
-        .onAppear {
-            if isExpanded {
-                appeared = Array(repeating: true, count: recentForm.count)
-            }
-        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Last \(results.count) league games, newest first: "
+            + results.map { $0 == "W" ? "won" : $0 == "L" ? "lost" : "drew" }.joined(separator: ", "))
     }
 
-    private func dotVisible(at index: Int) -> Bool {
-        guard index < appeared.count else { return !isExpanded }
-        return appeared[index]
-    }
-
-    private func dotColor(for result: Character) -> Color {
+    private func color(_ result: Character) -> Color {
         switch result {
         case "W": return .hotRose
-        case "D": return .mutedText
         case "L": return Color.red.opacity(0.6)
-        default: return .mutedText.opacity(0.3)
+        default:  return .softBlush
         }
     }
 }

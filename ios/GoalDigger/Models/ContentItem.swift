@@ -409,12 +409,12 @@ struct TeamPageCards: Codable {
     let season: SeasonCard?
     let nextFixture: NextFixtureCard?
 
-    // Redesign additions
-    let mood: MoodCard?
-    let thisWeek: ThisWeekCard?
-    let rivalryIntensity: Double?
+    /// Read by onboarding's Meet his team only; the club page links to
+    /// Matchday › After instead (council TEAM-01-15).
     let postMatch: TeamPostMatchCard?
-    let freshnessText: String?
+    /// Out for the latest game, deduped (lane A, 2026-11-01). Empty on a page
+    /// written before then.
+    let injuries: [TeamInjury]
 
     // Calendar tab + Table tab on TeamPageView (Info / Calendar / Table)
     let upcomingFixtures: [UpcomingFixture]?
@@ -446,11 +446,8 @@ struct TeamPageCards: Codable {
         case form
         case season
         case nextFixture = "next_fixture"
-        case mood
-        case thisWeek = "this_week"
-        case rivalryIntensity = "rivalry_intensity"
         case postMatch = "post_match"
-        case freshnessText = "freshness_text"
+        case injuries
         case upcomingFixtures = "upcoming_fixtures"
         case recentResults = "recent_results"
         case recentByCompetition = "recent_by_competition"
@@ -475,11 +472,9 @@ struct TeamPageCards: Codable {
         form = try? c.decodeIfPresent(FormCard.self, forKey: .form)
         season = try? c.decodeIfPresent(SeasonCard.self, forKey: .season)
         nextFixture = try? c.decodeIfPresent(NextFixtureCard.self, forKey: .nextFixture)
-        mood = try? c.decodeIfPresent(MoodCard.self, forKey: .mood)
-        thisWeek = try? c.decodeIfPresent(ThisWeekCard.self, forKey: .thisWeek)
-        rivalryIntensity = try? c.decodeIfPresent(Double.self, forKey: .rivalryIntensity)
         postMatch = try? c.decodeIfPresent(TeamPostMatchCard.self, forKey: .postMatch)
-        freshnessText = try? c.decodeIfPresent(String.self, forKey: .freshnessText)
+        injuries = ((try? c.decodeIfPresent([Lossy<TeamInjury>].self, forKey: .injuries)) ?? nil)?
+            .compactMap(\.value) ?? []
         upcomingFixtures = (try? c.decodeIfPresent([Lossy<UpcomingFixture>].self, forKey: .upcomingFixtures))?
             .compactMap(\.value)
         recentResults = (try? c.decodeIfPresent([Lossy<RecentResult>].self, forKey: .recentResults))?
@@ -597,6 +592,27 @@ struct LastMatchCard: Codable, Equatable {
     }
 
     var finishedDate: Date? { ISO8601DateFormatter.lenient(finishedAt) }
+
+    /// The club page's line to Matchday › After: "After Chelsea: lost 2-1",
+    /// "After Chelsea: lost 5-4 on pens". The shootout comes off the Calendar's
+    /// row for the same day; a level score settled without one on the page
+    /// says "on pens" alone.
+    func afterLine(recent: [RecentResult]) -> String {
+        let verb = state == .win ? "won" : state == .loss ? "lost" : "drew"
+        func score(_ a: Int, _ b: Int) -> String { "\(max(a, b))-\(min(a, b))" }
+        let row = recent.first { $0.date.prefix(10) == kickoff.prefix(10) && $0.penTeam != nil }
+        let result: String
+        if let row, let p = row.penTeam, let q = row.penOpp, state != .draw {
+            result = "\(verb) \(score(p, q)) on pens"
+        } else if teamScore == oppScore, state != .draw {
+            result = "\(verb) on pens"
+        } else {
+            result = "\(verb) \(score(teamScore, oppScore))"
+        }
+        let opp = Team.allCases.first { MatchContext.sameClub($0.displayName, opponent) }?.shortName ?? opponent
+        return "After \(opp): \(result)"
+    }
+
     var isExpired: Bool { (ISO8601DateFormatter.lenient(expiresAt) ?? .distantFuture) < Date.gdNow }
 }
 
@@ -701,15 +717,16 @@ struct TopPlayer: Codable, Identifiable {
 }
 
 struct RivalryCard: Codable {
-    /// The rival's badge: a Premier League club off `Team`, and the four
+    /// The rival's badge: a Premier League club off `Team`, and the three
     /// rivals outside it by their API-Football id (checked 2026-10-03).
+    /// Coventry's is Aston Villa since 2026-11-01 (council TEAM-01-54).
     var rivalCrestURL: URL? {
         guard let rival else { return nil }
         if let t = Team.allCases.first(where: {
             $0.displayName.caseInsensitiveCompare(rival) == .orderedSame
                 || $0.shortName.caseInsensitiveCompare(rival) == .orderedSame
         }) { return t.crestURL }
-        let outside = ["Birmingham City": 54, "Southampton": 41, "Norwich City": 71, "Derby County": 69]
+        let outside = ["Southampton": 41, "Norwich City": 71, "Derby County": 69]
         return outside[rival].flatMap { URL(string: "https://media.api-sports.io/football/teams/\($0).png") }
     }
 
@@ -971,19 +988,17 @@ struct StandingsCard: Codable, Equatable {
 
 // MARK: - Team Page — New card types for redesign
 
-struct MoodCard: Codable {
-    let state: MoodState
-    let text: String
-    enum MoodState: String, Codable { case good, bad, neutral }
-}
+/// One man out, from `cards.injuries`. API-Football abbreviates names
+/// ("B. Saka"), so he is found by surname (DATA_SOURCES.md).
+struct TeamInjury: Codable, Hashable {
+    let name: String
+    let reason: String
 
-struct ThisWeekCard: Codable {
-    let text: String
-    let talkingPoint: String
-
-    enum CodingKeys: String, CodingKey {
-        case text
-        case talkingPoint = "talking_point"
+    /// Why `player` is out, when exactly one listed man has his surname.
+    static func reason(for player: String, in injuries: [TeamInjury]) -> String? {
+        let key = PlayerPortrait.surname(player)
+        let hits = injuries.filter { key != nil && PlayerPortrait.surname($0.name) == key }
+        return hits.count == 1 ? hits[0].reason : nil
     }
 }
 

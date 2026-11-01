@@ -85,9 +85,6 @@
 		AA0F0003 /* PlusJakartaSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB0F0003 /* PlusJakartaSans-BoldItalic.ttf */; };
 		AA0F0002 /* LeagueSpartan-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB0F0002 /* LeagueSpartan-Bold.ttf */; };
 		AA000090 /* TeamPageCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000090 /* TeamPageCard.swift */; };
-		AA000091 /* TeamPageMoodBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000091 /* TeamPageMoodBanner.swift */; };
-		AA000092 /* TeamPageThisWeek.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000092 /* TeamPageThisWeek.swift */; };
-		AA000093 /* TeamPageRivalryMeter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000093 /* TeamPageRivalryMeter.swift */; };
 		AA000094 /* TeamPageCountdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000094 /* TeamPageCountdown.swift */; };
 		AA000095 /* TeamPageFormDots.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000095 /* TeamPageFormDots.swift */; };
 		AA000200 /* OnboardingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000200 /* OnboardingTextField.swift */; };
@@ -246,9 +243,6 @@
 		AB0F0003 /* PlusJakartaSans-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-BoldItalic.ttf"; sourceTree = "<group>"; };
 		AB0F0002 /* LeagueSpartan-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "LeagueSpartan-Bold.ttf"; sourceTree = "<group>"; };
 		AB000090 /* TeamPageCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageCard.swift; sourceTree = "<group>"; };
-		AB000091 /* TeamPageMoodBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageMoodBanner.swift; sourceTree = "<group>"; };
-		AB000092 /* TeamPageThisWeek.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageThisWeek.swift; sourceTree = "<group>"; };
-		AB000093 /* TeamPageRivalryMeter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageRivalryMeter.swift; sourceTree = "<group>"; };
 		AB000094 /* TeamPageCountdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageCountdown.swift; sourceTree = "<group>"; };
 		AB000095 /* TeamPageFormDots.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamPageFormDots.swift; sourceTree = "<group>"; };
 		AB000099 /* GoalDigger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GoalDigger.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -549,9 +543,6 @@
 			children = (
 				AB000037 /* TeamPageView.swift */,
 				AB000090 /* TeamPageCard.swift */,
-				AB000091 /* TeamPageMoodBanner.swift */,
-				AB000092 /* TeamPageThisWeek.swift */,
-				AB000093 /* TeamPageRivalryMeter.swift */,
 				AB000094 /* TeamPageCountdown.swift */,
 				AB000095 /* TeamPageFormDots.swift */,
 			);
@@ -842,9 +833,6 @@
 				AA000064 /* ContextSwitcherView.swift in Sources */,
 				AA000065 /* EveryoneEmptyStateCard.swift in Sources */,
 				AA000090 /* TeamPageCard.swift in Sources */,
-				AA000091 /* TeamPageMoodBanner.swift in Sources */,
-				AA000092 /* TeamPageThisWeek.swift in Sources */,
-				AA000093 /* TeamPageRivalryMeter.swift in Sources */,
 				AA000094 /* TeamPageCountdown.swift in Sources */,
 				AA000095 /* TeamPageFormDots.swift in Sources */,
 				AA000200 /* OnboardingTextField.swift in Sources */,

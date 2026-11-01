@@ -4,7 +4,6 @@ import Foundation
 enum AppFeature {
     case insiderCard
     case matchDayLive
-    case playerDossier
     case groupChatPrep
 }
 
@@ -17,11 +16,6 @@ struct TierGating {
         switch feature {
         case .insiderCard, .matchDayLive:
             return tier >= 2
-        case .playerDossier:
-            // Dossiers are basic "who is this player" info — more like
-            // onboarding than a premium feature. Ungated so a casual taps-around
-            // on the team page always reveals real content, never a paywall.
-            return true
         case .groupChatPrep:
             return tier >= 3
         }

@@ -1087,7 +1087,7 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
     // sends for the same club: this is the pair that decides whether a derby
     // weekend is labelled one, and nothing upstream gives either side an id.
     for (feed, seeded) in [
-        ("Tottenham", "Tottenham Hotspur"), ("Birmingham", "Birmingham City"),
+        ("Tottenham", "Tottenham Hotspur"), ("Aston Villa", "Aston Villa"),
         ("Southampton", "Southampton"), ("Fulham", "Fulham"),
         ("Crystal Palace", "Crystal Palace"), ("Brighton", "Brighton & Hove Albion"),
         ("Liverpool", "Liverpool"), ("Chelsea", "Chelsea"),

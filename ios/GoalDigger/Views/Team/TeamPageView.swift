@@ -10,12 +10,6 @@ struct TeamPageView: View {
     /// anecdote). Powers the redesigned "Things he doesn't know" section
     /// at the bottom of the team page. Empty array = section hidden.
     @State private var insiderSet: [InsiderItem] = []
-    /// Pre-tournament preview content_items keyed by synthetic fixture
-    /// id (`"<team_id>:<iso-date>:<opponent-slug>"`). When a row in the
-    /// Calendar tab matches a key here, tapping the row navigates to
-    /// that content_item's ContentDetailView. Empty for PL clubs and
-    /// for any WC country that hasn't been seeded yet. See Lesson 78.
-    @State private var previewByFixtureId: [String: ContentItem] = [:]
     @State private var isLoading = true
     @State private var hasError = false
     @State private var presentedPlayer: PlayerCard?
@@ -41,7 +35,7 @@ struct TeamPageView: View {
     private var importanceColumnWidth: CGFloat { min(importanceColumnScale, 150) }
 
     private enum TeamCardType: String, Hashable {
-        case basics, manager, onesToKnow, rivalry, form, season, comingUp
+        case basics, manager, onesToKnow, rivalry, form, comingUp
     }
 
     /// 3-way segmented control at the top of the team page.
@@ -89,17 +83,6 @@ struct TeamPageView: View {
             // fallback it shows for any failed image load.
             TeamCrestView(url: nil, size: 64)
         }
-    }
-
-    /// Word-aware truncation; avoids mid-word cuts.
-    private func truncateAtWord(_ text: String, maxChars: Int) -> String {
-        if text.count <= maxChars { return text }
-        let cutEnd = text.index(text.startIndex, offsetBy: maxChars)
-        let head = text[..<cutEnd]
-        if let lastSpace = head.lastIndex(where: { $0.isWhitespace }) {
-            return String(text[..<lastSpace]) + "…"
-        }
-        return String(head) + "…"
     }
 
     /// Rivalry blurbs from team-page-generator are shaped `"<rivals> — <context>..."`.
@@ -173,19 +156,13 @@ struct TeamPageView: View {
         .toolbarBackground(Color.appBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .task { await loadTeamPage() }
-        // His club's squad rows, for the shirt numbers. Only for the club My
-        // Turn's squad pack is for: the service caches one club.
-        .task(id: teamId) {
-            guard let team = appState.selectedTeam, team.rawValue == teamId else { return }
-            await squad.refresh(team: team, personalise: { appState.personalise($0) })
-        }
         .sheet(item: $presentedPlayer) { player in
             PlayerCardModal(player: player)
         }
         #if DEBUG
         .onAppear {
             // Screenshot harness (see MainTabView): -gdTeamTab calendar|table,
-            // -gdTeamExpand basics|manager|rivalry|season|comingUp.
+            // -gdTeamExpand basics|manager|rivalry|form|comingUp.
             let args = ProcessInfo.processInfo.arguments
             if let i = args.firstIndex(of: "-gdTeamTab"), i + 1 < args.count {
                 switch args[i + 1] { case "calendar": activeTab = .calendar; case "table": activeTab = .table; default: break }
@@ -199,7 +176,7 @@ struct TeamPageView: View {
                 case "basics": expandedCard = .basics
                 case "manager": expandedCard = .manager
                 case "rivalry": expandedCard = .rivalry
-                case "season": expandedCard = .season
+                case "form": expandedCard = .form
                 case "comingUp": expandedCard = .comingUp
                 default: break
                 }
@@ -276,25 +253,14 @@ struct TeamPageView: View {
     @ViewBuilder
     private func cardsSection(_ cards: TeamPageCards) -> some View {
         // Card 1: the next game. It is the reason she opened the page, so it
-        // sits above everything else; after the whistle the post-match card
-        // takes the same slot until it expires.
-        if showPostMatch, let postMatch = content?.cards.postMatch {
-            postMatchCard(postMatch)
-        } else if let fixture = cards.nextFixture {
+        // sits above everything else, after the whistle too: the game just
+        // played is one line under it that opens Matchday › After, its one
+        // home (council TEAM-01-15; the After card here hid Sunday's preview).
+        if let fixture = cards.nextFixture {
             comingUpCard(fixture).id(TeamCardType.comingUp)
         }
-
-        // Mood banner
-        if let mood = cards.mood {
-            TeamPageMoodBanner(mood: mood)
-        }
-
-        // THIS WEEK hero. Only when it is not the same fixture the Coming-up
-        // card above has just described in more detail: with Coming up first on
-        // the tab, the two read as the same sentence twice, which reads like a
-        // bug. It still earns its place when there is no next fixture to show.
-        if let thisWeek = cards.thisWeek, cards.nextFixture == nil {
-            TeamPageThisWeek(card: thisWeek)
+        if let last = cards.lastMatch, !last.isExpired, Team(rawValue: teamId) != nil {
+            afterLink(last, recent: cards.recentResults ?? [])
         }
 
         // Card 1: The basics
@@ -302,8 +268,8 @@ struct TeamPageView: View {
             TeamPageCard(
                 title: "The basics",
                 primaryText: basics.nickname,
-                zone2Label: "Say this:",
-                talkingPoint: basics.talkingPoint.map { appState.personalise($0) },
+                zone2Label: "",
+                talkingPoint: nil,
                 isStatic: true,
                 isExpanded: expandedCard == .basics,
                 onTap: { toggleCard(.basics) },
@@ -382,8 +348,8 @@ struct TeamPageView: View {
             TeamPageCard(
                 title: "The rivalry",
                 primaryText: rivalry.rival ?? rivalsHeadline(appState.personalise(rivalry.text)),
-                zone2Label: "Use this:",
-                talkingPoint: rivalry.talkingPoint.map { appState.personalise($0) },
+                zone2Label: "",
+                talkingPoint: nil,
                 isStatic: true,
                 isExpanded: expandedCard == .rivalry,
                 onTap: { toggleCard(.rivalry) },
@@ -391,61 +357,45 @@ struct TeamPageView: View {
                 leadingImageURL: rivalry.rivalCrestURL,
                 zone1Collapsed: { EmptyView() },
                 zone1Expanded: {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(appState.personalise(rivalry.text))
-                            .font(.jakarta(14, weight: .regular))
-                            .foregroundColor(.warmWhite.opacity(0.9))
-
-                        if let intensity = cards.rivalryIntensity {
-                            TeamPageRivalryMeter(intensity: intensity)
-                        }
-                    }
+                    Text(appState.personalise(rivalry.text))
+                        .font(.jakarta(14, weight: .regular))
+                        .foregroundColor(.warmWhite.opacity(0.9))
                 }
             )
             .id(TeamCardType.rivalry)
         }
 
-        // Card 5: How they're doing
+        // Card 5: How they're doing. The season sentence lives in here when
+        // it is opened: "The season so far" was its own card and said the
+        // position a third time (council TEAM-01-60).
         if let form = cards.form {
             TeamPageCard(
                 title: "How they're doing",
                 primaryText: form.leaguePositionLabel,
-                zone2Label: "Say this:",
-                talkingPoint: form.talkingPoint.map { appState.personalise($0) },
+                zone2Label: "",
+                talkingPoint: nil,
                 isExpanded: expandedCard == .form,
                 onTap: { toggleCard(.form) },
                 zone1Collapsed: {
-                    TeamPageFormDots(recentForm: form.recentForm, isExpanded: false)
+                    TeamPageFormDots(recentForm: form.recentForm)
                 },
                 zone1Expanded: {
                     VStack(alignment: .leading, spacing: 6) {
-                        TeamPageFormDots(recentForm: form.recentForm, isExpanded: expandedCard == .form)
+                        TeamPageFormDots(recentForm: form.recentForm)
 
                         Text(appState.personalise(form.formSummary))
                             .font(.jakarta(14, weight: .regular))
                             .foregroundColor(.warmWhite.opacity(0.9))
+                        if let season = cards.season {
+                            Text(appState.personalise(season.summary))
+                                .font(.jakarta(14, weight: .regular))
+                                .foregroundColor(.warmWhite.opacity(0.9))
+                                .padding(.top, 2)
+                        }
                     }
                 }
             )
-        }
-
-        // Card 6: The season so far
-        if let season = cards.season {
-            TeamPageCard(
-                title: "The season so far",
-                primaryText: truncateAtWord(appState.personalise(season.summary), maxChars: 50),
-                zone2Label: "Drop this:",
-                talkingPoint: season.talkingPoint.map { appState.personalise($0) },
-                isExpanded: expandedCard == .season,
-                onTap: { toggleCard(.season) },
-                hidePrimaryWhenExpanded: true,
-                zone1Collapsed: { EmptyView() },
-                zone1Expanded: {
-                    Text(appState.personalise(season.summary))
-                        .font(.jakarta(14, weight: .regular))
-                        .foregroundColor(.warmWhite.opacity(0.9))
-                }
-            )
+            .id(TeamCardType.form)
         }
 
         // Card 8 (T2+ only): "Things he doesn't know" — 4 niche items
@@ -475,15 +425,32 @@ struct TeamPageView: View {
             }
             .padding(.top, 8)
         }
+    }
 
-        // Freshness line
-        if let text = cards.freshnessText {
-            Text(text)
-                .font(.jakarta(12, weight: .regular))
-                .foregroundColor(.mutedText)
-                .frame(maxWidth: .infinity)
-                .padding(.top, 8)
+    /// "After Chelsea: lost on pens ›": opens Matchday on After for this club,
+    /// which the switcher is already on (the club page follows it).
+    private func afterLink(_ last: LastMatchCard, recent: [RecentResult]) -> some View {
+        Button {
+            appState.pendingOpenAfter = true
+        } label: {
+            HStack {
+                Text(last.afterLine(recent: recent))
+                    .font(.jakarta(14, weight: .bold))
+                    .foregroundColor(.warmWhite)
+                    .multilineTextAlignment(.leading)
+                Spacer(minLength: 8)
+                Text("›")
+                    .font(.jakarta(16, weight: .bold))
+                    .foregroundColor(.hotRose)
+            }
+            .padding(.horizontal, 16)
+            .frame(minHeight: 44)
+            .background(Color.deepMauve)
+            .cornerRadius(12)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .accessibilityHint("Opens Matchday on the game just played")
     }
 
     // MARK: - Coming up card
@@ -511,54 +478,50 @@ struct TeamPageView: View {
             // 2026-10-07 it left the page for My Turn on the first club's,
             // and Anton wants it back: the useful part was not having to
             // leave (2026-10-27).
-            footerLabel: "Pre game talk ›",
+            footerLabel: "The preview ›",
             onFooterTap: nil,
             zone1Collapsed: {
-                // One line of date + chips; stacked and wrapping at the
-                // accessibility sizes, where the row cut the date to "Sat, 10…".
-                let row = dynamicTypeSize.isAccessibilitySize
-                    ? AnyLayout(VStackLayout(alignment: .leading, spacing: 6))
-                    : AnyLayout(HStackLayout(spacing: 8))
-                row {
+                // The date and time on a line of their own, the chips on the
+                // next: sharing one, a match-day kickoff was cut to "at 1…"
+                // and the cup to "League Cu…" (council TEAM-01-23/24).
+                VStack(alignment: .leading, spacing: 6) {
                     Text(formattedFixtureDate(fixture.date))
                         .font(.jakarta(13, weight: .regular))
                         .foregroundColor(.warmWhite.opacity(0.7))
                         .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
-                    // Which competition. "Hull City, home" on a League Cup
-                    // night was indistinguishable from a league Saturday.
-                    if let competition = fixture.competitionShort {
-                        Text(competition)
-                            .font(.jakarta(11, weight: .bold))
-                            .foregroundColor(.warmWhite.opacity(0.85))
-                            .lineLimit(1)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 3)
-                            .background(Capsule().fill(Color.warmWhite.opacity(0.12)))
-                    }
-                    if let favorite = fixture.favorite {
-                        Text(favorite.label)
-                            .font(.jakarta(11, weight: .bold))
-                            .foregroundColor(.hotRose)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 3)
-                            .background(Capsule().fill(Color.hotRose.opacity(0.12)))
+                    if fixture.competitionShort != nil || fixture.favorite != nil {
+                        HStack(spacing: 8) {
+                            // Which competition. "Hull City, home" on a League
+                            // Cup night was indistinguishable from a league Saturday.
+                            if let competition = fixture.competitionShort {
+                                Text(competition)
+                                    .font(.jakarta(11, weight: .bold))
+                                    .foregroundColor(.warmWhite.opacity(0.85))
+                                    .fixedSize()
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(Capsule().fill(Color.warmWhite.opacity(0.12)))
+                            }
+                            if let favorite = fixture.favorite {
+                                Text(favorite.label)
+                                    .font(.jakarta(11, weight: .bold))
+                                    .foregroundColor(.hotRose)
+                                    .lineLimit(1)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(Capsule().fill(Color.hotRose.opacity(0.12)))
+                            }
+                        }
                     }
                 }
             },
             zone1Expanded: {
                 VStack(alignment: .leading, spacing: 8) {
+                    // The favourite chip stays in the collapsed part above,
+                    // which is still on screen (council TEAM-02-03).
                     Text(kickoffLine(fixture))
                         .font(.jakarta(13, weight: .bold))
                         .foregroundColor(.warmWhite.opacity(0.7))
-
-                    if let favorite = fixture.favorite {
-                        Text(favorite.label)
-                            .font(.jakarta(11, weight: .bold))
-                            .foregroundColor(.hotRose)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 3)
-                            .background(Capsule().fill(Color.hotRose.opacity(0.12)))
-                    }
 
                     // The preview is the deterministic paragraph, then
                     // optionally a blank line and one sentence of colour from
@@ -625,44 +588,6 @@ struct TeamPageView: View {
         return f
     }()
 
-    // MARK: - Post-match card
-
-    @ViewBuilder
-    private func postMatchCard(_ postMatch: TeamPostMatchCard) -> some View {
-        let tintColor: Color? = {
-            switch postMatch.state {
-            case .win: return Color.hotRose.opacity(0.06)
-            case .loss: return Color.red.opacity(0.04)
-            case .draw: return nil
-            }
-        }()
-
-        let label: String = {
-            switch postMatch.state {
-            case .win: return "Say this:"
-            case .loss: return "Tonight:"
-            case .draw: return "Ask \(appState.pObject):"
-            }
-        }()
-
-        TeamPageCard(
-            title: postMatch.state == .win ? "After the win" : postMatch.state == .loss ? "After the loss" : "After the draw",
-            primaryText: truncateAtWord(appState.personalise(postMatch.text), maxChars: 50),
-            zone2Label: label,
-            talkingPoint: appState.personalise(postMatch.talkingPoint),
-            isExpanded: expandedCard == .comingUp,
-            onTap: { toggleCard(.comingUp) },
-            tintColor: tintColor,
-            hidePrimaryWhenExpanded: true,
-            zone1Collapsed: { EmptyView() },
-            zone1Expanded: {
-                Text(appState.personalise(postMatch.text))
-                    .font(.jakarta(14, weight: .regular))
-                    .foregroundColor(.warmWhite.opacity(0.9))
-            }
-        )
-    }
-
     // MARK: - Calendar tab
 
     @ViewBuilder
@@ -680,10 +605,7 @@ struct TeamPageView: View {
                 )
             } else {
                 importanceLegend
-                ForEach(fixtures) { fixture in
-                    let preview = previewByFixtureId[previewKey(for: fixture)]
-                    calendarRow(fixture, preview: preview)
-                }
+                ForEach(fixtures) { calendarRowBody($0) }
             }
             if !recent.isEmpty {
                 lastGamesSection(recent)
@@ -749,31 +671,8 @@ struct TeamPageView: View {
         }
     }
 
-    /// Renders one Calendar row. When `preview` is non-nil, the row is
-    /// wrapped in a NavigationLink that opens the preview content_item's
-    /// ContentDetailView. Rows without a preview render the same visual
-    /// but are tap-inert (matches V1 behaviour — graceful for friendlies
-    /// and post-group fixtures that aren't previewed).
     @ViewBuilder
-    private func calendarRow(_ f: UpcomingFixture, preview: ContentItem?) -> some View {
-        let row = calendarRowBody(f, hasPreview: preview != nil)
-        if let preview {
-            NavigationLink(value: ContentDetailDestination(
-                contentId: preview.id,
-                scrollToTalkingPoints: false,
-                isEveryoneContext: false,
-                preloadedItem: preview
-            )) {
-                row
-            }
-            .buttonStyle(.plain)
-        } else {
-            row
-        }
-    }
-
-    @ViewBuilder
-    private func calendarRowBody(_ f: UpcomingFixture, hasPreview: Bool) -> some View {
+    private func calendarRowBody(_ f: UpcomingFixture) -> some View {
         Group {
             // Three columns side by side leave the club name a sliver at
             // accessibility text sizes — "Wolverhampton Wanderers" came out as
@@ -783,7 +682,7 @@ struct TeamPageView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     calendarDateColumn(f)
                     calendarOpponentColumn(f)
-                    calendarImportanceColumn(f, hasPreview: hasPreview)
+                    calendarImportanceColumn(f)
                 }
             } else {
                 HStack(alignment: .top, spacing: 14) {
@@ -794,7 +693,7 @@ struct TeamPageView: View {
                         // before the importance label does.
                         .layoutPriority(1)
                     Spacer(minLength: 0)
-                    calendarImportanceColumn(f, hasPreview: hasPreview)
+                    calendarImportanceColumn(f)
                         // No floor here. A 76pt minimum was tried on
                         // 2026-09-23 to stop "Champions League" breaking as
                         // "Champion s League", and it moved the break onto the
@@ -876,7 +775,7 @@ struct TeamPageView: View {
         .accessibilityLabel("The dots show how big each game is. More dots, bigger game.")
     }
 
-    private func calendarImportanceColumn(_ f: UpcomingFixture, hasPreview: Bool) -> some View {
+    private func calendarImportanceColumn(_ f: UpcomingFixture) -> some View {
         VStack(alignment: .trailing, spacing: 4) {
             HStack(spacing: 3) {
                 // A postponed game gets one dot: it is still on the list,
@@ -888,21 +787,14 @@ struct TeamPageView: View {
                         .frame(width: 6, height: 6)
                 }
             }
-            HStack(spacing: 4) {
-                Text(f.isPostponed ? "Postponed" : f.importanceLabel)
-                    .font(.feedTimestamp).foregroundColor(.hotRose)
-                    .lineLimit(2)
-                    // Shrink before splitting a word: the label is free text
-                    // from the server and the next one may be longer than
-                    // anything the floor above was measured against.
-                    .minimumScaleFactor(0.6)
-                    .multilineTextAlignment(.trailing)
-                if hasPreview {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(.hotRose.opacity(0.7))
-                }
-            }
+            Text(f.isPostponed ? "Postponed" : f.importanceLabel)
+                .font(.feedTimestamp).foregroundColor(.hotRose)
+                .lineLimit(2)
+                // Shrink before splitting a word: the label is free text
+                // from the server and the next one may be longer than
+                // anything the floor above was measured against.
+                .minimumScaleFactor(0.6)
+                .multilineTextAlignment(.trailing)
         }
     }
 
@@ -1154,13 +1046,6 @@ struct TeamPageView: View {
         }
     }
 
-    private var showPostMatch: Bool {
-        guard let pm = content?.cards.postMatch,
-              let expires = Self.parseISO(pm.expiresAt)
-        else { return false }
-        return Date() < expires
-    }
-
     /// The routine writes ISO 8601 with or without fractional seconds. A
     /// `.withInternetDateTime`-only parser printed the raw string back at her —
     /// a calendar row reading "2026-09-20T15:00:00.000Z" where a date belongs.
@@ -1332,9 +1217,21 @@ struct TeamPageView: View {
                             .font(.jakarta(22, weight: .bold))
                             .foregroundColor(.warmWhite)
                     }
-                    Text(player.position.capitalized)
-                        .font(.jakarta(13, weight: .medium))
-                        .foregroundColor(.warmWhite.opacity(0.55))
+                    positionLine(player)
+                    if let tally = tally(for: player) {
+                        Text(tally)
+                            .font(.jakarta(13, weight: .medium))
+                            .foregroundColor(.warmWhite.opacity(0.55))
+                    }
+                    if let reason = TeamInjury.reason(for: player.name, in: content?.cards.injuries ?? []) {
+                        Text("Out: \(reason)")
+                            .font(.jakarta(12, weight: .bold))
+                            .foregroundColor(.warmWhite)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(Capsule().fill(Color.hotRose))
+                            .padding(.top, 2)
+                    }
                     if let oneLiner = player.oneLiner {
                         Text(appState.personalise(oneLiner))
                             .font(.jakarta(15, weight: .regular))
@@ -1379,12 +1276,6 @@ struct TeamPageView: View {
                         if !card.summary.isEmpty {
                             Text(appState.personalise(card.summary))
                                 .font(.jakarta(14, weight: .regular))
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        if let form = card.form, !form.isEmpty {
-                            Text(appState.personalise(form))
-                                .font(.jakarta(13, weight: .regular))
-                                .opacity(0.85)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         VStack(alignment: .leading, spacing: 4) {
@@ -1459,14 +1350,55 @@ struct TeamPageView: View {
         name.split(separator: " ").last.map(String.init) ?? name
     }
 
+    /// His squad row (this club), matched on the folded surname when one man
+    /// has it.
+    private func squadRow(for player: TopPlayer) -> LiveSquadPack.Player? {
+        let key = PlayerPortrait.surname(player.name)
+        let hits = squad.players.filter { ($0.team_id == nil || $0.team_id == teamId) && PlayerPortrait.surname($0.name) == key }
+        return hits.count == 1 ? hits[0] : nil
+    }
+
+    /// "4 goals · 9 starts this season", off the players table at view time:
+    /// a tally in the one-liner was a game stale (council TEAM-01-49).
+    private func tally(for player: TopPlayer) -> String? {
+        guard let row = squadRow(for: player), let starts = row.starts else { return nil }
+        let goals = (row.goals ?? 0) > 0 ? "\(row.goals!) goal\(row.goals == 1 ? "" : "s") · " : ""
+        return "\(goals)\(starts) start\(starts == 1 ? "" : "s") this season"
+    }
+
+    /// His position: the dossier's ("Right-winger") when the glossary can
+    /// explain it, tappable for that; otherwise API-Football's coarse label,
+    /// which called Gakpo a midfielder (council TEAM-01-48).
+    @ViewBuilder
+    private func positionLine(_ player: TopPlayer) -> some View {
+        let key = PlayerPortrait.surname(player.name)
+        let hits = playerCards.filter { key != nil && PlayerPortrait.surname($0.playerName) == key }
+        let position = hits.count == 1 ? hits[0].position : ""
+        let term = ([position] + position.split(whereSeparator: { $0 == " " || $0 == "-" }).suffix(1).map(String.init))
+            .first { !$0.isEmpty && GlossaryService.shared.lookup($0) != nil }
+        if let term {
+            GlossaryButton(term: term) {
+                HStack(spacing: 4) {
+                    Text(position.prefix(1).uppercased() + position.dropFirst())
+                    Image(systemName: "info.circle").font(.system(size: 11)).foregroundColor(.hotRose)
+                }
+                .font(.jakarta(13, weight: .medium))
+                .foregroundColor(.warmWhite.opacity(0.55))
+                .contentShape(Rectangle())
+            }
+        } else {
+            Text(player.position.capitalized)
+                .font(.jakarta(13, weight: .medium))
+                .foregroundColor(.warmWhite.opacity(0.55))
+        }
+    }
+
     /// His own line to say: the squad pack's strongest fact about him this
     /// season ("Saka has three league goals already…"), the same one the
     /// quiz teaches, or the line for his position when the facts are thin.
     private func opener(for player: TopPlayer) -> String {
         let rows = squad.players.filter { $0.team_id == nil || $0.team_id == teamId }
-        let key = PlayerPortrait.surname(player.name)
-        let hits = rows.filter { PlayerPortrait.surname($0.name) == key }
-        let row = hits.count == 1 ? hits[0] : nil
+        let row = squadRow(for: player)
         let team = Team(rawValue: teamId)
         if let row, let team {
             let played = content?.cards.standings?.entries
@@ -1602,7 +1534,7 @@ struct TeamPageView: View {
 
     private var teamPageErrorView: some View {
         VStack(spacing: 16) {
-            Text("Couldn't load \(hisNameOrHis.lowercased()) team right now.")
+            Text("Couldn't load \(appState.namePossessive) team right now.")
                 .font(.jakarta(15, weight: .semiBold))
                 .foregroundColor(.warmWhite)
             Button {
@@ -1636,7 +1568,7 @@ struct TeamPageView: View {
             Image(systemName: "sportscourt")
                 .font(.system(size: 32))
                 .foregroundColor(.hotRose.opacity(0.6))
-            Text("We're getting \(hisNameOrHis.lowercased()) team ready. Check back in a moment.")
+            Text("We're getting \(appState.namePossessive) team ready. Check back in a moment.")
                 .font(.jakarta(15, weight: .medium))
                 .foregroundColor(.warmWhite.opacity(0.7))
                 .multilineTextAlignment(.center)
@@ -1692,15 +1624,13 @@ struct TeamPageView: View {
             }
             Self.loadedAt[teamId] = Date()
 
-            // Fetch player cards + insider set + previews in parallel with fresh data
+            // Fetch player cards + insider set in parallel with fresh data
             async let freshContent = fetchFromNetwork()
             async let players = fetchPlayerCards()
             async let insider = fetchInsiderSet()
-            async let previews = fetchPreviewItems()
 
             playerCards = await players
             insiderSet = await insider
-            previewByFixtureId = indexPreviews(await previews)
 
             if let fresh = await freshContent {
                 content = fresh
@@ -1727,10 +1657,8 @@ struct TeamPageView: View {
                 TeamPageCache.save(content: fetched, teamId: teamId)
                 async let players = fetchPlayerCards()
                 async let insider = fetchInsiderSet()
-                async let previews = fetchPreviewItems()
                 playerCards = await players
                 insiderSet = await insider
-                previewByFixtureId = indexPreviews(await previews)
             } else {
                 #if DEBUG
                 if let mock = MockData.teamPage(for: teamId) {
@@ -1768,39 +1696,5 @@ struct TeamPageView: View {
     /// (the section just hides).
     private func fetchInsiderSet() async -> [InsiderItem] {
         (try? await APIClient.shared.fetchInsiderSet(teamId: teamId)) ?? []
-    }
-
-    /// Fetches pre-tournament preview content_items for this team. Used to
-    /// power the Calendar tap-to-detail navigation. Empty array on error
-    /// or for teams without seeded previews (most teams pre-V1.1).
-    private func fetchPreviewItems() async -> [ContentItem] {
-        (try? await APIClient.shared.fetchPreviewItems(teamId: teamId)) ?? []
-    }
-
-    /// Build a `previewFixtureId → ContentItem` map for fast lookup at
-    /// row-render time. Only items with non-nil `previewFixtureId` enter
-    /// the map; the fetch query already filters for these, but the guard
-    /// is cheap and defensive.
-    private func indexPreviews(_ items: [ContentItem]) -> [String: ContentItem] {
-        var out: [String: ContentItem] = [:]
-        for item in items {
-            if let key = item.previewFixtureId { out[key] = item }
-        }
-        return out
-    }
-
-    /// Compute the synthetic fixture id used to link an upcoming fixture
-    /// row to its preview content_item. Format mirrors the migration 053
-    /// COMMENT: `"<team_id>:<iso-date>:<opponent-slug>"`. ISO date is
-    /// the date portion only (no time) so minor timestamp drift between
-    /// the team_pages payload and the content_items row doesn't break
-    /// the match. Opponent slug lowercases the display name and swaps
-    /// spaces for underscores ("Costa Rica" → "costa_rica").
-    private func previewKey(for fixture: UpcomingFixture) -> String {
-        let datePart = String(fixture.date.prefix(10))
-        let slug = fixture.opponent
-            .lowercased()
-            .replacingOccurrences(of: " ", with: "_")
-        return "\(teamId):\(datePart):\(slug)"
     }
 }

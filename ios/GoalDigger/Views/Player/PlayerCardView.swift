@@ -15,17 +15,9 @@ struct PlayerCardModal: View {
     @Environment(AppState.self) var appState
     @Environment(\.dismiss) var dismiss
 
-    /// Three rendering modes for the modal:
-    /// - `.locked`: user is below T3, show a soft teaser inviting them to upgrade
-    /// - `.empty`: T3 user but the routine hasn't generated a dossier yet
-    /// - `.full`: T3 user with a real dossier row
-    private enum Mode { case locked, empty, full }
-
-    private var mode: Mode {
-        if gated, !TierGating.isAvailable(.playerDossier, tier: appState.selectedTier) { return .locked }
-        if player.summary.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return .empty }
-        return .full
-    }
+    /// No dossier yet (the routine hasn't written one for him). The Premium
+    /// teaser that used to sit beside this never rendered (council TEAM-06-13).
+    private var isEmpty: Bool { player.summary.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 
     /// "Number 8 · 27" under the position, when the facts are there.
     private var facts: String? {
@@ -94,14 +86,7 @@ struct PlayerCardModal: View {
                         .padding(.top, 2)
                 }
 
-                switch mode {
-                case .locked:
-                    lockedBody
-                case .empty:
-                    emptyBody
-                case .full:
-                    fullBody
-                }
+                if isEmpty { emptyBody } else { fullBody }
             }
             .padding(Layout.cardPadding)
             .padding(.top, 24) // space for close button
@@ -125,51 +110,17 @@ struct PlayerCardModal: View {
 
     // MARK: - Modes
 
-    /// T3+ with a real dossier: name, position, summary, optional vibe + form.
+    /// A real dossier: the summary. The vibe and form tags under it went
+    /// (council TEAM-06-09/10): the form one repeated the summary.
     @ViewBuilder
     private var fullBody: some View {
         Text(appState.personalise(player.summary))
             .font(.detailBody)
             .foregroundColor(.textPrimaryOnCard)
             .lineLimit(5)
-
-        if let vibe = player.vibe {
-            HStack(spacing: 6) {
-                Image(systemName: vibeIcon(vibe))
-                    .font(.system(size: 12))
-                Text(vibe.capitalized)
-                    .font(.feedTimestamp)
-            }
-            .foregroundColor(.textSecondaryOnCard)
-        }
-
-        if let form = player.form {
-            HStack(spacing: 6) {
-                Image(systemName: "chart.line.uptrend.xyaxis")
-                    .font(.system(size: 12))
-                Text(appState.personalise(form))
-                    .font(.feedTimestamp)
-            }
-            .foregroundColor(.textSecondaryOnCard)
-        }
     }
 
-    /// T1/T2: soft teaser. Doesn't promise a specific paywall flow — Settings
-    /// is the only tier-switch surface today (paywall was removed when the app
-    /// went paid-up-front on the App Store), so just point her there.
-    @ViewBuilder
-    private var lockedBody: some View {
-        Text("Player dossiers are part of the Premium tier.")
-            .font(.detailBody)
-            .foregroundColor(.textPrimaryOnCard)
-
-        Text("Bump to T3 in Settings to unlock who \(appState.pSubject) \(appState.usesHeVoice ? "is" : "are"), how \(appState.pSubject) \(appState.usesHeVoice ? "plays" : "play"), and what to mention.")
-            .font(.feedTimestamp)
-            .foregroundColor(.textSecondaryOnCard)
-            .padding(.top, 2)
-    }
-
-    /// T3+ but no row yet (routine hasn't run for this player). Sister-voice
+    /// No row yet (routine hasn't run for this player). Sister-voice
     /// "lands Sunday" copy so she knows it's coming, not broken.
     @ViewBuilder
     private var emptyBody: some View {
@@ -186,15 +137,5 @@ struct PlayerCardModal: View {
             .font(.feedTimestamp)
             .foregroundColor(.textSecondaryOnCard)
             .padding(.top, 2)
-    }
-
-    private func vibeIcon(_ vibe: String) -> String {
-        switch vibe.lowercased() {
-        case "fan favourite": return "heart.fill"
-        case "controversial": return "exclamationmark.triangle"
-        case "reliable": return "checkmark.shield"
-        case "flashy": return "sparkles"
-        default: return "person"
-        }
     }
 }
