@@ -22,7 +22,7 @@ OVERHEARD = {
         player=dict(
             slot='ours.keeper',
             overheard="In interviews they all say 'the gaffer'. Bet {ours.keeper} does too.",
-            sayIt='"Does {ours.keeper} call the manager the gaffer too, or is that just fans?"',
+            sayIt='"Do you reckon {ours.keeper} rates the manager?"',
         ),
     ),
     "the-boss": dict(

@@ -429,7 +429,7 @@ OVERHEARD = {
         player=dict(
             slot='theirs.midfielder',
             overheard="Would you take {theirs.midfielder}? That's your transfer window done.",
-            sayIt='"When\'s the next transfer window? Would we ever go for {theirs.midfielder}?"',
+            sayIt='"Would we ever go for {theirs.midfielder} in a transfer window?"',
         ),
     ),
     "deadline-day": dict(

@@ -335,7 +335,7 @@
       "term": "Top four",
       "meaning": "Finishing in the first four places, which earns a Champions League spot for next season. The realistic target for clubs who won't win the title.",
       "heard": "\"Top four is the aim\" from big clubs that won't win the title.",
-      "sayIt": "\"Top four is the aim this year, surely?\"",
+      "sayIt": "\"Who do you think makes the top four?\"",
       "level": 2,
       "seeAlso": [
         "champions-league"
@@ -1960,7 +1960,7 @@
       "term": "xG",
       "meaning": "Expected goals. A number for how good a chance was: a tap-in is nearly 1, a shot from forty yards is nearly 0. Add them up to see who deserved to win.",
       "heard": "\"The xG was 2.5 and we lost 1-0\" as a complaint.",
-      "sayIt": "\"What was the xG? Felt like they should've scored three.\"",
+      "sayIt": "\"Felt like they should've scored three from those.\"",
       "level": 7,
       "overheard": "Have a look at the xG from that. It'll only wind you up.",
       "overheardTerm": "xG",
@@ -2893,7 +2893,7 @@
       "term": "Transfer window",
       "meaning": "The only times clubs can buy and sell players: the summer, and the month of January. Outside those, nothing moves.",
       "heard": "\"Deadline day\" on the last day, with a countdown clock.",
-      "sayIt": "\"Window shuts Monday. Are they buying anyone?\"",
+      "sayIt": "\"Are they looking to buy anyone in the window?\"",
       "level": 10,
       "seeAlso": [
         "deadline-day"
@@ -2913,7 +2913,7 @@
         {
           "slot": "theirs.midfielder",
           "overheard": "Would you take {theirs.midfielder}? That's your transfer window done.",
-          "sayIt": "\"When's the next transfer window? Would we ever go for {theirs.midfielder}?\"",
+          "sayIt": "\"Would we ever go for {theirs.midfielder} in a transfer window?\"",
           "overheardTerm": "transfer window"
         }
       ]
@@ -2924,7 +2924,7 @@
       "term": "Deadline day",
       "meaning": "The last day of the transfer window. Deals get done at midnight and reporters stand outside stadiums in the cold.",
       "heard": "Someone shouting \"here we go\" at a phone.",
-      "sayIt": "\"Deadline day. Anything happening?\"",
+      "sayIt": "\"Did they do anything on deadline day?\"",
       "level": 10,
       "seeAlso": [
         "transfer-window",
@@ -3081,7 +3081,7 @@
       "term": "The gaffer",
       "meaning": "The manager. Old British slang for the boss, still used by players and fans.",
       "heard": "\"The gaffer's got them playing\" from players and pundits alike.",
-      "sayIt": "\"What's the gaffer like? Do the players rate him?\"",
+      "sayIt": "\"Do the players rate the manager?\"",
       "level": 10,
       "seeAlso": [
         "the-boss"
@@ -3104,7 +3104,7 @@
         {
           "slot": "ours.keeper",
           "overheard": "In interviews they all say 'the gaffer'. Bet {ours.keeper} does too.",
-          "sayIt": "\"Does {ours.keeper} call the manager the gaffer too, or is that just fans?\"",
+          "sayIt": "\"Do you reckon {ours.keeper} rates the manager?\"",
           "overheardTerm": "gaffer"
         }
       ]
@@ -3259,7 +3259,7 @@
       "term": "Season ticket",
       "meaning": "A pass for every home league game. Waiting lists at big clubs can be years long, and people inherit them.",
       "heard": "\"I've had a season ticket since I was eight.\"",
-      "sayIt": "\"Have you ever had a season ticket?\"",
+      "sayIt": "\"How long is the waiting list for a season ticket there?\"",
       "level": 11,
       "overheard": "My dad had that season ticket before me. No chance I'm giving it up.",
       "overheardTerm": "season ticket",
@@ -3811,7 +3811,7 @@
       "term": "The boot room",
       "meaning": "Liverpool's old coaching room where the next manager was quietly promoted from within. Now means any club that grows its own.",
       "heard": "History chats about how Liverpool used to run things.",
-      "sayIt": "\"Is that a boot room appointment, promoted from inside?\"",
+      "sayIt": "\"Was the boot room just a Liverpool thing, or did every club have one?\"",
       "level": 12,
       "overheard": "The boot room was a proper thing once. All gone now.",
       "overheardTerm": "boot room",
