@@ -140,8 +140,10 @@ struct MeetManagerView: View {
     private var loadingSkeleton: some View {
         RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
             .fill(Color.cardBackground.opacity(0.3))
+            .shimmering()
+            .clipShape(RoundedRectangle(cornerRadius: Layout.cardCornerRadius))
             .frame(height: 140)
-            .redacted(reason: .placeholder)
+            .loadingSkeleton()
     }
 
     // MARK: - Loading

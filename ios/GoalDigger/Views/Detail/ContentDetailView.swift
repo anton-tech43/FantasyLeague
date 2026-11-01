@@ -80,8 +80,20 @@ struct ContentDetailView: View {
                     }
                 }
             } else if isLoading {
-                ProgressView()
-                    .tint(.hotRose)
+                // The article's shape: label, two-line headline, body.
+                VStack(alignment: .leading, spacing: 14) {
+                    SkeletonLine(width: 90, height: 12)
+                    SkeletonLine(height: 26)
+                    SkeletonLine(width: 220, height: 26)
+                        .padding(.bottom, 12)
+                    ForEach(0..<6, id: \.self) { i in
+                        SkeletonLine(width: i == 5 ? 160 : nil)
+                    }
+                }
+                .padding(.horizontal, Layout.screenPadding)
+                .padding(.top, 16)
+                .frame(maxHeight: .infinity, alignment: .top)
+                .loadingSkeleton()
             } else {
                 // Empty/error state — never fall through to a blank screen.
                 VStack(spacing: 16) {

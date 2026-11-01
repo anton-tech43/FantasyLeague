@@ -532,6 +532,7 @@ struct FeedView: View {
             ImmersiveSkeletonCard(cardHeight: screenHeight * Layout.immersiveCardHeightRatio)
             ImmersiveSkeletonCard(cardHeight: screenHeight * Layout.immersiveCardHeightRatio)
         }
+        .loadingSkeleton()
     }
 
     private var errorView: some View {

@@ -218,10 +218,12 @@ struct MeetTeamView: View {
             ForEach(0..<3, id: \.self) { _ in
                 RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
                     .fill(Color.cardBackground.opacity(0.3))
+                    .shimmering()
+                    .clipShape(RoundedRectangle(cornerRadius: Layout.cardCornerRadius))
                     .frame(height: 96)
             }
         }
-        .redacted(reason: .placeholder)
+        .loadingSkeleton()
     }
 
     // MARK: - Derived copy

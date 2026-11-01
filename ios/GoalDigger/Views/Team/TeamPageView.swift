@@ -1575,11 +1575,15 @@ struct TeamPageView: View {
             Circle()
                 .fill(Color.feedDivider)
                 .frame(width: 64, height: 64)
+                .shimmering()
+                .clipShape(Circle())
                 .padding(.top, 16)
 
             ForEach(0..<5, id: \.self) { _ in
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color.deepMauve.opacity(0.5))
+                    .shimmering()
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
                     .frame(height: 120)
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
@@ -1591,6 +1595,7 @@ struct TeamPageView: View {
         .padding(.horizontal, 16)
         .frame(maxHeight: .infinity, alignment: .top)
         .clipped()
+        .loadingSkeleton()
     }
 
     // MARK: - Error state

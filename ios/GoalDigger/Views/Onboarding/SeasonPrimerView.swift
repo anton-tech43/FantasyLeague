@@ -33,11 +33,18 @@ struct SeasonPrimerView: View {
 
             VStack(spacing: 0) {
                 if isLoading {
-                    Spacer()
-                    ProgressView()
-                        .tint(.hotRose)
-                        .scaleEffect(1.2)
-                    Spacer()
+                    // Where the headline and the sentence under it will land.
+                    VStack(alignment: .leading, spacing: 12) {
+                        SkeletonLine(width: 240, height: 34)
+                            .padding(.bottom, 16)
+                        SkeletonLine()
+                        SkeletonLine()
+                        SkeletonLine(width: 180)
+                    }
+                    .padding(.horizontal, Layout.screenPadding)
+                    .padding(.top, 80)
+                    .frame(maxHeight: .infinity, alignment: .top)
+                    .loadingSkeleton()
                 } else if let state, let stateLine = state.stateLine, let feelingLine = state.feelingLine {
                     primerContent(stateLine: stateLine, feelingLine: feelingLine)
                 } else {
