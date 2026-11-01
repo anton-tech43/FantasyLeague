@@ -29,6 +29,7 @@ import { deactivateTokens, fetchAllRows, getSupabaseClient, isTokenDead } from "
 import { cachedUpcomingFixtures } from "../_shared/cached-fixtures.ts";
 import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts";
 import { buildAPNsPayload, sendPushNotification } from "../_shared/apns-client.ts";
+import { fanOutRow } from "../_shared/pipeline-logger.ts";
 import {
   isLondonTomorrow,
   londonHour,
@@ -440,6 +441,15 @@ serve(async (req) => {
         sendResults.filter((r) => isTokenDead(r.res)).map((r) => r.token),
       );
       const sent = sendResults.filter((r) => r.res.success).length;
+      // Whether the reminder went out and to how many: it had no row, so a
+      // morning with no reminder looked the same as one nobody opened.
+      const { error: logErr } = await supabase.from("pipeline_health").insert({
+        team_id: teamId,
+        stage: "apns_send",
+        target: `${prep ? "prep" : "matchday"}_reminder:${teamId}:${cand.fixtureId}`,
+        ...fanOutRow(`${prep ? "prep" : "matchday"} reminder`, sendResults.map((r) => r.res)),
+      });
+      if (logErr) console.warn("matchday-reminder: apns_send row failed (non-fatal):", logErr.message);
 
       remindersSent++;
       results.push({

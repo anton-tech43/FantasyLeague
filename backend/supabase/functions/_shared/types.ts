@@ -98,7 +98,8 @@ export interface PipelineHealthLog {
     | "watch"
     | "page_refresh"      // any team_pages write, incl. the post_match card
     | "news_feeds"
-    | "token_register";   // device_tokens registration volume (migration 108)
+    | "token_register"    // device_tokens registration volume (migration 108)
+    | "la_send";          // one Live Activity fan-out, match-watcher (migration 150)
   // 'partial' for aggregated hop results where some children succeeded and
   // others failed (e.g., notification-sender batching to multiple tokens).
   status: "success" | "failure" | "skipped" | "partial";

@@ -45,7 +45,7 @@ import {
   renderPostMatch,
   type PostMatchState,
 } from "../_shared/stakes-templates.ts";
-import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
+import { fanOutRow, logPipelineEvent } from "../_shared/pipeline-logger.ts";
 import { resultFraming, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
 import { decideMatchdayRetry, MATCHDAY_STALENESS_MS } from "../_shared/matchday-retry.ts";
 import {
@@ -709,6 +709,13 @@ async function sweepLiveActivities(
   }).map((r) => r.token));
   await deactivateTokens(supabase, "live_activity_tokens",
     sent.filter((x) => x.res.success || isTokenDead(x.res) || old.has(x.token)).map((x) => x.token));
+  const fixtureOf = new Map(due.map((r) => [r.token, r.fixture_id]));
+  const byFix = new Map<number | null, Array<typeof sent[number]["res"]>>();
+  for (const x of sent) {
+    const f = fixtureOf.get(x.token) ?? null;
+    byFix.set(f, [...(byFix.get(f) ?? []), x.res]);
+  }
+  for (const [fixture, results] of byFix) await logLaSend(supabase, fixture, "end", 10, results, "sweep");
   const ok = sent.filter((s) => s.res.success).length;
   console.log(`la-end-sweep: ${due.length} due, ${ok} ended, ${due.length - ok} failed (kept for the next sweep unless dead or 6 h old)`);
   const reasons: Record<string, number> = {};
@@ -2117,6 +2124,7 @@ async function handleRequest(req: Request): Promise<Response> {
               "live_activity_tokens",
               sent.filter((s) => isTokenDead(s.res)).map((s) => s.token),
             );
+            await logLaSend(supabase, fixtureId, opts.event, opts.priority ?? 10, sent.map((s) => s.res));
             return sent;
           };
 
@@ -2963,6 +2971,31 @@ async function handleRequest(req: Request): Promise<Response> {
     JSON.stringify(summary),
     { headers: { "Content-Type": "application/json" } },
   );
+}
+
+/// One pipeline_health row per Live Activity fan-out (stage la_send, migration
+/// 150): target la:<fixture>:<event>:p<priority>[:sweep], so the updates a
+/// match cost can be counted by priority. Best-effort, never throws.
+async function logLaSend(
+  // deno-lint-ignore no-explicit-any
+  supabase: any,
+  fixtureId: number | null,
+  event: string,
+  priority: number,
+  results: Array<{ success: boolean; status?: number; reason?: string }>,
+  source?: string,
+): Promise<void> {
+  if (results.length === 0) return;
+  try {
+    const { error } = await supabase.from("pipeline_health").insert({
+      stage: "la_send",
+      target: `la:${fixtureId ?? "none"}:${event}:p${priority}${source ? `:${source}` : ""}`,
+      ...fanOutRow(`la ${event} p${priority}`, results),
+    });
+    if (error) console.warn("la_send row insert failed (non-fatal):", error.message);
+  } catch (e) {
+    console.warn("la_send row insert threw (non-fatal):", e instanceof Error ? e.message : String(e));
+  }
 }
 
 /// Best-effort aggregated pipeline_health row for a match-watcher run

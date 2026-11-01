@@ -53,6 +53,7 @@ SELECT club_group,
 q "PUSH OPENS vs SENDS (sends from pipeline_health apns_send, all builds; opens production only)" "
 WITH sent AS (
   SELECT CASE split_part(target, ':', 1) WHEN 'item' THEN 'article'
+              WHEN 'matchday_reminder' THEN 'prep' WHEN 'prep_reminder' THEN 'prep'
               ELSE regexp_replace(split_part(target, ':', 1), '^live_', '') END AS kind,
          sum(substring(message FROM '(\d+) sent')::int) AS sent
     FROM pipeline_health
