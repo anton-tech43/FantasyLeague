@@ -93,6 +93,7 @@ import {
   type SideStats,
   sideGoals,
 } from "../_shared/last-match.ts";
+import { decideTake, silenceReason, takeMarker, type TakeMoment, takeMomentFor } from "../_shared/match-take.ts";
 
 const FINISHED_STATUSES = new Set(["FT", "AET", "PEN"]);
 // Live = match is in play (or in HT pause). Both halves + extra time
@@ -753,11 +754,11 @@ function cupResult(through: boolean | null, leagueId: number, round: string | un
 /// One /fixtures/statistics call at full time, for the Matchday tab's three
 /// numbers. Empty map on any failure: the card is still written, with the
 /// numbers the score and the goal minutes can give.
-async function fetchFixtureStats(fixtureId: number, apiKey: string): Promise<Map<number, SideStats>> {
+async function fetchFixtureStats(fixtureId: number, apiKey: string, timeoutMs?: number): Promise<Map<number, SideStats>> {
   try {
     const resp = await fetch(
       `${API_FOOTBALL_BASE}/fixtures/statistics?fixture=${fixtureId}`,
-      { headers: { "x-apisports-key": apiKey } },
+      { headers: { "x-apisports-key": apiKey }, ...(timeoutMs ? { signal: AbortSignal.timeout(timeoutMs) } : {}) },
     );
     const json = await resp.json().catch(() => null);
     if (!json || (json.errors && Object.keys(json.errors).length > 0)) {
@@ -768,6 +769,91 @@ async function fetchFixtureStats(fixtureId: number, apiKey: string): Promise<Map
   } catch (e) {
     console.warn(`match-watcher: /fixtures/statistics fixture=${fixtureId} failed:`, e instanceof Error ? e.message : String(e));
     return new Map();
+  }
+}
+
+// ─── Live takes (dry run) ──────────────────────────────────────────────────
+// docs/LIVE_TAKES_PLAN.md phase 0. At 30', half-time, 70' and full time, one
+// /fixtures/statistics call (the full-time one is writeLastMatch's), stored in
+// match_status_state.stat_snapshots, and the take each followed side would
+// get, decided in _shared/match-take.ts and only LOGGED: pipeline_health stage
+// live_take, target take:<fixture>:<team>:<moment>. Nothing reaches a phone.
+// Runs after the tick's pushes are sent, so the half-time push never waits.
+const LIVE_TAKES_MODE: "off" | "dry_run" = "dry_run";
+const TAKE_STATS_TIMEOUT_MS = 5000;
+const TAKE_MOMENTS: TakeMoment[] = ["30", "ht", "70", "ft"];
+
+interface TakeSideInput {
+  slug: string;
+  apiId: number;
+  name: string;
+  goals: number;
+  followed: boolean;
+}
+
+async function liveTakeDryRun(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  a: {
+    fixtureId: number;
+    moment: TakeMoment;
+    elapsed: number | null;
+    home: TakeSideInput;
+    away: TakeSideInput;
+    ht: { home: number; away: number } | null;
+    events: StoredGoalEvent[] | null | undefined;
+    snapshots: Record<string, unknown> | null;
+    /// The full-time call writeLastMatch already made, reused.
+    ftStats?: Map<number, SideStats>;
+  },
+  apiKey: string,
+): Promise<void> {
+  // Claimed before the call: two overlapping ticks cannot both buy the stats.
+  const { data: claimed, error: claimErr } = await supabase.rpc("claim_fixture_marker", {
+    p_fixture_id: a.fixtureId, p_marker: takeMarker(a.moment),
+  });
+  if (claimErr || claimed === false) return;
+  const stats = a.ftStats ?? await fetchFixtureStats(a.fixtureId, apiKey, TAKE_STATS_TIMEOUT_MS);
+  const snap = {
+    home: stats.get(a.home.apiId) ?? null,
+    away: stats.get(a.away.apiId) ?? null,
+    elapsed: a.elapsed,
+    score: `${a.home.goals}-${a.away.goals}`,
+    at: new Date().toISOString(),
+  };
+  const { error: snapErr } = await supabase.from("match_status_state")
+    .update({ stat_snapshots: { ...(a.snapshots ?? {}), [a.moment]: snap } })
+    .eq("fixture_id", a.fixtureId);
+  if (snapErr) console.warn(`live take: snapshot write failed fixture=${a.fixtureId}:`, snapErr.message);
+  const htSnap = a.snapshots?.ht as { home?: SideStats | null; away?: SideStats | null } | undefined;
+  for (const [me, them, side] of [[a.home, a.away, "home"], [a.away, a.home, "away"]] as const) {
+    if (!me.followed) continue;
+    const mine = stats.get(me.apiId) ?? {};
+    const theirs = stats.get(them.apiId) ?? {};
+    const myHt = side === "home" ? htSnap?.home : htSnap?.away;
+    const theirHt = side === "home" ? htSnap?.away : htSnap?.home;
+    const take = decideTake(
+      a.moment,
+      { name: me.name, stats: mine },
+      { name: them.name, stats: theirs },
+      {
+        mine: me.goals,
+        theirs: them.goals,
+        ht: a.ht ? (side === "home" ? { mine: a.ht.home, theirs: a.ht.away } : { mine: a.ht.away, theirs: a.ht.home }) : null,
+        goals: a.moment === "ft" ? sideGoals(a.events, side) : null,
+      },
+      myHt && theirHt ? { mine: myHt, theirs: theirHt } : null,
+      // Seeded by fixture, side and moment: a re-run picks the same line, and
+      // two moments of one match do not draw the same variant index.
+      seededRng(a.fixtureId * 8 + (side === "home" ? 0 : 4) + TAKE_MOMENTS.indexOf(a.moment)),
+    );
+    const { error } = await supabase.from("pipeline_health").insert({
+      team_id: me.slug,
+      stage: "live_take",
+      status: take ? "success" : "skipped",
+      target: `take:${a.fixtureId}:${me.slug}:${a.moment}`,
+      message: take ? `${take.kind} | ${take.line} | ${take.backup}` : `silent | ${silenceReason(mine, theirs)}`,
+    });
+    if (error) console.warn("live take: pipeline_health insert failed:", error.message);
   }
 }
 
@@ -947,12 +1033,13 @@ async function writeLastMatch(
   ht: { home: number; away: number },
   events: StoredGoalEvent[] | null | undefined,
   apiKey: string,
-): Promise<void> {
+): Promise<Map<number, SideStats> | undefined> {
+  let stats: Map<number, SideStats> | undefined;
   try {
     const { data: pages } = await supabase
       .from("team_pages").select("team_id, content").in("team_id", sides.map((s) => s.slug));
     if (!pages || pages.length === 0) return;
-    const stats = await fetchFixtureStats(fx.fixtureId, apiKey);
+    stats = await fetchFixtureStats(fx.fixtureId, apiKey);
     const ids = [...new Set((events ?? []).map((e) => e.playerApiId).filter((id): id is number => typeof id === "number"))];
     const info = new Map<number, ScorerInfo>();
     if (ids.length > 0) {
@@ -1010,6 +1097,7 @@ async function writeLastMatch(
   } catch (e) {
     console.error(`writeLastMatch failed for fixture ${fx.fixtureId} (non-fatal):`, e);
   }
+  return stats;
 }
 
 async function handleRequest(req: Request): Promise<Response> {
@@ -1330,7 +1418,7 @@ async function handleRequest(req: Request): Promise<Response> {
 
       const { data: prior, error: priorErr } = await supabase
         .from("match_status_state")
-        .select("status, home_goals, away_goals, fired_finished_at, briefs_fired, matchday_fire_capped, la_started, la_sig, la_ended, la_note, goal_events, ht_home, ht_away")
+        .select("status, home_goals, away_goals, fired_finished_at, briefs_fired, matchday_fire_capped, la_started, la_sig, la_ended, la_note, goal_events, ht_home, ht_away, stat_snapshots")
         .eq("fixture_id", fixtureId)
         .maybeSingle();
       if (priorErr) {
@@ -1499,6 +1587,8 @@ async function handleRequest(req: Request): Promise<Response> {
       // (i.e. a detected goal). Stays null on quiet ticks so the upsert leaves
       // match_status_state.goal_events untouched rather than clobbering it.
       let goalEventsStored: StoredGoalEvent[] | null = null;
+      // The full-time /fixtures/statistics reading, reused by the live take.
+      let ftStats: Map<number, SideStats> | undefined;
       // PUSH-2: live alert pushes (goal/HT/FT/kickoff) are COLLECTED here and fired
       // only AFTER the end-of-tick state upsert succeeds — so a failed upsert can
       // never leave us having pushed without persisting the marker/score (which
@@ -2760,7 +2850,7 @@ async function handleRequest(req: Request): Promise<Response> {
                 : typeof prior?.ht_home === "number" && typeof prior?.ht_away === "number"
                 ? { home: prior.ht_home as number, away: prior.ht_away as number }
                 : halfTimeGoals(goalEventsStored ?? prior?.goal_events);
-              await writeLastMatch(
+              ftStats = await writeLastMatch(
                 supabase,
                 lastMatchSides,
                 {
@@ -2968,6 +3058,35 @@ async function handleRequest(req: Request): Promise<Response> {
         for (const p of pendingAlertPushes) {
           const n = await sendPlayingTeamPush(supabase, p.args);
           if (p.isGoal) goalPushSends += n;
+        }
+        // Live takes, after the pushes so nothing waits on the stats call.
+        const takeMoment = LIVE_TAKES_MODE === "off" || !apiFootballKey
+          ? null
+          : takeMomentFor(status, elapsed, (prior?.status as string | undefined) ?? null, briefsFired);
+        const homeName = liveMeta(homeTeamId)?.name;
+        const awayName = liveMeta(awayTeamId)?.name;
+        if (takeMoment && homeName && awayName && homeGoals != null && awayGoals != null) {
+          const feedHtTake = fx.score?.halftime;
+          try {
+            await liveTakeDryRun(supabase, {
+              fixtureId,
+              moment: takeMoment,
+              elapsed: elapsed ?? null,
+              home: { slug: homeTeamId, apiId: homeApiId, name: homeName, goals: homeGoals, followed: activeTeamIds.has(homeTeamId) },
+              away: { slug: awayTeamId, apiId: awayApiId, name: awayName, goals: awayGoals, followed: activeTeamIds.has(awayTeamId) },
+              // Missing stays missing: no 0-0 fallback for the half-time score.
+              ht: typeof feedHtTake?.home === "number" && typeof feedHtTake?.away === "number"
+                ? { home: feedHtTake.home, away: feedHtTake.away }
+                : typeof prior?.ht_home === "number" && typeof prior?.ht_away === "number"
+                ? { home: prior.ht_home as number, away: prior.ht_away as number }
+                : takeMoment === "ht" ? { home: homeGoals, away: awayGoals } : null,
+              events: (goalEventsStored ?? prior?.goal_events) as StoredGoalEvent[] | null | undefined,
+              snapshots: (prior?.stat_snapshots as Record<string, unknown> | null | undefined) ?? null,
+              ftStats: takeMoment === "ft" ? ftStats : undefined,
+            }, apiFootballKey!);
+          } catch (e) {
+            console.warn(`live take fixture=${fixtureId} failed (non-fatal):`, e instanceof Error ? e.message : String(e));
+          }
         }
       }
     } catch (e) {
