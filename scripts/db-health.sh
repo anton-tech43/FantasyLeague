@@ -189,6 +189,14 @@ for t in net._http_response cron.job_run_details public.pipeline_health; do
   elif [ "$MB" -gt 20 ];    then warn "$(printf '%-24s %s MB — vacuum job may have stopped' "$t" "$MB")"
   else                           note "OK" "$(printf '%-24s %s MB' "$t" "$MB")"; fi
 done
+# app_events grows with users, not clubs (budget: under 1 MB a week today).
+# On 2026-11-01 it was 89 MB holding 708 rows: the EXPLAIN seed of migration
+# 142 was rolled back, and a rollback never shrinks a btree. REINDEX fixed it.
+# check_app_events_budget() pushes hourly past 100 MB (migration 148).
+MB=$(q "SELECT pg_total_relation_size('public.app_events')/1024/1024;")
+if   [ -z "$MB" ];     then warn "app_events               could not read size"
+elif [ "$MB" -gt 25 ]; then warn "$(printf '%-24s %s MB — over budget: a flood, a stopped roll-up, or index bloat (REINDEX TABLE CONCURRENTLY)' app_events "$MB")"
+else                        note "OK" "$(printf '%-24s %s MB' app_events "$MB")"; fi
 
 # ----------------------------------------------------------------------
 # 5. Freshness
