@@ -593,3 +593,49 @@ export function withSaying(body: string, pool: readonly string[], rng: () => num
   return both.length <= SAYING_BODY_BUDGET ? both : say;
 }
 
+
+/// One club in a league table snapshot (API-Football standings, before the
+/// results that are applied on top of it).
+export interface TableRow {
+  apiId: number;
+  rank: number;
+  points: number;
+  gd: number;
+  gf: number;
+}
+
+/// Where the results leave one club, for the Deep full-time push (LOCK-02-12):
+/// "Up to 4th.", "Down to 12th.", "Still 7th.". Results are applied to the
+/// snapshot and the table re-sorted on points, goal difference, goals scored.
+/// Null when the club is not in the table, or level on all three with a
+/// neighbour (head-to-head decides that, and we do not hold it).
+export function tableLine(
+  rows: readonly TableRow[],
+  results: ReadonlyArray<{ home: number; away: number; hg: number; ag: number }>,
+  apiId: number,
+): string | null {
+  const t = new Map(rows.map((r) => [r.apiId, { ...r }]));
+  const before = t.get(apiId)?.rank;
+  if (before == null) return null;
+  for (const r of results) {
+    const h = t.get(r.home), a = t.get(r.away);
+    if (!h || !a) return null; // a result we cannot place: say nothing
+    h.gf += r.hg; a.gf += r.ag; h.gd += r.hg - r.ag; a.gd += r.ag - r.hg;
+    if (r.hg > r.ag) h.points += 3; else if (r.ag > r.hg) a.points += 3; else { h.points++; a.points++; }
+  }
+  const key = (r: TableRow) => [r.points, r.gd, r.gf];
+  const sorted = [...t.values()].sort((x, y) => y.points - x.points || y.gd - x.gd || y.gf - x.gf);
+  const i = sorted.findIndex((r) => r.apiId === apiId);
+  const same = (o?: TableRow) => o && key(o).every((v, k) => v === key(sorted[i])[k]);
+  if (same(sorted[i - 1]) || same(sorted[i + 1])) return null;
+  const after = i + 1;
+  return after < before ? `Up to ${ordinal(after)}.` : after > before ? `Down to ${ordinal(after)}.` : `Still ${ordinal(after)}.`;
+}
+
+/// The Deep line goes in before the line to say, if the lock screen has room.
+export function withDeepLine(body: string, line: string | undefined): string {
+  if (!line) return body;
+  const at = body.indexOf(" Say: “");
+  const out = at >= 0 ? `${body.slice(0, at)} ${line}${body.slice(at)}` : `${body} ${line}`;
+  return out.length <= SAYING_BODY_BUDGET ? out : body;
+}

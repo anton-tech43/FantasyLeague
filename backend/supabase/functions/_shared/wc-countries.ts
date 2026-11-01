@@ -86,6 +86,19 @@ export function wcStatusLabel(status: string): string {
     case "AET":
     case "PEN":
       return "FT";
+    // Stopped or called off: say so in words (LOCK-03-13). The app's mirror is
+    // LiveMatchSnapshot.statusLabel and must agree.
+    case "SUSP":
+      return "Suspended";
+    case "INT":
+      return "Interrupted";
+    case "ABD":
+      return "Abandoned";
+    case "PST":
+      return "Postponed";
+    // API-Football's "playing, period unknown": the badge never says LIVE.
+    case "LIVE":
+      return "In play";
     default:
       return status;
   }

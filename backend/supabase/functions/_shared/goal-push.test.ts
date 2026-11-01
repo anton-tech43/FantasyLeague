@@ -17,6 +17,8 @@ import {
   renderExtraTimePush,
   renderHalfTimePush,
   shootoutNote,
+  tableLine,
+  withDeepLine,
   renderKickoffSoonPush,
   seededRng,
   type StoredGoalEvent,
@@ -521,4 +523,31 @@ Deno.test("shootoutNote: running score during, the winner named after, nothing w
   eq(shootoutNote("P", { home: null, away: null }, "A", "B"), null, "");
   eq(shootoutNote("FT", { home: 5, away: 3 }, "A", "B"), null, "");
   eq(shootoutNote("P", null, "A", "B"), null, "");
+});
+
+Deno.test("tableLine: where the results leave a club, silent when it cannot know", () => {
+  const rows = [
+    { apiId: 1, rank: 1, points: 20, gd: 10, gf: 20 },
+    { apiId: 2, rank: 2, points: 18, gd: 8, gf: 15 },
+    { apiId: 3, rank: 3, points: 17, gd: 5, gf: 12 },
+    { apiId: 4, rank: 4, points: 15, gd: 2, gf: 10 },
+  ];
+  eq(tableLine(rows, [{ home: 4, away: 3, hg: 2, ag: 0 }], 4), "Up to 3rd.", "a win lifts them");
+  eq(tableLine(rows, [{ home: 4, away: 3, hg: 2, ag: 0 }], 3), "Down to 4th.", "the loser drops");
+  eq(tableLine(rows, [{ home: 1, away: 2, hg: 1, ag: 1 }], 1), "Still 1st.", "a draw at the top");
+  // Two games at once: both applied.
+  eq(tableLine(rows, [{ home: 4, away: 1, hg: 3, ag: 0 }, { home: 3, away: 2, hg: 2, ag: 0 }], 2), "Down to 3rd.", "");
+  eq(tableLine(rows, [{ home: 4, away: 99, hg: 1, ag: 0 }], 4), null, "a club not in the table");
+  eq(tableLine(rows, [], 99), null, "not in the table");
+  // Level on points, goal difference and goals with a neighbour: no claim.
+  const tied = [{ apiId: 1, rank: 1, points: 10, gd: 2, gf: 5 }, { apiId: 2, rank: 2, points: 10, gd: 2, gf: 5 }];
+  eq(tableLine(tied, [], 2), null, "head-to-head decides it");
+});
+
+Deno.test("withDeepLine: before the line to say, and only if it fits", () => {
+  eq(withDeepLine("Won 2-0. Say: \u201CJob done.\u201D", "Up to 4th."), "Won 2-0. Up to 4th. Say: \u201CJob done.\u201D", "");
+  eq(withDeepLine("Won 2-0.", "Up to 4th."), "Won 2-0. Up to 4th.", "no line to say");
+  eq(withDeepLine("Won 2-0.", undefined), "Won 2-0.", "nothing to add");
+  const long = "x".repeat(170);
+  eq(withDeepLine(long, "Up to 4th."), long, "never past the lock screen");
 });

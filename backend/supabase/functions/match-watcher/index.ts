@@ -72,6 +72,9 @@ import {
   shootoutNote,
   renderKickoffSoonPush,
   formatScorers,
+  tableLine,
+  type TableRow,
+  withDeepLine,
   type StoredGoalEvent,
   toStoredGoalEvents,
 } from "../_shared/goal-push.ts";
@@ -413,6 +416,9 @@ async function sendPlayingTeamPush(
     /// the ONE part of the body that survives when a pick lands. Goals only;
     /// half-time and full-time have no scorer to name.
     scorerLead?: string | null;
+    /// Full time only: where the result leaves each playing side in the
+    /// league ("Up to 4th."), for Deep devices (LOCK-02-12).
+    deepLineByTeam?: Record<string, string>;
   },
 ): Promise<number> {
   try {
@@ -516,7 +522,7 @@ async function sendPlayingTeamPush(
       // moment; the slip is hers to read in the app. The break and the final
       // whistle carry a line to say for everyone instead (withSaying, in the
       // HT/FT copy), which needs nothing saved.
-      const finalBody = body;
+      const finalBody = t.tier === 3 ? withDeepLine(body, args.deepLineByTeam?.[country]) : body;
       const contentId = args.contentIdByCountry?.[country] ?? `live-${args.label}-${args.fixtureId}`;
       const payload = buildAPNsPayload(
         "", // teamShortName fallback unused — we pass pushTitle below
@@ -642,6 +648,12 @@ async function writeTeamPostMatch(
 /// A match that will not be played on: its Live Activity must end too.
 const ENDED_STATUSES = new Set([...FINISHED_STATUSES, "ABD", "CANC", "PST", "AWD", "WO"]);
 const LIVE_STATUSES_LA = new Set(["1H", "HT", "2H", "ET", "BT", "P", "INT", "SUSP", "LIVE"]);
+/// Stopped, not over: the activity is updated to say so and kept.
+const PAUSED_LA = new Set(["INT", "SUSP"]);
+/// Every Live Activity push goes stale 20 minutes on (LOCK-03-15): a match the
+/// feed has frozen reads as "no update since", not as a live score. During
+/// play an update lands every minute; the break gets 30 minutes.
+const LA_STALE_SECONDS = 1200;
 
 /// End every Live Activity whose match is over and was not ended by the
 /// full-time tick.
@@ -670,7 +682,7 @@ async function sweepLiveActivities(
   const fixtureIds = [...new Set(rows.map((r) => r.fixture_id).filter((f): f is number => f != null))];
   const { data: states } = fixtureIds.length
     ? await supabase.from("match_status_state")
-      .select("fixture_id, status, kickoff_time, home_goals, away_goals")
+      .select("fixture_id, status, kickoff_time, home_goals, away_goals, la_note")
       .in("fixture_id", fixtureIds)
     : { data: [] as Array<Record<string, unknown>> };
   const byFixture = new Map((states ?? []).map((st) => [st.fixture_id as number, st]));
@@ -695,6 +707,8 @@ async function sweepLiveActivities(
         statusLabel: st ? wcStatusLabel(st.status as string) : "FT",
         elapsed: null,
         clockStart: null,
+        // The shootout result, as the full-time end would have said it.
+        ...(st?.la_note ? { note: st.la_note as string } : {}),
       },
       // Over already: gone from the lock screen in a minute, not four hours.
       dismissalSeconds: 60,
@@ -763,9 +777,12 @@ async function fetchFixtureStats(fixtureId: number, apiKey: string): Promise<Map
 // fixture_lineups (mig 137) and decide, in _shared/lineup-notable.ts, whether
 // our side's lineup is worth a line to her. DRY RUN: the line is only logged
 // to pipeline_health (stage starting_xi_fire, target lineup:<fixture>), and
-// no push or card is sent. Delivery (the T−30 push body plus a feed card) is
-// built after Anton has read a weekend of real cases (2026-10-27).
+// no push or card is sent. The line is also kept in fixture_lineups.note
+// (mig 151): with the LINEUP_PUSH_ENABLED secret set to "1" it replaces the
+// T−30 kickoff body for that side (LOCK-02-14). Off until Anton has read real
+// cases; the first two weekends logged none (see lastCall below).
 const LINEUP_WINDOW_MIN = { from: 30, to: 75 };
+const LINEUP_PUSH_ENABLED = Deno.env.get("LINEUP_PUSH_ENABLED") === "1";
 
 async function lineupDryRun(
   supabase: ReturnType<typeof getSupabaseClient>,
@@ -773,6 +790,8 @@ async function lineupDryRun(
   ourClubApiIds: Set<number>,
   teamIdMap: Map<number, string>,
   apiKey: string,
+  /// The last poll of the window: if the lineup is still missing, say why.
+  lastCall = false,
 ): Promise<void> {
   const fixtureId = fx.fixture.id;
   const { data: have, error: haveErr } = await supabase.from("fixture_lineups")
@@ -784,7 +803,24 @@ async function lineupDryRun(
     { headers: { "x-apisports-key": apiKey } });
   const json = await resp.json().catch(() => null);
   const sides = (json?.response ?? []) as Array<Record<string, any>>;
-  if (sides.length < 2 || sides.some((s) => (s.startXI ?? []).length !== 11)) return; // not out yet
+  if (sides.length < 2 || sides.some((s) => (s.startXI ?? []).length !== 11)) { // not out yet
+    // Nothing reached fixture_lineups on 31 Oct / 1 Nov, with eight fixtures
+    // in the window. One row per fixture at T−31 says which of "not
+    // published yet", a rate limit or an error it was.
+    if (lastCall) {
+      const ours = [fx.teams.home.id, fx.teams.away.id].map((id) => teamIdMap.get(id)).find((t) => t) ?? null;
+      await supabase.from("pipeline_health").insert({
+        team_id: ours,
+        stage: "starting_xi_fire",
+        status: "skipped",
+        target: `lineup:${fixtureId}`,
+        http_status: resp.status,
+        message: `no lineup by T-31: results=${json?.results ?? "?"} sides=${sides.length} ` +
+          `xi=${sides.map((s) => (s.startXI ?? []).length).join("/")} errors=${JSON.stringify(json?.errors ?? null)}`.slice(0, 400),
+      }).then(({ error }) => error && console.warn("pipeline_health insert failed:", error.message));
+    }
+    return;
+  }
 
   const toPlayers = (arr: Array<Record<string, any>> | undefined): LineupPlayer[] =>
     (arr ?? []).map((e) => ({ id: e.player?.id, name: e.player?.name, pos: e.player?.pos, grid: e.player?.grid }))
@@ -826,11 +862,62 @@ async function lineupDryRun(
         message: (note ? `DRY RUN ${note.kind}: ${note.line}` : "DRY RUN silent").slice(0, 400),
       }).then(({ error }) => error && console.warn("pipeline_health insert failed:", error.message));
     }
-    await supabase.from("fixture_lineups").upsert({
+    const { error: upErr } = await supabase.from("fixture_lineups").upsert({
       fixture_id: fixtureId, team_api_id: teamApiId, league_id: fx.league?.id ?? null,
-      formation: side.formation ?? null, xi, bench: toPlayers(side.substitutes),
+      formation: side.formation ?? null, xi, bench: toPlayers(side.substitutes), note: note?.line ?? null,
     }, { onConflict: "fixture_id,team_api_id" });
+    if (upErr) console.warn(`lineups: fixture_lineups upsert failed for ${fixtureId}:`, upErr.message);
   }
+}
+
+// ─── Where a league result leaves the two sides (Deep full-time push) ──────
+// LOCK-02-12: the consequence cards no longer push; a Deep follower reads the
+// table move in the full-time push instead. Silence over a wrong position: no
+// line while any other league game is still being played, and only from a
+// standings snapshot taken when no league game was in play (three hours clear
+// of every kickoff before it), with every league result since then applied.
+async function deepTableLines(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  a: { fixtureId: number; leagueId: number; kickoff: string; homeTeamId: string; awayTeamId: string; homeApiId: number; awayApiId: number; homeGoals: number; awayGoals: number },
+  apiIdBySlug: Map<string, number>,
+): Promise<Record<string, string> | undefined> {
+  const since = new Date(Date.now() - 2 * 86400_000).toISOString();
+  const { data: games } = await supabase.from("match_status_state")
+    .select("fixture_id, status, kickoff_time, home_team_id, away_team_id, home_goals, away_goals")
+    .eq("league_id", a.leagueId).gte("kickoff_time", new Date(Date.now() - 51 * 3600_000).toISOString());
+  const others = (games ?? []).filter((g) => g.fixture_id !== a.fixtureId);
+  const now = Date.now();
+  const inPlay = (g: Record<string, unknown>) => LIVE_STATUSES_LA.has(g.status as string) ||
+    (g.status === "NS" && Date.parse(g.kickoff_time as string) <= now);
+  if (others.some(inPlay)) return undefined;
+
+  const { data: logs } = await supabase.from("raw_fetch_logs").select("data, fetched_at")
+    .eq("source", "api_football_standings").eq("team_id", a.homeTeamId)
+    .gte("fetched_at", since).order("fetched_at", { ascending: false }).limit(30);
+  const kickoffs = [...others.map((g) => Date.parse(g.kickoff_time as string)), Date.parse(a.kickoff)];
+  const snap = (logs ?? []).find((l) => {
+    const at = Date.parse(l.fetched_at as string);
+    return !kickoffs.some((k) => k <= at && at - k < 3 * 3600_000);
+  });
+  // deno-lint-ignore no-explicit-any
+  const table = (snap?.data as any)?.response?.[0]?.league?.standings?.[0] as Array<Record<string, any>> | undefined;
+  if (!snap || !Array.isArray(table) || table.length === 0) return undefined;
+  const at = Date.parse(snap.fetched_at as string);
+  const rows: TableRow[] = table.map((r) => ({
+    apiId: r.team?.id, rank: r.rank, points: r.points, gd: r.goalsDiff, gf: r.all?.goals?.for ?? 0,
+  }));
+  const results = others.filter((g) => FINISHED_STATUSES.has(g.status as string) && Date.parse(g.kickoff_time as string) > at)
+    .map((g) => ({
+      home: apiIdBySlug.get(g.home_team_id as string) ?? -1, away: apiIdBySlug.get(g.away_team_id as string) ?? -1,
+      hg: (g.home_goals as number) ?? 0, ag: (g.away_goals as number) ?? 0,
+    }));
+  results.push({ home: a.homeApiId, away: a.awayApiId, hg: a.homeGoals, ag: a.awayGoals });
+  const out: Record<string, string> = {};
+  for (const [slug, id] of [[a.homeTeamId, a.homeApiId], [a.awayTeamId, a.awayApiId]] as const) {
+    const line = tableLine(rows, results, id);
+    if (line) out[slug] = line;
+  }
+  return out;
 }
 
 const LAST_MATCH_TTL_DAYS = 7;
@@ -1058,6 +1145,9 @@ async function handleRequest(req: Request): Promise<Response> {
   // champions_league (2) collides with France (2) and europa_league (3) with
   // Croatia (3). A fixture's team id is never a competition id, and the last
   // writer wins in a Map (audit 2026-09-23).
+  const apiIdBySlug = new Map<string, number>(
+    (teams ?? []).filter((t) => t.entity_type !== "tournament").map((t) => [t.id as string, t.api_football_id as number]),
+  );
   const teamIdMap = new Map<number, string>(
     (teams ?? []).filter((t) => t.entity_type !== "tournament")
       .map((t) => [t.api_football_id as number, t.id as string]),
@@ -1240,7 +1330,7 @@ async function handleRequest(req: Request): Promise<Response> {
 
       const { data: prior, error: priorErr } = await supabase
         .from("match_status_state")
-        .select("status, home_goals, away_goals, fired_finished_at, briefs_fired, matchday_fire_capped, la_started, la_sig, la_ended, goal_events, ht_home, ht_away")
+        .select("status, home_goals, away_goals, fired_finished_at, briefs_fired, matchday_fire_capped, la_started, la_sig, la_ended, la_note, goal_events, ht_home, ht_away")
         .eq("fixture_id", fixtureId)
         .maybeSingle();
       if (priorErr) {
@@ -2032,6 +2122,8 @@ async function handleRequest(req: Request): Promise<Response> {
       let laStarted = (prior?.la_started as boolean | undefined) ?? false;
       let laSig = (prior?.la_sig as string | null | undefined) ?? null;
       let laEnded = (prior?.la_ended as boolean | undefined) ?? false;
+      // The shootout line, kept so la-end-sweep can end with it too (LOCK-03-16).
+      let laNote = (prior?.la_note as string | null | undefined) ?? null;
 
       if (!laEnded) {
         const homeMeta = liveMeta(homeTeamId);
@@ -2061,6 +2153,7 @@ async function handleRequest(req: Request): Promise<Response> {
           // The shootout score, kick by kick if the feed has it, and the winner
           // at the end: a level score under "FT" was all the Lock Screen said.
           const note = shootoutNote(status, fx.score?.penalty, homeMeta.name, awayMeta.name);
+          if (note) laNote = note;
           const contentState = {
             homeScore: homeGoals ?? 0,
             awayScore: awayGoals ?? 0,
@@ -2175,16 +2268,24 @@ async function handleRequest(req: Request): Promise<Response> {
               },
               contentState,
               alert: { title: `${homeMeta.name} v ${awayMeta.name}`, body: "It's kicked off." },
-              staleSeconds: 5400,
+              staleSeconds: LA_STALE_SECONDS,
             }));
             laStarted = true;
             laSig = sig;
-          } else if (isLive && laStarted && sig !== laSig) {
+          } else if ((isLive || PAUSED_LA.has(status)) && laStarted && sig !== laSig) {
             // UPDATE — goal or period change (priority 10), or only the minute
-            // moved (priority 5, for the builds without a running clock).
+            // moved (priority 5, for the builds without a running clock). A
+            // stopped match (INT/SUSP) is a status change and says so
+            // (LOCK-03-15). Each shootout kick goes at 5, which iOS does not
+            // count against the budget; the result is the end push, at 10
+            // (LOCK-03-16).
             const minuteOnly = laSig !== null && laSig.replace(/-[^-]*$/, "") === sigCore;
             const updTokens = await laTokens((q) => q.eq("kind", "update").eq("fixture_id", fixtureId));
-            await sendAll(updTokens, { event: "update", contentState, staleSeconds: 5400, priority: minuteOnly ? 5 : 10 });
+            await sendAll(updTokens, {
+              // Half time is a planned 15–20 minutes without an update.
+              event: "update", contentState, staleSeconds: status === "HT" || status === "BT" ? 1800 : LA_STALE_SECONDS,
+              priority: minuteOnly || status === "P" ? 5 : 10,
+            });
             laSig = sig;
           }
         }
@@ -2230,7 +2331,7 @@ async function handleRequest(req: Request): Promise<Response> {
             (ourClubApiIds.has(homeApiId) || ourClubApiIds.has(awayApiId))
           ) {
             try {
-              await lineupDryRun(supabase, fx, ourClubApiIds, teamIdMap, apiFootballKey);
+              await lineupDryRun(supabase, fx, ourClubApiIds, teamIdMap, apiFootballKey, minsToKickoff <= 31);
             } catch (e) {
               console.warn(`lineups: fixture ${fixtureId} failed (non-fatal):`, e instanceof Error ? e.message : String(e));
             }
@@ -2245,6 +2346,17 @@ async function handleRequest(req: Request): Promise<Response> {
               competition: competitionClause,
               rng: seededRng(fixtureId * 7 + 1),
             });
+            // LOCK-02-14, behind LINEUP_PUSH_ENABLED: a side whose lineup is
+            // worth a line (fixture_lineups.note) gets that line as its T−30
+            // body instead. Never an extra push; the other side is untouched.
+            if (LINEUP_PUSH_ENABLED) {
+              const { data: notes } = await supabase.from("fixture_lineups")
+                .select("team_api_id, note").eq("fixture_id", fixtureId).not("note", "is", null);
+              for (const n of notes ?? []) {
+                const slug = teamIdMap.get(n.team_api_id as number);
+                if (slug && copy.bodies[slug]) copy.bodies[slug] = n.note as string;
+              }
+            }
             pendingAlertPushes.push({
               args: {
                 homeTeamId,
@@ -2730,6 +2842,16 @@ async function handleRequest(req: Request): Promise<Response> {
             // A held tie the feed settled late (after 23:30 London, or five
             // hours on) gets its cards above but no push: a result at 01:00
             // would wake her for something that can wait until morning.
+            // Deep: where the result leaves both sides in the league table.
+            const deepLineByTeam = fixtureLeagueId === 39 && status === "FT" && resultStillNews(kickoffTime)
+              ? await deepTableLines(supabase, {
+                fixtureId, leagueId: fixtureLeagueId, kickoff: kickoffTime, homeTeamId, awayTeamId,
+                homeApiId, awayApiId, homeGoals: homeGoals ?? 0, awayGoals: awayGoals ?? 0,
+              }, apiIdBySlug).catch((e) => {
+                console.warn(`deep table line fixture=${fixtureId} failed (non-fatal):`, e instanceof Error ? e.message : String(e));
+                return undefined;
+              })
+              : undefined;
             if (!resultStillNews(kickoffTime)) {
               console.log(`FT push fixture=${fixtureId}: result settled too late to push, cards only`);
             } else pendingAlertPushes.push({
@@ -2746,6 +2868,7 @@ async function handleRequest(req: Request): Promise<Response> {
                 contentIdByCountry: wcResultItemIds,
                 marker: "FT_PUSH",
                 outcomeByTeam: ftOutcomes,
+                deepLineByTeam,
               },
               isGoal: false,
             });
@@ -2799,6 +2922,7 @@ async function handleRequest(req: Request): Promise<Response> {
             la_started: laStarted,
             la_sig: laSig,
             la_ended: laEnded,
+            la_note: laNote,
             ...(matchdayWentStale
               ? { matchday_fire_capped: true }
               : {}),
