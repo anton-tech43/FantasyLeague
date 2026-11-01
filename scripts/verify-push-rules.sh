@@ -54,11 +54,26 @@ for ev in kickoff goal ht et ft; do
 done
 
 NS="$FN/notification-sender/index.ts"
-sb=$(grep -o 'item.type === "sunday_brief" ? [0-9]* : [0-9]*' "$NS" | grep -o '[0-9][0-9]*' | head -1)
-sbrow=$(grep -m1 '| \*\*The Sunday brief\*\*' "$DOC" || true)
-if [ -z "$sb" ]; then bad "could not read the content-type tier floor out of notification-sender"
-elif grep -qF "$(phrase_for "$sb")" <<< "$sbrow"; then ok "the Sunday brief is tier $sb in code, and §1 agrees"
-else bad "the Sunday brief is tier $sb in notification-sender, but §1 says otherwise"; fi
+# One line in the sender decides every written push's tier floor:
+#   item.type === "sunday_brief" ? A : isTournament ? B : item.significance === 2 ? C : D
+line=$(grep -m1 'const minTierForType = ' "$NS" || true)
+num_after() { grep -o "$1 [0-9]*" <<< "$line" | grep -o '[0-9]*$' | head -1; }
+sb=$(num_after 'item.type === "sunday_brief" ?')
+tn=$(num_after 'isTournament ?')
+big=$(num_after 'item.significance === 2 ?')
+rest=$(grep -o ': [0-9]*;' <<< "$line" | grep -o '[0-9]*')
+check_row() { # check_row <label> <tier> <row grep> <phrase override>
+  local label="$1" n="$2" row want
+  row=$(grep -m1 "$3" "$DOC" || true); want="${4:-$(phrase_for "$n")}"
+  if [ -z "$n" ]; then bad "could not read the $label tier floor out of notification-sender's minTierForType line"
+  elif [ -z "$row" ]; then bad "no row for $label in PUSH_RULES.md §1"
+  elif grep -qF "$want" <<< "$row"; then ok "$label is tier $n in code, and §1 says \"$want\""
+  else bad "$label is tier $n in notification-sender, but §1 does not say \"$want\""; fi
+}
+check_row "the Monday brief" "$sb" '| \*\*The Monday brief\*\*'
+check_row "a tournament card" "$tn" '| \*\*A tournament card\*\*'
+check_row "big news (significance 2)" "$big" '| \*\*A news card\*\*' "significance 2: $(phrase_for "$big")"
+check_row "other news" "$rest" '| \*\*A news card\*\*' "anything else: $(phrase_for "$rest")"
 
 echo
 echo "── 3. EVERY DOWNGRADE IS EXPLAINED ───────────────────────"

@@ -1,12 +1,13 @@
 // matchday-reminder/index.ts
 //
-// "His team plays" reminder push. Scheduled daily at 07:00 UTC (09:00
-// Europe/Stockholm). For every ACTIVE entity (PL club today; WC country when a
-// tournament is on) with a fixture kicking off within the next 24h, sends ONE
-// deterministic reminder to that entity's followers, with the kickoff in
-// the reader's own time (device_tokens.timezone, mig 082; London when unknown). PL never kicks off after midnight, so in practice this is
-// "the morning of the match"; the 24h window is kept as a guard and the copy
-// says "today"/"tomorrow" on its own.
+// "His team plays" reminder push. Runs hourly 07:00–19:00 UTC (mig 152): the
+// first run sends, and every later one retries any of today's fixtures whose
+// reminder has not gone (matchday_reminders_sent is the lock), until an hour
+// before kickoff. For every ACTIVE entity (PL club today; WC country when a
+// tournament is on) with a fixture kicking off later today (London date),
+// sends ONE deterministic reminder to that entity's followers, with the
+// kickoff in the reader's own time (device_tokens.timezone, mig 082; London
+// when unknown). Every round of every cup gets one (LOCK-02-09, 2026-11-01).
 //
 // Source of truth (audit 2026-09, A27): API-Football fixtures for each active
 // league, fetched live in this run — NOT team_season_state.next_fixtures. That
@@ -17,8 +18,7 @@
 // (QA-06; match_status_state, the old fallback, is empty at 07:00 since
 // match-watcher polls from 35 min before kickoff). Idempotent via
 // matchday_reminders_sent (PK team_id + kickoff_time). Deterministic copy, zero
-// Claude. morning-push checks matchday_reminders_sent and skips fixtures we
-// already covered, so a follower never gets both.
+// Claude. It replaced morning-push, the 08:00 fallback (LOCK-02-10).
 //
 // ?dry_run=1 reports what WOULD fire without claiming markers or sending — safe
 // to invoke any time against live data.
@@ -31,21 +31,19 @@ import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts"
 import { buildAPNsPayload, sendPushNotification } from "../_shared/apns-client.ts";
 import { fanOutRow } from "../_shared/pipeline-logger.ts";
 import {
-  isLondonTomorrow,
-  londonHour,
+  isLondonToday,
   renderMatchdayReminder,
   renderPreMatchBuildup,
-  renderPrepReminder,
   safeTz,
 } from "../_shared/matchday-reminder-copy.ts";
-import { seededRng } from "../_shared/goal-push.ts";
-import { minTierForLiveEvent, TIER_NOBODY } from "../_shared/push-tiers.ts";
 import { NOT_HAPPENING } from "../_shared/league-helpers.ts";
 import { buildContentItem } from "../_shared/build-content-item.ts";
 import { preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
 import { competitionProse, COVERED_CUP_LEAGUES, roundLabel, seasonForLeague } from "../_shared/league-helpers.ts";
 
 const WINDOW_MS = 24 * 60 * 60 * 1000;
+/// A reminder this close to kickoff is the kickoff push's job, not this one's.
+const LAST_CALL_MS = 60 * 60 * 1000;
 const API_FOOTBALL_BASE = "https://v3.football.api-sports.io";
 
 /// One reminder candidate: OUR team, the opponent's display name, kickoff.
@@ -60,9 +58,6 @@ interface Candidate {
   /// "League Cup (Carabao Cup), last 32". Empty for the Premier League, where
   /// naming the competition tells the reader nothing she does not assume.
   competition?: string;
-  /// For the early-cup-round gate (push-tiers.ts).
-  leagueId?: number;
-  round?: string;
 }
 
 /// The competition in the words the push uses. Silent for a home league.
@@ -127,18 +122,11 @@ serve(async (req) => {
   if (denied) return denied;
 
   const dryRun = new URL(req.url).searchParams.get("dry_run") === "1";
-  // ?mode=prep: the day-before push, "Leeds tomorrow", which opens Pre-game
-  // in My Turn (2026-10-02). Cron runs it at 08:00 and 09:00 UTC (migration 129) and it sends
-  // only at 09:00 London, so it holds that hour across the clock change.
-  const prep = new URL(req.url).searchParams.get("mode") === "prep";
   const supabase = getSupabaseClient();
   // `&now=<ISO>` on a dry run only: what a given morning would send.
   const nowParam = dryRun ? new URL(req.url).searchParams.get("now") : null;
   const now = nowParam && !isNaN(Date.parse(nowParam)) ? new Date(nowParam) : new Date();
-  if (prep && !dryRun && londonHour(now) !== 9) {
-    return json({ mode: "prep", skipped: `it is ${londonHour(now)}:00 in London, not 09:00` });
-  }
-  const windowEnd = new Date(now.getTime() + (prep ? 2 : 1) * WINDOW_MS);
+  const windowEnd = new Date(now.getTime() + WINDOW_MS);
 
   // Every ACTIVE entity with a league (audit 2026-09, A2/A27): PL clubs now,
   // WC countries only while a tournament is on (mig 079 flipped them inactive).
@@ -151,7 +139,7 @@ serve(async (req) => {
   if (cErr) return json({ error: `teams query: ${cErr.message}` }, 500);
   const teams = teamRows ?? [];
   const nameById = new Map(teams.map((t) => [t.id, t.display_name]));
-  // "Leeds", not "Leeds United": the day-before push reads like the app.
+  // "Leeds", not "Leeds United": the title reads like the app.
   const shortById = new Map(teams.map((t) => [t.id, t.short_name || t.display_name]));
   const typeById = new Map(teams.map((t) => [t.id, t.entity_type]));
   const rankById = new Map(teams.map((t) => [t.id, t.strength_rank ?? null]));
@@ -180,7 +168,7 @@ serve(async (req) => {
         .range(from, to)
     );
   } catch (e) {
-    // Nothing claimed yet, so a retry (or morning-push at 08:00) starts clean.
+    // Nothing claimed yet, so the next hourly run starts clean.
     return json({ error: `device_tokens read: ${(e as Error).message}` }, 500);
   }
   // Used only to decide who gets the reminder PUSH. The build-up FEED item is
@@ -222,7 +210,9 @@ serve(async (req) => {
       // Postponed or called off keeps its date in the feed ("PST stays"):
       // no "kicks off at 15:00" for a game that is not happening.
       if (NOT_HAPPENING.has(fx.fixture.status?.short ?? "")) continue;
-      if (prep ? !isLondonTomorrow(kickoff, now) : false) continue;
+      // Today's games only, and not in the last hour: the hourly retries would
+      // otherwise remind tonight for tomorrow's lunchtime kickoff.
+      if (!isLondonToday(kickoff, now) || kickoff.getTime() - now.getTime() < LAST_CALL_MS) continue;
       const homeId = idByApiId.get(fx.teams.home.id) ?? null;
       const awayId = idByApiId.get(fx.teams.away.id) ?? null;
       // One candidate per OUR team in the fixture (a PL derby yields two —
@@ -230,10 +220,10 @@ serve(async (req) => {
       const competition = fixtureCompetition(leagueId, fx.league?.round);
       const fixtureId = fx.fixture.id;
       if (homeId) {
-        candidates.push({ teamId: homeId, opponent: awayId ? (nameById.get(awayId) ?? fx.teams.away.name) : fx.teams.away.name, opponentId: awayId, kickoff, fixtureId, source, competition, leagueId, round: fx.league?.round });
+        candidates.push({ teamId: homeId, opponent: awayId ? (nameById.get(awayId) ?? fx.teams.away.name) : fx.teams.away.name, opponentId: awayId, kickoff, fixtureId, source, competition });
       }
       if (awayId) {
-        candidates.push({ teamId: awayId, opponent: homeId ? (nameById.get(homeId) ?? fx.teams.home.name) : fx.teams.home.name, opponentId: homeId, kickoff, fixtureId, source, competition, leagueId, round: fx.league?.round });
+        candidates.push({ teamId: awayId, opponent: homeId ? (nameById.get(homeId) ?? fx.teams.home.name) : fx.teams.home.name, opponentId: homeId, kickoff, fixtureId, source, competition });
       }
     }
   }
@@ -243,7 +233,7 @@ serve(async (req) => {
   // QA-18: a derby yields one candidate per side, and a device following both
   // clubs matched both. Tokens already reminded for a fixture in this run are
   // skipped for its second side, so she gets one push (the home side's copy,
-  // as candidates go home first — morning-push picks home the same way).
+  // as candidates go home first).
   const remindedByFixture = new Map<number, Set<string>>();
 
   for (const cand of candidates) {
@@ -276,7 +266,7 @@ serve(async (req) => {
       // The build-up floor exists for RSS-starved WC nations. PL clubs have a
       // full news routine, so keep their feeds free of deterministic filler
       // (audit 2026-09: scope of the A27 fix is the REMINDER, not feed volume).
-      const wantsBuildup = !prep && typeById.get(teamId) === "country";
+      const wantsBuildup = typeById.get(teamId) === "country";
       if (!dryRun && wantsBuildup) {
         const { data: existing } = await supabase
           .from("content_items")
@@ -320,19 +310,11 @@ serve(async (req) => {
 
       // ── Reminder PUSH — followed entities only ───────────────────────────
       const isFollowed = followed.has(teamId);
-      // An early League Cup or FA Cup round gets no kickoff or half-time push
-      // (push-tiers.ts); its morning reminder was the one framing push still
-      // going to every tier. Same rule here: the goals and the result reach her,
-      // the build-up does not.
-      const earlyCupRound =
-        minTierForLiveEvent("kickoff", cand.leagueId, cand.round) === TIER_NOBODY;
+      // Every cup round gets its reminder (LOCK-02-09): the early-round gate
+      // left a Tuesday League Cup tie with no word at all until the goals.
+      const titleName = shortById.get(teamId) ?? teamName;
       // Default-zone copy for the dry-run report; real sends render per zone below.
-      const copy = prep
-        ? renderPrepReminder({
-          opponent: (cand.opponentId && shortById.get(cand.opponentId)) || fx.opponent,
-          rng: seededRng(kickoff.getTime()),
-        })
-        : renderMatchdayReminder({ teamName, opponent: fx.opponent, kickoffUtc: kickoff, now, competition: fx.competition });
+      const copy = renderMatchdayReminder({ teamName, titleName, opponent: fx.opponent, kickoffUtc: kickoff, now, competition: fx.competition });
 
       if (dryRun) {
         results.push({
@@ -342,17 +324,13 @@ serve(async (req) => {
           buildup_headline: buildup.headline,
           followed: isFollowed,
           reminder_title: isFollowed ? copy.title : null,
-          would_push: isFollowed && !earlyCupRound,
-          early_cup_round: earlyCupRound || undefined,
+          would_push: isFollowed,
         });
         continue;
       }
 
-      if (!isFollowed || earlyCupRound) {
-        results.push({
-          team_id: teamId, kickoff: kickoff.toISOString(), buildup: buildupWritten,
-          followed: isFollowed, ...(earlyCupRound ? { skipped: "early cup round" } : {}),
-        });
+      if (!isFollowed) {
+        results.push({ team_id: teamId, kickoff: kickoff.toISOString(), buildup: buildupWritten, followed: false });
         continue;
       }
 
@@ -360,7 +338,7 @@ serve(async (req) => {
       // insert (23505) means we already reminded for this fixture — skip. This
       // survives cron retries and the same fixture returned by both sources.
       const { error: claimErr } = await supabase
-        .from(prep ? "prep_reminders_sent" : "matchday_reminders_sent")
+        .from("matchday_reminders_sent")
         .insert({ team_id: teamId, kickoff_time: kickoff.toISOString() });
       if (claimErr) {
         if (claimErr.code === "23505") continue; // already sent
@@ -382,10 +360,10 @@ serve(async (req) => {
             .range(from, to)
         );
       } catch (e) {
-        // Release the claim: recipients unknown, nothing sent, so the next run
-        // (or morning-push's fallback) may still remind for this fixture.
+        // Release the claim: recipients unknown, nothing sent, so the next
+        // hourly run may still remind for this fixture.
         await supabase
-          .from(prep ? "prep_reminders_sent" : "matchday_reminders_sent")
+          .from("matchday_reminders_sent")
           .delete()
           .eq("team_id", teamId)
           .eq("kickoff_time", kickoff.toISOString());
@@ -407,17 +385,14 @@ serve(async (req) => {
         const tz = safeTz(tzRaw);
         let p = payloadByTz.get(tz);
         if (!p) {
-          const c = prep
-            ? copy
-            : renderMatchdayReminder({ teamName, opponent: fx.opponent, kickoffUtc: kickoff, now, tz, competition: fx.competition });
+          const c = renderMatchdayReminder({ teamName, titleName, opponent: fx.opponent, kickoffUtc: kickoff, now, tz, competition: fx.competition });
           p = buildAPNsPayload(
             "", // teamShortName fallback unused — pushTitle is set below
             c.body, // headline fallback
-            // Non-UUID sentinel. "myturn-prep-…" opens My Turn on Pre-game
-            // (AppDelegate), for both the day-before and the matchday push:
-            // the morning reminder is the one pre-game push per match (Anton,
-            // 2026-10-26), and a tap should land where the getting-ready is,
-            // not on whatever feed was last open.
+            // Non-UUID sentinel. "myturn-prep-…" opens Matchday › Before
+            // (AppDelegate): the morning reminder is the one pre-game push per
+            // match (Anton, 2026-10-26), and a tap should land where the
+            // getting-ready is, not on whatever feed was last open.
             `myturn-prep-${teamId}-${kickoff.getTime()}`,
             "WC_MATCHDAY", // category string is not interpreted by iOS today; kept for log continuity
             false,
@@ -446,8 +421,8 @@ serve(async (req) => {
       const { error: logErr } = await supabase.from("pipeline_health").insert({
         team_id: teamId,
         stage: "apns_send",
-        target: `${prep ? "prep" : "matchday"}_reminder:${teamId}:${cand.fixtureId}`,
-        ...fanOutRow(`${prep ? "prep" : "matchday"} reminder`, sendResults.map((r) => r.res)),
+        target: `matchday_reminder:${teamId}:${cand.fixtureId}`,
+        ...fanOutRow("matchday reminder", sendResults.map((r) => r.res)),
       });
       if (logErr) console.warn("matchday-reminder: apns_send row failed (non-fatal):", logErr.message);
 
@@ -465,7 +440,6 @@ serve(async (req) => {
   }
 
   return json({
-    mode: prep ? "prep" : "matchday",
     dry_run: dryRun,
     reminders_sent: remindersSent,
     candidates: candidates.length,

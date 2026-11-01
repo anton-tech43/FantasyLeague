@@ -6,9 +6,15 @@
 // with tier segmentation and the gap check had a bug. See
 // _shared/anti-spam.ts header for the full rationale.
 //
-// Quiet hours: a direct trigger relies on post_news.sh, which downgrades a
-// card written in 21:00–05:59 UTC to feed-only. The hourly sweep applies the
-// same rule itself, plus a 90-minute freshness floor (2026-10-27).
+// Quiet hours: nothing is sent from 21:00 UTC until 07:00 London, on either
+// path (LOCK-02-06, 2026-11-01). post_news.sh downgrades a card written
+// 21:00–05:59 UTC to feed-only and holds one written before 07:00 London; the
+// hourly sweep sends a held one at 07:15, inside its 90-minute freshness floor.
+//
+// Who gets what (decided here, in code, PUSH_RULES.md §1): Light (tier 1)
+// only big news (significance 2); the Monday brief and the four tournament
+// feeds are Match-fit and up; the League Cup feed and match-watcher's
+// consequence cards never push. One push per club per three hours.
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { deactivateTokens, fetchAllRows, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
@@ -53,6 +59,17 @@ serve(async (req) => {
     // pass force_push:true to bypass the gate.
     const forcePush = body.force_push === true;
 
+    const now = Date.now();
+    const londonHour = Number(new Intl.DateTimeFormat("en-GB", {
+      hour: "numeric", hourCycle: "h23", timeZone: "Europe/London",
+    }).format(now));
+    const quiet = new Date(now).getUTCHours() >= 21 || londonHour < 7;
+    if (quiet && !forcePush) {
+      return new Response(JSON.stringify({ message: "Quiet hours (21:00 UTC to 07:00 London): nothing sent" }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // Three modes:
     //   1. Specific-item (caller passes content_item_id): routine path. Item
     //      is already status='published'; we just need to push.
@@ -76,7 +93,9 @@ serve(async (req) => {
       // recovery can still override with force_push:true.
       query = query.eq("id", specificItemId);
       if (!forcePush) {
-        query = query.eq("push_eligible", true);
+        // Consequence cards are feed-only (LOCK-02-12): the table move reaches
+        // a Deep follower inside match-watcher's full-time push instead.
+        query = query.eq("push_eligible", true).is("consequence_type", null);
       }
     } else {
       // Sweep: union of (a) and (b) above. Limit to 50 per run so a long
@@ -90,17 +109,15 @@ serve(async (req) => {
       // only through this sweep, so it applies the same two rules as
       // post_news.sh: nothing older than 90 minutes, and nothing pushed in
       // quiet hours (21:00–05:59 UTC). Missed ones stay in the feed, unpushed.
-      const now = Date.now();
       const fiveMinAgo = new Date(now - 5 * 60_000).toISOString();
       const freshFloor = new Date(now - 90 * 60_000).toISOString();
-      const hourUtc = new Date(now).getUTCHours();
-      const quiet = hourUtc >= 21 || hourUtc < 6;
       query = query
         .or(
-          "and(status.eq.approved,published_at.is.null)" +
-          (quiet ? "" : ",and(status.eq.published,pushed_at.is.null,published_at.lt." +
-            fiveMinAgo + ",published_at.gt." + freshFloor + ")")
+          "and(status.eq.approved,published_at.is.null)," +
+          "and(status.eq.published,pushed_at.is.null,published_at.lt." +
+            fiveMinAgo + ",published_at.gt." + freshFloor + ")"
         )
+        .is("consequence_type", null)
         // Push-eligibility gate (Lesson 76). Routines tag fun-trivia
         // items (e.g. "Arsenal's Odegaard heading to the WC as Norway
         // captain" written for Arsenal followers) with
@@ -130,11 +147,13 @@ serve(async (req) => {
       teamEntityTypes[t.id] = t.entity_type;
     }
 
-    // Per-team push throttle window (audit 2026-06-05, Lesson 89). Kept at
-    // 5 min — tight enough to collapse same-fire doubles (a routine writing
-    // two items seconds apart, each triggering a push) without suppressing
-    // genuinely-spaced matchday news (a result then a later, different item).
-    const PUSH_THROTTLE_MINUTES = 5;
+    // Per-team push throttle: one push per club per three hours (LOCK-02-06,
+    // 2026-11-01; was five minutes). "Pushed" means APNs accepted it (an
+    // apns_send row), not pushed_at, which a throttled or feed-only item also
+    // gets. The five-minute claim-order check below still collapses two items
+    // claimed in the same second, before either has sent.
+    const PUSH_THROTTLE_MINUTES = 180;
+    const CLAIM_RACE_MINUTES = 5;
 
     for (const item of items) {
       const teamId = item.team_id;
@@ -182,23 +201,47 @@ serve(async (req) => {
         continue;
       }
 
+      // The League Cup feed never pushes (Anton, 2026-11-01): its cards are
+      // read in the feed. Her own club's League Cup ties still get the live
+      // match pushes from match-watcher.
+      if (teamId === "league_cup") {
+        await supabase.from("content_items").update({ pushed_at: new Date().toISOString() }).eq("id", item.id);
+        await logPipelineEvent(supabase, {
+          team_id: teamId,
+          stage: "publish",
+          status: "skipped",
+          duration_ms: Date.now() - startTime,
+          message: "Feed only: the League Cup feed never pushes",
+          content_item_id: item.id,
+        });
+        continue;
+      }
+
       // Guard B — per-team push throttle. If this team already received a
       // push within PUSH_THROTTLE_MINUTES, leave this item feed-only (the
       // story still publishes). force_push bypasses for manual recovery.
       if (!forcePush) {
-        const throttleSince = new Date(Date.now() - PUSH_THROTTLE_MINUTES * 60_000).toISOString();
+        const raceSince = new Date(Date.now() - CLAIM_RACE_MINUTES * 60_000).toISOString();
         const { count: recentCount } = await supabase
           .from("content_items")
           .select("id", { count: "exact", head: true })
           .eq("team_id", teamId)
           .not("pushed_at", "is", null)
-          .gte("pushed_at", throttleSince)
+          .gte("pushed_at", raceSince)
           // Only claims made BEFORE this one: two items claimed together
           // each saw the other and both went unsent (bug hunt 2026-10-27).
           // The earlier claim pushes, the later one is throttled.
           .lt("pushed_at", claimedAt)
           .neq("id", item.id);
-        if ((recentCount ?? 0) > 0) {
+        const { count: sentCount } = await supabase
+          .from("pipeline_health")
+          .select("id", { count: "exact", head: true })
+          .eq("team_id", teamId)
+          .eq("stage", "apns_send")
+          .like("target", "item:%")
+          .in("status", ["success", "partial"])
+          .gte("created_at", new Date(Date.now() - PUSH_THROTTLE_MINUTES * 60_000).toISOString());
+        if ((recentCount ?? 0) > 0 || (sentCount ?? 0) > 0) {
           const update: Record<string, string> = { pushed_at: new Date().toISOString() };
           if (item.status !== "published") {
             update.status = "published";
@@ -303,7 +346,8 @@ serve(async (req) => {
       // Quiet hours handled by iOS Do Not Disturb on the device, not by the
       // server (server-side quiet hours meant matchday pushes for late-evening
       // games never reached the user — bad trade for a feature iOS does natively).
-      const minTierForType = item.type === "sunday_brief" ? 2 : 1;
+      // The literal line verify-push-rules.sh reads: keep it on one line.
+      const minTierForType = item.type === "sunday_brief" ? 2 : isTournament ? 2 : item.significance === 2 ? 1 : 2;
 
       type TokenEntry = { token: string; env: "development" | "production" };
       const eligibleTokens: TokenEntry[] = [];
