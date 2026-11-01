@@ -101,7 +101,16 @@ Deno.test("parseFixtureStats", () => {
     { team: { id: 63 }, statistics: [{ type: "Total Shots", value: null }] },
     "junk",
   ]);
-  eq(m.get(42), { shots: 17, onTarget: 6, possession: 61, xg: 2.13 }, "home stats");
+  // A listed count with a null value is the feed saying "none" (live takes).
+  eq(m.get(42), { shots: 17, onTarget: 6, possession: 61, xg: 2.13, corners: 0 }, "home stats");
   eq(m.get(63), {}, "nulls skipped");
   eq(parseFixtureStats(null).size, 0, "null input");
+});
+
+Deno.test("renderVerdict: a missing shot count is unknown, not 0", () => {
+  const late = sideGoals([ev("home", 23), ev("away", 61), ev("home", 88)], "home");
+  eq(renderVerdict(input({ goals: late, mine: { shots: 6 }, theirs: {} })), "Won it in the 88th minute.", "no 'they pushed'");
+  const loss = input({ state: "loss", teamScore: 0, oppScore: 1, goals: [], mine: { shots: 12 }, theirs: {} });
+  eq(renderVerdict(loss), "Not their day. Leeds were the better side.", "no 'had the chances'");
+  eq(renderVerdict({ ...loss, theirs: { shots: 4 } }), "Arsenal had the chances, Leeds had the goal.", "with data, unchanged");
 });

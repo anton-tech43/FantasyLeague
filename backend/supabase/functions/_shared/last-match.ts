@@ -19,7 +19,23 @@ export interface SideStats {
   onTarget?: number;
   possession?: number; // percent, 0-100
   xg?: number;
+  /// Counts for live takes (match-take.ts). The feed lists a count it has
+  /// with a null value for none, so a listed null is 0 here; a type that is
+  /// not listed at all stays missing.
+  corners?: number;
+  fouls?: number;
+  yellow?: number;
+  red?: number;
+  saves?: number; // goalkeeper saves
 }
+
+const COUNTS: Record<string, "corners" | "fouls" | "yellow" | "red" | "saves"> = {
+  "Corner Kicks": "corners",
+  "Fouls": "fouls",
+  "Yellow Cards": "yellow",
+  "Red Cards": "red",
+  "Goalkeeper Saves": "saves",
+};
 
 /// /fixtures/statistics → stats per API team id. Unusable input → empty map.
 export function parseFixtureStats(raw: unknown): Map<number, SideStats> {
@@ -32,7 +48,10 @@ export function parseFixtureStats(raw: unknown): Map<number, SideStats> {
     const s: SideStats = {};
     for (const st of list) {
       const type = (st as { type?: unknown })?.type;
-      const v = num((st as { value?: unknown })?.value);
+      const raw = (st as { value?: unknown })?.value;
+      const v = num(raw);
+      const count = typeof type === "string" ? COUNTS[type] : undefined;
+      if (count && (v !== null || raw === null)) s[count] = v ?? 0;
       if (v === null) continue;
       if (type === "Total Shots") s.shots = v;
       else if (type === "Shots on Goal") s.onTarget = v;
@@ -127,7 +146,8 @@ export function renderVerdict(v: VerdictInput): string {
 
   if (v.state === "win") {
     if (deciding && deciding.minute >= 85) {
-      const theyPushed = (shots(v.theirs) ?? 0) > (shots(v.mine) ?? 0);
+      const [ms, ts] = [shots(v.mine), shots(v.theirs)];
+      const theyPushed = ms !== null && ts !== null && ts > ms;
       return `Won it in the ${ordinal(Math.floor(deciding.minute))} minute` +
         (theyPushed ? ` after ${opp} had more of the chances.` : `.`);
     }
@@ -151,8 +171,9 @@ export function renderVerdict(v: VerdictInput): string {
         : `Let it slip in the ${ordinal(Math.floor(lateLeveller.minute))} minute.`;
     }
     if (gf === 0) {
-      const total = (onT(v.mine) ?? 0) + (onT(v.theirs) ?? 0);
-      return v.mine.onTarget !== undefined && v.theirs.onTarget !== undefined && total <= 4
+      const [mo, to] = [onT(v.mine), onT(v.theirs)];
+      const total = mo !== null && to !== null ? mo + to : null;
+      return total !== null && total <= 4
         ? `Ninety minutes, ${total} shot${total === 1 ? "" : "s"} on target between them.`
         : `No goals, and not much to remember it by.`;
     }
@@ -160,8 +181,9 @@ export function renderVerdict(v: VerdictInput): string {
   }
 
   // loss
-  const more = (shots(v.mine) ?? 0) - (shots(v.theirs) ?? 0);
-  if (more >= 5) return `${v.teamName} had the chances, ${opp} had the goal${ga === 1 ? "" : "s"}.`;
+  // A missing count is unknown, not 0 (LIVE_TAKES_PLAN trap 7).
+  const [ms, ts] = [shots(v.mine), shots(v.theirs)];
+  if (ms !== null && ts !== null && ms - ts >= 5) return `${v.teamName} had the chances, ${opp} had the goal${ga === 1 ? "" : "s"}.`;
   if (deciding && deciding.minute >= 85) return `Lost it in the ${ordinal(Math.floor(deciding.minute))} minute. Cruel.`;
   if (ga - gf >= 3) return `A night to forget. Best not to replay it this evening.`;
   return `Not their day. ${opp} were the better side.`;
