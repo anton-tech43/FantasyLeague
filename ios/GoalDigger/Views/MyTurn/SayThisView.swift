@@ -27,6 +27,11 @@ struct SayThisView: View {
     /// situations") clears it.
     @State private var practise: SayThisPractiseSession?
     @State private var showingPractise = false
+    /// Light (tier 1) opens on the moments alone, the other two groups folded
+    /// (council MY-11-00: 25 situations is too long a first look). Other
+    /// tiers see every group, as section labels. Session-only.
+    @State private var openGroups: Set<SituationGroup> = [.moments]
+    @Environment(AppState.self) private var appState
 
     private var lingoById: [String: LingoTerm] {
         // Not uniqueKeysWithValues: a repeated id in downloaded content would
@@ -149,10 +154,15 @@ struct SayThisView: View {
         // then how it is going, then what he asks her.
         ForEach(SituationGroup.allCases, id: \.self) { group in
             let sits = content.situations.filter { $0.group == group }
+            let folds = appState.selectedTier == 1
             if !sits.isEmpty {
-                MyTurnSectionLabel(text: group.title)
-                    .padding(.top, 20)
-                ForEach(sits) { s in
+                if folds {
+                    groupFold(group)
+                } else {
+                    MyTurnSectionLabel(text: group.title)
+                        .padding(.top, 20)
+                }
+                if !folds || openGroups.contains(group) { ForEach(sits) { s in
                     Button {
                         store.sayThisSituationId = s.id
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -164,9 +174,34 @@ struct SayThisView: View {
                         }
                     }
                     .buttonStyle(.plain)
-                }
+                } }
             }
         }
+    }
+
+    /// A group's label as a fold, for Light.
+    private func groupFold(_ group: SituationGroup) -> some View {
+        let open = openGroups.contains(group)
+        return Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                if open { openGroups.remove(group) } else { openGroups.insert(group) }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                MyTurnSectionLabel(text: group.title)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(.mutedText)
+                    .rotationEffect(.degrees(open ? 180 : 0))
+                Spacer(minLength: 0)
+            }
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .padding(.top, 8)
+        .accessibilityLabel(group.title)
+        .accessibilityHint(open ? "Hides these situations" : "Shows these situations")
     }
 
     // MARK: Level 2
@@ -213,10 +248,13 @@ struct SayThisView: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.warmWhite.opacity(0.6))
-                    .frame(width: 28, height: 28)
+                    // 44 pt, Apple's minimum tap target (MY-12-04).
+                    .frame(width: 44, height: 44)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .padding(.top, -8)
+            .padding(.trailing, -8)
             .accessibilityLabel("Dismiss")
         }
         .padding(12)
