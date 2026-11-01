@@ -519,7 +519,7 @@
           "answer": 0,
           "explanation": "Sergio Agüero, in the 94th minute of the final game, against QPR, to snatch the title from United on goal difference. The commentary is just 'Agüerooo'.",
           "useType": "say",
-          "use": "\"Agüerooo. That's why people put themselves through this.\""
+          "use": "\"Agüero, 94th minute, last day of 2011-12. City won the league on goal difference.\""
         },
         {
           "id": "legends-5",
@@ -898,9 +898,9 @@
             "Liverpool"
           ],
           "answer": 0,
-          "explanation": "Everton, after a toffee shop near where the club began. For decades a Toffee Lady in old-fashioned dress has thrown sweets into the crowd before home games.",
+          "explanation": "Everton, after a toffee shop in Everton village. Two claim it: Mother Noblett's and Ye Anciente Everton Toffee House. The Toffee Lady tradition came from the shops.",
           "useType": "impress",
-          "use": "\"Everton have a Toffee Lady who throws sweets to the crowd. That's why they're the Toffees.\""
+          "use": "\"They're the Toffees after an old sweet shop. The Toffee Lady throwing mints came from that.\""
         },
         {
           "id": "clubs-rivalries-8",
@@ -3943,9 +3943,9 @@
             "The Tigers"
           ],
           "answer": 0,
-          "explanation": "The Toffees, after the toffee shops by the club's early grounds. The Toffee Lady, in old-fashioned dress, throws sweets into the crowd before home games.",
+          "explanation": "The Toffees, after a toffee shop near the early grounds, Mother Noblett's or Ye Anciente Everton Toffee House. The Toffee Lady and her Everton Mints came from that.",
           "useType": "impress",
-          "use": "\"The Toffee Lady throws sweets into the crowd before games. That's why they're the Toffees.\""
+          "use": "\"It's from an old toffee shop. The Toffee Lady throwing mints before kick-off comes from that.\""
         },
         {
           "id": "club-everton-3",
