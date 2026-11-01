@@ -120,19 +120,20 @@ struct PlayerCardModal: View {
             .lineLimit(5)
     }
 
-    /// No row yet (routine hasn't run for this player). Sister-voice
-    /// "lands Sunday" copy so she knows it's coming, not broken.
+    /// No row yet (routine hasn't run for this player). Says it is coming,
+    /// not broken: gd-player-dossier runs every evening (17:00 UTC), never
+    /// only on Sundays, and it does not promise him one tonight.
     @ViewBuilder
     private var emptyBody: some View {
         // From the quiz there is no Sunday routine to promise: only fifteen or
         // so players a club have a dossier, by design. Say so plainly rather
         // than implying something is missing.
-        Text(gated ? "\(player.playerName)'s dossier lands Sunday evening."
+        Text(gated ? "No dossier on \(player.playerName) yet."
                    : "No dossier on him yet.")
             .font(.detailBody)
             .foregroundColor(.textPrimaryOnCard)
 
-        Text(gated ? "Fresh details every week so you always know who's who."
+        Text(gated ? "New ones land every evening."
                    : "The facts above are all we can vouch for.")
             .font(.feedTimestamp)
             .foregroundColor(.textSecondaryOnCard)

@@ -21,7 +21,7 @@ struct BadgeView: View {
         switch type {
         case .news: return "NEWS"
         case .matchday: return "MATCH DAY"
-        case .sundayBrief: return "SUNDAY BRIEF"
+        case .sundayBrief: return "MONDAY BRIEF"  // raw type stays sunday_brief; the brief moved to Monday 08:00
         }
     }
 
