@@ -242,6 +242,9 @@ class AppState {
         if let i = args.firstIndex(of: "-gdPresetTeam2"), i + 1 < args.count,
            let t2 = Team(rawValue: args[i + 1]), !self.selectedTeams.contains(t2) {
             self.selectedTeams.append(t2)
+            // With `-gdOnTeam2`, the switcher starts on it (Matchday and the
+            // club page follow the switcher).
+            if args.contains("-gdOnTeam2") { self.activeContext = .team(t2) }
         }
         // `-gdPresetCountry netherlands` adds a country follow on top, which
         // is the only way to reproduce the ten club+country devices and the
