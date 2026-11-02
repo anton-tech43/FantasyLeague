@@ -24,11 +24,14 @@ Deno.test("start with a channel carries input-push-channel next to the attribute
   assertEquals(aps["attributes-type"], "MatchActivityAttributes");
   assertEquals(aps["stale-date"], 2200);
   assertEquals(aps["timestamp"], 1000);
+  assertEquals((aps["attributes"] as Record<string, unknown>).viaChannel, true);
 });
 
 Deno.test("a token start has no input-push-channel; an update never does", () => {
-  const start = buildLiveActivityAps({ event: "start", contentState: cs }, 1);
+  const start = buildLiveActivityAps({ event: "start", contentState: cs,
+    attributes: { fixtureId: 1, homeName: "A", awayName: "B", homeFlag: "", awayFlag: "" } }, 1);
   assertEquals("input-push-channel" in start, false);
+  assertEquals("viaChannel" in (start["attributes"] as Record<string, unknown>), false);
   const upd = buildLiveActivityAps({ event: "update", contentState: cs, inputPushChannel: "x" }, 1);
   assertEquals("input-push-channel" in upd, false);
   assertEquals("attributes-type" in upd, false);

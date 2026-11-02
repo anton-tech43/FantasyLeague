@@ -242,7 +242,9 @@ final class LiveActivityManager {
     private func startIfMissing(from snap: LiveMatchSnapshot) {
         if let running = Activity<MatchActivityAttributes>.activities
             .first(where: { $0.attributes.fixtureId == snap.fixtureId }) {
-            guard running.pushToken == nil, !takenOver.contains(snap.fixtureId) else { return }
+            // A channel card never has a token and is fine; never replace it.
+            guard running.pushToken == nil, running.attributes.viaChannel != true,
+                  !takenOver.contains(snap.fixtureId) else { return }
             takenOver.insert(snap.fixtureId)
             Task { @MainActor in
                 try? await Task.sleep(for: .seconds(10))

@@ -51,4 +51,7 @@ struct MatchActivityAttributes: ActivityAttributes {
     var homeFlag: String   // emoji, e.g. "🇲🇽"
     var awayFlag: String   // emoji, e.g. "🇿🇦"
     var groupLabel: String?  // e.g. "Group A"
+    /// Started on a broadcast channel (iOS 18+): updates arrive on the channel,
+    /// so the activity never gets a push token, by design. Old builds ignore it.
+    var viaChannel: Bool? = nil
 }

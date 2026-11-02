@@ -239,6 +239,8 @@ interface LiveActivityAttributesPayload {
   homeFlag: string;
   awayFlag: string;
   groupLabel?: string;
+  /// Set on a channel start so the app knows the card has no token by design.
+  viaChannel?: boolean;
 }
 
 interface LiveActivityPushOptions {
@@ -275,7 +277,7 @@ export function buildLiveActivityAps(
   if (opts.event === "start") {
     // ActivityAttributes type name (must match the Swift struct name).
     aps["attributes-type"] = "MatchActivityAttributes";
-    aps["attributes"] = opts.attributes;
+    aps["attributes"] = opts.inputPushChannel ? { ...opts.attributes, viaChannel: true } : opts.attributes;
     if (opts.inputPushChannel) aps["input-push-channel"] = opts.inputPushChannel;
   }
   if (opts.alert) aps["alert"] = opts.alert;
