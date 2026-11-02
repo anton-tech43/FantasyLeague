@@ -54,7 +54,18 @@ import {
   pageRefreshMarker,
   planPageRefresh,
 } from "../_shared/page-refresh.ts";
-import { buildAPNsPayload, sendLiveActivityPush, sendPushNotification } from "../_shared/apns-client.ts";
+import {
+  type APNsEnvironment,
+  type APNsSendResult,
+  buildAPNsPayload,
+  type ChannelResult,
+  createChannel,
+  deleteChannel,
+  sendBroadcast,
+  sendLiveActivityPush,
+  sendPushNotification,
+} from "../_shared/apns-client.ts";
+import { channelColumn, laChannelMode, laChannelPrefixes, wantsChannel } from "../_shared/la-channels.ts";
 import { WC_COUNTRY_META, wcStatusLabel } from "../_shared/wc-countries.ts";
 import {
   attachScorerPhotos,
@@ -656,6 +667,53 @@ const PAUSED_LA = new Set(["INT", "SUSP"]);
 /// play an update lands every minute; the break gets 30 minutes.
 const LA_STALE_SECONDS = 1200;
 
+/// Broadcast-channel Live Activities (iOS 18+), off unless the LA_CHANNELS
+/// secret says otherwise (_shared/la-channels.ts, docs/LIVE_ACTIVITY_PLAN.md).
+/// A fixture that already holds a channel is broadcast to whatever the flag
+/// says now, so turning the flag off mid-match does not freeze those cards.
+const LA_CHANNEL_MODE = laChannelMode(Deno.env.get("LA_CHANNELS"));
+const LA_CHANNEL_PREFIXES = laChannelPrefixes(Deno.env.get("LA_CHANNEL_TOKENS"));
+const LA_ENVS: APNsEnvironment[] = ["production", "development"];
+
+/// One la_send row for a channel create or delete:
+/// target la:<fixture>:<op>:channel:<env>. Best-effort, never throws.
+async function logLaChannelOp(
+  // deno-lint-ignore no-explicit-any
+  supabase: any,
+  fixtureId: number,
+  op: "create" | "delete",
+  env: APNsEnvironment,
+  res: ChannelResult,
+): Promise<void> {
+  try {
+    await supabase.from("pipeline_health").insert({
+      stage: "la_send",
+      target: `la:${fixtureId}:${op}:channel:${env}`,
+      ...fanOutRow(`la channel ${op} ${env}`, [res]),
+    });
+  } catch (e) {
+    console.warn("la channel row insert threw (non-fatal):", e instanceof Error ? e.message : String(e));
+  }
+}
+
+/// The end of a channel: delete it and clear the column. A failed delete
+/// keeps the column, so la-end-sweep tries again (and gives up at six hours).
+async function retireChannel(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  fixtureId: number,
+  env: APNsEnvironment,
+  channelId: string,
+  giveUp = false,
+): Promise<boolean> {
+  const del = await deleteChannel(env, channelId);
+  await logLaChannelOp(supabase, fixtureId, "delete", env, del);
+  if (!del.success && !giveUp) return false;
+  const { error } = await supabase.from("match_status_state")
+    .update({ [channelColumn(env)]: null }).eq("fixture_id", fixtureId).eq(channelColumn(env), channelId);
+  if (error) console.warn(`clearing ${channelColumn(env)} for ${fixtureId} failed:`, error.message);
+  return del.success;
+}
+
 /// End every Live Activity whose match is over and was not ended by the
 /// full-time tick.
 ///
@@ -738,7 +796,43 @@ async function sweepLiveActivities(
     const k = `${x.res.status ?? "?"} ${x.res.reason ?? ""}`.trim();
     reasons[k] = (reasons[k] ?? 0) + 1;
   }
-  return new Response(JSON.stringify({ swept: due.length, ended: ok, failures: reasons }), {
+  // Channels left on a fixture that is over (157): the full-time end
+  // broadcast failed, or the delete after it did. Re-send the end, then
+  // delete. ponytail: if only the delete failed, this second end shortens the
+  // final score's 30 minutes to the time since full time + 1 min; rare (two
+  // APNs calls in a row, one ok), so not tracked separately.
+  const channelsSwept: Array<Record<string, unknown>> = [];
+  const { data: chanRows } = await supabase.from("match_status_state")
+    .select("fixture_id, status, kickoff_time, home_goals, away_goals, la_note, la_channel_id, la_channel_id_dev")
+    .or("la_channel_id.not.is.null,la_channel_id_dev.not.is.null");
+  for (const st of chanRows ?? []) {
+    const status = st.status as string;
+    const kickoff = st.kickoff_time as string;
+    const over = ENDED_STATUSES.has(status) || (kickoff < cutoff && !LIVE_STATUSES_LA.has(status)) || kickoff < giveUp;
+    if (!over) continue;
+    for (const env of LA_ENVS) {
+      const channelId = st[channelColumn(env)] as string | null;
+      if (!channelId) continue;
+      const res = await sendBroadcast(channelId, {
+        event: "end",
+        contentState: {
+          homeScore: (st.home_goals as number | null) ?? 0,
+          awayScore: (st.away_goals as number | null) ?? 0,
+          statusLabel: wcStatusLabel(status),
+          elapsed: null,
+          clockStart: null,
+          ...(st.la_note ? { note: st.la_note as string } : {}),
+        },
+        dismissalSeconds: 60,
+        environment: env,
+      });
+      await logLaSend(supabase, st.fixture_id as number, "end", 10, [res], "sweep:channel");
+      const deleted = await retireChannel(supabase, st.fixture_id as number, env, channelId, kickoff < giveUp);
+      channelsSwept.push({ fixture_id: st.fixture_id, env, end: res.success, deleted });
+    }
+  }
+
+  return new Response(JSON.stringify({ swept: due.length, ended: ok, failures: reasons, channels: channelsSwept }), {
     headers: { "Content-Type": "application/json" },
   });
 }
@@ -1425,7 +1519,7 @@ async function handleRequest(req: Request): Promise<Response> {
 
       const { data: prior, error: priorErr } = await supabase
         .from("match_status_state")
-        .select("status, home_goals, away_goals, fired_finished_at, briefs_fired, matchday_fire_capped, la_started, la_sig, la_ended, la_note, goal_events, ht_home, ht_away, stat_snapshots")
+        .select("status, home_goals, away_goals, fired_finished_at, briefs_fired, matchday_fire_capped, la_started, la_sig, la_ended, la_note, la_channel_id, la_channel_id_dev, goal_events, ht_home, ht_away, stat_snapshots")
         .eq("fixture_id", fixtureId)
         .maybeSingle();
       if (priorErr) {
@@ -2279,11 +2373,11 @@ async function handleRequest(req: Request): Promise<Response> {
           const laTokens = async (
             // deno-lint-ignore no-explicit-any
             filter: (q: any) => any,
-          ): Promise<Array<{ token: string; apns_environment: string }>> => {
+          ): Promise<Array<{ token: string; apns_environment: string; darwin_major: number | null }>> => {
             try {
               return await fetchAllRows((from, to) =>
                 filter(
-                  supabase.from("live_activity_tokens").select("token, apns_environment").eq("is_active", true),
+                  supabase.from("live_activity_tokens").select("token, apns_environment, darwin_major").eq("is_active", true),
                 ).order("token").range(from, to)
               );
             } catch (e) {
@@ -2295,6 +2389,7 @@ async function handleRequest(req: Request): Promise<Response> {
           const sendAll = async (
             rows: Array<{ token: string; apns_environment: string }> | null,
             opts: Parameters<typeof sendLiveActivityPush>[1],
+            source?: string,
           ) => {
             const list = rows ?? [];
             if (list.length === 0) return [];
@@ -2314,8 +2409,27 @@ async function handleRequest(req: Request): Promise<Response> {
               "live_activity_tokens",
               sent.filter((s) => isTokenDead(s.res)).map((s) => s.token),
             );
-            await logLaSend(supabase, fixtureId, opts.event, opts.priority ?? 10, sent.map((s) => s.res));
+            await logLaSend(supabase, fixtureId, opts.event, opts.priority ?? 10, sent.map((s) => s.res), source);
             return sent;
+          };
+
+          // The fixture's broadcast channels (157), one per APNs environment.
+          // Every update and end the token path sends goes to each as one
+          // broadcast, same content-state and priority; logged as
+          // la:<fixture>:<event>:p<prio>:channel.
+          const laChannels = new Map<APNsEnvironment, string>();
+          for (const env of LA_ENVS) {
+            const id = prior?.[channelColumn(env)] as string | null | undefined;
+            if (id) laChannels.set(env, id);
+          }
+          const broadcastAll = async (opts: Parameters<typeof sendLiveActivityPush>[1]) => {
+            const out: Array<{ env: APNsEnvironment; channelId: string; res: APNsSendResult }> = [];
+            for (const [env, channelId] of laChannels) {
+              const res = await sendBroadcast(channelId, { ...opts, environment: env });
+              await logLaSend(supabase, fixtureId, opts.event, opts.priority ?? 10, [res], "channel");
+              out.push({ env, channelId, res });
+            }
+            return out;
           };
 
           if (matchFinished && laStarted) {
@@ -2329,6 +2443,12 @@ async function handleRequest(req: Request): Promise<Response> {
             // which reads is_active tokens, ends it later — deactivating it
             // here left the score on her lock screen (bug hunt 2026-10-27).
             await deactivateTokens(supabase, "live_activity_tokens", ended.filter((e) => e.res.success).map((e) => e.token));
+            // A channel whose end was accepted is deleted now (Apple: delete
+            // once the event is over; an accepted broadcast is still
+            // delivered). A failed end leaves it for la-end-sweep.
+            for (const b of await broadcastAll({ event: "end", contentState, dismissalSeconds: 1800 })) {
+              if (b.res.success) await retireChannel(supabase, fixtureId, b.env, b.channelId);
+            }
             laEnded = true;
             laSig = sig;
           } else if (isLive && !laStarted && prior !== null) {
@@ -2351,7 +2471,14 @@ async function handleRequest(req: Request): Promise<Response> {
             // Sent after the state upsert (pendingLaStarts), like the alert
             // pushes: a failed save would otherwise start a second activity
             // on every phone next tick (bug hunt 2026-10-27).
-            pendingLaStarts.push(() => sendAll(ptsTokens, {
+            // LA_CHANNELS: the rows it selects start on the fixture's broadcast
+            // channel (created here, one per environment) instead of producing
+            // an update token. If the channel cannot be created they get
+            // today's token start, so nobody loses the card.
+            const channelRows = ptsTokens.filter((r) => wantsChannel(LA_CHANNEL_MODE, LA_CHANNEL_PREFIXES, r));
+            const onChannel = new Set(channelRows);
+            const tokenRows = channelRows.length ? ptsTokens.filter((r) => !onChannel.has(r)) : ptsTokens;
+            const startOpts: Parameters<typeof sendLiveActivityPush>[1] = {
               event: "start",
               attributes: {
                 fixtureId,
@@ -2366,7 +2493,35 @@ async function handleRequest(req: Request): Promise<Response> {
               contentState,
               alert: { title: `${homeMeta.name} v ${awayMeta.name}`, body: "It's kicked off." },
               staleSeconds: LA_STALE_SECONDS,
-            }));
+            };
+            pendingLaStarts.push(async () => {
+              const fallback: typeof ptsTokens = [];
+              for (const env of LA_ENVS) {
+                const rows = channelRows.filter((r) => (r.apns_environment === "production" ? "production" : "development") === env);
+                if (rows.length === 0) continue;
+                let channelId = laChannels.get(env);
+                if (!channelId) {
+                  const made = await createChannel(env);
+                  await logLaChannelOp(supabase, fixtureId, "create", env, made);
+                  if (made.success && made.channelId) {
+                    const { error } = await supabase.from("match_status_state")
+                      .update({ [channelColumn(env)]: made.channelId }).eq("fixture_id", fixtureId);
+                    if (error) {
+                      // Unsaved, nothing would ever broadcast to it: start
+                      // these phones on tokens instead and drop the channel.
+                      console.error(`saving ${channelColumn(env)} for ${fixtureId} failed:`, error.message);
+                      await logLaChannelOp(supabase, fixtureId, "delete", env, await deleteChannel(env, made.channelId));
+                    } else {
+                      channelId = made.channelId;
+                      laChannels.set(env, channelId);
+                    }
+                  }
+                }
+                if (channelId) await sendAll(rows, { ...startOpts, inputPushChannel: channelId }, "channel");
+                else fallback.push(...rows);
+              }
+              await sendAll([...tokenRows, ...fallback], startOpts);
+            });
             laStarted = true;
             laSig = sig;
           } else if ((isLive || PAUSED_LA.has(status)) && laStarted && sig !== laSig) {
@@ -2378,11 +2533,13 @@ async function handleRequest(req: Request): Promise<Response> {
             // (LOCK-03-16).
             const minuteOnly = laSig !== null && laSig.replace(/-[^-]*$/, "") === sigCore;
             const updTokens = await laTokens((q) => q.eq("kind", "update").eq("fixture_id", fixtureId));
-            await sendAll(updTokens, {
+            const updOpts: Parameters<typeof sendLiveActivityPush>[1] = {
               // Half time is a planned 15–20 minutes without an update.
               event: "update", contentState, staleSeconds: status === "HT" || status === "BT" ? 1800 : LA_STALE_SECONDS,
               priority: minuteOnly || status === "P" ? 5 : 10,
-            });
+            };
+            await sendAll(updTokens, updOpts);
+            await broadcastAll(updOpts);
             laSig = sig;
           }
         }
