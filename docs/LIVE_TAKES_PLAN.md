@@ -173,7 +173,8 @@ HT saying and today's verdict.
 
 **Phase 1 as built** (2026-11-03, migration 158, `_shared/la-notes.ts`)
 - `liveTake` (match-watcher) writes each followed side's take for 30', HT and
-  70' to `match_status_state.la_takes` `{home, away}`; a silent side gets no
+  70' to `match_status_state.la_takes` `{home, away, score, moment}` (a
+  take never outlives the score or period it was decided at); a silent side gets no
   note, which clears an older one. Full time is decided and logged but never
   sent. `pipeline_health` `live_take` rows: `success` = stored for the Live
   Activity, `skipped` = silent or full time, `failure` = the write failed.
