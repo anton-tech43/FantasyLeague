@@ -43,10 +43,33 @@ Deno.test("an outsider up front fires, named the way the league names him", () =
   const n = run([1, 2, 3, 4, 5, 6, 7, 8, 13, 10, 11], base, sq2);
   assertEquals(n?.kind, "outsider_in");
   assertEquals(n?.players, ["Nwaneri"]);
+  assertEquals(n?.line, "Nwaneri makes his first league start of the season against Leeds.");
+});
+
+Deno.test("a starter we have never heard of is a new name", () => {
+  const sq = squad.map((r) => r.api_player_id === 9 ? { ...r, league_starts: 1 } : r);
+  const xi = xiOf([1, 2, 3, 4, 5, 6, 7, 8, 99, 10, 11]);
+  const n = notableLineup({ xi, squad: sq, leaguePlayed: 9, previousXI: base, lastRole: roles, opponent: "Leeds" });
+  assertEquals(n?.line, "P99 starts against Leeds. That's a new name. Ask him who he is.");
+});
+
+Deno.test("Newcastle v Everton (2026-11-02): benched gets 'Ask him why', missing from the squad does not", () => {
+  // 3 (a regular centre-back) is out of the XI; on the bench, then not.
+  const xi = xiOf([1, 2, 12, 4, 5, 6, 7, 8, 9, 10, 11]);
+  const benched = notableLineup({ xi, squad, leaguePlayed: 9, previousXI: base, lastRole: roles, opponent: "Everton", bench: [3, 13] });
+  assertEquals(benched?.line, "3 is on the bench against Everton. Ask him why.");
+  const missing = notableLineup({ xi, squad, leaguePlayed: 9, previousXI: base, lastRole: roles, opponent: "Everton", bench: [13] });
+  assertEquals(missing?.line, "3 isn't even in the squad against Everton.");
+});
+
+Deno.test("five starts out of eight is not a regular any more (70%)", () => {
+  const sq = squad.map((r) => r.api_player_id === 3 ? { ...r, league_starts: 6 } : r); // 6 of 9 = 67%
+  // 3 is no longer a regular, so the story is the fringe centre-back coming in.
+  assertEquals(run([1, 2, 12, 4, 5, 6, 7, 8, 9, 10, 11], base, sq)?.kind, "outsider_in");
 });
 
 Deno.test("six changes with nobody regular missing fires as rotation", () => {
-  const fringe = squad.map((r) => ({ ...r, league_starts: 4 })); // nobody ≥ 60%, nobody ≤ 20%
+  const fringe = squad.map((r) => ({ ...r, league_starts: 4 })); // nobody ≥ 70%, nobody ≤ 20%
   const prev = [1, 2, 3, 4, 5, 26, 27, 28, 29, 30, 31];
   const n = run(base, prev, fringe);
   assertEquals(n?.kind, "rotation");

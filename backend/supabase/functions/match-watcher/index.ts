@@ -945,6 +945,7 @@ async function lineupDryRun(
       note = notableLineup({
         xi, squad: rows, leaguePlayed, lastRole, opponent,
         previousXI: prevLeague ? (prevLeague.xi as LineupPlayer[]).map((p) => p.id) : null,
+        bench: toPlayers(side.substitutes).map((p) => p.id),
       });
       await supabase.from("pipeline_health").insert({
         team_id: teamId ?? null,

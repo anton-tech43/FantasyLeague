@@ -28,6 +28,7 @@ export type TakeKind =
   | "second_best"
   | "all_ball_behind"
   | "all_ball_no_bite"
+  | "shooting_blanks"
   | "deserved_more"
   | "wasted_corners"
   | "scrap";
@@ -50,7 +51,8 @@ export const SHOT_GAP_90 = 9; // more shots than the other side
 export const SHOTS_90 = 15; // a side that is shooting a lot
 export const FEW_ON_TARGET_90 = 4; // "not hurting them"
 export const POOR_AIM = 0.25; // on target / shots at or below this
-export const KEEPER_SAVES_90 = 7; // a keeper having a busy day...
+export const ON_TARGET_GAP_90 = 4; // more shots on target than the other side
+export const KEEPER_SAVES_90 = 5; // a keeper having a busy day (4 by 70')...
 export const KEEPER_SAVES_MIN = 4; // ...but never fewer than this
 export const CORNERS_90 = 9;
 export const CORNERS_MIN = 5;
@@ -203,8 +205,9 @@ const RULES: Rule[] = [
     kind: "their_keeper",
     moments: ["ht", "70", "ft"],
     when: ({ lead, m, t, per }) =>
-      lead <= 1 && def(t.saves, m.onTarget, m.shots, t.shots) &&
-      t.saves! >= Math.max(KEEPER_SAVES_MIN, per(KEEPER_SAVES_90)) && m.shots! - t.shots! >= per(SHOT_GAP_90) / 2,
+      lead <= 1 && def(t.saves, m.onTarget, t.onTarget, m.shots, t.shots) &&
+      t.saves! >= Math.max(KEEPER_SAVES_MIN, per(KEEPER_SAVES_90)) &&
+      (m.shots! - t.shots! >= per(SHOT_GAP_90) / 2 || m.onTarget! - t.onTarget! >= per(ON_TARGET_GAP_90)),
     live: ["The {opp} keeper is keeping them in this.", "The {opp} keeper is having a blinder."],
     ft: ["The {opp} keeper was man of the match.", "Without the {opp} keeper, it wasn't close."],
     backup: ["{saves} saves already. They need to keep testing him."],
@@ -215,8 +218,9 @@ const RULES: Rule[] = [
     kind: "our_keeper",
     moments: ["30", "ht", "70", "ft"],
     when: ({ lead, m, t, per }) =>
-      lead >= 0 && def(m.saves, m.shots, t.shots) &&
-      m.saves! >= Math.max(KEEPER_SAVES_MIN, per(KEEPER_SAVES_90)) && t.shots! - m.shots! >= per(SHOT_GAP_90) / 2,
+      lead >= 0 && def(m.saves, m.onTarget, t.onTarget, m.shots, t.shots) &&
+      m.saves! >= Math.max(KEEPER_SAVES_MIN, per(KEEPER_SAVES_90)) &&
+      (t.shots! - m.shots! >= per(SHOT_GAP_90) / 2 || t.onTarget! - m.onTarget! >= per(ON_TARGET_GAP_90)),
     live: ["The {team} keeper is keeping them in this.", "The {team} keeper is having a blinder."],
     ft: ["The {team} keeper was man of the match.", "The {team} keeper saved them today."],
     backup: ["{saves} saves already. He's having a blinder.", "They need to keep the ball more and give him a rest."],
@@ -267,6 +271,19 @@ const RULES: Rule[] = [
       m.onTarget! <= m.shots! * POOR_AIM,
     live: ["{team} have the ball but aren't hurting anyone.", "{team} have the ball, but no real chances."],
     backup: ["{shots} shots and the keeper's barely had to move.", "They need someone to shoot from the edge of the box more."],
+  },
+  // Newcastle v Everton, 70' (2026-11-02): thirteen shots, none on target,
+  // without needing the ball. Anton: "skjuter mycket men träffar inte målet".
+  {
+    kind: "shooting_blanks",
+    moments: ["ht", "70", "ft"],
+    when: ({ lead, m, per }) =>
+      lead <= 0 && def(m.shots, m.onTarget) &&
+      m.shots! >= per(SHOTS_90) && m.onTarget! <= 1,
+    live: ["{team} keep shooting but can't hit the target.", "Loads of {team} shots, hardly any on target."],
+    ft: ["{team} kept shooting but missed the target.", "So many {team} shots, hardly any on target."],
+    backup: ["{shots} shots and the keeper's barely had to move.", "They need to take a touch and pick their spot."],
+    ftBackup: ["{shots} shots and the keeper barely had to move."],
   },
   // The Arsenal-Brighton full time: won, and should have won by more.
   {

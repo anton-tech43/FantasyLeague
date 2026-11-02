@@ -62,6 +62,16 @@ Deno.test("FT: won it late, 22 shots to 4, their keeper made 7 saves", () => {
     { mine: 2, theirs: 1 }), "deserved_more", "without the saves, deserved more");
 });
 
+// ─── Real matches ────────────────────────────────────────────────────────
+
+Deno.test("Newcastle 0-1 Everton at 70' (2026-11-02): silent before, now both sides have a line", () => {
+  const ncl: SideStats = { shots: 13, onTarget: 0, possession: 51, corners: 3, fouls: 9, yellow: 1, red: 0, saves: 4 };
+  const eve: SideStats = { shots: 16, onTarget: 5, possession: 49, corners: 4, fouls: 7, yellow: 1, red: 0, saves: 0 };
+  eq(kind("70", ncl, eve, { mine: 0, theirs: 1 }), "shooting_blanks", "Newcastle: thirteen shots, none on target");
+  eq(kind("70", eve, ncl, { mine: 1, theirs: 0 }), "their_keeper", "Everton: four saves by their keeper");
+  eq(kind("70", { ...ncl, onTarget: 4 }, eve, { mine: 0, theirs: 1 }), null, "four on target is not blanks");
+});
+
 // ─── The numbered situations ─────────────────────────────────────────────
 
 Deno.test("1. most of the ball and behind", () => {

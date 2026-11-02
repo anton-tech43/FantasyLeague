@@ -7,7 +7,7 @@
 // sent) until Anton has read real cases and turns on LINEUP_PUSH_ENABLED.
 //
 // Thresholds are here so tuning them is one edit.
-export const REGULAR_SHARE = 0.6;   // started ≥ 60% of league games played
+export const REGULAR_SHARE = 0.7;   // started ≥ 70% of league games played (Anton, 2026-11-02)
 export const OUTSIDER_SHARE = 0.2;  // started ≤ 20%
 export const MIN_PLAYED = 3;        // too early in the season to call anyone regular
 export const ROTATION_CHANGES = 5;  // changes from the previous league XI
@@ -41,6 +41,10 @@ export interface NotableInput {
   leaguePlayed: number;
   /// The previous league XI's ids, or null when none is stored yet.
   previousXI: number[] | null;
+  /// This match's substitutes. A regular missing from both the XI and the
+  /// bench is not in the squad at all, which is usually a knock rather than a
+  /// choice, so the line says so instead of "Ask him why". Null: unknown.
+  bench?: number[] | null;
   /// Each player's role in the last lineup we stored, for men not in this one.
   lastRole: Map<number, Role>;
   opponent: string;
@@ -87,7 +91,7 @@ function list(names: string[]): string {
 }
 
 export function notableLineup(input: NotableInput): Notable | null {
-  const { xi, squad, leaguePlayed, previousXI, lastRole, opponent } = input;
+  const { xi, squad, leaguePlayed, previousXI, lastRole, opponent, bench } = input;
   if (xi.length !== 11) return null;
   const inXI = new Set(xi.map((p) => p.id));
   const roles = rolesFromGrid(xi);
@@ -103,27 +107,46 @@ export function notableLineup(input: NotableInput): Notable | null {
       substance(lastRole.get(r.api_player_id) ?? ROLE_BY_POSITION[r.position ?? ""])
     );
     if (out.length > 0) {
-      const names = out.slice(0, 2).map((r) => shownName(r, r.name));
-      const verb = names.length === 1 ? "isn't" : "aren't";
-      return {
-        kind: "regular_out",
-        players: names,
-        line: `${list(names)} ${verb} starting against ${opponent}. Ask him why.`,
-      };
+      const onBench = bench ? new Set(bench) : null;
+      const benched = out.filter((r) => !onBench || onBench.has(r.api_player_id)).map((r) => shownName(r, r.name));
+      const missing = out.filter((r) => onBench && !onBench.has(r.api_player_id)).map((r) => shownName(r, r.name));
+      const isAre = (n: string[], one: string, many: string) => n.length === 1 ? one : many;
+      let line: string;
+      if (missing.length === 0) {
+        const b = benched.slice(0, 2);
+        line = onBench
+          ? `${list(b)} ${isAre(b, "is", "are")} on the bench against ${opponent}. Ask him why.`
+          : `${list(b)} ${isAre(b, "isn't", "aren't")} starting against ${opponent}. Ask him why.`;
+      } else if (benched.length === 0) {
+        const m = missing.slice(0, 2);
+        line = `${list(m)} ${isAre(m, "isn't", "aren't")} even in the squad against ${opponent}.`;
+      } else {
+        line = `${benched[0]} is on the bench and ${missing[0]} isn't in the squad against ${opponent}.`;
+      }
+      return { kind: "regular_out", players: [...benched, ...missing].slice(0, 2), line };
     }
 
+    // Downwards: a man who has hardly started, or never has. Someone not in
+    // our squad table at all is a new name (an academy debut: under-21s need
+    // no Premier League registration, so the official list can miss them).
     const outsiders = xi.filter((p) => {
       const r = byId.get(p.id);
-      return r !== undefined && (r.league_starts ?? 0) <= OUTSIDER_SHARE * leaguePlayed &&
+      return (r === undefined || (r.league_starts ?? 0) <= OUTSIDER_SHARE * leaguePlayed) &&
         substance(roles.get(p.id)) && roles.get(p.id) !== "gk";
     });
     if (outsiders.length > 0) {
       const names = outsiders.slice(0, 2).map((p) => shownName(byId.get(p.id), p.name));
+      const firstStart = outsiders.length === 1 && byId.get(outsiders[0].id)?.league_starts === 0;
+      const newName = outsiders.length === 1 && !byId.has(outsiders[0].id);
       const verb = names.length === 1 ? "starts" : "start";
       return {
         kind: "outsider_in",
         players: names,
-        line: `${list(names)} ${verb} against ${opponent}, which is new. Ask him if that's a gamble.`,
+        line: newName
+          ? `${names[0]} starts against ${opponent}. That's a new name. Ask him who he is.`
+          : firstStart
+          ? `${names[0]} makes his first league start of the season against ${opponent}.`
+          : `${list(names)} ${verb} against ${opponent}, which is new. Ask him if that's a gamble.`,
       };
     }
   }
