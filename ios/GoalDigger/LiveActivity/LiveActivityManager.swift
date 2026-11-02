@@ -101,13 +101,28 @@ final class LiveActivityManager {
     private func observeToken(of activity: Activity<MatchActivityAttributes>) {
         Task {
             for await tokenData in activity.pushTokenUpdates {
-                guard await Self.onboarded else { continue }
-                try? await APIClient.shared.registerLiveActivityToken(
-                    tokenData.gdHexString, kind: "update",
-                    fixtureId: activity.attributes.fixtureId,
-                    countryIds: Self.followedCountryIds, teamIds: Self.followedTeamIds)
+                await registerUpdateToken(tokenData.gdHexString, fixtureId: activity.attributes.fixtureId)
             }
         }
+    }
+
+    /// Update tokens the server has accepted this session.
+    @MainActor private var registeredUpdateTokens: Set<String> = []
+
+    /// pushTokenUpdates hands each token over once. A POST that failed (the
+    /// background wake ran out, no network yet) or a token that arrived before
+    /// onboarding could be read was lost for the whole match, and match-watcher
+    /// can only update an activity whose token it has. syncForegroundActivity
+    /// re-sends any running activity's token that never got through.
+    @MainActor
+    private func registerUpdateToken(_ token: String, fixtureId: Int) async {
+        guard Self.onboarded, !registeredUpdateTokens.contains(token) else { return }
+        do {
+            try await APIClient.shared.registerLiveActivityToken(
+                token, kind: "update", fixtureId: fixtureId,
+                countryIds: Self.followedCountryIds, teamIds: Self.followedTeamIds)
+            registeredUpdateTokens.insert(token)
+        } catch {}
     }
 
     // MARK: Foreground-start fallback
@@ -127,6 +142,10 @@ final class LiveActivityManager {
         if let last = lastSync, Date().timeIntervalSince(last) < 60 { return }
         lastSync = Date()
         Task { await registerPushToStartIfPossible() }
+        for activity in Activity<MatchActivityAttributes>.activities {
+            guard let token = activity.pushToken?.gdHexString else { continue }
+            Task { await registerUpdateToken(token, fixtureId: activity.attributes.fixtureId) }
+        }
         // Each followed team — any could be live (e.g. his Arsenal and her
         // Sweden) — then, tournament-wide, whichever World Championship match
         // is live right now, for every user. startIfMissing is keyed by
@@ -204,12 +223,40 @@ final class LiveActivityManager {
         }
     }
 
+    /// Fixtures whose unreachable activity this session already replaced.
+    @MainActor private var takenOver: Set<Int> = []
+
     /// Starts an activity only when none runs for the fixture. A running one
     /// belongs to match-watcher's pushes: overwriting it from here erased the
     /// note (the half-time line, the shootout) and reset its stale date.
+    ///
+    /// Except one match-watcher cannot reach. iOS hands a push-started
+    /// activity's update token to the app only after she has tapped Allow
+    /// under it (Apple DTS, forums thread 825419) and only if the app can be
+    /// woken (not force-quit). Liverpool v Arsenal 2026-11-01: 110 started,
+    /// 37 tokens; the rest sat at 0-0 through every goal, then "No recent
+    /// update". In the foreground the app can start its own, which iOS tokens
+    /// straight away (docs/LIVE_ACTIVITY_PLAN.md). Ten seconds' grace for a
+    /// token still on its way, once per fixture.
+    @MainActor
     private func startIfMissing(from snap: LiveMatchSnapshot) {
-        guard !Activity<MatchActivityAttributes>.activities
-            .contains(where: { $0.attributes.fixtureId == snap.fixtureId }) else { return }
+        if let running = Activity<MatchActivityAttributes>.activities
+            .first(where: { $0.attributes.fixtureId == snap.fixtureId }) {
+            guard running.pushToken == nil, !takenOver.contains(snap.fixtureId) else { return }
+            takenOver.insert(snap.fixtureId)
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(10))
+                guard running.pushToken == nil, running.activityState == .active || running.activityState == .stale,
+                      requestLocal(from: snap) else { return }
+                await running.end(nil, dismissalPolicy: .immediate)
+            }
+            return
+        }
+        _ = requestLocal(from: snap)
+    }
+
+    /// Starts a token-pushed activity for the snapshot; false when iOS refused.
+    private func requestLocal(from snap: LiveMatchSnapshot) -> Bool {
         // Stale once no update has landed for longer than a whole match with
         // extra time and penalties, so a dead activity says so instead of
         // showing a score that might be hours old.
@@ -217,7 +264,7 @@ final class LiveActivityManager {
                                       staleDate: Date().addingTimeInterval(150 * 60))
 
         guard let home = Self.side(snap.homeTeamId, serverName: snap.homeName),
-              let away = Self.side(snap.awayTeamId, serverName: snap.awayName) else { return }
+              let away = Self.side(snap.awayTeamId, serverName: snap.awayName) else { return false }
 
         let attributes = MatchActivityAttributes(
             fixtureId: snap.fixtureId,
@@ -229,7 +276,7 @@ final class LiveActivityManager {
 
         // pushType: .token so iOS vends an update token → observeToken registers
         // it → the backend takes over live updates through to full-time.
-        _ = try? Activity.request(attributes: attributes, content: content, pushType: .token)
+        return (try? Activity.request(attributes: attributes, content: content, pushType: .token)) != nil
     }
 
     /// Display side for a country or club slug. Mirrors the backend's liveMeta:
