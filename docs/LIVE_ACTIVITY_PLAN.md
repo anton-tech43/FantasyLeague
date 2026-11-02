@@ -182,3 +182,99 @@ before enabling for everyone.
 5. **Ship `4ced911`** in the next TestFlight build.
 6. **Development tokens:** prune the 36 `development` push-to-start rows, or
    keep them for testing?
+
+## 7. Broadcast channels: what is built (2026-11-03)
+
+Broadcast Capability is on for `com.goaldigger.app` (Anton, 2026-11-03). The
+server side of §5 step 3 is deployed **behind `LA_CHANNELS`, unset = off**:
+
+- `_shared/apns-client.ts`: `createChannel`, `deleteChannel`, `sendBroadcast`,
+  and `input-push-channel` on a start. Same .p8 provider JWT as every send.
+- Migration 157: `match_status_state.la_channel_id` (production) and
+  `la_channel_id_dev` (sandbox); `la_sweep_due()` also wakes for a finished
+  fixture that still holds a channel.
+- `match-watcher`: `LA_CHANNELS=allowlist` starts only the push-to-start
+  tokens whose first 16 hex chars are in `LA_CHANNEL_TOKENS` on the channel;
+  `on` starts every Darwin ≥ 24 row on it. Everyone else gets today's token
+  start. The channel is created at the start tick; if that fails, those
+  phones get a token start. Every update and end also goes out as one
+  broadcast (same content-state, priority, no alert), logged
+  `la:<fixture>:<event>:p<prio>:channel`; create/delete as
+  `la:<fixture>:create|delete:channel:<env>`. The channel is deleted after an
+  accepted end; `la-end-sweep` re-sends a failed end and deletes leftovers.
+- `la-channel-test`: the harness below.
+
+What Apple documents (checked 2026-11-03):
+
+| | |
+|---|---|
+| Channel management | `POST/GET/DELETE /1/apps/<bundle>/channels` (`GET …/all-channels` lists them) on `api-manage-broadcast.sandbox.push.apple.com:2195` / `api-manage-broadcast.push.apple.com:2196`. Create body `{"message-storage-policy": 0\|1, "push-type": "LiveActivity"}`, 201 with the id in the `apns-channel-id` response header (base64, size not fixed). Delete 204. Token auth, same JWT. [Doc](https://developer.apple.com/documentation/usernotifications/sending-channel-management-requests-to-apns) |
+| Limits | 10,000 channels per environment. Channels cannot cross environments. The policy cannot be changed after creation. |
+| Broadcast | `POST /4/broadcasts/apps/<bundle>` on the normal `api(.sandbox).push.apple.com:443`. Headers `apns-channel-id`, `apns-push-type: liveactivity`, `apns-priority`, `apns-expiration` (required). **No `apns-topic`** in Apple's table, and a broadcast without it was accepted (200, probe below). 5 KB payload cap. [Doc](https://developer.apple.com/documentation/usernotifications/sending-broadcast-push-notification-requests-to-apns) |
+| Storage policy | We use **0, No Message Stored**. Apple: "For activities with frequent updates like sports scores, use No Message Storage, which allows a higher publishing budget." Policy 1 keeps the latest *deferred* message for a phone that was offline; it does not replay to a later subscriber (the start payload already carries the current score). On policy 0 `apns-expiration` must be 0, or the message is rejected. An offline phone catches up on the next minute's update; the sweep re-sends a missed end. |
+| Start | `input-push-channel: <id>` in the push-to-start `aps`. "If you send this payload to a device that doesn't run iOS 18 or later … the Live Activity doesn't start." A broadcast cannot start an activity. [Doc](https://developer.apple.com/documentation/activitykit/starting-and-updating-live-activities-with-activitykit-push-notifications) |
+| Metrics | Push Notification Console › Channels, production only. |
+
+Verified live: from a Supabase Edge Function, a production channel create
+(201), a broadcast to it (200) and the delete (204) all work.
+
+## 8. Channel test procedure
+
+Reaches only Anton's phone. Nothing reads `.env`: the call goes out from the
+database with `net.http_post` and the Vault cron key, as every pg_cron job does.
+
+**a. Anton opens the app on his phone** (any build), so its push-to-start
+token is the newest production row.
+
+**b. Take his token prefix:**
+
+```sql
+select left(token,16) as token_prefix, app_build, darwin_major, updated_at
+  from live_activity_tokens
+ where kind = 'push_to_start' and apns_environment = 'production'
+ order by updated_at desc limit 3;
+```
+
+(2026-11-03: `40a745c0129e5bc9`, build 16, Darwin 27, 23:14 UTC.)
+
+**c. Run it** (`./scripts/sql.sh -c "…"`). Start 0-0, 20 s later a broadcast
+1-0, 20 s later FT 2-0 and the channel is deleted; the card leaves two
+minutes after the end.
+
+```sql
+select net.http_post(
+  url := 'https://cwgpsmbunrocrofziqad.supabase.co/functions/v1/la-channel-test',
+  headers := jsonb_build_object('Content-Type','application/json',
+             'Authorization','Bearer ' || public.get_cron_service_key()),
+  body := jsonb_build_object('token_prefix','<prefix>','step','run','wait_seconds',20),
+  timeout_milliseconds := 90000);
+-- returns a request id; about 45 s later:
+select status_code, content from net._http_response where id = <id>;
+-- the same outcomes, one row per APNs call:
+select created_at, target, status, message, response_excerpt from pipeline_health
+ where stage = 'la_send' and target like 'la:9990%' order by created_at desc limit 10;
+```
+
+`'step','probe'` does the create → broadcast → delete with no phone involved.
+To answer the Allow question at his own pace, use steps: `'step','start'`
+returns `channel_id` and `fixture_id`; then send
+`jsonb_build_object('token_prefix','<prefix>','step','update','channel_id','<id>','fixture_id',<fid>)`
+and later the same with `'step','end'` (which deletes the channel).
+
+**What to look for on the phone:**
+
+1. Does the card appear at all? If not, while the start was 200, this build
+   or iOS does not take a channel start.
+2. Does it go to 1-0 **without tapping Allow** and without opening the app?
+   Then repeat with the app force-quit from the app switcher first. Both are
+   the cases that freeze the token path today.
+3. Does FT 2-0 arrive and the card leave?
+
+Only then: `supabase secrets set LA_CHANNELS=allowlist LA_CHANNEL_TOKENS=<prefix>`
+for one real fixture, and `on` after that.
+
+**Before the next app build ships:** `4ced911` replaces a push-started card
+that has no update token after 10 s with a locally started one. A channel
+card never has a token, so that build would tear down every channel card the
+moment she opens the app (it falls back to a working token card, but the
+switch is visible). It must skip activities whose `pushType` is a channel.
