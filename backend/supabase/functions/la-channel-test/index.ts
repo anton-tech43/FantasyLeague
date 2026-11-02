@@ -23,12 +23,23 @@
 //   wait_seconds (run only): default 20, at most 60.
 //   note (optional): the line under the score on the 1-0 update, e.g. a
 //                    live take; at most 60 characters, like the real ones.
+//   as (optional, run/start/update): "home" | "away" | "neutral" — the
+//                    per-side live take test (docs/LIVE_TAKES_PLAN.md phase
+//                    1). The phone's own club (its token's team_ids) plays
+//                    home or away against Liverpool/Arsenal, or the match is
+//                    Arsenal v Liverpool for neutral. The 1-0 update carries
+//                    home_note and away_note through match-watcher's own
+//                    choice (_shared/la-notes.ts): the phone should see only
+//                    its side's note, and none on neutral. The channel is
+//                    still one per test.
+//   home_note, away_note (optional with as): default sample lines.
 //
 // Every APNs response (status + reason) goes to pipeline_health stage la_send
 // and back in the HTTP response.
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
+import { audienceFor, parseTakeNotes, stateFor } from "../_shared/la-notes.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { fanOutRow } from "../_shared/pipeline-logger.ts";
 import {
@@ -72,7 +83,7 @@ serve(async (req) => {
 
   const supabase = getSupabaseClient();
   const { data: rows, error } = await supabase.from("live_activity_tokens")
-    .select("token, apns_environment, app_build, darwin_major, updated_at")
+    .select("token, apns_environment, app_build, darwin_major, updated_at, team_ids")
     .eq("kind", "push_to_start").ilike("token", `${prefix}%`)
     .order("updated_at", { ascending: false }).limit(2);
   if (error) return json({ error: `token lookup failed: ${error.message}` }, 500);
@@ -97,6 +108,23 @@ serve(async (req) => {
   };
 
   const note = typeof body?.note === "string" && body.note.trim() ? body.note.trim().slice(0, 60) : undefined;
+
+  // Per-side take test: which teams play, and which note this phone gets.
+  const as = ["home", "away", "neutral"].includes(body?.as) ? body.as as "home" | "away" | "neutral" : null;
+  const mine = ((row.team_ids ?? []) as string[]).find((t) => t !== "arsenal" && t !== "liverpool") ?? null;
+  if (as && as !== "neutral" && !mine) return json({ error: "the token follows no club other than Arsenal/Liverpool" }, 400);
+  let homeSlug = "arsenal", awaySlug = "liverpool", homeName = "Arsenal", awayName = "Liverpool";
+  if (as && as !== "neutral") {
+    const { data: t } = await supabase.from("teams").select("short_name").eq("id", mine!).maybeSingle();
+    const myName = (t?.short_name as string | undefined) ?? mine!;
+    if (as === "home") [homeSlug, homeName] = [mine!, myName];
+    else [awaySlug, awayName] = [mine!, myName];
+  }
+  const takes = parseTakeNotes({
+    home: typeof body?.home_note === "string" ? body.home_note : `${homeName} have had all the ball`,
+    away: typeof body?.away_note === "string" ? body.away_note : `${awayName} need to shoot more`,
+  });
+  const audience = as ? audienceFor(row.team_ids, homeSlug, awaySlug) : null;
   const state = (home: number, away: number, statusLabel: string, minute: number | null, line?: string): LiveActivityContentState => ({
     homeScore: home,
     awayScore: away,
@@ -120,14 +148,14 @@ serve(async (req) => {
       event: "start",
       attributes: {
         fixtureId,
-        homeName: "Arsenal",
-        awayName: "Liverpool",
+        homeName,
+        awayName,
         homeFlag: "",
         awayFlag: "",
         groupLabel: "CHANNEL TEST",
       },
       contentState: state(0, 0, "1H", 1),
-      alert: { title: "Arsenal v Liverpool", body: "Channel test: kicked off." },
+      alert: { title: `${homeName} v ${awayName}`, body: "Channel test: kicked off." },
       staleSeconds: 1200,
       inputPushChannel: channelId,
       environment: env,
@@ -136,8 +164,9 @@ serve(async (req) => {
     await log({ step: "start", target: `la:${fixtureId}:start:p10:channel`, success: r.success, status: r.status, reason: r.reason });
   };
   const update = async (channelId: string) => {
+    const contentState = audience ? stateFor(state(1, 0, "1H", 32), takes, audience) : state(1, 0, "1H", 32, note);
     const r = await sendBroadcast(channelId, {
-      event: "update", contentState: state(1, 0, "1H", 32, note), staleSeconds: 1200, environment: env, priority: 10,
+      event: "update", contentState, staleSeconds: 1200, environment: env, priority: 10,
     });
     await log({ step: "update", target: `la:${fixtureId}:update:p10:channel`, success: r.success, status: r.status, reason: r.reason });
   };
@@ -150,7 +179,10 @@ serve(async (req) => {
   };
   const sleep = (s: number) => new Promise((r) => setTimeout(r, s * 1000));
 
-  const token = { prefix, environment: env, app_build: row.app_build, darwin_major: row.darwin_major, updated_at: row.updated_at };
+  const token = {
+    prefix, environment: env, app_build: row.app_build, darwin_major: row.darwin_major, updated_at: row.updated_at,
+    team_ids: row.team_ids, ...(as ? { match: `${homeName} v ${awayName}`, audience, expected_note: audience === "neutral" ? null : takes[audience!] ?? null } : {}),
+  };
 
   if (step === "probe") {
     // A broadcast to a channel nobody has subscribed to yet: checks the
