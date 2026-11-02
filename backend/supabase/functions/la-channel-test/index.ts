@@ -21,6 +21,8 @@
 //   { token_prefix, step: "update" | "end", channel_id, fixture_id }
 //                                      one broadcast; "end" deletes the channel
 //   wait_seconds (run only): default 20, at most 60.
+//   note (optional): the line under the score on the 1-0 update, e.g. a
+//                    live take; at most 60 characters, like the real ones.
 //
 // Every APNs response (status + reason) goes to pipeline_health stage la_send
 // and back in the HTTP response.
@@ -94,12 +96,14 @@ serve(async (req) => {
     }
   };
 
-  const state = (home: number, away: number, statusLabel: string, minute: number | null): LiveActivityContentState => ({
+  const note = typeof body?.note === "string" && body.note.trim() ? body.note.trim().slice(0, 60) : undefined;
+  const state = (home: number, away: number, statusLabel: string, minute: number | null, line?: string): LiveActivityContentState => ({
     homeScore: home,
     awayScore: away,
     statusLabel,
     elapsed: minute,
     clockStart: minute != null ? Math.round(Date.now() / 1000 - minute * 60) : null,
+    ...(line ? { note: line } : {}),
   });
 
   const create = async (): Promise<string | null> => {
@@ -133,7 +137,7 @@ serve(async (req) => {
   };
   const update = async (channelId: string) => {
     const r = await sendBroadcast(channelId, {
-      event: "update", contentState: state(1, 0, "1H", 2), staleSeconds: 1200, environment: env, priority: 10,
+      event: "update", contentState: state(1, 0, "1H", 32, note), staleSeconds: 1200, environment: env, priority: 10,
     });
     await log({ step: "update", target: `la:${fixtureId}:update:p10:channel`, success: r.success, status: r.status, reason: r.reason });
   };
