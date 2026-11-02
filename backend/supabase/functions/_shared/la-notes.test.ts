@@ -15,6 +15,7 @@ import {
   planUpdate,
   stateFor,
   type TakeNotes,
+  takesRow,
 } from "./la-notes.ts";
 
 const HOME = "arsenal", AWAY = "liverpool";
@@ -151,4 +152,18 @@ Deno.test("la_takes and la_note_sig round-trip; junk and over-long lines are dro
   assertEquals(parseTakeNotes({ home: 5, away: "" }), {});
   assertEquals(parseTakeNotes({ home: "x".repeat(MAX_NOTE + 1), away: "ok" }), { away: "ok" });
   assertEquals(parseTakeNotes(null), {});
+});
+
+Deno.test("a stored take never outlives its score or its period, even if a clear was missed", () => {
+  // Two overlapping ticks: the goal tick read the row before the take was
+  // written, so it cleared nothing; the stored score still catches it.
+  const row = takesRow({ home: notes.home }, "0-0", "30");
+  const same = { status: "1H", home: 1, away: 0 };
+  assertEquals(carryNotes(row, same, { status: "1H", home: 1, away: 0, elapsed: 34 }), {});
+  assertEquals(carryNotes(row, { status: "1H", home: 0, away: 0 }, { status: "1H", home: 0, away: 0, elapsed: 34 }), { home: notes.home });
+  // A 30' take never shows at half-time; the HT take does, into 2H; 70' only in 2H.
+  assertEquals(carryNotes(row, { status: "HT", home: 0, away: 0 }, { status: "HT", home: 0, away: 0 }), {});
+  const ht = takesRow({ away: notes.away }, "0-0", "ht");
+  assertEquals(carryNotes(ht, { status: "HT", home: 0, away: 0 }, { status: "2H", home: 0, away: 0, elapsed: 50 }), { away: notes.away });
+  assertEquals(takesRow({}, "0-0", "70"), null);
 });

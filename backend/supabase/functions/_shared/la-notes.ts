@@ -66,13 +66,33 @@ export function parseTakeNotes(raw: unknown): TakeNotes {
   return out;
 }
 
+/// The statuses a stored take is still about: a 30' take only in the first
+/// half, the half-time take through the break and the second half, a 70'
+/// take only in the second half.
+const MOMENT_STATUSES: Record<string, ReadonlySet<string>> = {
+  "30": new Set(["1H"]),
+  ht: new Set(["HT", "2H"]),
+  "70": new Set(["2H"]),
+};
+
+/// la_takes as liveTake writes it: the notes plus the score and moment they
+/// were decided at, so a note can never outlive either, even when two ticks
+/// overlap and the clear on one is missed by the other.
+export function takesRow(notes: TakeNotes, score: string, moment: string): Record<string, string> | null {
+  return notes.home || notes.away ? { ...notes, score, moment } : null;
+}
+
 /// The notes to carry on this tick: the stored ones, unless the score
-/// changed, the match went to half-time, it is past 90' or not in 1H/HT/2H.
+/// changed, the match went to half-time, it is past 90' or not in 1H/HT/2H,
+/// or the score or period differs from the one the take was decided at.
 export function carryNotes(stored: unknown, prev: TickScore | null, now: TickScore): TakeNotes {
   if (!NOTE_STATUSES.has(now.status)) return {};
   if (now.status === "2H" && typeof now.elapsed === "number" && now.elapsed > LAST_NOTE_MINUTE) return {};
   if (prev && (prev.home !== now.home || prev.away !== now.away)) return {};
   if (prev && now.status === "HT" && prev.status !== "HT") return {};
+  const o = (stored && typeof stored === "object" ? stored : {}) as Record<string, unknown>;
+  if (typeof o.score === "string" && o.score !== `${now.home}-${now.away}`) return {};
+  if (typeof o.moment === "string" && !MOMENT_STATUSES[o.moment]?.has(now.status)) return {};
   return parseTakeNotes(stored);
 }
 

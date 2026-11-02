@@ -66,7 +66,7 @@ import {
   sendPushNotification,
 } from "../_shared/apns-client.ts";
 import { channelList, laChannelMode, laChannelPrefixes, type LaChannels, parseLaChannels, wantsChannel } from "../_shared/la-channels.ts";
-import { audienceFor, carryNotes, LA_AUDIENCES, type LaAudience, noteSig, parseTakeNotes, planUpdate, type TakeNotes } from "../_shared/la-notes.ts";
+import { audienceFor, carryNotes, LA_AUDIENCES, type LaAudience, noteSig, parseTakeNotes, planUpdate, takesRow, type TakeNotes } from "../_shared/la-notes.ts";
 import { WC_COUNTRY_META, wcStatusLabel } from "../_shared/wc-countries.ts";
 import {
   attachScorerPhotos,
@@ -957,7 +957,7 @@ async function liveTake(
   const { error: snapErr } = await supabase.from("match_status_state")
     .update({
       stat_snapshots: { ...(a.snapshots ?? {}), [a.moment]: snap },
-      ...(sendNotes ? { la_takes: notes.home || notes.away ? notes : null } : {}),
+      ...(sendNotes ? { la_takes: takesRow(notes, `${a.home.goals}-${a.away.goals}`, a.moment) } : {}),
     })
     .eq("fixture_id", a.fixtureId);
   if (snapErr) console.warn(`live take: snapshot write failed fixture=${a.fixtureId}:`, snapErr.message);
@@ -3239,12 +3239,11 @@ async function handleRequest(req: Request): Promise<Response> {
             la_sig: laSig,
             la_ended: laEnded,
             la_note: laNote,
-            // Written only when a clear changed them: liveTake sets them
-            // after this upsert, and an overlapping tick that read the row
-            // before that must not write the old (empty) notes back.
-            ...(noteSig(laTakes) !== noteSig(parseTakeNotes(prior?.la_takes))
-              ? { la_takes: laTakes.home || laTakes.away ? laTakes : null }
-              : {}),
+            // Written only when a clear emptied them (carryNotes either keeps
+            // the stored notes or clears them): liveTake sets them after this
+            // upsert, and an overlapping tick that read the row before that
+            // must not write the old (empty) notes back.
+            ...(noteSig(laTakes) !== noteSig(parseTakeNotes(prior?.la_takes)) ? { la_takes: null } : {}),
             la_note_sig: laNoteSig,
             ...(matchdayWentStale
               ? { matchday_fire_capped: true }
