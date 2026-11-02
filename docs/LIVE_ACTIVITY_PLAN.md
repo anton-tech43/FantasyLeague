@@ -203,6 +203,13 @@ server side of §5 step 3 is deployed **behind `LA_CHANNELS`, unset = off**:
   `la:<fixture>:create|delete:channel:<env>`. The channel is deleted after an
   accepted end; `la-end-sweep` re-sends a failed end and deletes leftovers.
 - `la-channel-test`: the harness below.
+- **Migration 158 (2026-11-03, live takes phase 1):** a fixture now has up to
+  three channels per environment in `la_channels` `{env: {home, away,
+  neutral}}`, because a broadcast reaches everyone on it and a take note must
+  reach only the side it is about. A push-to-start token joins the channel of
+  the one side its `team_ids` follow, or neutral (both or neither, never a
+  note). `la_channel_id`/`la_channel_id_dev` are no longer read (their values
+  moved to neutral); drop them later. Set/remove via `la_channel_put()`.
 
 What Apple documents (checked 2026-11-03):
 

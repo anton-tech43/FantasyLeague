@@ -1,7 +1,10 @@
 # Live takes: plan
 
 **Status:** plan agreed with Anton on 2026-10-29. Phase 0 built and deployed
-2026-11-01 (dry run: decided and logged, nothing sent). Phases 1-3 not built.
+2026-11-01 (dry run: decided and logged, nothing sent). **Phase 1 built and
+live 2026-11-03** (Anton: "kör direkt"): `LIVE_TAKES_MODE = "live"`, the take
+is the Live Activity note per side at 30', HT and 70' (see "Phase 1 as
+built"). Phases 2-3 not built.
 
 Match statistics turned into one line she can say, so she sounds like one of
 the lads (memory: she wants to sound smart). It is the "4. stats" item.
@@ -167,6 +170,43 @@ HT saying and today's verdict.
   dev token on a device. Check that a goal clears the note, that a note-only
   change goes at priority 5, and that the other side's follower gets no note.
 - Watch `pipeline_health` LA sends per match: priority-10 count unchanged.
+
+**Phase 1 as built** (2026-11-03, migration 158, `_shared/la-notes.ts`)
+- `liveTake` (match-watcher) writes each followed side's take for 30', HT and
+  70' to `match_status_state.la_takes` `{home, away}`; a silent side gets no
+  note, which clears an older one. Full time is decided and logged but never
+  sent. `pipeline_health` `live_take` rows: `success` = stored for the Live
+  Activity, `skipped` = silent or full time, `failure` = the write failed.
+- The next tick's Live Activity update carries it (up to a minute later):
+  update tokens are split by `team_ids` (exactly one side of the match → that
+  side's note; both or neither → none). A note-only change goes at priority
+  5, only to the side whose note changed; any other update carries the notes.
+  `la_note_sig` is the notes last sent. Cleared by a score change, the change
+  to HT, anything but 1H/HT/2H, and 2H past 90'. The end and the sweep never
+  carry a take (the shootout note stays as it was). Line ≤ 60 is checked again
+  when read back (`parseTakeNotes`).
+- Broadcast channels (LA_CHANNELS=on): `la_channels` `{env: {home, away,
+  neutral}}`, one channel per audience that has a phone, chosen at
+  push-to-start by the token's `team_ids`; each gets its own content-state.
+  Logged `la:<fixture>:<event>:p<prio>:channel:<audience>`; token sends that
+  carry a note are logged `…:take:<side>`.
+- The HT push copy is unchanged (phase 2).
+- Watch a match night:
+
+  ```sql
+  -- the takes and whether each was stored for sending
+  SELECT created_at AT TIME ZONE 'Europe/London' AS at, target, status, message
+    FROM pipeline_health WHERE stage = 'live_take' AND created_at > now() - interval '12 hours'
+   ORDER BY created_at;
+  -- the Live Activity sends per match, by priority and audience (note-only = p5 :take / :channel)
+  SELECT split_part(target, ':', 2) AS fixture, split_part(target, ':', 4) AS prio,
+         substring(target from ':p[0-9]+:(.*)$') AS route, split_part(target, ':', 3) AS event, count(*), count(*) FILTER (WHERE status = 'success') AS ok
+    FROM pipeline_health WHERE stage = 'la_send' AND created_at > now() - interval '12 hours'
+   GROUP BY 1, 2, 3, 4 ORDER BY 1, 4, 2, 3;
+  -- the notes on the row right now
+  SELECT fixture_id, status, elapsed, home_goals || '-' || away_goals AS score, la_takes, la_note_sig, la_channels
+    FROM match_status_state WHERE status IN ('1H', 'HT', '2H');
+  ```
 
 **Phase 2: HT push + live card + After (backend + one app build)**
 - HT: `renderHalfTimePush` takes an optional take per side. When present it
