@@ -254,6 +254,36 @@ interface LiveActivityPushOptions {
   alert?: { title: string; body: string };
   environment?: APNsEnvironment;
   priority?: number;
+  /// start only, iOS 18+: the activity subscribes to this broadcast channel
+  /// instead of producing a per-activity update token. On iOS 17 the start is
+  /// dropped by the system, so only send it to rows known to be Darwin 24+.
+  inputPushChannel?: string;
+}
+
+/// The `aps` dictionary of a Live Activity push, the same for a per-device
+/// send and a channel broadcast. Pure, so the shape is tested
+/// (apns-broadcast.test.ts).
+export function buildLiveActivityAps(
+  opts: Omit<LiveActivityPushOptions, "environment" | "priority">,
+  now: number,
+): Record<string, unknown> {
+  const aps: Record<string, unknown> = {
+    timestamp: now,
+    event: opts.event,
+    "content-state": opts.contentState,
+  };
+  if (opts.event === "start") {
+    // ActivityAttributes type name (must match the Swift struct name).
+    aps["attributes-type"] = "MatchActivityAttributes";
+    aps["attributes"] = opts.attributes;
+    if (opts.inputPushChannel) aps["input-push-channel"] = opts.inputPushChannel;
+  }
+  if (opts.alert) aps["alert"] = opts.alert;
+  if (opts.staleSeconds) aps["stale-date"] = now + opts.staleSeconds;
+  if (opts.event === "end" && opts.dismissalSeconds) {
+    aps["dismissal-date"] = now + opts.dismissalSeconds;
+  }
+  return aps;
 }
 
 /// Send an ActivityKit Live Activity push (start / update / end). Reuses the
@@ -272,23 +302,7 @@ export async function sendLiveActivityPush(
   try {
     const jwt = await getProviderJWT();
     const host = getAPNsHost(env);
-    const now = Math.floor(Date.now() / 1000);
-
-    const aps: Record<string, unknown> = {
-      timestamp: now,
-      event: opts.event,
-      "content-state": opts.contentState,
-    };
-    if (opts.event === "start") {
-      // ActivityAttributes type name (must match the Swift struct name).
-      aps["attributes-type"] = "MatchActivityAttributes";
-      aps["attributes"] = opts.attributes;
-    }
-    if (opts.alert) aps["alert"] = opts.alert;
-    if (opts.staleSeconds) aps["stale-date"] = now + opts.staleSeconds;
-    if (opts.event === "end" && opts.dismissalSeconds) {
-      aps["dismissal-date"] = now + opts.dismissalSeconds;
-    }
+    const aps = buildLiveActivityAps(opts, Math.floor(Date.now() / 1000));
 
     const doSend = (authJwt: string) =>
       fetch(`${host}/3/device/${token}`, {
@@ -318,6 +332,155 @@ export async function sendLiveActivityPush(
       status: response.status,
       reason: (body as Record<string, string>).reason ?? `HTTP ${response.status}`,
     };
+  } catch (e) {
+    return { token, success: false, reason: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+// ── Broadcast channels (iOS 18+ Live Activities) ─────────────────────────
+// One channel per fixture and environment; a single broadcast updates every
+// activity started with `input-push-channel`, with no per-activity token.
+// Same provider JWT (same .p8 key) as every other send.
+// Channel management: https://developer.apple.com/documentation/usernotifications/sending-channel-management-requests-to-apns
+// Broadcast:          https://developer.apple.com/documentation/usernotifications/sending-broadcast-push-notification-requests-to-apns
+
+/// Apple: "For activities with frequent updates like sports scores, use No
+/// Message Storage, which allows a higher publishing budget." Most Recent
+/// Message (1) stores the last deferred message for a phone that was OFFLINE
+/// when it went out; it does not replay anything to a later subscriber (the
+/// start payload already carries the current score). An offline phone heals on
+/// the next minute's update, and la-end-sweep re-sends the end. The policy
+/// cannot be changed after creation, and with 0 `apns-expiration` must be 0.
+export const LA_CHANNEL_STORAGE_POLICY = 0;
+
+/// Channel management lives on its own hosts and ports, separate per
+/// environment; a channel cannot cross environments.
+export function channelManagementBase(env: APNsEnvironment): string {
+  return env === "production"
+    ? "https://api-manage-broadcast.push.apple.com:2196"
+    : "https://api-manage-broadcast.sandbox.push.apple.com:2195";
+}
+
+/// The broadcast request minus `authorization`. Pure for the tests. The
+/// topic is the bundle in the path: Apple's broadcast header table has no
+/// `apns-topic`. `apns-expiration` must be 0 on a no-storage channel.
+export function buildBroadcastRequest(
+  bundleId: string,
+  env: APNsEnvironment,
+  channelId: string,
+  aps: Record<string, unknown>,
+  priority: number,
+  storagePolicy = LA_CHANNEL_STORAGE_POLICY,
+): { url: string; headers: Record<string, string>; body: string } {
+  return {
+    url: `${getAPNsHost(env)}/4/broadcasts/apps/${bundleId}`,
+    headers: {
+      "Content-Type": "application/json",
+      "apns-push-type": "liveactivity",
+      "apns-channel-id": channelId,
+      "apns-priority": String(priority),
+      // ponytail: with policy 1 this would be now + 8 h at most; 0 means
+      // deliver once, never store. Only policy 0 is used today.
+      "apns-expiration": storagePolicy === 0 ? "0" : String(Math.floor(Date.now() / 1000) + 3600),
+    },
+    body: JSON.stringify({ aps }),
+  };
+}
+
+interface ChannelResult {
+  success: boolean;
+  status?: number;
+  reason?: string;
+  channelId?: string;
+}
+
+async function apnsRequest(make: (jwt: string) => Promise<Response>): Promise<Response> {
+  let response = await make(await getProviderJWT());
+  if (response.status === 429) {
+    // Same TooManyProviderTokenUpdates recovery as sendPushNotification.
+    await new Promise((r) => setTimeout(r, 750));
+    response = await make(await getProviderJWT());
+  }
+  return response;
+}
+
+async function failure(response: Response): Promise<{ success: false; status: number; reason: string }> {
+  const body = await response.json().catch(() => ({}));
+  return {
+    success: false,
+    status: response.status,
+    reason: (body as Record<string, string>).reason ?? `HTTP ${response.status}`,
+  };
+}
+
+/// POST /1/apps/<bundle>/channels. 201 with the id in `apns-channel-id`.
+export async function createChannel(
+  env: APNsEnvironment,
+  storagePolicy = LA_CHANNEL_STORAGE_POLICY,
+): Promise<ChannelResult> {
+  const bundleId = Deno.env.get("APNS_BUNDLE_ID") ?? "com.goaldigger.app";
+  try {
+    const response = await apnsRequest((jwt) =>
+      fetch(`${channelManagementBase(env)}/1/apps/${bundleId}/channels`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `bearer ${jwt}` },
+        body: JSON.stringify({ "message-storage-policy": storagePolicy, "push-type": "LiveActivity" }),
+      })
+    );
+    const channelId = response.headers.get("apns-channel-id") ?? undefined;
+    if (response.ok && channelId) {
+      await response.body?.cancel();
+      return { success: true, status: response.status, channelId };
+    }
+    if (response.ok) return { success: false, status: response.status, reason: "no apns-channel-id in response" };
+    return await failure(response);
+  } catch (e) {
+    return { success: false, reason: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+/// DELETE /1/apps/<bundle>/channels with the id in `apns-channel-id`. 204.
+export async function deleteChannel(env: APNsEnvironment, channelId: string): Promise<ChannelResult> {
+  const bundleId = Deno.env.get("APNS_BUNDLE_ID") ?? "com.goaldigger.app";
+  try {
+    const response = await apnsRequest((jwt) =>
+      fetch(`${channelManagementBase(env)}/1/apps/${bundleId}/channels`, {
+        method: "DELETE",
+        headers: { Authorization: `bearer ${jwt}`, "apns-channel-id": channelId },
+      })
+    );
+    if (response.ok) {
+      await response.body?.cancel();
+      return { success: true, status: response.status, channelId };
+    }
+    return { ...(await failure(response)), channelId };
+  } catch (e) {
+    return { success: false, reason: e instanceof Error ? e.message : String(e), channelId };
+  }
+}
+
+/// One Live Activity update or end to every activity on the channel.
+/// `token` in the result is `channel:<id>` so it fits the fan-out logging.
+export async function sendBroadcast(
+  channelId: string,
+  opts: LiveActivityPushOptions,
+): Promise<APNsSendResult> {
+  const bundleId = Deno.env.get("APNS_BUNDLE_ID") ?? "com.goaldigger.app";
+  const env = opts.environment ?? defaultAPNsEnvironment();
+  const token = `channel:${channelId}`;
+  if (opts.event === "start") return { token, success: false, reason: "a broadcast cannot start an activity" };
+  try {
+    const req = buildBroadcastRequest(
+      bundleId, env, channelId, buildLiveActivityAps(opts, Math.floor(Date.now() / 1000)), opts.priority ?? 10,
+    );
+    const response = await apnsRequest((jwt) =>
+      fetch(req.url, { method: "POST", headers: { ...req.headers, Authorization: `bearer ${jwt}` }, body: req.body })
+    );
+    if (response.ok) {
+      await response.body?.cancel();
+      return { token, success: true, status: response.status };
+    }
+    return { token, ...(await failure(response)) };
   } catch (e) {
     return { token, success: false, reason: e instanceof Error ? e.message : String(e) };
   }
@@ -373,4 +536,6 @@ export type {
   APNsEnvironment,
   LiveActivityContentState,
   LiveActivityAttributesPayload,
+  LiveActivityPushOptions,
+  ChannelResult,
 };
