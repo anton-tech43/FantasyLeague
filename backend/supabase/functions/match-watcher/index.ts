@@ -65,7 +65,8 @@ import {
   sendLiveActivityPush,
   sendPushNotification,
 } from "../_shared/apns-client.ts";
-import { channelColumn, laChannelMode, laChannelPrefixes, wantsChannel } from "../_shared/la-channels.ts";
+import { channelList, laChannelMode, laChannelPrefixes, type LaChannels, parseLaChannels, wantsChannel } from "../_shared/la-channels.ts";
+import { audienceFor, carryNotes, LA_AUDIENCES, type LaAudience, noteSig, parseTakeNotes, planUpdate, type TakeNotes } from "../_shared/la-notes.ts";
 import { WC_COUNTRY_META, wcStatusLabel } from "../_shared/wc-countries.ts";
 import {
   attachScorerPhotos,
@@ -104,7 +105,7 @@ import {
   type SideStats,
   sideGoals,
 } from "../_shared/last-match.ts";
-import { decideTake, silenceReason, takeMarker, type TakeMoment, takeMomentFor } from "../_shared/match-take.ts";
+import { decideTake, silenceReason, type Take, takeMarker, type TakeMoment, takeMomentFor } from "../_shared/match-take.ts";
 
 const FINISHED_STATUSES = new Set(["FT", "AET", "PEN"]);
 // Live = match is in play (or in HT pause). Both halves + extra time
@@ -676,7 +677,7 @@ const LA_CHANNEL_PREFIXES = laChannelPrefixes(Deno.env.get("LA_CHANNEL_TOKENS"))
 const LA_ENVS: APNsEnvironment[] = ["production", "development"];
 
 /// One la_send row for a channel create or delete:
-/// target la:<fixture>:<op>:channel:<env>. Best-effort, never throws.
+/// target la:<fixture>:<op>:channel:<env>:<audience>. Best-effort, never throws.
 async function logLaChannelOp(
   // deno-lint-ignore no-explicit-any
   supabase: any,
@@ -684,11 +685,12 @@ async function logLaChannelOp(
   op: "create" | "delete",
   env: APNsEnvironment,
   res: ChannelResult,
+  audience: LaAudience,
 ): Promise<void> {
   try {
     await supabase.from("pipeline_health").insert({
       stage: "la_send",
-      target: `la:${fixtureId}:${op}:channel:${env}`,
+      target: `la:${fixtureId}:${op}:channel:${env}:${audience}`,
       ...fanOutRow(`la channel ${op} ${env}`, [res]),
     });
   } catch (e) {
@@ -702,15 +704,17 @@ async function retireChannel(
   supabase: ReturnType<typeof getSupabaseClient>,
   fixtureId: number,
   env: APNsEnvironment,
+  audience: LaAudience,
   channelId: string,
   giveUp = false,
 ): Promise<boolean> {
   const del = await deleteChannel(env, channelId);
-  await logLaChannelOp(supabase, fixtureId, "delete", env, del);
+  await logLaChannelOp(supabase, fixtureId, "delete", env, del, audience);
   if (!del.success && !giveUp) return false;
-  const { error } = await supabase.from("match_status_state")
-    .update({ [channelColumn(env)]: null }).eq("fixture_id", fixtureId).eq(channelColumn(env), channelId);
-  if (error) console.warn(`clearing ${channelColumn(env)} for ${fixtureId} failed:`, error.message);
+  const { error } = await supabase.rpc("la_channel_put", {
+    p_fixture_id: fixtureId, p_env: env, p_audience: audience, p_channel_id: null, p_expect: channelId,
+  });
+  if (error) console.warn(`clearing la_channels.${env}.${audience} for ${fixtureId} failed:`, error.message);
   return del.success;
 }
 
@@ -803,16 +807,15 @@ async function sweepLiveActivities(
   // APNs calls in a row, one ok), so not tracked separately.
   const channelsSwept: Array<Record<string, unknown>> = [];
   const { data: chanRows } = await supabase.from("match_status_state")
-    .select("fixture_id, status, kickoff_time, home_goals, away_goals, la_note, la_channel_id, la_channel_id_dev")
-    .or("la_channel_id.not.is.null,la_channel_id_dev.not.is.null");
+    .select("fixture_id, status, kickoff_time, home_goals, away_goals, la_note, la_channels")
+    .not("la_channels", "is", null);
   for (const st of chanRows ?? []) {
     const status = st.status as string;
     const kickoff = st.kickoff_time as string;
     const over = ENDED_STATUSES.has(status) || (kickoff < cutoff && !LIVE_STATUSES_LA.has(status)) || kickoff < giveUp;
     if (!over) continue;
-    for (const env of LA_ENVS) {
-      const channelId = st[channelColumn(env)] as string | null;
-      if (!channelId) continue;
+    // The end carries no take note, so every audience gets the same one.
+    for (const { env, audience, channelId } of channelList(parseLaChannels(st.la_channels))) {
       const res = await sendBroadcast(channelId, {
         event: "end",
         contentState: {
@@ -826,9 +829,9 @@ async function sweepLiveActivities(
         dismissalSeconds: 60,
         environment: env,
       });
-      await logLaSend(supabase, st.fixture_id as number, "end", 10, [res], "sweep:channel");
-      const deleted = await retireChannel(supabase, st.fixture_id as number, env, channelId, kickoff < giveUp);
-      channelsSwept.push({ fixture_id: st.fixture_id, env, end: res.success, deleted });
+      await logLaSend(supabase, st.fixture_id as number, "end", 10, [res], `sweep:channel:${audience}`);
+      const deleted = await retireChannel(supabase, st.fixture_id as number, env, audience, channelId, kickoff < giveUp);
+      channelsSwept.push({ fixture_id: st.fixture_id, env, audience, end: res.success, deleted });
     }
   }
 
@@ -866,14 +869,21 @@ async function fetchFixtureStats(fixtureId: number, apiKey: string, timeoutMs?: 
   }
 }
 
-// ─── Live takes (dry run) ──────────────────────────────────────────────────
-// docs/LIVE_TAKES_PLAN.md phase 0. At 30', half-time, 70' and full time, one
+// ─── Live takes ────────────────────────────────────────────────────────────
+// docs/LIVE_TAKES_PLAN.md. At 30', half-time, 70' and full time, one
 // /fixtures/statistics call (the full-time one is writeLastMatch's), stored in
-// match_status_state.stat_snapshots, and the take each followed side would
-// get, decided in _shared/match-take.ts and only LOGGED: pipeline_health stage
-// live_take, target take:<fixture>:<team>:<moment>. Nothing reaches a phone.
+// match_status_state.stat_snapshots, and the take each followed side gets,
+// decided in _shared/match-take.ts and logged: pipeline_health stage
+// live_take, target take:<fixture>:<team>:<moment>.
+// Phase 1 ("live"): at 30', HT and 70' the take becomes that side's note
+// under the score on the Live Activity (match_status_state.la_takes, sent by
+// the next tick's Live Activity update, silently, to that side's followers
+// only; _shared/la-notes.ts). A silent moment clears the side's note. Full
+// time is never sent: the end carries no take. "dry_run" only logs.
 // Runs after the tick's pushes are sent, so the half-time push never waits.
-const LIVE_TAKES_MODE: "off" | "dry_run" = "dry_run";
+const LIVE_TAKES_MODE: "off" | "dry_run" | "live" = "live";
+/// The moments whose take goes on the Live Activity.
+const LA_TAKE_MOMENTS = new Set<TakeMoment>(["30", "ht", "70"]);
 const TAKE_STATS_TIMEOUT_MS = 5000;
 const TAKE_MOMENTS: TakeMoment[] = ["30", "ht", "70", "ft"];
 
@@ -885,7 +895,7 @@ interface TakeSideInput {
   followed: boolean;
 }
 
-async function liveTakeDryRun(
+async function liveTake(
   supabase: ReturnType<typeof getSupabaseClient>,
   a: {
     fixtureId: number;
@@ -914,11 +924,9 @@ async function liveTakeDryRun(
     score: `${a.home.goals}-${a.away.goals}`,
     at: new Date().toISOString(),
   };
-  const { error: snapErr } = await supabase.from("match_status_state")
-    .update({ stat_snapshots: { ...(a.snapshots ?? {}), [a.moment]: snap } })
-    .eq("fixture_id", a.fixtureId);
-  if (snapErr) console.warn(`live take: snapshot write failed fixture=${a.fixtureId}:`, snapErr.message);
   const htSnap = a.snapshots?.ht as { home?: SideStats | null; away?: SideStats | null } | undefined;
+  const decided: Array<{ me: TakeSideInput; take: Take | null; reason: string }> = [];
+  const notes: TakeNotes = {};
   for (const [me, them, side] of [[a.home, a.away, "home"], [a.away, a.home, "away"]] as const) {
     if (!me.followed) continue;
     const mine = stats.get(me.apiId) ?? {};
@@ -940,12 +948,29 @@ async function liveTakeDryRun(
       // two moments of one match do not draw the same variant index.
       seededRng(a.fixtureId * 8 + (side === "home" ? 0 : 4) + TAKE_MOMENTS.indexOf(a.moment)),
     );
+    if (take) notes[side] = take.line;
+    decided.push({ me, take, reason: take ? "" : silenceReason(mine, theirs) });
+  }
+  // One write: the snapshot, and in live mode the notes for this moment
+  // (each followed side's take, or none; a silent moment clears an older one).
+  const sendNotes = LIVE_TAKES_MODE === "live" && LA_TAKE_MOMENTS.has(a.moment);
+  const { error: snapErr } = await supabase.from("match_status_state")
+    .update({
+      stat_snapshots: { ...(a.snapshots ?? {}), [a.moment]: snap },
+      ...(sendNotes ? { la_takes: notes.home || notes.away ? notes : null } : {}),
+    })
+    .eq("fixture_id", a.fixtureId);
+  if (snapErr) console.warn(`live take: snapshot write failed fixture=${a.fixtureId}:`, snapErr.message);
+  for (const { me, take, reason } of decided) {
+    // success = on its way to the Live Activity; skipped = silent, full time
+    // or dry run; failure = decided but the write failed.
+    const status = !take ? "skipped" : !sendNotes ? "skipped" : snapErr ? "failure" : "success";
     const { error } = await supabase.from("pipeline_health").insert({
       team_id: me.slug,
       stage: "live_take",
-      status: take ? "success" : "skipped",
+      status,
       target: `take:${a.fixtureId}:${me.slug}:${a.moment}`,
-      message: take ? `${take.kind} | ${take.line} | ${take.backup}` : `silent | ${silenceReason(mine, theirs)}`,
+      message: take ? `${take.kind} | ${take.line} | ${take.backup}` : `silent | ${reason}`,
     });
     if (error) console.warn("live take: pipeline_health insert failed:", error.message);
   }
@@ -1519,7 +1544,7 @@ async function handleRequest(req: Request): Promise<Response> {
 
       const { data: prior, error: priorErr } = await supabase
         .from("match_status_state")
-        .select("status, home_goals, away_goals, fired_finished_at, briefs_fired, matchday_fire_capped, la_started, la_sig, la_ended, la_note, la_channel_id, la_channel_id_dev, goal_events, ht_home, ht_away, stat_snapshots")
+        .select("status, home_goals, away_goals, fired_finished_at, briefs_fired, matchday_fire_capped, la_started, la_sig, la_ended, la_note, la_takes, la_note_sig, la_channels, goal_events, ht_home, ht_away, stat_snapshots")
         .eq("fixture_id", fixtureId)
         .maybeSingle();
       if (priorErr) {
@@ -2315,6 +2340,15 @@ async function handleRequest(req: Request): Promise<Response> {
       let laEnded = (prior?.la_ended as boolean | undefined) ?? false;
       // The shootout line, kept so la-end-sweep can end with it too (LOCK-03-16).
       let laNote = (prior?.la_note as string | null | undefined) ?? null;
+      // Live takes phase 1 (158, docs/LIVE_TAKES_PLAN.md): the note per side,
+      // carried in every update until a score change, the change to HT or
+      // the end clears it. Set by liveTake after the pushes, sent next tick.
+      const laTakes: TakeNotes = carryNotes(
+        prior?.la_takes,
+        prior ? { status: prior.status as string, home: prior.home_goals as number | null, away: prior.away_goals as number | null } : null,
+        { status, home: homeGoals, away: awayGoals, elapsed },
+      );
+      let laNoteSig = (prior?.la_note_sig as string | null | undefined) ?? null;
 
       if (!laEnded) {
         const homeMeta = liveMeta(homeTeamId);
@@ -2373,11 +2407,11 @@ async function handleRequest(req: Request): Promise<Response> {
           const laTokens = async (
             // deno-lint-ignore no-explicit-any
             filter: (q: any) => any,
-          ): Promise<Array<{ token: string; apns_environment: string; darwin_major: number | null }>> => {
+          ): Promise<Array<{ token: string; apns_environment: string; darwin_major: number | null; team_ids: string[] | null }>> => {
             try {
               return await fetchAllRows((from, to) =>
                 filter(
-                  supabase.from("live_activity_tokens").select("token, apns_environment, darwin_major").eq("is_active", true),
+                  supabase.from("live_activity_tokens").select("token, apns_environment, darwin_major, team_ids").eq("is_active", true),
                 ).order("token").range(from, to)
               );
             } catch (e) {
@@ -2413,21 +2447,23 @@ async function handleRequest(req: Request): Promise<Response> {
             return sent;
           };
 
-          // The fixture's broadcast channels (157), one per APNs environment.
-          // Every update and end the token path sends goes to each as one
-          // broadcast, same content-state and priority; logged as
-          // la:<fixture>:<event>:p<prio>:channel.
-          const laChannels = new Map<APNsEnvironment, string>();
-          for (const env of LA_ENVS) {
-            const id = prior?.[channelColumn(env)] as string | null | undefined;
-            if (id) laChannels.set(env, id);
-          }
-          const broadcastAll = async (opts: Parameters<typeof sendLiveActivityPush>[1]) => {
-            const out: Array<{ env: APNsEnvironment; channelId: string; res: APNsSendResult }> = [];
-            for (const [env, channelId] of laChannels) {
+          // The fixture's broadcast channels (158): per APNs environment, one
+          // each for home followers, away followers and neutral (both or
+          // neither), so a take note reaches only the side it is about. Every
+          // update and end the token path sends goes to each as one
+          // broadcast, with that audience's content-state, same priority;
+          // logged as la:<fixture>:<event>:p<prio>:channel:<audience>.
+          const laChannels: LaChannels = parseLaChannels(prior?.la_channels);
+          const broadcastAll = async (
+            optsFor: (audience: LaAudience) => Parameters<typeof sendLiveActivityPush>[1] | null,
+          ) => {
+            const out: Array<{ env: APNsEnvironment; audience: LaAudience; channelId: string; res: APNsSendResult }> = [];
+            for (const { env, audience, channelId } of channelList(laChannels)) {
+              const opts = optsFor(audience);
+              if (!opts) continue;
               const res = await sendBroadcast(channelId, { ...opts, environment: env });
-              await logLaSend(supabase, fixtureId, opts.event, opts.priority ?? 10, [res], "channel");
-              out.push({ env, channelId, res });
+              await logLaSend(supabase, fixtureId, opts.event, opts.priority ?? 10, [res], `channel:${audience}`);
+              out.push({ env, audience, channelId, res });
             }
             return out;
           };
@@ -2446,8 +2482,10 @@ async function handleRequest(req: Request): Promise<Response> {
             // A channel whose end was accepted is deleted now (Apple: delete
             // once the event is over; an accepted broadcast is still
             // delivered). A failed end leaves it for la-end-sweep.
-            for (const b of await broadcastAll({ event: "end", contentState, dismissalSeconds: 1800 })) {
-              if (b.res.success) await retireChannel(supabase, fixtureId, b.env, b.channelId);
+            // No take note on the end (only the shootout's), so every
+            // audience gets the same one.
+            for (const b of await broadcastAll(() => ({ event: "end", contentState, dismissalSeconds: 1800 }))) {
+              if (b.res.success) await retireChannel(supabase, fixtureId, b.env, b.audience, b.channelId);
             }
             laEnded = true;
             laSig = sig;
@@ -2494,53 +2532,77 @@ async function handleRequest(req: Request): Promise<Response> {
               alert: { title: `${homeMeta.name} v ${awayMeta.name}`, body: "It's kicked off." },
               staleSeconds: LA_STALE_SECONDS,
             };
+            // Each channel phone joins its audience's channel (trap 1): the
+            // side it follows, or neutral if it follows both or neither.
+            // Channels are created only for an audience that has a phone.
             pendingLaStarts.push(async () => {
               const fallback: typeof ptsTokens = [];
               for (const env of LA_ENVS) {
-                const rows = channelRows.filter((r) => (r.apns_environment === "production" ? "production" : "development") === env);
-                if (rows.length === 0) continue;
-                let channelId = laChannels.get(env);
-                if (!channelId) {
-                  const made = await createChannel(env);
-                  await logLaChannelOp(supabase, fixtureId, "create", env, made);
-                  if (made.success && made.channelId) {
-                    const { error } = await supabase.from("match_status_state")
-                      .update({ [channelColumn(env)]: made.channelId }).eq("fixture_id", fixtureId);
-                    if (error) {
-                      // Unsaved, nothing would ever broadcast to it: start
-                      // these phones on tokens instead and drop the channel.
-                      console.error(`saving ${channelColumn(env)} for ${fixtureId} failed:`, error.message);
-                      await logLaChannelOp(supabase, fixtureId, "delete", env, await deleteChannel(env, made.channelId));
-                    } else {
-                      channelId = made.channelId;
-                      laChannels.set(env, channelId);
+                for (const audience of LA_AUDIENCES) {
+                  const rows = channelRows.filter((r) =>
+                    (r.apns_environment === "production" ? "production" : "development") === env &&
+                    audienceFor(r.team_ids, homeTeamId, awayTeamId) === audience
+                  );
+                  if (rows.length === 0) continue;
+                  let channelId = laChannels[env]?.[audience];
+                  if (!channelId) {
+                    const made = await createChannel(env);
+                    await logLaChannelOp(supabase, fixtureId, "create", env, made, audience);
+                    if (made.success && made.channelId) {
+                      const { error } = await supabase.rpc("la_channel_put", {
+                        p_fixture_id: fixtureId, p_env: env, p_audience: audience, p_channel_id: made.channelId,
+                      });
+                      if (error) {
+                        // Unsaved, nothing would ever broadcast to it: start
+                        // these phones on tokens instead and drop the channel.
+                        console.error(`saving la_channels.${env}.${audience} for ${fixtureId} failed:`, error.message);
+                        await logLaChannelOp(supabase, fixtureId, "delete", env, await deleteChannel(env, made.channelId), audience);
+                      } else {
+                        channelId = made.channelId;
+                        (laChannels[env] ??= {})[audience] = channelId;
+                      }
                     }
                   }
+                  if (channelId) await sendAll(rows, { ...startOpts, inputPushChannel: channelId }, `channel:${audience}`);
+                  else fallback.push(...rows);
                 }
-                if (channelId) await sendAll(rows, { ...startOpts, inputPushChannel: channelId }, "channel");
-                else fallback.push(...rows);
               }
               await sendAll([...tokenRows, ...fallback], startOpts);
             });
             laStarted = true;
             laSig = sig;
-          } else if ((isLive || PAUSED_LA.has(status)) && laStarted && sig !== laSig) {
+          } else if ((isLive || PAUSED_LA.has(status)) && laStarted) {
             // UPDATE — goal or period change (priority 10), or only the minute
             // moved (priority 5, for the builds without a running clock). A
             // stopped match (INT/SUSP) is a status change and says so
             // (LOCK-03-15). Each shootout kick goes at 5, which iOS does not
             // count against the budget; the result is the end push, at 10
-            // (LOCK-03-16).
-            const minuteOnly = laSig !== null && laSig.replace(/-[^-]*$/, "") === sigCore;
-            const updTokens = await laTokens((q) => q.eq("kind", "update").eq("fixture_id", fixtureId));
-            const updOpts: Parameters<typeof sendLiveActivityPush>[1] = {
+            // (LOCK-03-16). A take note (_shared/la-notes.ts) rides along on
+            // any of these, each side's to its own followers; a tick where
+            // only a note changed goes at 5 to that side alone. No update
+            // carries an alert.
+            const plan = planUpdate({
+              contentState,
+              notes: laTakes,
+              status,
+              sig,
+              sigCore,
+              laSig,
+              laNoteSig,
               // Half time is a planned 15–20 minutes without an update.
-              event: "update", contentState, staleSeconds: status === "HT" || status === "BT" ? 1800 : LA_STALE_SECONDS,
-              priority: minuteOnly || status === "P" ? 5 : 10,
-            };
-            await sendAll(updTokens, updOpts);
-            await broadcastAll(updOpts);
-            laSig = sig;
+              staleSeconds: status === "HT" || status === "BT" ? 1800 : LA_STALE_SECONDS,
+            });
+            if (plan) {
+              const updTokens = await laTokens((q) => q.eq("kind", "update").eq("fixture_id", fixtureId));
+              const audienceOf = new Map(updTokens.map((r) => [r.token, audienceFor(r.team_ids, homeTeamId, awayTeamId)]));
+              for (const send of plan.sends) {
+                const rows = updTokens.filter((r) => send.audiences.includes(audienceOf.get(r.token)!));
+                await sendAll(rows, send.opts, send.take ? `take:${send.audiences.join("+")}` : undefined);
+              }
+              await broadcastAll((aud) => plan.sends.find((x) => x.audiences.includes(aud))?.opts ?? null);
+              laSig = sig;
+              laNoteSig = noteSig(laTakes);
+            }
           }
         }
       }
@@ -3177,6 +3239,13 @@ async function handleRequest(req: Request): Promise<Response> {
             la_sig: laSig,
             la_ended: laEnded,
             la_note: laNote,
+            // Written only when a clear changed them: liveTake sets them
+            // after this upsert, and an overlapping tick that read the row
+            // before that must not write the old (empty) notes back.
+            ...(noteSig(laTakes) !== noteSig(parseTakeNotes(prior?.la_takes))
+              ? { la_takes: laTakes.home || laTakes.away ? laTakes : null }
+              : {}),
+            la_note_sig: laNoteSig,
             ...(matchdayWentStale
               ? { matchday_fire_capped: true }
               : {}),
@@ -3232,7 +3301,7 @@ async function handleRequest(req: Request): Promise<Response> {
         if (takeMoment && homeName && awayName && homeGoals != null && awayGoals != null) {
           const feedHtTake = fx.score?.halftime;
           try {
-            await liveTakeDryRun(supabase, {
+            await liveTake(supabase, {
               fixtureId,
               moment: takeMoment,
               elapsed: elapsed ?? null,

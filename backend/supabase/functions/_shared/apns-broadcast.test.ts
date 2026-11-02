@@ -7,7 +7,7 @@ import {
   channelManagementBase,
   LA_CHANNEL_STORAGE_POLICY,
 } from "./apns-client.ts";
-import { channelColumn, laChannelMode, laChannelPrefixes, wantsChannel } from "./la-channels.ts";
+import { channelList, laChannelMode, laChannelPrefixes, parseLaChannels, wantsChannel } from "./la-channels.ts";
 
 const cs = { homeScore: 1, awayScore: 0, statusLabel: "2H", elapsed: 60, clockStart: null };
 
@@ -60,8 +60,19 @@ Deno.test("broadcast request: path, headers, expiration 0 on a no-storage channe
 Deno.test("channel management hosts and ports per environment", () => {
   assertEquals(channelManagementBase("production"), "https://api-manage-broadcast.push.apple.com:2196");
   assertEquals(channelManagementBase("development"), "https://api-manage-broadcast.sandbox.push.apple.com:2195");
-  assertEquals(channelColumn("production"), "la_channel_id");
-  assertEquals(channelColumn("development"), "la_channel_id_dev");
+});
+
+Deno.test("la_channels: up to three per environment, junk ignored, listed flat", () => {
+  const ch = parseLaChannels({
+    production: { home: "H", away: "A", neutral: "N", other: "x" },
+    development: { home: 5, away: "" },
+    staging: { home: "S" },
+  });
+  assertEquals(ch, { production: { home: "H", away: "A", neutral: "N" } });
+  assertEquals(channelList(ch).map((c) => `${c.env}:${c.audience}:${c.channelId}`), [
+    "production:home:H", "production:away:A", "production:neutral:N",
+  ]);
+  assertEquals(parseLaChannels(null), {});
 });
 
 Deno.test("LA_CHANNELS: unset or unknown is off, and off reaches nobody", () => {

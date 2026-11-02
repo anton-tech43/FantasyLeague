@@ -10,6 +10,7 @@
 //               channel start is dropped by the system, so unknown = no.
 
 import type { APNsEnvironment } from "./apns-client.ts";
+import { type LaAudience, LA_AUDIENCES } from "./la-notes.ts";
 
 export type LaChannelMode = "off" | "allowlist" | "on";
 
@@ -34,8 +35,34 @@ export function wantsChannel(
   return false;
 }
 
-/// match_status_state column holding the fixture's channel for an environment
-/// (migration 157). Channels cannot cross environments.
-export function channelColumn(env: APNsEnvironment): "la_channel_id" | "la_channel_id_dev" {
-  return env === "production" ? "la_channel_id" : "la_channel_id_dev";
+/// A fixture's broadcast channels (match_status_state.la_channels, mig 158):
+/// up to three per environment, one per audience (_shared/la-notes.ts), since
+/// a broadcast reaches everyone on the channel and a take note must only reach
+/// the side it is about. Channels cannot cross environments.
+export type LaChannels = Partial<Record<APNsEnvironment, Partial<Record<LaAudience, string>>>>;
+
+export function parseLaChannels(raw: unknown): LaChannels {
+  const out: LaChannels = {};
+  if (!raw || typeof raw !== "object") return out;
+  for (const env of ["production", "development"] as const) {
+    const e = (raw as Record<string, unknown>)[env];
+    if (!e || typeof e !== "object") continue;
+    for (const aud of LA_AUDIENCES) {
+      const id = (e as Record<string, unknown>)[aud];
+      if (typeof id === "string" && id.length > 0) (out[env] ??= {})[aud] = id;
+    }
+  }
+  return out;
+}
+
+/// Every channel in the map, flat.
+export function channelList(ch: LaChannels): Array<{ env: APNsEnvironment; audience: LaAudience; channelId: string }> {
+  const out: Array<{ env: APNsEnvironment; audience: LaAudience; channelId: string }> = [];
+  for (const env of ["production", "development"] as const) {
+    for (const audience of LA_AUDIENCES) {
+      const channelId = ch[env]?.[audience];
+      if (channelId) out.push({ env, audience, channelId });
+    }
+  }
+  return out;
 }
