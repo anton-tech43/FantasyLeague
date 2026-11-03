@@ -344,6 +344,9 @@ async function logFire(
      * would log as failure.
      */
     status?: "success" | "failure" | "skipped";
+    /// Overrides the derived error_class/message (matchday not configured).
+    errorClass?: string;
+    message?: string;
   },
 ): Promise<void> {
   try {
@@ -370,8 +373,8 @@ async function logFire(
       target,
       http_status: args.httpStatus,
       response_excerpt: args.bodyExcerpt,
-      error_class: meta.error_class,
-      message: meta.message,
+      error_class: args.errorClass ?? meta.error_class,
+      message: args.message ?? meta.message,
     });
   } catch (e) {
     // Logging is best-effort. Don't break the fire loop.
@@ -1272,11 +1275,15 @@ async function handleRequest(req: Request): Promise<Response> {
   // trigger label STARTING_XI, fire window kickoff−65min, branch the
   // fire loop on `trigger === "STARTING_XI"` to pick the right URL.
 
-  if (!apiFootballKey || !routineUrl || !routineToken) {
+  // Only the feed key is required. The matchday routine pair is optional like
+  // the live-brief pair: it serves exactly one thing, the full-time gd-matchday
+  // fire, and unsetting it used to 500 the whole tick, which silently stopped
+  // every live push and Live Activity (bug hunt 2026-11-03, E-C1). Without it
+  // the fire is skipped and logged per side (matchday_fire, not_configured).
+  const matchdayConfigured = !!routineUrl && !!routineToken;
+  if (!apiFootballKey) {
     return new Response(
-      JSON.stringify({
-        error: "Missing one of: API_FOOTBALL_KEY, MATCHDAY_ROUTINE_URL, MATCHDAY_ROUTINE_TOKEN",
-      }),
+      JSON.stringify({ error: "Missing API_FOOTBALL_KEY" }),
       { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }
@@ -1780,6 +1787,19 @@ async function handleRequest(req: Request): Promise<Response> {
             else awayFireOk = true;
             continue;
           }
+          // No routine secrets: skip this side's article, keep everything
+          // else (consequences, fired_finished_at) moving. One visible row per
+          // side so the gap shows in pipeline_health instead of in silence.
+          if (!matchdayConfigured) {
+            if (isHome) homeFireOk = true;
+            else awayFireOk = true;
+            await logFire(supabase, {
+              stage: "matchday_fire", teamId, fixtureId, httpStatus: null, success: false, threw: false,
+              bodyExcerpt: null, status: "skipped", errorClass: "not_configured",
+              message: "MATCHDAY_ROUTINE_URL/TOKEN unset: gd-matchday not fired",
+            });
+            continue;
+          }
           const score = isHome
             ? `${homeGoals}-${awayGoals}`
             : `${awayGoals}-${homeGoals}`;
@@ -1804,7 +1824,7 @@ async function handleRequest(req: Request): Promise<Response> {
           let matchdaySuccess = false;
           let matchdayThrew = false;
           try {
-            const fireResp = await fetch(routineUrl, {
+            const fireResp = await fetch(routineUrl!, {
               method: "POST",
               headers: {
                 "Authorization": `Bearer ${routineToken}`,

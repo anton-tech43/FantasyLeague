@@ -521,6 +521,8 @@ ORDER BY last_checked DESC LIMIT 5;
 
 **Row present but `fired_finished_at IS NULL`:** match-watcher saw it but didn't catch the FT transition. Often the first-observation guard (deploy-during-live-match).
 
+**No matchday article but live pushes went out:** look for `matchday_fire` rows with `error_class = 'not_configured'`. The `MATCHDAY_ROUTINE_URL/TOKEN` secrets are unset (for example after a claude.ai account change); match-watcher keeps running without them and only skips the article. Set them again with `supabase secrets set`; never unset them to silence errors.
+
 **Live pushes (kickoff, goal, half-time, full time) do not go through `content_items`.** match-watcher sends them directly (`sendPlayingTeamPush`), gated per tier by `_shared/push-tiers.ts`: a goal reaches every tier, kickoff and half-time need tier 2. Check them in Step 5, not Step 3.
 
 ### Step 3 — Did a content_item land? (news, matchday and post-match items)

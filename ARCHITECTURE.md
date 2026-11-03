@@ -324,6 +324,11 @@ Key tables: `teams`, `team_pages`, `team_season_state`, `team_context`,
   (CLAUDE.md). Retention sweeps run nightly (`*_retention_sweep` cron jobs; migration 129
   adds inactive tokens and stale Live Activity rows after 90 days).
 - Secrets: Vault for the cron key; APNs `.p8` and API keys in the Edge runtime env.
+- match-watcher needs only `API_FOOTBALL_KEY`. The routine pairs (`MATCHDAY_ROUTINE_URL/TOKEN`,
+  `LIVE_BRIEF_ROUTINE_URL/TOKEN`) are optional: without one, that routine is not fired and
+  every live push and Live Activity carries on (a missing matchday pair leaves one
+  `matchday_fire` row per side, `status=skipped`, `error_class=not_configured`). Until
+  2026-11-03 a missing matchday pair returned 500 for the whole tick.
 - JSONB-null trap: `WHERE x IS NULL` misses a JSONB literal `null` (use
   `jsonb_typeof(x)='null'`).
 
