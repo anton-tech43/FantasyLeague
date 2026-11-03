@@ -113,6 +113,14 @@ const FINISHED_STATUSES = new Set(["FT", "AET", "PEN"]);
 // — those aren't moments worth commenting on.
 const LIVE_STATUSES = new Set(["1H", "HT", "2H", "ET", "P", "BT"]);
 const API_FOOTBALL_BASE = "https://v3.football.api-sports.io";
+/// Every outbound call has a bound (bug hunt 2026-11-03, E-C3). Deno's fetch
+/// has none, and a tick that hangs past the next minute acts on stale state.
+/// The feed answers in well under a second; a routine fire is accepted in a
+/// few. A routine fire that times out is logged as thrown and retried with
+/// backoff; gd-matchday's post script upserts, so a late-accepted duplicate
+/// writes nothing twice.
+const FEED_TIMEOUT_MS = 10_000;
+const ROUTINE_TIMEOUT_MS = 15_000;
 
 interface ApiFixture {
   fixture: {
@@ -197,7 +205,7 @@ async function fetchGoalEvents(fixtureId: number, apiKey: string): Promise<GoalE
   try {
     const resp = await fetch(
       `${API_FOOTBALL_BASE}/fixtures/events?fixture=${fixtureId}`,
-      { headers: { "x-apisports-key": apiKey } },
+      { headers: { "x-apisports-key": apiKey }, signal: AbortSignal.timeout(FEED_TIMEOUT_MS) },
     );
     const json = await resp.json().catch(() => null);
     if (
@@ -670,6 +678,8 @@ const PAUSED_LA = new Set(["INT", "SUSP"]);
 /// feed has frozen reads as "no update since", not as a live score. During
 /// play an update lands every minute; the break gets 30 minutes.
 const LA_STALE_SECONDS = 1200;
+/// briefs_fired marker for the one push-to-start per fixture.
+const LA_START_MARKER = "LA_START";
 
 /// Broadcast-channel Live Activities (iOS 18+), off unless the LA_CHANNELS
 /// secret says otherwise (_shared/la-channels.ts, docs/LIVE_ACTIVITY_PLAN.md).
@@ -858,7 +868,7 @@ async function fetchFixtureStats(fixtureId: number, apiKey: string, timeoutMs?: 
   try {
     const resp = await fetch(
       `${API_FOOTBALL_BASE}/fixtures/statistics?fixture=${fixtureId}`,
-      { headers: { "x-apisports-key": apiKey }, ...(timeoutMs ? { signal: AbortSignal.timeout(timeoutMs) } : {}) },
+      { headers: { "x-apisports-key": apiKey }, signal: AbortSignal.timeout(timeoutMs ?? FEED_TIMEOUT_MS) },
     );
     const json = await resp.json().catch(() => null);
     if (!json || (json.errors && Object.keys(json.errors).length > 0)) {
@@ -1014,7 +1024,7 @@ async function lineupDryRun(
   if ((have ?? []).length > 0) return;
 
   const resp = await fetch(`${API_FOOTBALL_BASE}/fixtures/lineups?fixture=${fixtureId}`,
-    { headers: { "x-apisports-key": apiKey } });
+    { headers: { "x-apisports-key": apiKey }, signal: AbortSignal.timeout(FEED_TIMEOUT_MS) });
   const json = await resp.json().catch(() => null);
   const sides = (json?.response ?? []) as Array<Record<string, any>>;
   if (sides.length < 2 || sides.some((s) => (s.startXI ?? []).length !== 11)) { // not out yet
@@ -1230,6 +1240,7 @@ async function writeLastMatch(
 }
 
 async function handleRequest(req: Request): Promise<Response> {
+  const tickStartedMs = Date.now();
   const supabase = getSupabaseClient();
   if (new URL(req.url).searchParams.get("sweep") === "la") return await sweepLiveActivities(supabase);
 
@@ -1433,7 +1444,7 @@ async function handleRequest(req: Request): Promise<Response> {
     try {
       const resp = await fetch(
         `${API_FOOTBALL_BASE}/fixtures?league=${leagueId}&season=${season}&date=${pollDate}`,
-        { headers: { "x-apisports-key": apiFootballKey } },
+        { headers: { "x-apisports-key": apiFootballKey }, signal: AbortSignal.timeout(FEED_TIMEOUT_MS) },
       );
       const json = await resp.json();
       if (
@@ -1833,6 +1844,7 @@ async function handleRequest(req: Request): Promise<Response> {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({ text }),
+              signal: AbortSignal.timeout(ROUTINE_TIMEOUT_MS),
             });
             matchdayHttpStatus = fireResp.status;
             if (fireResp.ok) {
@@ -2318,6 +2330,7 @@ async function handleRequest(req: Request): Promise<Response> {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({ text }),
+              signal: AbortSignal.timeout(ROUTINE_TIMEOUT_MS),
             });
             liveHttpStatus = fireResp.status;
             if (fireResp.ok) {
@@ -2556,6 +2569,19 @@ async function handleRequest(req: Request): Promise<Response> {
             // side it follows, or neutral if it follows both or neither.
             // Channels are created only for an audience that has a phone.
             pendingLaStarts.push(async () => {
+              // Claimed in the database, not read from `prior`: a tick that
+              // stalled past the next one read la_started=false too, and both
+              // would push-to-start a second card on every phone (bug hunt
+              // 2026-11-03, E-C3). A failed claim sends, like the alert pushes.
+              const { data: claimed, error: claimErr } = await supabase.rpc("claim_fixture_marker", {
+                p_fixture_id: fixtureId, p_marker: LA_START_MARKER,
+              });
+              if (claimErr) {
+                console.warn(`la start fixture=${fixtureId}: marker claim failed, starting anyway:`, claimErr.message);
+              } else if (claimed === false) {
+                console.log(`la start fixture=${fixtureId}: already started by another tick, skipping`);
+                return;
+              }
               const fallback: typeof ptsTokens = [];
               for (const env of LA_ENVS) {
                 for (const audience of LA_AUDIENCES) {
@@ -3444,6 +3470,8 @@ async function handleRequest(req: Request): Promise<Response> {
     active_leagues: activeLeagues,
     league_errors: leagueErrors,
     page_refresh: pageRefresh,
+    // A tick longer than its minute overlaps the next one (E-C3).
+    duration_ms: Date.now() - tickStartedMs,
   };
 
   // A17 (audit 2026-09): leave a trace of the run itself. Not every tick — that
@@ -3454,7 +3482,7 @@ async function handleRequest(req: Request): Promise<Response> {
   // pg_cron run log and CHECK 6 (mig 081) cover "is it running at all".
   const anomalous =
     leagueErrors.length > 0 || upsertErrors.length > 0 || priorErrors.length > 0 ||
-    fixtureErrors.length > 0 ||
+    fixtureErrors.length > 0 || summary.duration_ms > 50_000 ||
     (fixtures.length > 0 && stateUpdates + skippedFixtures < fixtures.length);
   const hourlyBeat = fixtures.length > 0 && new Date().getUTCMinutes() === 0;
   if (anomalous || hourlyBeat) {

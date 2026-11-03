@@ -148,6 +148,12 @@ async function fetchOrMintJWT(nowMs: number): Promise<string> {
 
 type APNsEnvironment = "development" | "production";
 
+/// Every APNs request is bounded (bug hunt 2026-11-03, E-C3): Deno's fetch has
+/// no timeout, and match-watcher's tick must finish inside its minute. APNs
+/// answers in tens of milliseconds; a hung request is reported as a failed
+/// send (no status), which never deactivates a token.
+export const APNS_TIMEOUT_MS = 10_000;
+
 function getAPNsHost(env: APNsEnvironment): string {
   return env === "production"
     ? "https://api.push.apple.com"
@@ -184,6 +190,7 @@ export async function sendPushNotification(
           "apns-priority": "10",
         },
         body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(APNS_TIMEOUT_MS),
       });
 
     let response = await doSend(jwt);
@@ -317,6 +324,7 @@ export async function sendLiveActivityPush(
           "apns-priority": String(opts.priority ?? 10),
         },
         body: JSON.stringify({ aps }),
+        signal: AbortSignal.timeout(APNS_TIMEOUT_MS),
       });
 
     let response = await doSend(jwt);
@@ -427,6 +435,7 @@ export async function createChannel(
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `bearer ${jwt}` },
         body: JSON.stringify({ "message-storage-policy": storagePolicy, "push-type": "LiveActivity" }),
+        signal: AbortSignal.timeout(APNS_TIMEOUT_MS),
       })
     );
     const channelId = response.headers.get("apns-channel-id") ?? undefined;
@@ -449,6 +458,7 @@ export async function deleteChannel(env: APNsEnvironment, channelId: string): Pr
       fetch(`${channelManagementBase(env)}/1/apps/${bundleId}/channels`, {
         method: "DELETE",
         headers: { Authorization: `bearer ${jwt}`, "apns-channel-id": channelId },
+        signal: AbortSignal.timeout(APNS_TIMEOUT_MS),
       })
     );
     if (response.ok) {
@@ -476,7 +486,12 @@ export async function sendBroadcast(
       bundleId, env, channelId, buildLiveActivityAps(opts, Math.floor(Date.now() / 1000)), opts.priority ?? 10,
     );
     const response = await apnsRequest((jwt) =>
-      fetch(req.url, { method: "POST", headers: { ...req.headers, Authorization: `bearer ${jwt}` }, body: req.body })
+      fetch(req.url, {
+        method: "POST",
+        headers: { ...req.headers, Authorization: `bearer ${jwt}` },
+        body: req.body,
+        signal: AbortSignal.timeout(APNS_TIMEOUT_MS),
+      })
     );
     if (response.ok) {
       await response.body?.cancel();
