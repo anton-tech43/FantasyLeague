@@ -38,6 +38,7 @@ import {
 } from "../_shared/matchday-reminder-copy.ts";
 import { NOT_HAPPENING } from "../_shared/league-helpers.ts";
 import { buildContentItem } from "../_shared/build-content-item.ts";
+import { type ReminderToken, tokensStillToRemind } from "./dedupe.ts";
 import { preMatchVerdict, WC_FAVORITE_GAP } from "../_shared/matchup-verdict.ts";
 import { competitionProse, COVERED_CUP_LEAGUES, roundLabel, seasonForLeague } from "../_shared/league-helpers.ts";
 
@@ -353,7 +354,7 @@ serve(async (req) => {
         tokenPage = await fetchAllRows((from, to) =>
           supabase
             .from("device_tokens")
-            .select("apns_token, apns_environment, timezone")
+            .select("apns_token, apns_environment, timezone, team_id, team_ids, country_id, country_ids")
             .or(`team_id.eq.${teamId},team_ids.cs.{${teamId}},country_id.eq.${teamId},country_ids.cs.{${teamId}}`)
             .eq("is_active", true)
             .order("apns_token")
@@ -372,7 +373,19 @@ serve(async (req) => {
       }
       const reminded = remindedByFixture.get(cand.fixtureId) ?? new Set<string>();
       remindedByFixture.set(cand.fixtureId, reminded);
-      const tokens = tokenPage.filter((t) => !reminded.has(t.apns_token as string));
+      // P-C6: the other side of a derby reminded in an EARLIER run already
+      // reached its dual followers; this run's set cannot know that.
+      let opponentClaimed = false;
+      if (cand.opponentId) {
+        const { data: oppClaim } = await supabase
+          .from("matchday_reminders_sent")
+          .select("team_id")
+          .eq("team_id", cand.opponentId)
+          .eq("kickoff_time", kickoff.toISOString())
+          .maybeSingle();
+        opponentClaimed = !!oppClaim;
+      }
+      const tokens = tokensStillToRemind(tokenPage as unknown as ReminderToken[], reminded, cand.opponentId, opponentClaimed) as unknown as Array<Record<string, unknown>>;
       for (const t of tokens) reminded.add(t.apns_token as string);
 
       // Mig 082: kickoff is rendered in each READER's zone. Followers cluster
