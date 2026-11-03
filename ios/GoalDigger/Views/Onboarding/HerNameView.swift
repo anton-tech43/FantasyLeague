@@ -66,5 +66,11 @@ struct HerNameView: View {
             Spacer().frame(height: 40)
         }
         .animation(.easeOut(duration: 0.2), value: name.isEmpty)
+        // The field keeps what she typed. Back re-creates this view, and a kill
+        // mid-onboarding restarts the flow; both used to show an empty field
+        // with Continue hidden (bug hunt 2026-11-03 U-C4). Saved as she types,
+        // so a draft survives too; nothing reads it before onboarding ends.
+        .onAppear { if name.isEmpty { name = appState.herName } }
+        .onChange(of: name) { _, new in appState.herName = new.trimmingCharacters(in: .whitespaces) }
     }
 }

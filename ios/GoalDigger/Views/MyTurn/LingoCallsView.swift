@@ -50,6 +50,9 @@ struct LingoCallsView: View {
     @State private var index = LingoCallsView.startIndex
     /// The filled slip is a small gold row until she opens it.
     @State private var slipOpen = false
+    /// The next line slides in under the same two buttons, so a double tap
+    /// answered a line she never saw (bug hunt 2026-11-03 U-C6).
+    @State private var gate = TransitionTapGate()
     @Environment(\.dynamicTypeSize) private var typeSize
 
     private var slip: MyTurnStore.MatchCalls? { store.matchCalls(for: context) }
@@ -229,7 +232,6 @@ struct LingoCallsView: View {
     @ViewBuilder
     private func answerButtons(_ call: LingoCall, of offered: [LingoCall]) -> some View {
         let yes = Button {
-            Analytics.shared.log(.lineSaved, ["source": "slip"])
             answer(call, yes: true, of: offered)
         } label: {
             answerLabel("Save for the game", filled: true)
@@ -269,6 +271,10 @@ struct LingoCallsView: View {
     /// slip she walked and fancied none of has to be remembered as walked or
     /// the same lines come back on every open, which is nagging.
     private func answer(_ call: LingoCall, yes: Bool, of offered: [LingoCall]) {
+        // Only the line on screen, once: a tap on the card fading out, or a
+        // second tap while the next one slides in, is dropped.
+        guard index < offered.count, offered[index].id == call.id, gate.allow() else { return }
+        if yes { Analytics.shared.log(.lineSaved, ["source": "slip"]) }
         withAnimation(.easeInOut(duration: 0.2)) {
             if yes { picked.insert(call.id) }
             index += 1

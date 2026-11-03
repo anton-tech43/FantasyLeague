@@ -14,6 +14,11 @@ struct OnboardingFlow: View {
         return .welcome
     }()
     @State private var startedAt = Date()
+    /// Every step's primary button sits in the same place, so a quick double
+    /// tap used to land its second tap on the NEXT step's button and skip a
+    /// screen ("Meet the boss" went straight to "How it works", bug hunt
+    /// 2026-11-03 U-C8). A step change is ignored while the last one animates.
+    @State private var gate = TransitionTapGate()
 
     /// Onboarding step order (V2.1, post World Championship).
     ///
@@ -83,7 +88,7 @@ struct OnboardingFlow: View {
                     if step != .welcome {
                         Button {
                             if let prev = OnboardingStep(rawValue: step.rawValue - 1) {
-                                step = prev
+                                go(prev)
                             }
                         } label: {
                             Image(systemName: "chevron.left")
@@ -116,33 +121,43 @@ struct OnboardingFlow: View {
                 // Screen content
                 switch step {
                 case .welcome:
-                    WelcomeView { step = .herName }
+                    WelcomeView { go(.herName) }
                 case .herName:
-                    HerNameView { step = .hisName }
+                    HerNameView { go(.hisName) }
                 case .hisName:
-                    HisNameView { step = .plTeamOptional }
+                    HisNameView { go(.plTeamOptional) }
                 case .plTeamOptional:
-                    OptionalPLTeamView { step = .meetTeam }
+                    OptionalPLTeamView { go(.meetTeam) }
                 case .meetTeam:
-                    MeetTeamView(entityId: meetEntityId) { step = .meetManager }
+                    MeetTeamView(entityId: meetEntityId) { go(.meetManager) }
                 case .meetManager:
-                    MeetManagerView(entityId: meetEntityId) { step = .howItWorks }
+                    MeetManagerView(entityId: meetEntityId) { go(.howItWorks) }
                 case .howItWorks:
-                    HowItWorksView { step = .tierSelection }
+                    HowItWorksView { go(.tierSelection) }
                 case .tierSelection:
-                    TierSelectionView { step = .notificationPrompt }
+                    TierSelectionView { go(.notificationPrompt) }
                 case .notificationPrompt:
-                    NotificationPromptView { step = .calendar }
+                    NotificationPromptView { go(.calendar) }
                 case .calendar:
                     CalendarOptInView { completeOnboarding() }
                 }
             }
         }
         .animation(.easeInOut(duration: 0.3), value: step)
-        .onAppear { Analytics.shared.log(.onboardingStepViewed, ["step": String(describing: step)]) }
+        .onAppear {
+            Analytics.shared.log(.onboardingStepViewed, ["step": String(describing: step)])
+            #if DEBUG
+            TransitionTapGate.selfCheck()
+            #endif
+        }
         .onChange(of: step) { _, new in
             Analytics.shared.log(.onboardingStepViewed, ["step": String(describing: new)])
         }
+    }
+
+    private func go(_ next: OnboardingStep) {
+        guard gate.allow() else { return }
+        step = next
     }
 
     /// Final completion: marks contexts as viewed, registers the APNs token
@@ -213,4 +228,29 @@ struct OnboardingFlow: View {
         // cfprefsd flushes loses every field and re-onboards next launch.
         appState.persistNow()
     }
+}
+
+/// Swallows a second tap that arrives while the screen it was meant for is
+/// still animating away. Onboarding steps and the pre-game slip both put the
+/// next screen's button exactly where the last one was.
+struct TransitionTapGate {
+    /// The onboarding step animation is 0.3 s; the slip's is 0.2 s.
+    static let window: TimeInterval = 0.35
+    private var last = Date.distantPast
+
+    mutating func allow(now: Date = Date()) -> Bool {
+        guard now.timeIntervalSince(last) >= Self.window else { return false }
+        last = now
+        return true
+    }
+
+    #if DEBUG
+    static func selfCheck() {
+        var g = TransitionTapGate()
+        let t = Date()
+        assert(g.allow(now: t), "the first tap was swallowed")
+        assert(!g.allow(now: t.addingTimeInterval(0.2)), "a double tap got through, so a step is skipped")
+        assert(g.allow(now: t.addingTimeInterval(0.6)), "a deliberate second tap was swallowed")
+    }
+    #endif
 }
