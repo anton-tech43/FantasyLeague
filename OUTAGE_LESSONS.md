@@ -5,7 +5,7 @@ Fyra gånger på fem månader har databasen tagit appen ner eller nära nog. Det
 `SJALVRANNSAKAN_2026-09.md`. Det här är det som visade sig vara **samma sak varje
 gång**, formulerat så att det går att ta med sig till nästa system.
 
-Del 2 (lärdom 8–17) kommer från den första bug-hunten, 3 november 2026: en
+Del 2 (lärdom 8–18) kommer från den första bug-hunten, 3 november 2026: en
 systematisk jakt på buggar, säkerhetshål och skörhet innan användarna hittar dem.
 Rapporten med alla 63 fynd finns i `docs/bug-hunt/BUG_HUNT_2026-11-03.md`.
 
@@ -463,6 +463,36 @@ rättade det — och hur vet du att rättningen inte bara fick testet att passer
 
 ---
 
+## 18. Ett skydd som bara testats i en kopia av miljön är otestat
+
+Samma kväll som bug-hunten stoppade vårt nya skydd allt riktigt innehåll.
+
+Integritetsspärren från lärdom 8 skulle kontrollera att koden i rutinens
+sandlåda var identisk med `main`. Den testades noga: i en ren kopia, en grund
+kopia, på en annan gren, med lösryckt HEAD. 264 tester gröna. Sedan körde den
+för första gången i den riktiga molnsandlådan och vägrade allt: dossierkorten
+klockan 18, halvtidsbriefen 20:50 och båda matchartiklarna 21:56.
+
+Orsaken: sandlådan hade en sparad referens till `main` från fem dagar tidigare.
+Koden den körde var dagens, så jämfört med den gamla referensen såg varenda fil
+"ändrad" ut. Inget av testerna hade en gammal referens, eftersom ingen visste att
+den riktiga miljön hade det.
+
+Två saker räddade kvällen. Spärren var byggd för att **synas** när den stoppar:
+den skrev en rad i hälsotabellen, larmet gick till telefonen, och modellen
+försökte inte gå runt den utan rapporterade. Och de stoppade artiklarna kunde
+köras om. Rättningen jämför i stället mot den commit som faktiskt checkades ut.
+
+> **Regel:** ett skydd som stänger vid fel måste testas i den riktiga miljön
+> innan det får stänga på riktigt — kör det först i ett läge där det bara
+> loggar vad det *skulle* ha stoppat. Och bygg det så att det märks när det
+> stänger: ett tyst stopp är ett driftstopp du inte vet om.
+
+*Fråga till ditt system:* vilka av dina säkerhetsspärrar har bara körts i test,
+och vad händer med användarna första gången en av dem stänger fel?
+
+---
+
 ## Det korta
 
 **Del 1, driftstoppen**
@@ -487,6 +517,7 @@ rättade det — och hur vet du att rättningen inte bara fick testet att passer
 15. Rätt data vid fel tillfälle är fel data.
 16. Maskera som standard, inte bara det du känner igen.
 17. Den som hittar felet ska inte vara den som bekräftar det.
+18. Ett skydd som bara testats i en kopia av miljön är otestat.
 
 Och den som binder ihop driftstoppen: **varje gång har det tagit längre tid att tro på
 mätningen än att göra den.** Juni hade svaret i statistiktabellen hela tiden.
