@@ -93,7 +93,7 @@ Defaults: no unrequested abstractions, deletion over addition, boring over cleve
   cups, not "3 teams". The World Championship is retired (countries inactive,
   `CountryFollowing.isEnabled = false`).
 - **iOS sim**: `xcodebuild -project ios/GoalDigger.xcodeproj -scheme GoalDigger -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build`
-- **Edge Function deploy**: from `backend/` dir, `supabase functions deploy <name> --project-ref cwgpsmbunrocrofziqad --no-verify-jwt`. The flag is load-bearing: the cron key is a random secret, not a JWT (IOS_GOTCHAS.md §14).
+- **Edge Function deploy**: `./scripts/deploy-fn.sh <name...>`. It refuses while `poll_leagues()` has rows (a match is live or kicks off within 35 min: a mid-match restart loses the FT push, O-C4); `--during-match` overrides. Underneath it runs `supabase functions deploy <name> --project-ref cwgpsmbunrocrofziqad --no-verify-jwt` from `backend/`. The flag is load-bearing: the cron key is a random secret, not a JWT (IOS_GOTCHAS.md §14).
 - **DB access**: `set -a && source backend/.env && set +a && /opt/homebrew/opt/libpq/bin/psql "$SUPABASE_DB_URL"`
 - **JSONB null trap**: `WHERE x IS NULL` does NOT match a JSONB literal `null`. Use `WHERE x IS NULL OR jsonb_typeof(x) = 'null'`.
 - **Routines repo**: `anton-tech43/goaldigger-routines` — pattern is `PROMPT.md` + `post_*.sh` + cron schedule via `RemoteTrigger`. Copy this pattern for any new LLM-backed cross-team workflow.

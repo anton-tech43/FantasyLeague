@@ -116,6 +116,17 @@ Bookmark this URL. Check it daily. It should take 5 seconds to see if everything
 
 ---
 
+## Deploying an Edge Function
+
+Every "deploy" or "redeploy" below means `./scripts/deploy-fn.sh <name...>`, never a bare
+`supabase functions deploy`. The script refuses while `poll_leagues()` returns rows, that is
+while a match is live or kicks off within 35 minutes: a restart mid-match trips match-watcher's
+first-observation guard and the FT push is lost (Step 2 of the push SOP below). Wait for full
+time. When the fix is the match itself (match-watcher broken during the game), pass
+`--during-match`. It deploys one function at a time from `backend/` with `--no-verify-jwt`.
+
+---
+
 ## Failure Scenarios & Recovery
 
 ### Scenario 1: Claude API is Down
@@ -519,7 +530,7 @@ ORDER BY last_checked DESC LIMIT 5;
 - The competition was not polled that day. The Premier League and the five cups are covered; `SELECT * FROM poll_leagues(now())` lists what match-watcher polls today, derived from the fixture feed.
 - API-Football didn't return the fixture for the date filter (timezone drift, abandoned match, etc.).
 
-**Row present but `fired_finished_at IS NULL`:** match-watcher saw it but didn't catch the FT transition. Often the first-observation guard (deploy-during-live-match).
+**Row present but `fired_finished_at IS NULL`:** match-watcher saw it but didn't catch the FT transition. Often the first-observation guard (deploy-during-live-match; `scripts/deploy-fn.sh` now refuses that unless `--during-match`).
 
 **No matchday article but live pushes went out:** look for `matchday_fire` rows with `error_class = 'not_configured'`. The `MATCHDAY_ROUTINE_URL/TOKEN` secrets are unset (for example after a claude.ai account change); match-watcher keeps running without them and only skips the article. Set them again with `supabase secrets set`; never unset them to silence errors.
 
