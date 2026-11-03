@@ -201,8 +201,11 @@ server side of §5 step 3 is deployed **behind `LA_CHANNELS`, unset = off**:
   phones get a token start. Every update and end also goes out as one
   broadcast (same content-state, priority, no alert), logged
   `la:<fixture>:<event>:p<prio>:channel`; create/delete as
-  `la:<fixture>:create|delete:channel:<env>`. The channel is deleted after an
-  accepted end; `la-end-sweep` re-sends a failed end and deletes leftovers.
+  `la:<fixture>:create|delete:channel:<env>`. The channel is kept after the
+  full-time end, because policy 0 stores nothing for a phone offline at the
+  whistle; `la-end-sweep` broadcasts the end once more three hours past kickoff
+  and then deletes it (`channelRetireDue`, bug hunt 2026-11-03 P-C7). An
+  abandoned or postponed match is retired at the next sweep.
 - `la-channel-test`: the harness below.
 - **Migration 158 (2026-11-03, live takes phase 1):** a fixture now has up to
   three channels per environment in `la_channels` `{env: {home, away,
@@ -219,7 +222,7 @@ What Apple documents (checked 2026-11-03):
 | Channel management | `POST/GET/DELETE /1/apps/<bundle>/channels` (`GET …/all-channels` lists them) on `api-manage-broadcast.sandbox.push.apple.com:2195` / `api-manage-broadcast.push.apple.com:2196`. Create body `{"message-storage-policy": 0\|1, "push-type": "LiveActivity"}`, 201 with the id in the `apns-channel-id` response header (base64, size not fixed). Delete 204. Token auth, same JWT. [Doc](https://developer.apple.com/documentation/usernotifications/sending-channel-management-requests-to-apns) |
 | Limits | 10,000 channels per environment. Channels cannot cross environments. The policy cannot be changed after creation. |
 | Broadcast | `POST /4/broadcasts/apps/<bundle>` on the normal `api(.sandbox).push.apple.com:443`. Headers `apns-channel-id`, `apns-push-type: liveactivity`, `apns-priority`, `apns-expiration` (required). **No `apns-topic`** in Apple's table, and a broadcast without it was accepted (200, probe below). 5 KB payload cap. [Doc](https://developer.apple.com/documentation/usernotifications/sending-broadcast-push-notification-requests-to-apns) |
-| Storage policy | We use **0, No Message Stored**. Apple: "For activities with frequent updates like sports scores, use No Message Storage, which allows a higher publishing budget." Policy 1 keeps the latest *deferred* message for a phone that was offline; it does not replay to a later subscriber (the start payload already carries the current score). On policy 0 `apns-expiration` must be 0, or the message is rejected. An offline phone catches up on the next minute's update; the sweep re-sends a missed end. |
+| Storage policy | We use **0, No Message Stored**. Apple: "For activities with frequent updates like sports scores, use No Message Storage, which allows a higher publishing budget." Policy 1 keeps the latest *deferred* message for a phone that was offline; it does not replay to a later subscriber (the start payload already carries the current score). On policy 0 `apns-expiration` must be 0, or the message is rejected. An offline phone catches up on the next minute's update; an end is not stored, so the channel stays open after full time and the sweep sends the end once more three hours past kickoff before deleting it (a phone offline for that whole hour keeps its card until iOS ends it). |
 | Start | `input-push-channel: <id>` in the push-to-start `aps`. "If you send this payload to a device that doesn't run iOS 18 or later … the Live Activity doesn't start." A broadcast cannot start an activity. [Doc](https://developer.apple.com/documentation/activitykit/starting-and-updating-live-activities-with-activitykit-push-notifications) |
 | Metrics | Push Notification Console › Channels, production only. |
 

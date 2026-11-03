@@ -7,7 +7,7 @@ import {
   channelManagementBase,
   LA_CHANNEL_STORAGE_POLICY,
 } from "./apns-client.ts";
-import { channelList, laChannelMode, laChannelPrefixes, parseLaChannels, wantsChannel } from "./la-channels.ts";
+import { channelList, channelRetireDue, laChannelMode, laChannelPrefixes, parseLaChannels, wantsChannel } from "./la-channels.ts";
 
 const cs = { homeScore: 1, awayScore: 0, statusLabel: "2H", elapsed: 60, clockStart: null };
 
@@ -99,4 +99,21 @@ Deno.test("on: Darwin 24+ on build 16+ only, unknown iOS or build stays on the t
   assertEquals(wantsChannel("on", new Set(), { token: t, darwin_major: 25, app_build: 12 }), false);
   assertEquals(wantsChannel("on", new Set(), { token: t, darwin_major: 25, app_build: null }), false);
   assertEquals(wantsChannel("on", new Set(), { token: t, darwin_major: 25 }), false);
+});
+
+// P-C7 (bug hunt 2026-11-03): a no-storage channel cannot hold the end for a
+// phone offline at full time, so a finished match keeps its channel for the
+// sweep's second end, three hours past kickoff.
+Deno.test("channelRetireDue: a finished match keeps its channels until kickoff + 3 h", () => {
+  const ko = Date.parse("2026-11-03T20:00:00Z");
+  const at = (h: number) => ko + h * 3600_000;
+  const ft = { ended: true, finished: true, live: false, kickoffMs: ko };
+  assertEquals(channelRetireDue({ ...ft, nowMs: at(2) }), false, "just after the whistle: kept");
+  assertEquals(channelRetireDue({ ...ft, nowMs: at(2.9) }), false, "still inside the hour");
+  assertEquals(channelRetireDue({ ...ft, nowMs: at(3.1) }), true, "then the last end and delete");
+  const abd = { ended: true, finished: false, live: false, kickoffMs: ko };
+  assertEquals(channelRetireDue({ ...abd, nowMs: at(0.5) }), true, "abandoned: at once");
+  const live = { ended: false, finished: false, live: true, kickoffMs: ko };
+  assertEquals(channelRetireDue({ ...live, nowMs: at(3.5) }), false, "extra time still being played");
+  assertEquals(channelRetireDue({ ...live, nowMs: at(6.1) }), true, "six hours: always");
 });

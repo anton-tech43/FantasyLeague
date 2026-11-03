@@ -76,3 +76,28 @@ export function channelList(ch: LaChannels): Array<{ env: APNsEnvironment; audie
   }
   return out;
 }
+
+/// Whether la-end-sweep may send the last end to a fixture's channels and
+/// delete them (bug hunt 2026-11-03, P-C7). Channels are no-storage (policy 0,
+/// so `apns-expiration` must be 0): a phone offline at full time never gets
+/// the end, and a deleted channel cannot reach it later. So a FINISHED match
+/// keeps its channels until three hours past kickoff (about an hour after the
+/// whistle, after the 30 minutes the final score is shown), and the sweep then
+/// broadcasts the end once more before deleting: a phone back online by then
+/// loses the card. A match that ended any other way (abandoned, postponed) is
+/// retired at once, as before; six hours past kickoff always.
+/// ponytail: one re-send, not a schedule; a phone offline for the whole hour
+/// still keeps its card until iOS's own limit. Upgrade: a policy-1 channel
+/// (stores the latest message) if Apple's budget allows it for scores.
+export function channelRetireDue(a: {
+  ended: boolean; // FT/AET/PEN or ABD/CANC/PST/AWD/WO
+  finished: boolean; // FT/AET/PEN: an end was broadcast at the whistle
+  live: boolean;
+  kickoffMs: number;
+  nowMs: number;
+}): boolean {
+  const past = (h: number) => a.kickoffMs < a.nowMs - h * 3600_000;
+  if (past(6)) return true;
+  if (past(3) && !a.live) return true;
+  return a.ended && !a.finished;
+}

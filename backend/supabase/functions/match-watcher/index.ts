@@ -65,7 +65,7 @@ import {
   sendLiveActivityPush,
   sendPushNotification,
 } from "../_shared/apns-client.ts";
-import { channelList, laChannelMode, laChannelPrefixes, type LaChannels, parseLaChannels, wantsChannel } from "../_shared/la-channels.ts";
+import { channelList, channelRetireDue, laChannelMode, laChannelPrefixes, type LaChannels, parseLaChannels, wantsChannel } from "../_shared/la-channels.ts";
 import { audienceFor, carryNotes, LA_AUDIENCES, type LaAudience, noteSig, parseTakeNotes, planUpdate, takesRow, type TakeNotes } from "../_shared/la-notes.ts";
 import { WC_COUNTRY_META, wcStatusLabel } from "../_shared/wc-countries.ts";
 import {
@@ -812,11 +812,11 @@ async function sweepLiveActivities(
     const k = `${x.res.status ?? "?"} ${x.res.reason ?? ""}`.trim();
     reasons[k] = (reasons[k] ?? 0) + 1;
   }
-  // Channels left on a fixture that is over (157): the full-time end
-  // broadcast failed, or the delete after it did. Re-send the end, then
-  // delete. ponytail: if only the delete failed, this second end shortens the
-  // final score's 30 minutes to the time since full time + 1 min; rare (two
-  // APNs calls in a row, one ok), so not tracked separately.
+  // Channels on a fixture that is over (157): kept after the full-time end so
+  // a phone offline at the whistle can still be reached (P-C7). Once
+  // channelRetireDue says so, send the end again and delete. ponytail: after
+  // extra time the whistle is ~2h35 past kickoff, so this second end can cut
+  // the final score's 30 minutes by a few; rare, accepted.
   const channelsSwept: Array<Record<string, unknown>> = [];
   const { data: chanRows } = await supabase.from("match_status_state")
     .select("fixture_id, status, kickoff_time, home_goals, away_goals, la_note, la_channels")
@@ -824,7 +824,13 @@ async function sweepLiveActivities(
   for (const st of chanRows ?? []) {
     const status = st.status as string;
     const kickoff = st.kickoff_time as string;
-    const over = ENDED_STATUSES.has(status) || (kickoff < cutoff && !LIVE_STATUSES_LA.has(status)) || kickoff < giveUp;
+    const over = channelRetireDue({
+      ended: ENDED_STATUSES.has(status),
+      finished: FINISHED_STATUSES.has(status),
+      live: LIVE_STATUSES_LA.has(status),
+      kickoffMs: Date.parse(kickoff),
+      nowMs: Date.now(),
+    });
     if (!over) continue;
     // The end carries no take note, so every audience gets the same one.
     for (const { env, audience, channelId } of channelList(parseLaChannels(st.la_channels))) {
@@ -2513,14 +2519,13 @@ async function handleRequest(req: Request): Promise<Response> {
             // which reads is_active tokens, ends it later — deactivating it
             // here left the score on her lock screen (bug hunt 2026-10-27).
             await deactivateTokens(supabase, "live_activity_tokens", ended.filter((e) => e.res.success).map((e) => e.token));
-            // A channel whose end was accepted is deleted now (Apple: delete
-            // once the event is over; an accepted broadcast is still
-            // delivered). A failed end leaves it for la-end-sweep.
+            // The channels stay open after the end: they store nothing, so a
+            // phone offline now would never get it. la-end-sweep sends the end
+            // once more three hours past kickoff and then deletes them
+            // (channelRetireDue, P-C7). A failed end waits for that too.
             // No take note on the end (only the shootout's), so every
             // audience gets the same one.
-            for (const b of await broadcastAll(() => ({ event: "end", contentState, dismissalSeconds: 1800 }))) {
-              if (b.res.success) await retireChannel(supabase, fixtureId, b.env, b.audience, b.channelId);
-            }
+            await broadcastAll(() => ({ event: "end", contentState, dismissalSeconds: 1800 }));
             laEnded = true;
             laSig = sig;
           } else if (isLive && !laStarted && prior !== null) {

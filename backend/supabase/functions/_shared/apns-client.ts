@@ -359,8 +359,11 @@ export async function sendLiveActivityPush(
 /// Message (1) stores the last deferred message for a phone that was OFFLINE
 /// when it went out; it does not replay anything to a later subscriber (the
 /// start payload already carries the current score). An offline phone heals on
-/// the next minute's update, and la-end-sweep re-sends the end. The policy
-/// cannot be changed after creation, and with 0 `apns-expiration` must be 0.
+/// the next minute's update. The end is not stored for it either, so the
+/// channel is kept until three hours past kickoff and la-end-sweep broadcasts
+/// the end once more before deleting it (channelRetireDue in la-channels.ts).
+/// The policy cannot be changed after creation, and with 0 `apns-expiration`
+/// must be 0.
 export const LA_CHANNEL_STORAGE_POLICY = 0;
 
 /// Channel management lives on its own hosts and ports, separate per
