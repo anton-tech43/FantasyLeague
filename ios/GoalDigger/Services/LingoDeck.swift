@@ -1137,6 +1137,7 @@ func lingoDeckSelfCheck(bundled: LingoContent) {
         ("Newcastle", "Newcastle United"), ("Bournemouth", "AFC Bournemouth"),
         ("Man Utd", "Manchester United"), ("Spurs", "Tottenham Hotspur"),
         ("Wolves", "Wolverhampton Wanderers"), ("West Ham", "West Ham United"),
+        ("Birmingham", "Birmingham City"),   // Aston Villa's rival
     ] {
         assert(MatchContext.sameClub(feed, seeded), "sameClub missed \(feed) / \(seeded)")
     }

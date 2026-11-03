@@ -74,6 +74,14 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         assert((try? JSONDecoder().decode(TeamPageContent.self, from: Data(#"{"cards":{}}"#.utf8))) != nil
                && (try? JSONDecoder().decode(TeamPageContent.self, from: Data(#"{"schema_version":"2","cards":{}}"#.utf8))) != nil,
                "a team page without a numeric schema_version does not show")
+        // Every distinct team_pages.cards.rivalry.rival on 2026-11-04 (D-C9:
+        // Birmingham City lost its crest when Coventry's rival changed). Add a
+        // name here whenever a rival changes in the data.
+        let rivals = ["Tottenham Hotspur", "Birmingham City", "Southampton", "Fulham", "Crystal Palace", "Aston Villa",
+                      "Brighton", "Liverpool", "Chelsea", "Leeds United", "Norwich City", "Manchester United",
+                      "Sunderland", "Derby County", "Arsenal", "Newcastle United"]
+        let crestless = rivals.filter { RivalryCard(updatedAt: nil, text: "", talkingPoint: nil, rival: $0).rivalCrestURL == nil }
+        assert(crestless.isEmpty, "rivalry card has no crest for \(crestless)")
         Task { @MainActor in
             let ordered = await LatestOnlyQueue.selfCheck()
             assert(ordered, "push registrations can overtake each other; the server may keep the older follow set")
