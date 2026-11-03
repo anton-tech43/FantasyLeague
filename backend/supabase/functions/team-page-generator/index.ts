@@ -1257,6 +1257,7 @@ async function updateDynamicFields(
         const { data: rankRows } = await supabase
           .from("teams")
           .select("id, api_football_id, strength_rank")
+          .neq("entity_type", "tournament") // 45 is Everton AND the FA Cup row
           .or(`id.eq.${team.id},api_football_id.eq.${nextFixture.opponent_api_id}`);
         const mine = rankRows?.find((r) => r.id === team.id)?.strength_rank as number | null;
         const theirs = rankRows?.find((r) =>
@@ -1790,6 +1791,7 @@ async function updateWcDynamicFields(
     const { data: vRows } = await supabase
       .from("teams")
       .select("id, api_football_id, strength_rank")
+      .neq("entity_type", "tournament") // a country's id can be a league's (2, 3)
       .or(vOrParts.join(","));
     const myRank = (vRows?.find((r) => r.id === team.id)?.strength_rank as number | null) ?? null;
     const oppRank = firstUpcoming?.opponentApiId
@@ -1903,6 +1905,10 @@ async function loadOpponentCardInfo(
     .from("teams")
     .select("id, display_name")
     .eq("api_football_id", opponentApiId)
+    // A tournament row's api_football_id is a LEAGUE id: 45 is Everton and the
+    // FA Cup, 48 West Ham and the League Cup. Two rows made maybeSingle() fail,
+    // so Everton's opponents had no "their ones to watch" (bug hunt D-C1).
+    .neq("entity_type", "tournament")
     .maybeSingle();
   if (!oppTeam) return null;
 
