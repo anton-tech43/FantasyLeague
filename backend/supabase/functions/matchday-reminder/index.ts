@@ -374,16 +374,19 @@ serve(async (req) => {
       const reminded = remindedByFixture.get(cand.fixtureId) ?? new Set<string>();
       remindedByFixture.set(cand.fixtureId, reminded);
       // P-C6: the other side of a derby reminded in an EARLIER run already
-      // reached its dual followers; this run's set cannot know that.
+      // reached its dual followers; this run's set cannot know that. Judged by
+      // the other side's logged send, not its claim: a run that claimed and
+      // then died sent nothing, and its dual followers would get no reminder.
       let opponentClaimed = false;
       if (cand.opponentId) {
-        const { data: oppClaim } = await supabase
-          .from("matchday_reminders_sent")
-          .select("team_id")
-          .eq("team_id", cand.opponentId)
-          .eq("kickoff_time", kickoff.toISOString())
-          .maybeSingle();
-        opponentClaimed = !!oppClaim;
+        const { data: oppSent } = await supabase
+          .from("pipeline_health")
+          .select("id")
+          .eq("stage", "apns_send")
+          .eq("status", "success")
+          .eq("target", `matchday_reminder:${cand.opponentId}:${cand.fixtureId}`)
+          .limit(1);
+        opponentClaimed = (oppSent ?? []).length > 0;
       }
       const tokens = tokensStillToRemind(tokenPage as unknown as ReminderToken[], reminded, cand.opponentId, opponentClaimed) as unknown as Array<Record<string, unknown>>;
       for (const t of tokens) reminded.add(t.apns_token as string);
