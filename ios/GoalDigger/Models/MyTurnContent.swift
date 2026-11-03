@@ -396,6 +396,25 @@ struct QuizPack: Codable, Identifiable, Hashable {
     /// "His Club" packs are keyed `club-<kebab club id>`; the Quiz tab shows
     /// exactly one of them, for the club selected in His Team.
     var isClubPack: Bool { id.hasPrefix("club-") }
+
+    /// Every line she reads, run through `fill` (AppState.personalise). The
+    /// live packs carry team-page one-liners, and the routine writes
+    /// "[his name]" into them by design: unfilled, she read the bracket
+    /// (bug hunt 2026-11-03 D-C3). Applied where QuizView reads its packs.
+    func personalised(_ fill: (String) -> String) -> QuizPack {
+        QuizPack(id: id, label: fill(label), questions: questions.map { q in
+            MyTurnQuestion(id: q.id, difficulty: q.difficulty, verified: q.verified, question: fill(q.question),
+                           options: q.options.map(fill), answer: q.answer, explanation: fill(q.explanation),
+                           use: q.use.map(fill), useType: q.useType, image: q.image, player: q.player,
+                           answerImage: q.answerImage)
+        })
+    }
+}
+
+/// A name placeholder the content pipelines write for the app to fill:
+/// [his name], [Her name's], {name}. True when one is still in the text.
+func hasNamePlaceholder(_ text: String) -> Bool {
+    text.range(of: #"\[(his|her)\b|\{(his_|her_)?name\}"#, options: [.regularExpression, .caseInsensitive]) != nil
 }
 
 /// What the line under a question is for. The app labels it accordingly.

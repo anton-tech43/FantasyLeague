@@ -59,6 +59,14 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         assert(LiveClubPack.clubSelfCheck(), "the club pack misreads form or a shootout")
         assert(LiveSquadPack.injurySelfCheck(), "an injured man got a line that sends her looking for him")
         assert(LingoCalendar.selfCheck(), "the transfer window is open on the wrong days")
+        let named = QuizPack(id: "t", label: "t", questions: [MyTurnQuestion(
+            id: "q", difficulty: 1, question: "[His name] asks", options: ["[her name]", "[Her name's] call"], answer: 0,
+            explanation: "the kind of chances that get [his name] off the sofa", use: "[His name's] one to watch")])
+            .personalised(AppState.shared.personalise).questions[0]
+        assert(!([named.question, named.explanation, named.use ?? ""] + named.options).contains(where: hasNamePlaceholder)
+               && hasNamePlaceholder("get [his name] off") && hasNamePlaceholder("[Her name's] call") && hasNamePlaceholder("hi {name}")
+               && !hasNamePlaceholder("Arsenal [4-3 pens] his name"),
+               "a quiz line keeps [his name] for her to read")
         Task { @MainActor in
             let ordered = await LatestOnlyQueue.selfCheck()
             assert(ordered, "push registrations can overtake each other; the server may keep the older follow set")

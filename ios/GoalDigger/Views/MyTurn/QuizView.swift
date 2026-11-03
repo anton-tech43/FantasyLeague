@@ -4,6 +4,7 @@ import SwiftUI
 /// explanation is where the learning happens, the score is not. No streaks,
 /// no daily goals, no reminders. A round in progress is paused, never lost.
 struct QuizView: View {
+    @Environment(AppState.self) private var appState
     let content: QuizContent
     @Bindable var store: MyTurnStore
     /// His Team's selected club (Team.rawValue, snake_case). Nil hides the
@@ -36,7 +37,9 @@ struct QuizView: View {
     @State private var showMore = false
 
     private var livePacks: [QuizPack] { [livePack, squadPack, leaguePack, opponentPack].compactMap { $0 } }
-    private var allPacks: [QuizPack] { content.packs + livePacks }
+    /// Personalised here, once, so every line on screen (question, options,
+    /// answer, the line to use, the missed-ones list) has its name filled.
+    private var allPacks: [QuizPack] { (content.packs + livePacks).map { $0.personalised(appState.personalise) } }
 
     /// The basics first: it is the only pack that assumes nothing. Then his
     /// squad, his club now, his club's history, the league, then the rest.
@@ -93,7 +96,14 @@ struct QuizView: View {
     private var currentQuestion: MyTurnQuestion? {
         guard let round, !round.finished, let pack = roundPack, round.index < round.questionIds.count else { return nil }
         guard let qid = round.questionIds[safe: round.index] else { return nil }
-        return pack.questions.first { $0.id == qid }
+        let q = pack.questions.first { $0.id == qid }
+        #if DEBUG
+        if let q {
+            assert(!([q.question, q.explanation, q.use ?? ""] + q.options).contains(where: hasNamePlaceholder),
+                   "quiz \(q.id) shows a name placeholder unfilled")
+        }
+        #endif
+        return q
     }
 
     var body: some View {

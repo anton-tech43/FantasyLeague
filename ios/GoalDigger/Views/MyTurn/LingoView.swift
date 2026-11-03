@@ -1464,6 +1464,7 @@ struct OpponentLesson {
 }
 
 struct OpponentLessonView: View {
+    @Environment(AppState.self) private var appState
     let lesson: OpponentLesson
     let onStart: () -> Void
     let onExit: () -> Void
@@ -1560,8 +1561,14 @@ struct OpponentLessonView: View {
             .minimumScaleFactor(0.6)
     }
 
-    private func quote(_ text: String) -> some View {
-        Text("\u{201C}\(text.hasSuffix(".") ? String(text.dropLast()) : text)\u{201D}")
+    /// A one-liner from his page: the routine writes "[his name]" into them by
+    /// design, so it is filled here (bug hunt 2026-11-03 D-C3).
+    private func quote(_ raw: String) -> some View {
+        let text = appState.personalise(raw)
+        #if DEBUG
+        assert(!hasNamePlaceholder(text), "lesson quote shows a name placeholder unfilled: \(text)")
+        #endif
+        return Text("\u{201C}\(text.hasSuffix(".") ? String(text.dropLast()) : text)\u{201D}")
             .font(.jakarta(14, weight: .italic))
             .foregroundColor(.softBlush)
             .lineSpacing(4)
