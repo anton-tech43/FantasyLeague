@@ -5,7 +5,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
-import { callClaude } from "../_shared/claude-client.ts";
+import { callClaude, refuseDormantPaidCall, singleTeamId } from "../_shared/claude-client.ts";
 import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 import { triggerFunction } from "../_shared/trigger.ts";
 import { sanitizeText, wrapExternalData } from "../_shared/input-sanitizer.ts";
@@ -665,7 +665,11 @@ serve(async (req) => {
   const supabase = getSupabaseClient();
 
   try {
-    const payload: TriggerPayload = await req.json();
+    const payload: TriggerPayload = await req.json().catch(() => ({} as TriggerPayload));
+    // COST-1: the flag used to be checked only by the caller (data-fetcher), so a
+    // direct call or matchday-scheduler spent regardless. Fail closed here too.
+    const refused = refuseDormantPaidCall("content-generator", "CONTENT_GENERATOR_ENABLED", singleTeamId(payload?.team_id));
+    if (refused) return refused;
     const { team_id, trigger, fetch_log_ids, fixture_id, kickoff_time, opponent } = payload;
 
     // Get team info

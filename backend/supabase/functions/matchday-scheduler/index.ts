@@ -1,16 +1,24 @@
 // matchday-scheduler/index.ts
-// Goal Digger — Daily 07:00 UTC, checks API-Football for today's fixtures
-// Schedules content generation at kickoff - 90 minutes for each matched team
+// Goal Digger — DORMANT. Once checked API-Football for today's fixtures and
+// fired content-generator (a paid Claude call) per fixture of ours. No cron
+// calls it; gd-matchday (claude.ai routine) produces matchday content.
+//
+// COST-1 (bug hunt 2026-11-03 E-C2/O-C1): it used to loop every fixture today,
+// and its pg_cron path (RPC schedule_matchday_job, which no longer exists, and
+// which was handed SERVICE_KEY to write into cron.job) always fell back to an
+// immediate content-generator call. Now it refuses unless
+// CONTENT_GENERATOR_ENABLED=true and the body names ONE fixture_id, and it
+// triggers content-generator for that fixture only, immediately.
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
 import { triggerFunction } from "../_shared/trigger.ts";
+import { refuseDormantPaidCall } from "../_shared/claude-client.ts";
 import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 import { seasonForLeague, FALLBACK_ACTIVE_LEAGUES, COVERED_CUP_LEAGUES } from "../_shared/league-helpers.ts";
 
 const API_FOOTBALL_BASE = "https://v3.football.api-sports.io";
-const SEND_LEAD_TIME_MS = 90 * 60 * 1000; // 90 minutes before kickoff
 
 interface Fixture {
   fixture: {
@@ -33,6 +41,10 @@ serve(async (req) => {
   // key that triggerFunction + pg_cron present.
   const denied = requireServiceAuth(req);
   if (denied) return denied;
+  const body = await req.json().catch(() => ({}));
+  const fixtureId = Number.isInteger(body?.fixture_id) && body.fixture_id > 0 ? body.fixture_id as number : null;
+  const refused = refuseDormantPaidCall("matchday-scheduler", "CONTENT_GENERATOR_ENABLED", fixtureId ? String(fixtureId) : null);
+  if (refused) return refused;
   const startTime = Date.now();
   const supabase = getSupabaseClient();
 
@@ -91,6 +103,7 @@ serve(async (req) => {
     let scheduledCount = 0;
 
     for (const fixture of fixtures) {
+      if (fixture.fixture.id !== fixtureId) continue;
       // V2.0: only fixtures whose league is in our active set. The fetch
       // already filters by league, but defence-in-depth (API-Football
       // occasionally returns related leagues e.g. a WC qualifier under
@@ -116,8 +129,6 @@ serve(async (req) => {
         : fixture.teams.home.name;
 
       const kickoffTime = new Date(fixture.fixture.date);
-      const sendTime = new Date(kickoffTime.getTime() - SEND_LEAD_TIME_MS);
-      const now = new Date();
 
       // Skip if match has already started or finished
       const matchStatus = fixture.fixture.status.short;
@@ -125,60 +136,14 @@ serve(async (req) => {
         continue;
       }
 
-      if (sendTime > now) {
-        // Future send — schedule via pg_cron one-off job
-        const minute = sendTime.getUTCMinutes();
-        const hour = sendTime.getUTCHours();
-        const day = sendTime.getUTCDate();
-        const month = sendTime.getUTCMonth() + 1;
-        const cronExpr = `${minute} ${hour} ${day} ${month} *`;
-        const jobName = `matchday-${ourTeam.id}-${today}`;
-
-        const supabaseUrl = Deno.env.get("SUPABASE_URL");
-        // SERVICE_KEY = new-model sb_secret_*; legacy JWT as transition fallback.
-        const serviceKey =
-          Deno.env.get("SERVICE_KEY") ??
-          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-        // Create one-off pg_cron job
-        const { error: cronError } = await supabase.rpc("schedule_matchday_job", {
-          job_name: jobName,
-          cron_expression: cronExpr,
-          function_url: `${supabaseUrl}/functions/v1/content-generator`,
-          service_key: serviceKey,
-          payload: JSON.stringify({
-            team_id: ourTeam.id,
-            trigger: "matchday",
-            fixture_id: String(fixture.fixture.id),
-            kickoff_time: kickoffTime.toISOString(),
-            opponent,
-          }),
-        });
-
-        if (cronError) {
-          // Fallback: trigger immediately if cron scheduling fails
-          console.warn(`pg_cron scheduling failed for ${jobName}, triggering immediately:`, cronError);
-          await triggerFunction("content-generator", {
-            team_id: ourTeam.id,
-            trigger: "matchday",
-            fixture_id: String(fixture.fixture.id),
-            kickoff_time: kickoffTime.toISOString(),
-            opponent,
-          });
-        }
-
-        scheduledCount++;
-      } else {
-        // Send time has passed — trigger immediately
-        await triggerFunction("content-generator", {
-          team_id: ourTeam.id,
-          trigger: "matchday",
-          fixture_id: String(fixture.fixture.id),
-          kickoff_time: kickoffTime.toISOString(),
-          opponent,
-        });
-        scheduledCount++;
-      }
+      await triggerFunction("content-generator", {
+        team_id: ourTeam.id,
+        trigger: "matchday",
+        fixture_id: String(fixture.fixture.id),
+        kickoff_time: kickoffTime.toISOString(),
+        opponent,
+      });
+      scheduledCount++;
 
       await logPipelineEvent(supabase, {
         team_id: ourTeam.id,

@@ -9,13 +9,13 @@
 // DORMANT (CONTENT-7): the 'team-season-state-daily' cron was UNSCHEDULED in
 // migration 022 — the live season primer is produced by the gd-season-state
 // claude.ai routine (subscription quota). This Edge function still calls Claude
-// per team, so do NOT re-invoke it without a team_id: a no-team_id call loops
-// callClaude across every team (paid API, the BACKFILL_RULES anti-pattern).
+// per team. Since 2026-11-03 the code refuses anything but one team_id with
+// SEASON_STATE_GENERATOR_ENABLED=true (refuseDormantPaidCall, COST-1).
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
-import { callClaude } from "../_shared/claude-client.ts";
+import { callClaude, refuseDormantPaidCall, singleTeamId } from "../_shared/claude-client.ts";
 import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 import { wrapExternalData } from "../_shared/input-sanitizer.ts";
 import type { Team } from "../_shared/types.ts";
@@ -143,17 +143,14 @@ serve(async (req) => {
 
   try {
     const payload: Payload = await req.json().catch(() => ({}));
-    const teamFilter = payload.team_id;
+    const teamFilter = singleTeamId(payload?.team_id);
+    // COST-1: an empty body used to loop callClaude over all 136 teams.
+    const refused = refuseDormantPaidCall("team-season-state-generator", "SEASON_STATE_GENERATOR_ENABLED", teamFilter);
+    if (refused) return refused;
 
-    let teams: Team[];
-    if (teamFilter) {
-      const { data } = await supabase.from("teams").select("*").eq("id", teamFilter).single();
-      if (!data) throw new Error(`Team not found: ${teamFilter}`);
-      teams = [data];
-    } else {
-      const { data } = await supabase.from("teams").select("*").order("id");
-      teams = data ?? [];
-    }
+    const { data } = await supabase.from("teams").select("*").eq("id", teamFilter).single();
+    if (!data) throw new Error(`Team not found: ${teamFilter}`);
+    const teams: Team[] = [data];
 
     const results: Record<string, string> = {};
 
@@ -176,10 +173,6 @@ serve(async (req) => {
         });
       }
 
-      // Be polite to the Claude API rate limit when batching all teams
-      if (teams.length > 1) {
-        await new Promise((r) => setTimeout(r, 2000));
-      }
     }
 
     return new Response(JSON.stringify({ success: true, results }), {

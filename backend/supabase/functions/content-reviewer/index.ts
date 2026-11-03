@@ -5,7 +5,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { getSupabaseClient } from "../_shared/supabase-client.ts";
-import { callClaude } from "../_shared/claude-client.ts";
+import { callClaude, refuseDormantPaidCall } from "../_shared/claude-client.ts";
 import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
 import { triggerFunction } from "../_shared/trigger.ts";
 import type { ReviewBotResult, ReviewNote } from "../_shared/types.ts";
@@ -184,7 +184,13 @@ serve(async (req) => {
   const supabase = getSupabaseClient();
 
   try {
-    const { content_item_id, team_id }: ReviewRequest = await req.json();
+    const { content_item_id, team_id }: ReviewRequest = await req.json().catch(() => ({} as ReviewRequest));
+    // COST-1: one content item, and only while the content pipeline is switched on.
+    const itemId = typeof content_item_id === "string" &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(content_item_id)
+      ? content_item_id : null;
+    const refused = refuseDormantPaidCall("content-reviewer", "CONTENT_GENERATOR_ENABLED", itemId);
+    if (refused) return refused;
 
     // Fetch the draft content item
     const { data: item, error: itemErr } = await supabase

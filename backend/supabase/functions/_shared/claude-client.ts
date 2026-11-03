@@ -18,8 +18,41 @@
 // first A1 generation when only PL data was in the prompt input. Sonnet 4.5
 // is the model docs/archive/BUILD_PLAN.md / docs/archive/PROMPTS.md originally specified.
 const CLAUDE_MODEL = "claude-sonnet-4-5-20250929";
-const MAX_RETRIES = 3;
-const RETRY_DELAYS = [30_000, 120_000, 600_000]; // 30s, 2min, 10min
+// Retry only what can succeed on a second try: 429, 5xx, and a network error.
+// A 4xx is the request's fault (bad key, bad body) and is thrown at once.
+// Total sleep 2+8+20 = 30 s, well inside the Edge wall clock; the old
+// 30 s/2 min/10 min schedule outlived the isolate (bug hunt 2026-11-03 O-C5).
+const RETRY_DELAYS = [2_000, 8_000, 20_000];
+const MAX_RETRIES = RETRY_DELAYS.length;
+
+export function isRetryableStatus(status: number): boolean {
+  return status === 429 || status >= 500;
+}
+
+/**
+ * COST-1 for the dormant Claude callers (team-season-state-generator,
+ * matchday-scheduler, content-generator, content-reviewer). Each one used to
+ * loop callClaude over every team or fixture when called with an empty body,
+ * guarded only by a comment (bug hunt 2026-11-03 E-C2/O-C1). Refuse unless
+ * the function's own flag is exactly "true" AND the request names exactly
+ * one target. Returns the refusal, or null to go ahead.
+ */
+export function refuseDormantPaidCall(fn: string, flag: string, target: string | null): Response | null {
+  const refuse = (status: number, error: string) =>
+    new Response(JSON.stringify({ error }), { status, headers: { "Content-Type": "application/json" } });
+  if (Deno.env.get(flag) !== "true") {
+    return refuse(403, `Refused: ${fn} is dormant and calls Claude (paid API credit). It runs only with ${flag}=true. Live content comes from the claude.ai routines; see BACKFILL_RULES.md / CLAUDE.md.`);
+  }
+  if (!target) {
+    return refuse(400, `Refused: ${fn} needs exactly one explicit target in the body. It never loops teams or fixtures (CLAUDE.md hard rule).`);
+  }
+  return null;
+}
+
+/** One team id or null: a string shaped like teams.id, never an array or empty. */
+export function singleTeamId(v: unknown): string | null {
+  return typeof v === "string" && /^[a-z0-9_]{2,40}$/.test(v) ? v : null;
+}
 
 interface ClaudeMessage {
   role: "user" | "assistant";
@@ -68,8 +101,9 @@ export async function callClaude(request: ClaudeRequest): Promise<ClaudeResponse
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    let response: Response | null = null;
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -78,22 +112,16 @@ export async function callClaude(request: ClaudeRequest): Promise<ClaudeResponse
         },
         body: JSON.stringify(body),
       });
-
-      if (response.ok) {
-        return await response.json() as ClaudeResponse;
-      }
-
-      const status = response.status;
-      // Don't retry on client errors (except rate limits)
-      if (status >= 400 && status < 500 && status !== 429) {
-        const errorBody = await response.text();
-        throw new Error(`Claude API error ${status}: ${errorBody}`);
-      }
-
-      // Retryable error (5xx or 429)
-      lastError = new Error(`Claude API error ${status}`);
     } catch (e) {
+      // Network error: retryable.
       lastError = e instanceof Error ? e : new Error(String(e));
+    }
+
+    if (response) {
+      if (response.ok) return await response.json() as ClaudeResponse;
+      const errorBody = await response.text().catch(() => "");
+      lastError = new Error(`Claude API error ${response.status}: ${errorBody.slice(0, 500)}`);
+      if (!isRetryableStatus(response.status)) throw lastError;
     }
 
     if (attempt < MAX_RETRIES) {
