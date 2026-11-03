@@ -77,8 +77,6 @@ const PLAIN = {
 "cron.sweep": "An hourly sweep that picks up anything written in the last hour that deserves to interrupt her, and sends it.",
 "edge.notifsender": "The single door between the feed and her lock screen. Nothing written by the AI can reach her phone without coming through here.",
 "g.pushgate": "The rule that decides whether a piece of writing is worth a buzz or should just sit quietly in the feed. Most things sit quietly.",
-"cron.morning": "The 8am alarm on a match day.",
-"edge.morning": "The morning message on a day his club plays. Written by hand once, reused forever — no AI involved.",
 "cron.reminder": "The 7am alarm for the match reminder.",
 "edge.reminder": "Tells her his club plays today, with the kickoff time converted into whatever time zone her phone is in.",
 "cron.prep": "The day-before reminder. It exists, it is switched off, and it stays off until the next version of the app is in the store.",

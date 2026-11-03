@@ -47,7 +47,6 @@ const INDEX = [
   ["data-fetcher/","Every 2 hours. 9 RSS feeds plus ~7 API-Football endpoints per club into raw_fetch_logs. No model."],
   ["team-page-generator/","Two modes. dynamic_only rewrites the numbers with no model; full rebuilds a page with one and costs API credits."],
   ["notification-sender/","The single APNs gate for content. Hourly sweep plus on-demand. Per-team throttle, tier filter."],
-  ["morning-push/","Daily game-day push at 08:00."],
   ["matchday-reminder/","The his-team-plays reminder at 07:00, rendered in the reader's own timezone."],
   ["official-squads/","Reads the Premier League's own squad list as a second source. Added after ~30 wrong shirt numbers were found in the feed."],
   ["content-audit/","Nightly deterministic fact-check of recent content against the real league table. Never mutates, never pushes."],

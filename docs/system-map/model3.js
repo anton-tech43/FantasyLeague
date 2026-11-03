@@ -148,12 +148,6 @@ W("w.0700", 26, "matchday-reminder", "early, because it has to arrive before her
   w:"Tells her his club plays today, with the kickoff time in her own time zone.",
   g:"One job, many time zones — the kickoff is rendered per phone, not once centrally. Getting that wrong is how a push arrives in the middle of the night.", x:["edge.reminder"] }),
 
-T("t.0800", 27, "08:00", "daily", { w:"Game day." }),
-W("w.0800", 27, "morning-push", "the second cup of coffee, and only on a day his club actually plays", {
-  k:"code", t:"08:00 UTC daily, but it sends nothing unless there is a fixture.", rd:"Today's fixtures.", wr:"A lock-screen alert.",
-  w:"The “game day” nudge.",
-  g:"Entirely templated. No model is involved in any scheduled push in this product.", x:["edge.morning"] }),
-
 T("t.0800p", 28, "08:00 and 09:00", "PAUSED", { s:"paused", w:"The day-before nudge, switched off." }),
 W("w.0800p", 28, "prep-reminder", "would open the practice screen the day before a match — switched off until the app that opens it is in the store", {
   s:"paused", k:"guard", t:"Switched off. Verified in the live scheduler on 2026-10-07: not active.", rd:"—", wr:"Nothing.",
@@ -254,9 +248,6 @@ M("m.verify", 8, 0, "guard","live","The feed-only contract","checked after every
 M("m.verifyd",8, 1, "code","live","verify-push-eligible.sh","run by hand, and in maintenance",{ w:"Looks for any card that was marked feed-only and nonetheless shows a send.", t:"On demand.", g:"This is the regression test for the rule above it. Rules without a test drift." }),
 M("m.verifyw",8, 2, "guard","live","because a quiet card that buzzes is worse than a loud one","it breaks the promise rather than the product",{ w:"If feed-only can buzz, then every downgrade in the list above means nothing, and the only way to find out is from a person who stopped trusting the notifications.", t:"—" }),
 
-M("m.gameday",10, 0, "surface","live","Game day","08:00, if there is a fixture",{ w:"His club plays today.", t:"08:00 UTC.", x:["edge.morning"] }),
-M("m.gamedayd",10,1, "code","live","morning-push","every tier with a fixture today",{ w:"One templated line. No model, no writing job, no cost.", t:"08:00 UTC.", g:"It sends nothing at all on a day with no fixture." }),
-M("m.gamedayw",10,2, "guard","live","so the day is not a surprise","and she can plan around it",{ w:"The cheapest useful push in the product: it needs no writing, no checking and no AI, and it changes how she plans her day.", t:"—" }),
 
 M("m.remind", 11, 0, "surface","live","Kickoff time","07:00, in her time zone",{ w:"When the match actually starts, where she is.", t:"07:00 UTC.", x:["edge.reminder"] }),
 M("m.remindd",11, 1, "code","live","matchday-reminder","every tier",{ w:"The kickoff is rendered per phone from that phone's own time zone, not once centrally.", t:"07:00 UTC.", g:"Rendering it centrally is how a push arrives in the middle of somebody's night." }),

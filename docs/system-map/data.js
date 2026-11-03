@@ -134,6 +134,13 @@ const M1_NODES = [
       f:["/Users/anton/goaldigger-routines/MATCHDAY_PROMPT.md"],
       g:"It deliberately never pushes — the full-time push already went out from match-watcher minutes earlier." } },
 
+{ id:"cron.lasweep", c:0, r:3, k:"code", s:"live", l:"la-end-sweep", sub:"*/10 * * * *  ·  pg_cron",
+  p:{ w:"Ends Live Activities the minute clock missed: re-sends an end APNs refused and closes broadcast channels left open.",
+      t:"Every 10 minutes, only when la_sweep_due() finds something.",
+      rd:"match_status_state, live_activity_tokens.", wr:"POST to match-watcher?sweep=la.",
+      f:["backend/supabase/migrations/157_la_channels.sql"],
+      g:"The sweep runs before match-watcher's own secret checks, so it survives a tick that cannot poll." } },
+
 { id:"cron.reaper", c:0, r:4, k:"code", s:"live", l:"match-status-reaper", sub:"0 5 * * *  ·  pg_cron",
   p:{ w:"Closes fixtures that got stuck. Pure SQL, no function call.",
       t:"05:00 UTC daily. Verified active.",
@@ -473,14 +480,6 @@ const M1_NODES = [
       f:["scripts/verify-push-eligible.sh","backend/supabase/functions/_shared/push-tiers.ts"],
       g:"Run scripts/verify-push-eligible.sh after every gd-news fire: any push_eligible=false row with a pushed_at or an apns_send row is a violation. A goal reaches every tier in every competition; kickoff and half-time need tier 2; early cup rounds get neither." } },
 
-{ id:"cron.morning", c:0, r:29, k:"code", s:"live", l:"gd-morning-push", sub:"0 8 * * *  ·  pg_cron",
-  p:{ w:"Game day.", t:"08:00 UTC daily. Verified active.", rd:"—", wr:"POST to morning-push.",
-      f:["backend/supabase/migrations/048_*.sql"], g:"—" } },
-
-{ id:"edge.morning", c:2, r:29, k:"code", s:"live", l:"morning-push", sub:"Edge · templated",
-  p:{ w:"Sends “Game day at <team>” to followers of any club with a fixture today.",
-      t:"08:00 UTC.", rd:"fixtures, device_tokens.", wr:"APNs.",
-      f:["backend/supabase/functions/morning-push/index.ts"], g:"No model. Pure template." } },
 
 { id:"cron.reminder", c:0, r:30, k:"code", s:"live", l:"goaldigger-matchday-reminder", sub:"0 7 * * *  ·  pg_cron",
   p:{ w:"The his-team-plays reminder.", t:"07:00 UTC daily. Verified active.", rd:"—", wr:"POST to matchday-reminder.",
@@ -631,10 +630,17 @@ const M1_NODES = [
       f:["backend/supabase/migrations/104_*.sql","backend/supabase/migrations/124_review_fixes_for_122_and_123.sql"],
       g:"These are not optional. pg_net's _http_response table is unlogged and grows forever, and when it bloats, pg_cron starves and reports “job startup timeout” — which looks exactly like every job being broken at once. This is the smallest Supabase compute, six workers." } },
 
+{ id:"cron.events", c:0, r:48, k:"code", s:"live", l:"app_events_rollup + app_events_budget", sub:"40 3 * * * / 17 * * * *  ·  pg_cron",
+  p:{ w:"Usage events: app_events_rollup folds rows older than 13 months into app_events_daily; app_events_budget pushes a developer alert when the table passes 100 MB or 50,000 rows a day.",
+      t:"Roll-up 03:40 UTC daily, budget hourly at :17.",
+      rd:"app_events.", wr:"app_events_daily; an alert through client-error-alert.",
+      f:["backend/supabase/migrations/142_app_events.sql","backend/supabase/migrations/148_usage_delete_and_server_clock.sql"],
+      g:"log_events is callable with the key in the binary, so this alarm is the backstop for a flood (and migration 159 caps one event at 1 KB)." } },
+
 /* ===== BAND 7 — built, then switched off ===== */
 { id:"edge.contentgen", c:2, r:49, k:"model", s:"dormant", l:"content-generator", sub:"Edge · gated off",
   p:{ w:"The original news pipeline. Claude-written content from raw data, with a review chain behind it.",
-      t:"Never. data-fetcher only triggers it when CONTENT_GENERATOR_ENABLED is the string \"true\".",
+      t:"Never. data-fetcher only triggers it when CONTENT_GENERATOR_ENABLED is the string \"true\", and since 2026-11-03 the function itself refuses unless that flag is set and one team_id is named.",
       rd:"raw_fetch_logs.", wr:"Would write content_items.",
       f:["backend/supabase/functions/content-generator/index.ts"],
       g:"THE SINGLE MOST MISLEADING THING IN THE REPOSITORY. docs/archive/PRD.md, docs/archive/AGENT_CONTRACTS.md and docs/archive/PROMPTS.md all describe this as the content pipeline. It is not. Live content comes from claude.ai routines, billed to the subscription; this would bill the API credit balance." } },
@@ -648,13 +654,13 @@ const M1_NODES = [
 { id:"edge.mdsched", c:2, r:51, k:"code", s:"dormant", l:"matchday-scheduler", sub:"Edge · no cron row",
   p:{ w:"Created one-off pg_cron jobs to fire content-generator 90 minutes before kickoff.",
       t:"Never. Verified 2026-10-07: it has no row in cron.job at all, and its only downstream is gated off.",
-      rd:"fixtures.", wr:"Would schedule jobs via schedule_matchday_job().",
+      rd:"fixtures.", wr:"Would trigger content-generator for one fixture. Since 2026-11-03 it refuses unless CONTENT_GENERATOR_ENABLED is \"true\" and one fixture_id is named; the schedule_matchday_job() path is gone (that RPC no longer exists).",
       f:["backend/supabase/functions/matchday-scheduler/index.ts"],
       g:"Migration 003 scheduled it using current_setting('app.settings.*'), which migration 015 documents as returning NULL. It was never re-created with the working accessor." } },
 
 { id:"edge.tssgen", c:2, r:52, k:"model", s:"dormant", l:"team-season-state-generator", sub:"Edge · unscheduled in 022",
   p:{ w:"Daily Claude regeneration of the season primer and its three welcome lines.",
-      t:"Never since migration 022 unscheduled team-season-state-daily.",
+      t:"Never since migration 022 unscheduled team-season-state-daily. Since 2026-11-03 it refuses unless SEASON_STATE_GENERATOR_ENABLED is \"true\" and one team_id is named, so it can no longer loop every team.",
       rd:"standings.", wr:"Would write team_season_state.",
       f:["backend/supabase/functions/team-season-state-generator/index.ts"],
       g:"Its header warns that a call with no team_id loops inference over every team — exactly the shape BACKFILL_RULES.md exists to prevent. Note the trap: gd-season-state's prompt says the Edge path is what runs in production, and this is that path. Neither is writing." } },
@@ -685,6 +691,13 @@ const M1_NODES = [
       f:["backend/supabase/functions/register-dev-device/index.ts"],
       g:"This is why dev_alert_devices is empty, and therefore why client-error-alert is shouting into a void. Fixing the alerting means fixing this first — or inserting a row by hand." } },
 
+{ id:"edge.lachtest", c:2, r:58, k:"code", s:"dormant", l:"la-channel-test", sub:"Edge · run by hand",
+  p:{ w:"An operator tool: starts, updates and ends a test Live Activity on one phone, by token or broadcast channel.",
+      t:"Only when a developer calls it with the service key. No cron, no app caller.",
+      rd:"live_activity_tokens.", wr:"APNs.",
+      f:["backend/supabase/functions/la-channel-test/index.ts"],
+      g:"Gated, but it can reach any production token or channel it is given (bug hunt 2026-11-03, hunter E H1)." } },
+
 { id:"r.wc", c:2, r:57, k:"model", s:"dormant", l:"the World Cup routines", sub:"gd-news-wc · gd-wc-preview · gd-wc-factcheck",
   p:{ w:"A complete parallel content system for 48 national teams, built for the 2026 World Cup.",
       t:"Retired. gd-wc-preview self-exits on a date gate past 2026-07-19; the other two are not in the schedule table. Last commits 2026-05-17 and 2026-06-15.",
@@ -702,6 +715,7 @@ const M1_NODES = [
 
 const M1_EDGES = [
 /* band 1 */
+["cron.lasweep","edge.match-watcher","?sweep=la","flow"],
 ["cron.mw","edge.match-watcher","every minute","flow"],
 ["api.football","edge.match-watcher","polls live fixtures","flow"],
 ["edge.match-watcher","store.msstate","upserts","flow"],
@@ -783,8 +797,6 @@ const M1_EDGES = [
 ["store.content","edge.notifsender","push_eligible only","read"],
 ["edge.notifsender","g.pushgate","","flow"],
 ["g.pushgate","sf.push","claims · throttles · tiers","flow"],
-["cron.morning","edge.morning","","flow"],
-["edge.morning","sf.push","game day","flow"],
 ["cron.reminder","edge.reminder","","flow"],
 ["edge.reminder","sf.push","in her timezone","flow"],
 ["cron.prep","edge.reminder","paused until 2.3 ships","dead"],
@@ -818,6 +830,7 @@ const M1_EDGES = [
 ["cron.hbcheck","store.health","","flow"],
 ["cron.archive","store.content","archives after 7 days","flow"],
 ["cron.sweeps","store.health","deletes past 30 days","flow"],
+["cron.events","store.health","alerts past budget","flow"],
 
 /* band 7 — dormant */
 ["edge.datafetcher","edge.contentgen","only if CONTENT_GENERATOR_ENABLED = \"true\"","dead"],
@@ -989,7 +1002,7 @@ const M2_NODES = [
       g:"Claims the item before sending. Per-team 5-minute throttle, tier filter, matches both scalar and array follows, pages past 1,000 rows.", x:["edge.notifsender"] } },
 
 { id:"fn.live", c:2, r:23, k:"code", s:"live", l:"the other 8 live functions", sub:"reads, pushes, audits",
-  p:{ w:"live-brief-current, live-match-current, quiz-current, delete-my-data, morning-push, matchday-reminder, official-squads, content-audit.",
+  p:{ w:"live-brief-current, live-match-current, quiz-current, delete-my-data, matchday-reminder, official-squads, content-audit.",
       t:"Four are read endpoints the app calls; three are scheduled pushes or syncs; one is the nightly audit.",
       rd:"Their own tables.", wr:"APNs, players, pipeline_health.",
       f:["backend/supabase/functions/content-audit/index.ts"],
