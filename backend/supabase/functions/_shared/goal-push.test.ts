@@ -24,6 +24,8 @@ import {
   type StoredGoalEvent,
   withSaying,
   toStoredGoalEvents,
+  hasUnresolvedScorer,
+  reconcileGoalEvents,
 } from "./goal-push.ts";
 import {
   FT_COPY,
@@ -550,4 +552,26 @@ Deno.test("withDeepLine: before the line to say, and only if it fits", () => {
   eq(withDeepLine("Won 2-0.", undefined), "Won 2-0.", "nothing to add");
   const long = "x".repeat(170);
   eq(withDeepLine(long, "Up to 4th."), long, "never past the lock screen");
+});
+
+// Bug hunt 2026-11-03, P-C1: Chelsea 2-0 Man Utd (1557450). Estêvão's 71' was
+// ruled out after its scorer was stored; the list kept three goals and the
+// After card showed "3–0 Chelsea" under a 2-0.
+Deno.test("reconcileGoalEvents: a ruled-out goal leaves the stored list", () => {
+  const ev = (side: "home" | "away", minute: number, playerApiId: number) =>
+    ({ side, player: "x", playerApiId, minute, extra: null, isOwnGoal: false, isPenalty: false });
+  const stored = [ev("home", 50, 19170), ev("home", 64, 152982), ev("home", 71, 425733)];
+  assert(hasUnresolvedScorer(stored, 2), "a list longer than the score is re-fetched");
+  eq(reconcileGoalEvents(stored, 2, 0).map((e) => e.minute).join(), "50,64", "the latest goal of that side goes");
+  eq(reconcileGoalEvents(stored, 3, 0).length, 3, "a list that fits is unchanged");
+  eq(reconcileGoalEvents(stored, 0, 0).length, 0, "every goal ruled out");
+  // Per side: an away goal never pays for a home goal ruled out.
+  const mixed = [ev("home", 10, 1), ev("away", 20, 2), ev("home", 30, 3)];
+  eq(reconcileGoalEvents(mixed, 1, 1).map((e) => e.minute).join(), "10,20", "home's second goes, away's stays");
+  // Short lists stay short: the feed lags, the re-fetch fills them in.
+  eq(reconcileGoalEvents([ev("home", 10, 1)], 2, 1).length, 1, "short list kept");
+  assert(hasUnresolvedScorer([ev("home", 10, 1)], 2), "short list re-fetched");
+  assert(!hasUnresolvedScorer([ev("home", 10, 1)], 1), "exact list with ids is resolved");
+  assert(hasUnresolvedScorer([{ ...ev("home", 10, 1), playerApiId: null }], 1), "anonymous scorer re-fetched");
+  assert(hasUnresolvedScorer(null, 1) && !hasUnresolvedScorer(null, 0), "no list");
 });

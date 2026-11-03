@@ -89,6 +89,8 @@ import {
   withDeepLine,
   type StoredGoalEvent,
   toStoredGoalEvents,
+  hasUnresolvedScorer,
+  reconcileGoalEvents,
 } from "../_shared/goal-push.ts";
 import {
   halfTimeGoals,
@@ -202,6 +204,12 @@ export function parseGoalEvents(raw: unknown): GoalEvent[] {
 /// as the fixtures poll. Returns [] on any error (network, non-array payload,
 /// API `errors` object) so the caller falls back cleanly to scorer-less copy.
 async function fetchGoalEvents(fixtureId: number, apiKey: string): Promise<GoalEvent[]> {
+  return (await fetchGoalEventsOrNull(fixtureId, apiKey)) ?? [];
+}
+
+/// Same, but null when the feed could not be read, so a re-fetch can tell
+/// "no goals" (every goal ruled out) from "no answer".
+async function fetchGoalEventsOrNull(fixtureId: number, apiKey: string): Promise<GoalEvent[] | null> {
   try {
     const resp = await fetch(
       `${API_FOOTBALL_BASE}/fixtures/events?fixture=${fixtureId}`,
@@ -217,29 +225,14 @@ async function fetchGoalEvents(fixtureId: number, apiKey: string): Promise<GoalE
         `match-watcher: /fixtures/events fixture=${fixtureId} unusable ` +
         `(status=${resp.status}, errors=${JSON.stringify(json?.errors ?? {})})`,
       );
-      return [];
+      return null;
     }
     return parseGoalEvents(json.response);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.warn(`match-watcher: /fixtures/events fixture=${fixtureId} fetch failed:`, msg);
-    return [];
+    return null;
   }
-}
-
-/// True if any stored goal still lacks its scorer id. API-Football publishes a
-/// goal's SCORE a beat before it fills in the player, so the goal-detection
-/// tick can store an anonymous entry (player/id null). A later tick must
-/// re-fetch to back-fill it, or the scorer stays "Goal" with no face forever
-/// (seen live 2026-07-10: Merino's 88' vs Belgium).
-function hasUnresolvedScorer(events: unknown, goalsOnBoard = 0): boolean {
-  if (!Array.isArray(events)) return goalsOnBoard > 0;
-  // Fewer stored goals than the score says: the events feed was empty when the
-  // goal was detected (Napoli 0-1 Arsenal, 2026-09-09: goal_events stayed []
-  // all night because an empty list has nothing "unresolved" in it).
-  if (events.length < goalsOnBoard) return true;
-  return events.some((e) => e != null && typeof e === "object" &&
-    (e as StoredGoalEvent).playerApiId == null);
 }
 
 /// The four values `players.position` holds. Anything else the feed invents is
@@ -286,10 +279,11 @@ async function enrichPhotos(
   };
 }
 
-/// Return prior goal_events with any anonymous scorer back-filled from a fresh
-/// /fixtures/events fetch. No unresolved entry → returns prior unchanged, no
-/// fetch (so this is free on the common path). A fetch that comes back empty
-/// or still-anonymous falls back to prior rather than losing data.
+/// The stored goal list, re-read from the feed and held to the score
+/// (reconcileGoalEvents): anonymous scorers back-filled, a goal the feed has
+/// not published yet waited for, a goal ruled out dropped. A feed that cannot
+/// be read, or comes back empty while the score has goals, falls back to the
+/// prior list (trimmed to the score) rather than losing data.
 async function resolveScorers(
   supabase: ReturnType<typeof getSupabaseClient>,
   fixtureId: number,
@@ -297,9 +291,14 @@ async function resolveScorers(
   priorEvents: StoredGoalEvent[] | null | undefined,
   homeApiId: number,
   awayApiId: number,
+  homeGoals: number,
+  awayGoals: number,
 ): Promise<StoredGoalEvent[] | null> {
-  const fresh = toStoredGoalEvents(await fetchGoalEvents(fixtureId, apiKey), homeApiId, awayApiId);
-  if (fresh.length === 0) return priorEvents ?? null;
+  const priorFit = Array.isArray(priorEvents) ? reconcileGoalEvents(priorEvents, homeGoals, awayGoals) : null;
+  const raw = await fetchGoalEventsOrNull(fixtureId, apiKey);
+  if (raw === null) return priorFit;
+  const fresh = reconcileGoalEvents(toStoredGoalEvents(raw, homeApiId, awayApiId), homeGoals, awayGoals);
+  if (fresh.length === 0 && homeGoals + awayGoals > 0) return priorFit;
   return (await enrichPhotos(supabase, fresh)).events;
 }
 
@@ -2117,6 +2116,8 @@ async function handleRequest(req: Request): Promise<Response> {
                   prior?.goal_events as StoredGoalEvent[] | null | undefined,
                   homeApiId,
                   awayApiId,
+                  homeGoals ?? 0,
+                  awayGoals ?? 0,
                 );
                 if (resolvedFtEvents !== (prior?.goal_events ?? null)) {
                   goalEventsStored = resolvedFtEvents;
@@ -2843,7 +2844,7 @@ async function handleRequest(req: Request): Promise<Response> {
               // articles that copy this list render faces with no join.
               const enriched = await enrichPhotos(
                 supabase,
-                toStoredGoalEvents(events, homeApiId, awayApiId),
+                reconcileGoalEvents(toStoredGoalEvents(events, homeApiId, awayApiId), homeGoals ?? 0, awayGoals ?? 0),
               );
               goalEventsStored = enriched.events;
               if (side !== "both" && scorerLine === null && !waiting) {
@@ -2872,7 +2873,10 @@ async function handleRequest(req: Request): Promise<Response> {
               const events = await fetchGoalEvents(fixtureId, apiFootballKey);
               let roles = new Map<number, ScorerRole | null>();
               if (events.length > 0) {
-                const enriched = await enrichPhotos(supabase, toStoredGoalEvents(events, homeApiId, awayApiId));
+                const enriched = await enrichPhotos(
+                  supabase,
+                  reconcileGoalEvents(toStoredGoalEvents(events, homeApiId, awayApiId), homeGoals ?? 0, awayGoals ?? 0),
+                );
                 goalEventsStored = enriched.events;
                 roles = enriched.roleByApiId;
               }
@@ -2894,12 +2898,15 @@ async function handleRequest(req: Request): Promise<Response> {
                 prior.goal_events as StoredGoalEvent[] | null | undefined,
                 homeApiId,
                 awayApiId,
+                homeGoals ?? 0,
+                awayGoals ?? 0,
               );
             }
           }
 
-          // FULL TIME with goals the list does not have: a 90+4' winner and the
-          // whistle inside one poll. The goal block above only runs while live,
+          // FULL TIME with a list that does not match the score: a 90+4' winner
+          // and the whistle inside one poll, or a goal ruled out after its
+          // scorer was stored (P-C1, 2026-11-03). The goal block above only runs while live,
           // and polling stops after this tick, so back-fill now or the After
           // card and goal_events miss the winner for good (bug hunt 2026-10-27).
           if (
@@ -2914,6 +2921,8 @@ async function handleRequest(req: Request): Promise<Response> {
               prior.goal_events as StoredGoalEvent[] | null | undefined,
               homeApiId,
               awayApiId,
+              homeGoals ?? 0,
+              awayGoals ?? 0,
             );
           }
 

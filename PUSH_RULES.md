@@ -121,6 +121,12 @@ push?" is answerable with one grep**, and §6 does exactly that.
    `push_eligible=false` item with a `pushed_at` or an `apns_send` row is a
    violation of the contract in §2.
 
+### Proposed, not built: "goal ruled out" (Anton decides)
+
+1. **The moment:** a goal push reached her and VAR took the goal back a minute or two later. If she tells him "3-0!" she is wrong in front of him, which is the one thing this product exists to prevent (5 such pushes 21 Oct–1 Nov, bug hunt 2026-11-03, P-C2).
+2. **Against a goal:** as time-critical as the goal it corrects and as unambiguous. Sent only to the phones that goal push reached (same tiers, both sides), once per ruled-out goal that was pushed, decided in match-watcher's score-went-down branch, never in a prompt. Title carries her club's corrected score first ("Chelsea 2-0 Man Utd"), body one line ("Estêvão's goal was ruled out by VAR.").
+3. **Today instead:** nothing buzzes. The Live Activity and the live box show the corrected score within a minute, and the stored goal list drops the goal (`reconcileGoalEvents`, so the After card is right). `detectGoal` in `_shared/goal-push.ts` calls this push noise; building it means overturning that line and adding a §1 row.
+
 ---
 
 ## 6. The check that keeps this page honest

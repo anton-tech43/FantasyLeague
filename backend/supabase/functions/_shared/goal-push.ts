@@ -139,6 +139,43 @@ export interface StoredGoalEvent {
   isPenalty: boolean;
 }
 
+/// The stored goal list must say what the score says. A goal ruled out by VAR
+/// takes the score down; the feed drops the goal from /fixtures/events, but a
+/// list stored before that kept it, and the club page's After card listed a
+/// third goal under a 2-0 (1557450, bug hunt 2026-11-03, P-C1). Keeps each
+/// side's first `home`/`away` goals in time order and drops the rest: a VAR
+/// check takes minutes, so the goal it cancels is that side's latest. A side
+/// with fewer goals than its score is left short (the feed lags; the scorer
+/// re-fetch fills it). Pure; the input is not changed.
+export function reconcileGoalEvents<T extends { side: "home" | "away"; minute: number | null; extra: number | null }>(
+  events: readonly T[],
+  home: number,
+  away: number,
+): T[] {
+  const order = events
+    .map((e, i) => ({ e, i }))
+    .sort((a, b) => (a.e.minute ?? 0) - (b.e.minute ?? 0) || (a.e.extra ?? 0) - (b.e.extra ?? 0) || a.i - b.i);
+  const left = { home, away };
+  const keep = new Set<number>();
+  for (const { e, i } of order) {
+    if (left[e.side] > 0) { left[e.side]--; keep.add(i); }
+  }
+  return events.filter((_e, i) => keep.has(i));
+}
+
+/// True when the stored list cannot be trusted against the score: a different
+/// number of goals (fewer: the feed had not published one yet; more: one was
+/// ruled out) or a goal with no scorer id yet. API-Football publishes a goal's
+/// score a beat before the player (Merino's 88' vs Belgium, 2026-07-10), and
+/// an empty list once stayed empty all night (Napoli 0-1 Arsenal, 2026-09-09).
+/// Until 2026-11-03 only "fewer" counted, so a ruled-out goal stayed (P-C1).
+export function hasUnresolvedScorer(events: unknown, goalsOnBoard = 0): boolean {
+  if (!Array.isArray(events)) return goalsOnBoard > 0;
+  if (events.length !== goalsOnBoard) return true;
+  return events.some((e) => e != null && typeof e === "object" &&
+    (e as StoredGoalEvent).playerApiId == null);
+}
+
 /// Project a fixture's parsed goal events into the live-box storage shape,
 /// tagging each with the playing side (home/away) from the API team ids and
 /// dropping any event that belongs to neither side (defensive). Sorted
