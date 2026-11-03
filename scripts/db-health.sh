@@ -198,6 +198,22 @@ if   [ -z "$MB" ];     then warn "app_events               could not read size"
 elif [ "$MB" -gt 25 ]; then warn "$(printf '%-24s %s MB — over budget: a flood, a stopped roll-up, or index bloat (REINDEX TABLE CONCURRENTLY)' app_events "$MB")"
 else                        note "OK" "$(printf '%-24s %s MB' app_events "$MB")"; fi
 
+# New push tokens a day. Since migration 160 a registration flood is logged,
+# never refused (a global refusal locked real installs out), so this is the
+# alarm on junk growth. Real peaks: 10 device and 43 Live Activity tokens a day.
+TOK=$(q "SELECT (SELECT count(*) FROM public.device_tokens WHERE created_at > now() - interval '1 day'),
+                (SELECT count(*) FROM public.live_activity_tokens WHERE created_at > now() - interval '1 day');")
+if [ -z "$TOK" ]; then
+  warn "new push tokens         could not read"
+else
+  NDT=$(echo "$TOK" | cut -d'|' -f1); NLA=$(echo "$TOK" | cut -d'|' -f2)
+  if [ "$NDT" -gt 200 ] || [ "$NLA" -gt 500 ]; then
+    warn "$(printf '%-24s %s device + %s Live Activity in 24 h — a registration flood? (pipeline_health stage token_register)' 'new push tokens' "$NDT" "$NLA")"
+  else
+    note "OK" "$(printf '%-24s %s device + %s Live Activity in 24 h' 'new push tokens' "$NDT" "$NLA")"
+  fi
+fi
+
 # ----------------------------------------------------------------------
 # 5. Freshness
 # ----------------------------------------------------------------------
@@ -241,15 +257,22 @@ echo "── 7. WHAT CAN THE SHIPPED KEY REACH? ──────────�
 # anon-executable. So this cannot be prevented at creation, only noticed: every
 # CREATE FUNCTION needs its own REVOKE, and this is what catches the one that
 # forgets. Migrations 084/095/096/103 went a year without anybody noticing.
-ALLOWED='register_device_token|register_la_token|save_match_calls|log_events|delete_app_events'
-OPEN=$(q "SELECT string_agg(p.proname, ', ' ORDER BY p.proname)
+# Matched by full signature, not by name: a new overload such as
+# log_events(uuid, jsonb, text) born without its REVOKE must not pass as one of
+# these five (bug hunt 2026-11-03, hunter A hardening 1).
+ALLOWED="'register_device_token(text,text[],text[],integer,text,text)',
+         'register_la_token(text,text,integer,text[],text,text[])',
+         'save_match_calls(text,bigint,jsonb)',
+         'log_events(uuid,jsonb)',
+         'delete_app_events(uuid,integer,text)'"
+OPEN=$(q "SELECT string_agg(p.oid::regprocedure::text, ', ' ORDER BY p.proname)
             FROM pg_proc p
            WHERE p.pronamespace = 'public'::regnamespace
              AND p.prorettype <> 'trigger'::regtype
              AND has_function_privilege('anon', p.oid, 'EXECUTE')
-             AND p.proname !~ '^($ALLOWED)\$';")
+             AND p.oid::regprocedure::text NOT IN ($ALLOWED);")
 if [ -z "$OPEN" ]; then
-  note "OK" "only the app's own RPCs are callable by anon"
+  note "OK" "only the app's five RPCs are callable by anon"
 else
   fail "anon can execute: $OPEN  (add REVOKE EXECUTE ... FROM PUBLIC, anon, authenticated)"
 fi

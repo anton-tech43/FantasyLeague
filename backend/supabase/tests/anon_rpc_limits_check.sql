@@ -28,6 +28,33 @@ BEGIN
     '159: a real app_events row would now be dropped';
 END $$;
 
+-- 160: a flood of new tokens is logged, never refused, and the log stays small.
+DO $$ BEGIN
+  FOR i IN 1..1000 LOOP
+    PERFORM public.register_device_token(md5('zzjunk'||i)||md5('zzjunk2'||i), ARRAY['arsenal'], NULL, 2, 'production');
+  END LOOP;
+  FOR i IN 1..2000 LOOP
+    PERFORM public.register_la_token(md5('zzla'||i)||md5('zzla2'||i), 'push_to_start', NULL, NULL, 'production', ARRAY['arsenal']);
+  END LOOP;
+END $$;
+SET LOCAL ROLE anon;
+SELECT public.register_device_token(md5('zzreal')||md5('zzreal2'), ARRAY['arsenal'], NULL, 2, 'production');
+SELECT public.register_la_token(md5('zzreal')||md5('zzreal2')||md5('zzreal3'), 'push_to_start', NULL, NULL, 'production', ARRAY['arsenal']);
+RESET ROLE;
+DO $$
+DECLARE dt int; la int;
+BEGIN
+  ASSERT EXISTS (SELECT 1 FROM public.device_tokens WHERE apns_token = md5('zzreal')||md5('zzreal2')),
+    '160: a real install was refused during a flood';
+  ASSERT EXISTS (SELECT 1 FROM public.live_activity_tokens WHERE token = md5('zzreal')||md5('zzreal2')||md5('zzreal3')),
+    '160: a real LA token was refused during a flood';
+  SELECT count(*) FILTER (WHERE target = 'rate_limit'), count(*) FILTER (WHERE target = 'la_rate_limit')
+    INTO dt, la FROM public.pipeline_health
+   WHERE stage = 'token_register' AND created_at = now();
+  ASSERT dt BETWEEN 1 AND 2 AND la BETWEEN 1 AND 2,
+    format('160: expected 1-2 log rows per table for a flood, got %s / %s', dt, la);
+END $$;
+
 -- The key in the binary reaches exactly the five app RPCs (plus three trigger
 -- functions Postgres refuses to call outside a trigger).
 DO $$
