@@ -134,20 +134,36 @@ export interface VerdictInput {
   fallback: string;
 }
 
+/// The shot gap at which the numbers call one side on top (pickThreeNumbers'
+/// "were all over them" / "had more of it"). The verdict uses the same line,
+/// so the sentence and the numbers under it never disagree: until 2026-11-03
+/// a 1-0 against 20 shots read "Man City hardly got a look in" above "7–20
+/// shots" (bug hunt D-C14).
+export const SHOT_GAP = 6;
+
+/// The goal list, only when it accounts for every goal. A list that is short
+/// (a scorer never published) or long (a goal ruled out) would put the winner
+/// at the wrong minute; ftSituation applies the same rule to the FT push.
+function trustedGoals(v: VerdictInput): SideGoal[] {
+  return v.goals.length === v.teamScore + v.oppScore ? v.goals : [];
+}
+
 /// The serif line under the score: what kind of game it was, in one sentence
 /// that fits two rows on the card. Facts only, from the score, the half-time
-/// score, the goal minutes and the shot counts.
+/// score, the goal minutes and the shot counts, and never a claim the three
+/// numbers beneath it contradict.
 export function renderVerdict(v: VerdictInput): string {
   if (v.unusualFinish) return v.fallback;
   const { teamScore: gf, oppScore: ga, opponentName: opp } = v;
-  const deciding = decidingGoal(v.goals, gf, ga);
-  const shots = (s: SideStats) => s.shots ?? null;
+  const goals = trustedGoals(v);
+  const deciding = decidingGoal(goals, gf, ga);
+  // A missing count is unknown, not 0 (LIVE_TAKES_PLAN trap 7).
+  const gap = v.mine.shots !== undefined && v.theirs.shots !== undefined ? v.mine.shots - v.theirs.shots : null;
   const onT = (s: SideStats) => s.onTarget ?? null;
 
   if (v.state === "win") {
     if (deciding && deciding.minute >= 85) {
-      const [ms, ts] = [shots(v.mine), shots(v.theirs)];
-      const theyPushed = ms !== null && ts !== null && ts > ms;
+      const theyPushed = gap !== null && gap <= -SHOT_GAP;
       return `Won it in the ${ordinal(Math.floor(deciding.minute))} minute` +
         (theyPushed ? ` after ${opp} had more of the chances.` : `.`);
     }
@@ -157,14 +173,20 @@ export function renderVerdict(v: VerdictInput): string {
       if (v.ht && v.ht.mine - v.ht.theirs >= 2) return `Over by half-time. The second half was a lap of honour.`;
       return `A proper hammering. ${opp} will want to forget this one.`;
     }
-    if (ga === 0) return `A clean sheet, and ${opp} hardly got a look in.`;
+    if (ga === 0) {
+      if (onT(v.theirs) === 0) return `A clean sheet, and ${opp} never had a shot on target.`;
+      if (gap !== null && gap <= -SHOT_GAP) return `A clean sheet, and it took some defending.`;
+      if (gap !== null && gap >= SHOT_GAP) return `A clean sheet, and ${opp} hardly got a look in.`;
+      return `Kept a clean sheet and took the points.`;
+    }
+    // The numbers say "The second half was a formality." for this one.
+    if (v.ht && v.ht.mine - v.ht.theirs >= 2) return `Clear by half-time, and they saw it out.`;
+    if (gf - ga >= 2) return `Won it with a goal to spare.`;
     return `Won it, without ever making it comfortable.`;
   }
 
   if (v.state === "draw") {
-    const lateLeveller = deciding === null && v.goals.length > 0
-      ? v.goals[v.goals.length - 1]
-      : null;
+    const lateLeveller = goals.length > 0 ? goals[goals.length - 1] : null;
     if (lateLeveller && lateLeveller.minute >= 85 && lateLeveller.mine === lateLeveller.theirs) {
       return lateLeveller.ours
         ? `Saved a point in the ${ordinal(Math.floor(lateLeveller.minute))} minute.`
@@ -181,11 +203,11 @@ export function renderVerdict(v: VerdictInput): string {
   }
 
   // loss
-  // A missing count is unknown, not 0 (LIVE_TAKES_PLAN trap 7).
-  const [ms, ts] = [shots(v.mine), shots(v.theirs)];
-  if (ms !== null && ts !== null && ms - ts >= 5) return `${v.teamName} had the chances, ${opp} had the goal${ga === 1 ? "" : "s"}.`;
+  if (gap !== null && gap >= SHOT_GAP) return `${v.teamName} had the chances, ${opp} had the goal${ga === 1 ? "" : "s"}.`;
   if (deciding && deciding.minute >= 85) return `Lost it in the ${ordinal(Math.floor(deciding.minute))} minute. Cruel.`;
   if (ga - gf >= 3) return `A night to forget. Best not to replay it this evening.`;
+  // "Not much in it" on the shots: the score, not the game, went their way.
+  if (gap !== null && gap > -SHOT_GAP) return `Not their day. ${opp} took their chances.`;
   return `Not their day. ${opp} were the better side.`;
 }
 
@@ -217,12 +239,14 @@ export function pickThreeNumbers(v: VerdictInput): NumberRow[] {
   }
   if (mine.shots !== undefined && theirs.shots !== undefined) {
     const gap = mine.shots - theirs.shots;
-    const caption = gap >= 6
+    const caption = gap >= SHOT_GAP
       ? (v.state === "loss" ? `shots. One of those nights.` : `shots. ${team} were all over them.`)
-      : gap <= -6
-      ? (v.state === "win" ? `shots. ${opp} had more of it, ${team} had the goals.` : `shots. ${opp} were on top.`)
+      : gap <= -SHOT_GAP
+      ? (v.state === "win"
+        ? `shots. ${opp} had more of it, ${team} had the goal${v.teamScore === 1 ? "" : "s"}.`
+        : `shots. ${opp} were on top.`)
       : `shots. Not much in it.`;
-    out.push({ rank: Math.abs(gap) >= 6 ? 8 : 3, value: `${mine.shots}–${theirs.shots}`, caption });
+    out.push({ rank: Math.abs(gap) >= SHOT_GAP ? 8 : 3, value: `${mine.shots}–${theirs.shots}`, caption });
   }
   if (v.ht && Math.abs(v.ht.mine - v.ht.theirs) >= 2) {
     out.push({
@@ -235,7 +259,7 @@ export function pickThreeNumbers(v: VerdictInput): NumberRow[] {
   } else if (v.ht && v.ht.mine < v.ht.theirs && v.state !== "loss") {
     out.push({ rank: 9, value: `${v.ht.mine}–${v.ht.theirs}`, caption: `at half-time. They came from behind.` });
   }
-  const deciding = decidingGoal(v.goals, v.teamScore, v.oppScore);
+  const deciding = decidingGoal(trustedGoals(v), v.teamScore, v.oppScore);
   if (deciding && deciding.minute >= 85) {
     out.push({
       rank: 9,
