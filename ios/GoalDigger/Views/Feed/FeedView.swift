@@ -31,6 +31,14 @@ struct FeedView: View {
     @State private var live = LiveBriefPoller.shared
     private var liveBrief: LiveMatchBrief? { live.entityId == activeEntityId ? live.brief : nil }
     @State private var notificationStatus: UNAuthorizationStatus = .authorized
+    /// When `loadInitial` last ran. `.task` fires on every re-appearance, back
+    /// from a story included, and the reload replaced the list with page 1:
+    /// past card 20 the rest vanished, and a story that landed while she read
+    /// pushed every card down one, so she came back a card off (bug hunt
+    /// 2026-11-03 U-C5). Coming back within five minutes keeps the list.
+    // ponytail: past five minutes it still reloads page 1 and can move her;
+    // the upgrade is a `.scrollPosition(id:)` anchor restored after the reload.
+    @State private var loadedAt: Date?
 
     private let pageSize = 20
     private let screenHeight = UIScreen.main.bounds.height
@@ -130,7 +138,14 @@ struct FeedView: View {
         .toolbarBackground(Color.appBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(.hidden, for: .tabBar)
-        .task { await loadInitial() }
+        .task {
+            // An empty or failed feed always reloads: a load cut short by a
+            // tab switch must not leave the skeleton up for five minutes.
+            if let loadedAt, !teamItems.isEmpty, !hasError,
+               Date().timeIntervalSince(loadedAt) < 5 * 60 { return }
+            await loadInitial()
+            if !Task.isCancelled { loadedAt = Date() }
+        }
         .task { await checkNotifications() }
         .onChange(of: activeEntityId) { _, newEntity in
             // Keyed on the entity `teamItems` belongs to, not selectedTeam
