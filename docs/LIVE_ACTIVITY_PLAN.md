@@ -195,7 +195,8 @@ server side of §5 step 3 is deployed **behind `LA_CHANNELS`, unset = off**:
   fixture that still holds a channel.
 - `match-watcher`: `LA_CHANNELS=allowlist` starts only the push-to-start
   tokens whose first 16 hex chars are in `LA_CHANNEL_TOKENS` on the channel;
-  `on` starts every Darwin ≥ 24 row on it. Everyone else gets today's token
+  `on` starts every Darwin ≥ 24 row from app build ≥ 16 on it (`LA_CHANNEL_MIN_BUILD`;
+  build 16 is the only one the channel test has proven, bug hunt 2026-11-03 P-C4). Everyone else gets today's token
   start. The channel is created at the start tick; if that fails, those
   phones get a token start. Every update and end also goes out as one
   broadcast (same content-state, priority, no alert), logged

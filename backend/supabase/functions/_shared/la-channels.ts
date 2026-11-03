@@ -6,8 +6,13 @@
 //   allowlist — only tokens whose first 16 hex chars are in LA_CHANNEL_TOKENS
 //               (comma-separated). No iOS check: the point is to learn what a
 //               given phone and build does with a channel start.
-//   on        — every token registered from Darwin 24+ (iOS 18+). On iOS 17 a
-//               channel start is dropped by the system, so unknown = no.
+//   on        — every token registered from Darwin 24+ (iOS 18+) by app build
+//               16 or later. On iOS 17 a channel start is dropped by the
+//               system; build 16 (2.3) is the only build the channel test has
+//               proven (2026-11-02), and a start APNs accepts but a build
+//               ignores leaves that phone with no card at all, since the token
+//               fallback only runs when the channel cannot be created (bug
+//               hunt 2026-11-03, P-C4). Unknown iOS or build = token path.
 
 import type { APNsEnvironment } from "./apns-client.ts";
 import { type LaAudience, LA_AUDIENCES } from "./la-notes.ts";
@@ -25,12 +30,17 @@ export function laChannelPrefixes(raw: string | undefined): Set<string> {
   );
 }
 
+/// The first app build proven to show a channel start (la-channel-test).
+/// Lower it only after the procedure in LIVE_ACTIVITY_PLAN §8 passes on that
+/// build; raise nothing above it without the same.
+export const LA_CHANNEL_MIN_BUILD = 16;
+
 export function wantsChannel(
   mode: LaChannelMode,
   prefixes: Set<string>,
-  row: { token: string; darwin_major?: number | null },
+  row: { token: string; darwin_major?: number | null; app_build?: number | null },
 ): boolean {
-  if (mode === "on") return (row.darwin_major ?? 0) >= 24;
+  if (mode === "on") return (row.darwin_major ?? 0) >= 24 && (row.app_build ?? 0) >= LA_CHANNEL_MIN_BUILD;
   if (mode === "allowlist") return prefixes.has(row.token.slice(0, 16).toLowerCase());
   return false;
 }

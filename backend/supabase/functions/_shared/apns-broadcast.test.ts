@@ -89,9 +89,14 @@ Deno.test("allowlist matches the first 16 hex chars, case-insensitive, ignoring 
   assertEquals(wantsChannel("allowlist", p, { token: "abcdef012345678a" + "00".repeat(40), darwin_major: 25 }), false);
 });
 
-Deno.test("on: Darwin 24+ only, unknown iOS stays on the token path", () => {
+Deno.test("on: Darwin 24+ on build 16+ only, unknown iOS or build stays on the token path", () => {
   const t = "ab".repeat(40);
-  assertEquals(wantsChannel("on", new Set(), { token: t, darwin_major: 24 }), true);
-  assertEquals(wantsChannel("on", new Set(), { token: t, darwin_major: 23 }), false);
-  assertEquals(wantsChannel("on", new Set(), { token: t, darwin_major: null }), false);
+  assertEquals(wantsChannel("on", new Set(), { token: t, darwin_major: 24, app_build: 16 }), true);
+  assertEquals(wantsChannel("on", new Set(), { token: t, darwin_major: 27, app_build: 18 }), true);
+  assertEquals(wantsChannel("on", new Set(), { token: t, darwin_major: 23, app_build: 16 }), false);
+  assertEquals(wantsChannel("on", new Set(), { token: t, darwin_major: null, app_build: 16 }), false);
+  // P-C4 (bug hunt 2026-11-03): only build 16 has been shown a channel start.
+  assertEquals(wantsChannel("on", new Set(), { token: t, darwin_major: 25, app_build: 12 }), false);
+  assertEquals(wantsChannel("on", new Set(), { token: t, darwin_major: 25, app_build: null }), false);
+  assertEquals(wantsChannel("on", new Set(), { token: t, darwin_major: 25 }), false);
 });

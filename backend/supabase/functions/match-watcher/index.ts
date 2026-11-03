@@ -2441,11 +2441,11 @@ async function handleRequest(req: Request): Promise<Response> {
           const laTokens = async (
             // deno-lint-ignore no-explicit-any
             filter: (q: any) => any,
-          ): Promise<Array<{ token: string; apns_environment: string; darwin_major: number | null; team_ids: string[] | null }>> => {
+          ): Promise<Array<{ token: string; apns_environment: string; darwin_major: number | null; app_build: number | null; team_ids: string[] | null }>> => {
             try {
               return await fetchAllRows((from, to) =>
                 filter(
-                  supabase.from("live_activity_tokens").select("token, apns_environment, darwin_major, team_ids").eq("is_active", true),
+                  supabase.from("live_activity_tokens").select("token, apns_environment, darwin_major, app_build, team_ids").eq("is_active", true),
                 ).order("token").range(from, to)
               );
             } catch (e) {
