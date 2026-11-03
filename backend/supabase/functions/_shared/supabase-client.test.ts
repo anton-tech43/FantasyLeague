@@ -1,6 +1,6 @@
 // deno test backend/supabase/functions/_shared/supabase-client.test.ts
 import { assertEquals, assertRejects } from "https://deno.land/std@0.177.0/testing/asserts.ts";
-import { fetchAllRows, isTokenDead } from "./supabase-client.ts";
+import { fetchAllRows, isTokenBad, isTokenDead } from "./supabase-client.ts";
 
 Deno.test("isTokenDead: only a token-level APNs verdict kills a token (QA-03)", () => {
   assertEquals(isTokenDead({ success: true, status: 200 }), false);
@@ -13,6 +13,15 @@ Deno.test("isTokenDead: only a token-level APNs verdict kills a token (QA-03)", 
   }
   assertEquals(isTokenDead({ success: false, status: 403, reason: "InvalidProviderToken" }), false);
   assertEquals(isTokenDead({ success: false, reason: "network down" }), false);
+});
+
+Deno.test("isTokenBad: only BadDeviceToken is kept off for good (migration 168)", () => {
+  assertEquals(isTokenBad({ success: false, reason: "BadDeviceToken" }), true);
+  // A reinstall's re-registration after a 410 is valid again (Apple), and a
+  // wrong topic on our side would answer NotForTopic for every real token.
+  assertEquals(isTokenBad({ success: false, reason: "Unregistered" }), false);
+  assertEquals(isTokenBad({ success: false, reason: "DeviceTokenNotForTopic" }), false);
+  assertEquals(isTokenBad({ success: true }), false);
 });
 
 Deno.test("fetchAllRows reads past the 1000-row page and stops on a short page (QA-04)", async () => {

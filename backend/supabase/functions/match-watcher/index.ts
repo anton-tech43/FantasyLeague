@@ -17,7 +17,7 @@
 import { type LineupPlayer, type Notable, notableLineup, type Role, rolesFromGrid, type SquadRow } from "../_shared/lineup-notable.ts";
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
-import { deactivateTokens, fetchAllRows, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
+import { deactivateTokens, fetchAllRows, getSupabaseClient, isTokenBad, isTokenDead, markBadTokens } from "../_shared/supabase-client.ts";
 import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts";
 import {
   seasonForLeague,
@@ -563,7 +563,7 @@ async function sendPlayingTeamPush(
 
     const results = await mapWithConcurrency(recipients, PUSH_CONCURRENCY, async (r) => {
       const res = await sendPushNotification(r.token, r.payload, r.env);
-      return { country: r.country, token: r.token, res };
+      return { country: r.country, token: r.token, env: r.env, res };
     });
 
     // Tally per country (for the per-country pipeline_health rows) and collect
@@ -588,6 +588,7 @@ async function sendPlayingTeamPush(
       stats.set(country, s);
     }
     await deactivateTokens(supabase, "device_tokens", deadTokens);
+    await markBadTokens(supabase, "device_tokens", results.filter((r) => isTokenBad(r.res)));
 
     // Best-effort observability: never let a logging error break the send.
     try {
@@ -788,7 +789,7 @@ async function sweepLiveActivities(
       // Over already: gone from the lock screen in a minute, not four hours.
       dismissalSeconds: 60,
       environment: r.apns_environment === "production" ? "production" : "development",
-    }).then((res) => ({ token: r.token, res }));
+    }).then((res) => ({ token: r.token, env: r.apns_environment, res }));
   });
   // Ended or dead, these tokens have nothing left to receive. A transient
   // failure stays active for the next sweep, until the six-hour give-up.
@@ -798,6 +799,7 @@ async function sweepLiveActivities(
   }).map((r) => r.token));
   await deactivateTokens(supabase, "live_activity_tokens",
     sent.filter((x) => x.res.success || isTokenDead(x.res) || old.has(x.token)).map((x) => x.token));
+  await markBadTokens(supabase, "live_activity_tokens", sent.filter((x) => isTokenBad(x.res)));
   const fixtureOf = new Map(due.map((r) => [r.token, r.fixture_id]));
   const byFix = new Map<number | null, Array<typeof sent[number]["res"]>>();
   for (const x of sent) {
@@ -2474,7 +2476,7 @@ async function handleRequest(req: Request): Promise<Response> {
               sendLiveActivityPush(r.token, {
                 ...opts,
                 environment: r.apns_environment === "production" ? "production" : "development",
-              }).then((res) => ({ token: r.token, res })),
+              }).then((res) => ({ token: r.token, env: r.apns_environment, res })),
             );
             // Clean up tokens APNs reported dead (410/400) in one UPDATE so a
             // stale Live Activity token stops being pushed on every tick.
@@ -2483,6 +2485,7 @@ async function handleRequest(req: Request): Promise<Response> {
               "live_activity_tokens",
               sent.filter((s) => isTokenDead(s.res)).map((s) => s.token),
             );
+            await markBadTokens(supabase, "live_activity_tokens", sent.filter((s) => isTokenBad(s.res)));
             await logLaSend(supabase, fixtureId, opts.event, opts.priority ?? 10, sent.map((s) => s.res), source);
             return sent;
           };

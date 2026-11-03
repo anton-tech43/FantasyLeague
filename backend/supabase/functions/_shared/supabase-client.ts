@@ -95,6 +95,40 @@ export async function deactivateTokens(
   }
 }
 
+/// BadDeviceToken: APNs says this is not a token in the environment it was
+/// sent to, and Apple never makes it one there. Recorded so register_* keeps
+/// it inactive in that environment (migration 168): without it a junk-token
+/// flood re-armed itself on every registration. Unregistered (410) is not
+/// recorded — Apple treats a token re-registered after the 410 as valid — and
+/// neither is DeviceTokenNotForTopic, which a wrong topic on our side would
+/// produce for every real token.
+export function isTokenBad(result: { success: boolean; reason?: string }): boolean {
+  return !result.success && result.reason === "BadDeviceToken";
+}
+
+/// Mark tokens APNs answered BadDeviceToken, each with the environment it was
+/// sent to. Also deactivates them. Best-effort, like deactivateTokens.
+export async function markBadTokens(
+  supabase: SupabaseClient,
+  table: "device_tokens" | "live_activity_tokens",
+  bad: Array<{ token: string; env: string }>,
+): Promise<void> {
+  // Chunked only to bound the request body; this is a POST, not a URL.
+  for (let i = 0; i < bad.length; i += 500) {
+    const chunk = bad.slice(i, i + 500);
+    try {
+      const { error } = await supabase.rpc("mark_tokens_bad", {
+        p_table: table,
+        p_tokens: chunk.map((b) => b.token),
+        p_envs: chunk.map((b) => b.env),
+      });
+      if (error) console.error(`markBadTokens(${table}) failed for ${chunk.length} tokens: ${error.message}`);
+    } catch (e) {
+      console.error(`markBadTokens(${table}) threw for ${chunk.length} tokens: ${e instanceof Error ? e.message : e}`);
+    }
+  }
+}
+
 /// Read every row of a query past PostgREST's 1000-row cap (QA-04). `page`
 /// builds the query for one [from, to] window; it must be stably ordered.
 /// Throws on a read error so a caller never fans out to a silently partial list.

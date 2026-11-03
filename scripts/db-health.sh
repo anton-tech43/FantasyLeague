@@ -198,9 +198,10 @@ if   [ -z "$MB" ];     then warn "app_events               could not read size"
 elif [ "$MB" -gt 25 ]; then warn "$(printf '%-24s %s MB — over budget: a flood, a stopped roll-up, or index bloat (REINDEX TABLE CONCURRENTLY)' app_events "$MB")"
 else                        note "OK" "$(printf '%-24s %s MB' app_events "$MB")"; fi
 
-# New push tokens a day. Since migration 160 a registration flood is logged,
-# never refused (a global refusal locked real installs out), so this is the
-# alarm on junk growth. Real peaks: 10 device and 43 Live Activity tokens a day.
+# New push tokens a day. Since 160 a flood is not refused per hour (that
+# locked real installs out); since 168 it is refused only past 20 000 / 50 000
+# ACTIVE tokens, and check_token_volume() pushes hourly past 100 / 300 new an
+# hour. Real peaks: 10 device and 43 Live Activity tokens a day.
 TOK=$(q "SELECT (SELECT count(*) FROM public.device_tokens WHERE created_at > now() - interval '1 day'),
                 (SELECT count(*) FROM public.live_activity_tokens WHERE created_at > now() - interval '1 day');")
 if [ -z "$TOK" ]; then
@@ -212,6 +213,12 @@ else
   else
     note "OK" "$(printf '%-24s %s device + %s Live Activity in 24 h' 'new push tokens' "$NDT" "$NLA")"
   fi
+fi
+# The real-time half of the alarm above (168). Gone, a flood is silent for days.
+if [ "$(q "SELECT count(*) FROM cron.job WHERE jobname = 'token_volume_alarm' AND active;")" = "1" ]; then
+  note "OK" "$(printf '%-24s %s' 'token volume alarm' 'hourly cron job active')"
+else
+  warn "$(printf '%-24s %s' 'token volume alarm' 'cron job token_volume_alarm missing or inactive (migration 168)')"
 fi
 
 # ----------------------------------------------------------------------

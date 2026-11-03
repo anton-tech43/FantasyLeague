@@ -25,7 +25,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
-import { deactivateTokens, fetchAllRows, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
+import { deactivateTokens, fetchAllRows, getSupabaseClient, isTokenBad, isTokenDead, markBadTokens } from "../_shared/supabase-client.ts";
 import { cachedUpcomingFixtures } from "../_shared/cached-fixtures.ts";
 import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts";
 import { buildAPNsPayload, sendPushNotification } from "../_shared/apns-client.ts";
@@ -423,7 +423,7 @@ serve(async (req) => {
       const sendResults = await mapWithConcurrency(tokens, PUSH_CONCURRENCY, async (t) => {
         const env = t.apns_environment === "production" ? "production" : "development";
         const res = await sendPushNotification(t.apns_token as string, payloadFor(t.timezone as string | null), env);
-        return { token: t.apns_token as string, res };
+        return { token: t.apns_token as string, env, res };
       });
       const zones = [...payloadByTz.keys()];
       await deactivateTokens(
@@ -431,6 +431,7 @@ serve(async (req) => {
         "device_tokens",
         sendResults.filter((r) => isTokenDead(r.res)).map((r) => r.token),
       );
+      await markBadTokens(supabase, "device_tokens", sendResults.filter((r) => isTokenBad(r.res)));
       const sent = sendResults.filter((r) => r.res.success).length;
       // Whether the reminder went out and to how many: it had no row, so a
       // morning with no reminder looked the same as one nobody opened.

@@ -19,7 +19,7 @@
 // gets the big story after a Match-fit push earlier that morning.
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { deactivateTokens, fetchAllRows, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
+import { deactivateTokens, fetchAllRows, getSupabaseClient, isTokenBad, isTokenDead, markBadTokens } from "../_shared/supabase-client.ts";
 import { mapWithConcurrency, PUSH_CONCURRENCY } from "../_shared/concurrency.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { sendPushNotification, buildAPNsPayload } from "../_shared/apns-client.ts";
@@ -438,6 +438,7 @@ serve(async (req) => {
       let aborted = false; // set on the first 403 — stop hammering APNs on auth failure
       type SendOutcome = {
         token: string;
+        env: string;
         success: boolean;
         status?: number;
         reason?: string;
@@ -449,7 +450,7 @@ serve(async (req) => {
         async ({ token, env }) => {
           // A prior task hit a 403 (bad .p8 / JWT) — every send is doomed the
           // same way, so skip the rest rather than spray thousands of requests.
-          if (aborted) return { token, success: false, skipped: true };
+          if (aborted) return { token, env, success: false, skipped: true };
           let result = await sendPushNotification(token, payload, env);
           // 429 = APNs back-pressure. Back off once and retry this one token.
           if (result.status === 429) {
@@ -457,7 +458,7 @@ serve(async (req) => {
             result = await sendPushNotification(token, payload, env);
           }
           if (result.status === 403) aborted = true;
-          return { token, success: result.success, status: result.status, reason: result.reason };
+          return { token, env, success: result.success, status: result.status, reason: result.reason };
         },
       );
 
@@ -468,6 +469,7 @@ serve(async (req) => {
       // Batch-deactivate every token APNs reported dead (410/400) in ONE UPDATE.
       const deadTokens = attempted.filter((o) => isTokenDead(o)).map((o) => o.token);
       await deactivateTokens(supabase, "device_tokens", deadTokens);
+      await markBadTokens(supabase, "device_tokens", attempted.filter((o) => isTokenBad(o)));
 
       // One aggregate apns_send observability row per item (was one row PER
       // token — 50k inserts per push at scale). The message carries the
