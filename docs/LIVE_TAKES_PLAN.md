@@ -126,7 +126,7 @@ HT saying and today's verdict.
   Anton reads the logged takes and says which ones he would say.
 
 **How to review the dry run** (phase 0 as built, 2026-11-01)
-- Code: `_shared/match-take.ts` (rules, thresholds at the top, 15 situations),
+- Code: `_shared/match-take.ts` (rules, thresholds at the top, 20 situations),
   `match-watcher` `liveTakeDryRun` (after the tick's pushes; markers
   `TAKE_30`, `TAKE_HT`, `TAKE_70`, `TAKE_FT`, claimed before the stats call),
   migration 155. `LIVE_TAKES_MODE` in match-watcher is `"dry_run"`.

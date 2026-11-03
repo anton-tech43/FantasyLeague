@@ -24,7 +24,11 @@ export type TakeKind =
   | "their_keeper"
   | "our_keeper"
   | "one_way_traffic"
+  | "pushing_since_ht"
+  | "taken_over"
+  | "lost_grip"
   | "riding_luck"
+  | "clinical_opponent"
   | "second_best"
   | "all_ball_behind"
   | "all_ball_no_bite"
@@ -47,7 +51,13 @@ export const BALL = 60; // "all the ball"
 export const LITTLE_BALL = 42; // "barely got out of their own half"
 export const SECOND_HALF_LOW_BALL = 35; // sitting back since the break
 export const SECOND_HALF_BALL = 58; // one-way traffic since the break
+export const FIRST_HALF_LITTLE_BALL = 45; // "couldn't keep it before the break"
+export const FIRST_HALF_BALL = 55; // "had a grip on it before the break"
+export const BALL_SWING = 15; // points of the ball that changed hands between halves
 export const SHOT_GAP_90 = 9; // more shots than the other side
+export const SHOT_GAP_SMALL_90 = 5; // ...enough when one side has hardly had the ball
+export const VERY_LITTLE_BALL = 35; // "barely had a kick"
+export const EVEN_SHOTS_90 = 4; // shots this close are an even game
 export const SHOTS_90 = 15; // a side that is shooting a lot
 export const FEW_ON_TARGET_90 = 4; // "not hurting them"
 export const POOR_AIM = 0.25; // on target / shots at or below this
@@ -93,6 +103,8 @@ interface Ctx {
   /// a number is missing from either end.
   m2: SideStats;
   t2: SideStats;
+  /// Our half-time snapshot; empty when there is none.
+  mh: SideStats;
   per: (per90: number) => number;
 }
 
@@ -187,6 +199,42 @@ const RULES: Rule[] = [
     backup: ["{opp} are just camped in their own box.", "One-way traffic. {team} need to keep at it."],
     ftBackup: ["{opp} sat in their own box all second half."],
   },
+  // Man Utd v Roma, 70' (2026-11-03): 1-2 down, six shots to one since the
+  // break. Behind only, so it can never stand in for "turned it round".
+  {
+    kind: "pushing_since_ht",
+    moments: ["70"],
+    when: ({ lead, m2, t2 }) =>
+      lead < 0 && def(m2.shots, t2.shots) && m2.shots! >= 5 && m2.shots! >= 3 * Math.max(t2.shots!, 1),
+    live: ["{team} have been all over them since half-time.", "All {team} since the break. This isn't over."],
+    backup: ["One more goal and this is a different night.", "They've had nearly all the shots since the break."],
+  },
+  // A swing in the ball between halves, backed by the shots since the break.
+  // After the result-driven rules, so a bigger story wins (Anton, 2026-11-03).
+  {
+    kind: "taken_over",
+    moments: ["70", "ft"],
+    when: ({ mh, m2, t2 }) =>
+      def(mh.possession, m2.possession, m2.shots, t2.shots) &&
+      mh.possession! <= FIRST_HALF_LITTLE_BALL && m2.possession! >= SECOND_HALF_BALL &&
+      m2.possession! - mh.possession! >= BALL_SWING && m2.shots! >= t2.shots!,
+    live: ["{team} have taken over since half-time.", "Much more of the ball for {team} now."],
+    ft: ["{team} took over after half-time.", "{team} took over the ball after the break."],
+    backup: ["They couldn't keep it before the break. Now they can.", "They're keeping the ball now. That's the change."],
+    ftBackup: ["They couldn't keep it before the break. Then they could."],
+  },
+  {
+    kind: "lost_grip",
+    moments: ["70", "ft"],
+    when: ({ mh, m2, t2 }) =>
+      def(mh.possession, m2.possession, m2.shots, t2.shots) &&
+      mh.possession! >= FIRST_HALF_BALL && m2.possession! <= LITTLE_BALL &&
+      mh.possession! - m2.possession! >= BALL_SWING && t2.shots! >= m2.shots!,
+    live: ["{opp} have had the ball since the break.", "{team} have lost their grip since half-time."],
+    ft: ["{opp} had the ball after the break.", "{team} lost their grip after half-time."],
+    backup: ["{team} need to get it back and slow it down."],
+    ftBackup: ["{team} needed to get it back and slow it down."],
+  },
   // The Arsenal-Brighton half-time: they scored with almost nothing, we have
   // had all the shots.
   {
@@ -238,13 +286,28 @@ const RULES: Rule[] = [
     backup: ["They've been under the cosh. They need to keep the ball.", "{theirShots} shots against them. They need the ball more."],
     ftBackup: ["{theirShots} shots against. Could've gone either way.", "They were under the cosh for most of it."],
   },
-  // 2. Behind and outplayed.
+  // Man Utd v Roma, half-time (2026-11-03): 0-2 on five shots to six.
+  // Not outplayed; Roma scored with nearly everything they put on target.
+  {
+    kind: "clinical_opponent",
+    moments: ["ht", "70", "ft"],
+    when: ({ s, lead, m, t, per }) =>
+      lead <= -2 && def(t.onTarget, m.shots, t.shots) && t.onTarget! <= s.theirs + 1 &&
+      (Math.abs(m.shots! - t.shots!) <= per(EVEN_SHOTS_90) || m.shots! >= t.shots!),
+    live: ["Even game. {opp} have taken their chances.", "{opp} have taken their chances. Not much else."],
+    ft: ["Even game. {opp} just took their chances.", "{opp} took their chances. Not much else."],
+    backup: ["Nearly every {opp} shot on target has gone in."],
+    ftBackup: ["Nearly every {opp} shot on target went in."],
+  },
+  // 2. Behind and outplayed: a big gap in shots with little of the ball, or
+  // a smaller one with hardly any (Barcelona v Villa, 70' and FT, 2026-11-03).
   {
     kind: "second_best",
     moments: ["ht", "70", "ft"],
     when: ({ lead, m, t, per }) =>
       lead < 0 && def(m.shots, t.shots, m.possession) &&
-      t.shots! - m.shots! >= per(SHOT_GAP_90) && m.possession! <= LITTLE_BALL,
+      ((t.shots! - m.shots! >= per(SHOT_GAP_90) && m.possession! <= LITTLE_BALL) ||
+        (t.shots! - m.shots! >= per(SHOT_GAP_SMALL_90) && m.possession! <= VERY_LITTLE_BALL)),
     live: ["Honestly, {team} have been second best.", "{team} have been second best. No complaints."],
     ft: ["Honestly, {team} were second best all game.", "No complaints. {team} were second best today."],
     backup: ["They've barely got out of their own half.", "They need to keep the ball better and get up the pitch."],
@@ -363,6 +426,7 @@ export function decideTake(
     lead: score.mine - score.theirs,
     m2: since(mine.stats, htSnapshot?.mine, minute),
     t2: since(theirs.stats, htSnapshot?.theirs, minute),
+    mh: htSnapshot?.mine ?? {},
     per: (per90) => per90 * minute / 90,
   };
   for (const r of RULES) {

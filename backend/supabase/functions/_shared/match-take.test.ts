@@ -72,6 +72,62 @@ Deno.test("Newcastle 0-1 Everton at 70' (2026-11-02): silent before, now both si
   eq(kind("70", { ...ncl, onTarget: 4 }, eve, { mine: 0, theirs: 1 }), null, "four on target is not blanks");
 });
 
+Deno.test("Champions League 2026-11-03: silent all night before, now a take at HT, 70' and FT", () => {
+  // The stored snapshots (match_status_state.stat_snapshots), xG left out.
+  const s = (shots: number, onTarget: number, possession: number, fouls: number, yellow: number, red: number,
+    corners?: number, saves?: number): SideStats => {
+    const o: SideStats = { shots, onTarget, possession, fouls, yellow, red };
+    if (corners !== undefined) o.corners = corners;
+    if (saves !== undefined) o.saves = saves;
+    return o;
+  };
+  const decide = (moment: TakeMoment, me: [string, SideStats], them: [string, SideStats], score: TakeScore,
+    ht?: { mine: SideStats; theirs: SideStats }) =>
+    decideTake(moment, { name: me[0], stats: me[1] }, { name: them[0], stats: them[1] }, score, ht, seededRng(1))?.kind ?? null;
+
+  // Man Utd (home, followed) 3-2 Roma.
+  const mu = { "30": s(2, 0, 54, 3, 1, 0), ht: s(5, 1, 54, 3, 1, 0, 0, 1), "70": s(11, 3, 55, 4, 1, 0, 3, 2), ft: s(15, 6, 53, 10, 3, 1, 3, 2) };
+  const ro = { "30": s(4, 2, 46, 4, 1, 0), ht: s(6, 3, 46, 9, 3, 0, 1, 1), "70": s(7, 4, 45, 10, 3, 0, 1, 1), ft: s(7, 4, 47, 14, 3, 0, 1, 2) };
+  const muHt = { mine: mu.ht, theirs: ro.ht };
+  const htMu = { mine: 0, theirs: 2 };
+  eq(decide("30", ["Man Utd", mu["30"]], ["AS Roma", ro["30"]], { mine: 0, theirs: 2 }), null, "MU 30'");
+  eq(decide("ht", ["Man Utd", mu.ht], ["AS Roma", ro.ht], { mine: 0, theirs: 2 }), "clinical_opponent", "MU HT");
+  eq(decide("70", ["Man Utd", mu["70"]], ["AS Roma", ro["70"]], { mine: 1, theirs: 2, ht: htMu }, muHt), "pushing_since_ht", "MU 70'");
+  eq(decide("ft", ["Man Utd", mu.ft], ["AS Roma", ro.ft], { mine: 3, theirs: 2, ht: htMu }, muHt), "turned_it_round", "MU FT");
+  // The same 70' numbers, but already ahead: turned it round, never "pushing".
+  eq(decide("70", ["Man Utd", mu["70"]], ["AS Roma", ro["70"]], { mine: 3, theirs: 2, ht: htMu }, muHt), "turned_it_round", "MU 70' ahead");
+
+  // Barcelona 3-0 Aston Villa (away, followed).
+  const ba = { "30": s(4, 2, 68, 3, 0, 0, 0, 0), ht: s(5, 3, 68, 4, 1, 0, 2, 1), "70": s(12, 7, 67, 8, 1, 0, 4, 1), ft: s(16, 8, 65, 14, 1, 0, 4, 1) };
+  const av = { "30": s(3, 0, 32, 4, 1, 0, 3, 1), ht: s(5, 1, 32, 4, 2, 0, 4, 2), "70": s(6, 1, 33, 8, 3, 0, 6, 4), ft: s(9, 1, 35, 9, 3, 0, 8, 5) };
+  const avHt = { mine: av.ht, theirs: ba.ht };
+  const htAv = { mine: 0, theirs: 1 };
+  eq(decide("30", ["Aston Villa", av["30"]], ["Barcelona", ba["30"]], { mine: 0, theirs: 1 }), null, "Villa 30'");
+  eq(decide("ht", ["Aston Villa", av.ht], ["Barcelona", ba.ht], { mine: 0, theirs: 1 }), null, "Villa HT: shots level, not second best");
+  eq(decide("70", ["Aston Villa", av["70"]], ["Barcelona", ba["70"]], { mine: 0, theirs: 3, ht: htAv }, avHt), "second_best", "Villa 70'");
+  eq(decide("ft", ["Aston Villa", av.ft], ["Barcelona", ba.ft], { mine: 0, theirs: 3, ht: htAv }, avHt), "second_best", "Villa FT");
+
+  // The swing rules stay quiet on a steady 54/55 (Man Utd's first and second half).
+  eq(decide("70", ["Man Utd", mu["70"]], ["AS Roma", ro["70"]], { mine: 2, theirs: 2, ht: { mine: 2, theirs: 2 } }, muHt), null,
+    "MU steady ball, level: no swing");
+});
+
+Deno.test("a swing in the ball between halves", () => {
+  // 40 at half-time, 48 by 70' cumulative: about 62 since the break.
+  const htMine = { ...quiet, possession: 40, shots: 3 }, htTheirs = { ...quiet, possession: 60, shots: 5 };
+  const ht = { mine: htMine, theirs: htTheirs };
+  eq(kind("70", { ...htMine, possession: 48, shots: 7 }, { ...htTheirs, possession: 52, shots: 8 },
+    { mine: 1, theirs: 1, ht: { mine: 1, theirs: 1 } }, ht), "taken_over", "40 to 62");
+  eq(kind("70", { ...htMine, possession: 48, shots: 5 }, { ...htTheirs, possession: 52, shots: 9 },
+    { mine: 1, theirs: 1, ht: { mine: 1, theirs: 1 } }, ht), null, "the ball but fewer shots since: one stat only");
+  // The inverse: 62 at half-time, 54 by 70' cumulative: about 40 since.
+  const htMine2 = { ...quiet, possession: 62, shots: 5 }, htTheirs2 = { ...quiet, possession: 38, shots: 3 };
+  eq(kind("70", { ...htMine2, possession: 54, shots: 7 }, { ...htTheirs2, possession: 46, shots: 6 },
+    { mine: 1, theirs: 1, ht: { mine: 1, theirs: 1 } }, { mine: htMine2, theirs: htTheirs2 }), "lost_grip", "62 to 40");
+  eq(kind("70", { ...htMine, possession: 48, shots: 7 }, { ...htTheirs, possession: 52, shots: 8 },
+    { mine: 1, theirs: 1 }), null, "no half-time snapshot, no swing");
+});
+
 // ─── The numbered situations ─────────────────────────────────────────────
 
 Deno.test("1. most of the ball and behind", () => {
