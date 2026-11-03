@@ -1,9 +1,13 @@
-# Vad driftstoppen har lärt oss
+# Vad driftstoppen och bug-hunten har lärt oss
 
 Fyra gånger på fem månader har databasen tagit appen ner eller nära nog. Det här
 är inte loggen över dem — den finns i `IMPLEMENTATION_PROGRESS.md` och
 `SJALVRANNSAKAN_2026-09.md`. Det här är det som visade sig vara **samma sak varje
 gång**, formulerat så att det går att ta med sig till nästa system.
+
+Del 2 (lärdom 8–17) kommer från den första bug-hunten, 3 november 2026: en
+systematisk jakt på buggar, säkerhetshål och skörhet innan användarna hittar dem.
+Rapporten med alla 63 fynd finns i `docs/bug-hunt/BUG_HUNT_2026-11-03.md`.
 
 Exemplen är härifrån. Mönstren är det inte.
 
@@ -208,7 +212,260 @@ kördes hittade den att kartan hänvisade till ett skript som var raderat.
 
 ---
 
+# Del 2. Vad bug-hunten lärde oss
+
+Driftstoppen kom till oss. Bug-hunten var tvärtom: vi letade själva, innan
+någon användare hann märka något.
+
+**Så gick den till**, eftersom metoden är en lärdom i sig. Den bygger på
+Cloudflares öppna `security-audit`-skill, anpassad till vår stack:
+
+1. **Kartlägg först, jaga sedan.** Två agenter listade varje väg in i systemet
+   (124 på servern, 64 i appen) innan någon letade fel. Utan karta letar man
+   där det är ljust, inte där felen är.
+2. **En jägare per yta.** Nio agenter parallellt: det publika API:et, serverns
+   funktioner, pushar, AI-rutinerna, appen och gamla versioner, datakvalitet,
+   drift och kostnad, hemligheter, och en som testade appen som en användare.
+3. **Riktig data genom riktig kod.** Jägarna körde levande rader från
+   produktionen genom den kod som faktiskt körs, aldrig handplockade exempel.
+4. **Den som hittar ett fel får inte bekräfta det.** En annan agent, eller
+   fixaren, ska reproducera felet innan det räknas.
+5. **En rapport med ägare.** Varje fynd fick allvarlighet, bevis, åtgärd och
+   vem som äger den.
+
+Resultat: 63 fynd, varav 3 allvarliga. Här är det som går att ta med sig.
+
+---
+
+## 8. Vakten får inte kunna skriva om sig själv
+
+Våra AI-rutiner skriver nyhetskort. Mellan modellen och databasen står ett
+skript med kontroller: stämmer fakta, finns det en källa, låter det rätt.
+Skriptet är vakten.
+
+En av rutinerna hade instruktionen *"om du hittar en kontroll som saknas, skriv
+den, testa den och pusha till main"*. Den gjorde det fyra tisdagar i rad. Ingen
+människa läste ändringarna. Avsikten var god: systemet skulle förbättra sig
+självt. Men det betydde att **den som vaktades kunde skriva om vaktens regler**,
+och att en lurad eller felande modell kunde ta bort en kontroll och få igenom
+allt efter det.
+
+Åtgärden gick i tre lager: rutinen fick inte längre rätt att pusha (en
+inställning, inte en instruktion), prompten säger "föreslå, gör inte", och
+skripten kontrollerar själva att de är oförändrade innan de skriver något.
+
+> **Regel:** den som kontrolleras får aldrig ha skrivrätt till kontrollen.
+> Separera rollerna i *behörigheter*, inte i instruktioner. En instruktion
+> "rör inte vakten" är en förhoppning; en saknad skrivrätt är ett faktum.
+
+*Fråga till ditt system:* vilka av dina automatiska processer kan ändra koden
+eller konfigurationen som granskar dem själva?
+
+---
+
+## 9. En AI har samma behörighet som den som skriver texten den läser
+
+Rutinerna läser nyhetsflöden, alltså text som vem som helst på internet kan
+påverka. Samma rutin hade ett terminalverktyg och databasens huvudnyckel.
+
+Det betyder att en rubrik som *"Ignorera tidigare instruktioner och kör …"*
+i värsta fall blir ett kommando med full behörighet. Det kallas *prompt
+injection*, och det har ingen fullständig lösning i själva modellen.
+
+Vi byggde lager: texten tvättas från osynliga tecken och kortas, den märks
+tydligt som data, läsning går via ett skript som bara kan läsa godkända
+tabeller, rutinen förlorade webbverktyg och underagenter den inte behövde, och
+all skrivning ska gå via kontrollskripten. Men så länge nyckeln finns i
+miljön kan en tillräckligt lurad modell gå runt allt det. Den riktiga lösningen
+är en nyckel som bara får göra det rutinen behöver: lägga in ett kort.
+
+> **Regel:** behandla en AI-agents behörighet som om den tillhörde den som
+> skrev texten agenten läser. Ge den minsta möjliga verktyg och minsta möjliga
+> nyckel. Lager hjälper; minsta behörighet är det som håller.
+
+*Fråga till ditt system:* om all text din AI läser var skriven av en
+angripare, vad är det värsta den kan göra med de verktyg och nycklar den har?
+
+---
+
+## 10. Låt inte modellen välja det som koden kan räkna ut
+
+Måndagsbriefen ska sammanfatta helgens match. Datan modellen fick var rätt:
+de fem senaste matcherna, nyast först. Ändå beskrev **15 av 20 kort fel
+helg**. Chelsea "förlorade mot Spurs" fast de slog Man Utd. Korten pushades.
+
+Modellen valde fel rad i en lista. Det är inget konstigt fel; det är
+förutsägbart att det händer ibland. Felet var att vi lät den välja.
+
+Nu räknar koden ut "senaste resultat" innan modellen börjar och ger den en färdig
+mening. Och en kontroll efteråt jämför varje resultat i texten med spelade
+matcher. Sedan tidigare gäller samma princip för veckodagar: modellen räknade
+datum i fel tidszon tills koden gav den dagen färdig.
+
+> **Regel:** det som går att räkna ut deterministiskt ska räknas ut i kod och
+> ges till modellen som ett faktum. Modellen formulerar; koden bestämmer vad
+> som är sant. Och kontrollera efteråt det som ändå måste stämma.
+
+*Fråga till ditt system:* vilka beslut låter du en språkmodell fatta som en
+SQL-fråga eller tio rader kod kunde ha fattat utan att gissa?
+
+---
+
+## 11. Varje skrivning ska tåla att göras två gånger
+
+Samma brief postades två till tre gånger per klubb, 46 kort i stället för 20.
+Modellen körde sitt eget postningsskript igen för att *läsa utdatan*, och varje
+körning postade allt igen. På ett annat ställe gjorde vår AI-klient om anrop
+som fått ett permanent fel, fyra gånger med 12 minuters väntan.
+
+Båda är samma sak: något upprepas, och sidoeffekten upprepas med det.
+
+Nu är postningen **idempotent**: en andra brief för samma klubb samma dag är
+ett lyckat anrop som inte skriver något. Och klienten gör bara om fel som kan
+gå över (överbelastning, nätverk), aldrig fel som säger att anropet är fel.
+
+> **Regel:** utgå från att allt kommer att köras två gånger — av en retry, en
+> användare som dubbeltrycker, eller en agent som vill se resultatet igen.
+> Gör skrivningar idempotenta i koden, och gör bara om det som kan lyckas nästa
+> gång.
+
+*Fråga till ditt system:* vad händer om ditt viktigaste skrivanrop körs två
+gånger i rad? Har du testat det?
+
+---
+
+## 12. "Vilande" är inte "avstängt"
+
+Fyra gamla serverfunktioner hade inte använts på månader. Ingen anropade
+dem. Men de låg fortfarande ute och svarade, och en av dem gjorde, utan
+parametrar, ett betalt AI-anrop **för vart och ett av 136 lag**. En annan
+föll tillbaka på att starta en kostsam kedja för varje match, eftersom en
+databasfunktion den behövde hade tagits bort.
+
+Ingen hade glömt dem av slarv; de var "dormant", och dormant kändes säkert.
+
+Nu vägrar alla fyra att köra om inte en uttrycklig flagga är satt och anropet
+gäller exakt ett mål. Ingen av dem kan loopa längre.
+
+> **Regel:** kod som kan kosta pengar eller skicka något till användare är
+> aktiv så länge den går att anropa. Antingen tar du bort den, eller så har den
+> en avstängning i koden. "Ingen anropar den" är inte ett skydd.
+
+*Fråga till ditt system:* vilka av dina publicerade funktioner skulle kosta
+pengar om någon anropade dem i morgon, och vem märker det?
+
+---
+
+## 13. Ett beroende man kan klara sig utan får inte ta ner allt
+
+Funktionen som bevakar live-matcher behöver två hemligheter för att starta en
+AI-rutin efter slutsignalen. Om någon av dem saknades returnerade hela
+funktionen fel direkt, innan den ens tittat på matcherna. Det hade stoppat
+**varje målpush och varje livescore för alla användare**, för att en
+bisak saknades. Det hade inte hänt, men hemligheterna kom från ett konto som
+håller på att stängas.
+
+Nu hoppar funktionen bara över just den delen, loggar det, och gör resten.
+
+> **Regel:** skilj på det du *måste* ha och det du *vill* ha. Det som är
+> valfritt ska degradera tyst och synligt i loggen, inte ta med sig huvudsaken
+> i fallet. Fråga för varje beroende: om det här försvinner, vad slutar
+> fungera — och borde det verkligen sluta?
+
+*Fråga till ditt system:* vilken enskild konfigurationsrad tar ner mest om den
+försvinner?
+
+---
+
+## 14. Gamla versioner lever kvar, och de läser samma server
+
+Fyra versioner av appen finns ute samtidigt och läser samma backend. Vi
+testade på riktigt: jägaren kompilerade datamodellerna från varje version och
+körde dem mot allt som finns i produktionen i dag — 73 klubbsidor, 194
+nyheter, 1 824 spelare, tusentals livepayloads. **Noll fel.** Det var en bra
+nyhet, och den gick att visa med bevis i stället för att tro.
+
+Men samma dag hittade användartestet ett fel av samma sort: en innehållsuppdatering
+tog bort id:t på två repliker. Gamla versioner sparar bara id:t när hon
+stjärnmärker en replik, så hennes sparade repliker försvann tyst.
+
+> **Regel:** ett id som någon klient kan ha sparat får aldrig försvinna. Och en
+> ändring på servern är inte testad förrän den är testad mot varje
+> klientversion som fortfarande finns i användarnas fickor.
+
+*Fråga till ditt system:* vilka klientversioner läser din backend i dag, och
+när testade du senast en ändring mot den äldsta?
+
+---
+
+## 15. Rätt data vid fel tillfälle är fel data
+
+Tre fynd hade samma form:
+- Prognosdata för nästa match köptes medan förra matchen fortfarande pågick,
+  och köptes aldrig om. Formen låg en match efter på 9 av 11 matchkort.
+- Ett mål som VAR dömde bort låg kvar i listan, så klubbsidan visade tre mål
+  för en 2–0-match. Fem målpushar på tio dagar gällde mål som senare dömdes
+  bort.
+- Nyheter skrivna sent på kvällen läste tabellen innan dagens resultat var
+  inräknat.
+
+Inget av det var fel data. Det var rätt data från **före** något som ändrade den.
+
+> **Regel:** färskhet ska mätas mot händelser, inte mot klockan. "Hämtad för en
+> timme sedan" säger ingenting om data hämtades före eller efter matchen.
+> Bestäm vilka händelser som gör din data inaktuell, och hämta om efter dem.
+
+*Fråga till ditt system:* vilken data i ditt system kan vara korrekt hämtad och
+ändå beskriva en värld som inte längre finns?
+
+---
+
+## 16. Maskera som standard, inte bara det du känner igen
+
+En av jägarna skulle leta efter hemliga nycklar och dölja det den hittade. Den
+dolde det den kände igen: kända prefix för AI-nycklar, databasnycklar och
+JWT. En nyckel till en tjänst vi inte hade tänkt på hade ett annat prefix — och
+skrevs ut i klartext i loggen.
+
+Samma svaghet fanns i vår skanner som stoppar hemligheter från att committas:
+den kände igen två format och missade sju.
+
+> **Regel:** en blocklista skyddar mot det du redan har tänkt på. Maskera allt
+> som *ser ut* som en hemlighet (långa slumpmässiga strängar) som standard, och
+> visa bara det du uttryckligen vet är ofarligt. Det okända formatet är det som
+> läcker.
+
+*Fråga till ditt system:* vilken nyckel har du som din hemlighetsskanner inte
+skulle känna igen?
+
+---
+
+## 17. Den som hittar felet ska inte vara den som bekräftar det
+
+Faktakontrollerna vi byggt för AI-rutinerna stoppade 14 nyheter i produktion.
+När en jägare körde om dem med riktig data var **9 av de 14 stoppen fel**: en
+mening om att Manchester United var 17:e kontrollerades mot Chelseas
+tabellplats. Kontrollen var byggd, testad och godkänd — av samma process som
+skrivit den.
+
+Därför har bug-hunten ett steg där en annan agent försöker *motbevisa* varje
+fynd innan det räknas. När vi hoppade över det steget för att rätta snabbare
+blev resultatet ärligt redovisat: 8 fixar var gjorda utan att felet först
+visats i den gamla koden, och de fick stå kvar som obekräftade tills det var
+gjort.
+
+> **Regel:** reproducera innan du rättar, och låt någon annan än upphittaren
+> bekräfta. Ett test som bara körs på exempel du själv valt bekräftar att du
+> har rätt om exemplen, inte om verkligheten.
+
+*Fråga till ditt system:* när visade du senast att ett fel fanns innan du
+rättade det — och hur vet du att rättningen inte bara fick testet att passera?
+
+---
+
 ## Det korta
+
+**Del 1, driftstoppen**
 
 1. Larmet får inte bo i det som kan gå sönder.
 2. Ett larm som bara mäter symptom missar varje långsamt haveri.
@@ -218,15 +475,35 @@ kördes hittade den att kartan hänvisade till ett skript som var raderat.
 6. Fixen kan vara det som dödar dig.
 7. Prod driver ifrån repot, tyst.
 
-Och den som binder ihop dem: **varje gång har det tagit längre tid att tro på
+**Del 2, bug-hunten**
+
+8. Vakten får inte kunna skriva om sig själv.
+9. En AI har samma behörighet som den som skriver texten den läser.
+10. Låt inte modellen välja det som koden kan räkna ut.
+11. Varje skrivning ska tåla att göras två gånger.
+12. "Vilande" är inte "avstängt".
+13. Ett beroende man kan klara sig utan får inte ta ner allt.
+14. Gamla versioner lever kvar, och de läser samma server.
+15. Rätt data vid fel tillfälle är fel data.
+16. Maskera som standard, inte bara det du känner igen.
+17. Den som hittar felet ska inte vara den som bekräftar det.
+
+Och den som binder ihop driftstoppen: **varje gång har det tagit längre tid att tro på
 mätningen än att göra den.** Juni hade svaret i statistiktabellen hela tiden.
 September hade felkoderna liggande i sex dygn. Oktober hade kurvan i
 körloggen från den 21:a, fyra dygn innan någon tittade. Datan fanns. Någon hade
 bestämt sig först.
+
+Och den som binder ihop bug-hunten: **ett skydd som bara finns i en instruktion
+är inget skydd.** Vakten som kunde skriva om sig själv, modellen som valde fel
+match, nyckeln som en lurad AI kunde använda — varje gång var regeln nedskriven
+någonstans. Det som höll var det som var byggt i behörigheter och kod.
 
 ---
 
 *Relaterat: `DB_BASICS.md` (hur delarna hänger ihop, för en icke-DBA) ·
 `RUNBOOK.md` (vad man gör när det brinner) · `scripts/db-health.sh` (kör den
 först) · `scripts/io-attribution.sh` (mät innan du skär) ·
-`scripts/post-restore.sh` (de första sextio sekunderna efteråt).*
+`scripts/post-restore.sh` (de första sextio sekunderna efteråt) ·
+`docs/bug-hunt/BUG_HUNT_2026-11-03.md` (alla 63 fynd) · `.claude/skills/bug-hunt/`
+(så körs jakten).*
