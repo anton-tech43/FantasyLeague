@@ -112,8 +112,11 @@ def load(name: str) -> dict:
     except json.JSONDecodeError as e:
         err(f"{name}: not valid JSON — {e}")
         return {}
-    if not re.match(r"^\d{4}-\d{2}-\d{2}\.\d+$", str(data.get("contentVersion", ""))):
-        err(f"{name}: contentVersion must look like 2026-09-07.1")
+    # One digit after the dot: builds 2.2, 2.3 and 17 compare versions as
+    # strings, so a tenth publish in a day (".10" < ".9") would never reach
+    # them. Wait for tomorrow's date instead (bug hunt 2026-11-03, hunter I).
+    if not re.match(r"^\d{4}-\d{2}-\d{2}\.[1-9]$", str(data.get("contentVersion", ""))):
+        err(f"{name}: contentVersion must look like 2026-09-07.1, with N from 1 to 9")
     for path, why, text in house_copy_violations(data, name):
         err(f"{path}: {why}: {text[:70]}")
     return data
