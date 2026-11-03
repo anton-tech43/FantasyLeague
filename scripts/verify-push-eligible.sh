@@ -10,14 +10,19 @@
 #   LOOKBACK defaults to '3 hours' (covers one fire window). Pass e.g.
 #   '15 hours' to inspect the previous fire too.
 #
-# Reads SUPABASE_DB_URL from backend/.env. Exits non-zero on any violation.
+# Reads backend/.env for SUPABASE_DB_URL locally; in the cloud (routines) it's
+# injected as an env var already, so only source the file when it exists —
+# same fallback db-health.sh uses, since this script never ran in gd-env
+# without it (missing backend/.env, then a macOS-only psql path).
+# Exits non-zero on any violation.
 
 set -euo pipefail
 LOOKBACK="${1:-3 hours}"
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-set -a && source "$HERE/backend/.env" && set +a
-PSQL="/opt/homebrew/opt/libpq/bin/psql"
+[ -f "$HERE/backend/.env" ] && { set -a && source "$HERE/backend/.env" && set +a; }
+PSQL=/opt/homebrew/opt/libpq/bin/psql
+[ -x "$PSQL" ] || PSQL=psql
 
 echo "=== push-eligible contract check — last $LOOKBACK ==="
 

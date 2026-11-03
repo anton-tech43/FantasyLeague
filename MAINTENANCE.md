@@ -117,6 +117,29 @@ its findings go to `pipeline_health`, which nothing reads.
 Anything in A1/A2/A3 that is a deterministic, reversible cleanup → auto-fix and log.
 Anything that needs a human decision or is outside this repo → push.
 
+**When the Postgres pooler is DNS-blocked (the §1 known failure), work A2/A4/A6/A7
+via the Data API instead of skipping them:**
+- **A2 proxy**: `cron.job_run_details` itself isn't REST-reachable, but `pipeline_health`
+  is a public table and is. Recent rows at `stage='fetch'` (data-fetcher, every ~2h/club),
+  `stage='apns_send'`/`'la_send'` and the per-minute `live_*`/`watch` stages during a live
+  match are all driven by pg_cron — if they're still landing within the last hour or two,
+  pg_cron is alive even though you can't query it directly. It does not substitute for A2's
+  actual 72h-failure-count check; it only tells you cron hasn't gone silent.
+- **A4 per-source mapping** (none of this is a `source` column on `content_items` — there
+  isn't one): `pipeline_health.target` prefixes `post_news:<team>` = gd-news,
+  `post_insider:<team>` = gd-insider, `post_season_state:<team>` = gd-season-state (also
+  cross-check `team_season_state.generated_at` directly, it's REST-readable). `gd-saturday-
+  quiz` writes `saturday_quiz_items` (REST-readable; order by `published_at` explicitly —
+  PostgREST has no default order, so an unordered `limit=1` can return any row, not the
+  newest). `gd-matchday` shows up as `matchday_fire`/`post_match`/`matchday_reminder`
+  stages, paced by real fixtures, not a clock — judge it against whether a followed club
+  actually played, not a fixed cadence.
+- **A5 push-eligible check**: `verify-push-eligible.sh`'s own SQL is one straightforward
+  `content_items` filter (`push_eligible=false AND pushed_at IS NOT NULL` in the lookback
+  window) — run it over the Data API instead of the script when psql is blocked.
+- **A6**: search `pipeline_health.message`/`error_class` for `IDLE_TIMEOUT`/`WORKER_RESOURCE`
+  and any `stage` naming `team_page`, over REST, same as any other table here.
+
 ---
 
 ## 3. Pass B — Freshness & content (Friday, before the weekend's matches)
@@ -153,11 +176,34 @@ Every run, regardless of outcome:
 - **Commit** it to the repo so the history is readable on return
   (`git add reports/ && git commit`). Commit any doc self-revision (§5) too.
 
+**"Commit it" is not "merge it" — check this every run (found 2026-11-03).** Every
+`gd-maintenance` session works on its own fresh throwaway branch (`claude/gallant-
+mendel-*`) and this task's own rules forbid opening a PR unless asked and forbid
+pushing anywhere else. Nothing merges those branches automatically. Audited
+2026-11-03: of 12 prior run-branches going back to 2026-09-24, **11 are still sitting
+unmerged** — their reports, their `MAINTENANCE.md`/`DATA_SOURCES.md` edits, all of it,
+invisible from this branch and from whatever branch the next run starts on. Anton
+hand-copied one report and one `MAINTENANCE.md` paragraph across on 2026-10-27
+(commit `2d9ce7d`); everything else — including two prior *fixes* to
+`verify-push-eligible.sh`'s cloud-compatibility bug on two different dead branches —
+never landed and had to be rediscovered or (in that script's case) re-fixed from
+scratch this run. **Until a human changes how this routine is wired (e.g. binding the
+trigger to one persistent session/branch, or having it open a PR each run), each run
+should open this file first, run `git log --oneline --all | grep -i maintenance` (or
+list `claude/gallant-mendel-*` branches on the remote) and skim anything not yet on
+this branch before redoing the work.** This is exactly the kind of cross-run,
+infra-level finding that's a push, not a fix — see below.
+
 **Push to the phone (`PushNotification`) ONLY when** — so vacation isn't spammed:
 - something is **RED** (backend down / broken), or
 - a **human-source** finding needs a decision (manager, photo, ambiguous copy), or
 - the **cost ceiling** (Rule 2) was hit and a fix was deferred, or
-- the **DB was unreachable** (§1).
+- the **DB was unreachable** (§1) **in a way that's new or changed** — the pooler's DNS
+  block itself has been unchanged since 2026-10-06 and PostgREST has covered A1/A4/A6/A7
+  every run since; re-pushing the identical, already-acknowledged limitation every Tue/Fri
+  is the vacation spam this section exists to prevent (precedent: 2026-10-13 ran green
+  under the same block and stayed silent). Push it again only if PostgREST *also* goes
+  down (whole-project outage, not just the pooler), or if a NEW host joins the blocklist.
 
 **Green = silent.** No push when everything is fine and all fixes were in the
 automatic-source class.
