@@ -71,7 +71,7 @@ Original design: `docs/archive/V2.2_DESIGN_MULTI_TEAM.md` (historical).
   (070). `UNIQUE(apns_token)` and `UNIQUE(token)` are **deliberately preserved**.
 - **Registration** goes through SECURITY DEFINER RPCs keyed on the token:
   `rpc/register_device_token` and `rpc/register_la_token` (migration 071; payload caps
-  and rate limits in 129), called from `Services/APIClient.swift`. One row per device
+  in 129, rate limits log-only since 160), called from `Services/APIClient.swift`. One row per device
   makes a double push structurally impossible, even when a device follows both sides of
   a fixture, and keeps token expiry and Delete My Data simple.
 - **Scalar back-compat:** the legacy scalar `team_id`/`country_id` mirror `array[0]`.
@@ -316,10 +316,17 @@ Key tables: `teams`, `team_pages`, `team_season_state`, `team_context`,
 (`teams.manager_name`, migration 085; `teams.fan_name`, 128), per `DATA_SOURCES.md`.
 
 **Access posture:**
-- The app's publishable key can call exactly four RPCs: `register_device_token`,
-  `register_la_token`, `save_match_calls`, `log_events` (write-only, capped). It has no access to the token tables
-  (migrations 106, 120) and reads published content only. `./scripts/db-health.sh` §7
-  fails on any other anon-executable function.
+- The app's publishable key can call exactly five RPCs: `register_device_token`,
+  `register_la_token`, `save_match_calls`, `log_events` (write-only, capped; since 159 a
+  prop key must be `^[a-z_]{1,32}$` and one event's props ≤ 1 KB, else that event is
+  dropped) and `delete_app_events` (deletes only the caller's own random install id's
+  rows, migration 148; Delete My Data needs it, never revoke it). It has no access to the
+  token tables (migrations 106, 120) and reads published content only. `./scripts/db-health.sh`
+  §7 fails on any other anon-executable function, matched by full signature.
+- Token registration is never refused for volume (migration 160): a global hourly cap
+  locked real installs out during a flood, so it now only logs (`pipeline_health`
+  `token_register`), and db-health §4 warns on new tokens a day. A per-IP cap waits on
+  confirming that `x-forwarded-for` is set by Supabase's gateway, not the caller.
 - Every new function needs its own `REVOKE ... FROM PUBLIC, anon, authenticated`
   (CLAUDE.md). Retention sweeps run nightly (`*_retention_sweep` cron jobs; migration 129
   adds inactive tokens and stale Live Activity rows after 90 days).
