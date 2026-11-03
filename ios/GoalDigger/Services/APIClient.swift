@@ -134,6 +134,14 @@ class APIClient {
     /// any list endpoint where future schema changes could trip older
     /// clients on production data they don't yet recognize.
     private func decodeArrayLoosely<T: Decodable>(data: Data) throws -> [T] {
+        try Self.decodeArrayLoosely(data: data, decoder: decoder)
+    }
+
+    /// The same, for callers with their own decoder (the `players` reads use a
+    /// plain one): one row with a null name or a column of a surprising type
+    /// used to empty the squad, Who's Who and the opponent quiz on every build
+    /// (bug hunt 2026-11-03, hunter I hardening 3).
+    static func decodeArrayLoosely<T: Decodable>(data: Data, decoder: JSONDecoder = JSONDecoder()) throws -> [T] {
         let rawItems = try JSONSerialization.jsonObject(with: data, options: []) as? [Any] ?? []
         var decoded: [T] = []
         decoded.reserveCapacity(rawItems.count)
@@ -399,7 +407,7 @@ class APIClient {
         let request = makeRequest(url: url)
         let (data, response) = try await URLSession.shared.data(for: request)
         try validateResponse(response)
-        return try decoder.decode([PlayerCard].self, from: data)
+        return try decodeArrayLoosely(data: data)
     }
 
     func fetchTeamPage(teamId: String) async throws -> TeamPageContent? {

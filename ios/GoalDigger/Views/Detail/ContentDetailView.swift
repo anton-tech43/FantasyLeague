@@ -695,7 +695,7 @@ struct NamedPlayer: Identifiable {
             URLQueryItem(name: "select", value: "*"),
             URLQueryItem(name: "team_id", value: "eq.\(id)"),
         ])
-        guard let rows = data.flatMap({ try? JSONDecoder().decode([LiveSquadPack.Player].self, from: $0) }),
+        guard let rows = data.flatMap({ try? APIClient.decodeArrayLoosely(data: $0) as [LiveSquadPack.Player] }),
               !rows.isEmpty else { return [] }
         squads[id] = rows.filter { $0.in_official_squad != false }
         return squads[id] ?? []
@@ -711,7 +711,7 @@ struct NamedPlayer: Identifiable {
                     URLQueryItem(name: "select", value: "*"),
                     URLQueryItem(name: "team_id", value: "eq.\(id)"),
                 ])
-                let rows = data.flatMap { try? JSONDecoder().decode([LiveSquadPack.Player].self, from: $0) }
+                let rows = data.flatMap { try? APIClient.decodeArrayLoosely(data: $0) as [LiveSquadPack.Player] }
                 guard let rows, !rows.isEmpty else { continue }  // retry next open
                 squads[id] = rows.filter { $0.in_official_squad != false }
                 dossiers[id] = (try? await APIClient.shared.fetchPlayerCards(teamId: id)) ?? []

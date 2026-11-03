@@ -391,12 +391,20 @@ struct PlayerCard: Identifiable, Codable {
 // MARK: - Team Page — Versioned JSONB schema (matches Supabase team_pages.content)
 
 struct TeamPageContent: Codable {
-    let schemaVersion: Int
+    /// Read by nothing. Optional and decoded leniently so a page written
+    /// without it, or with it as a string, still shows (hunter I hardening 3).
+    let schemaVersion: Int?
     let cards: TeamPageCards
 
     enum CodingKeys: String, CodingKey {
         case schemaVersion = "schema_version"
         case cards
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        schemaVersion = try? c.decode(Int.self, forKey: .schemaVersion)
+        cards = try c.decode(TeamPageCards.self, forKey: .cards)
     }
 }
 

@@ -67,6 +67,13 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                && hasNamePlaceholder("get [his name] off") && hasNamePlaceholder("[Her name's] call") && hasNamePlaceholder("hi {name}")
                && !hasNamePlaceholder("Arsenal [4-3 pens] his name"),
                "a quiz line keeps [his name] for her to read")
+        let squad = Data((#"[{"api_player_id":1,"name":"B. Saka","minutes":900},{"api_player_id":2,"name":null},"#
+                          + #"{"api_player_id":3,"name":"D. Rice","minutes":"lots"},{"api_player_id":4,"name":"W. Saliba"}]"#).utf8)
+        let kept = ((try? APIClient.decodeArrayLoosely(data: squad) as [LiveSquadPack.Player]) ?? []).map(\.api_player_id)
+        assert(kept == [1, 4], "one bad players row blanks the whole squad")
+        assert((try? JSONDecoder().decode(TeamPageContent.self, from: Data(#"{"cards":{}}"#.utf8))) != nil
+               && (try? JSONDecoder().decode(TeamPageContent.self, from: Data(#"{"schema_version":"2","cards":{}}"#.utf8))) != nil,
+               "a team page without a numeric schema_version does not show")
         Task { @MainActor in
             let ordered = await LatestOnlyQueue.selfCheck()
             assert(ordered, "push registrations can overtake each other; the server may keep the older follow set")

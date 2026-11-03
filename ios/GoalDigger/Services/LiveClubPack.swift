@@ -1111,11 +1111,15 @@ final class LiveClubPackService {
         let playersData = try await APIClient.shared.rawGET(path: "players", queryItems: [
             URLQueryItem(name: "select", value: "*"),
             URLQueryItem(name: "team_id", value: "in.(\(ids))"),
-            URLQueryItem(name: "order", value: "minutes.desc"),
-            URLQueryItem(name: "limit", value: "1500"),
+            // PostgREST caps a response at 1000 rows whatever limit says, and
+            // Postgres sorts NULL first on DESC: past the cap the men who play
+            // were cut before the 75 who never have. Nulls last, at the cap.
+            // ponytail: 626 rows today; past 1000, page with offset.
+            URLQueryItem(name: "order", value: "minutes.desc.nullslast"),
+            URLQueryItem(name: "limit", value: "1000"),
         ])
         let decoder = JSONDecoder()
-        let rows = ((try? decoder.decode([LiveSquadPack.Player].self, from: playersData)) ?? [])
+        let rows = ((try? APIClient.decodeArrayLoosely(data: playersData) as [LiveSquadPack.Player]) ?? [])
             .filter { $0.in_official_squad != false }
 
         // Pick a handful per club, then spend the photo checks only on those.

@@ -633,7 +633,7 @@ final class LiveSquadService {
             // Not asked about: anyone the official squad list says is not
             // registered ("What number does Luka Bentt wear?").
             let players = ((try? await rows).flatMap {
-                try? JSONDecoder().decode([LiveSquadPack.Player].self, from: $0)
+                try? APIClient.decodeArrayLoosely(data: $0) as [LiveSquadPack.Player]
             } ?? []).filter { $0.in_official_squad != false }
             let names = (try? await managers).flatMap {
                 try? JSONDecoder().decode([[String: String?]].self, from: $0)
