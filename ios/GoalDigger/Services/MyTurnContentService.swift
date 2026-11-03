@@ -40,6 +40,10 @@ final class MyTurnContentService {
         #if DEBUG
         myTurnPayloadSelfCheck()
         #endif
+        // Copy the text of every saved line this content still has, so a
+        // later publish that drops an id cannot take it out of "Your lines".
+        // The first launch of this build back-fills stars saved as bare ids.
+        MyTurnStore.shared.rememberSavedLines(from: sayThis)
     }
 
     // MARK: Loading
@@ -159,6 +163,9 @@ final class MyTurnContentService {
         switch module {
         case "saythis":
             guard let c = try? decoder.decode(SayThisContent.self, from: data), c.isUsable else { return }
+            // From the content she has now, before it goes: a line this
+            // publish drops is copied while it can still be read.
+            MyTurnStore.shared.rememberSavedLines(from: sayThis)
             store(module, data); sayThis = c
         case "lingo":
             guard let c = try? decoder.decode(LingoContent.self, from: data), c.isUsable else { return }

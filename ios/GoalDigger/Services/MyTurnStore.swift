@@ -268,7 +268,15 @@ final class MyTurnStore {
 
     private struct Persisted: Codable {
         var lastModule: MyTurnModule = .sayThis
+        /// Oldest first, in the order she saved them.
         var starredLineIds: [String] = []
+        /// What each saved line said when she saved it, keyed by line id. A
+        /// publish that renames or drops an id (who-was-good-2 and -4, gone on
+        /// 2026-11-01) used to take the line out of "Your lines" without a
+        /// word; the copy here keeps it. Optional so a blob written before it
+        /// existed still decodes (the ids in it are copied on the next launch
+        /// while the content still has them, `rememberSavedLines`).
+        var savedLines: [String: SavedLine]? = nil
         var hasSeenRiskExplainer: Bool = false
         var sayThisSituationId: String? = nil
         var lingoExpandedId: String? = nil
@@ -333,8 +341,54 @@ final class MyTurnStore {
         }
         #if DEBUG
         myTurnTolerantDecodeSelfCheck()
+        if defaults != nil { Self.savedLinesSelfCheck() }
         #endif
     }
+
+    #if DEBUG
+    /// "Your lines" (bug hunt 2026-11-03 U-C1/U-C2): a saved line survives a
+    /// publish that drops its id, the list is newest first, a blob of bare ids
+    /// from an older build still decodes, and Undo puts a removed line back
+    /// where it was. On a store that touches no UserDefaults.
+    private static func savedLinesSelfCheck() {
+        func line(_ id: String, _ text: String) -> SayLine {
+            SayLine(id: id, text: text, usage: "u", risk: .safe, lingo: nil)
+        }
+        func content(_ lines: [SayLine]) -> SayThisContent {
+            SayThisContent(contentVersion: "t", situations: [
+                Situation(id: "s", group: .moments, label: "Who was good", lines: lines)])
+        }
+        let before = content([line("a", "Line A"), line("b", "Line B"), line("c", "Line C")])
+        let after = content([line("a", "Line A"), line("c", "Line C, fixed")])
+
+        let store = MyTurnStore(defaults: nil)
+        store.toggleStar("b"); store.toggleStar("a"); store.toggleStar("c")
+        store.rememberSavedLines(from: before)
+        var rows = store.savedLines(in: after)
+        assert(rows.map(\.line.id) == ["c", "a", "b"], "Your lines is not newest first, or lost a line: \(rows.map(\.line.id))")
+        assert(rows.first?.line.text == "Line C, fixed", "a line the content still has should read as the content has it now")
+        assert(rows.last?.line.text == "Line B" && rows.last?.situationLabel == "Who was good",
+               "a saved line vanished when a publish dropped its id")
+
+        store.toggleStar("a")
+        assert(store.savedLines(in: after).map(\.line.id) == ["c", "b"], "unstar did not remove the line")
+        store.undoUnstar()
+        assert(store.savedLines(in: after).map(\.line.id) == ["c", "a", "b"], "Undo did not put the line back where it was")
+        store.toggleStar("b")
+        store.undoUnstar()
+        rows = store.savedLines(in: after)
+        assert(rows.last?.line.text == "Line B", "Undo on a line the content dropped lost its saved text")
+
+        // The blob an older build wrote: ids only, no savedLines key.
+        var old = Persisted()
+        old.starredLineIds = ["a", "b"]
+        let data = try! JSONEncoder().encode(old)
+        assert(!String(decoding: data, as: UTF8.self).contains("savedLines"), "the old-blob fixture is not old")
+        let read = try? JSONDecoder().decode(Persisted.self, from: data)
+        assert(read?.starredLineIds == ["a", "b"] && read?.savedLines == nil,
+               "a blob without savedLines no longer decodes, and every star in it is lost")
+    }
+    #endif
 
     private func persist() {
         if let data = try? JSONEncoder().encode(state) {
@@ -391,13 +445,76 @@ final class MyTurnStore {
 
     // MARK: Say This
 
+    /// A saved line as it read when she saved it, for when the content no
+    /// longer has its id.
+    struct SavedLine: Codable, Equatable {
+        let line: SayLine
+        let situationLabel: String
+    }
+
+    /// The last line taken out of "Your lines", for its Undo. Not persisted:
+    /// an undo only means something for the few seconds it is on screen.
+    struct Unstarred: Equatable {
+        let id: String
+        let position: Int
+        let saved: SavedLine?
+    }
+    var lastUnstarred: Unstarred?
+
     var starredLineIds: Set<String> { Set(state.starredLineIds) }
     func isStarred(_ lineId: String) -> Bool { state.starredLineIds.contains(lineId) }
     func toggleStar(_ lineId: String) {
         if let i = state.starredLineIds.firstIndex(of: lineId) {
+            lastUnstarred = Unstarred(id: lineId, position: i, saved: state.savedLines?[lineId])
             state.starredLineIds.remove(at: i)
+            state.savedLines?[lineId] = nil
         } else {
             state.starredLineIds.append(lineId)
+            if lastUnstarred?.id == lineId { lastUnstarred = nil }
+        }
+    }
+
+    /// Puts the last removed line back where it was, with its saved copy.
+    func undoUnstar() {
+        guard let u = lastUnstarred, !state.starredLineIds.contains(u.id) else { lastUnstarred = nil; return }
+        lastUnstarred = nil
+        var s = state
+        s.starredLineIds.insert(u.id, at: min(u.position, s.starredLineIds.count))
+        if let saved = u.saved { s.savedLines = (s.savedLines ?? [:]).merging([u.id: saved]) { _, new in new } }
+        state = s
+    }
+
+    /// Copies the text of every saved line the content still has. Called with
+    /// the content she has on launch (which also back-fills stars saved by a
+    /// build that kept ids only), on every save, and with the OLD content just
+    /// before a publish replaces it, so a line the publish drops is copied
+    /// while it can still be read.
+    func rememberSavedLines(from content: SayThisContent) {
+        guard !state.starredLineIds.isEmpty else { return }
+        let ids = Set(state.starredLineIds)
+        var saved = state.savedLines ?? [:]
+        for s in content.situations {
+            for l in s.lines where ids.contains(l.id) {
+                saved[l.id] = SavedLine(line: l, situationLabel: s.label)
+            }
+        }
+        // Only a real change writes the blob (this runs on every save and launch).
+        if saved != (state.savedLines ?? [:]) { state.savedLines = saved }
+    }
+
+    /// "Your lines", newest first. A line the content still has is shown as
+    /// the content has it now (a typo fix reaches her); one it has dropped is
+    /// shown from the copy taken when she saved it. An id with neither was
+    /// dropped before this build could copy it and cannot be shown.
+    func savedLines(in content: SayThisContent) -> [(situationLabel: String, line: SayLine)] {
+        var live: [String: (String, SayLine)] = [:]
+        for s in content.situations {
+            for l in s.lines where live[l.id] == nil { live[l.id] = (s.label, l) }
+        }
+        return state.starredLineIds.reversed().compactMap { id in
+            if let (label, line) = live[id] { return (label, line) }
+            if let saved = state.savedLines?[id] { return (saved.situationLabel, saved.line) }
+            return nil
         }
     }
     var hasSeenRiskExplainer: Bool {

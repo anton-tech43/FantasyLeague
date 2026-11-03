@@ -44,14 +44,10 @@ struct SayThisView: View {
         return content.situations.first { $0.id == id }
     }
 
-    /// Lines she saved here, with their situation, for "Your lines".
-    private var starred: [(Situation, SayLine)] {
-        let ids = store.starredLineIds
-        var out: [(Situation, SayLine)] = []
-        for s in content.situations {
-            for l in s.lines where ids.contains(l.id) { out.append((s, l)) }
-        }
-        return out
+    /// Lines she saved here, newest first, for "Your lines". One the content
+    /// has since dropped is shown from the copy kept when she saved it.
+    private var starred: [(situationLabel: String, line: SayLine)] {
+        store.savedLines(in: content)
     }
 
     var body: some View {
@@ -86,6 +82,15 @@ struct SayThisView: View {
         .animation(.easeInOut(duration: 0.2), value: store.sayThisSituationId)
         .animation(.easeInOut(duration: 0.2), value: practise?.index)
         .animation(.easeInOut(duration: 0.2), value: practise?.revealed)
+        // Copy a line's text the moment she saves it.
+        .onChange(of: store.starredLineIds) { _, _ in store.rememberSavedLines(from: content) }
+        // Undo stays for a few seconds, then the removal is final.
+        .task(id: store.lastUnstarred) {
+            guard store.lastUnstarred != nil else { return }
+            try? await Task.sleep(for: .seconds(5))
+            if !Task.isCancelled { store.lastUnstarred = nil }
+        }
+        .onDisappear { store.lastUnstarred = nil }
         #if DEBUG
         .onAppear(perform: applyPractiseArguments)
         #endif
@@ -138,6 +143,25 @@ struct SayThisView: View {
         MyTurnSectionLabel(text: "Your lines")
         LingoCallsView(calls: LingoCalls.published(lingo), store: store, context: context,
                        presentation: .list) { _ in }
+        if let removed = store.lastUnstarred {
+            HStack {
+                Text("Removed from your lines")
+                    .font(.jakarta(14, weight: .regular))
+                    .foregroundColor(.warmWhite.opacity(0.7))
+                Spacer(minLength: 8)
+                Button("Undo") {
+                    store.undoUnstar()
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                }
+                .font(.jakarta(14, weight: .bold))
+                .foregroundColor(.hotRose)
+                .frame(minWidth: 44, minHeight: 44)
+                .accessibilityLabel("Undo, put the line back")
+            }
+            .padding(.horizontal, 4)
+            .id(removed.id)
+            .transition(.opacity)
+        }
         if starred.isEmpty {
             Text("Save a line with its star and it'll wait for you here.")
                 .font(.jakarta(14, weight: .regular))
@@ -145,8 +169,8 @@ struct SayThisView: View {
                 .padding(.horizontal, 4)
                 .padding(.bottom, 8)
         } else {
-            ForEach(starred, id: \.1.id) { situation, line in
-                lineRow(line, situationLabel: situation.label)
+            ForEach(starred, id: \.line.id) { row in
+                lineRow(row.line, situationLabel: row.situationLabel)
             }
         }
 
