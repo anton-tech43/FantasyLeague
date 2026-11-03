@@ -20,6 +20,12 @@ struct SettingsView: View {
     @State private var isSyncingCalendar = false
     @State private var showCalendarRemoveConfirm = false
     @State private var calendarErrorMessage: String?
+    /// The two folds. Owned by the gear that presents this sheet, not by this
+    /// view: presenting an alert here (Delete My Data) tears this view down and
+    /// builds a new one (seen 2026-11-03: disappear + appear on the alert), so
+    /// any `@State` of its own comes back folded and at the top.
+    @Binding var setupOpen: Bool
+    @Binding var aboutOpen: Bool
 
     var body: some View {
         ZStack {
@@ -42,7 +48,7 @@ struct SettingsView: View {
                     //    is "what's happening right now" (push state +
                     //    calendar sync); identity + mode editing is one
                     //    extra tap away.
-                    CollapsibleSection(title: "Change your setup") {
+                    CollapsibleSection(title: "Change your setup", isExpanded: $setupOpen) {
                         VStack(spacing: Layout.cardSpacing) {
                             yourNameRow
                             hisNameRow
@@ -70,7 +76,7 @@ struct SettingsView: View {
                     //    Version) so the entire app metadata lives in
                     //    one expand-on-tap section instead of trailing
                     //    rows that pad the page.
-                    CollapsibleSection(title: "About") {
+                    CollapsibleSection(title: "About", isExpanded: $aboutOpen) {
                         VStack(spacing: Layout.cardSpacing) {
                             aboutBlurbCard
                             contactRow
@@ -896,6 +902,17 @@ struct TierPickerSheet: View {
 struct SettingsButton: ViewModifier {
     @Environment(AppState.self) private var appState
     @State private var showing = false
+    /// Settings' two folds, kept here so they survive the sheet's content
+    /// being rebuilt (see SettingsView.setupOpen). Folded again on close.
+    @State private var setupOpen = false
+    @State private var aboutOpen: Bool = {
+        #if DEBUG
+        // `-gdSettingsAbout` opens Settings on About (with `-gdOpenSettings`).
+        return ProcessInfo.processInfo.arguments.contains("-gdSettingsAbout")
+        #else
+        return false
+        #endif
+    }()
 
     func body(content: Content) -> some View {
         content
@@ -910,9 +927,15 @@ struct SettingsButton: ViewModifier {
                 }
             }
             .sheet(isPresented: $showing) {
-                NavigationStack { SettingsView() }
+                NavigationStack { SettingsView(setupOpen: $setupOpen, aboutOpen: $aboutOpen) }
             }
+            .onChange(of: showing) { _, open in if !open { setupOpen = false; aboutOpen = false } }
             .onChange(of: appState.pushTapTick) { showing = false }
+            #if DEBUG
+            // `-gdOpenSettings` opens the sheet on launch (the gear sits in the
+            // navigation bar, which the simulator tool cannot always tap).
+            .onAppear { if ProcessInfo.processInfo.arguments.contains("-gdOpenSettings") { showing = true } }
+            #endif
     }
 }
 

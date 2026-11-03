@@ -77,7 +77,11 @@ struct MatchLiveActivity: Widget {
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(LA.warmWhite)
                 .lineLimit(1)
+                .minimumScaleFactor(0.75)
         }
+        // Off the island's rounded corners, which clipped the first letter of
+        // the home side and the last of the away side (bug hunt 2026-11-03 U-C9).
+        .padding(.horizontal, 8)
     }
 
 }

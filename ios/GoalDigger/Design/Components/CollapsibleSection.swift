@@ -5,12 +5,17 @@ import SwiftUI
 /// by default on each view appearance — no persistence (a user revisits
 /// settings often; defaulting to collapsed keeps the screen compact).
 ///
+/// The open/closed flag belongs to the caller: kept in this view's own
+/// `@State`, Delete My Data › Cancel came back with both sections folded
+/// and the page at the top, so she had to open About again to retry (bug
+/// hunt 2026-11-03 U-C10). Settings keeps it in the gear that presents it.
+///
 /// Visual: rose-tinted uppercase title matching `settingsSection`
 /// headers, chevron-down (collapsed) / chevron-up (expanded), spring
 /// animation on toggle. Content slides in from the top with opacity.
 struct CollapsibleSection<Content: View>: View {
     let title: String
-    @State private var isExpanded: Bool = false
+    @Binding var isExpanded: Bool
     @ViewBuilder let content: () -> Content
 
     var body: some View {

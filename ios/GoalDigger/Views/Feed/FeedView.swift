@@ -191,37 +191,16 @@ struct FeedView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Notifications are off")
                 .font(.jakarta(15, weight: .bold))
+                .fixedSize(horizontal: false, vertical: true)
             Text("You'll miss the score as it happens and the heads-up before \(appState.pPossessive) next game.")
                 .font(.jakarta(13, weight: .regular))
                 .foregroundColor(.textPrimaryOnCard.opacity(0.75))
                 .fixedSize(horizontal: false, vertical: true)
-            HStack(spacing: 16) {
-                Button {
-                    Analytics.shared.log(.notificationsBanner, ["action": "turn_on"])
-                    Task {
-                        if notificationStatus == .notDetermined {
-                            _ = await NotificationService.shared.requestPermission()
-                            appState.notificationPermissionRequested = true
-                            await checkNotifications()
-                        } else if let url = URL(string: UIApplication.openSettingsURLString) {
-                            await UIApplication.shared.open(url)
-                        }
-                    }
-                } label: {
-                    Text("Turn them on")
-                        .font(.jakarta(13, weight: .bold))
-                        .foregroundColor(.warmWhite)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .background(Capsule().fill(Color.hotRose))
-                }
-                Button("Not now") {
-                    Analytics.shared.log(.notificationsBanner, ["action": "not_now"])
-                    bannerSnoozedUntil = Date().addingTimeInterval(14 * 24 * 3600).timeIntervalSince1970
-                }
-                .font(.jakarta(13, weight: .semiBold))
-                .foregroundColor(.textPrimaryOnCard.opacity(0.7))
-                .frame(minHeight: 44)
+            // Side by side, or stacked when the text is too big for one row
+            // ("Turn t…" at the accessibility sizes, bug hunt 2026-11-03 U-C9).
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 16) { bannerButtons }
+                VStack(alignment: .leading, spacing: 4) { bannerButtons }
             }
             .padding(.top, 2)
         }
@@ -229,8 +208,41 @@ struct FeedView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
         .background(RoundedRectangle(cornerRadius: 16).fill(Color.cardBackground))
+        // It sits above the paged feed, so at the largest sizes it would take
+        // half the screen from the cards (which stop at .xxxLarge themselves).
+        .dynamicTypeSize(...DynamicTypeSize.accessibility1)
         .accessibilityElement(children: .contain)
         .onAppear { Analytics.shared.log(.notificationsBanner, ["action": "shown"]) }
+    }
+
+    @ViewBuilder
+    private var bannerButtons: some View {
+            Button {
+                Analytics.shared.log(.notificationsBanner, ["action": "turn_on"])
+                Task {
+                    if notificationStatus == .notDetermined {
+                        _ = await NotificationService.shared.requestPermission()
+                        appState.notificationPermissionRequested = true
+                        await checkNotifications()
+                    } else if let url = URL(string: UIApplication.openSettingsURLString) {
+                        await UIApplication.shared.open(url)
+                    }
+                }
+            } label: {
+                Text("Turn them on")
+                    .font(.jakarta(13, weight: .bold))
+                    .foregroundColor(.warmWhite)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(Capsule().fill(Color.hotRose))
+            }
+            Button("Not now") {
+                Analytics.shared.log(.notificationsBanner, ["action": "not_now"])
+                bannerSnoozedUntil = Date().addingTimeInterval(14 * 24 * 3600).timeIntervalSince1970
+            }
+            .font(.jakarta(13, weight: .semiBold))
+            .foregroundColor(.textPrimaryOnCard.opacity(0.7))
+            .frame(minHeight: 44)
     }
 
     // MARK: - Context Pill

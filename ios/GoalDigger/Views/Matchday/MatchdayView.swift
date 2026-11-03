@@ -351,6 +351,7 @@ struct MatchdayCard: View {
     let fill: Color
     let ink: Color
     var arrow = false
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         GeometryReader { geo in
@@ -359,7 +360,10 @@ struct MatchdayCard: View {
                 Text(title)
                     .font(.spartanBold(30))
                     .tracking(-0.045 * 30)
-                    .lineLimit(arrow ? 2 : 1)
+                    // A second row at the accessibility sizes: on one, the
+                    // score read "Arsenal 2-1…" and hid who it was against
+                    // (bug hunt 2026-11-03 U-C9).
+                    .lineLimit(arrow || typeSize.isAccessibilitySize ? 2 : 1)
                     .minimumScaleFactor(0.7)
                     .fixedSize(horizontal: false, vertical: true)
                 if !text.isEmpty {
