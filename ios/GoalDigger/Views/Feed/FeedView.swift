@@ -168,6 +168,14 @@ struct FeedView: View {
     /// Settings keeps the same control for when she goes looking.
     private func checkNotifications() async {
         notificationStatus = await NotificationService.shared.checkNotificationStatus()
+        #if DEBUG
+        // `-gdNotificationsOff` shows the banner on a simulator that has
+        // already granted notifications (simctl cannot revoke them).
+        if ProcessInfo.processInfo.arguments.contains("-gdNotificationsOff") {
+            notificationStatus = .denied
+            bannerSnoozedUntil = 0
+        }
+        #endif
     }
 
     private var pushesOff: Bool {
@@ -338,13 +346,13 @@ struct FeedView: View {
     private var immersiveFeed: some View {
         // The banner sits above the feed, not inside it, so the cards below
         // are sized to the space that is left and "Your move" still clears
-        // the tab bar on the first card.
-        VStack(spacing: 0) {
-        if pushesOff {
-            notificationsOffBanner
-                .padding(.horizontal, Layout.screenPadding)
-                .padding(.vertical, 8)
-        }
+        // the tab bar on the first card. It is a top safe-area inset, not a
+        // row of a VStack: in a VStack the scroll view's frame started under
+        // the banner while view-aligned paging measured from higher up, so a
+        // swipe came to rest ~60 pt off a card with the next headline hidden
+        // behind the banner (bug hunt 2026-11-03 U-C7). As an inset the
+        // scroll view runs to the top like it does under the navigation bar,
+        // and the cards page against the edge she can see.
         GeometryReader { geo in
           ScrollViewReader { proxy in
             ScrollView(.vertical) {
@@ -425,6 +433,13 @@ struct FeedView: View {
             #endif
           }
         }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if pushesOff {
+                notificationsOffBanner
+                    .padding(.horizontal, Layout.screenPadding)
+                    .padding(.vertical, 8)
+                    .background(Color.appBackground)
+            }
         }
     }
 
