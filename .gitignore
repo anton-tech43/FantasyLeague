@@ -44,3 +44,6 @@ __pycache__/
 .claude/worktrees/
 # Xcode per-user state
 **/xcuserdata/
+
+# Codex config holds live API keys (Blotato); never commit it (bug hunt 2026-11-03).
+.codex/
