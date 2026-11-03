@@ -18,6 +18,10 @@
 #   - -----BEGIN ... PRIVATE KEY----- — the APNs .p8 and any PEM key
 #   - postgres://user:<password>@ — SUPABASE_DB_URL with its password
 #   - blt_*         — Blotato API key
+#   - EAA*          — Meta (Facebook/Instagram) access token (META_ACCESS_TOKEN)
+#   - sk_<40+ hex>  — ElevenLabs API key (ELEVENLABS_API_KEY)
+#   - sk-*/sk-proj-* — OpenAI API key
+#   - ghp_/gho_/ghu_/ghs_/ghr_ — GitHub token
 #   - 80 hex chars  — the cron key's shape (openssl rand -hex 40)
 #   - 32 hex chars after an API-Football key name or header
 #   The two hex shapes are checked in text files outside image and lock
@@ -49,6 +53,10 @@ PATTERNS=(
   "-----BEGIN [A-Z ]*PRIVATE KEY-----"               # APNs .p8 / PEM
   "postgres(ql)?://[^:@/[:space:]]+:[^@[:space:]<>\$[{*]+@"  # DB URL with a password (not a <placeholder>)
   "blt_[A-Za-z0-9+/=_-]{16,}"                        # Blotato
+  "(^|[^A-Za-z0-9+/])EAA[A-Za-z0-9]{100,}"           # Meta access token (not inside base64 image data)
+  "(^|[^A-Za-z0-9_])sk_[0-9a-f]{40,}"                # ElevenLabs
+  "(^|[^A-Za-z0-9_])sk-(proj-)?[A-Za-z0-9_-]{40,}"   # OpenAI
+  "gh[pousr]_[A-Za-z0-9]{36}"                        # GitHub token
 )
 # Hex shapes: only in text files that are not image/lock assets.
 HEX_PATTERNS=(
