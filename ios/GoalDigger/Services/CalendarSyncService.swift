@@ -92,10 +92,14 @@ final class CalendarSyncService {
     /// Launch / foreground hook: best-effort, non-prompting, throttled. No-op
     /// unless the user enabled sync AND already granted full calendar access
     /// (we never trigger the permission prompt from a background-resume path).
-    func autoResync(teams: [Team], countries: [Country], enabled: Bool) async {
+    ///
+    /// `force` skips the throttle: a club added or removed in Settings has to
+    /// reach the calendar now, not on the next foreground half an hour later
+    /// (bug hunt 2026-11-03 U-C3).
+    func autoResync(teams: [Team], countries: [Country], enabled: Bool, force: Bool = false) async {
         guard enabled else { return }
         guard EKEventStore.authorizationStatus(for: .event) == .fullAccess else { return }
-        if let last = lastAutoResyncAt, Date().timeIntervalSince(last) < 30 * 60 { return }
+        if !force, let last = lastAutoResyncAt, Date().timeIntervalSince(last) < 30 * 60 { return }
         lastAutoResyncAt = Date() // set before awaiting so a rapid re-entry no-ops
         try? await resync(teams: teams, countries: countries)
     }

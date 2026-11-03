@@ -719,6 +719,9 @@ struct TeamPickerSheet: View {
         }
         appState.isContextSwitcherOpen = false
         NotificationService.shared.reregisterForFollowChange()
+        // The new club's games in, the dropped club's calendar out, now.
+        let teams = picks, countries = appState.selectedCountries, enabled = appState.calendarSyncEnabled
+        Task { await CalendarSyncService.shared.autoResync(teams: teams, countries: countries, enabled: enabled, force: true) }
         dismiss()
     }
 }
