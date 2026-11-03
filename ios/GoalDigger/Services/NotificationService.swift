@@ -18,6 +18,7 @@ class NotificationService {
         }
     }
 
+    @MainActor
     func handleTokenRegistration(_ token: String) {
         // iOS reissues the same APNs token across cold starts unless the app
         // is reinstalled or the user resets their device. Re-POSTing on every
@@ -55,8 +56,14 @@ class NotificationService {
         let scope = "\(countryIds.sorted().joined(separator: ","))" +
             "|\(teamIds.sorted().joined(separator: ","))|\(tier)|\(TimeZone.current.identifier)"
         let lastScope = UserDefaults.standard.string(forKey: "lastRegisteredScope")
-        if unchanged && alreadyRegistered && scope == lastScope { return }
-        Task {
+        // While a POST is in flight, lastScope is not yet what the server will
+        // hold, so the guard cannot be trusted: queue unconditionally.
+        if unchanged && alreadyRegistered && scope == lastScope && !registrations.isBusy { return }
+        // One registration at a time, newest last (bug hunt 2026-11-03 I-C2):
+        // two quick follow changes fired two parallel upserts that could land
+        // out of order, leaving the server on the older follow set while
+        // lastRegisteredScope named the newer one, so no later launch fixed it.
+        registrations.run {
             do {
                 try await APIClient.shared.registerToken(
                     token,
@@ -64,17 +71,13 @@ class NotificationService {
                     countryIds: countryIds,
                     tier: tier
                 )
-                await MainActor.run {
-                    UserDefaults.standard.set(true, forKey: "apnsTokenRegistered")
-                    UserDefaults.standard.set(scope, forKey: "lastRegisteredScope")
-                }
+                UserDefaults.standard.set(true, forKey: "apnsTokenRegistered")
+                UserDefaults.standard.set(scope, forKey: "lastRegisteredScope")
             } catch {
                 // Clear the flag, it may still be true from an older token. The
                 // new token is already stored, so leaving it true made the guard
                 // above return early on every later call: a permanent black hole.
-                await MainActor.run {
-                    UserDefaults.standard.set(false, forKey: "apnsTokenRegistered")
-                }
+                UserDefaults.standard.set(false, forKey: "apnsTokenRegistered")
                 #if DEBUG
                 print("⚠️ registerToken failed: \(error)")
                 #endif
@@ -82,9 +85,12 @@ class NotificationService {
         }
     }
 
+    private let registrations = LatestOnlyQueue()
+
     /// Re-register the stored APNs token after the followed country/team changes
     /// (e.g. the Settings country picker), so device_tokens.country_id updates
     /// immediately instead of waiting for the next launch. No-op if no token yet.
+    @MainActor
     func reregisterForFollowChange() {
         guard let token = UserDefaults.standard.string(forKey: "apnsToken"), !token.isEmpty else { return }
         handleTokenRegistration(token)
@@ -124,4 +130,55 @@ class NotificationService {
         guard let before, before != now, now != "not_determined" else { return }
         Task { @MainActor in Analytics.shared.log(.notificationPermissionChanged, ["from": before, "to": now]) }
     }
+}
+
+/// Runs one job at a time. A job submitted while one runs replaces any job
+/// already waiting, so after the running one finishes only the newest runs:
+/// last write wins, and writes reach the server in the order they were made.
+@MainActor
+final class LatestOnlyQueue {
+    typealias Job = @MainActor () async -> Void
+    private var running = false
+    private var waiting: Job?
+
+    nonisolated init() {}
+
+    var isBusy: Bool { running }
+
+    func run(_ job: @escaping Job) {
+        if running { waiting = job; return }
+        running = true
+        Task { @MainActor in
+            var next: Job? = job
+            while let current = next {
+                await current()
+                next = waiting
+                waiting = nil
+            }
+            running = false
+        }
+    }
+
+    #if DEBUG
+    /// A runs and is held; B and C arrive meanwhile. Only C may follow A, and
+    /// a job submitted once the queue is idle runs on its own.
+    static func selfCheck() async -> Bool {
+        let queue = LatestOnlyQueue()
+        var ran: [String] = []
+        var gate: CheckedContinuation<Void, Never>?
+        queue.run {
+            ran.append("A")
+            await withCheckedContinuation { gate = $0 }
+        }
+        queue.run { ran.append("B") }
+        queue.run { ran.append("C") }
+        while gate == nil { await Task.yield() }
+        let heldWhileBusy = ran == ["A"] && queue.isBusy
+        gate?.resume()
+        while queue.isBusy { await Task.yield() }
+        queue.run { ran.append("D") }
+        while queue.isBusy { await Task.yield() }
+        return heldWhileBusy && ran == ["A", "C", "D"]
+    }
+    #endif
 }

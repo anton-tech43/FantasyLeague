@@ -59,6 +59,11 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         assert(LiveClubPack.clubSelfCheck(), "the club pack misreads form or a shootout")
         assert(LiveSquadPack.injurySelfCheck(), "an injured man got a line that sends her looking for him")
         assert(LingoCalendar.selfCheck(), "the transfer window is open on the wrong days")
+        Task { @MainActor in
+            let ordered = await LatestOnlyQueue.selfCheck()
+            assert(ordered, "push registrations can overtake each other; the server may keep the older follow set")
+            print("✅ LatestOnlyQueue self-check passed")
+        }
         #endif
 
         UNUserNotificationCenter.current().delegate = self
