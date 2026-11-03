@@ -78,6 +78,7 @@ type Any = any;
  * `response[0]`. The date check is for the 2-hour window in which response[0]
  * is a game that has already started — buying predictions for that one would
  * cost a call and then be skipped by the team page, which wants the NEXT one.
+ * WHEN to buy (not during that game) is `predictionsDue`.
  */
 export function nextFixtureIdForPredictions(payload: unknown, now: Date): number | null {
   const response = (payload as Any)?.response;
@@ -92,6 +93,60 @@ export function nextFixtureIdForPredictions(payload: unknown, now: Date): number
     const t = Date.parse(fixture?.date ?? "");
     if (Number.isNaN(t) || t >= now.getTime()) return id;
   }
+  return null;
+}
+
+/**
+ * Kickoff to "the feed's form includes the result": a game lasts about two
+ * hours, plus an hour for the feed to catch up.
+ */
+export const PREDICTIONS_SETTLE_MS = 3 * 60 * 60 * 1000;
+/**
+ * Re-buy at least this often. Catches a result we cannot see coming (an
+ * opponent's game against a club we do not track) and a feed slower than the
+ * settle margin, within a day. ~20 calls a day at most.
+ */
+export const PREDICTIONS_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Should data-fetcher (re)buy `/predictions` for the next fixture now?
+ *
+ * Until 2026-11-03 it bought once per fixture, and the fixture became "next"
+ * the minute the previous game kicked off, so every payload was bought DURING
+ * that game and kept for the week: form one result behind on 20 of 20 matchup
+ * cards (bug hunt D-C2).
+ *
+ * `fetchedAt` is the newest stored row for this fixture (ms, null for none);
+ * `kickoffs` are the kickoff times (ms) of recent games of EITHER side.
+ */
+export function predictionsDue(fetchedAt: number | null, kickoffs: number[], now: number): boolean {
+  // A game in play or just finished: its result is not in the form yet.
+  // Never buy now; the next run will.
+  if (kickoffs.some((k) => k <= now && now - k < PREDICTIONS_SETTLE_MS)) return false;
+  if (fetchedAt === null) return true;
+  if (now - fetchedAt >= PREDICTIONS_MAX_AGE_MS) return true;
+  // Bought before a game of either side had settled: one result behind.
+  return kickoffs.some((k) => k + PREDICTIONS_SETTLE_MS <= now && fetchedAt < k + PREDICTIONS_SETTLE_MS);
+}
+
+/** Kickoff times (ms) of every fixture in a `/fixtures` payload. */
+export function fixtureKickoffs(payload: unknown): number[] {
+  const response = (payload as Any)?.response;
+  if (!Array.isArray(response)) return [];
+  return response
+    .map((item: Any) => Date.parse(item?.fixture?.date ?? ""))
+    .filter((t: number) => !Number.isNaN(t));
+}
+
+/** The other side's API-Football id in fixture `fixtureId` of a `/fixtures` payload. */
+export function opponentApiIdIn(payload: unknown, fixtureId: number, ourApiId: number): number | null {
+  const response = (payload as Any)?.response;
+  if (!Array.isArray(response)) return null;
+  const item = response.find((i: Any) => i?.fixture?.id === fixtureId);
+  const home = item?.teams?.home?.id;
+  const away = item?.teams?.away?.id;
+  if (home === ourApiId && typeof away === "number") return away;
+  if (away === ourApiId && typeof home === "number") return home;
   return null;
 }
 

@@ -6,7 +6,10 @@ import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import {
   buildMatchupCard,
   type ClubStyleRow,
+  fixtureKickoffs,
   nextFixtureIdForPredictions,
+  opponentApiIdIn,
+  predictionsDue,
 } from "./matchup-card.ts";
 
 const ARSENAL = 42;
@@ -279,6 +282,53 @@ Deno.test("nextFixtureIdForPredictions: nothing to buy", () => {
     nextFixtureIdForPredictions(fixtures([1, "2026-09-20T15:00:00+00:00"]), now),
     null,
   );
+});
+
+// ── When the predictions call is bought (bug hunt 2026-11-03, D-C2) ─────────
+
+const H = 60 * 60 * 1000;
+const at = (iso: string) => Date.parse(iso);
+
+Deno.test("predictionsDue: never during a game of either side, nor in the hour after", () => {
+  // Everton's row was bought 29 s after Newcastle v Everton kicked off.
+  const ko = at("2026-11-02T20:00:00Z");
+  assertEquals(predictionsDue(null, [ko], ko + 30_000), false);
+  assertEquals(predictionsDue(null, [ko], ko + 2.9 * H), false);
+  assertEquals(predictionsDue(null, [ko], ko + 3 * H), true);
+});
+
+Deno.test("predictionsDue: a row bought before a game settled is bought again", () => {
+  const ko = at("2026-11-02T20:00:00Z");
+  const boughtMidMatch = ko + 30_000;
+  assertEquals(predictionsDue(boughtMidMatch, [ko], ko + 10 * H), true);
+  // Bought after it settled: kept.
+  assertEquals(predictionsDue(ko + 4 * H, [ko], ko + 10 * H), false);
+  // The opponent's midweek game makes Saturday's row one result behind too.
+  const oppKo = at("2026-11-04T19:45:00Z");
+  assertEquals(predictionsDue(ko + 4 * H, [ko, oppKo], oppKo + 4 * H), true);
+  // A future fixture in the list changes nothing.
+  assertEquals(predictionsDue(ko + 4 * H, [ko, at("2026-11-08T15:00:00Z")], ko + 10 * H), false);
+});
+
+Deno.test("predictionsDue: at least daily, and a never-bought fixture with no recent game", () => {
+  const ko = at("2026-11-02T20:00:00Z");
+  assertEquals(predictionsDue(ko + 4 * H, [ko], ko + 28 * H), true);
+  assertEquals(predictionsDue(null, [], ko), true);
+});
+
+Deno.test("fixtureKickoffs / opponentApiIdIn read a /fixtures payload", () => {
+  const p = {
+    response: [
+      { fixture: { id: 1557460, date: "2026-11-08T15:00:00+00:00" }, teams: { home: { id: 1346 }, away: { id: 45 } } },
+      { fixture: { id: 7, date: "nonsense" }, teams: { home: { id: 45 }, away: { id: 1 } } },
+    ],
+  };
+  assertEquals(fixtureKickoffs(p), [at("2026-11-08T15:00:00Z")]);
+  assertEquals(fixtureKickoffs(null), []);
+  assertEquals(opponentApiIdIn(p, 1557460, 1346), 45);
+  assertEquals(opponentApiIdIn(p, 1557460, 45), 1346);
+  assertEquals(opponentApiIdIn(p, 1557460, 99), null);
+  assertEquals(opponentApiIdIn(p, 404, 45), null);
 });
 
 Deno.test("buildMatchupCard: a friendly is never a meeting", () => {

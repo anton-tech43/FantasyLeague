@@ -24,7 +24,10 @@ import {
   type PlayerStatsPage,
 } from "../_shared/player-stats.ts";
 import {
+  fixtureKickoffs,
   nextFixtureIdForPredictions,
+  opponentApiIdIn,
+  predictionsDue,
   PREDICTIONS_SOURCE,
 } from "../_shared/matchup-card.ts";
 
@@ -170,6 +173,7 @@ async function fetchAPIFootball(
   standings: StandingsCache,
   counters: RunCounters,
   supabase: ReturnType<typeof getSupabaseClient>,
+  recentGames: () => Promise<RecentGames>,
 ): Promise<Array<{ source: string; data: unknown }>> {
   const results: Array<{ source: string; data: unknown }> = [];
   const headers = {
@@ -328,17 +332,37 @@ async function fetchAPIFootball(
   // between the two clubs, and the feed's own verdict on who is favourite.
   //
   // It is keyed by FIXTURE, not by team, so it rides on the fixtures_next
-  // payload this same run just bought, and it is skipped the moment we already
-  // hold a row for that fixture. That is what keeps it at roughly one call per
-  // club per matchweek rather than one every two hours: the fixture id only
-  // changes when a game has been played.
+  // payload this same run just bought. WHEN is `predictionsDue`: never while a
+  // game of either side is in play or just finished, again once each such
+  // game has settled, and at least daily. About one to three calls per club
+  // per matchweek plus the daily refresh, ~20-30 a day against a 7,500 cap.
+  // (Until 2026-11-03 it bought once, during the previous game, and kept that
+  // payload all week: form one result behind on every card. Bug hunt D-C2.)
   //
   // Clubs only. A WC country's page is built by a different path that does not
   // read this, so buying it for one would be quota spent on nothing.
   const fixturesNext = results.find((r) => r.source === "api_football_fixtures_next")?.data;
+  const fixturesLast = results.find((r) => r.source === "api_football_fixtures_last")?.data;
   if (fixturesNext && team.entity_type !== "country") {
-    const fixtureId = nextFixtureIdForPredictions(fixturesNext, new Date());
-    if (fixtureId !== null && !(await hasPredictions(supabase, team.id, fixtureId))) {
+    const nowMs = Date.now();
+    const fixtureId = nextFixtureIdForPredictions(fixturesNext, new Date(nowMs));
+    const fetchedAt = fixtureId === null ? "fresh" : await predictionsFetchedAt(supabase, team.id, fixtureId);
+    let due = false;
+    if (fixtureId !== null && fetchedAt !== "fresh") {
+      // Our games from this run's payloads; the opponent's from match_status_state.
+      const recent = await recentGames();
+      const oppApi = opponentApiIdIn(fixturesNext, fixtureId, team.api_football_id);
+      const oppId = oppApi === null ? undefined : recent.clubByApi.get(oppApi);
+      const kickoffs = [
+        ...fixtureKickoffs(fixturesNext),
+        ...fixtureKickoffs(fixturesLast),
+        ...recent.games
+          .filter((g) => g.home === team.id || g.away === team.id || (oppId !== undefined && (g.home === oppId || g.away === oppId)))
+          .map((g) => g.kickoff),
+      ];
+      due = predictionsDue(fetchedAt, kickoffs, nowMs);
+    }
+    if (fixtureId !== null && due) {
       const data = await get(`/predictions?fixture=${fixtureId}`, "predictions");
       // The response does not name the fixture it was bought for, so wrap it:
       // the skip query above and the team page both key off this id.
@@ -355,30 +379,64 @@ async function fetchAPIFootball(
 }
 
 /**
- * Do we already hold a predictions payload for this fixture?
+ * When did we last buy predictions for this fixture? ms, or null for never.
  *
- * A query failure answers "yes". A false negative costs one API call every two
- * hours per club for as long as the query is broken; erring the other way is
- * the cheap mistake, exactly as the player-stats gate does.
+ * A query failure answers "fresh" (skip). A false "due" costs one API call
+ * every two hours per club for as long as the query is broken; erring the
+ * other way is the cheap mistake, exactly as the player-stats gate does.
  */
-async function hasPredictions(
+async function predictionsFetchedAt(
   supabase: ReturnType<typeof getSupabaseClient>,
   teamId: string,
   fixtureId: number,
-): Promise<boolean> {
+): Promise<number | null | "fresh"> {
   const { data, error } = await supabase
     .from("raw_fetch_logs")
-    .select("id")
+    .select("fetched_at")
     .eq("team_id", teamId)
     .eq("source", PREDICTIONS_SOURCE)
     .eq("data->>fixture_id", String(fixtureId))
+    .order("fetched_at", { ascending: false })
     .limit(1);
 
   if (error) {
     console.warn(`predictions gate query failed for ${teamId}:`, error.message);
-    return true;
+    return "fresh";
   }
-  return (data ?? []).length > 0;
+  const t = Date.parse((data?.[0]?.fetched_at as string | undefined) ?? "");
+  return Number.isNaN(t) ? null : t;
+}
+
+/** Games of tracked clubs in the last eight days, for the predictions gate. */
+interface RecentGames {
+  /** API-Football id -> our slug, clubs only (45 is Everton AND the FA Cup). */
+  clubByApi: Map<number, string>;
+  games: Array<{ home: string; away: string; kickoff: number }>;
+}
+
+/** Loaded at most once per run, and only when a club reaches the gate. */
+function recentGamesLoader(supabase: ReturnType<typeof getSupabaseClient>): () => Promise<RecentGames> {
+  let loaded: Promise<RecentGames> | null = null;
+  return () =>
+    loaded ??= (async () => {
+      const since = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
+      const [clubs, games] = await Promise.all([
+        supabase.from("teams").select("id, api_football_id").eq("entity_type", "club"),
+        supabase.from("match_status_state").select("home_team_id, away_team_id, kickoff_time").gte("kickoff_time", since),
+      ]);
+      if (clubs.error || games.error) {
+        // Degrades to our own fixtures plus the daily refresh; never blocks a buy.
+        console.warn("predictions gate: recent games unavailable:", clubs.error?.message ?? games.error?.message);
+      }
+      return {
+        clubByApi: new Map((clubs.data ?? []).map((r) => [r.api_football_id as number, r.id as string])),
+        games: (games.data ?? []).map((g) => ({
+          home: g.home_team_id as string,
+          away: g.away_team_id as string,
+          kickoff: Date.parse(g.kickoff_time as string),
+        })).filter((g) => !Number.isNaN(g.kickoff)),
+      };
+    })();
 }
 
 /**
@@ -591,6 +649,7 @@ serve(async (req) => {
     // One league table per run, shared across every entity in that league.
     const standingsCache = new StandingsCache();
     const counters: RunCounters = { apiCalls: 0 };
+    const recentGames = recentGamesLoader(supabase);
     let logsWritten = 0;
 
     const apiFootballKey = Deno.env.get("API_FOOTBALL_KEY");
@@ -617,7 +676,7 @@ serve(async (req) => {
         // times a day that nothing live reads (the routines fetch their own
         // feeds; content-generator, the reader, is off). Bug hunt 2026-10-27.
         scope.only?.includes("rss") ? fetchRSSFeeds(team) : Promise.resolve([]),
-        fetchAPIFootball(team, apiFootballKey, scope, standingsCache, counters, supabase),
+        fetchAPIFootball(team, apiFootballKey, scope, standingsCache, counters, supabase, recentGames),
         wantsPlayerStats
           ? fetchPlayerStats(team, apiFootballKey, seasonForLeague(team.league_id!), counters)
           : Promise.resolve([]),
