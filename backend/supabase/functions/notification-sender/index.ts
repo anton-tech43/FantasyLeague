@@ -14,7 +14,9 @@
 // Who gets what (decided here, in code, PUSH_RULES.md §1): Light (tier 1)
 // only big news (significance 2); the Monday brief and the four tournament
 // feeds are Match-fit and up; the League Cup feed and match-watcher's
-// consequence cards never push. One push per club per three hours.
+// consequence cards never push. One push per club per three hours on any
+// one phone: the throttle is per tier (throttle.ts), so a Light phone still
+// gets the big story after a Match-fit push earlier that morning.
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { deactivateTokens, fetchAllRows, getSupabaseClient, isTokenDead } from "../_shared/supabase-client.ts";
@@ -29,6 +31,14 @@ import { sendPushNotification, buildAPNsPayload } from "../_shared/apns-client.t
 // (it's already 'published' before the check runs), so any item with no prior
 // pushed item in 24h would silently fail.
 import { logPipelineEvent } from "../_shared/pipeline-logger.ts";
+import { unpushedTierCeiling } from "./throttle.ts";
+
+// Who a written push reaches: the lowest tier that gets it (PUSH_RULES.md §1).
+function minTierFor(item: { type: string; significance?: number | null }, isTournament: boolean): number {
+  // The literal line verify-push-rules.sh reads: keep it on one line.
+  const minTierForType = item.type === "sunday_brief" ? 2 : isTournament ? 2 : item.significance === 2 ? 1 : 2;
+  return minTierForType;
+}
 
 function getCategoryFromType(
   type: string,
@@ -158,6 +168,9 @@ serve(async (req) => {
     for (const item of items) {
       const teamId = item.team_id;
       const shortName = teamShortNames[teamId] ?? teamId;
+      const isTournament = teamEntityTypes[teamId] === "tournament";
+      const minTierForType = minTierFor(item, isTournament);
+      let tierCeiling = Infinity; // Guard B narrows it when some tiers were already pushed
       const category = getCategoryFromType(item.type, item.emotional_context);
       const isResult = category === "RESULT";
 
@@ -217,14 +230,17 @@ serve(async (req) => {
         continue;
       }
 
-      // Guard B — per-team push throttle. If this team already received a
-      // push within PUSH_THROTTLE_MINUTES, leave this item feed-only (the
-      // story still publishes). force_push bypasses for manual recovery.
+      // Guard B — per-team push throttle, per tier (P-C5, 2026-11-03). If this
+      // team already received a push within PUSH_THROTTLE_MINUTES, send only to
+      // the tiers that push did not reach; if none are left, the item is
+      // feed-only (the story still publishes). force_push bypasses for manual
+      // recovery. An earlier item whose row cannot be read counts as floor 1
+      // (everyone was pushed), so a lookup failure can only throttle more.
       if (!forcePush) {
         const raceSince = new Date(Date.now() - CLAIM_RACE_MINUTES * 60_000).toISOString();
-        const { count: recentCount } = await supabase
+        const { data: racing } = await supabase
           .from("content_items")
-          .select("id", { count: "exact", head: true })
+          .select("type, significance")
           .eq("team_id", teamId)
           .not("pushed_at", "is", null)
           .gte("pushed_at", raceSince)
@@ -233,15 +249,25 @@ serve(async (req) => {
           // The earlier claim pushes, the later one is throttled.
           .lt("pushed_at", claimedAt)
           .neq("id", item.id);
-        const { count: sentCount } = await supabase
+        const { data: sent } = await supabase
           .from("pipeline_health")
-          .select("id", { count: "exact", head: true })
+          .select("content_item_id")
           .eq("team_id", teamId)
           .eq("stage", "apns_send")
           .like("target", "item:%")
           .in("status", ["success", "partial"])
           .gte("created_at", new Date(Date.now() - PUSH_THROTTLE_MINUTES * 60_000).toISOString());
-        if ((recentCount ?? 0) > 0 || (sentCount ?? 0) > 0) {
+        const sentIds = [...new Set((sent ?? []).map((r) => r.content_item_id).filter(Boolean))];
+        const { data: sentItems } = sentIds.length
+          ? await supabase.from("content_items").select("id, type, significance").in("id", sentIds)
+          : { data: [] };
+        const sentFloors = (sent ?? []).map((r) => {
+          const it = (sentItems ?? []).find((x) => x.id === r.content_item_id);
+          return it ? minTierFor(it, isTournament) : 1;
+        });
+        const earlier = [...(racing ?? []).map((it) => minTierFor(it, isTournament)), ...sentFloors];
+        const ceiling = unpushedTierCeiling(minTierForType, earlier);
+        if (ceiling === null) {
           const update: Record<string, string> = { pushed_at: new Date().toISOString() };
           if (item.status !== "published") {
             update.status = "published";
@@ -258,6 +284,7 @@ serve(async (req) => {
           });
           continue;
         }
+        tierCeiling = ceiling;
       }
 
       // Get all active device tokens for this team OR country with their
@@ -290,7 +317,6 @@ serve(async (req) => {
       // broadcast to the first 1000 users. Ordered by apns_token (UNIQUE) so
       // pages neither skip nor duplicate rows. The same loop serves the
       // follower path — it rarely needs page 2, but correctness is free.
-      const isTournament = teamEntityTypes[teamId] === "tournament";
       const affected: string[] = isTournament ? (item.affected_team_ids ?? []) : [];
       // deno-lint-ignore no-explicit-any
       let allTokens: any[];
@@ -346,14 +372,13 @@ serve(async (req) => {
       // Quiet hours handled by iOS Do Not Disturb on the device, not by the
       // server (server-side quiet hours meant matchday pushes for late-evening
       // games never reached the user — bad trade for a feature iOS does natively).
-      // The literal line verify-push-rules.sh reads: keep it on one line.
-      const minTierForType = item.type === "sunday_brief" ? 2 : isTournament ? 2 : item.significance === 2 ? 1 : 2;
-
+      // minTierForType is decided once per item at the top of the loop
+      // (minTierFor); tierCeiling is Guard B's per-tier throttle.
       type TokenEntry = { token: string; env: "development" | "production" };
       const eligibleTokens: TokenEntry[] = [];
       for (const t of tokens) {
         const tier = t.tier ?? 2;
-        if (tier < minTierForType) continue;
+        if (tier < minTierForType || tier >= tierCeiling) continue;
         const env = (t.apns_environment === "production" ? "production" : "development") as "development" | "production";
         eligibleTokens.push({ token: t.apns_token, env });
       }
@@ -371,7 +396,9 @@ serve(async (req) => {
           stage: "publish",
           status: "skipped",
           duration_ms: Date.now() - startTime,
-          message: `No tokens at or above min tier ${minTierForType} for type=${item.type}`,
+          message: tierCeiling === Infinity
+            ? `No tokens at or above min tier ${minTierForType} for type=${item.type}`
+            : `Throttled: ${teamId} tiers ${tierCeiling}+ already pushed within ${PUSH_THROTTLE_MINUTES}m, no tokens at tier ${minTierForType}-${tierCeiling - 1}`,
           content_item_id: item.id,
         });
         continue;
