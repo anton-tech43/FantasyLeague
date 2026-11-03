@@ -61,7 +61,7 @@ App Group by itself.
 
 ## Paused, and why
 
-- **Lineup line in the T−30 push** (LOCK-02-14): built behind the `LINEUP_PUSH_ENABLED` secret, off. Anton turns it on after reading the `starting_xi_fire` rows; none were captured on 31 Oct / 1 Nov, and a T−31 row now says why.
+- **Lineup line in the kickoff push** (LOCK-02-14): the push moved from T−30 to T−25 on 2026-11-03 (the lineup landed at T−29 in the first three matches that logged one). Behind the `LINEUP_PUSH_ENABLED` secret; Anton approved switching it on after the T−25 deploy. A derby follower always gets the plain body.
 - `content-generator` and `content-reviewer` Edge Functions: dormant by design. All live content comes from routines.
 - `gd-news-wc` is off and `gd-champions-league` is retired (Europe is `gd-europe`).
 

@@ -14,7 +14,16 @@
 //
 // Schedule: every 1 min via pg_cron (see migration 017).
 
-import { type LineupPlayer, type Notable, notableLineup, type Role, rolesFromGrid, type SquadRow } from "../_shared/lineup-notable.ts";
+import {
+  bodyForDevice,
+  type LineupPlayer,
+  type Notable,
+  notableLineup,
+  type Role,
+  rolesFromGrid,
+  type SquadRow,
+  withLineupNotes,
+} from "../_shared/lineup-notable.ts";
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireServiceAuth } from "../_shared/require-service-auth.ts";
 import { deactivateTokens, fetchAllRows, getSupabaseClient, isTokenBad, isTokenDead, markBadTokens } from "../_shared/supabase-client.ts";
@@ -442,6 +451,9 @@ async function sendPlayingTeamPush(
     /// Full time only: where the result leaves each playing side in the
     /// league ("Up to 4th."), for Deep devices (LOCK-02-12).
     deepLineByTeam?: Record<string, string>;
+    /// Kickoff-soon only: the bodies for a device that follows both sides,
+    /// so a derby follower never gets one side's lineup line (withLineupNotes).
+    derbyBodies?: Record<string, string>;
   },
 ): Promise<number> {
   try {
@@ -532,13 +544,9 @@ async function sendPlayingTeamPush(
         ...((t.country_ids as string[] | null) ?? (t.country_id ? [t.country_id as string] : [])),
         ...((t.team_ids as string[] | null) ?? (t.team_id ? [t.team_id as string] : [])),
       ];
-      const country = followed.includes(args.homeTeamId)
-        ? args.homeTeamId
-        : followed.includes(args.awayTeamId)
-        ? args.awayTeamId
-        : null;
-      if (!country) continue; // matched on stale scalar only — not actually following
-      const body = args.copy.bodies[country];
+      const pick = bodyForDevice(followed, args.homeTeamId, args.awayTeamId, args.copy.bodies, args.derbyBodies);
+      if (!pick) continue; // matched on stale scalar only — not actually following
+      const { side: country, body } = pick;
       if (!body) continue; // follower of a team not in this match — shouldn't happen
       // Her saved sayings are not pushed (Anton, 2026-10-02). A goal push lands
       // a minute or two after the goal, too late to say anything in the
@@ -1004,12 +1012,14 @@ async function liveTake(
 // to pipeline_health (stage starting_xi_fire, target lineup:<fixture>), and
 // no push or card is sent. The line is also kept in fixture_lineups.note
 // (mig 151): with the LINEUP_PUSH_ENABLED secret set to "1" it replaces the
-// T−30 kickoff body for that side (LOCK-02-14). Off until Anton has read real
-// cases. The first two weekends logged none: API-Football publishes lineups
+// T−25 kickoff body for that side (LOCK-02-14), never a derby follower's.
+// The first two weekends logged none: API-Football publishes lineups
 // 20-40 minutes before kickoff, and the window used to close at T−30, while
 // the league is only polled from T−35, so it asked five times, too early. It
-// now runs to T−10; a lineup that lands after T−30 still makes the record
-// and the dry run, just not the T−30 push.
+// now runs to T−10; a lineup that lands after T−25 still makes the record
+// and the dry run, just not the kickoff push. The push moved from T−30 to
+// T−25 (2026-11-03) because the lineup landed at T−29 in the first three
+// matches that logged one.
 const LINEUP_WINDOW_MIN = { from: 10, to: 75 };
 const LINEUP_PUSH_ENABLED = Deno.env.get("LINEUP_PUSH_ENABLED") === "1";
 
@@ -1019,7 +1029,7 @@ async function lineupDryRun(
   ourClubApiIds: Set<number>,
   teamIdMap: Map<number, string>,
   apiKey: string,
-  /// Minutes to kickoff: logged with the lineup (did it land before the T−30
+  /// Minutes to kickoff: logged with the lineup (did it land before the T−25
   /// push?), and the last poll of the window says why it is still missing.
   minsToKickoff: number,
 ): Promise<void> {
@@ -2686,12 +2696,14 @@ async function handleRequest(req: Request): Promise<Response> {
           const fixtureRound = fx.league?.round;
           const competitionClause = competitionSuffix(fixtureLeagueId, fixtureRound);
 
-          // 30-MINUTES-TO-KICKOFF — the "it's about to start" nudge. Fire once
-          // when the fixture is still NS and kickoff is within the next 30 min.
+          // 25-MINUTES-TO-KICKOFF — the "it's about to start" nudge. Fire once
+          // when the fixture is still NS and kickoff is within the next 25 min
+          // (T−25, not T−30, so the lineup is in first: it landed at T−29 in
+          // Newcastle–Everton, Man Utd–Roma and Barcelona–Villa).
           // Future-only (minsToKickoff > 0) so a delayed game already past its
           // listed time can't fire it; marker-gated so a deploy inside the window
           // fires at most once. The fixture is in match_status_state ~2h before
-          // kickoff (date roll), so the 30-min mark is always observed.
+          // kickoff (date roll), so the 25-min mark is always observed.
           const minsToKickoff = (new Date(kickoffTime).getTime() - Date.now()) / 60000;
           if (
             apiFootballKey && status === "NS" &&
@@ -2708,7 +2720,7 @@ async function handleRequest(req: Request): Promise<Response> {
             }
           }
           if (
-            status === "NS" && minsToKickoff > 0 && minsToKickoff <= 30 &&
+            status === "NS" && minsToKickoff > 0 && minsToKickoff <= 25 &&
             !briefsFired.includes("PREKICK_PUSH")
           ) {
             const copy = renderKickoffSoonPush({
@@ -2718,15 +2730,20 @@ async function handleRequest(req: Request): Promise<Response> {
               rng: seededRng(fixtureId * 7 + 1),
             });
             // LOCK-02-14, behind LINEUP_PUSH_ENABLED: a side whose lineup is
-            // worth a line (fixture_lineups.note) gets that line as its T−30
-            // body instead. Never an extra push; the other side is untouched.
+            // worth a line (fixture_lineups.note) gets that line as its T−25
+            // body instead. Never an extra push; the other side is untouched,
+            // and a device following both sides gets the plain body.
+            let derbyBodies: Record<string, string> | undefined;
             if (LINEUP_PUSH_ENABLED) {
-              const { data: notes } = await supabase.from("fixture_lineups")
+              const { data: notes, error: notesErr } = await supabase.from("fixture_lineups")
                 .select("team_api_id, note").eq("fixture_id", fixtureId).not("note", "is", null);
-              for (const n of notes ?? []) {
-                const slug = teamIdMap.get(n.team_api_id as number);
-                if (slug && copy.bodies[slug]) copy.bodies[slug] = n.note as string;
-              }
+              if (notesErr) console.warn(`lineups: notes unreadable for ${fixtureId}, plain kickoff body:`, notesErr.message);
+              const swapped = withLineupNotes(copy.bodies, (notes ?? []).map((n) => ({
+                slug: teamIdMap.get(n.team_api_id as number),
+                note: n.note as string | null,
+              })));
+              copy.bodies = swapped.bodies;
+              derbyBodies = swapped.derby;
             }
             pendingAlertPushes.push({
               args: {
@@ -2738,6 +2755,7 @@ async function handleRequest(req: Request): Promise<Response> {
                 label: "kickoff",
                 minTier: minTierForLiveEvent("kickoff", fixtureLeagueId, fixtureRound),
                 marker: "PREKICK_PUSH",
+                derbyBodies,
               },
               isGoal: false,
             });

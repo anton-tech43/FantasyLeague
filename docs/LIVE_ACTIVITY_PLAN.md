@@ -131,8 +131,8 @@ Problems:
   a new optional `kickoff` field with `Text(timerInterval:countsDown:true)`;
   old builds ignore the field.
 - **Push rules.** The start alert moves from kickoff to T−30.
-  - Tier 2+ already get the T−30 kickoff push (`PREKICK_PUSH`), so they would
-    get **two alerts in the same minute**. They can only be merged per device
+  - Tier 2+ already get the kickoff push (`PREKICK_PUSH`, T−25 since
+    2026-11-03), so they would get **two alerts five minutes apart**. They can only be merged per device
     once a Live Activity token is linked to its install (app build).
   - Light gets no T−30 push today, so this adds a new lock-screen moment for
     her (PUSH_RULES §5 and §1, `verify-push-rules.sh`).

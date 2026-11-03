@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.177.0/testing/asserts.ts";
-import { type LineupPlayer, notableLineup, type Role, rolesFromGrid, type SquadRow } from "./lineup-notable.ts";
+import { bodyForDevice, type LineupPlayer, notableLineup, type Role, rolesFromGrid, type SquadRow, withLineupNotes } from "./lineup-notable.ts";
 
 // A 4-3-3: GK, RB LCB RCB LB, three mids, three forwards. Ids 1..11.
 const grid = ["1:1", "2:4", "2:3", "2:2", "2:1", "3:3", "3:2", "3:1", "4:3", "4:2", "4:1"];
@@ -94,4 +94,17 @@ Deno.test("no stored role: a regular midfielder out still fires, a defender does
   const def = notableLineup({ xi: xiOf([1, 2, 12, 4, 5, 6, 7, 8, 9, 10, 11]),
     squad: sq.map((r) => r.api_player_id === 12 ? { ...r, league_starts: 5 } : r), leaguePlayed: 9, previousXI: null, lastRole: none, opponent: "Leeds" });
   assertEquals(def, null);
+});
+
+Deno.test("kickoff push: a lineup line replaces only its own side's body, never a derby follower's", () => {
+  const bodies = { arsenal: "Arsenal vs Spurs kicks off in 25 minutes.", spurs: "Spurs vs Arsenal kicks off in 25 minutes." };
+  const note = "Saka is on the bench against Spurs. Ask him why.";
+  const { bodies: b, derby } = withLineupNotes(bodies, [{ slug: "arsenal", note }, { slug: undefined, note: "x" }, { slug: "spurs", note: null }]);
+  assertEquals(b, { arsenal: note, spurs: bodies.spurs });
+  assertEquals(bodyForDevice(["arsenal"], "arsenal", "spurs", b, derby), { side: "arsenal", body: note });
+  assertEquals(bodyForDevice(["chelsea", "spurs"], "arsenal", "spurs", b, derby), { side: "spurs", body: bodies.spurs });
+  assertEquals(bodyForDevice(["spurs", "arsenal"], "arsenal", "spurs", b, derby), { side: "arsenal", body: bodies.arsenal });
+  assertEquals(bodyForDevice(["chelsea"], "arsenal", "spurs", b, derby), null);
+  // Every other push passes no derby map and is unchanged: home's body for both.
+  assertEquals(bodyForDevice(["spurs", "arsenal"], "arsenal", "spurs", bodies), { side: "arsenal", body: bodies.arsenal });
 });

@@ -427,7 +427,7 @@ export function renderGoalPush(args: {
   };
 }
 
-/// 30-minutes-to-kickoff push for the two PLAYING countries' followers. The
+/// 25-minutes-to-kickoff push for the two PLAYING countries' followers. The
 /// "it's about to start" nudge. No score (not started); each side's body names
 /// the follower's own team. Title is the shared factual fixture.
 export function renderKickoffSoonPush(args: {

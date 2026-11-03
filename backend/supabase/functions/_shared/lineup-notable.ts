@@ -163,3 +163,32 @@ export function notableLineup(input: NotableInput): Notable | null {
   }
   return null;
 }
+
+/// LOCK-02-14: the T−25 kickoff-soon bodies with each side's lineup line
+/// (fixture_lineups.note) in place of that side's own body, never the other
+/// side's. `derby` keeps the untouched bodies for a device that follows both
+/// sides: one side's team news is the wrong half of a derby.
+export function withLineupNotes(
+  bodies: Record<string, string>,
+  notes: ReadonlyArray<{ slug: string | undefined; note: string | null | undefined }>,
+): { bodies: Record<string, string>; derby: Record<string, string> } {
+  const out = { ...bodies };
+  for (const n of notes) if (n.slug && n.note && out[n.slug]) out[n.slug] = n.note;
+  return { bodies: out, derby: { ...bodies } };
+}
+
+/// Which playing side a device's push speaks for, and its body. Home when it
+/// follows both, so the single push is deterministic; a device following both
+/// reads `derby` when given. Null: it follows neither (a stale scalar).
+export function bodyForDevice(
+  followed: readonly string[],
+  homeId: string,
+  awayId: string,
+  bodies: Record<string, string>,
+  derby?: Record<string, string>,
+): { side: string; body: string | undefined } | null {
+  const home = followed.includes(homeId), away = followed.includes(awayId);
+  const side = home ? homeId : away ? awayId : null;
+  if (!side) return null;
+  return { side, body: (home && away ? derby?.[side] : undefined) ?? bodies[side] };
+}

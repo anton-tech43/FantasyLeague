@@ -52,23 +52,24 @@ export const GOAL_BOTH: Record<GoalState, readonly string[]> = {
 };
 
 // ============================================================
-// 30-MINUTES-TO-KICKOFF pool. {team} = follower's team, {opp} = opponent.
+// 25-MINUTES-TO-KICKOFF pool. {team} = follower's team, {opp} = opponent.
+// T−25 since 2026-11-03 (was T−30), so the lineup is in before it fires.
 // No score (the game hasn't started). The "it's about to start" nudge.
 // ============================================================
 
 export const KICKOFF_SOON: readonly string[] = [
-  "{team} vs {opp} kicks off in 30 minutes. Time to get comfy.",
-  "Almost time. {team} take on {opp} in half an hour.",
-  "{team} kick off against {opp} in 30. He'll be settling in.",
-  "30 minutes until {team} vs {opp}. Last call for snacks.",
-  "{team} vs {opp} starts in half an hour. He's on the sofa already.",
-  "Nearly kickoff. {team} face {opp} in 30 minutes.",
-  "{team} are about to start against {opp}. 30 minutes to go.",
-  "Half an hour till {team} vs {opp}. Wish him luck.",
-  "{team} vs {opp} in 30. He'll have the telly on already.",
-  "Kickoff in 30: {team} vs {opp}. Settle in with him.",
-  "{team} play {opp} in half an hour. Game face on.",
-  "Not long now. {team} vs {opp} kicks off in 30 minutes.",
+  "{team} vs {opp} kicks off in 25 minutes. Time to get comfy.",
+  "Almost time. {team} take on {opp} in 25 minutes.",
+  "{team} kick off against {opp} in 25. He'll be settling in.",
+  "25 minutes until {team} vs {opp}. Last call for snacks.",
+  "{team} vs {opp} starts in 25 minutes. He's on the sofa already.",
+  "Nearly kickoff. {team} face {opp} in 25 minutes.",
+  "{team} are about to start against {opp}. 25 minutes to go.",
+  "25 minutes till {team} vs {opp}. Wish him luck.",
+  "{team} vs {opp} in 25. He'll have the telly on already.",
+  "Kickoff in 25: {team} vs {opp}. Settle in with him.",
+  "{team} play {opp} in 25 minutes. Game face on.",
+  "Not long now. {team} vs {opp} kicks off in 25 minutes.",
 ];
 
 // ============================================================
