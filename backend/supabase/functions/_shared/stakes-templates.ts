@@ -284,7 +284,9 @@ export function renderPostMatch(
         : state === "loss"
         ? (margin >= 3
           ? `Give him a minute with that one. Then ask what has to change before the next game.`
-          : `A goal in it. Ask him what he would have done differently.`)
+          : margin === 1
+          ? `A goal in it. Ask him what he would have done differently.`
+          : `Two goals down by the end. Ask him where it got away from them.`)
         : (situation.certainty === "soft"
           ? `A point keeps them alive. Ask him what they need from the last group game.`
           : `Ask him whether that was a decent night's work or two points dropped.`);
@@ -527,7 +529,11 @@ function postMatchTalkingPoint(ctx: ClubPostMatchContext): string {
   if (ctx.state === "loss") {
     return margin >= 3
       ? `Give him a minute with that one. Then ask what has to change before the next game.`
-      : `A goal in it. Ask him what he would have done differently.`;
+      : margin === 1
+      ? `A goal in it. Ask him what he would have done differently.`
+      // A 0-2 is not "a goal in it" (bug hunt 2026-11-03, man_utd and
+      // crystal_palace After cards).
+      : `Two goals down by the end. Ask him where it got away from them.`;
   }
   return ctx.venue === "home"
     ? `A point at home. Ask him whether that counts as two dropped.`

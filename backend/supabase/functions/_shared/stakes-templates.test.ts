@@ -430,6 +430,8 @@ Deno.test("club post_match: a heavy defeat is given room, a one-goal defeat is n
   const narrow = cpm({ state: "loss", teamScore: 1, oppScore: 2 });
   assert(/Give him a minute/.test(heavy.talking_point), heavy.talking_point);
   assert(/A goal in it/.test(narrow.talking_point), narrow.talking_point);
+  const two = cpm({ state: "loss", teamScore: 0, oppScore: 2 });
+  assert(!/A goal in it/.test(two.talking_point), two.talking_point);
 });
 
 Deno.test("club post_match: a settled cup tie states what it settled", () => {
