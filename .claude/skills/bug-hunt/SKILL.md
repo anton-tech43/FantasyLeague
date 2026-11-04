@@ -21,7 +21,11 @@ when Anton asks. Small change sets get the small size (end of this file).
 Method: Cloudflare's open-source security-audit skill, vendored unmodified in
 `vendor/cloudflare-security-audit/` (what was kept and why: `VENDORED.md`). This
 file adapts it to us. When the two disagree, this file wins. Every item from the
-checklists Anton saved is mapped to this system in `CHECKLIST.md`.
+checklists Anton saved is mapped to this system in `docs/bug-hunt/CHECKLIST.md`.
+
+**Local only.** `docs/bug-hunt/` (the checklist with its open gaps, every report and its
+JSON) is git-ignored: this repository is public, and a list of open holes is a map.
+Keep it on the Mac and in Anton's private copies; never force-add it.
 
 ## Surfaces
 
@@ -35,7 +39,7 @@ checklists Anton saved is mapped to this system in `CHECKLIST.md`.
 | **D** | Data truth: facts that rot, feeds that lie | `DATA_SOURCES.md`, the `stale-data-audit` skill in report-only mode, `db-health.sh` §8 |
 | **O** | Ops, performance, cost: timeouts, retries, retention, migrations, backups, deploy windows, API-Football cap, Anthropic credit | `RUNBOOK.md`, `BACKFILL_RULES.md`, `scripts/io-attribution.sh`, `cron.job` |
 | **S** | Supply chain and secrets: the built bundle, git history, pre-commit scan, dependencies, worktrees | `scripts/pre-commit-secret-scan.sh`, `Package.resolved`, Deno imports |
-| **U** | User tests in the simulator: the nine beta tests, accessibility, VoiceOver, offline and slow network | `CHECKLIST.md` §B |
+| **U** | User tests in the simulator: the nine beta tests, accessibility, VoiceOver, offline and slow network | `docs/bug-hunt/CHECKLIST.md` §B |
 
 ## How it runs
 
@@ -53,7 +57,7 @@ its brief. Working files live in `$H = <scratchpad>/bug-hunt-<YYYY-MM-DD>/`.
 
 - **Read-only on production.** SQL only through `./scripts/sql.sh -c "BEGIN READ ONLY; <query>; ROLLBACK;"`. `sql.sh` itself will run anything, so the wrapper is the rule, not a habit. No deploys, no migrations, no `supabase secrets`, no cron changes, no RemoteTrigger runs, no commits or pushes in this repo or the routines repo.
 - **No traffic that does work.** HTTP with the publishable key only as GET to tables and to the four ungated read functions (`quiz-current`, `live-brief-current`, `live-match-current`, `team-season-state`; the fifth ungated one, `delete-my-data`, never). Never call a gated function, not even with a bogus key: if the gate were broken, the call would do the work. Never call an RPC over HTTP (each one writes); check RPC logic from `pg_get_functiondef` and by evaluating its regexes and caps in read-only SQL. Anything that needs a real write to prove becomes `needs_validation` with a rolled-back-transaction plan for Anton.
-- **No scanners against Supabase.** No nmap, sqlmap, fuzzers or load tools against `*.supabase.co` (why: `CHECKLIST.md` T1). No load or availability test on anything live.
+- **No scanners against Supabase.** No nmap, sqlmap, fuzzers or load tools against `*.supabase.co` (why: `docs/bug-hunt/CHECKLIST.md` T1). No load or availability test on anything live.
 - **No paid calls.** Never invoke anything in `_shared/claude-client.ts`'s caller graph, `data-fetcher`, `official-squads` or anything that calls API-Football or APNs (CLAUDE.md hard rule). Scratch harnesses that import shipped code run as `deno run --allow-read=<paths>` with no `--allow-net` and no `--allow-env`, so a stray call fails instead of spending.
 - **Pushes.** None to real users, ever. If a finding can only be proven with a real push, it goes to Anton as a plan for his own dev devices (`apns_environment = 'development'`, `la-channel-test`).
 - **Simulators.** Each agent that needs one creates its own (`xcrun simctl create GD-hunt-<agent> "iPhone 17 Pro"`), builds with its own `-derivedDataPath $H/agents/<agent>/dd`, passes the UDID to every call (never `booted`), and deletes it at the end. Never touch the shared simulator `64CD0EC3-5543-4406-8E68-2F9EEACD0712`. Before trusting a run, `simctl spawn <udid> defaults read com.goaldigger.app` must be empty (memory `project_sim_verification`).
@@ -85,14 +89,14 @@ Enumerate from the system, never from memory:
 - **Schedules:** `cron.job` (command, schedule, active), routines' "Schedules, in one place" in their README.
 - **App inputs:** every `APIClient` call and the table or function behind it, push payload keys and `content_id` prefixes the app routes on (`AppDelegate`), Live Activity content-state, the notification extension's request, App Group keys, the Facebook URL scheme, launch arguments (DEBUG-only? check `#if DEBUG`), bundled JSON refreshed from `my_turn_content`.
 - **External feeds:** API-Football endpoints in use, RSS sources (`team_news_sources`), premierleague.com.
-- **Every `CHECKLIST.md` row marked `gap` or `covered`** becomes at least one ledger row.
+- **Every `docs/bug-hunt/CHECKLIST.md` row marked `gap` or `covered`** becomes at least one ledger row.
 
 Status values: `planned`, `in_progress`, `covered`, `candidate`, `blocked`, `n.a.`, `deferred` (with the reason). **Coverage gate:** before the report, no row is `planned` or `in_progress`, and every `deferred` row is listed in the report.
 
 ## 2. The hunt
 
 Launch the hunters in parallel, each with: these rules, the commit, `ARCHITECTURE.md`
-and `STATUS.md` to read first, its ledger rows, its `CHECKLIST.md` rows, and the
+and `STATUS.md` to read first, its ledger rows, its `docs/bug-hunt/CHECKLIST.md` rows, and the
 vendored files named below to read by path (`vendor/cloudflare-security-audit/…`).
 Every hunter uses the core hunting method in `HUNTING.md` and the relevant classes
 in `ATTACK-CLASSES.md`. Each returns its candidates, its ledger rows updated, its
@@ -102,13 +106,13 @@ hardening notes and **"What holds up"**.
 `$H/agents/<agent>/rows/` and run them through the shipped functions in a scratch
 harness. Hand-picked fixtures are how the 2026-09-09 defects passed the suites.
 
-- **A, anon surface.** Reads `DATA-ISOLATION-AND-LIFECYCLE.md`, `WEB-PROTOCOL-AND-AUTH.md` (API-key classes). Catalog checks with `has_function_privilege` and `has_table_privilege` (not `information_schema`, which hides `MAINTAIN`), `pg_policy` with roles, views that read RLS tables, SECURITY DEFINER functions and their `search_path`. The GET probe from `SECURITY_PROBE_2026-10-07.md` "Reproduce" over every table, `Accept-Profile` for `net`, `cron`, `vault`, `storage`, and the ungated read functions with malformed parameters. Replaces the PentAGI-style scan (`CHECKLIST.md` T1).
+- **A, anon surface.** Reads `DATA-ISOLATION-AND-LIFECYCLE.md`, `WEB-PROTOCOL-AND-AUTH.md` (API-key classes). Catalog checks with `has_function_privilege` and `has_table_privilege` (not `information_schema`, which hides `MAINTAIN`), `pg_policy` with roles, views that read RLS tables, SECURITY DEFINER functions and their `search_path`. The GET probe from `SECURITY_PROBE_2026-10-07.md` "Reproduce" over every table, `Accept-Profile` for `net`, `cron`, `vault`, `storage`, and the ungated read functions with malformed parameters. Replaces the PentAGI-style scan (`docs/bug-hunt/CHECKLIST.md` T1).
 - **E, Edge Functions.** Reads `CLOUD-AND-DEPLOYMENT.md`, `PROTOCOLS-RPC-AND-MESSAGING.md`, `RESOURCE-EXHAUSTION-AND-AVAILABILITY.md`. For every function: is the gate the first thing on every method, what does it trust from the body, does every outbound `fetch` have a timeout, what does a thrown error leave half-written, does it read more rows than 1,000 without paging. `deno check` on each.
 - **P, push and Live Activity.** Reads `PROTOCOLS-RPC-AND-MESSAGING.md` (duplicate delivery, ordering). `PUSH_RULES.md` §1 against `_shared/push-tiers.ts` with the last 30 days of fixtures; duplicate `apns_send` per target and device; quiet hours across the clock change; priority-10 sends per match against the budget; held ties and shootouts; `isTokenDead`; a device following both sides of a derby; what each old build does with today's payloads (with I).
 - **R, routines.** Reads `AI-AND-LLM.md`, `SUPPLY-CHAIN-AND-RELEASE.md`. Per routine: inputs, tools, credential and its reach, outputs, and the deterministic guard between model and database. Craft a malicious RSS item as a local fixture and push it through `parse_club_rss.py`, `fact_checks.py` and each `post_*.sh` guard with posting stubbed, never against Supabase. Confirm no script loops a paid call, and that `REBUILD.md` rebuilds every routine the closing account runs.
 - **I, iOS logic and old builds.** Reads `DESKTOP-MOBILE-AND-LOCAL-IPC.md`. Push-tap routing, App Group data shared with the extension and widget, token refresh after restore, Delete My Data completeness (server rows, Live Activities, calendar, App Group, Meta ids), decode tolerance. **Contract:** decode live `team_pages.content`, `live-match-current`, `live-brief-current` and a stored Live Activity content-state with each in-the-wild build's model types (`git show <build-commit>:<file>` compiled in a scratch Swift package or read side by side). An update an old build cannot decode is dropped without a sound.
 - **D, data truth.** Runs the `stale-data-audit` skill in report-only mode, every section, nothing fixed; then every visible fact resting on a field `DATA_SOURCES.md` marks not trusted, and any two surfaces that disagree about one match.
-- **O, ops, performance, cost.** `CHECKLIST.md` rows marked O. Retention per table with weekly growth, migration files against the live catalog, backoff, alerting, deploy windows against `poll_leagues()`, `io-attribution.sh`, `pg_stat_statements` top 20, API-Football calls per day against 7,500, every `callClaude()` caller and its trigger. Backups and restore are questions for Anton (`needs_validation` with the exact dashboard place to look).
+- **O, ops, performance, cost.** `docs/bug-hunt/CHECKLIST.md` rows marked O. Retention per table with weekly growth, migration files against the live catalog, backoff, alerting, deploy windows against `poll_leagues()`, `io-attribution.sh`, `pg_stat_statements` top 20, API-Football calls per day against 7,500, every `callClaude()` caller and its trigger. Backups and restore are questions for Anton (`needs_validation` with the exact dashboard place to look).
 - **S, supply chain and secrets.** Reads `SUPPLY-CHAIN-AND-RELEASE.md`; runs `ATTACK-CLASSES.md` "Obvious things" literally. `strings` on the built `.app` and its frameworks, `git log -p --since=60.days` in both repos for key shapes the pre-commit scan misses, `.gitignore` coverage, `git worktree list` (never open a worktree), dependency advisories for the pinned versions, debug-only files shipped in Release (NEW-21).
 
 **Coverage critic.** When the wave returns, one fresh agent gets the ledger and the
@@ -127,7 +131,7 @@ Merge by fingerprint.
 ## 3. User tests
 
 One or two U agents, each with its own simulator set to `Europe/London`. Run the
-rows in `CHECKLIST.md` §B. simctl cannot tap; use the iOS Simulator control tool
+rows in `docs/bug-hunt/CHECKLIST.md` §B. simctl cannot tap; use the iOS Simulator control tool
 (`tap`, `text`, `swipe`) on the agent's own device, which asks Anton for device
 access on first use. What still cannot be driven (offline, slow network, a real
 push, the notification extension, the Lock Screen widget) becomes a short
@@ -176,7 +180,7 @@ In the report, HIGH covers Cloudflare's critical and high, LOW covers low and in
    - Needs validation: the exact fact and who can observe it.
    - Hardening notes, kept apart from findings.
    - Coverage: ledger counts by status, deferred rows with reasons, what the critic added, what the second security run found that the first did not.
-   - `CHECKLIST.md` rows whose status changed.
+   - `docs/bug-hunt/CHECKLIST.md` rows whose status changed.
    - **What holds up.**
 3. Copy `findings.json` to `docs/bug-hunt/BUG_HUNT_<YYYY-MM-DD>.json`. Grep both files for key shapes (`eyJ`, `sb_secret_`, `sb_publishable_`, `sk-ant-`, `postgres://`, `BEGIN PRIVATE`) before committing; the commit uses named paths only.
 4. Send Anton the decisions list in a few sentences, in his language.
@@ -193,7 +197,7 @@ re-apply by hand, never merge blind (memory `feedback_bg_agent_worktree_base`).
 Deploys and migrations stay with you, serialized, after review (memory
 `feedback_run_migrations_yourself`). Remove each worktree when its fix lands: it
 holds a copy of `backend/.env` (CLAUDE.md). Each fix leaves one runnable check
-behind, and the finding's `CHECKLIST.md` row moves to `covered` in the same commit.
+behind, and the finding's `docs/bug-hunt/CHECKLIST.md` row moves to `covered` in the same commit.
 
 ## Size
 
@@ -207,5 +211,5 @@ Scale by adding hunters per subsystem, never by giving one hunter more surfaces.
 Shrinking drops surfaces, never the disprove step, the evidence standard or the
 read-only rules.
 
-Recount `CHECKLIST.md` after editing it:
-`grep -oE '^\| [A-Z][A-Za-z0-9-]* \| [^|]+ \| (covered|gap|n\.a\.) \|' .claude/skills/bug-hunt/CHECKLIST.md | grep -oE '(covered|gap|n\.a\.) \|$' | sort | uniq -c`
+Recount `docs/bug-hunt/CHECKLIST.md` after editing it:
+`grep -oE '^\| [A-Z][A-Za-z0-9-]* \| [^|]+ \| (covered|gap|n\.a\.) \|' docs/bug-hunt/CHECKLIST.md | grep -oE '(covered|gap|n\.a\.) \|$' | sort | uniq -c`

@@ -47,3 +47,6 @@ __pycache__/
 
 # Codex config holds live API keys (Blotato); never commit it (bug hunt 2026-11-03).
 .codex/
+
+# Bug-hunt reports and the open-gap checklist: a map of holes, never in this public repo.
+docs/bug-hunt/
