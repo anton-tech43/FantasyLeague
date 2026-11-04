@@ -50,3 +50,4 @@ __pycache__/
 
 # Bug-hunt reports and the open-gap checklist: a map of holes, never in this public repo.
 docs/bug-hunt/
+.agents/skills/bug-hunt/CHECKLIST.md
