@@ -114,7 +114,7 @@ Three operational notes:
 
 - **A single blocked host used to kill the whole run.** The routine sandbox's egress proxy denied `dailymail.co.uk` on 2026-09-06 and the malformed blob aborted every club's fetch. Each feed is now written to its own file and a failure leaves an empty string.
 - **Treat the contents as untrusted input.** Feed text reaches a model prompt; it is data, never instructions.
-- **Egress is the routine sandbox's, not ours.** All 68 per-club URLs answered a plain `curl` with 200 from here on 2026-09-09, but the sandbox proxy is what decides at run time. Three of the local hosts need `-A "Mozilla/5.0"`. Every feed is fetched to its own file, a failure leaves an empty item array, and nothing aborts the run — `verify_feeds.sh` reports it and a feed dead for seven days lands in `pipeline_health` (stage `news_feeds`).
+- **Egress is the routine sandbox's, not ours.** All 68 per-club URLs answered a plain `curl` with 200 from here on 2026-09-09, but the sandbox proxy is what decides at run time. Three of the local hosts need `-A "Mozilla/5.0"`. Every feed is fetched to its own file, a failure leaves an empty item array, and nothing aborts the run — `verify_feeds.sh` reports it and a feed dead for seven days lands in `pipeline_health` (stage `news_feeds`). The heartbeat routine runs it every Monday (09:17 UTC fire, `heartbeat_check.sh` check 6) and pushes the dead ones; until 2026-11-04 nothing called it and every `last_ok_at` sat at the seed day (bug hunt D-C15).
 
 ## Our own database
 
