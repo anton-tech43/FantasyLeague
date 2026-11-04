@@ -43,11 +43,10 @@ Server and routine changes are live; app changes ship with 2.4 (18) built from t
 - **Portraits**: 111 manager and player portraits re-rendered at 900 px.
 - **Bug hunt** (`.claude/skills/bug-hunt/`, first run 2026-11-03): findings were reproduced and fixed the same week; the report is kept outside this public repo. Lessons for others: [OUTAGE_LESSONS.md](./OUTAGE_LESSONS.md) part 2.
 
-## Next TestFlight build: 2.4 (18)
+## In TestFlight: 2.4 (18)
 
-Bumped 2026-10-29. The archive stops at signing until the account holder accepts Apple's
-updated Program License Agreement (developer.apple.com); Xcode then registers the new
-App Group by itself.
+Uploaded 2026-11-04 from 37f402b (this week's work included). App Group verified on the app
+and the notification extension in the archive.
 
 - Usage tracking: 23 events into `app_events` (migrations 142–144), weekly digest
   `scripts/tracking-digest.sh`, Meta `activated` event. Plan and status:
