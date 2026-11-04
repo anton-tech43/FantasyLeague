@@ -26,7 +26,7 @@ page drift apart**, so this is a contract rather than a description — see §6.
 | **Half time** | `match-watcher` → `_shared/push-tiers.ts` | **tier 2+** | The clearest purpose of any push here. During play he is not listening and afterwards the moment is gone; half time is a fifteen-minute window and it closes. Ends with a line she can actually use. |
 | **Extra time** | `match-watcher` → `_shared/push-tiers.ts` | **every tier**, every round | A one-off cup tie level after 90 (2026-10-29). It lands when she expects the full-time push and tells her the evening runs another half hour. Sent only on the feed's own `ET`, seen on two polls at the same level score and before 100', so it is never a guess from the competition's rules: the League Cup goes straight to penalties and gets nothing here. Not sent when the shootout starts either; the Live Activity shows it kick by kick and the result push follows minutes later. |
 | **Full time** | `match-watcher` → `_shared/push-tiers.ts` | **every tier** | How it ended is the single fact that most shapes the next few hours in her house. Worth an interruption whether or not she has paid. Deep also gets where it leaves them in the league ("Up to 4th."), only when no other league game is still being played. A level cup tie the feed calls finished is held until it says PEN or AET (polled up to 14 hours, mig 145); a result that settles after 23:30 London or five hours after kickoff corrects the cards and does not push (`resultStillNews`). |
-| **A news card** | `post_news.sh` (~60 guards) → `notification-sender` | significance 2: every tier; anything else: tier 2+ | The only route from the model to a lock screen, and the narrowest. Light gets only the big story (2026-11-01). Six separate reasons downgrade a card to feed-only (§3); most cards never push at all. The bold title must carry the fact (a name or number the story states), or `post_news.sh` sends it back. At most one per club per three hours on any one phone (`notification-sender`, counted from APNs-accepted sends, per tier: after a tier-2+ push, the club's big story still reaches Light phones, and only them), and nothing from 21:00 UTC until 07:00 London: a card written 06:00–07:00 London is held and the 07:15 sweep sends it. |
+| **A news card** | `post_news.sh` (~60 guards) → `notification-sender` | significance 2: every tier; anything else: tier 2+ | The only route from the model to a lock screen, and the narrowest. Light gets only the big story (2026-11-01). Seven separate reasons downgrade a card to feed-only (§3); most cards never push at all. The bold title must carry the fact (a name or number the story states), or `post_news.sh` sends it back. At most one per club per three hours on any one phone (`notification-sender`, counted from APNs-accepted sends, per tier: after a tier-2+ push, the club's big story still reaches Light phones, and only them), and nothing from 21:00 UTC until 07:00 London: a card written 06:00–07:00 London is held and the 07:15 sweep sends it. |
 | **A tournament card** | same path, a `tournament` feed (`champions_league`, `europa_league`, `conference_league`, `fa_cup`) | **tier 2+** | Goes to every device, so it has to be the knockout night itself, not another club's news. Anton, 2026-11-01: Match-fit and Deep only. **The `league_cup` feed never pushes**; it is read in the feed. |
 | **The Monday brief** (type `sunday_brief`) | same path as a news card | **tier 2+** | The one piece that sets up her week rather than reacting to something: the weekend that was and the week ahead, Monday 08:00 London (`gd-sunday-brief`, moved from Sunday 2026-11-01). A Monday-night game is called "tonight". |
 | **Kickoff time** | `matchday-reminder`, hourly 07:00–19:00 UTC | every tier, **every round of every cup** | The useful fact is not *that* there is a match but *when*, which is only meaningful in her own time zone. Rendered per phone from `device_tokens.timezone`, never once centrally; the title uses the club's short name. **This is the one pre-game push per match**: a tap opens Matchday › Before. The first run sends; later runs retry only today's fixtures with no row in `matchday_reminders_sent`, until an hour before kickoff (mig 152). It replaced `morning-push`, the 08:00 fallback, and the day-before push, whose code and cron were removed 2026-11-01. |
@@ -68,11 +68,11 @@ routines have **no push path at all**. That is the strongest available form of
 
 ---
 
-## 3. The six downgrades
+## 3. The seven downgrades
 
 A card passes every correctness guard, is published to the feed, and still does
 not push. These are product judgements, not correctness ones, and every one was
-added after a real complaint or a real audit. All six live in `post_news.sh`
+added after a real complaint or a real audit. All seven live in `post_news.sh`
 and set `push_eligible=false` before the insert.
 
 | Reason (the literal `force_reason`) | Added because |
@@ -83,6 +83,7 @@ and set `push_eligible=false` before the insert.
 | `opaque-teaser headline` | A push that conveys a reaction without the news — "it's already written" — is bait without the payload. |
 | `quiet hours (21:00–05:59 UTC, PL clubs)` | The 00:30 run produced 32% of August's PL pushes between 23:37 and 00:03 London, against a store listing that promises "we don't send at 3am". **A downgrade, not a queue:** a delayed push arrives detached from what caused it. The one exception is the last stretch of the morning: a card written between 06:00 UTC and 07:00 London (the 06:30 UTC run, in winter) is held, and the hourly sweep sends it at 07:15 London (2026-11-01). |
 | `matchday article (FT push already sent by match-watcher)` | See §2. |
+| `transfer/injury claim on colour sources only` | 2026-10-30: a Spurs injury card sourced to mirror.co.uk alone pushed (bug hunt R-6). The two-source rule asks for a rewrite on attempt 1 but, like every quality rule, publishes on attempt 2, so a signing or an injury that no record host (BBC, the Guardian, the Premier League, a club's own site, Sky except for a transfer) carries among the links the run actually read still reaches the feed and never a lock screen. Two independent colour hosts are enough to publish, not to push (Anton, 2026-11-04). |
 
 
 ---
@@ -98,7 +99,7 @@ Five files, and nothing else may send a push to her (plus a test harness that re
 | `backend/supabase/functions/notification-sender/index.ts` | The single gate for everything written. Claims before sending, one push per club per three hours per tier (`notification-sender/throttle.ts`), quiet hours, tier filter, skips consequence cards and the League Cup feed, pages past 1,000 rows. |
 | `backend/supabase/functions/matchday-reminder/index.ts` | The one scheduled push. |
 | `backend/supabase/functions/la-channel-test/index.ts` | Nothing for her: a hand-run Live Activity test that reaches one named phone. |
-| `goaldigger-routines/post_news.sh` | The six downgrades in §3, the fact-in-the-title check, and the morning hold. |
+| `goaldigger-routines/post_news.sh` | The seven downgrades in §3, the fact-in-the-title check, and the morning hold. |
 
 `_shared/apns-client.ts` is the only way to reach APNs, so **"can this file send a
 push?" is answerable with one grep**, and §6 does exactly that.
