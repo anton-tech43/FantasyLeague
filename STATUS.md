@@ -1,6 +1,6 @@
 # GoalDigger: status
 
-What is true on **2026-10-07**. How it works: [ARCHITECTURE.md](./ARCHITECTURE.md). Known issues: [AUDIT_FINDINGS.md](./AUDIT_FINDINGS.md). Rules for anyone working here, agents included: [CLAUDE.md](./CLAUDE.md). Keep this file to one page; history goes to git.
+What is true on **2026-11-04**. How it works: [ARCHITECTURE.md](./ARCHITECTURE.md). Known issues: [AUDIT_FINDINGS.md](./AUDIT_FINDINGS.md). Rules for anyone working here, agents included: [CLAUDE.md](./CLAUDE.md). Keep this file to one page; history goes to git.
 
 ## Live on the App Store: 2.2 (12)
 
@@ -33,7 +33,17 @@ Branch `claude/matchday-tab`. Nothing deployed until the PR is kept.
 - Matchday › After: the game just played, from a `last_match` card match-watcher writes at full time (needs the match-watcher deploy). Matchday › Before: Pre-game, moved out of My Turn.
 - The full-time push opens After; the day-before push and "Pre-game ›" open Before.
 
-## Next TestFlight build: 2.4 (18), not uploaded yet
+## 2026-11-01 to 11-04: council decisions, live features, first bug hunt
+
+Server and routine changes are live; app changes ship with 2.4 (18) built from this branch.
+
+- **App council round 2** (113 decisions): Matchday follows the switcher's club and shows the live score; club page trimmed (After card moved to Matchday, injured key players marked "Out", form letters, season inside "How they're doing"); My Turn order Say This · Lingo · Quiz with "More packs"; offside explained one way everywhere; skeletons with shimmer while pages load; "Before the match" stamp on pre-match cards; shootouts count as W/L.
+- **Pushes**: goal and full-time copy per side with no lines about him; Light gets only big news; tournaments (not the League Cup) to Match-fit and Deep; nothing before 07:00 London; one push per club per 3 h; the matchday reminder for every cup round; the Monday brief at 08:00 London; "kickoff soon" at T−25 with the lineup line on.
+- **Live Activity**: status in words, a dimmed score with "No update since …" when stale, broadcast channels on iOS 18+ (build 16 and later, per side), live takes as a silent note at 30', half-time and 70' (rules tuned on real Champions League matches), a frozen-feed alarm.
+- **Portraits**: 111 manager and player portraits re-rendered at 900 px.
+- **Bug hunt** (`.claude/skills/bug-hunt/`, first run 2026-11-03): findings were reproduced and fixed the same week; the report is kept outside this public repo. Lessons for others: [OUTAGE_LESSONS.md](./OUTAGE_LESSONS.md) part 2.
+
+## Next TestFlight build: 2.4 (18)
 
 Bumped 2026-10-29. The archive stops at signing until the account holder accepts Apple's
 updated Program License Agreement (developer.apple.com); Xcode then registers the new
@@ -70,17 +80,16 @@ App Group by itself.
 - No full-time articles since 2026-09-20 because no followed club has played since then: the international window runs to the weekend of 10 October. Not a fault.
 - `gd-season-state` last wrote `team_season_state` on 2026-09-07 and that table still lists last season's fixtures. The app only reads it for country follows (switched off) and the unreachable season primer; the "season so far" card comes from the team page. Retire the routine or point it at 2026-27.
 - The `gd-maintenance` cloud environment cannot reach the database directly, so most of its checks come back blocked.
-- Alerts reach nobody: `dev_alert_devices` is empty (74 unalerted `client_errors`).
 - My Turn copy says he/him for every relationship type (deferred, NEW-9).
 - Privacy policy: new text in [docs/PRIVACY_POLICY_DRAFT.md](./docs/PRIVACY_POLICY_DRAFT.md), not published; Settings opens the site's home page.
 - Usage analytics are built but reach nobody until 2.4 (18) is out; the digest is empty until then.
 
 ## Next
 
-1. When Apple releases 2.3: apply migration 130.
-2. Publish the privacy policy at its own URL and match the App Store privacy label to the privacy manifest.
-3. Upload 2.4 (18) to TestFlight once the licence agreement is accepted; after release switch the ad set's goal to `activated`.
-4. Register a device in `dev_alert_devices`.
+1. Finish the routines' switch to their own narrow credential (goaldigger-routines REBUILD.md, "Switching to routine-ingest"), then rotate the old keys.
+2. Publish the My Turn content (2026-11-04) with `tools/myturn/publish_content.sh`.
+3. Publish the privacy policy at its own URL and match the App Store privacy label to the privacy manifest.
+4. After 2.4 is released, switch the ad set's goal to `activated`.
 5. Decide `gd-season-state`: retire it or move it to 2026-27.
 
 ## History

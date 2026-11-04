@@ -7,6 +7,16 @@
 
 ---
 
+## 2026-11-03 to 11-04: first bug hunt
+
+A systematic hunt (`.claude/skills/bug-hunt/`, Cloudflare's open security-audit method vendored and adapted) over the app, the anon-callable surface, the Edge Functions, the routines, pushes and data. Each finding was reproduced before it was fixed. The detailed report stays outside this public repository; the transferable lessons are in OUTAGE_LESSONS.md part 2.
+
+What changed, in short:
+- Routines: feed text is sanitised and fenced as data; reads go through an allowlist; writes only through the guarded post scripts; web tools and sub-agents removed from the news routines; no routine can push to main; post scripts refuse a run whose code was edited; a narrow write path (`routine-ingest`) replaces the service key once the environment is switched.
+- Anon RPCs: payload size and key checks on usage events; token pools bounded, dead tokens stay dead, hourly volume alarm; per-token call limits.
+- Edge Functions: timeouts on every outbound call; dormant paid functions refuse unless explicitly enabled for one target; a missing optional secret no longer stops live pushes; deploys refuse during live matches (`scripts/deploy-fn.sh`).
+- Secrets: the pre-commit scan covers more key shapes in both repositories; local tool configs with keys are ignored.
+
 ## Summary of Changes
 
 | # | Change | Severity Fixed | Files Modified |
