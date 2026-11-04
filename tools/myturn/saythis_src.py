@@ -156,3 +156,15 @@ SITUATIONS = [
         ("4", "Proper six-pointer, this.", "Only when both teams are chasing the same thing: the title, top four, survival.", "bold", "six-pointer"),
     ]),
 ]
+
+# Lines taken out of the bank that an installed build may still hold as a saved
+# line (bug hunt U-C1). Builds 2.2-2.4 find a saved line by its id in the current
+# content, so the line stays in its situation, with its text unchanged, and is
+# listed in retiredIds. Appended after the live lines. Never delete one.
+RETIRED = {
+    # 2026-11-01: replaced by the centre-back pick (scripted agreement); back 2026-11-04.
+    "who-was-good": [
+        ("2", "Whoever was running the midfield.", "When one midfielder had the ball all game.", "bold", "box-to-box"),
+        ("4", "You tell me. You watched it properly.", "When you honestly could not pick anyone out.", "safe", None),
+    ],
+}

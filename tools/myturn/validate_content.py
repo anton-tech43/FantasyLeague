@@ -8,6 +8,8 @@ the spec's "Validering" section is here, and the build breaks on any of them.
 
     python3 tools/myturn/validate_content.py            # exit 1 on any error
     python3 tools/myturn/validate_content.py --quiet    # errors only
+    python3 tools/myturn/validate_content.py --published live.json
+        # also: no id in the published bodies ({module: body}) leaves the files
 
 Also run by tools/myturn/publish_content.sh before it uploads anything.
 """
@@ -466,6 +468,66 @@ def validate_hype(d: dict) -> int:
     return total
 
 
+# ------------------------------------------------------- ids old builds hold
+# An installed build keeps ids in her saved state: starred Say This lines, quiz
+# question ids, Lingo term ids, Called-it picks. Builds 2.2-2.4 find a saved
+# line by looking its id up in the current content, so a publish that drops an
+# id takes her saved line away without a word: who-was-good-2 and -4 went on
+# 2026-11-01 (bug hunt U-C1). So an id the app has been sent never leaves the
+# file. A line, question or term nobody should be offered any more stays in the
+# file, keeps its text, and is named in that file's top-level `retiredIds`.
+def module_ids(module: str, body: dict) -> set[str]:
+    if not isinstance(body, dict):
+        return set()
+    if module == "saythis":
+        return {ln.get("id") for s in body.get("situations") or [] for ln in s.get("lines") or []} \
+            | {s.get("id") for s in body.get("situations") or []}
+    if module == "lingo":
+        return {t.get("id") for t in body.get("terms") or []} | {c.get("id") for c in body.get("calls") or []}
+    if module == "quiz":
+        return {q.get("id") for p in body.get("packs") or [] for q in p.get("questions") or []} \
+            | {p.get("id") for p in body.get("packs") or []}
+    return set()  # hype has no ids
+
+
+def check_retired(module: str, body: dict) -> None:
+    retired = body.get("retiredIds", [])
+    if not isinstance(retired, list) or not all(isinstance(i, str) for i in retired):
+        err(f"{module}: retiredIds must be a list of ids")
+        return
+    missing = sorted(set(retired) - module_ids(module, body))
+    for i in missing:
+        err(f"{module}: retiredIds names '{i}', which is not in the file. A retired id keeps its entry "
+            "and its text, so a build that saved it can still show it.")
+
+
+def check_kept_ids(module: str, published: dict, new: dict) -> list[str]:
+    """Ids in the published body that the new file drops. Each is an error."""
+    gone = sorted(i for i in module_ids(module, published) - module_ids(module, new) if i)
+    for i in gone:
+        err(f"{module}: '{i}' is in the published content and not in this file. An installed build may have "
+            "saved it (U-C1). Keep the entry and list it in retiredIds instead of deleting it.")
+    return gone
+
+
+_saved = list(errors)
+check_kept_ids("saythis", {"situations": [{"id": "s", "lines": [{"id": "s-1"}, {"id": "s-2"}]}]},
+               {"situations": [{"id": "s", "lines": [{"id": "s-1"}]}]})
+assert len(errors) == len(_saved) + 1 and "'s-2'" in errors[-1]
+check_retired("saythis", {"retiredIds": ["s-2"], "situations": [{"id": "s", "lines": [{"id": "s-1"}]}]})
+assert len(errors) == len(_saved) + 2
+check_kept_ids("quiz", {"packs": [{"id": "p", "questions": [{"id": "q1"}]}]},
+               {"retiredIds": ["q1"], "packs": [{"id": "p", "questions": [{"id": "q1"}, {"id": "q2"}]}]})
+assert len(errors) == len(_saved) + 2
+errors[:] = _saved
+
+
+def published_bodies(path: str) -> dict:
+    """--published <file>: {module: body} as publish_content.sh read it from my_turn_content."""
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
 def main() -> int:
     quiet = "--quiet" in sys.argv
     saythis = load("saythis.json")
@@ -479,6 +541,15 @@ def main() -> int:
     n_sit, n_lines = validate_saythis(saythis, lingo_ids) if saythis else (0, 0)
     n_packs, n_q = validate_quiz(quiz) if quiz else (0, 0)
     n_hype = validate_hype(hype) if hype else 0
+    files = {"saythis": saythis, "lingo": lingo, "quiz": quiz, "hype": hype}
+    for module, body in files.items():
+        if body:
+            check_retired(module, body)
+    if "--published" in sys.argv:
+        pub = published_bodies(sys.argv[sys.argv.index("--published") + 1])
+        for module, body in files.items():
+            if body and pub.get(module):
+                check_kept_ids(module, pub[module], body)
 
     if not quiet:
         print(f"saythis: {n_sit} situations, {n_lines} lines")

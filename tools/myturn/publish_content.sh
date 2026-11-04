@@ -15,11 +15,21 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
-python3 tools/myturn/validate_content.py --quiet
-
 : "${SUPABASE_DB_URL:?set SUPABASE_DB_URL (source backend/.env)}"
 PSQL=${PSQL:-/opt/homebrew/opt/libpq/bin/psql}
 DIR=ios/GoalDigger/Resources/MyTurn
+
+# What is live now, read-only, so the validator can refuse a publish that drops
+# an id an installed build may have saved (U-C1: who-was-good-2 and -4 left with
+# the 2026-11-01 publish and took her saved lines with them). An empty or
+# failed read stops the publish: the check that cannot run is not a pass.
+live=$(mktemp); trap 'rm -f "$live"' EXIT
+"$PSQL" "$SUPABASE_DB_URL" -X -q -At -v ON_ERROR_STOP=1 \
+  -c "BEGIN READ ONLY;" -c "SELECT coalesce(json_object_agg(module, body), '{}') FROM my_turn_content;" -c "ROLLBACK;" > "$live"
+jq -e 'type == "object" and length > 0' "$live" >/dev/null \
+  || { echo "could not read the live my_turn_content; nothing published" >&2; exit 1; }
+
+python3 tools/myturn/validate_content.py --quiet --published "$live"
 
 # hype needs migration 101 (the module CHECK) applied first, or the insert
 # is rejected by the constraint and the loop stops there.

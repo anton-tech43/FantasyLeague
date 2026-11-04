@@ -1,5 +1,9 @@
 {
-  "contentVersion": "2026-11-01.1",
+  "contentVersion": "2026-11-04.1",
+  "retiredIds": [
+    "who-was-good-2",
+    "who-was-good-4"
+  ],
   "situations": [
     {
       "id": "goal-for-us",
@@ -758,6 +762,19 @@
           "usage": "When the two central defenders won most of the headers.",
           "risk": "bold",
           "lingo": "centre-back"
+        },
+        {
+          "id": "who-was-good-2",
+          "text": "Whoever was running the midfield.",
+          "usage": "When one midfielder had the ball all game.",
+          "risk": "bold",
+          "lingo": "box-to-box"
+        },
+        {
+          "id": "who-was-good-4",
+          "text": "You tell me. You watched it properly.",
+          "usage": "When you honestly could not pick anyone out.",
+          "risk": "safe"
         }
       ]
     },

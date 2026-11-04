@@ -6,15 +6,17 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from saythis_src import SITUATIONS  # noqa: E402
+from saythis_src import RETIRED, SITUATIONS  # noqa: E402
 
 OUT = os.path.join(HERE, "..", "..", "ios", "GoalDigger", "Resources", "MyTurn", "saythis.json")
-VERSION = "2026-11-01.1"
+VERSION = "2026-11-04.1"
 
 situations = []
+retired_ids = []
 for sid, group, label, lines in SITUATIONS:
     rows = []
-    for suffix, text, usage, risk, lingo in lines:
+    retired_ids += [f"{sid}-{r[0]}" for r in RETIRED.get(sid, [])]
+    for suffix, text, usage, risk, lingo in lines + RETIRED.get(sid, []):
         row = {"id": f"{sid}-{suffix}", "text": text, "usage": usage, "risk": risk}
         if lingo:
             row["lingo"] = lingo
@@ -22,6 +24,6 @@ for sid, group, label, lines in SITUATIONS:
     situations.append({"id": sid, "group": group, "label": label, "lines": rows})
 
 with open(OUT, "w", encoding="utf-8") as f:
-    json.dump({"contentVersion": VERSION, "situations": situations}, f, indent=2, ensure_ascii=False)
+    json.dump({"contentVersion": VERSION, "retiredIds": retired_ids, "situations": situations}, f, indent=2, ensure_ascii=False)
     f.write("\n")
 print(f"wrote {OUT}: {len(situations)} situations, {sum(len(s['lines']) for s in situations)} lines")
