@@ -230,6 +230,7 @@ async function relay(r: Response, extra: Record<string, string> = {}): Promise<R
 type Rule =
   | { t: "str"; max: number; re?: RegExp }
   | { t: "int"; min: number; max: number }
+  | { t: "id" }
   | { t: "bool" }
   | { t: "json"; maxBytes: number; array?: number }
   | { t: "strs"; max: number; each: number };
@@ -244,11 +245,21 @@ function check(field: string, v: unknown, r: Rule): void {
       if ([...(v as string)].length > r.max) no(`longer than ${r.max} characters`);
       if (r.re && !r.re.test(v as string)) no("has the wrong shape");
       return;
-    case "int":
-      if (typeof v !== "number" || !Number.isInteger(v) || v < r.min || v > r.max) no(`must be an integer ${r.min}-${r.max}`);
+    // PostgREST coerces "46" into an integer column and 1234567 into a text
+    // one, and the prompts write both; refusing either would cost a card the
+    // old path published. Accept the shape, check the value.
+    case "int": {
+      const n = typeof v === "string" && /^-?\d{1,9}$/.test(v) ? Number(v) : v;
+      if (typeof n !== "number" || !Number.isInteger(n) || n < r.min || n > r.max) no(`must be an integer ${r.min}-${r.max}`);
+      return;
+    }
+    case "id":
+      if (!(typeof v === "number" && Number.isInteger(v) && v >= 0) && !(typeof v === "string" && /^\d{1,15}$/.test(v))) {
+        no("must be a numeric id");
+      }
       return;
     case "bool":
-      if (typeof v !== "boolean") no("must be true or false");
+      if (typeof v !== "boolean" && v !== "true" && v !== "false") no("must be true or false");
       return;
     case "json":
       if (r.array !== undefined && (!Array.isArray(v) || v.length > r.array)) no(`must be an array of at most ${r.array}`);
@@ -279,7 +290,8 @@ function project(row: unknown, rules: Record<string, Rule>): { row: Record<strin
       continue;
     }
     check(k, v, r);
-    out[k] = v;
+    // "false" is false: a push downgrade must never be lost to a string.
+    out[k] = r.t === "bool" && typeof v === "string" ? v === "true" : v;
   }
   return { row: out, dropped };
 }
@@ -287,7 +299,6 @@ function project(row: unknown, rules: Record<string, Rule>): { row: Record<strin
 const TEAM_ID = /^[a-z_]{2,40}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const URLISH = /^https?:\/\/[^\s]+$/;
-const FIXTURE = /^\d{1,12}$/;
 
 const CONTENT_RULES: Record<string, Rule> = {
   team_id: { t: "str", max: 40, re: TEAM_ID },
@@ -296,7 +307,7 @@ const CONTENT_RULES: Record<string, Rule> = {
   body: { t: "str", max: 5000 },
   talking_points: { t: "strs", max: 10, each: 600 },
   source_urls: { t: "strs", max: 30, each: 600 },
-  match_id: { t: "str", max: 20, re: FIXTURE },
+  match_id: { t: "id" },
   kickoff_time: { t: "str", max: 40 },
   emotional_context: { t: "str", max: 20 },
   everyone_talking: { t: "bool" },
@@ -312,7 +323,7 @@ const CONTENT_RULES: Record<string, Rule> = {
   push_title: { t: "str", max: 35 },
   affected_team_ids: { t: "strs", max: 30, each: 40 },
   push_eligible: { t: "bool" },
-  preview_fixture_id: { t: "str", max: 60 },
+  preview_fixture_id: { t: "json", maxBytes: 60 }, // World Cup only, retired
   significance: { t: "int", min: 0, max: 2 },
   info_cards: { t: "json", maxBytes: 8000, array: 3 },
   league_id: { t: "int", min: 1, max: 100000 },
@@ -332,14 +343,14 @@ const INSIDER_RULES: Record<string, Rule> = {
 };
 const QUIZ_RULES: Record<string, Rule> = {
   team_id: { t: "str", max: 40, re: TEAM_ID },
-  match_id: { t: "str", max: 20, re: FIXTURE },
+  match_id: { t: "id" },
   headline: { t: "str", max: 200 },
   questions: { t: "json", maxBytes: 20000, array: 5 },
   share_template: { t: "str", max: 300 },
 };
 const LIVE_BRIEF_RULES: Record<string, Rule> = {
   team_id: { t: "str", max: 40, re: TEAM_ID },
-  match_id: { t: "str", max: 20, re: FIXTURE },
+  match_id: { t: "id" },
   headline: { t: "str", max: 300 },
   body: { t: "str", max: 1500 },
   minute: { t: "int", min: 0, max: 150 },
@@ -384,7 +395,7 @@ const TEAM_PAGE_RULES: Record<string, Rule> = {
   form_summary: { t: "str", max: 2000 },
   season_summary: { t: "str", max: 3000 },
   next_fixture_preview: { t: "str", max: 1500 },
-  next_fixture_preview_fixture_id: { t: "str", max: 20, re: FIXTURE },
+  next_fixture_preview_fixture_id: { t: "id" },
   top_players: { t: "json", maxBytes: 8000, array: 6 },
 };
 const LOG_RULES: Record<string, Rule> = {

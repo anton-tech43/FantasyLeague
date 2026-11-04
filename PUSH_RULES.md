@@ -103,6 +103,11 @@ Five files, and nothing else may send a push to her (plus a test harness that re
 `_shared/apns-client.ts` is the only way to reach APNs, so **"can this file send a
 push?" is answerable with one grep**, and §6 does exactly that.
 
+`routine-ingest` (the routines' credential path, 2026-11-04) decides nothing here: its
+`notify` action forwards a routine card published in the last hour that has not pushed
+to `notification-sender`, exactly as `post_news.sh` did with the service key, and every
+rule above still runs there.
+
 ---
 
 ## 5. Adding a new push

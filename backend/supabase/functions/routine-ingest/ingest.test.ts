@@ -305,3 +305,15 @@ Deno.test("mergeTeamPage drops ones_to_know.talking_point even with no new playe
   const m = mergeTeamPage({ cards: { ones_to_know: { players: [], talking_point: "old line" } } }, { form_summary: "f" }, "T");
   assertEquals((m.cards as Record<string, Record<string, unknown>>).ones_to_know, { players: [] });
 });
+
+Deno.test("the shapes the prompts write that PostgREST coerced on the old path still pass", async () => {
+  const brief = await call("insert_live_brief", { team_id: "arsenal", match_id: 12345, headline: "h", body: "b", minute: "46", trigger_label: "HT" });
+  assertEquals(brief.status, 201);
+  const page = await call("upsert_team_page", { team_id: "arsenal", next_fixture_preview: "c", next_fixture_preview_fixture_id: 1234567 },
+    { page: { cards: { next_fixture: {} } } });
+  assertEquals(page.status, 201);
+  // a string "false" is still a downgrade, never dropped
+  const off = await call("insert_content", { ...card, push_eligible: "false" });
+  assertEquals((off.writes()[0].body as Record<string, unknown>).push_eligible, false);
+  assertEquals((await call("insert_live_brief", { team_id: "arsenal", match_id: "1; drop", body: "b" })).status, 400);
+});

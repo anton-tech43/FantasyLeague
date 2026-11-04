@@ -1186,6 +1186,14 @@ const M2_NODES = [
       f:["/Users/anton/goaldigger-routines/post_insider.sh"],
       g:"post_content_review.sh refuses a review whose metrics did not come from the script, and refuses a verdict under 80 characters.", x:["g.postother","g.postlive","store.reviews"] } },
 
+{ id:"edge.ingest", c:3, r:54, k:"guard", s:"live", l:"routine-ingest", sub:"Edge · the routines' only credential (R-1)",
+  p:{ w:"Every Supabase call the routine scripts make, once ROUTINE_INGEST_KEY is in their environment: allowlisted reads (never device_tokens; followers per club instead) and the specific writes of the post scripts. Holds the service key server-side.",
+      t:"On every routine read and write (sb.sh in goaldigger-routines).",
+      rd:"The tables the routines read, column-allowlisted.",
+      wr:"content_items (routine rows only, same-story updates < 72 h), team_insider_items, saturday_quiz_items, live_match_briefs, player_cards, team_season_state, content_reviews, team_pages (the prose merge runs here), team_news_sources status, pipeline_health; on-demand notification-sender for a routine card published in the last hour.",
+      f:["backend/supabase/functions/routine-ingest/ingest.ts","/Users/anton/goaldigger-routines/sb.sh"],
+      g:"Built 2026-11-04 for bug-hunt finding R-1. Unset secret = every call refused. No delete, no generic RPC; caps, forced provenance and an hourly rate limit per table. Until the key is set the scripts keep the old service-key path.", x:["rt.postnews","rt.postrest","edge.notifsender"] } },
+
 { id:"rt.checks", c:1, r:60, h:3, k:"guard", s:"live", l:"checks and one-offs", sub:"tests, probes, dead backfills",
   p:{ w:"The offline test suite and the operational probes, plus eight scripts nothing references.",
       t:"—", rd:"—", wr:"—", f:["/Users/anton/goaldigger-routines/test_guards.sh"],

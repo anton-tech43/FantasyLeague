@@ -93,7 +93,12 @@ Original design: `docs/archive/V2.2_DESIGN_MULTI_TEAM.md` (historical).
   `/Users/anton/goaldigger-routines`); its README section "Schedules, in one place" is
   the schedule. Each is `PROMPT*.md` + `fetch_*.sh` + `post_*.sh`. The `post_*.sh`
   scripts apply deterministic guards (dash strip, length caps, voice rejects, house copy
-  substitutions, `push_eligible`) before posting to Supabase. Current routines:
+  substitutions, `push_eligible`) before posting to Supabase. Every Supabase call they
+  make goes through `sb.sh`: to the Edge function **`routine-ingest`** when the routine
+  environment holds `ROUTINE_INGEST_KEY` (allowlisted reads, the specific writes,
+  routine-owned rows only, caps and an hourly rate limit; the service key stays
+  server-side), and to PostgREST with `SUPABASE_SERVICE_KEY` only until then (bug hunt
+  R-1, 2026-11-04; switch steps in goaldigger-routines `REBUILD.md`). Current routines:
   `gd-news`, `gd-insider`, `gd-season-state`, `gd-content-review`, `gd-europe`,
   `gd-domestic-cups`, `gd-team-page`, `gd-saturday-quiz`, `gd-sunday-brief`,
   `gd-player-dossier`, `gd-heartbeat`. **`gd-matchday`** (full time) and
@@ -183,7 +188,9 @@ There is **no** content → review → send chain in production for pushes. The 
   Functions deploy `--no-verify-jwt` and check the caller in code with
   `_shared/require-service-auth.ts` (constant-time comparison against the Edge secrets
   `CRON_AUTH_KEY`, sent by pg_cron and manual ops, and `SERVICE_KEY`, sent by
-  inter-function calls and the routines). The cron key is a random secret, never a JWT: `IOS_GOTCHAS.md` §14,
+  inter-function calls and, until they switch to `routine-ingest`, the routines).
+  `routine-ingest` is the one function with its own secret (`ROUTINE_INGEST_KEY` in
+  `x-routine-key`); it refuses every call while that secret is unset. The cron key is a random secret, never a JWT: `IOS_GOTCHAS.md` §14,
   `scripts/verify-cron-auth.sh`, `scripts/rotate-cron-key.sh`. Never add the `net` schema
   to PostgREST's exposed schemas.
 
