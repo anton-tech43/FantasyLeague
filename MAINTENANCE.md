@@ -70,6 +70,21 @@ same network policy as the pooler block above. That check is currently un-runnab
 `gd-env` until a human adds the host to the allowlist; Pass B should report it as skipped,
 not silently pass it.
 
+**A2 workaround (found 2026-11-10): `rpc/get_pipeline_diagnostics` over PostgREST.**
+This `service_role` RPC (migration 036) answers most of A2 without raw SQL: cron-job
+active/schedule for 4 hardcoded jobnames (`match-watcher-1min`, `notification-sweep`,
+`goaldigger-cron-heartbeat-check`, `goaldigger-daily-pipeline`), the last 20
+`match-watcher-1min` runs, and the last 20 `net._http_response` rows. Call it with
+`curl -X POST "$SUPABASE_URL/rest/v1/rpc/get_pipeline_diagnostics" -H "apikey: $SUPABASE_SERVICE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" -d '{}'`.
+Limits: only those 4 jobnames (not e.g. the `pgnet_response_vacuum*`/retention-sweep jobs
+from migration 104), and only a 20-row window per table — it cannot confirm a clean 72h the
+way a direct `cron.job_run_details` query would, and gives no `net._http_response` row
+count (A3 stays blocked). **Ignore its `key_shape_check` field** — it was written before
+the cron-key format reversed on 2026-10-05 (`IOS_GOTCHAS.md` #14: the key is now an
+80-char random secret, never a JWT) and still flags the correct current state
+(`is_jwt_shape: false`) as if it were wrong. Nothing else reads that field; it's stale,
+not a live alarm.
+
 **PostgREST's 1000-row page cap can silently truncate a per-run pull (first seen
 2026-10-09).** A `select` with no per-team filter on a table with >1000 rows (e.g.
 `players`, 1822 rows across all entities) returns only the first page with no error —
