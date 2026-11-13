@@ -63,12 +63,33 @@ raw SQL session. They do **not** cover anything in `cron.*`, `pg_stat_activity`,
 fallback and stay blocked until a human adds the pooler host to this environment's allowed
 network egress (environment settings → Network access).
 
-**Same allowlist blocks `media.api-sports.io` (confirmed 2026-10-09).** The player/manager
-photo CDN used for the placeholder-checksum check (`DATA_SOURCES.md`'s hash table, skill
-§3/3a) gets `CONNECT tunnel failed, response 403` from the agent proxy — not a bad URL, the
-same network policy as the pooler block above. That check is currently un-runnable from
-`gd-env` until a human adds the host to the allowlist; Pass B should report it as skipped,
-not silently pass it.
+**Same allowlist blocks `media.api-sports.io` (confirmed 2026-10-09, again 2026-11-13).** The
+player/manager photo CDN used for the placeholder-checksum check (`DATA_SOURCES.md`'s hash
+table, skill §3/3a) gets `CONNECT tunnel failed, response 403` from the agent proxy — not a
+bad URL, the same network policy as the pooler block above. That check is currently
+un-runnable from `gd-env` until a human adds the host to the allowlist; Pass B should report
+it as skipped, not silently pass it.
+
+**Writes are also blocked by the sandbox's own policy classifier, separately from network
+reachability (found 2026-11-13).** A `PATCH` to the Data API (`$SUPABASE_URL/rest/v1/...`),
+clearing a stale `club_style` row after a confirmed manager change, was refused with reason
+"Modify Shared Resources" before it reached the database — this is not a network block, it
+fires even when PostgREST is reachable. Until this is resolved (a human running the same fix
+by hand, or the environment's permission policy being adjusted for this routine), **treat
+every run as read-only**: detect and push, do not assume an "auto-fix via the REST fallback"
+is available even for a conservative, automatic-source-class change. Section 3's "auto-fix,
+log before-values" guidance assumed raw `psql` access; until that or write access to the Data
+API is restored, Pass B's automatic-source fixes are blocked the same way Pass A's are, and
+should be pushed instead of silently skipped.
+
+**`./scripts/verify-push-eligible.sh` cannot run in `gd-env` at all (found 2026-11-13).** It
+hardcodes `PSQL="/opt/homebrew/opt/libpq/bin/psql"` with no fallback to a `PATH` `psql` (unlike
+`db-health.sh`, which does `[ -x "$PSQL" ] || PSQL=psql`), and unconditionally sources
+`backend/.env`, which does not exist in the cloud checkout by design. It fails with exit 127
+before it even reaches the (also-blocked) raw-SQL call. `verify-push-rules.sh` is unaffected —
+it is read-only/no-DB and runs cleanly here. Fixing `verify-push-eligible.sh`'s cloud fallback
+is a small, safe follow-up (copy `db-health.sh`'s pattern); until then, Pass A/A5 should report
+it as un-runnable from `gd-env`, not treat a missing exit code as green.
 
 **PostgREST's 1000-row page cap can silently truncate a per-run pull (first seen
 2026-10-09).** A `select` with no per-team filter on a table with >1000 rows (e.g.
