@@ -70,6 +70,29 @@ same network policy as the pooler block above. That check is currently un-runnab
 `gd-env` until a human adds the host to the allowlist; Pass B should report it as skipped,
 not silently pass it.
 
+**`get_pipeline_diagnostics()` is a PostgREST-reachable fallback for A2/A3 (confirmed
+2026-11-17).** It's a `SECURITY DEFINER` RPC (migrations 029/036) granted to
+`service_role`, callable as `POST $SUPABASE_URL/rest/v1/rpc/get_pipeline_diagnostics`
+with the service key — no raw Postgres needed. It returns the 4 expected `cron.job` rows,
+the last 20 `match-watcher-1min` runs, the last 20 `net._http_response` rows, and a 24h
+status-code histogram, which covers most of A2 and the symptom side of A3 when the pooler
+is blocked. It's a 20-row snapshot, not a certified 72h sweep, so still note it as partial
+coverage in the report. **Caveat**: its `key_shape_check` field assumes the cron key is
+JWT-shaped (`eyJ...`, >100 chars) — a leftover from the May 2026 outage postmortem. Since
+the cron key was deliberately changed to a random secret (not a JWT) with Edge Functions
+deployed `--no-verify-jwt` (`IOS_GOTCHAS.md` §14), `is_jwt_shape: false` is now expected
+and does **not** mean cron auth is broken — cross-check against the same payload's
+`recent_http_responses`/`http_health_summary_24h` status codes instead.
+
+**`verify-push-eligible.sh` has no cloud-environment guard (found 2026-11-17).** Unlike
+`db-health.sh` and `tracking-digest.sh`, it unconditionally `source`s `backend/.env`
+(absent by design in `gd-env`, see above) and hardcodes the macOS Homebrew `psql` path
+with no `PATH` fallback, so in `gd-env` it fails with exit 127 before it even tries to
+reach the DB. It would still need pooler access this environment lacks either way, but
+right now it fails earlier and less informatively than that. Needs the same two-line fix
+`db-health.sh` already has (`[ -f ... ] && source ...`, `[ -x "$PSQL" ] || PSQL=psql`) —
+flag for a human; not a data risk, so not auto-fixed by this routine.
+
 **PostgREST's 1000-row page cap can silently truncate a per-run pull (first seen
 2026-10-09).** A `select` with no per-team filter on a table with >1000 rows (e.g.
 `players`, 1822 rows across all entities) returns only the first page with no error —
