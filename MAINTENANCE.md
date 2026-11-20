@@ -63,12 +63,15 @@ raw SQL session. They do **not** cover anything in `cron.*`, `pg_stat_activity`,
 fallback and stay blocked until a human adds the pooler host to this environment's allowed
 network egress (environment settings → Network access).
 
-**Same allowlist blocks `media.api-sports.io` (confirmed 2026-10-09).** The player/manager
-photo CDN used for the placeholder-checksum check (`DATA_SOURCES.md`'s hash table, skill
-§3/3a) gets `CONNECT tunnel failed, response 403` from the agent proxy — not a bad URL, the
-same network policy as the pooler block above. That check is currently un-runnable from
-`gd-env` until a human adds the host to the allowlist; Pass B should report it as skipped,
-not silently pass it.
+**`media.api-sports.io` reachability has flip-flopped (blocked 2026-09-23 and
+2026-10-09, reachable again 2026-11-20).** When blocked, the agent proxy returns
+`CONNECT tunnel failed, response 403` for the player/manager photo CDN used by the
+placeholder-checksum check (`DATA_SOURCES.md`'s hash table, skill §3/3a) — same class
+of block as the pooler above. **Don't assume either state carries over from the last
+report: test it fresh each run** (one `curl` + byte check is enough) and run the
+placeholder check when it's up, report it as skipped when it's down. Nobody has
+confirmed whether this is an allowlist a human toggled, an intermittent proxy issue, or
+something else — flag to a human only if it's useful context, not as a standing fact.
 
 **PostgREST's 1000-row page cap can silently truncate a per-run pull (first seen
 2026-10-09).** A `select` with no per-team filter on a table with >1000 rows (e.g.
